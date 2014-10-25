@@ -1,0 +1,42 @@
+package gemini.myownradio.light.ContextHandlers;
+
+import gemini.myownradio.exception.RadioException;
+import gemini.myownradio.ff.FFEncoderBuilder;
+import gemini.myownradio.flow.AudioFormatsRegister;
+import gemini.myownradio.light.LHttpHandler;
+import gemini.myownradio.light.LHttpProtocol;
+import gemini.myownradio.engine.InitRadio;
+import gemini.myownradio.tools.BaseLogger;
+
+import java.io.IOException;
+import java.sql.SQLException;
+
+/**
+ * Created by Roman on 16.10.14.
+ */
+public class handlerAudio extends LHttpHandler {
+    @Override
+    public void handler(LHttpProtocol exchange) throws IOException {
+        String      stream      = exchange.get("s");
+        boolean     metadata    = exchange.headerEquals("icy-metadata", "1");
+
+        String      format      = exchange.get("f", "mp3_128k");
+
+        BaseLogger.writeLog(String.format("New client %s required quality %s",
+                exchange.getClientIP(), format));
+
+        FFEncoderBuilder decoder = AudioFormatsRegister.analyzeFormat(format);
+
+        try {
+            if (decoder != null) {
+                BaseLogger.writeLog(String.format("Starting to listen to stream %s with quality %s",
+                        stream, decoder.getAudioFormatName()));
+                InitRadio radio =
+                        new InitRadio(exchange, stream, decoder, metadata);
+                radio.startStreamer();
+            }
+        } catch (SQLException | RadioException e) {
+            e.printStackTrace();
+        }
+    }
+}

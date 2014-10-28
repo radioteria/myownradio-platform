@@ -1,6 +1,6 @@
 package gemini.myownradio.light;
 
-import gemini.myownradio.tools.MORConfig;
+import gemini.myownradio.tools.MORSettings;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -95,7 +95,7 @@ public class LHttpProtocol {
         if (!this.headersFlushed) {
             pw.printf("%s %s\r\n", request.getProtoVersion(), status != null ? status.getResponse() : defaultStatus.getResponse());
             pw.println("Connection: close");
-            pw.printf("Server: %s\r\n", MORConfig.whoIsMe);
+            pw.printf("Server: %s\r\n", MORSettings.getFirstString("server", "title", "MOR"));
             if (ctSize != null) {
                 pw.println(String.format("Content-Size: %d", ctSize));
             }

@@ -1,6 +1,6 @@
 package gemini.myownradio.engine.entity;
 
-import gemini.myownradio.tools.MORConfig;
+import gemini.myownradio.tools.MORSettings;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -87,7 +87,7 @@ public class Track {
         File ff;
 
         ff = new File(String.format("%s/ui_%d/a_%03d_original.%s",
-                MORConfig.getRoot().getChild("content").getChild("root-location").getValue(),
+                MORSettings.getFirstString("content", "content_folder", "content"),
                 this.getUserId(),
                 this.getTrackId(),
                 this.getExtension()
@@ -96,7 +96,7 @@ public class Track {
             return ff;
         }
         ff = new File(String.format("%s/ui_%d/lores_%03d.mp3",
-                MORConfig.getRoot().getChild("content").getChild("root-location").getValue(),
+                MORSettings.getFirstString("content", "content_folder", "content"),
                 this.getUserId(),
                 this.getTrackId()
         ));

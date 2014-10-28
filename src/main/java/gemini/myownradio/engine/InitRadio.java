@@ -5,10 +5,10 @@ import gemini.myownradio.ff.FFEncoderBuilder;
 import gemini.myownradio.light.LHttpProtocol;
 import gemini.myownradio.engine.entity.Stream;
 import gemini.myownradio.tools.BaseLogger;
-import gemini.myownradio.tools.MORConfig;
 import gemini.myownradio.engine.buffer.ConcurrentBuffer;
 import gemini.myownradio.engine.buffer.ConcurrentBufferKey;
 import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
+import gemini.myownradio.tools.MORSettings;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -44,8 +44,7 @@ public class InitRadio {
                 this.streamObject.getId()
         );
 
-        int bufferSize = (encoder.getAudioFormat().getBitrate() >> 3) *
-                Integer.parseInt(MORConfig.getRoot().getChild("player").getChild("buffer-length").getValue());
+        int bufferSize = (encoder.getAudioFormat().getBitrate() >> 3) * MORSettings.getFirstInteger("server", "streaming_buffer", 5);
 
         ConcurrentBuffer broadcast;
 

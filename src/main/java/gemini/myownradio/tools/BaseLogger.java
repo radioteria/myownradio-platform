@@ -13,14 +13,17 @@ import java.io.File;
  */
 public class BaseLogger {
     final static Logger logger = Logger.getLogger(WebRadio.class);
+    final public static String binLocation =
+            new File(MORSettings.urldecode(WebRadio.class.getProtectionDomain().getCodeSource().getLocation().getPath())).getParent();
 
     public static void writeLog(String message) {
         logger.info(message);
     }
 
     public static void configure() {
+        System.out.println("Initializing logger...");
         FileAppender fa = new FileAppender();
-        fa.setFile(MORConfig.binLocation + "/webradio.log");
+        fa.setFile(binLocation + "/webradio.log");
         fa.setLayout(new
                 PatternLayout("%d{yyyy.MM.dd HH:mm:ss.SSS} [%t] %-5p - %m%n"));
         fa.setThreshold(Level.ALL);

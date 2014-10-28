@@ -8,7 +8,7 @@ import gemini.myownradio.engine.entity.Stream;
 import gemini.myownradio.engine.entity.Track;
 import gemini.myownradio.flow.NoisePlayer;
 import gemini.myownradio.tools.BaseLogger;
-import gemini.myownradio.tools.MORConfig;
+import gemini.myownradio.tools.MORSettings;
 import gemini.myownradio.tools.io.ThrottledOutputStream;
 import gemini.myownradio.tools.io.ThroughOutputStream;
 import gemini.myownradio.tools.ThreadTools;
@@ -56,15 +56,8 @@ public class StreamRadio implements Runnable {
 
         Track track;
         AbstractPlayer player;
-        int preloadTime;
 
-        try {
-            preloadTime = Integer.parseInt(MORConfig.getRoot()
-                    .getChild("player").getChild("buffer-length")
-                    .getValue());
-        } catch (NumberFormatException e) {
-            preloadTime = 5;
-        }
+        int preloadTime = MORSettings.getFirstInteger("server", "stream_preload", 5) * 1000;
 
         int order = 0;
         long beforeEnd;
@@ -74,22 +67,32 @@ public class StreamRadio implements Runnable {
             while (true) {
 
                 try {
-                    track = stream.reload().getNowPlaying(order == 0 ? -(preloadTime * 1000) : 0);
+                    track = stream.reload().getNowPlaying(order == 0 ? preloadTime : 0);
+
                     beforeEnd = track.getDuration() - track.getTrackOffset();
+
                     if ((beforeEnd >> 11) == 0L) {
                         ThreadTools.Sleep(beforeEnd);
                         continue;
                     }
+
                     player = new TrackPlayer(broadcast, output, track.getPath().getAbsolutePath(),
                             (track.getOrderIndex() % 4 == 0) && (track.getTrackOffset() < 2000L));
+
                     broadcast.setTitle(track.getTitle());
+
                     BaseLogger.writeLog(String.format("Stream %d listening to %s",
                             this.stream.getId(), track.getTitle()));
+
                     player.play(track.getTrackOffset());
-                } catch (RadioException | SQLException | FileNotFoundException e) {
+
+                } catch (RadioException | FileNotFoundException e) {
                     player = new NoisePlayer(broadcast, output);
                     broadcast.setTitle("No signal");
                     player.play();
+                } catch (SQLException e) {
+                    // Terminate player if database is unreachable
+                    return;
                 }
 
                 order++;

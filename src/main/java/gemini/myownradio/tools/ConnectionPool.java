@@ -20,18 +20,19 @@ public class ConnectionPool {
 
             ComboPooledDataSource cpds = new ComboPooledDataSource();
 
-            cpds.setDriverClass("com.mysql.jdbc.Driver");
+            cpds.setDriverClass(MORSettings.getFirstString("server", "jdbc_driver", "com.mysql.jdbc.Driver"));
 
             cpds.setJdbcUrl(String.format("jdbc:mysql://%s:3306/%s",
-                    MORConfig.getRoot().getChild("database").getChild("hostname").getValue(),
-                    MORConfig.getRoot().getChild("database").getChild("database").getValue()));
+                    MORSettings.getFirstString("database", "db_hostname", "127.0.0.1"),
+                    MORSettings.getFirstString("database", "db_database", "myownradio")));
 
-            cpds.setUser(MORConfig.getRoot().getChild("database").getChild("login").getValue());
-            cpds.setPassword(MORConfig.getRoot().getChild("database").getChild("password").getValue());
+            cpds.setUser(MORSettings.getFirstString("database", "db_login", "mor"));
+            cpds.setPassword(MORSettings.getFirstString("database", "db_password", ""));
 
             cpds.setMinPoolSize(1);
-            cpds.setAcquireIncrement(1);
             cpds.setMaxPoolSize(20);
+
+            cpds.setAcquireIncrement(1);
             cpds.setMaxIdleTime(30);
             cpds.setMaxStatements(20);
 

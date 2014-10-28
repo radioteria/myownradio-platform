@@ -1,7 +1,10 @@
 package gemini.myownradio.tools;
 
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
+import javax.sql.DataSource;
+import java.beans.PropertyVetoException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
@@ -9,34 +12,33 @@ import java.sql.SQLException;
  */
 public class Database {
 
-    private String db_host = "myownradio.biz";
-    private String db_base = "myownradio";
-    private String db_user = "mor";
-    private String db_pass = "3bWdNNa0v";
+    final private static DataSource dataSource;
 
-    private Connection dbo;
+    static {
+        try {
+            ComboPooledDataSource cpds = new ComboPooledDataSource();
 
-    private static Database instance;
+            cpds.setDriverClass("com.mysql.jdbc.Driver");
+            cpds.setJdbcUrl(String.format("jdbc:mysql://%s:3306/%s",
+                    MORConfig.getRoot().getChild("database").getChild("hostname").getValue(),
+                    MORConfig.getRoot().getChild("database").getChild("database").getValue()));
 
-    public Database() throws SQLException {
-        this.dbo = DriverManager.getConnection(
-                String.format("jdbc:mysql://%s:3306/%s",
-                        MORConfig.getRoot().getChild("database").getChild("hostname").getValue(),
-                        MORConfig.getRoot().getChild("database").getChild("database").getValue()),
-                MORConfig.getRoot().getChild("database").getChild("login").getValue(),
-                MORConfig.getRoot().getChild("database").getChild("password").getValue()
-        );
-    }
+            cpds.setUser(MORConfig.getRoot().getChild("database").getChild("login").getValue());
+            cpds.setPassword(MORConfig.getRoot().getChild("database").getChild("password").getValue());
 
-    public static Database getInstance() throws SQLException {
-        if (instance == null) {
-            instance = new Database();
+            cpds.setMinPoolSize(1);
+            cpds.setAcquireIncrement(1);
+            cpds.setMaxPoolSize(20);
+            cpds.setMaxIdleTime(60);
+
+            dataSource = cpds;
+        } catch (PropertyVetoException e) {
+            throw new RuntimeException(e);
         }
-        return instance;
     }
 
-    public Connection dbo() {
-        return this.dbo;
+    public static Connection newConnection() throws SQLException {
+        return dataSource.getConnection();
     }
 
 }

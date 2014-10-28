@@ -15,7 +15,9 @@ public class Database {
     final private static DataSource dataSource;
 
     static {
+
         try {
+
             ComboPooledDataSource cpds = new ComboPooledDataSource();
 
             cpds.setDriverClass("com.mysql.jdbc.Driver");
@@ -32,9 +34,13 @@ public class Database {
             cpds.setMaxIdleTime(60);
 
             dataSource = cpds;
+
         } catch (PropertyVetoException e) {
-            throw new RuntimeException(e);
+            RuntimeException rte = new RuntimeException("Database connection pool couldn't be initialized!");
+            rte.addSuppressed(e);
+            throw rte;
         }
+
     }
 
     public static Connection newConnection() throws SQLException {

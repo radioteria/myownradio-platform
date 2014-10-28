@@ -23,9 +23,8 @@ public class BaseLogger {
     public static void configure() {
         System.out.println("Initializing logger...");
         FileAppender fa = new FileAppender();
-        fa.setFile(binLocation + "/webradio.log");
-        fa.setLayout(new
-                PatternLayout("%d{yyyy.MM.dd HH:mm:ss.SSS} [%t] %-5p - %m%n"));
+        fa.setFile(MORSettings.getFirstString("server", "server_logfile", "/tmp/mor-radio.log"));
+        fa.setLayout(new PatternLayout("%d{yyyy.MM.dd HH:mm:ss.SSS} [%t] %-5p - %m%n"));
         fa.setThreshold(Level.ALL);
         fa.setAppend(true);
         fa.activateOptions();

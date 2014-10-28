@@ -29,12 +29,18 @@ public class ConnectionPool {
             cpds.setUser(MORSettings.getFirstString("database", "db_login", "mor"));
             cpds.setPassword(MORSettings.getFirstString("database", "db_password", ""));
 
+            cpds.setTestConnectionOnCheckin(true);
+
+            cpds.setUnreturnedConnectionTimeout(60);
+
             cpds.setMinPoolSize(1);
             cpds.setMaxPoolSize(20);
 
             cpds.setAcquireIncrement(1);
             cpds.setMaxIdleTime(30);
             cpds.setMaxStatements(20);
+
+            cpds.setAutoCommitOnClose(true);
 
             dataSource = cpds;
 

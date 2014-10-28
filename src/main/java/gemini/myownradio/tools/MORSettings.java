@@ -20,7 +20,7 @@ public class MORSettings {
     private static HashMap<String,ArrayList<String>> settings = new HashMap<>();
 
     static {
-        iniFile = new File("/usr/local/etc/mor.ini");
+        iniFile = new File("/usr/local/myownradio/conf/mor.conf");
         System.out.println(iniFile);
         readFile();
     }

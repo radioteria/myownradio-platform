@@ -5,8 +5,10 @@ package gemini.myownradio;
  */
 
 import gemini.myownradio.light.ContextHandlers.handlerAudio;
+import gemini.myownradio.light.ContextHandlers.handlerImage;
 import gemini.myownradio.light.ContextHandlers.handlerNotify;
 import gemini.myownradio.light.ContextHandlers.handlerRun;
+import gemini.myownradio.light.LHttpContextRegexp;
 import gemini.myownradio.light.LHttpContextString;
 import gemini.myownradio.tools.BaseLogger;
 import gemini.myownradio.light.LHttpServer;
@@ -41,7 +43,9 @@ public class WebRadio {
                 .createContext(new LHttpContextString("/audio"))
                 .setHandler(new handlerAudio());
 
-
+        httpServer
+                .createContext(new LHttpContextRegexp(".jpg$"))
+                .setHandler(new handlerImage());
 
         try {
             httpServer.start().join();

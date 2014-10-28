@@ -35,9 +35,10 @@ public class LHttpServer {
 
     private ServerSocket serverSocket;
 
-    private Map<LHttpContextInterface, LHttpContext> handlerMap = new HashMap<>();
+    private Map<LHttpContextInterface, LHttpContext> handlerMap;
 
     public LHttpServer() {
+        handlerMap = new HashMap<>();
     }
 
     public int getPort() {

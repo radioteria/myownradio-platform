@@ -100,6 +100,7 @@ public class LHttpServer {
     }
 
     private boolean routeRequest(LHttpRequest req, OutputStream os) throws IOException {
+        // todo: do this using stream and lambda
         LHttpHandler route;
         for (LHttpContextInterface ctx : handlerMap.keySet()) {
             route = handlerMap.get(ctx).getHandler();

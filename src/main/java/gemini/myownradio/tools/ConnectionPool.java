@@ -10,7 +10,7 @@ import java.sql.SQLException;
 /**
  * Created by Roman on 30.09.14.
  */
-public class Database {
+public class ConnectionPool {
 
     final private static DataSource dataSource;
 
@@ -21,6 +21,7 @@ public class Database {
             ComboPooledDataSource cpds = new ComboPooledDataSource();
 
             cpds.setDriverClass("com.mysql.jdbc.Driver");
+
             cpds.setJdbcUrl(String.format("jdbc:mysql://%s:3306/%s",
                     MORConfig.getRoot().getChild("database").getChild("hostname").getValue(),
                     MORConfig.getRoot().getChild("database").getChild("database").getValue()));
@@ -31,14 +32,17 @@ public class Database {
             cpds.setMinPoolSize(1);
             cpds.setAcquireIncrement(1);
             cpds.setMaxPoolSize(20);
-            cpds.setMaxIdleTime(60);
+            cpds.setMaxIdleTime(30);
+            cpds.setMaxStatements(20);
 
             dataSource = cpds;
 
         } catch (PropertyVetoException e) {
-            RuntimeException rte = new RuntimeException("Database connection pool couldn't be initialized!");
+
+            RuntimeException rte = new RuntimeException("ConnectionPool connection pool couldn't be initialized!");
             rte.addSuppressed(e);
             throw rte;
+
         }
 
     }

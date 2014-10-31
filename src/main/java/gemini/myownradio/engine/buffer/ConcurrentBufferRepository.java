@@ -1,6 +1,5 @@
 package gemini.myownradio.engine.buffer;
 
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -33,8 +32,8 @@ public class ConcurrentBufferRepository {
         repository = temp;
     }
 
-    public static Set<ConcurrentBufferKey> getKeys() {
-        return repository.keySet();
+    public static java.util.stream.Stream<ConcurrentBufferKey> getKeys() {
+        return repository.keySet().stream();
     }
 
 }

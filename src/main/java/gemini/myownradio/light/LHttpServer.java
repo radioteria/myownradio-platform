@@ -107,12 +107,12 @@ public class LHttpServer {
         LHttpHandler handler = handlerMap
                 .keySet()
                 .stream()
-                .filter(k -> k.is(req.getRequestPath()))
-                .map(k -> handlerMap.get(k).getHandler())
-                .filter(v -> v != null)
+                .parallel()
+                .filter(handle -> handle.is(req.getRequestPath()))
+                .map(handle -> handlerMap.get(handle).getHandler())
+                .filter(action -> action != null)
                 .findFirst()
                 .orElse(null);
-
 
         if (handler != null) {
             handler.handler(new LHttpProtocol(req, os));

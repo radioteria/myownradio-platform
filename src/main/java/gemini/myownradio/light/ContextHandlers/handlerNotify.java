@@ -1,5 +1,6 @@
 package gemini.myownradio.light.ContextHandlers;
 
+import gemini.myownradio.engine.buffer.ConcurrentBufferKey;
 import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
 import gemini.myownradio.light.LHttpHandler;
 import gemini.myownradio.light.LHttpProtocol;
@@ -26,15 +27,14 @@ public class handlerNotify implements LHttpHandler {
 
         stream_id = Integer.parseInt(exchange.get("s"));
 
-        long notified =
-                ConcurrentBufferRepository                                          // Register of active streamers
-                        .getKeys()                                  // Get all active streamers keys
-                        .stream()                                   // Translate keys into stream
-                        .filter(s -> s.getStream() == stream_id)    // Filter only keys where stream id equals stream_id
-                        .map(s -> ConcurrentBufferRepository.getBC(s))              // Get streamer objects by filtered keys
-                        .map(o -> o.setNotify())                    // Call setNotify upon those objects
-                        .count();                                   // Get count of notified streamers
+        long notified = ConcurrentBufferRepository
+                        .getKeys()
+                        .parallel()
+                        .filter(o -> o.getStream() == stream_id)
+                        .map(s -> ConcurrentBufferRepository.getBC(s))
+                        .map(o -> o.setNotify())
+                        .count();
 
-        exchange.getPrinter().println("STREAMERS_NOTIFIED=" + notified);
+        exchange.getPrinter().println("STREAMERS_NOTIFIED = " + notified);
     }
 }

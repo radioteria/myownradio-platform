@@ -63,7 +63,7 @@ public class WebRadio {
          */
         httpServer
                 .createContext(new LHttpContextRegexp(".jpg$"))
-                .setHandler((exchange) -> {
+                .setHandler(exchange -> {
                     exchange.setContentType("text/plain");
                     PrintWriter pw = exchange.getPrinter();
                     pw.println(".jpg$");
@@ -71,7 +71,7 @@ public class WebRadio {
 
         httpServer
                 .createContext(new LHttpContextRegexp("picture\\.jpg$"))
-                .setHandler((exchange) -> {
+                .setHandler(exchange -> {
                     exchange.setContentType("text/plain");
                     PrintWriter pw = exchange.getPrinter();
                     pw.println("picture\\.jpg$");
@@ -79,7 +79,7 @@ public class WebRadio {
 
         httpServer
                 .createContext(new LHttpContextPrefix("/files/"))
-                .setHandler((exchange) -> {
+                .setHandler(exchange -> {
                     exchange.setContentType("text/plain");
                     PrintWriter pw = exchange.getPrinter();
                     pw.println("You're in prefix /files/*");
@@ -87,7 +87,7 @@ public class WebRadio {
 
         httpServer
                 .createContext(new LHttpContextPostfix("style.css"))
-                .setHandler((exchange) -> {
+                .setHandler(exchange -> {
                     exchange.setContentType("text/plain");
                     PrintWriter pw = exchange.getPrinter();
                     pw.println("You're in postfix /style.css");
@@ -95,7 +95,7 @@ public class WebRadio {
 
         httpServer
                 .createContext(new LHttpContextRegexp("\\.php$"))
-                .setHandler((exchange) -> {
+                .setHandler(exchange -> {
                     exchange.setContentType("text/html;charset=utf8");
                     PrintWriter pw = exchange.getPrinter();
                     pw.println("<!DOCTYPE html>");

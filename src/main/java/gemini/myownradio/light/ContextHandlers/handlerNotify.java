@@ -10,9 +10,10 @@ import java.io.IOException;
 /**
  * Created by Roman on 16.10.14.
  */
-public class handlerNotify extends LHttpHandler {
-    @Override
+public class handlerNotify implements LHttpHandler {
+
     public void handler(LHttpProtocol exchange) throws IOException {
+
         if (!exchange.getClientIP().equals("127.0.0.1")) {
             exchange.setStatus(LHttpStatus.STATUS_403);
             exchange.setContentType("text/html");
@@ -34,6 +35,6 @@ public class handlerNotify extends LHttpHandler {
                         .map(o -> o.setNotify())                    // Call setNotify upon those objects
                         .count();                                   // Get count of notified streamers
 
-            exchange.getPrinter().println("STREAMERS_NOTIFIED=" + notified);
+        exchange.getPrinter().println("STREAMERS_NOTIFIED=" + notified);
     }
 }

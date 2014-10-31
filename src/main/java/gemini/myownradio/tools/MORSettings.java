@@ -1,7 +1,5 @@
 package gemini.myownradio.tools;
 
-import gemini.myownradio.WebRadio;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,19 +15,17 @@ public class MORSettings {
 
     private final static File iniFile;
     private final static String defaultSection = "main";
-    private static HashMap<String,ArrayList<String>> settings = new HashMap<>();
+    private static HashMap<String, ArrayList<String>> settings = new HashMap<>();
 
     static {
         iniFile = new File("/usr/local/myownradio/conf/mor.conf");
-        System.out.println(iniFile);
         readFile();
     }
 
     private static void readFile() {
-        BaseLogger.writeLog("Reading configuration: " + iniFile);
-        try(
-            FileReader file = new FileReader(iniFile);
-            BufferedReader buffered = new BufferedReader(file);
+        try (
+                FileReader file = new FileReader(iniFile);
+                BufferedReader buffered = new BufferedReader(file);
         ) {
             String line;
             String tline;
@@ -64,18 +60,17 @@ public class MORSettings {
     }
 
     /**
-     *
-     * @param section       Setting section in .ini file
-     * @param setting       Setting in .ini file
-     * @param alternative   Alternative value if setting not set
-     * @return              Returns setting value or alternative (string)
+     * @param section     Setting section in .ini file
+     * @param setting     Setting in .ini file
+     * @param alternative Alternative value if setting not set
+     * @return Returns setting value or alternative (string)
      */
     public static String getFirstString(String section, String setting, String alternative) {
 
-        if(settings.get(String.format("%s/%s", section, setting)) == null)
+        if (settings.get(String.format("%s/%s", section, setting)) == null)
             return alternative;
 
-        if(settings.get(String.format("%s/%s", section, setting)).get(0) == null)
+        if (settings.get(String.format("%s/%s", section, setting)).get(0) == null)
             return alternative;
 
         return settings.get(String.format("%s/%s", section, setting)).get(0);
@@ -83,7 +78,7 @@ public class MORSettings {
     }
 
     public static List<String> getValues(String section, String setting) {
-        if(settings.get(String.format("%s/%s", section, setting)) == null) {
+        if (settings.get(String.format("%s/%s", section, setting)) == null) {
             return new ArrayList<>();
         } else {
             return settings.get(String.format("%s/%s", section, setting));
@@ -91,18 +86,17 @@ public class MORSettings {
     }
 
     /**
-     *
-     * @param section       Setting section in .ini file
-     * @param setting       Setting in .ini file
-     * @param alternative   Alternative value if setting not set
-     * @return              Returns setting value or alternative (string)
+     * @param section     Setting section in .ini file
+     * @param setting     Setting in .ini file
+     * @param alternative Alternative value if setting not set
+     * @return Returns setting value or alternative (string)
      */
     public static Integer getFirstInteger(String section, String setting, Integer alternative) {
 
-        if(settings.get(String.format("%s/%s", section, setting)) == null)
+        if (settings.get(String.format("%s/%s", section, setting)) == null)
             return alternative;
 
-        if(settings.get(String.format("%s/%s", section, setting)).get(0) == null)
+        if (settings.get(String.format("%s/%s", section, setting)).get(0) == null)
             return alternative;
 
         try {

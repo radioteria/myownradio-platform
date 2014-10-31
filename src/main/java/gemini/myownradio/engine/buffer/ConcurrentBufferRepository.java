@@ -1,45 +1,36 @@
 package gemini.myownradio.engine.buffer;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Created by Roman on 02.10.14.
  */
 public class ConcurrentBufferRepository {
 
-    private static Object locker = new Object() {};
-    private static Map<ConcurrentBufferKey, ConcurrentBuffer> repository =
-            new HashMap<>();
+    private static ConcurrentMap<ConcurrentBufferKey, ConcurrentBuffer> repository =
+            new ConcurrentHashMap<>();
 
     public static boolean BCExists(ConcurrentBufferKey streamKey) {
-        synchronized (locker) {
-            return repository.containsKey(streamKey);
-        }
+        return repository.containsKey(streamKey);
     }
 
     public static ConcurrentBuffer getBC(ConcurrentBufferKey streamKey) {
-        synchronized (locker) {
-            return repository.get(streamKey);
-        }
+        return repository.get(streamKey);
     }
 
     public static ConcurrentBuffer createBC(ConcurrentBufferKey streamKey, int size) {
-        synchronized (locker) {
-            ConcurrentBuffer temp = new ConcurrentBuffer(streamKey, size);
-            repository.put(streamKey, temp);
-            return temp;
-        }
+        ConcurrentBuffer temp;
+        repository.put(streamKey, temp = new ConcurrentBuffer(streamKey, size));
+        return temp;
     }
 
     public static void deleteBC(ConcurrentBufferKey streamKey) {
-        synchronized (locker) {
-            Map<ConcurrentBufferKey, ConcurrentBuffer> temp =
-                    new HashMap<>(repository);
-            temp.remove(streamKey);
-            repository = temp;
-        }
+        ConcurrentMap<ConcurrentBufferKey, ConcurrentBuffer> temp =
+                new ConcurrentHashMap<>(repository);
+        temp.remove(streamKey);
+        repository = temp;
     }
 
     public static Set<ConcurrentBufferKey> getKeys() {

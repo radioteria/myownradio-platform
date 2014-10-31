@@ -4,15 +4,13 @@ import gemini.myownradio.light.Exceptions.LHttpException;
 import gemini.myownradio.light.Exceptions.LHttpExceptionBadRequest;
 import gemini.myownradio.light.Exceptions.LHttpExceptionEntityTooLong;
 import gemini.myownradio.light.Exceptions.LHttpExceptionNotFound;
+import gemini.myownradio.light.context.LHttpContextAbstract;
 import gemini.myownradio.tools.BaseLogger;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -35,10 +33,15 @@ public class LHttpServer {
 
     private ServerSocket serverSocket;
 
-    private Map<LHttpContextInterface, LHttpContext> handlerMap;
+    private Map<LHttpContextAbstract, LHttpContext> handlerMap;
 
     public LHttpServer() {
-        handlerMap = new HashMap<>();
+        handlerMap = new TreeMap<>(new Comparator<LHttpContextAbstract>() {
+            @Override
+            public int compare(LHttpContextAbstract o1, LHttpContextAbstract o2) {
+                return o2.compare() - o1.compare();
+            }
+        });
     }
 
     public int getPort() {
@@ -100,16 +103,24 @@ public class LHttpServer {
     }
 
     private boolean routeRequest(LHttpRequest req, OutputStream os) throws IOException {
-        // todo: do this using stream and lambda
-        LHttpHandler route;
-        for (LHttpContextInterface ctx : handlerMap.keySet()) {
-            route = handlerMap.get(ctx).getHandler();
-            if (ctx.is(req.getRequestPath()) && route != null) {
-                route.handler(new LHttpProtocol(req, os));
-                return true;
-            }
+
+        LHttpHandler handler = handlerMap
+                .keySet()
+                .stream()
+                .filter(k -> k.is(req.getRequestPath()))
+                .map(k -> handlerMap.get(k).getHandler())
+                .filter(v -> v != null)
+                .findFirst()
+                .orElse(null);
+
+
+        if (handler != null) {
+            handler.handler(new LHttpProtocol(req, os));
+            return true;
         }
+
         return false;
+
     }
 
     private LHttpRequest readRequest(InputStream is, Socket socket) throws IOException, LHttpException {
@@ -132,7 +143,7 @@ public class LHttpServer {
         throw new LHttpExceptionBadRequest();
     }
 
-    public LHttpContext createContext(LHttpContextInterface context) {
+    public LHttpContext createContext(LHttpContextAbstract context) {
         LHttpContext ctx = new LHttpContext(context);
         handlerMap.put(context, ctx);
         return ctx;

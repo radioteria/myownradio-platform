@@ -12,8 +12,8 @@ import java.text.DecimalFormatSymbols;
 /**
  * Created by Roman on 16.10.14.
  */
-public class handlerRun extends LHttpHandler {
-    @Override
+public class handlerRun implements LHttpHandler {
+
     public void handler(LHttpProtocol exchange) throws IOException {
 
         Runtime rt = Runtime.getRuntime();

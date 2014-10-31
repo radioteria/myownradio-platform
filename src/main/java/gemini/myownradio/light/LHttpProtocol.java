@@ -91,6 +91,10 @@ public class LHttpProtocol {
         return request.getClientIP();
     }
 
+    public String getRequest() {
+        return request.getRequestPath();
+    }
+
     private void flushHeaders() {
         if (!this.headersFlushed) {
             pw.printf("%s %s\r\n", request.getProtoVersion(), status != null ? status.getResponse() : defaultStatus.getResponse());

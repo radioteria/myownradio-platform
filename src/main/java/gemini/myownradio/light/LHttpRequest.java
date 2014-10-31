@@ -6,21 +6,18 @@ import gemini.myownradio.light.Exceptions.LHttpExceptionMethodNotImplemented;
 import gemini.myownradio.tools.CaseString;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Byte.parseByte;
-
 /**
  * Created by Roman on 15.10.14.
  */
 public class LHttpRequest {
     private LHttpHeaders headers = new LHttpHeaders();
-    private Map<String,String> get = new HashMap<>();
+    private Map<String, String> get = new HashMap<>();
 
     private String protoVersion;
     private String requestPath;
@@ -68,7 +65,7 @@ public class LHttpRequest {
                 } else if (temp1.length == 1) {
                     get.put(
                             URLDecoder.decode(temp1[0], "ISO-8859-1"),
-                            ""
+                            URLDecoder.decode(temp1[0], "ISO-8859-1")
                     );
                 }
 

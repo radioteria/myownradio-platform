@@ -3,9 +3,7 @@ package gemini.myownradio.flow;
 import gemini.myownradio.engine.buffer.ConcurrentBuffer;
 import gemini.myownradio.ff.FFDecoderBuilder;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * Created by Roman on 07.10.14.
@@ -16,14 +14,18 @@ public class TrackPlayer implements AbstractPlayer {
     private final String filename;
     private final ConcurrentBuffer broadcast;
 
-    public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, String filename, boolean jingled) {
+    public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, String filename, boolean jingled) throws FileNotFoundException {
+        if (!new File(filename).exists()) {
+            throw new FileNotFoundException("File '" + filename + "' not found!");
+        }
+
         this.output = output;
         this.filename = filename;
         this.jingled = jingled;
         this.broadcast = broadcast;
     }
 
-    public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, String filename) {
+    public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, String filename) throws FileNotFoundException {
         this(broadcast, output, filename, false);
     }
 
@@ -53,7 +55,7 @@ public class TrackPlayer implements AbstractPlayer {
             int length;
             while ((length = in.read(buffer)) != -1) {
                 output.write(buffer, 0, length);
-                // Clean error stream
+                // Clear error stream
                 while (err.available() > 0) {
                     length = err.read(buffer);
                 }

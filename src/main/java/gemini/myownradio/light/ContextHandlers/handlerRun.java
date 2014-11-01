@@ -42,9 +42,9 @@ public class handlerRun implements LHttpHandler {
         out.println("Active streamers:");
         out.println("");
 
-        for (Object o : ConcurrentBufferRepository.getKeys()) {
-            out.println(" * " + o.toString());
-        }
+        ConcurrentBufferRepository
+                .getKeys()
+                .forEach((value) -> System.out.println( " * " + value.toString()));
 
         out.println("");
         out.println("You're: " + exchange.getHeader("X-Forwarded-For"));

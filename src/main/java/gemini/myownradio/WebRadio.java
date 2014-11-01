@@ -62,7 +62,7 @@ public class WebRadio {
          * Next contexts created only for testing purposes
          */
         httpServer
-                .createContext(new LHttpContextRegexp(".jpg$"))
+                .createContext(new LHttpContextRegexp("\\.jpg$"))
                 .setHandler(exchange -> {
                     exchange.setContentType("text/plain");
                     PrintWriter pw = exchange.getPrinter();
@@ -82,15 +82,15 @@ public class WebRadio {
                 .setHandler(exchange -> {
                     exchange.setContentType("text/plain");
                     PrintWriter pw = exchange.getPrinter();
-                    pw.println("You're in prefix /files/*");
+                    pw.println("You're in /files/*");
                 });
 
         httpServer
-                .createContext(new LHttpContextPostfix("style.css"))
+                .createContext(new LHttpContextPostfix("/style.css"))
                 .setHandler(exchange -> {
                     exchange.setContentType("text/plain");
                     PrintWriter pw = exchange.getPrinter();
-                    pw.println("You're in postfix /style.css");
+                    pw.println("You're in */style.css");
                 });
 
         httpServer

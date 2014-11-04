@@ -1,39 +1,51 @@
 package gemini.myownradio.engine.buffer;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Created by Roman on 02.10.14.
  */
 public class ConcurrentBufferRepository {
 
-    private static ConcurrentMap<ConcurrentBufferKey, ConcurrentBuffer> repository =
-            new ConcurrentHashMap<>();
+    private static Object locker = new Object();
+    private static Map<ConcurrentBufferKey, ConcurrentBuffer> repository =
+            new HashMap<>();
 
     public static boolean BCExists(ConcurrentBufferKey streamKey) {
-        return repository.containsKey(streamKey);
+        synchronized (locker) {
+            return repository.containsKey(streamKey);
+        }
     }
 
     public static ConcurrentBuffer getBC(ConcurrentBufferKey streamKey) {
-        return repository.get(streamKey);
+        synchronized (locker) {
+            return repository.get(streamKey);
+        }
     }
 
     public static ConcurrentBuffer createBC(ConcurrentBufferKey streamKey, int size) {
-        ConcurrentBuffer temp;
-        repository.put(streamKey, temp = new ConcurrentBuffer(streamKey, size));
-        return temp;
+        synchronized (locker) {
+            ConcurrentBuffer temp;
+            repository.put(streamKey, temp = new ConcurrentBuffer(streamKey, size));
+            return temp;
+        }
     }
 
     public static void deleteBC(ConcurrentBufferKey streamKey) {
-        ConcurrentMap<ConcurrentBufferKey, ConcurrentBuffer> temp =
-                new ConcurrentHashMap<>(repository);
-        temp.remove(streamKey);
-        repository = temp;
+        synchronized (locker) {
+            Map<ConcurrentBufferKey, ConcurrentBuffer> temp =
+                    new HashMap<>(repository);
+            temp.remove(streamKey);
+            repository = temp;
+        }
     }
 
-    public static java.util.stream.Stream<ConcurrentBufferKey> getKeys() {
-        return repository.keySet().stream();
+    public static Stream<ConcurrentBufferKey> getKeys() {
+        synchronized (locker) {
+            return repository.keySet().stream();
+        }
     }
 
 }

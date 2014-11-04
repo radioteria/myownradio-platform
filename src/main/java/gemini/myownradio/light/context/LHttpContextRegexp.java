@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
  * Created by Roman on 16.10.14.
  */
 public class LHttpContextRegexp extends LHttpContextAbstract {
+
     private final Pattern pat;
     private final int PRIORITY_INDEX = 1_000_000;
 
@@ -30,4 +31,5 @@ public class LHttpContextRegexp extends LHttpContextAbstract {
     public int compare() {
         return PRIORITY_INDEX + context.length();
     }
+
 }

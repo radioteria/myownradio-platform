@@ -16,9 +16,10 @@ public abstract class LHttpContextAbstract implements LHttpContextInterface {
     }
 
     public String toString() {
-        return context;
+        return getContext();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -30,6 +31,7 @@ public abstract class LHttpContextAbstract implements LHttpContextInterface {
         return true;
     }
 
+    @Override
     public int hashCode() {
         return context != null ? context.hashCode() : 0;
     }

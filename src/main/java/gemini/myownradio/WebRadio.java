@@ -29,7 +29,8 @@ public class WebRadio {
         LHttpServer httpServer = new LHttpServer();
 
         setConfiguration(httpServer);
-        setHandlers(httpServer);
+        addHandlers(httpServer);
+        addTestHandlers(httpServer);
 
         try {
             httpServer.start().join();
@@ -44,7 +45,7 @@ public class WebRadio {
         httpServer.setPort(port);
     }
 
-    public static void setHandlers(LHttpServer httpServer) {
+    public static void addHandlers(LHttpServer httpServer) {
 
         httpServer
                 .createContext(new LHttpContextString("/run"))
@@ -58,9 +59,9 @@ public class WebRadio {
                 .createContext(new LHttpContextString("/audio"))
                 .setHandler(new handlerAudio());
 
-        /**
-         * Next contexts created only for testing purposes
-         */
+    }
+
+    public static void addTestHandlers(LHttpServer httpServer) {
         httpServer
                 .createContext(new LHttpContextRegexp("\\.jpg$"))
                 .setHandler(exchange -> {
@@ -79,25 +80,25 @@ public class WebRadio {
 
         httpServer
                 .createContext(new LHttpContextPrefix("/files/"))
-                .setHandler(exchange -> {
-                    exchange.setContentType("text/plain");
-                    PrintWriter pw = exchange.getPrinter();
+                .setHandler(x -> {
+                    x.setContentType("text/plain");
+                    PrintWriter pw = x.getPrinter();
                     pw.println("You're in /files/*");
                 });
 
         httpServer
                 .createContext(new LHttpContextPostfix("/style.css"))
-                .setHandler(exchange -> {
-                    exchange.setContentType("text/plain");
-                    PrintWriter pw = exchange.getPrinter();
+                .setHandler(x -> {
+                    x.setContentType("text/plain");
+                    PrintWriter pw = x.getPrinter();
                     pw.println("You're in */style.css");
                 });
 
         httpServer
                 .createContext(new LHttpContextRegexp("\\.php$"))
-                .setHandler(exchange -> {
-                    exchange.setContentType("text/html;charset=utf8");
-                    PrintWriter pw = exchange.getPrinter();
+                .setHandler(x -> {
+                    x.setContentType("text/html;charset=utf8");
+                    PrintWriter pw = x.getPrinter();
                     pw.println("<!DOCTYPE html>");
                     pw.println("<html>");
                     pw.println("<body><center><img style='padding-top:100px' src='http://myownradio.biz/images/java_powered.png' /></center></body>");

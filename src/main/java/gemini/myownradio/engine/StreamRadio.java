@@ -2,18 +2,18 @@ package gemini.myownradio.engine;
 
 import gemini.myownradio.engine.buffer.ConcurrentBuffer;
 import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
-import gemini.myownradio.exception.RadioException;
-import gemini.myownradio.ff.FFEncoderBuilder;
 import gemini.myownradio.engine.entity.Stream;
 import gemini.myownradio.engine.entity.Track;
+import gemini.myownradio.exception.RadioException;
+import gemini.myownradio.ff.FFEncoderBuilder;
+import gemini.myownradio.flow.AbstractPlayer;
 import gemini.myownradio.flow.NoisePlayer;
+import gemini.myownradio.flow.TrackPlayer;
 import gemini.myownradio.tools.BaseLogger;
 import gemini.myownradio.tools.MORSettings;
+import gemini.myownradio.tools.ThreadTools;
 import gemini.myownradio.tools.io.ThrottledOutputStream;
 import gemini.myownradio.tools.io.ThroughOutputStream;
-import gemini.myownradio.tools.ThreadTools;
-import gemini.myownradio.flow.AbstractPlayer;
-import gemini.myownradio.flow.TrackPlayer;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -37,10 +37,10 @@ public class StreamRadio implements Runnable {
 
     public void run() {
 
-        try(
-            OutputStream flow = broadcast.getOutputStream();
-            OutputStream raw = new ThroughOutputStream(flow, null, decoder.generate());
-            OutputStream thr = new ThrottledOutputStream(raw, 176400, 5);
+        try (
+                OutputStream flow = broadcast.getOutputStream();
+                OutputStream raw = new ThroughOutputStream(flow, null, decoder.generate());
+                OutputStream thr = new ThrottledOutputStream(raw, 176400, 5);
         ) {
             this.MakeFlow(thr);
         } catch (IOException e) {
@@ -99,7 +99,7 @@ public class StreamRadio implements Runnable {
 
             }
 
-        } catch(IOException e) {
+        } catch (IOException e) {
             /*NOP*/
         }
     }

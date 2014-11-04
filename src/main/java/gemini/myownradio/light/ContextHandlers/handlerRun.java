@@ -44,7 +44,7 @@ public class handlerRun implements LHttpHandler {
 
         ConcurrentBufferRepository
                 .getKeys()
-                .forEach((value) -> System.out.println( " * " + value.toString()));
+                .forEach((value) -> System.out.println(" * " + value.toString()));
 
         out.println("");
         out.println("You're: " + exchange.getHeader("X-Forwarded-For"));

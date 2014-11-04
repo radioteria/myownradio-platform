@@ -3,14 +3,16 @@ package gemini.myownradio.light;
 import gemini.myownradio.light.Exceptions.LHttpException;
 import gemini.myownradio.light.Exceptions.LHttpExceptionBadRequest;
 import gemini.myownradio.light.Exceptions.LHttpExceptionEntityTooLong;
-import gemini.myownradio.light.Exceptions.LHttpExceptionNotFound;
 import gemini.myownradio.light.context.LHttpContextAbstract;
 import gemini.myownradio.tools.BaseLogger;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -35,13 +37,17 @@ public class LHttpServer {
 
     private Map<LHttpContextAbstract, LHttpContext> handlerMap;
 
+    private final LHttpHandler defaultHandler = x -> {
+        x.setContentType("text/html");
+        x.setStatus(LHttpStatus.STATUS_404);
+        PrintWriter pw = x.getPrinter();
+        pw.println("<h1>404 Not Found</h1>");
+        pw.println("Document not found");
+        pw.flush();
+    };
+
     public LHttpServer() {
-        handlerMap = new TreeMap<>(new Comparator<LHttpContextAbstract>() {
-            @Override
-            public int compare(LHttpContextAbstract o1, LHttpContextAbstract o2) {
-                return o2.compare() - o1.compare();
-            }
-        });
+        handlerMap = new TreeMap<>((o1, o2) -> o2.compare() - o1.compare());
     }
 
     public int getPort() {
@@ -74,9 +80,7 @@ public class LHttpServer {
                         ) {
                             try {
                                 LHttpRequest req = readRequest(is, socket);
-                                if (!routeRequest(req, os)) {
-                                    throw new LHttpExceptionNotFound();
-                                }
+                                routeRequest(req, os);
                             } catch (LHttpException e) {
                                 PrintWriter pw = new PrintWriter(os, true);
                                 LHttpStatus st = e.getStatus();
@@ -102,31 +106,22 @@ public class LHttpServer {
 
     }
 
-    private boolean routeRequest(LHttpRequest req, OutputStream os) throws IOException {
+    private void routeRequest(LHttpRequest req, OutputStream os) throws IOException {
 
-        LHttpHandler handler = handlerMap
-                .keySet()
-                .stream()
-                .parallel()
+        handlerMap
+                .keySet().stream()
                 .filter(handle -> handle.is(req.getRequestPath()))
                 .map(handle -> handlerMap.get(handle).getHandler())
                 .filter(action -> action != null)
-                .findFirst()
-                .orElse(null);
-
-        if (handler != null) {
-            handler.handler(new LHttpProtocol(req, os));
-            return true;
-        }
-
-        return false;
+                .findFirst().orElse(defaultHandler)
+                .handler(new LHttpProtocol(req, os));
 
     }
 
     private LHttpRequest readRequest(InputStream is, Socket socket) throws IOException, LHttpException {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        List<String> requestHeaders = new ArrayList<>();
+        List<String> requestComponents = new ArrayList<>();
         int count = 0;
 
         String line;
@@ -134,10 +129,10 @@ public class LHttpServer {
             if (count + line.length() > maximalEntitySize) {
                 throw new LHttpExceptionEntityTooLong();
             }
-            requestHeaders.add(line);
+            requestComponents.add(line);
             count += line.length();
-            if (line.equals("")) {
-                return new LHttpRequest(requestHeaders, socket);
+            if (line.isEmpty()) {
+                return new LHttpRequest(requestComponents, socket);
             }
         }
         throw new LHttpExceptionBadRequest();

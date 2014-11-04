@@ -8,7 +8,7 @@ import gemini.myownradio.light.context.LHttpContextInterface;
 public class LHttpContext {
 
     private final LHttpContextInterface context;
-    private LHttpHandler handler;
+    private LHttpHandler handler = null;
 
     public LHttpContext(LHttpContextInterface context) {
         this.context = context;
@@ -21,4 +21,5 @@ public class LHttpContext {
     public LHttpHandler getHandler() {
         return handler;
     }
+
 }

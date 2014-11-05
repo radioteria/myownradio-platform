@@ -94,16 +94,9 @@ public class WebRadio {
                     pw.println("You're in */style.css");
                 });
 
-        httpServer
-                .createContext(new LHttpContextRegexp("\\.php$"))
-                .setHandler(x -> {
-                    x.setContentType("text/html;charset=utf8");
-                    PrintWriter pw = x.getPrinter();
-                    pw.println("<!DOCTYPE html>");
-                    pw.println("<html>");
-                    pw.println("<body><center><img style='padding-top:100px' src='http://myownradio.biz/images/java_powered.png' /></center></body>");
-                    pw.println("</html>");
-                });
+        httpServer.createContext(new LHttpContextString("/test.do")).setHandler((x) -> x.getPrinter().println("Hello1"));
+        httpServer.createContext(new LHttpContextString("/test.do")).setHandler((x) -> x.getPrinter().println("Hello2"));
+        httpServer.createContext(new LHttpContextString("/test.do")).setHandler((x) -> x.getPrinter().println("Hello3"));
     }
 
 }

@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by Roman on 15.10.14.
@@ -83,8 +84,8 @@ public class LHttpProtocol {
         return val != null ? val : defaultValue;
     }
 
-    public String get(String key) {
-        return request.get(key);
+    public Optional<String> get(String key) {
+        return Optional.ofNullable(request.get(key));
     }
 
     public String getClientIP() {

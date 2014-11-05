@@ -8,9 +8,6 @@ import gemini.myownradio.light.ContextHandlers.handlerAudio;
 import gemini.myownradio.light.ContextHandlers.handlerNotify;
 import gemini.myownradio.light.ContextHandlers.handlerRun;
 import gemini.myownradio.light.LHttpServer;
-import gemini.myownradio.light.context.LHttpContextPostfix;
-import gemini.myownradio.light.context.LHttpContextPrefix;
-import gemini.myownradio.light.context.LHttpContextRegexp;
 import gemini.myownradio.light.context.LHttpContextString;
 import gemini.myownradio.tools.BaseLogger;
 import gemini.myownradio.tools.MORSettings;
@@ -21,7 +18,7 @@ import java.io.PrintWriter;
 
 public class WebRadio {
 
-    public static void main(String... args) {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         BaseLogger.writeLog("WebRadio Server " + WebRadio.class.getPackage().getImplementationVersion());
         BaseLogger.writeLog("Starting radio server");
@@ -30,13 +27,8 @@ public class WebRadio {
 
         setConfiguration(httpServer);
         addHandlers(httpServer);
-        addTestHandlers(httpServer);
 
-        try {
-            httpServer.start().join();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
+        httpServer.start().join();
 
     }
 
@@ -59,44 +51,6 @@ public class WebRadio {
                 .createContext(new LHttpContextString("/audio"))
                 .setHandler(new handlerAudio());
 
-    }
-
-    public static void addTestHandlers(LHttpServer httpServer) {
-        httpServer
-                .createContext(new LHttpContextRegexp("\\.jpg$"))
-                .setHandler(exchange -> {
-                    exchange.setContentType("text/plain");
-                    PrintWriter pw = exchange.getPrinter();
-                    pw.println(".jpg$");
-                });
-
-        httpServer
-                .createContext(new LHttpContextRegexp("picture\\.jpg$"))
-                .setHandler(exchange -> {
-                    exchange.setContentType("text/plain");
-                    PrintWriter pw = exchange.getPrinter();
-                    pw.println("picture\\.jpg$");
-                });
-
-        httpServer
-                .createContext(new LHttpContextPrefix("/files/"))
-                .setHandler(x -> {
-                    x.setContentType("text/plain");
-                    PrintWriter pw = x.getPrinter();
-                    pw.println("You're in /files/*");
-                });
-
-        httpServer
-                .createContext(new LHttpContextPostfix("/style.css"))
-                .setHandler(x -> {
-                    x.setContentType("text/plain");
-                    PrintWriter pw = x.getPrinter();
-                    pw.println("You're in */style.css");
-                });
-
-        httpServer.createContext(new LHttpContextString("/test.do")).setHandler((x) -> x.getPrinter().println("Hello1"));
-        httpServer.createContext(new LHttpContextString("/test.do")).setHandler((x) -> x.getPrinter().println("Hello2"));
-        httpServer.createContext(new LHttpContextString("/test.do")).setHandler((x) -> x.getPrinter().println("Hello3"));
     }
 
 }

@@ -1,7 +1,7 @@
 package gemini.myownradio.light.ContextHandlers;
 
 import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
-import gemini.myownradio.light.Exceptions.LHttpExceptionBadRequest;
+import gemini.myownradio.light.LHttpException;
 import gemini.myownradio.light.LHttpHandler;
 import gemini.myownradio.light.LHttpProtocol;
 import gemini.myownradio.light.LHttpStatus;
@@ -23,7 +23,7 @@ public class handlerNotify implements LHttpHandler {
             return;
         }
 
-        final int stream_id = Integer.parseInt(exchange.get("s").orElseThrow(() -> new LHttpExceptionBadRequest()));
+        final int stream_id = Integer.parseInt(exchange.getParameter("s").orElseThrow(() -> LHttpException.BadRequest()));
 
         long notified = ConcurrentBufferRepository
                 .getKeys()

@@ -1,8 +1,5 @@
 package gemini.myownradio.light;
 
-import gemini.myownradio.light.Exceptions.LHttpException;
-import gemini.myownradio.light.Exceptions.LHttpExceptionBadRequest;
-import gemini.myownradio.light.Exceptions.LHttpExceptionEntityTooLong;
 import gemini.myownradio.light.context.LHttpContextAbstract;
 import gemini.myownradio.tools.BaseLogger;
 
@@ -23,35 +20,20 @@ import java.util.concurrent.TimeUnit;
  */
 public class LHttpServer {
 
-    private final int MIN_PORT = 80;
-    private final int MAX_PORT = 65535;
+    public final int MIN_PORT = 1024;
+    public final int MAX_PORT = 65535;
 
-    private int port = 80;
+    private int port = 1024;
     private int workersCore = 4;
     private int workersMax = 1024;
-
     private int blockingQueue = 256;
     private int maximalEntitySize = 8192;
-
     private ServerSocket serverSocket;
 
-    private Map<LHttpContextAbstract, LHttpContext> handlerMap;
-
-    private final LHttpHandler defaultHandler = x -> {
-        x.setContentType("text/html");
-        x.setStatus(LHttpStatus.STATUS_404);
-        PrintWriter pw = x.getPrinter();
-        pw.println("<h1>404 Not Found</h1>");
-        pw.println("Document not found");
-        pw.flush();
-    };
+    private Map<LHttpContextAbstract, LHttpContext> handlerMap
+            = new TreeMap<>((o1, o2) -> o2.compare() - o1.compare());
 
     public LHttpServer() {
-        handlerMap = new TreeMap<>((o1, o2) -> o2.compare() - o1.compare());
-    }
-
-    public int getPort() {
-        return port;
     }
 
     public void setPort(int port) {
@@ -62,72 +44,54 @@ public class LHttpServer {
         this.port = port;
     }
 
-    public Thread start() throws IOException {
+    public void start() throws IOException {
+
         ExecutorService threadPool = new ThreadPoolExecutor(workersCore, workersMax, 60L, TimeUnit.SECONDS,
-                new ArrayBlockingQueue<Runnable>(blockingQueue));
+                new ArrayBlockingQueue<>(blockingQueue));
 
         serverSocket = new ServerSocket(port, blockingQueue);
 
-        Thread t = new Thread(() -> {
-            BaseLogger.writeLog("Server started listening on port " + this.port);
-            try {
-                while (true) {
-                    final Socket socket = serverSocket.accept();
-                    threadPool.submit(() -> {
-                        try (
-                                InputStream is = socket.getInputStream();
-                                OutputStream os = socket.getOutputStream()
-                        ) {
-                            try {
-                                LHttpRequest req = readRequest(is, socket);
-                                routeRequest(req, os);
-                            } catch (LHttpException e) {
-                                PrintWriter pw = new PrintWriter(os, true);
-                                LHttpStatus st = e.getStatus();
-                                pw.printf("HTTP/1.1 %s\r\n", st.getResponse());
-                                pw.println("Content-Type: text/html");
-                                pw.println("");
-                                pw.printf("<h1>%s</h1>", st.getResponse());
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });
+        BaseLogger.writeLog("Server started listening on port " + this.port);
 
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+        while (true) {
 
-        t.start();
+            final Socket socket = serverSocket.accept();
 
-        return t;
+            threadPool.submit(() -> {
 
+                try (
+                        InputStream inputStream = socket.getInputStream();
+                        OutputStream outputStream = socket.getOutputStream()
+                ) {
+                    try {
+                        LHttpRequest request = readRequest(inputStream, socket);
+                        routeRequest(request, outputStream);
+                    } catch (LHttpException e) {
+                        PrintWriter printWriter = new PrintWriter(outputStream, true);
+                        LHttpStatus st = e.getStatus();
+                        printWriter.printf("HTTP/1.1 %s\r\n", st.getResponse());
+                        printWriter.println("Content-Type: text/html");
+                        printWriter.println("");
+                        printWriter.printf("<h1>%s</h1>", st.getResponse());
+                    }
+                } catch (IOException hotClientDisconnection) { /* NOP */ }
+
+            });
+
+        }
     }
 
-    private void routeRequest(LHttpRequest req, OutputStream os) throws IOException {
 
-        handlerMap
-                .keySet().stream()
-                .filter(handle -> handle.is(req.getRequestPath()))
-                .map(handle -> handlerMap.get(handle).getHandler())
-                .filter(action -> action != null)
-                .findFirst().orElse(defaultHandler)
-                .handler(new LHttpProtocol(req, os));
+    private LHttpRequest readRequest(InputStream inputStream, Socket socket) throws IOException, LHttpException {
 
-    }
-
-    private LHttpRequest readRequest(InputStream is, Socket socket) throws IOException, LHttpException {
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         List<String> requestComponents = new ArrayList<>();
         int count = 0;
 
         String line;
-        while ((line = br.readLine()) != null) {
+        while ((line = bufferedReader.readLine()) != null) {
             if (count + line.length() > maximalEntitySize) {
-                throw new LHttpExceptionEntityTooLong();
+                throw LHttpException.EntityToLong();
             }
             requestComponents.add(line);
             count += line.length();
@@ -135,7 +99,22 @@ public class LHttpServer {
                 return new LHttpRequest(requestComponents, socket);
             }
         }
-        throw new LHttpExceptionBadRequest();
+
+        throw LHttpException.BadRequest();
+
+    }
+
+    private void routeRequest(LHttpRequest req, OutputStream os) throws IOException {
+
+        handlerMap
+                .keySet()
+                .stream()
+                .filter(handle -> handle.is(req.getRequestPath()))
+                .map(handle -> handlerMap.get(handle).getHandler())
+                .filter(action -> action != null)
+                .findFirst().orElseThrow(() -> new LHttpException(LHttpStatus.STATUS_404))
+                .handler(new LHttpProtocol(req, os));
+
     }
 
     public LHttpContext createContext(LHttpContextAbstract context) {

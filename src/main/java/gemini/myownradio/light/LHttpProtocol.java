@@ -79,12 +79,12 @@ public class LHttpProtocol {
 
     }
 
-    public String get(String key, String defaultValue) {
+    public String getParameter(String key, String defaultValue) {
         String val = request.get(key);
         return val != null ? val : defaultValue;
     }
 
-    public Optional<String> get(String key) {
+    public Optional<String> getParameter(String key) {
         return Optional.ofNullable(request.get(key));
     }
 

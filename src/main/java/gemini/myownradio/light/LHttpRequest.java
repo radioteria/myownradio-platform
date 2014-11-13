@@ -1,8 +1,5 @@
 package gemini.myownradio.light;
 
-import gemini.myownradio.light.Exceptions.LHttpException;
-import gemini.myownradio.light.Exceptions.LHttpExceptionBadRequest;
-import gemini.myownradio.light.Exceptions.LHttpExceptionMethodNotImplemented;
 import gemini.myownradio.tools.CaseString;
 
 import java.io.IOException;
@@ -18,10 +15,8 @@ import java.util.Map;
 public class LHttpRequest {
     private LHttpHeaders headers = new LHttpHeaders();
     private Map<String, String> get = new HashMap<>();
-
     private String protoVersion;
     private String requestPath;
-
     private String remoteIP;
 
     public LHttpRequest(List<String> requestHeaders, Socket socket) throws IOException, LHttpException {
@@ -32,18 +27,18 @@ public class LHttpRequest {
         String line = requestHeaders.get(0);
 
         if (line == null || line.trim().length() == 0)
-            throw new LHttpExceptionBadRequest();
+            throw LHttpException.BadRequest();
 
         String[] temp = line.split("\\s+"); // Split method
 
         if (temp.length != 3)
-            throw new LHttpExceptionBadRequest();
+            throw LHttpException.BadRequest();
 
         /* Request method */
         String method = temp[0];
 
         if (!temp[2].contains("HTTP/"))
-            throw new LHttpExceptionBadRequest();
+            throw LHttpException.BadRequest();
 
         this.protoVersion = temp[2];
 
@@ -75,7 +70,7 @@ public class LHttpRequest {
         }
 
         if (!method.equals("GET"))
-            throw new LHttpExceptionMethodNotImplemented();
+            throw LHttpException.MethodNotImplemented();
 
         // Parse headers
         for (int i = 1; i < requestHeaders.size(); i++) {
@@ -86,7 +81,7 @@ public class LHttpRequest {
                 break;
 
             if (!line.contains(":"))
-                throw new LHttpExceptionBadRequest();
+                throw LHttpException.BadRequest();
 
             temp = line.split(":", 2);
             this.headers.add(new CaseString(temp[0]), temp[1].trim());

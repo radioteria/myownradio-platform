@@ -23,19 +23,17 @@ public class WebRadio {
 
         LHttpServer httpServer = new LHttpServer();
 
-        setConfiguration(httpServer);
-        addHandlers(httpServer);
+        int listeningPort = MORSettings.getFirstInteger("server", "listening_port", 7778);
 
-        httpServer.start().join();
+        httpServer.setPort(listeningPort);
+
+        addRequestHandlers(httpServer);
+
+        httpServer.start();
 
     }
 
-    public static void setConfiguration(LHttpServer httpServer) {
-        int port = MORSettings.getFirstInteger("server", "listening_port", 7778);
-        httpServer.setPort(port);
-    }
-
-    public static void addHandlers(LHttpServer httpServer) {
+    public static void addRequestHandlers(LHttpServer httpServer) {
 
         httpServer
                 .createContext(new LHttpContextString("/run"))

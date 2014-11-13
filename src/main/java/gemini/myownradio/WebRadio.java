@@ -4,9 +4,9 @@ package gemini.myownradio;
  * Created by Roman on 30.09.14.
  */
 
-import gemini.myownradio.light.ContextHandlers.handlerAudio;
-import gemini.myownradio.light.ContextHandlers.handlerNotify;
-import gemini.myownradio.light.ContextHandlers.handlerRun;
+import gemini.myownradio.light.ContextHandlers.GetRunStateHandler;
+import gemini.myownradio.light.ContextHandlers.GetStreamAudioHandler;
+import gemini.myownradio.light.ContextHandlers.SetStreamStateNotifyHandler;
 import gemini.myownradio.light.LHttpServer;
 import gemini.myownradio.light.context.LHttpContextString;
 import gemini.myownradio.tools.BaseLogger;
@@ -37,15 +37,15 @@ public class WebRadio {
 
         httpServer
                 .createContext(new LHttpContextString("/run"))
-                .setHandler(new handlerRun());
+                .setHandler(new GetRunStateHandler());
 
         httpServer
                 .createContext(new LHttpContextString("/notify"))
-                .setHandler(new handlerNotify());
+                .setHandler(new SetStreamStateNotifyHandler());
 
         httpServer
                 .createContext(new LHttpContextString("/audio"))
-                .setHandler(new handlerAudio());
+                .setHandler(new GetStreamAudioHandler());
 
     }
 

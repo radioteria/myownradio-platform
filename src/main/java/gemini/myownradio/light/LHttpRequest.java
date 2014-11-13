@@ -27,18 +27,18 @@ public class LHttpRequest {
         String line = requestHeaders.get(0);
 
         if (line == null || line.trim().length() == 0)
-            throw LHttpException.BadRequest();
+            throw LHttpException.newBadRequest();
 
         String[] temp = line.split("\\s+"); // Split method
 
         if (temp.length != 3)
-            throw LHttpException.BadRequest();
+            throw LHttpException.newBadRequest();
 
         /* Request method */
         String method = temp[0];
 
         if (!temp[2].contains("HTTP/"))
-            throw LHttpException.BadRequest();
+            throw LHttpException.newBadRequest();
 
         this.protoVersion = temp[2];
 
@@ -70,7 +70,7 @@ public class LHttpRequest {
         }
 
         if (!method.equals("GET"))
-            throw LHttpException.MethodNotImplemented();
+            throw LHttpException.newMethodNotImplemented();
 
         // Parse headers
         for (int i = 1; i < requestHeaders.size(); i++) {
@@ -81,7 +81,7 @@ public class LHttpRequest {
                 break;
 
             if (!line.contains(":"))
-                throw LHttpException.BadRequest();
+                throw LHttpException.newBadRequest();
 
             temp = line.split(":", 2);
             this.headers.add(new CaseString(temp[0]), temp[1].trim());

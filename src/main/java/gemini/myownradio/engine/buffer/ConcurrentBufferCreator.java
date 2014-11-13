@@ -12,7 +12,7 @@ public class ConcurrentBufferCreator {
 
     final private int WAITING_TIME = 5000;
 
-    int     sbSize;
+    int sbSize;
 
     private ConcurrentBufferMemory bu;
 

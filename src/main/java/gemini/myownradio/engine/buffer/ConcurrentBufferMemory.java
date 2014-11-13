@@ -31,7 +31,7 @@ public class ConcurrentBufferMemory implements Cloneable {
 
         this.buffer = new byte[size];
 
-        for (int i=0; i<buffer.length; i++) {
+        for (int i = 0; i < buffer.length; i++) {
             buffer[i] = 0x00;
         }
 

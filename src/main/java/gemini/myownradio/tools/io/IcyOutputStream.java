@@ -37,11 +37,12 @@ public class IcyOutputStream extends FilterOutputStream {
     }
 
     int cnt = 0;
+
     public void setTitle(String title) {
         try {
             String formatted = String.format("StreamTitle='%s';", title);
             byte[] symbols = formatted.getBytes("UTF-8");
-            byte size = (byte)Math.ceil((double)symbols.length / 16D);
+            byte size = (byte) Math.ceil((double) symbols.length / 16D);
             this.meta = new byte[size * 16 + 1];
             for (int i = 0; i < meta.length; i++) {
                 meta[i] = 0x20;

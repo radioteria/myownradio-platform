@@ -48,8 +48,8 @@ public class TrackPlayer implements AbstractPlayer {
         }
 
         try (
-            InputStream in = proc.getInputStream();
-            InputStream err = proc.getErrorStream();
+                InputStream in = proc.getInputStream();
+                InputStream err = proc.getErrorStream();
         ) {
             byte[] buffer = new byte[4096];
             int length;

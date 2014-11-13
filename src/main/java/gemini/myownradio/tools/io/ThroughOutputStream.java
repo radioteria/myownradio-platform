@@ -64,7 +64,7 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
 
     @Override
     public void write(byte[] b) throws IOException {
-        this.write(b, 0 , b.length);
+        this.write(b, 0, b.length);
     }
 
     @Override

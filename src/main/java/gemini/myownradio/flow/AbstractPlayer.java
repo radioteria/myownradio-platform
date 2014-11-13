@@ -7,5 +7,6 @@ import java.io.IOException;
  */
 public interface AbstractPlayer {
     public void play() throws IOException;
+
     public void play(int offset) throws IOException;
 }

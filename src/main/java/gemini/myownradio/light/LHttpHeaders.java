@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class LHttpHeaders {
 
-    private Map<CaseString,List<String>> headers = new HashMap<>();
+    private Map<CaseString, List<String>> headers = new HashMap<>();
 
     public void add(CaseString header, String value) {
         List<String> tmp = headers.get(header);

@@ -20,7 +20,7 @@ public class ConcurrentBufferOutput extends OutputStream {
             throw new IllegalArgumentException("Wrong integer value");
         }
 
-        byte[] tmp = {(byte)b};
+        byte[] tmp = {(byte) b};
 
         this.write(tmp);
     }

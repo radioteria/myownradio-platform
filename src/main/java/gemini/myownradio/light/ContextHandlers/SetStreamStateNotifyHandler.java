@@ -11,7 +11,7 @@ import java.io.IOException;
 /**
  * Created by Roman on 16.10.14.
  */
-public class handlerNotify implements LHttpHandler {
+public class SetStreamStateNotifyHandler implements LHttpHandler {
 
     public void handler(LHttpProtocol exchange) throws IOException {
 
@@ -23,7 +23,7 @@ public class handlerNotify implements LHttpHandler {
             return;
         }
 
-        final int stream_id = Integer.parseInt(exchange.getParameter("s").orElseThrow(() -> LHttpException.BadRequest()));
+        final int stream_id = Integer.parseInt(exchange.getParameter("s").orElseThrow(() -> LHttpException.newBadRequest()));
 
         long notified = ConcurrentBufferRepository
                 .getKeys()

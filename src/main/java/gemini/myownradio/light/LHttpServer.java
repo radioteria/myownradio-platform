@@ -30,8 +30,8 @@ public class LHttpServer {
     private int maximalEntitySize = 8192;
     private ServerSocket serverSocket;
 
-    private Map<LHttpContextAbstract, LHttpContext> handlerMap
-            = new TreeMap<>((o1, o2) -> o2.compare() - o1.compare());
+    private Map<LHttpContextAbstract, LHttpContext>
+            handlerMap = new TreeMap<>((o1, o2) -> o2.compare() - o1.compare());
 
     public LHttpServer() {
     }
@@ -81,7 +81,6 @@ public class LHttpServer {
         }
     }
 
-
     private LHttpRequest readRequest(InputStream inputStream, Socket socket) throws IOException, LHttpException {
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
@@ -91,7 +90,7 @@ public class LHttpServer {
         String line;
         while ((line = bufferedReader.readLine()) != null) {
             if (count + line.length() > maximalEntitySize) {
-                throw LHttpException.EntityToLong();
+                throw LHttpException.newEntityToLong();
             }
             requestComponents.add(line);
             count += line.length();
@@ -100,7 +99,7 @@ public class LHttpServer {
             }
         }
 
-        throw LHttpException.BadRequest();
+        throw LHttpException.newBadRequest();
 
     }
 
@@ -112,7 +111,7 @@ public class LHttpServer {
                 .filter(handle -> handle.is(req.getRequestPath()))
                 .map(handle -> handlerMap.get(handle).getHandler())
                 .filter(action -> action != null)
-                .findFirst().orElseThrow(() -> new LHttpException(LHttpStatus.STATUS_404))
+                .findFirst().orElseThrow(() -> LHttpException.newDocumentNotFound())
                 .handler(new LHttpProtocol(req, os));
 
     }

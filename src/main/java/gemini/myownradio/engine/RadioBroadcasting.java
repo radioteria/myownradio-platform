@@ -26,7 +26,7 @@ public class RadioBroadcasting {
     private Stream streamObject;
 
     public RadioBroadcasting(LHttpProtocol exchange, String stream_id, FFEncoderBuilder encoder, boolean useIcyMetadata)
-    throws SQLException, RadioException, IOException {
+            throws SQLException, RadioException, IOException {
 
         this.streamObject = new Stream(stream_id);
 

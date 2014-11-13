@@ -14,19 +14,19 @@ public class LHttpException extends RuntimeException {
         return status;
     }
 
-    public static LHttpException BadRequest() {
+    public static LHttpException newBadRequest() {
         return new LHttpException(LHttpStatus.STATUS_400);
     }
 
-    public static LHttpException EntityToLong() {
+    public static LHttpException newEntityToLong() {
         return new LHttpException(LHttpStatus.STATUS_413);
     }
 
-    public static LHttpException MethodNotImplemented() {
+    public static LHttpException newMethodNotImplemented() {
         return new LHttpException(LHttpStatus.STATUS_501);
     }
 
-    public static LHttpException DocumentNotFound() {
+    public static LHttpException newDocumentNotFound() {
         return new LHttpException(LHttpStatus.STATUS_404);
     }
 }

@@ -19,7 +19,7 @@ public class FFEncoderBuilder {
     private void prepare() {
         switch (format.getCodec()) {
             case "libfdk_aac":
-                cmd = new String[] {
+                cmd = new String[]{
                         "ffmpeg",
                         "-acodec", "pcm_s16le",
                         "-ar", "44100",
@@ -40,21 +40,21 @@ public class FFEncoderBuilder {
                 };
                 break;
             default:
-                cmd = new String[] {
+                cmd = new String[]{
                         "ffmpeg",
                         "-acodec", "pcm_s16le",
                         "-ar", "44100",
                         "-ac", "2",
                         "-f", "s16le",
                         "-i", "-",
-                        "-af","compand=0 0:1 1:-90/-900 -70/-70 -21/-21 0/-15:0.01:12:0:0",
-                        "-map_metadata","-1",
+                        "-af", "compand=0 0:1 1:-90/-900 -70/-70 -21/-21 0/-15:0.01:12:0:0",
+                        "-map_metadata", "-1",
                         "-vn",
-                        "-ar","44100",
-                        "-ac","2",
+                        "-ar", "44100",
+                        "-ac", "2",
                         "-ab", Integer.toString(format.getBitrate()),
                         "-acodec", format.getCodec(),
-                        "-strict","-2",
+                        "-strict", "-2",
                         "-f", format.getFormat(),
                         "-"
                 };

@@ -15,11 +15,11 @@ import java.sql.SQLException;
 /**
  * Created by Roman on 16.10.14.
  */
-public class handlerAudio implements LHttpHandler {
+public class GetStreamAudioHandler implements LHttpHandler {
 
     public void handler(LHttpProtocol exchange) throws IOException {
 
-        String stream = exchange.getParameter("s").orElseThrow(() -> LHttpException.BadRequest());
+        String stream = exchange.getParameter("s").orElseThrow(() -> LHttpException.newBadRequest());
         boolean metadata = exchange.headerEquals("icy-metadata", "1");
 
         String format = exchange.getParameter("f", "mp3_128k");

@@ -12,7 +12,7 @@ public class RegExpTools {
         Pattern p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
         Matcher m = p.matcher(target);
 
-        if(m.find())
+        if (m.find())
             return true;
         else
             return false;
@@ -21,7 +21,7 @@ public class RegExpTools {
     public static Matcher getMatcher(String pattern, String target) {
         Pattern p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
         Matcher r = p.matcher(target);
-        if(r.find())
+        if (r.find())
             return r;
         else
             return null;

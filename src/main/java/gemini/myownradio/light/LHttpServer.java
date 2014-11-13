@@ -20,14 +20,15 @@ import java.util.concurrent.TimeUnit;
  */
 public class LHttpServer {
 
-    public final int MIN_PORT = 1024;
-    public final int MAX_PORT = 65535;
+    public final int MIN_PORT       = 1024;
+    public final int MAX_PORT       = 65535;
 
-    private int port = 1024;
-    private int workersCore = 4;
-    private int workersMax = 1024;
-    private int blockingQueue = 256;
-    private int maximalEntitySize = 8192;
+    private int port                = 1024;
+    private int workersCore         = 4;
+    private int workersMax          = 1024;
+    private int blockingQueue       = 256;
+    private int maximalEntitySize   = 8192;
+
     private ServerSocket serverSocket;
 
     private Map<LHttpContextAbstract, LHttpContext>

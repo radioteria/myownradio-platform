@@ -13,6 +13,8 @@ import gemini.myownradio.tools.BaseLogger;
 import gemini.myownradio.tools.MORSettings;
 
 import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.LinkedBlockingDeque;
 
 public class WebRadio {
 
@@ -27,13 +29,13 @@ public class WebRadio {
 
         httpServer.setPort(listeningPort);
 
-        addRequestHandlers(httpServer);
+        registerRequestHandlers(httpServer);
 
         httpServer.start();
 
     }
 
-    public static void addRequestHandlers(LHttpServer httpServer) {
+    public static void registerRequestHandlers(LHttpServer httpServer) {
 
         httpServer
                 .createContext(new LHttpContextString("/run"))

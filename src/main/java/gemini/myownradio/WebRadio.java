@@ -25,6 +25,8 @@ public class WebRadio {
 
         int listeningPort = MORSettings.getFirstInteger("server", "listening_port", 7778);
 
+        System.out.println("port " + listeningPort);
+
         httpServer.setPort(listeningPort);
 
         registerRequestHandlers(httpServer);

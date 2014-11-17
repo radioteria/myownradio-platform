@@ -39,7 +39,7 @@ public class StreamRadio implements Runnable {
 
         try (
                 OutputStream flow = broadcast.getOutputStream();
-                OutputStream raw = new ThroughOutputStream(flow, null, decoder.generate());
+                OutputStream raw = new ThroughOutputStream(flow, System.err, decoder.generate());
                 OutputStream thr = new ThrottledOutputStream(raw, 176400, 5);
         ) {
             this.MakeFlow(thr);

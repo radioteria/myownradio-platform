@@ -26,8 +26,7 @@ public class FFDecoderBuilder {
                     "-ar", "44100",
                     "-ac", "2",
                     "-f", "s16le",
-                    "-",
-                    "2> /tmp/decoder.log"
+                    "-"
             };
         } else {
             cmd = new String[]{
@@ -40,8 +39,7 @@ public class FFDecoderBuilder {
                     "-ar", "44100",
                     "-ac", "2",
                     "-f", "s16le",
-                    "-",
-                    "2> /tmp/decoder.log"
+                    "-"
             };
         }
     }

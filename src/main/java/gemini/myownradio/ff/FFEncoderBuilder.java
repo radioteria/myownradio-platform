@@ -36,8 +36,7 @@ public class FFEncoderBuilder {
                         "-profile:a", "aac_he_v2",
                         "-strict", "-2",
                         "-f", format.getFormat(),
-                        "-",
-                        "2> /tmp/encoder.log"
+                        "-"
                 };
                 break;
             default:
@@ -57,8 +56,7 @@ public class FFEncoderBuilder {
                         "-acodec", format.getCodec(),
                         "-strict", "-2",
                         "-f", format.getFormat(),
-                        "-",
-                        "2> /tmp/encoder.log"
+                        "-"
                 };
 
         }

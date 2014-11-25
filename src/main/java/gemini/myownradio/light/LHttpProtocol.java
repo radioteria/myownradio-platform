@@ -13,6 +13,9 @@ import java.util.Optional;
  * Created by Roman on 15.10.14.
  */
 public class LHttpProtocol {
+
+    final private String EMPTY_LINE = "";
+
     private List<String> headers;
     private LHttpStatus status = null;
     private String contentType = null;
@@ -108,7 +111,7 @@ public class LHttpProtocol {
             for (String h : headers) {
                 pw.println(h);
             }
-            pw.println("");
+            pw.println(EMPTY_LINE);
             this.headersFlushed = true;
         }
     }

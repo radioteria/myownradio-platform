@@ -40,16 +40,11 @@ public class TrackPlayer implements AbstractPlayer {
 
         pb = new ProcessBuilder(new FFDecoderBuilder(this.filename, offset, jingled).generate());
 
-        try {
-            proc = pb.start();
-        } catch (IOException e) {
-            System.err.println("Player couldn't start: " + e.getMessage());
-            return;
-        }
+        proc = pb.start();
 
         try (
                 InputStream in = proc.getInputStream();
-                InputStream err = proc.getErrorStream();
+                InputStream err = proc.getErrorStream()
         ) {
             byte[] buffer = new byte[4096];
             int length;

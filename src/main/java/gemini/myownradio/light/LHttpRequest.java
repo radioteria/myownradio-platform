@@ -13,6 +13,9 @@ import java.util.Map;
  * Created by Roman on 15.10.14.
  */
 public class LHttpRequest {
+
+    final private String EMPTY_LINE = "";
+
     private LHttpHeaders headers = new LHttpHeaders();
     private Map<String, String> get = new HashMap<>();
     private String protoVersion;
@@ -77,7 +80,7 @@ public class LHttpRequest {
             line = requestHeaders.get(i);
 
             // Looking for end of request
-            if (line.trim().length() == 0)
+            if (line.equals(EMPTY_LINE))
                 break;
 
             if (!line.contains(":"))

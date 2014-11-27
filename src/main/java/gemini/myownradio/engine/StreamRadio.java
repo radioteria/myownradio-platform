@@ -59,15 +59,15 @@ public class StreamRadio implements Runnable {
 
         int preloadTime = MORSettings.getFirstInteger("server", "stream_preload", 5) * 1000;
 
-        int order = 0;
-        long beforeEnd;
+        int firstPlayingTrack = 0;
+        Long beforeEnd = null;
 
         try {
 
             while (true) {
 
                 try {
-                    track = stream.reload().getNowPlaying(order == 0 ? preloadTime : 0);
+                    track = stream.reload().getNowPlaying(firstPlayingTrack == 0 ? preloadTime : 0);
 
                     beforeEnd = track.getDuration() - track.getTrackOffset();
 
@@ -86,21 +86,23 @@ public class StreamRadio implements Runnable {
 
                     player.play(track.getTrackOffset());
 
-                } catch (RadioException | FileNotFoundException e) {
+                } catch (FileNotFoundException e) {
+
+                } catch (RadioException e) {
                     player = new NoisePlayer(broadcast, output);
-                    broadcast.setTitle("No signal");
+                    broadcast.setTitle("Track not found");
                     player.play();
                 } catch (SQLException e) {
                     // Terminate player if database is unreachable
                     return;
                 }
 
-                order++;
+                firstPlayingTrack++;
 
             }
 
         } catch (IOException e) {
-            /*NOP*/
+            /* NOP */
         }
     }
 

@@ -14,17 +14,25 @@ public class NoisePlayer implements AbstractPlayer {
 
     private final ConcurrentBuffer broadcast;
     private OutputStream output;
+    private Integer length;
+
+    final private static int PCM_BYTE_RATE = 176400;
 
     public NoisePlayer(ConcurrentBuffer broadcast, OutputStream output) {
+        this(broadcast, output, null);
+    }
+
+    public NoisePlayer(ConcurrentBuffer broadcast, OutputStream output, Integer length) {
         this.broadcast = broadcast;
         this.output = output;
+        this.length = length;
     }
 
     @Override
     public void play() throws IOException {
 
         try (
-                InputStream in = new NoiseInputStream();
+                InputStream in = new NoiseInputStream(length != null ? length * PCM_BYTE_RATE : null);
         ) {
             byte[] buffer = new byte[4096];
             int length;

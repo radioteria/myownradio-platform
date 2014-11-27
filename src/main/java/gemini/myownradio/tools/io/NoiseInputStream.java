@@ -8,8 +8,19 @@ import java.io.InputStream;
  */
 public class NoiseInputStream extends InputStream {
 
+    private Integer length;
+
+    public NoiseInputStream() {
+        this(null);
+    }
+
+    public NoiseInputStream(Integer length) {
+        this.length = length;
+    }
+
     @Override
     public int read() throws IOException {
+        if (length != null && length-- <= 0) return -1;
         return (int) (Math.random() * 255);
     }
 
@@ -20,9 +31,16 @@ public class NoiseInputStream extends InputStream {
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
+        if (length != null && length-- <= 0) return -1;
+        if (length != null && length < len) len = length;
+
         for (int i = off; i < len; i++) {
             b[i] = (byte) (Math.random() * 255);
         }
+
+        length -= len;
+
         return len;
     }
+
 }

@@ -4,7 +4,6 @@ import gemini.myownradio.engine.buffer.ConcurrentBuffer;
 import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
 import gemini.myownradio.engine.entity.Stream;
 import gemini.myownradio.engine.entity.Track;
-import gemini.myownradio.exception.RadioException;
 import gemini.myownradio.ff.FFEncoderBuilder;
 import gemini.myownradio.flow.AbstractPlayer;
 import gemini.myownradio.flow.NoisePlayer;
@@ -15,10 +14,8 @@ import gemini.myownradio.tools.ThreadTools;
 import gemini.myownradio.tools.io.ThrottledOutputStream;
 import gemini.myownradio.tools.io.ThroughOutputStream;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.sql.SQLException;
 
 /**
  * Created by Roman on 02.10.14.
@@ -62,48 +59,43 @@ public class StreamRadio implements Runnable {
         int firstPlayingTrack = 0;
         Long beforeEnd = null;
 
-        try {
+        while (true) {
 
-            while (true) {
+            try {
 
-                try {
-                    track = stream.reload().getNowPlaying(firstPlayingTrack == 0 ? preloadTime : 0);
+                track = stream.reload().getNowPlaying(firstPlayingTrack == 0 ? preloadTime : 0);
 
-                    beforeEnd = track.getDuration() - track.getTrackOffset();
+                beforeEnd = track.getDuration() - track.getTrackOffset();
 
-                    if ((beforeEnd >> 11) == 0L) {
-                        ThreadTools.Sleep(beforeEnd);
-                        continue;
-                    }
-
-                    player = new TrackPlayer(broadcast, output, track.getPath().getAbsolutePath(),
-                            (track.getOrderIndex() % 4 == 0) && (track.getTrackOffset() < 2000L));
-
-                    broadcast.setTitle(track.getTitle());
-
-                    BaseLogger.writeLog(String.format("Stream %d listening to %s",
-                            this.stream.getId(), track.getTitle()));
-
-                    player.play(track.getTrackOffset());
-
-                } catch (FileNotFoundException e) {
-
-                } catch (RadioException e) {
-                    player = new NoisePlayer(broadcast, output);
-                    broadcast.setTitle("Track not found");
-                    player.play();
-                } catch (SQLException e) {
-                    // Terminate player if database is unreachable
-                    return;
+                if ((beforeEnd >> 11) == 0L) {
+                    ThreadTools.Sleep(beforeEnd);
+                    continue;
                 }
 
-                firstPlayingTrack++;
+                if (track.getPath().exists()) {
+                    player = new TrackPlayer(broadcast, output, track.getPath().getAbsolutePath(),
+                            (track.getOrderIndex() % 4 == 0) && (track.getTrackOffset() < 2000L));
+                    broadcast.setTitle(track.getTitle());
+                } else {
+                    player = new NoisePlayer(broadcast, output, beforeEnd / 1000);
+                    broadcast.setTitle(track.getTitle() + " (file not found)");
+                }
 
+                BaseLogger.writeLog(String.format("Stream %d listening to %s",
+                        this.stream.getId(), track.getTitle()));
+
+                player.play(track.getTrackOffset());
+
+            } catch (Exception e) {
+                // Terminate player if any exception
+                return;
             }
 
-        } catch (IOException e) {
-            /* NOP */
+            firstPlayingTrack++;
+
         }
+
+
     }
 
 }

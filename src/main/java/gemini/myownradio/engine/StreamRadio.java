@@ -71,10 +71,12 @@ public class StreamRadio implements Runnable {
                 }
 
                 try {
+                    // Normally we initialize track player
                     trackPlayer = new TrackPlayer(broadcast, output, trackItem.getPath().getAbsolutePath(),
                             (trackItem.getOrderIndex() % 4 == 0) && (trackItem.getTrackOffset() < 2000L));
                     broadcast.setTitle(trackItem.getTitle());
                 } catch (FileNotFoundException e) {
+                    // If track file not exists we initialize noise player
                     trackPlayer = new NoisePlayer(broadcast, output, trackItem.getTimeRemainder() / 1000L);
                     broadcast.setTitle(trackItem.getTitle() + " (file not found)");
                 }
@@ -86,7 +88,7 @@ public class StreamRadio implements Runnable {
                 trackPlayer.play(trackItem.getTrackOffset());
 
             } catch (Exception e) {
-                // Terminate player if any exception
+                // Terminate streamer on any exception
                 return;
             }
 

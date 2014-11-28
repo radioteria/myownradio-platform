@@ -14,6 +14,7 @@ import gemini.myownradio.tools.ThreadTools;
 import gemini.myownradio.tools.io.ThrottledOutputStream;
 import gemini.myownradio.tools.io.ThroughOutputStream;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -69,14 +70,15 @@ public class StreamRadio implements Runnable {
                     continue;
                 }
 
-                if (trackItem.getPath().exists()) {
+                try {
                     trackPlayer = new TrackPlayer(broadcast, output, trackItem.getPath().getAbsolutePath(),
                             (trackItem.getOrderIndex() % 4 == 0) && (trackItem.getTrackOffset() < 2000L));
                     broadcast.setTitle(trackItem.getTitle());
-                } else {
+                } catch (FileNotFoundException e) {
                     trackPlayer = new NoisePlayer(broadcast, output, trackItem.getTimeRemainder() / 1000L);
                     broadcast.setTitle(trackItem.getTitle() + " (file not found)");
                 }
+
 
                 BaseLogger.writeLog(String.format("Stream %d listening to %s",
                         this.stream.getId(), trackItem.getTitle()));

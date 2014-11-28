@@ -37,7 +37,7 @@ public class StreamRadio implements Runnable {
         try (
                 OutputStream flow = broadcast.getOutputStream();
                 OutputStream raw = new ThroughOutputStream(flow, System.err, decoder.generate());
-                OutputStream thr = new ThrottledOutputStream(raw, 176400, 5);
+                OutputStream thr = new ThrottledOutputStream(raw, 176400, 5)
         ) {
             this.MakeFlow(thr);
         } catch (IOException e) {
@@ -51,47 +51,44 @@ public class StreamRadio implements Runnable {
 
     public void MakeFlow(OutputStream output) {
 
-        Track track;
-        AbstractPlayer player;
+        Track trackItem;
+        AbstractPlayer trackPlayer;
 
         int preloadTime = MORSettings.getFirstInteger("server", "stream_preload", 5) * 1000;
 
-        int firstPlayingTrack = 0;
-        Long beforeEnd = null;
+        Boolean firstPlayingTrack = true;
 
         while (true) {
 
             try {
 
-                track = stream.reload().getNowPlaying(firstPlayingTrack == 0 ? preloadTime : 0);
+                trackItem = stream.reload().getNowPlaying(firstPlayingTrack ? preloadTime : 0);
 
-                beforeEnd = track.getDuration() - track.getTrackOffset();
-
-                if ((beforeEnd >> 11) == 0L) {
-                    ThreadTools.Sleep(beforeEnd);
+                if ((trackItem.getTimeRemainder() >> 11) == 0L) {
+                    ThreadTools.Sleep(trackItem.getTimeRemainder());
                     continue;
                 }
 
-                if (track.getPath().exists()) {
-                    player = new TrackPlayer(broadcast, output, track.getPath().getAbsolutePath(),
-                            (track.getOrderIndex() % 4 == 0) && (track.getTrackOffset() < 2000L));
-                    broadcast.setTitle(track.getTitle());
+                if (trackItem.getPath().exists()) {
+                    trackPlayer = new TrackPlayer(broadcast, output, trackItem.getPath().getAbsolutePath(),
+                            (trackItem.getOrderIndex() % 4 == 0) && (trackItem.getTrackOffset() < 2000L));
+                    broadcast.setTitle(trackItem.getTitle());
                 } else {
-                    player = new NoisePlayer(broadcast, output, beforeEnd / 1000);
-                    broadcast.setTitle(track.getTitle() + " (file not found)");
+                    trackPlayer = new NoisePlayer(broadcast, output, trackItem.getTimeRemainder() / 1000L);
+                    broadcast.setTitle(trackItem.getTitle() + " (file not found)");
                 }
 
                 BaseLogger.writeLog(String.format("Stream %d listening to %s",
-                        this.stream.getId(), track.getTitle()));
+                        this.stream.getId(), trackItem.getTitle()));
 
-                player.play(track.getTrackOffset());
+                trackPlayer.play(trackItem.getTrackOffset());
 
             } catch (Exception e) {
                 // Terminate player if any exception
                 return;
             }
 
-            firstPlayingTrack++;
+            firstPlayingTrack = false;
 
         }
 

@@ -109,4 +109,8 @@ public class Track {
     public int getTrackOffset() {
         return this.playlistTime - (int) this.getTimeOffset();
     }
+
+    public long getTimeRemainder() {
+        return this.getDuration() - this.getTrackOffset();
+    }
 }

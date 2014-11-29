@@ -58,6 +58,7 @@ public class StreamRadio implements Runnable {
         int preloadTime = MORSettings.getFirstInteger("server", "stream_preload", 5) * 1000;
 
         Boolean firstPlayingTrack = true;
+        int trackSkipTimes = 0;
 
         while (true) {
 
@@ -75,12 +76,18 @@ public class StreamRadio implements Runnable {
                     trackPlayer = new TrackPlayer(broadcast, output, trackItem.getPath().getAbsolutePath(),
                             (trackItem.getOrderIndex() % 4 == 0) && (trackItem.getTrackOffset() < 2000L));
                     broadcast.setTitle(trackItem.getTitle());
+                    trackSkipTimes = 0;
                 } catch (FileNotFoundException e) {
+                    if (trackSkipTimes >= 5) {
+                        return;
+                    }
                     // If track file not exists we initialize noise player
-                    trackPlayer = new NoisePlayer(broadcast, output, trackItem.getTimeRemainder() / 1000L);
-                    broadcast.setTitle(trackItem.getTitle() + " (file not found)");
+                    //trackPlayer = new NoisePlayer(broadcast, output, 1000L);
+                    //broadcast.setTitle(trackItem.getTitle() + " (file not found)");
+                    stream.skipMilliseconds(trackItem.getTimeRemainder());
+                    trackSkipTimes ++;
+                    continue;
                 }
-
 
                 BaseLogger.writeLog(String.format("Stream %d listening to %s",
                         this.stream.getId(), trackItem.getTitle()));

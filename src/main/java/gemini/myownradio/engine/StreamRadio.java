@@ -66,6 +66,9 @@ public class StreamRadio implements Runnable {
 
                 trackItem = stream.reload().getNowPlaying(firstPlayingTrack ? preloadTime : 0);
 
+                BaseLogger.writeLog(String.format("Stream %d listening to %s",
+                        this.stream.getId(), trackItem.getTitle()));
+
                 if ((trackItem.getTimeRemainder() >> 11) == 0L) {
                     ThreadTools.Sleep(trackItem.getTimeRemainder());
                     continue;
@@ -89,8 +92,6 @@ public class StreamRadio implements Runnable {
                     continue;
                 }
 
-                BaseLogger.writeLog(String.format("Stream %d listening to %s",
-                        this.stream.getId(), trackItem.getTitle()));
 
                 trackPlayer.play(trackItem.getTrackOffset());
 

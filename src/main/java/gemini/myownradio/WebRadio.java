@@ -9,7 +9,7 @@ import gemini.myownradio.light.ContextHandlers.GetStreamAudioHandler;
 import gemini.myownradio.light.ContextHandlers.SetStreamStateNotifyHandler;
 import gemini.myownradio.light.LHttpServer;
 import gemini.myownradio.light.context.LHttpContextString;
-import gemini.myownradio.tools.BaseLogger;
+import gemini.myownradio.tools.MORLogger;
 import gemini.myownradio.tools.MORSettings;
 
 import java.io.IOException;
@@ -18,15 +18,14 @@ public class WebRadio {
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
-        BaseLogger.writeLog("WebRadio Server " + WebRadio.class.getPackage().getImplementationVersion());
-        BaseLogger.writeLog("Starting radio server");
+        MORLogger log = new MORLogger(MORLogger.MessageKind.SERVER);
+
+        log.println("Starting WebRadio Server");
 
         LHttpServer httpServer = new LHttpServer();
-
         int listeningPort = MORSettings.getFirstInteger("server", "listening_port", 7778);
 
-        System.out.println("port " + listeningPort);
-
+        log.sprintf("Starting listening on port %s", listeningPort);
         httpServer.setPort(listeningPort);
 
         registerRequestHandlers(httpServer);

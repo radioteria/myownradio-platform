@@ -84,6 +84,7 @@ public class Track {
     }
 
     public File getPath() throws FileNotFoundException {
+
         File ff;
 
         ff = new File(String.format("%s/ui_%d/a_%03d_original.%s",
@@ -92,18 +93,23 @@ public class Track {
                 this.getTrackId(),
                 this.getExtension()
         ));
+
         if (ff.exists()) {
             return ff;
         }
+
         ff = new File(String.format("%s/ui_%d/lores_%03d.mp3",
                 MORSettings.getFirstString("content", "content_folder", "content"),
                 this.getUserId(),
                 this.getTrackId()
         ));
+
         if (ff.exists()) {
             return ff;
         }
+
         throw new FileNotFoundException(ff.getPath());
+
     }
 
     public int getTrackOffset() {

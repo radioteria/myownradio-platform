@@ -8,10 +8,11 @@
  */
 class Streams extends Model {
 
-    const STREAM_FETCH_LIST     = "SELECT sid, uid, name, permalink, info, hashtags, cover FROM r_streams
-                                   WHERE status = 1 LIMIT ?, ?";
-    const STREAM_FETCH_BY_ID    = "SELECT sid, uid, name, permalink, info, hashtags, cover FROM r_streams
-                                   WHERE (sid = :id) OR (permalink = :id AND permalink != '')";
+    const STREAM_FETCH_LIST     = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, b.bookmarks_count as bookmarks
+                                   FROM r_streams a LEFT JOIN r_static_stream_vars b ON a.sid = b.stream_id WHERE a.status = 1 LIMIT ?, ?";
+    const STREAM_FETCH_BY_ID    = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover
+                                   FROM r_streams a LEFT JOIN r_static_stream_vars b ON a.sid = b.stream_id
+                                   WHERE (a.sid = :id) OR (a.permalink = :id AND a.permalink != '')";
     const STREAM_FETCH_SIMILAR  = "SELECT sid, uid, name, permalink, info, hashtags, cover FROM r_streams
                                    WHERE sid != :id AND permalink != :id AND MATCH(hashtags) AGAINST(
                                    (SELECT hashtags FROM r_streams
@@ -127,7 +128,6 @@ class Streams extends Model {
         $row['key'] = empty($row['permalink']) ? $row['sid'] : $row['permalink'];
         $row['hashtags_array'] = strlen($row['hashtags']) ? preg_split("/\\s*\\,\\s*/", $row['hashtags']) : null;
         $row['listeners'] = (int) rand(0, 500);
-        $row['bookmarks'] = (int) rand(0, 500);
     }
 
     private static function processUserRow(&$row) {

@@ -1,18 +1,6 @@
 <?php
 
-class get_controller extends controller
-{
-    public function getList()
-    {
-        header("Content-Type: application/json");
-
-        $from = application::get("from", 0, REQ_INT);
-        $limit = application::get("limit", 50, REQ_INT);
-
-        $streams = Streams::getStreamList($from, $limit);
-
-        echo json_encode($streams);
-    }
+class get_controller extends controller {
 
     public function getOne() {
         header("Content-Type: application/json");
@@ -30,14 +18,18 @@ class get_controller extends controller
         echo json_encode(Streams::getSimilarTo($id));
     }
 
-    public function getFilteredStreamList() {
+    public function getList() {
         header("Content-Type: application/json");
 
-        $filter = application::get("q", "*", REQ_STRING);
+        $filter = application::get("q", null, REQ_STRING);
         $from = application::get("from", 0, REQ_INT);
         $limit = application::get("limit", 50, REQ_INT);
 
-        $streams = Streams::getStreamListFiltered($filter, $from, $limit);
+        if (is_null($filter)) {
+            $streams = Streams::getStreamList($from, $limit);
+        } else {
+            $streams = Streams::getStreamListFiltered($filter, $from, $limit);
+        }
 
         echo json_encode($streams);
     }

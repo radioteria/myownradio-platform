@@ -1,0 +1,15 @@
+table.rm_tagedit_table {
+    width: 480px;
+    margin: -22px 3px;
+    border-collapse: collapse;
+    border: none;
+}
+
+table.rm_tagedit_table > tbody > tr > td:first-child {
+    width: 140px;
+    text-align: left;
+}
+
+table.rm_tagedit_table > tbody > tr > td:last-child > input {
+    width: 100%;
+}

@@ -1,0 +1,136 @@
+<?php
+
+/**
+ * Created by PhpStorm.
+ * User: Roman
+ * Date: 02.12.14
+ * Time: 16:21
+ */
+class Streams extends Model {
+
+    const STREAM_FETCH_LIST     = "SELECT sid, uid, name, permalink, info, hashtags, cover FROM r_streams
+                                   WHERE status = 1 LIMIT ?, ?";
+    const STREAM_FETCH_BY_ID    = "SELECT sid, uid, name, permalink, info, hashtags, cover FROM r_streams
+                                   WHERE (sid = :id) OR (permalink = :id AND permalink != '')";
+    const STREAM_FETCH_SIMILAR  = "SELECT sid, uid, name, permalink, info, hashtags, cover FROM r_streams
+                                   WHERE sid != :id AND permalink != :id AND MATCH(hashtags) AGAINST(
+                                   (SELECT hashtags FROM r_streams
+                                   WHERE (sid = :id) OR (permalink = :id AND permalink != ''))) LIMIT :max";
+    const STREAM_FETCH_SEARCH   = "SELECT sid, uid, name, permalink, info, hashtags, cover FROM r_streams
+                                   WHERE MATCH(name, permalink, hashtags) AGAINST (? IN BOOLEAN MODE)
+                                   LIMIT ?, ?";
+    const STREAM_FETCH_HASHTAGS = "SELECT sid, uid, name, permalink, info, hashtags, cover FROM r_streams
+                                   WHERE MATCH(hashtags) AGAINST (? IN BOOLEAN MODE)
+                                   LIMIT ?, ?";
+    const USERS_FETCH_BY_LIST   = "SELECT uid, name, permalink, avatar FROM r_users WHERE FIND_IN_SET(uid, ?)";
+    const USERS_FETCH_BY_ID     = "SELECT uid, name, permalink, avatar FROM r_users WHERE uid = ?";
+
+    const MAXIMUM_SIMILAR_COUNT = 10;
+
+    public static function getStreamList($from = 0, $limit = 50) {
+        $db = Database::getInstance();
+
+        $involved_users = [];
+
+        $prepared_query = $db->query_quote(self::STREAM_FETCH_LIST, array($from, $limit));
+        $streams = $db->query_universal($prepared_query, null, function ($row) use (&$involved_users) {
+            if (array_search($row['uid'], $involved_users) === false) {
+                $involved_users[] = $row['uid'];
+            }
+            self::processStreamRow($row);
+            return $row;
+        });
+
+        $prepared_query = $db->query_quote(self::USERS_FETCH_BY_LIST, array(implode(',', $involved_users)));
+
+        $users = $db->query_universal($prepared_query, 'uid', function ($row) {
+            self::processUserRow($row);
+            return $row;
+        });
+
+        return ['streams' => $streams, 'users' => $users];
+    }
+
+    public static function getStreamListFiltered($filter = "*", $from = 0, $limit = 50) {
+        $db = Database::getInstance();
+
+        $involved_users = [];
+
+        if (substr($filter, 0, 1) === '#') {
+            $prepared_query = $db->query_quote(self::STREAM_FETCH_HASHTAGS,
+                array('+' . substr($filter, 1), $from, $limit));
+        } else {
+            $prepared_query = $db->query_quote(self::STREAM_FETCH_SEARCH,
+                array(misc::searchQueryFilter($filter), $from, $limit));
+        }
+
+        $streams = $db->query_universal($prepared_query, null, function ($row) use (&$involved_users) {
+            if (array_search($row['uid'], $involved_users) === false) {
+                $involved_users[] = $row['uid'];
+            }
+            self::processStreamRow($row);
+            return $row;
+        });
+
+        $prepared_query = $db->query_quote(self::USERS_FETCH_BY_LIST, array(implode(',', $involved_users)));
+
+        $users = $db->query_universal($prepared_query, 'uid', function ($row) {
+            self::processUserRow($row);
+            return $row;
+        });
+
+        return ['streams' => $streams, 'users' => $users];
+    }
+
+    public static function getOneStream($id) {
+        $db = Database::getInstance();
+
+        $prepared_query = $db->query_quote(self::STREAM_FETCH_BY_ID, array(':id' => $id));
+
+        $stream = $db->query_single_row($prepared_query);
+
+        if($stream !== null) {
+            self::processStreamRow($stream);
+            $stream['owner'] = $db->query_single_row(self::USERS_FETCH_BY_ID, array($stream['uid']));
+        }
+
+        return $stream;
+    }
+
+    public static function getSimilarTo($id) {
+        $db = Database::getInstance();
+
+        $involved_users = [];
+
+        $prepared_query = $db->query_quote(self::STREAM_FETCH_SIMILAR,
+            array(':id' => $id, ':max' => self::MAXIMUM_SIMILAR_COUNT));
+
+        $streams = $db->query_universal($prepared_query, null, function ($row) use (&$involved_users) {
+            if (array_search($row['uid'], $involved_users) === false) {
+                $involved_users[] = $row['uid'];
+            }
+            self::processStreamRow($row);
+            return $row;
+        });
+
+        $prepared_query = $db->query_quote(self::USERS_FETCH_BY_LIST, array(implode(',', $involved_users)));
+        $users = $db->query_universal($prepared_query, 'uid', function ($row) {
+            self::processUserRow($row);
+            return $row;
+        });
+
+        return ['streams' => $streams, 'users' => $users];
+    }
+
+    private static function processStreamRow(&$row) {
+        $row['cover_url'] = Folders::genStreamCoverUrl($row['cover']);
+        $row['key'] = empty($row['permalink']) ? $row['sid'] : $row['permalink'];
+        $row['hashtags_array'] = strlen($row['hashtags']) ? preg_split("/\\s*\\,\\s*/", $row['hashtags']) : null;
+    }
+
+    private static function processUserRow(&$row) {
+        $row['avatar_url'] = Folders::genAvatarUrl($row['avatar']);
+        $row['key'] = empty($row['permalink']) ? $row['uid'] : $row['permalink'];
+    }
+
+}

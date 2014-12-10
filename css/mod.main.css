@@ -1,0 +1,80 @@
+body {
+    background: #223344;
+    font-family: "PT Sans";
+    font-size: 13pt;
+    color: #edf2f8;
+}
+
+.rh_wrap {
+    margin-bottom: 48px;
+}
+
+.rh_width {
+    width: 1000px;
+    margin: 0 auto;
+}
+
+.rh_wrap > .header {
+    background-color: #445566;
+    overflow: hidden;
+    padding: 0px 16px;
+    border-bottom: 1px solid #4a5c6f;
+    box-shadow: 0px 0px 2px #000;
+}
+
+.rh_wrap > .footer {
+    position: absolute;
+    background-color: #1b2128;
+    overflow: hidden;
+    padding: 0px 16px;
+    bottom: 0px;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 11pt;
+    border-top: 1px solid #111519;
+}
+
+
+a {
+    text-decoration: none;
+    color: #ddd;
+    transition: color linear 250ms;
+}
+
+a:hover {
+    color: #edf2f8;
+}
+
+a.logo {
+    font-weight: 500;
+    color: #fff;
+}
+
+.fl_l {
+    float: left;
+}
+
+.fl_r {
+    float: right;
+}
+
+.rh_wrap > .header > div > ul,
+.rh_wrap > .footer > div > ul {
+    overflow: hidden;
+}
+
+.rh_wrap > .header > div > ul > li {
+    float: left;
+    line-height: 63px;
+}
+
+.rh_wrap > .footer > div > ul > li {
+    float: left;
+    line-height: 47px;
+    height: 49px;
+}
+
+.rh_wrap > .header > div > ul > li:not(:first-child),
+.rh_wrap > .footer > div > ul > li:not(:first-child) {
+    margin-left: 32px;
+}

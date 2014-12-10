@@ -1,0 +1,156 @@
+.rh_infobar {
+    margin-top: 12px;
+}
+
+.rh_infobar ul.info {
+    overflow: hidden;
+}
+
+.rh_infobar ul.info > li {
+    float: left;
+}
+
+.rh_infobar ul.info > li.name {
+    width: 200px;
+    overflow: visible;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+i {
+    margin-right: 4px;
+}
+
+.rh_infobar ul.info > li.owner {
+    font-size: 10pt;
+    line-height: 23px;
+    color: #aeb6bf;
+}
+
+.rh_infobar ul.info > li.owner > span {
+    color: #fff;
+}
+
+.rh_infobar ul.info > li:not(:last-child) {
+    margin-right: 16px;
+}
+
+.rh_playbar {
+    margin-top: 32px;
+}
+
+.rh_playbar > .play_cover {
+    width: 200px;
+    height: 200px;
+    background: url("/images/radioad-mini.jpg") no-repeat center center;
+    border: 1px solid #112233;
+}
+
+.rh_playbar > .play_button {
+    margin-top: 32px;
+    margin-left: 24px;
+    font-size: 24pt;
+    text-align: center;
+    line-height: 80px;
+    text-shadow: 1px 1px 1px #333, inset 1px 1px 1px #ddd;
+}
+
+.rh_playbar > .play_button > .pb_border {
+    width: 96px;
+    height: 96px;
+    background: #445566;
+    border: 1px solid #223344;
+    border-radius: 50%;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: border-radius linear 250ms;
+}
+
+.rh_playbar > .play_button > .pb_border > .pb_fore {
+    width: 80px;
+    height: 80px;
+    margin-left: 7px;
+    margin-top: 7px;
+    background: #667788;
+    border: 1px solid #445566;
+    box-sizing: border-box;
+    border-radius: 50%;
+    padding-left: 4px;
+    transition: border-radius linear 250ms;
+}
+
+.rh_playbar > .play_button > .pb_border:hover {
+    background: #556677;
+    border: 1px solid #334455;
+}
+
+.rh_playbar > .play_button > .pb_border:hover > .pb_fore {
+    background: #778899;
+    border: 1px solid #556677;
+}
+
+.play_info {
+    margin-left: 350px;
+    box-sizing: border-box;
+    padding-top: 28px;
+    font-size: 12pt;
+    line-height: 150%;
+}
+
+.play_info .pl_status,
+.play_info .pl_time_wrap {
+    font-size: 10pt;
+    color: #aeb6bf;
+}
+
+.play_info .pl_title {
+    margin-top: 4px;
+}
+
+.play_info .pl_progress {
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.play_info .pl_progress > .pr_bg {
+    height: 16px;
+    border-radius: 3px;
+    box-shadow: 0 1px 5px #000 inset, 0 1px 0 #445566;  
+    padding: 2px;
+    box-sizing: border-box;
+}
+
+.play_info .pl_progress > .pr_bg > .fg {
+    background-color: #d09d14;
+    width: 50%;
+    height: 100%;
+    -transition: width linear 250ms;
+    border-radius: 3px;
+    box-shadow: 0 1px 0 #d9b85e inset;
+}
+
+.play_info .hidable {
+    transition: opacity linear 250ms;
+}
+
+.rh_playbar.stopped .hidable {
+    opacity: 0;
+}
+
+.rh_playbar:not(.waiting) > .play_button > .pb_border {
+    border-radius: 3px;
+}
+
+.rh_playbar:not(.waiting) > .play_button > .pb_border > .pb_fore {
+    border-radius: 3px;
+}
+
+.rh_playbar .stream_info {
+    clear: both;
+    padding-top: 16px;
+
+    box-sizing: border-box;
+    color: #aeb6bf;
+    font-size: 10pt;
+    line-height: 125%;
+}

@@ -1,0 +1,21 @@
+div.rm_popup_info {
+    position: fixed;
+    width: 300px;
+    top: 16px;
+    right: 16px;
+    
+    background-color: #ddeeff;
+    border: 2px solid #ffffff;
+    z-index: 10;
+    padding: 2px 8px;
+    box-shadow: 0px 0px 16px rgba(0,0,0,0.3);
+    border-radius: 3px;
+    text-align: center;
+    cursor: pointer;
+    line-height: 1.5em;
+}
+
+div.rm_popup_info.error {
+    background-color: #ff8888;
+    -border: 1px solid #ff5555;
+}

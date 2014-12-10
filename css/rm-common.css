@@ -1,0 +1,79 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 11 вер. 2014, 9:57:01
+    Author     : Roman
+*/
+
+.rm-button-group {
+    overflow: hidden;
+    display: inline-block;
+    line-height: 24px;
+    
+}
+
+.rm-button-group > div {
+    float: left;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    padding: 0px 6px;
+    border-right: 1px solid #ddd;
+    cursor: pointer;
+
+    background: #f4f4f4;
+    background: -moz-linear-gradient(top, #ffffff, #f4f4f4);
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f4f4f4));
+    background: -o-linear-gradient(#ffffff, #f4f4f4);
+
+}
+
+.rm-button-group > div:first-child {
+    border-radius: 5px 0 0 5px;
+    border-left: 1px solid #ddd;
+}
+
+.rm-button-group > div:last-child {
+    border-radius: 0 5px 5px 0;
+}
+
+.rm-button-group > div:only-child {
+    border-radius: 5px;
+}
+
+.rm-button-group > div:not(.active):not(:active):hover {
+    background: #ffffff !important;
+}
+
+.rm-button-group > .active, 
+.rm-button-group > :active {
+    background: #25749c !important;
+    color: #eeeeee;
+    box-shadow: inset 2px 2px 4px #1b5978;
+}
+
+.rm-single-button {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    display: inline-block;
+    cursor: pointer;
+
+    background: #f4f4f4;
+    background: -moz-linear-gradient(top, #ffffff, #f4f4f4);
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f4f4f4));
+    background: -o-linear-gradient(#ffffff, #f4f4f4);
+
+}
+
+.rm-single-button:not(:active):hover {
+    background: #ffffff !important;
+}
+
+.rm-single-button:active {
+    background: #25749c !important;
+    color: #eeeeee;
+    box-shadow: inset 2px 2px 4px #1b5978;
+}

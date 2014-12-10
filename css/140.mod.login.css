@@ -1,0 +1,71 @@
+body.public.login {
+    background: #888;
+}
+
+div.login_frame_wrap {
+    background: #fff;
+    width: 500px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 16px #000;
+    padding-bottom: 12px;
+}
+
+div.login_frame_wrap > #header {
+    height: 64px;
+    border-bottom: 1px solid #eee;
+    line-height: 63px;
+    padding: 0 16px;
+    margin-bottom: 16px;
+}
+
+div.login_frame_wrap > #header > #label {
+    float: right;
+}
+
+div.login_frame_wrap div.loginRow {
+    overflow: hidden;
+    padding: 4px 16px;
+}
+
+div.login_frame_wrap .loginLabel {
+    float: left;
+    line-height: 33px;
+}
+
+div.login_frame_wrap .loginInput {
+    box-sizing: border-box;
+    width: 350px;
+    float: right;
+    padding: 8px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+}
+
+div.login_frame_wrap .loginSubmit {
+    width: 96px;
+    height: 32px;
+    border: none;
+    background: #5594b4;
+    border-radius: 3px;
+    float: right;
+    color: #fff;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+div.login_frame_wrap .loginSubmit:hover {
+    background: #66aacc;
+}
+
+div.login_frame_wrap div.loginHint {
+    color: #333;
+    padding-bottom: 16px;
+    line-height: 1.5em;
+    text-align: center;
+}
+
+a.subRegLink {
+    margin-top: 8px;
+    float: left;
+    line-height: 31px;
+}

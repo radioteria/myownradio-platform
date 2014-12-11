@@ -8,27 +8,10 @@
  */
 class Streams extends Model {
 
-    const STREAM_FETCH_LIST     = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, a.created, b.bookmarks_count, b.listeners_count
-                                   FROM r_streams a LEFT JOIN r_static_stream_vars b ON a.sid = b.stream_id WHERE a.status = 1 LIMIT ?, ?";
-
-    const STREAM_FETCH_BY_ID    = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, a.created, b.bookmarks_count, b.listeners_count
-                                   FROM r_streams a LEFT JOIN r_static_stream_vars b ON a.sid = b.stream_id
-                                   WHERE (a.sid = :id) OR (a.permalink = :id AND a.permalink != '')";
-
     const STREAM_FETCH_SIMILAR  = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, a.created, b.bookmarks_count, b.listeners_count
                                    FROM r_streams a LEFT JOIN r_static_stream_vars b ON a.sid = b.stream_id
                                    WHERE a.sid != :id AND a.permalink != :id AND MATCH(a.hashtags) AGAINST(
                                    (SELECT hashtags FROM r_streams WHERE (sid = :id) OR (permalink = :id AND permalink != ''))) LIMIT :max";
-
-    const STREAM_FETCH_SEARCH   = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, a.created, b.bookmarks_count, b.listeners_count
-                                   FROM r_streams a LEFT JOIN r_static_stream_vars b ON a.sid = b.stream_id
-                                   WHERE MATCH(a.name, a.permalink, a.hashtags) AGAINST (? IN BOOLEAN MODE)
-                                   LIMIT ?, ?";
-
-    const STREAM_FETCH_HASHTAGS = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, a.created, b.bookmarks_count, b.listeners_count
-                                   FROM r_streams a LEFT JOIN r_static_stream_vars b ON a.sid = b.stream_id
-                                   WHERE MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)
-                                   LIMIT ?, ?";
 
     const USERS_FETCH_BY_LIST   = "SELECT uid, name, permalink, avatar FROM r_users WHERE FIND_IN_SET(uid, ?)";
     const USERS_FETCH_BY_ID     = "SELECT uid, name, permalink, avatar FROM r_users WHERE uid = ?";
@@ -152,10 +135,23 @@ class Streams extends Model {
 
     }
 
+    /**
+     * @param $id
+     * @return array
+     */
     public static function getSimilarTo($id) {
-        $db = Database::getInstance();
 
         $involved_users = [];
+
+        $db = Database::getInstance();
+
+        $fluent = self::getStreamsPrefix();
+        $fluent->where("a.sid != :id");
+        $fluent->where("AND a.permalink != :id ");
+        $fluent->where("MATCH(a.hashtags) AGAINST((SELECT hashtags FROM r_streams WHERE (sid = :id) OR
+                                                            (permalink = :id AND permalink != '')))", [':id' => $id]);
+
+        echo $fluent->getQuery(false);
 
         $prepared_query = $db->query_quote(self::STREAM_FETCH_SIMILAR,
             array(':id' => $id, ':max' => self::MAXIMUM_SIMILAR_COUNT));

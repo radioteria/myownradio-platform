@@ -326,7 +326,7 @@ class track
 
         if(!$last_id)
         {
-            return misc::outputJSON("UPLOAD_WAS_NOT_ADDED");
+            return misc::outputJSON("UPLOAD_WAS_NOT_ADDED", ['sql' => db::lastError()]);
         }
         else
         {

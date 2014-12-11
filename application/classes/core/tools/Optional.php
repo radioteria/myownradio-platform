@@ -117,4 +117,8 @@ class Optional {
         return new Optional($value, function ($v) use ($object) { return $v instanceof $object; });
     }
 
+    public static function ofPositiveNumber($value) {
+        return new Optional($value, function ($v) { return is_numeric($v) && $v > 0; });
+    }
+
 } 

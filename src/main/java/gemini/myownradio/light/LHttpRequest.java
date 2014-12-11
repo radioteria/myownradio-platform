@@ -20,6 +20,7 @@ public class LHttpRequest {
     private Map<String, String> get = new HashMap<>();
     private String protoVersion;
     private String requestPath;
+    private String requestUrl;
     private String remoteIP;
 
     public LHttpRequest(List<String> requestHeaders, Socket socket) throws IOException, LHttpException {
@@ -45,6 +46,8 @@ public class LHttpRequest {
 
         this.protoVersion = temp[2];
 
+        this.requestUrl = URLDecoder.decode(temp[1], "ISO-8859-1");
+
         if (temp[1].contains("?")) {
             String[] subRequest = temp[1].split("\\?");
             this.requestPath = URLDecoder.decode(subRequest[0], "ISO-8859-1");
@@ -69,7 +72,7 @@ public class LHttpRequest {
 
             }
         } else {
-            this.requestPath = URLDecoder.decode(temp[1], "ISO-8859-1");
+            this.requestPath = this.requestUrl;
         }
 
         if (!method.equals("GET"))

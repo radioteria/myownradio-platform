@@ -26,6 +26,7 @@ class post_controller extends authController {
     }
 
     public function upload() {
-
+        $fabric = new Fabric();
+        echo $fabric->uploadTrack($_FILES["file"]);
     }
 }

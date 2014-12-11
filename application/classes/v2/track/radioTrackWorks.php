@@ -5,11 +5,12 @@ class radioTrackWorks {
         self::truncate($tracks);
         self::delete($tracks);
     }
-    
+
     public static function truncate(validTrackList $tracks) {
+
         $database   = Database::getInstance();
         
-        $result = $database->query("SELECT `stream_id`, GROUP_CONCAT(`unique_id`) as `unique_ids` FROM `r_link` WHERE FIND_IN_SET(`track_id`, ?) GROUP BY `stream_id`", 
+        $result = $database->query("SELECT stream_id, GROUP_CONCAT(unique_id) as unique_ids FROM r_link WHERE FIND_IN_SET(track_id, ?) GROUP BY stream_id",
                 array($tracks->get()));
         
         foreach($result as $case) {

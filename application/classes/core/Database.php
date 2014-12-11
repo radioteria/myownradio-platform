@@ -34,6 +34,7 @@ class Database {
     }
 
     /**
+     * @deprecated
      * @param string $value
      * @return string
      */
@@ -101,7 +102,13 @@ class Database {
         return $result;
     }
 
-    public function fetchOneRow(/* String */ $query, /* Array */ $params = array(), /* Callable */ $callback = null) {
+    /**
+     * @param string $query
+     * @param array $params
+     * @param Callable $callback
+     * @return mixed
+     */
+    public function fetchOneRow($query, $params = array(), $callback = null) {
         $res = $this->pdo->prepare($this->query_quote($query, $params));
         $res->execute();
 
@@ -114,8 +121,31 @@ class Database {
         return $row;
     }
 
-    /*
-     * @Deprecated
+    /**
+     * @param string $query
+     * @param array $params
+     * @return int
+     */
+    public function executeUpdate($query, $params = []) {
+        $res = $this->pdo->prepare($this->query_quote($query, $params));
+        $res->execute();
+        return $res->rowCount();
+    }
+
+    /**
+     * @param string $query
+     * @param array $params
+     * @param string $key
+     * @return int
+     */
+    public function executeInsert($query, $params = [], $key = null) {
+        $res = $this->pdo->prepare($this->query_quote($query, $params));
+        $res->execute();
+        return $this->pdo->lastInsertId($key);
+    }
+
+    /**
+     * @deprecated
      */
     public function query_universal(/* String */ $query, /* String */ $key = null, callable $callback = null) {
 
@@ -141,6 +171,13 @@ class Database {
         return $result;
     }
 
+    /**
+     * @deprecated
+     * @param $query
+     * @param array $params
+     * @return array
+     * @throws databaseException
+     */
     public function query($query, $params = []) {
         $res = $this->pdo->prepare($query);
 
@@ -162,6 +199,13 @@ class Database {
         return $res->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * @deprecated
+     * @param $query
+     * @param array $params
+     * @return null
+     * @throws databaseException
+     */
     public function query_single_col($query, $params = array()) {
         $res = $this->pdo->prepare($query);
 
@@ -188,6 +232,13 @@ class Database {
         }
     }
 
+    /**
+     * @deprecated
+     * @param $query
+     * @param array $params
+     * @return mixed|null
+     * @throws databaseException
+     */
     public function query_single_row($query, $params = array()) {
         // todo: fix this!!!!
         $res = $this->pdo->prepare($query);
@@ -214,6 +265,13 @@ class Database {
         }
     }
 
+    /**
+     * @deprecated
+     * @param $query
+     * @param array $params
+     * @return int
+     * @throws databaseException
+     */
     public function query_update($query, $params = array()) {
         if ($this->pdo == null) {
             self::connect();
@@ -249,7 +307,7 @@ class Database {
     }
 
     public function __toString() {
-        return $this->count;
+        return (string) $this->count;
     }
 
 }

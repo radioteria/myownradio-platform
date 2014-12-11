@@ -7,7 +7,6 @@ import gemini.myownradio.flow.AudioFormatsRegister;
 import gemini.myownradio.light.LHttpException;
 import gemini.myownradio.light.LHttpHandler;
 import gemini.myownradio.light.LHttpProtocol;
-import gemini.myownradio.tools.BaseLogger;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -23,9 +22,6 @@ public class GetStreamAudioHandler implements LHttpHandler {
         boolean metadata = exchange.headerEquals("icy-metadata", "1");
 
         String format = exchange.getParameter("f", "mp3_128k");
-
-        BaseLogger.writeLog(String.format("New client %s required quality %s",
-                exchange.getClientIP(), format));
 
         FFEncoderBuilder decoder = AudioFormatsRegister.analyzeFormat(format);
 

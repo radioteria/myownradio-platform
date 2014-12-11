@@ -15,10 +15,9 @@ public class FlowListener {
     private int stream_id;
     private String quality;
 
-    private MORLogger logger;
+    private static MORLogger logger = new MORLogger(MORLogger.MessageKind.SERVER);
 
     public FlowListener(String client_ip, String client_ua, String quality, int stream_id) throws SQLException {
-        this.logger = new MORLogger(MORLogger.MessageKind.SERVER);
         this.client_ip = client_ip;
         this.client_ua = client_ua;
         this.quality = quality;
@@ -47,7 +46,7 @@ public class FlowListener {
 
             connection.commit();
 
-            logger.sprintf("New listener id = %d\n", this.listener_id);
+            logger.sprintf("New listener obtained ID #%d", this.listener_id);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -61,6 +60,7 @@ public class FlowListener {
             ps.executeUpdate();
 
             connection.commit();
+            logger.sprintf("Finishing listener #%d session", this.listener_id);
         }
     }
 
@@ -71,6 +71,7 @@ public class FlowListener {
             ps.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
+            logger.exception(e);
         }
     }
 }

@@ -7,7 +7,7 @@ import gemini.myownradio.engine.entity.Stream;
 import gemini.myownradio.exception.RadioException;
 import gemini.myownradio.ff.FFEncoderBuilder;
 import gemini.myownradio.light.LHttpProtocol;
-import gemini.myownradio.tools.BaseLogger;
+import gemini.myownradio.tools.MORLogger;
 import gemini.myownradio.tools.MORSettings;
 
 import java.io.IOException;
@@ -25,6 +25,8 @@ public class RadioBroadcasting {
     private boolean useIcyMetadata;
     private Stream streamObject;
 
+    private static MORLogger logger = new MORLogger(MORLogger.MessageKind.PLAYER);
+
     public RadioBroadcasting(LHttpProtocol exchange, String stream_id, FFEncoderBuilder encoder, boolean useIcyMetadata)
             throws SQLException, RadioException, IOException {
 
@@ -34,6 +36,9 @@ public class RadioBroadcasting {
         this.useIcyMetadata = useIcyMetadata;
 
         this.encoder = encoder;
+
+        logger.sprintf("Starting to transmit stream (id=%s, name=%s)",
+                this.streamObject.getId(), this.streamObject.getName());
 
     }
 
@@ -51,12 +56,12 @@ public class RadioBroadcasting {
 
         ConcurrentBuffer broadcast;
 
-        BaseLogger.writeLog(String.format("Using buffer size=%d key=%s", bufferSize, streamKey.toString()));
+        logger.sprintf("Using buffer size=%d key=%s", bufferSize, streamKey.toString());
 
         if ((broadcast = ConcurrentBufferRepository.getBC(streamKey)) == null) {
             broadcast = ConcurrentBufferRepository.createBC(streamKey, bufferSize);
             Thread streamer = new Thread(new StreamRadio(broadcast, encoder, streamObject));
-            streamer.setName("Streamer key " + streamKey.toString());
+            streamer.setName("Streamer " + streamKey.toString());
             streamer.setDaemon(true);
             streamer.start();
         }

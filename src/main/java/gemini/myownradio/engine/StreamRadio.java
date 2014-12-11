@@ -6,9 +6,8 @@ import gemini.myownradio.engine.entity.Stream;
 import gemini.myownradio.engine.entity.Track;
 import gemini.myownradio.ff.FFEncoderBuilder;
 import gemini.myownradio.flow.AbstractPlayer;
-import gemini.myownradio.flow.NoisePlayer;
 import gemini.myownradio.flow.TrackPlayer;
-import gemini.myownradio.tools.BaseLogger;
+import gemini.myownradio.tools.MORLogger;
 import gemini.myownradio.tools.MORSettings;
 import gemini.myownradio.tools.ThreadTools;
 import gemini.myownradio.tools.io.ThrottledOutputStream;
@@ -27,10 +26,14 @@ public class StreamRadio implements Runnable {
     private Stream stream;
     private FFEncoderBuilder decoder;
 
+    private static MORLogger logger = new MORLogger(MORLogger.MessageKind.PLAYER);
+
     public StreamRadio(ConcurrentBuffer concurrentBuffer, FFEncoderBuilder decoder, Stream stream) {
         this.broadcast = concurrentBuffer;
         this.stream = stream;
         this.decoder = decoder;
+
+        logger.sprintf("New streamer thread initialized");
     }
 
     public void run() {
@@ -42,9 +45,11 @@ public class StreamRadio implements Runnable {
         ) {
             this.MakeFlow(thr);
         } catch (IOException e) {
-            System.out.println("Streamer exception: " + e.getMessage());
+            logger.exception(e);
         } finally {
+            logger.sprintf("Destroying streamer thread");
             ConcurrentBufferRepository.deleteBC(this.broadcast.getStreamKey());
+            logger.sprintf("Calling garbage collector");
             System.gc();
         }
 
@@ -57,6 +62,8 @@ public class StreamRadio implements Runnable {
 
         int preloadTime = MORSettings.getFirstInteger("server", "stream_preload", 5) * 1000;
 
+        logger.sprintf("Streamer preload time=%d", preloadTime);
+
         Boolean firstPlayingTrack = true;
         int trackSkipTimes = 0;
 
@@ -66,8 +73,7 @@ public class StreamRadio implements Runnable {
 
                 trackItem = stream.reload().getNowPlaying(firstPlayingTrack ? preloadTime : 0);
 
-                BaseLogger.writeLog(String.format("Stream %d listening to %s",
-                        this.stream.getId(), trackItem.getTitle()));
+                logger.sprintf("Now playing: %s (remainder: %d ms)", trackItem.getTitle(), trackItem.getTimeRemainder());
 
                 if ((trackItem.getTimeRemainder() >> 11) == 0L) {
                     ThreadTools.Sleep(trackItem.getTimeRemainder());
@@ -81,22 +87,22 @@ public class StreamRadio implements Runnable {
                     broadcast.setTitle(trackItem.getTitle());
                     trackSkipTimes = 0;
                 } catch (FileNotFoundException e) {
+                    logger.sprintf("File not found: %s", e.getMessage());
                     if (trackSkipTimes >= 5) {
+                        logger.sprintf("Too many skip attempts. Stopping streamer");
                         return;
                     }
-                    // If track file not exists we initialize noise player
-                    //trackPlayer = new NoisePlayer(broadcast, output, 1000L);
-                    //broadcast.setTitle(trackItem.getTitle() + " (file not found)");
                     stream.skipMilliseconds(trackItem.getTimeRemainder());
                     trackSkipTimes ++;
+                    logger.sprintf("Skip attempt: %d", trackSkipTimes);
                     continue;
                 }
-
 
                 trackPlayer.play(trackItem.getTrackOffset());
 
             } catch (Exception e) {
                 // Terminate streamer on any exception
+                logger.exception(e);
                 return;
             }
 

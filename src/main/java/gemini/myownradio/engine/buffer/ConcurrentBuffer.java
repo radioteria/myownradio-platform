@@ -9,7 +9,6 @@ import java.io.OutputStream;
 public class ConcurrentBuffer {
 
     private ConcurrentBufferKey key;
-    private int size;
     private ConcurrentBufferCreator buffer;
     private volatile String title;
 
@@ -17,7 +16,6 @@ public class ConcurrentBuffer {
 
     public ConcurrentBuffer(ConcurrentBufferKey streamKey, int size) {
         this.key = streamKey;
-        this.size = size;
         this.buffer = new ConcurrentBufferCreator(size);
         this.title = "";
     }

@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Formatter;
 
@@ -33,7 +34,7 @@ public class MORLogger {
         this.pw = this.os != null ? new PrintWriter(os) : null;
     }
 
-    public void println(String message) {
+    public synchronized void println(String message) {
 
         String date = new Date().toString();
         String thread = Thread.currentThread().getName();
@@ -47,8 +48,18 @@ public class MORLogger {
 
     }
 
+    public void sprintf(String message) {
+        this.println(message);
+    }
+
     public void sprintf(String format, Object... args) {
         this.println(new Formatter().format(format, args).toString());
+    }
+
+    public void exception(Throwable e) {
+        String title = e.getClass().getName();
+        String body = e.getMessage();
+        this.sprintf("Exception: %s, Message: %s", title, body);
     }
 
     public enum MessageKind {

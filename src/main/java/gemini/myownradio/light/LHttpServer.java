@@ -1,7 +1,7 @@
 package gemini.myownradio.light;
 
 import gemini.myownradio.light.context.LHttpContextAbstract;
-import gemini.myownradio.tools.BaseLogger;
+import gemini.myownradio.tools.MORLogger;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -34,6 +34,8 @@ public class LHttpServer {
     private Map<LHttpContextAbstract, LHttpContext>
             handlerMap = new TreeMap<>((o1, o2) -> o2.compare() - o1.compare());
 
+    private static MORLogger logger = new MORLogger(MORLogger.MessageKind.SERVER);
+
     public LHttpServer() {
     }
 
@@ -47,12 +49,15 @@ public class LHttpServer {
 
     public void start() throws IOException {
 
+        logger.println("Initializing thread pool");
+
         ExecutorService threadPool = new ThreadPoolExecutor(workersCore, workersMax, 60L, TimeUnit.SECONDS,
                 new ArrayBlockingQueue<>(blockingQueue));
 
+        logger.println("Initializing server socket");
         serverSocket = new ServerSocket(port, blockingQueue);
 
-        BaseLogger.writeLog("Server started listening on port " + this.port);
+        logger.println("Server started");
 
         while (true) {
 
@@ -65,9 +70,12 @@ public class LHttpServer {
                         OutputStream outputStream = socket.getOutputStream()
                 ) {
                     try {
+                        logger.println("New connection attempt. Reading request...");
                         LHttpRequest request = readRequest(inputStream, socket);
+                        logger.sprintf("Client IP=%s, ROUTE=%s", socket.getInetAddress().getHostAddress(), request.getRequestPath());
                         routeRequest(request, outputStream);
                     } catch (LHttpException e) {
+                        logger.sprintf("Unable to route request. STATUS=%s", e.getStatus().getCode());
                         PrintWriter printWriter = new PrintWriter(outputStream, true);
                         LHttpStatus st = e.getStatus();
                         printWriter.printf("HTTP/1.1 %s\r\n", st.getResponse());
@@ -75,7 +83,9 @@ public class LHttpServer {
                         printWriter.println("");
                         printWriter.printf("<h1>%s</h1>", st.getResponse());
                     }
-                } catch (IOException hotClientDisconnection) { /* NOP */ }
+                } catch (IOException hotClientDisconnection) {
+                    logger.sprintf("Client IP=%s hardly disconnected", socket.getInetAddress().getHostAddress());
+                }
 
             });
 
@@ -106,13 +116,15 @@ public class LHttpServer {
 
     private void routeRequest(LHttpRequest req, OutputStream os) throws IOException {
 
+        logger.sprintf("Routing request %s...", req.getRequestPath());
+
         handlerMap
                 .keySet()
                 .stream()
                 .filter(handle -> handle.is(req.getRequestPath()))
                 .map(handle -> handlerMap.get(handle).getHandler())
                 .filter(action -> action != null)
-                .findFirst().orElseThrow(() -> LHttpException.newDocumentNotFound())
+                .findFirst().orElseThrow(LHttpException::newDocumentNotFound)
                 .handler(new LHttpProtocol(req, os));
 
     }

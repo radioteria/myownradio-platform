@@ -40,7 +40,7 @@ class Streams extends Model {
 
         return $fluentPDO
             ->from("r_streams a")->leftJoin("r_static_stream_vars b ON a.sid = b.stream_id")
-            ->select("a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags", "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count");
+            ->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags", "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count"]);
     }
 
     private static function getUsersPrefix() {
@@ -48,7 +48,7 @@ class Streams extends Model {
 
         return $fluentPDO
             ->from("r_users")
-            ->select("uid", "name", "permalink", "avatar");
+            ->select(["uid", "name", "permalink", "avatar"]);
     }
 
     public static function getStreamList($from = 0, $limit = 50) {
@@ -59,8 +59,6 @@ class Streams extends Model {
         //$prepared_query = $db->query_quote(self::STREAM_FETCH_LIST, array($from, $limit));
         $prepared_query = self::getStreamsPrefix()->where("status = 1")->limit($limit)->offset($from)
             ->getQuery();
-
-        echo $prepared_query;
 
         $streams = $db->query_universal($prepared_query, null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {

@@ -45,8 +45,9 @@ public class FlowListener {
 
             this.listener_id = rs.getInt(1);
 
-            logger.sprintf("New listener id = %d\n", this.listener_id);
+            connection.commit();
 
+            logger.sprintf("New listener id = %d\n", this.listener_id);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -58,6 +59,8 @@ public class FlowListener {
             ps = connection.prepareStatement("UPDATE r_listener SET finished = NOW() WHERE client_id = ?");
             ps.setInt(1, this.listener_id);
             ps.executeUpdate();
+
+            connection.commit();
         }
     }
 
@@ -66,6 +69,7 @@ public class FlowListener {
         try (Connection connection = JDBCPool.getConnection()) {
             ps = connection.prepareStatement("UPDATE r_listener SET finished = NOW() WHERE finished = NULL");
             ps.executeUpdate();
+            connection.commit();
         } catch (SQLException e) {
         }
     }

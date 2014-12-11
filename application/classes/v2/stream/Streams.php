@@ -150,13 +150,12 @@ class Streams extends Model {
         $fluent->where("AND a.permalink != :id ");
         $fluent->where("MATCH(a.hashtags) AGAINST((SELECT hashtags FROM r_streams WHERE (sid = :id) OR
                                                             (permalink = :id AND permalink != '')))", [':id' => $id]);
+        $fluent->limit(self::MAXIMUM_SIMILAR_COUNT);
 
-        echo $fluent->getQuery(false);
+//        $prepared_query = $db->query_quote(self::STREAM_FETCH_SIMILAR,
+//            array(':id' => $id, ':max' => self::MAXIMUM_SIMILAR_COUNT));
 
-        $prepared_query = $db->query_quote(self::STREAM_FETCH_SIMILAR,
-            array(':id' => $id, ':max' => self::MAXIMUM_SIMILAR_COUNT));
-
-        $streams = $db->query_universal($prepared_query, null, function ($row) use (&$involved_users) {
+        $streams = $db->fetchAll($fluent->getQuery(false), $fluent->getParameters(), null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {
                 $involved_users[] = $row['uid'];
             }

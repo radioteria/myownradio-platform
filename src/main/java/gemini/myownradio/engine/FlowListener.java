@@ -1,6 +1,7 @@
 package gemini.myownradio.engine;
 
 import gemini.myownradio.tools.JDBCPool;
+import gemini.myownradio.tools.MORLogger;
 
 import java.sql.*;
 
@@ -14,7 +15,10 @@ public class FlowListener {
     private int stream_id;
     private String quality;
 
+    private MORLogger logger;
+
     public FlowListener(String client_ip, String client_ua, String quality, int stream_id) throws SQLException {
+        this.logger = new MORLogger(MORLogger.MessageKind.SERVER);
         this.client_ip = client_ip;
         this.client_ua = client_ua;
         this.quality = quality;
@@ -38,7 +42,11 @@ public class FlowListener {
 
             rs = ps.getGeneratedKeys();
             rs.next();
+
             this.listener_id = rs.getInt(1);
+
+            logger.sprintf("New listener id = %d\n", this.listener_id);
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

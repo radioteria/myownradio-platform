@@ -13,21 +13,17 @@ import java.util.Formatter;
  */
 public class MORLogger {
 
-    final private static String logFile = MORSettings.getFirstString("server", "server_logfile", "/tmp/mor-server.log");
-    final private static OutputStream os;
+    final private static String logFile =
+            MORSettings.getFirstString("server", "server_logfile", "/tmp/mor-server.log");
     final private static PrintWriter pw;
 
     static {
-        OutputStream os1;
         PrintWriter pw1;
         try {
-            os1 = new FileOutputStream(logFile, true);
-            pw1 = new PrintWriter(os1);
+            pw1 = new PrintWriter(new FileOutputStream(logFile, true), true);
         } catch (FileNotFoundException e) {
-            os1 = null;
             pw1 = null;
         }
-        os = os1;
         pw = pw1;
     }
 

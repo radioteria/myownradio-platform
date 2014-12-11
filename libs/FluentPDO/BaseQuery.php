@@ -194,6 +194,7 @@ abstract class BaseQuery implements IteratorAggregate {
 	 */
 	public function getQuery($formated = true) {
 		$query = $this->buildQuery();
+        print_r($query);
 		if ($formated) $query = FluentUtils::formatQuery($query);
 		return $query;
 	}
@@ -218,7 +219,6 @@ abstract class BaseQuery implements IteratorAggregate {
 				}
 			}
 		}
-        print_r($query);
 		return trim($query);
 	}
 

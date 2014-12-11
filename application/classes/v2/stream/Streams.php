@@ -88,8 +88,6 @@ class Streams extends Model {
                 ->whereRaw("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)", array('+' . substr($filter, 1)))
                 ->limit($limit)->offset($from)->getQuery();
 
-            echo $prepared_query;
-
         } else {
             $prepared_query = $db->query_quote(self::STREAM_FETCH_SEARCH,
                 array(misc::searchQueryFilter($filter), $from, $limit));

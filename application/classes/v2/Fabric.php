@@ -59,6 +59,8 @@ class Fabric extends Model {
 
         $timeLeftOnAccount = $visitorPlan->getTimeLimit() - $visitorStats->getTracksDuration();
 
+        $fileObject = new File($file);
+
         // Check file type is supported
         if(array_search($file['type'], config::getSetting('upload', 'supported_audio')) === false) {
             return misc::outputJSON("UPLOAD_ERROR_UNSUPPORTED");

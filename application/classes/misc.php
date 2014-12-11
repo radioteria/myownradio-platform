@@ -223,8 +223,7 @@ class misc
     {
         return json_encode(array(
             'code' => $code,
-            'data' => $data,
-            'stats' => application::getProfileStats()
+            'data' => $data
         ));
     }
     

@@ -47,8 +47,8 @@ class Streams extends Model {
         $fluentPDO = Database::getFluentPDO();
 
         return $fluentPDO
-            ->from("r_users")
-            ->select(["uid", "name", "permalink", "avatar"]);
+            ->from("r_users a")
+            ->select(["a.uid", "a.name", "a.permalink", "a.avatar"]);
     }
 
     public static function getStreamList($from = 0, $limit = 50) {
@@ -69,7 +69,7 @@ class Streams extends Model {
         });
 
         //$prepared_query = $db->query_quote(self::USERS_FETCH_BY_LIST, array(implode(',', $involved_users)));
-        $prepared_query = self::getUsersPrefix()->where("FIND_IN_SET(uid, ?)", implode(',', $involved_users))
+        $prepared_query = self::getUsersPrefix()->where("FIND_IN_SET(a.uid, ?)", array(implode(',', $involved_users)))
             ->getQuery();
 
         echo $prepared_query;

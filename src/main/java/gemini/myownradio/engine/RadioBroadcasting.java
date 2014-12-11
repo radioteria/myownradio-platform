@@ -37,7 +37,7 @@ public class RadioBroadcasting {
 
     }
 
-    public void startStreamer() throws IOException {
+    public void startStreamer() throws IOException, SQLException {
 
         ConcurrentBufferKey streamKey = new ConcurrentBufferKey(
                 encoder.getAudioFormat().getFormat(),

@@ -147,7 +147,7 @@ class Streams extends Model {
 
         $fluent = self::getStreamsPrefix();
         $fluent->where("a.sid != :id");
-        $fluent->where("AND a.permalink != :id ");
+        $fluent->where("a.permalink != :id");
         $fluent->where("MATCH(a.hashtags) AGAINST((SELECT hashtags FROM r_streams WHERE (sid = :id) OR
                                                             (permalink = :id AND permalink != '')))", [':id' => $id]);
         $fluent->limit(self::MAXIMUM_SIMILAR_COUNT);

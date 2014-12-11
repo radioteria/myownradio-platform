@@ -54,7 +54,14 @@ class Database {
         return $this->pdo->prepare($query);
     }
 
-    public function fetchAll(/* String */ $query, /* Array */ $params = array(), /* String */ $key, /* Callable */ $callback = null) {
+    /**
+     * @param string $query
+     * @param array $params
+     * @param string $key
+     * @param Callable $callback
+     * @return array
+     */
+    public function fetchAll($query, $params = array(), $key = null, $callback = null) {
         $res = $this->pdo->prepare($this->query_quote($query, $params));
         $res->execute();
         $result = [];

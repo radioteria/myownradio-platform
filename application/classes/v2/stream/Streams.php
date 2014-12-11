@@ -35,28 +35,41 @@ class Streams extends Model {
 
     const MAXIMUM_SIMILAR_COUNT = 10;
 
+    /**
+     * @return SelectQuery
+     */
     private static function getStreamsPrefix() {
-        $fluentPDO = Database::getFluentPDO();
-        return $fluentPDO
+        $fluent = Database::getFluentPDO();
+        return $fluent
             ->from("r_streams a")->leftJoin("r_static_stream_vars b ON a.sid = b.stream_id")
             ->select(null)->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags",
                 "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count"]);
     }
 
+    /**
+     * @return SelectQuery
+     */
     private static function getUsersPrefix() {
+
         $fluentPDO = Database::getFluentPDO();
         return $fluentPDO->from("r_users")->select(null)->select(["uid", "name", "permalink", "avatar"]);
+
     }
 
+    /**
+     * @param int $from
+     * @param int $limit
+     * @return array
+     */
     public static function getStreamList($from = 0, $limit = 50) {
+
         $db = Database::getInstance();
 
         $involved_users = [];
 
-        $prepared_query = self::getStreamsPrefix()->where("status = 1")->limit($limit)->offset($from)
-            ->getQuery();
+        $prepared_query = self::getStreamsPrefix()->where("status = 1")->limit($limit)->offset($from);
 
-        $streams = $db->query_universal($prepared_query, null, function ($row) use (&$involved_users) {
+        $streams = $db->fetchAll($prepared_query->getQuery(false), [], null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {
                 $involved_users[] = $row['uid'];
             }
@@ -73,27 +86,36 @@ class Streams extends Model {
         });
 
         return ['streams' => $streams, 'users' => $users];
+
     }
 
-    public static function getStreamListFiltered($filter = "*", $from = 0, $limit = 50) {
-        $db = Database::getInstance();
+    /**
+     * @param string $filter
+     * @param int $from
+     * @param int $limit
+     * @return array
+     */
+    public static function getStreamListFiltered($filter = "", $from = 0, $limit = 50) {
 
         $involved_users = [];
 
+        $db = Database::getInstance();
+
+        $fluent = self::getStreamsPrefix();
+
         if (substr($filter, 0, 1) === '#') {
-
-            $fluent = self::getStreamsPrefix()
-                ->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)", '+' . substr($filter, 1))
-                ->limit($limit)->offset($from);
-
-            $prepared_query = $db->query_quote($fluent->getQuery(false), $fluent->getParameters());
-
+            $fluent->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)",
+                '+' . substr($filter, 1));
         } else {
-            $prepared_query = $db->query_quote(self::STREAM_FETCH_SEARCH,
-                array(misc::searchQueryFilter($filter), $from, $limit));
+            $fluent->where("MATCH(a.name, a.permalink, a.hashtags) AGAINST (? IN BOOLEAN MODE)",
+                misc::searchQueryFilter($filter));
         }
 
-        $streams = $db->query_universal($prepared_query, null, function ($row) use (&$involved_users) {
+        $fluent->limit($limit)->offset($from);
+
+        $prepared_query = $db->query_quote($fluent->getQuery(false), $fluent->getParameters());
+
+        $streams = $db->fetchAll($prepared_query, null, null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {
                 $involved_users[] = $row['uid'];
             }
@@ -101,29 +123,33 @@ class Streams extends Model {
             return $row;
         });
 
-        $prepared_query = $db->query_quote(self::USERS_FETCH_BY_LIST, array(implode(',', $involved_users)));
-
-        $users = $db->query_universal($prepared_query, 'uid', function ($row) {
-            self::processUserRow($row);
-            return $row;
-        });
+        $users = self::getUsersList($db, $involved_users);
 
         return ['streams' => $streams, 'users' => $users];
+
     }
 
+    /**
+     * @param $id
+     * @return array
+     */
     public static function getOneStream($id) {
+
         $db = Database::getInstance();
 
-        $prepared_query = $db->query_quote(self::STREAM_FETCH_BY_ID, array(':id' => $id));
+        $fluent = self::getStreamsPrefix();
+        $fluent->where("(a.sid = :id) OR (a.permalink = :id AND a.permalink != '')", [':id' => $id]);
 
-        $stream = $db->query_single_row($prepared_query);
+        $stream = $db->fetchOneRow($fluent->getQuery(false), $fluent->getParameters());
 
         if($stream !== null) {
             self::processStreamRow($stream);
-            $stream['owner'] = $db->query_single_row(self::USERS_FETCH_BY_ID, array($stream['uid']));
+            $fluent = self::getUsersPrefix()->where('uid', $stream['uid']);
+            $stream['owner'] = $db->fetchOneRow($fluent->getQuery(false), $fluent->getParameters());
         }
 
         return $stream;
+
     }
 
     public static function getSimilarTo($id) {
@@ -168,6 +194,21 @@ class Streams extends Model {
 
         $row['avatar_url'] = Folders::genAvatarUrl($row['avatar']);
         $row['key'] = empty($row['permalink']) ? $row['uid'] : $row['permalink'];
+    }
+
+    /**
+     * @param Database $db
+     * @param array $users
+     * @return SelectQuery
+     */
+    private static function getUsersList(Database $db, array $users) {
+        $fluent = self::getUsersPrefix();
+        $fluent->where("uid", $users);
+        $users = $db->fetchAll($fluent->getQuery(false), $fluent->getParameters(), "uid", function ($row) {
+            self::processUserRow($row);
+            return $row;
+        });
+        return $users;
     }
 
 }

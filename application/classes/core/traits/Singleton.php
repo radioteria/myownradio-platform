@@ -2,7 +2,10 @@
 
 trait Singleton {
     protected static $_instance = null;
-    
+
+    /**
+     * @return static
+     */
     final public static function getInstance() {
         $calledClass = get_called_class();
         $calledArgs  = func_get_args();

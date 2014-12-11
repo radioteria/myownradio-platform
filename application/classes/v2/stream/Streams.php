@@ -40,9 +40,7 @@ class Streams extends Model {
 
         return $fluentPDO
             ->from("r_streams a")->leftJoin("r_static_stream_vars b ON a.sid = b.stream_id")
-            ->select("a.sid", "a.uid", "a.name", "a.permalink", "a.info")
-            ->select("a.hashtags", "a.cover", "a.created")
-            ->select("b.bookmarks_count", "b.listeners_count");
+            ->select("a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags", "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count");
     }
 
     private static function getUsersPrefix() {

@@ -49,7 +49,7 @@ class Streams extends Model {
 
         return $fluentPDO
             ->from("r_users")
-            ->select(["uid", "name", "permalink", "avatar"]);
+            ->select("uid", "name", "permalink", "avatar");
     }
 
     public static function getStreamList($from = 0, $limit = 50) {

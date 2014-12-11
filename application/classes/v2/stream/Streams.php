@@ -37,7 +37,6 @@ class Streams extends Model {
 
     private static function getStreamsPrefix() {
         $fluentPDO = Database::getFluentPDO();
-
         return $fluentPDO
             ->from("r_streams a")->leftJoin("r_static_stream_vars b ON a.sid = b.stream_id")
             ->select(null)->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags",
@@ -46,9 +45,7 @@ class Streams extends Model {
 
     private static function getUsersPrefix() {
         $fluentPDO = Database::getFluentPDO();
-
         return $fluentPDO->from("r_users")->select(null)->select(["uid", "name", "permalink", "avatar"]);
-
     }
 
     public static function getStreamList($from = 0, $limit = 50) {
@@ -84,8 +81,17 @@ class Streams extends Model {
         $involved_users = [];
 
         if (substr($filter, 0, 1) === '#') {
-            $prepared_query = $db->query_quote(self::STREAM_FETCH_HASHTAGS,
-                array('+' . substr($filter, 1), $from, $limit));
+//            $prepared_query = $db->query_quote(self::STREAM_FETCH_HASHTAGS,
+//                array('+' . substr($filter, 1), $from, $limit));
+
+            $prepared_query = self::getStreamsPrefix()
+                ->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)", '+' . substr($filter, 1))
+                ->limit($limit)
+                ->offset($from)
+                ->getQuery();
+
+            echo $prepared_query;
+
         } else {
             $prepared_query = $db->query_quote(self::STREAM_FETCH_SEARCH,
                 array(misc::searchQueryFilter($filter), $from, $limit));

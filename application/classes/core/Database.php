@@ -43,7 +43,7 @@ class Database
 
         $position = 0;
 
-        $arguments = preg_replace_callback("/(\\?)|(\:\w+)/", function ($match) use ($params, &$position) {
+        $arguments = preg_replace_callback("/(\\?)|(\\:\\w+)/", function ($match) use ($params, &$position) {
             $array_key = $match[0] === '?' ? $position++ : $match[0];
             if (!isset($params[$array_key])) {
                 throw new Exception(sprintf("No value for variable %s present in parameters array!", $match[0]));

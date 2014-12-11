@@ -60,6 +60,8 @@ class Streams extends Model {
         $prepared_query = self::getStreamsPrefix()->where("status = 1")->limit($limit)->offset($from)
             ->getQuery();
 
+        echo $prepared_query;
+
         $streams = $db->query_universal($prepared_query, null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {
                 $involved_users[] = $row['uid'];

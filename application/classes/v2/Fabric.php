@@ -32,17 +32,12 @@ class Fabric extends Model {
 
         $result = $this->database->query_update($query);
 
-/*        $result = $this->database->query_update(self::SQL_NEW_STREAM,
-            array($this->visitor->getId(), $name, $info, $ids, $permalink, $category, time())); */
-
         if ($result === 0) {
             throw new streamException("Can't create new stream", 1001, null);
         }
 
         $id = $this->database->lastInsertId();
 
-        $stream = new radioStream($id);
-
-        return misc::okJSON($stream->toArray());
+        return misc::okJSON(Streams::getOneStream($id));
     }
 }

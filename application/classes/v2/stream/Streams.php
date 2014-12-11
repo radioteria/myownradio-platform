@@ -35,12 +35,33 @@ class Streams extends Model {
 
     const MAXIMUM_SIMILAR_COUNT = 10;
 
+    private static function getStreamsPrefix() {
+        $fluentPDO = Database::getFluentPDO();
+
+        return $fluentPDO
+            ->from("r_streams a")->leftJoin("r_static_stream_vars b ON a.sid = b.stream_id")
+            ->select("a.sid", "a.uid", "a.name", "a.permalink", "a.info")
+            ->select("a.hashtags", "a.cover", "a.created")
+            ->select("b.bookmarks_count", "b.listeners_count");
+    }
+
+    private static function getUsersPrefix() {
+        $fluentPDO = Database::getFluentPDO();
+
+        return $fluentPDO
+            ->from("r_users")
+            ->select("uid", "name", "permalink", "avatar");
+    }
+
     public static function getStreamList($from = 0, $limit = 50) {
         $db = Database::getInstance();
 
         $involved_users = [];
 
-        $prepared_query = $db->query_quote(self::STREAM_FETCH_LIST, array($from, $limit));
+        //$prepared_query = $db->query_quote(self::STREAM_FETCH_LIST, array($from, $limit));
+        $prepared_query = self::getStreamsPrefix()->where("status = 1")->limit($limit)->offset($from)
+            ->getQuery();
+
         $streams = $db->query_universal($prepared_query, null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {
                 $involved_users[] = $row['uid'];
@@ -49,7 +70,9 @@ class Streams extends Model {
             return $row;
         });
 
-        $prepared_query = $db->query_quote(self::USERS_FETCH_BY_LIST, array(implode(',', $involved_users)));
+        //$prepared_query = $db->query_quote(self::USERS_FETCH_BY_LIST, array(implode(',', $involved_users)));
+        $prepared_query = self::getUsersPrefix()->where("FIND_IN_SET(uid, ?)", implode(',', $involved_users))
+            ->getQuery();
 
         $users = $db->query_universal($prepared_query, 'uid', function ($row) {
             self::processUserRow($row);

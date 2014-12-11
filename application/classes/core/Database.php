@@ -27,7 +27,11 @@ class Database
     }
 
     public static function getFluentPDO() {
-        return new FluentPDO(self::getInstance());
+        return new FluentPDO(self::getInstance()->getPDO());
+    }
+
+    public function getPDO() {
+        return $this->pdo;
     }
 
     public function quote($value)

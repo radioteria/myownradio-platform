@@ -67,7 +67,7 @@ public class FlowListener {
     public static void init() {
         PreparedStatement ps;
         try (Connection connection = JDBCPool.getConnection()) {
-            ps = connection.prepareStatement("UPDATE r_listener SET finished = NOW() WHERE finished = NULL");
+            ps = connection.prepareStatement("UPDATE r_listener SET finished = NOW() WHERE finished IS NULL");
             ps.executeUpdate();
             connection.commit();
         } catch (SQLException e) {

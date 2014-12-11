@@ -6,7 +6,7 @@ class post_controller extends authController {
     {
         $streamName      = new validStreamName(application::post("name", "", REQ_STRING));
         $streamInfo      = new validStreamDescription(application::post("description", "", REQ_STRING));
-        $streamGenres    = new ArrayObject(application::post("genre"));
+        $streamGenres    = new ArrayObject(application::post("genre", array("test")));
         $streamPermalink = new validPermalink(application::post("permalink", "", REQ_STRING));
         $streamCategory  = new validCategory(application::post("category", 13, REQ_INT));
         

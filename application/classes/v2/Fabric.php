@@ -90,7 +90,7 @@ class Fabric extends Model {
             "title"         => (new Container($audio_tags["TITLE"], $file['name']))->get(),
             "album"         => $audio_tags["ALBUM"],
             "genre"         => $audio_tags["GENRE"],
-            "date"          => $audio_tags["RECORD_DATE"],
+            "date"          => $audio_tags["RECORDED_DATE"],
             "duration"      => $audio_tags["DURATION"],
             "filesize"      => filesize($file["tmp_name"]),
             'uploaded'      => time()

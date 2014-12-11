@@ -85,12 +85,18 @@ class Fabric extends Model {
             "uid"           => $this->visitor->getId(),
             "filename"      => $file["name"],
             "ext"           => $extension,
-            "track_number"  => $audio_tags["TRACKNUMBER"],
-            "artist"        => $audio_tags["PERFORMER"],
-            "title"         => (new Container($audio_tags["TITLE"], $file['name']))->get(),
-            "album"         => $audio_tags["ALBUM"],
-            "genre"         => $audio_tags["GENRE"],
-            "date"          => $audio_tags["RECORDED_DATE"],
+            "track_number"  => Optional::ofEmpty($audio_tags["TRACKNUMBER"])
+                    ->getOrElseEmpty(),
+            "artist"        => Optional::ofEmpty($audio_tags["PERFORMER"])
+                    ->getOrElseEmpty(),
+            "title"         => Optional::ofEmpty($audio_tags["TITLE"])
+                    ->getOrElse($file['name']),
+            "album"         => Optional::ofEmpty($audio_tags["ALBUM"])
+                    ->getOrElseEmpty(),
+            "genre"         => Optional::ofEmpty($audio_tags["GENRE"])
+                    ->getOrElseEmpty(),
+            "date"          => Optional::ofEmpty($audio_tags["RECORDED_DATE"])
+                    ->getOrElseEmpty(),
             "duration"      => $audio_tags["DURATION"],
             "filesize"      => filesize($file["tmp_name"]),
             'uploaded'      => time()

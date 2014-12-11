@@ -10,7 +10,7 @@ class post_controller extends authController {
         $streamPermalink = new validPermalink(application::post("permalink", "", REQ_STRING));
         $streamCategory  = new validCategory(application::post("category", 13, REQ_INT));
         
-        $creator = new creator();
+        $creator = new Fabric();
         
         echo $creator->createStream($streamName, $streamInfo, $streamGenres, $streamPermalink, $streamCategory);
     }

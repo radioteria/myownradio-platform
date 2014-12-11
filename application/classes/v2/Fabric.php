@@ -76,6 +76,7 @@ class Fabric extends Model {
             return misc::outputJSON("UPLOAD_ERROR_LONG_AUDIO");
         }
 
+        // todo: fix this
         if($audio_tags['DURATION'] > $timeLeftOnAccount && $visitorPlan->getTimeLimit())
         {
             return misc::outputJSON("UPLOAD_ERROR_NO_SPACE");

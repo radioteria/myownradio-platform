@@ -15,23 +15,26 @@ public class MORLogger {
 
     final private static String logFile = MORSettings.getFirstString("server", "server_logfile", "/tmp/mor-server.log");
     final private static OutputStream os;
+    final private static PrintWriter pw;
 
     static {
         OutputStream os1;
+        PrintWriter pw1;
         try {
             os1 = new FileOutputStream(logFile, true);
+            pw1 = new PrintWriter(os1);
         } catch (FileNotFoundException e) {
             os1 = null;
+            pw1 = null;
         }
         os = os1;
+        pw = pw1;
     }
 
     final private MessageKind kind;
-    final private PrintWriter pw;
 
     public MORLogger(MessageKind kind) {
         this.kind = kind;
-        this.pw = this.os != null ? new PrintWriter(os) : null;
     }
 
     public synchronized void println(String message) {
@@ -41,7 +44,7 @@ public class MORLogger {
         String out = String.format("[%s] [%s] [%s] %s", date, kind.toString(), thread, message);
 
         if (pw != null) {
-            this.pw.println(out);
+            pw.println(out);
         }
 
         System.out.println(out);

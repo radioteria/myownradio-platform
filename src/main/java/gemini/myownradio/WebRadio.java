@@ -21,7 +21,7 @@ public class WebRadio {
 
         MORLogger log = new MORLogger(MORLogger.MessageKind.SERVER);
 
-        //FlowListener.init();
+        FlowListener.init();
 
         log.println("Starting WebRadio Server");
 

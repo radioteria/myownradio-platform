@@ -8,24 +8,24 @@
  */
 class Streams extends Model {
 
-    const STREAM_FETCH_LIST     = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, b.bookmarks_count as bookmarks
+    const STREAM_FETCH_LIST     = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, b.bookmarks_count, b.listeners_count
                                    FROM r_streams a LEFT JOIN r_static_stream_vars b ON a.sid = b.stream_id WHERE a.status = 1 LIMIT ?, ?";
 
-    const STREAM_FETCH_BY_ID    = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, b.bookmarks_count as bookmarks
+    const STREAM_FETCH_BY_ID    = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, b.bookmarks_count, b.listeners_count
                                    FROM r_streams a LEFT JOIN r_static_stream_vars b ON a.sid = b.stream_id
                                    WHERE (a.sid = :id) OR (a.permalink = :id AND a.permalink != '')";
 
-    const STREAM_FETCH_SIMILAR  = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, b.bookmarks_count as bookmarks
+    const STREAM_FETCH_SIMILAR  = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, b.bookmarks_count, b.listeners_count
                                    FROM r_streams a LEFT JOIN r_static_stream_vars b ON a.sid = b.stream_id
                                    WHERE a.sid != :id AND a.permalink != :id AND MATCH(a.hashtags) AGAINST(
                                    (SELECT hashtags FROM r_streams WHERE (sid = :id) OR (permalink = :id AND permalink != ''))) LIMIT :max";
 
-    const STREAM_FETCH_SEARCH   = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, b.bookmarks_count as bookmarks
+    const STREAM_FETCH_SEARCH   = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, b.bookmarks_count, b.listeners_count
                                    FROM r_streams a LEFT JOIN r_static_stream_vars b ON a.sid = b.stream_id
                                    WHERE MATCH(a.name, a.permalink, a.hashtags) AGAINST (? IN BOOLEAN MODE)
                                    LIMIT ?, ?";
 
-    const STREAM_FETCH_HASHTAGS = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, b.bookmarks_count as bookmarks
+    const STREAM_FETCH_HASHTAGS = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, b.bookmarks_count, b.listeners_count
                                    FROM r_streams a LEFT JOIN r_static_stream_vars b ON a.sid = b.stream_id
                                    WHERE MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)
                                    LIMIT ?, ?";
@@ -138,7 +138,8 @@ class Streams extends Model {
         $row['cover_url'] = Folders::genStreamCoverUrl($row['cover']);
         $row['key'] = empty($row['permalink']) ? $row['sid'] : $row['permalink'];
         $row['hashtags_array'] = strlen($row['hashtags']) ? preg_split("/\\s*\\,\\s*/", $row['hashtags']) : null;
-        $row['listeners'] = (int) rand(0, 500);
+        $row['listeners_count'] = (int) $row['listeners_count'];
+        $row['bookmarks_count'] = (int) $row['bookmarks_count'];
     }
 
     private static function processUserRow(&$row) {

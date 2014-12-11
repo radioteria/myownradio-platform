@@ -34,9 +34,7 @@ class Database {
         return $this->pdo->quote($value);
     }
 
-    public function query_quote( /* string */
-        $query, /* array */
-        $params) {
+    public function query_quote(/* String */ $query, /* Array */ $params) {
 
         $position = 0;
 
@@ -52,14 +50,51 @@ class Database {
 
     }
 
-    public function createStatement( /* String */
-        $query) {
+    public function createStatement(/* String */ $query) {
         return $this->pdo->prepare($query);
     }
 
-    public function query_universal( /* string */
-        $query, /* string */
-        $key = null, callable $callback = null) {
+    public function fetchAll(/* String */ $query, /* Array */ $params = array(), /* String */ $key, /* Callable */ $callback = null) {
+        $res = $this->pdo->prepare($this->query_quote($query, $params));
+        $res->execute();
+        $result = [];
+
+        while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
+
+            if (is_callable($callback)) {
+                $row = call_user_func($callback, $row);
+            }
+
+            if (!is_null($key)) {
+                $k = $row[$key];
+                unset($row[$key]);
+                $result[$k] = $row;
+            } else {
+                $result[] = $row;
+            }
+
+        }
+
+        return $result;
+    }
+
+    public function fetchOneRow(/* String */ $query, /* Array */ $params = array(), /* Callable */ $callback = null) {
+        $res = $this->pdo->prepare($this->query_quote($query, $params));
+        $res->execute();
+
+        $row = $res->fetch(PDO::FETCH_ASSOC);
+
+        if (!is_null($row) && is_callable($callback)) {
+            $row = call_user_func($callback, $row);
+        }
+
+        return $row;
+    }
+
+    /*
+     * @Deprecated
+     */
+    public function query_universal(/* String */ $query, /* String */ $key = null, callable $callback = null) {
 
         $res = $this->pdo->prepare($query);
         $res->execute();

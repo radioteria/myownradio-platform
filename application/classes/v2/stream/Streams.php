@@ -61,8 +61,6 @@ class Streams extends Model {
         $prepared_query = self::getStreamsPrefix()->where("status = 1")->limit($limit)->offset($from)
             ->getQuery();
 
-        echo $prepared_query;
-
         $streams = $db->query_universal($prepared_query, null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {
                 $involved_users[] = $row['uid'];
@@ -71,11 +69,8 @@ class Streams extends Model {
             return $row;
         });
 
-        //$prepared_query = $db->query_quote(self::USERS_FETCH_BY_LIST, array(implode(',', $involved_users)));
         $prepared_query = self::getUsersPrefix()->where("uid", $involved_users)
             ->getQuery();
-
-        echo $prepared_query;
 
         $users = $db->query_universal($prepared_query, 'uid', function ($row) {
             self::processUserRow($row);

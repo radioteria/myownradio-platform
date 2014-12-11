@@ -48,8 +48,8 @@ class Streams extends Model {
         $fluentPDO = Database::getFluentPDO();
 
         return $fluentPDO
-            ->from("r_users a")
-            ->select(["a.uid", "a.name", "a.permalink", "a.avatar"]);
+            ->from("r_users")
+            ->select(["uid", "name", "permalink", "avatar"]);
 
     }
 
@@ -61,6 +61,8 @@ class Streams extends Model {
         $prepared_query = self::getStreamsPrefix()->where("status = 1")->limit($limit)->offset($from)
             ->getQuery();
 
+        echo $prepared_query;
+
         $streams = $db->query_universal($prepared_query, null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {
                 $involved_users[] = $row['uid'];
@@ -70,7 +72,8 @@ class Streams extends Model {
         });
 
         //$prepared_query = $db->query_quote(self::USERS_FETCH_BY_LIST, array(implode(',', $involved_users)));
-        $prepared_query = self::getUsersPrefix()->where("a.uid", $involved_users)->getQuery();
+        $prepared_query = self::getUsersPrefix()->where("uid", $involved_users)
+            ->getQuery();
 
         echo $prepared_query;
 

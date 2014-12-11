@@ -40,15 +40,16 @@ class Streams extends Model {
 
         return $fluentPDO
             ->from("r_streams a")->leftJoin("r_static_stream_vars b ON a.sid = b.stream_id")
-            ->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags", "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count"]);
+            ->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags",
+                "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count"]);
     }
 
     private static function getUsersPrefix() {
         $fluentPDO = Database::getFluentPDO();
 
         return $fluentPDO
-            ->from("r_users a")
-            ->select(["a.uid", "a.name", "a.permalink", "a.avatar"]);
+            ->from("r_users")
+            ->select(["uid", "name", "permalink", "avatar"]);
     }
 
     public static function getStreamList($from = 0, $limit = 50) {
@@ -56,7 +57,6 @@ class Streams extends Model {
 
         $involved_users = [];
 
-        //$prepared_query = $db->query_quote(self::STREAM_FETCH_LIST, array($from, $limit));
         $prepared_query = self::getStreamsPrefix()->where("status = 1")->limit($limit)->offset($from)
             ->getQuery();
 
@@ -69,8 +69,7 @@ class Streams extends Model {
         });
 
         //$prepared_query = $db->query_quote(self::USERS_FETCH_BY_LIST, array(implode(',', $involved_users)));
-        $prepared_query = self::getUsersPrefix()->where("FIND_IN_SET(a.uid, ?)", array(implode(',', $involved_users)))
-            ->getQuery();
+        $prepared_query = self::getUsersPrefix()->where("FIND_IN_SET(uid, ?)", array(implode(',', $involved_users)))->getQuery();
 
         echo $prepared_query;
 

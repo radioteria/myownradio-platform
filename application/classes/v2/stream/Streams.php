@@ -81,8 +81,6 @@ class Streams extends Model {
         $involved_users = [];
 
         if (substr($filter, 0, 1) === '#') {
-//            $prepared_query = $db->query_quote(self::STREAM_FETCH_HASHTAGS,
-//                array('+' . substr($filter, 1), $from, $limit));
 
             $fluent = self::getStreamsPrefix()
                 ->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)", '+' . substr($filter, 1))

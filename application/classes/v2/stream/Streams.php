@@ -85,7 +85,7 @@ class Streams extends Model {
 //                array('+' . substr($filter, 1), $from, $limit));
 
             $prepared_query = self::getStreamsPrefix()
-                ->whereRaw("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)", array('+' . substr($filter, 1)))
+                ->whereRaw("MATCH(a.hashtags) AGAINST (:q IN BOOLEAN MODE)", ['q' => '+' . substr($filter, 1)])
                 ->limit($limit)->offset($from)->getQuery();
 
         } else {

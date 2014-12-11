@@ -206,7 +206,6 @@ abstract class BaseQuery implements IteratorAggregate {
 	protected function buildQuery() {
 		$query = '';
 		foreach ($this->clauses as $clause => $separator) {
-            print_r(['clause'=>$clause, 'sep'=>$separator]);
 			if ($this->clauseNotEmpty($clause)) {
 				if (is_string($separator)) {
 					$query .= " $clause " . implode($separator, $this->statements[$clause]);

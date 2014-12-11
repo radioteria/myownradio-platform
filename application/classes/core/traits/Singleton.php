@@ -1,7 +1,7 @@
 <?php
 
 trait Singleton {
-    protected static $_instance = null;
+    protected static $_instance = [];
 
     /**
      * @return static
@@ -9,13 +9,11 @@ trait Singleton {
     final public static function getInstance() {
         $calledClass = get_called_class();
         $calledArgs  = func_get_args();
-        
-        if(self::$_instance === null) {
+        $hash = serialize($calledArgs);
+        if(!isset(self::$_instance[$hash])) {
             $reflector = new ReflectionClass($calledClass);
-            
-            self::$_instance = call_user_func_array(array($reflector, "newInstance"), $calledArgs);
+            self::$_instance[$hash] = call_user_func_array(array($reflector, "newInstance"), $calledArgs);
         }
-
-        return self::$_instance;
+        return self::$_instance[$hash];
     }
 }

@@ -60,12 +60,20 @@ class Optional {
         return $this->test() ? $this->value : "";
     }
 
+    public function validate() {
+        return $this->test();
+    }
+
     /**
      * @return mixed
      */
     private function test() {
         return call_user_func($this->predicate, $this->value);
     }
+
+    /*---------------------------------------------------------------*/
+    /*                    Static Fabric Methods                      */
+    /*---------------------------------------------------------------*/
 
     /**
      * @param $value
@@ -84,14 +92,27 @@ class Optional {
         return new Optional($value, $callback);
     }
 
+    /**
+     * @param $value
+     * @return Optional
+     */
     public static function ofEmpty($value) {
         return new Optional($value, function ($v) { return !empty($v); });
     }
 
+    /**
+     * @param $value
+     * @return Optional
+     */
     public static function ofNumber($value) {
         return new Optional($value, function ($v) { return is_numeric($v); });
     }
 
+    /**
+     * @param $value
+     * @param $object
+     * @return Optional
+     */
     public static function ofObject($value, $object) {
         return new Optional($value, function ($v) use ($object) { return $v instanceof $object; });
     }

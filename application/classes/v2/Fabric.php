@@ -51,10 +51,13 @@ class Fabric extends Model {
 
     }
 
+    // todo: fix outputJSON -> throw
     public function uploadTrack(array $file) {
 
-        $visitorPlan = new VisitorPlan($this->visitor->getId());
-        $visitorStats = new VisitorStats($this->visitor->getId());
+        $visitorPlan = VisitorPlan::getInstance($this->visitor->getId());
+        $visitorStats = VisitorStats::getInstance($this->visitor->getId());
+
+        $timeLeftOnAccount = $visitorPlan->getTimeLimit() - $visitorStats->getTracksDuration();
 
         // Check file type is supported
         if(array_search($file['type'], config::getSetting('upload', 'supported_audio')) === false) {
@@ -73,7 +76,7 @@ class Fabric extends Model {
             return misc::outputJSON("UPLOAD_ERROR_LONG_AUDIO");
         }
 
-        if($audio_tags['DURATION'] > $visitorPlan->getTimeLimit() - $visitorStats->getTracksDuration() && $visitorPlan->getTimeLimit())
+        if($audio_tags['DURATION'] > $timeLeftOnAccount && $visitorPlan->getTimeLimit())
         {
             return misc::outputJSON("UPLOAD_ERROR_NO_SPACE");
         }
@@ -85,18 +88,12 @@ class Fabric extends Model {
             "uid"           => $this->visitor->getId(),
             "filename"      => $file["name"],
             "ext"           => $extension,
-            "track_number"  => Optional::ofEmpty($audio_tags["TRACKNUMBER"])
-                    ->getOrElseEmpty(),
-            "artist"        => Optional::ofEmpty($audio_tags["PERFORMER"])
-                    ->getOrElseEmpty(),
-            "title"         => Optional::ofEmpty($audio_tags["TITLE"])
-                    ->getOrElse($file['name']),
-            "album"         => Optional::ofEmpty($audio_tags["ALBUM"])
-                    ->getOrElseEmpty(),
-            "genre"         => Optional::ofEmpty($audio_tags["GENRE"])
-                    ->getOrElseEmpty(),
-            "date"          => Optional::ofEmpty($audio_tags["RECORDED_DATE"])
-                    ->getOrElseEmpty(),
+            "track_number"  => Optional::ofEmpty($audio_tags["TRACKNUMBER"])    ->getOrElseEmpty(),
+            "artist"        => Optional::ofEmpty($audio_tags["PERFORMER"])      ->getOrElseEmpty(),
+            "title"         => Optional::ofEmpty($audio_tags["TITLE"])          ->getOrElse($file['name']),
+            "album"         => Optional::ofEmpty($audio_tags["ALBUM"])          ->getOrElseEmpty(),
+            "genre"         => Optional::ofEmpty($audio_tags["GENRE"])          ->getOrElseEmpty(),
+            "date"          => Optional::ofEmpty($audio_tags["RECORDED_DATE"])  ->getOrElseEmpty(),
             "duration"      => $audio_tags["DURATION"],
             "filesize"      => filesize($file["tmp_name"]),
             'uploaded'      => time()

@@ -133,13 +133,13 @@ class Streams extends Model {
     private static function processStreamRow(&$row) {
         $row['sid'] = (int) $row['sid'];
         $row['uid'] = (int) $row['uid'];
-        $row['bookmarks'] = (int) $row['bookmarks'];
+
+        $row['listeners_count'] = (int) $row['listeners_count'];
+        $row['bookmarks_count'] = (int) $row['bookmarks_count'];
 
         $row['cover_url'] = Folders::genStreamCoverUrl($row['cover']);
         $row['key'] = empty($row['permalink']) ? $row['sid'] : $row['permalink'];
         $row['hashtags_array'] = strlen($row['hashtags']) ? preg_split("/\\s*\\,\\s*/", $row['hashtags']) : null;
-        $row['listeners_count'] = (int) $row['listeners_count'];
-        $row['bookmarks_count'] = (int) $row['bookmarks_count'];
     }
 
     private static function processUserRow(&$row) {

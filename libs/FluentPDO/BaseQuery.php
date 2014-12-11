@@ -62,10 +62,6 @@ abstract class BaseQuery implements IteratorAggregate {
 			$this->statements[$clause] = $statement;
 			$this->parameters[$clause] = $parameters;
 		}
-            print_r($this->statements[$clause]);
-            echo "\n";
-            print_r($this->parameters[$clause]);
-            echo "\n";
 		return $this;
 	}
 
@@ -222,6 +218,7 @@ abstract class BaseQuery implements IteratorAggregate {
 				}
 			}
 		}
+        print_r($query);
 		return trim($query);
 	}
 

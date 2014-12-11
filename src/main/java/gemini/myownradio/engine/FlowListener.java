@@ -38,6 +38,8 @@ public class FlowListener {
             rs = ps.getGeneratedKeys();
             rs.next();
             this.listener_id = rs.getInt(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

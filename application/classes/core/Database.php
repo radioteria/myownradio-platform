@@ -26,15 +26,27 @@ class Database {
         return new FluentPDO(self::getInstance()->getPDO());
     }
 
+    /**
+     * @return PDOExtended
+     */
     public function getPDO() {
         return $this->pdo;
     }
 
+    /**
+     * @param string $value
+     * @return string
+     */
     public function quote($value) {
         return $this->pdo->quote($value);
     }
 
-    public function query_quote(/* String */ $query, /* Array */ $params) {
+    /**
+     * @param string $query
+     * @param array $params
+     * @return string
+     */
+    public function query_quote($query, $params = array()) {
 
         $position = 0;
 
@@ -50,7 +62,11 @@ class Database {
 
     }
 
-    public function createStatement(/* String */ $query) {
+    /**
+     * @param string $query
+     * @return PDOStatement
+     */
+    public function createStatement($query) {
         return $this->pdo->prepare($query);
     }
 

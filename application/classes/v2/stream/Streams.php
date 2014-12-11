@@ -152,9 +152,6 @@ class Streams extends Model {
                                                             (permalink = :id AND permalink != '')))", [':id' => $id]);
         $fluent->limit(self::MAXIMUM_SIMILAR_COUNT);
 
-//        $prepared_query = $db->query_quote(self::STREAM_FETCH_SIMILAR,
-//            array(':id' => $id, ':max' => self::MAXIMUM_SIMILAR_COUNT));
-
         $streams = $db->fetchAll($fluent->getQuery(false), $fluent->getParameters(), null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {
                 $involved_users[] = $row['uid'];
@@ -163,15 +160,15 @@ class Streams extends Model {
             return $row;
         });
 
-        $prepared_query = $db->query_quote(self::USERS_FETCH_BY_LIST, array(implode(',', $involved_users)));
-        $users = $db->query_universal($prepared_query, 'uid', function ($row) {
-            self::processUserRow($row);
-            return $row;
-        });
+        $users = self::getUsersList($db, $involved_users);
 
         return ['streams' => $streams, 'users' => $users];
+
     }
 
+    /**
+     * @param $row
+     */
     private static function processStreamRow(&$row) {
         $row['sid'] = (int) $row['sid'];
         $row['uid'] = (int) $row['uid'];
@@ -184,6 +181,9 @@ class Streams extends Model {
         $row['hashtags_array'] = strlen($row['hashtags']) ? preg_split("/\\s*\\,\\s*/", $row['hashtags']) : null;
     }
 
+    /**
+     * @param $row
+     */
     private static function processUserRow(&$row) {
         $row['uid'] = (int) $row['uid'];
 

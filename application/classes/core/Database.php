@@ -26,6 +26,10 @@ class Database
         unset($this->pdo);
     }
 
+    public static function getFluentPDO() {
+        return new FluentPDO(self::getInstance());
+    }
+
     public function quote($value)
     {
         return $this->pdo->quote($value);

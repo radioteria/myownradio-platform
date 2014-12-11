@@ -14,7 +14,7 @@ public class LHttpContext {
         this.context = context;
     }
 
-    public void setHandler(LHttpHandler handler) {
+    public void exec(LHttpHandler handler) {
         this.handler = handler;
     }
 

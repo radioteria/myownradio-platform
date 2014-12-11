@@ -40,16 +40,16 @@ public class WebRadio {
     public static void registerRequestHandlers(LHttpServer httpServer) {
 
         httpServer
-                .createContext(new LHttpContextString("/run"))
-                .setHandler(new GetRunStateHandler());
+                .when(new LHttpContextString("/run"))
+                .exec(new GetRunStateHandler());
 
         httpServer
-                .createContext(new LHttpContextString("/notify"))
-                .setHandler(new SetStreamStateNotifyHandler());
+                .when(new LHttpContextString("/notify"))
+                .exec(new SetStreamStateNotifyHandler());
 
         httpServer
-                .createContext(new LHttpContextString("/audio"))
-                .setHandler(new GetStreamAudioHandler());
+                .when(new LHttpContextString("/audio"))
+                .exec(new GetStreamAudioHandler());
 
     }
 

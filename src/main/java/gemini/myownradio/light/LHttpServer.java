@@ -117,7 +117,7 @@ public class LHttpServer {
 
     }
 
-    public LHttpContext createContext(LHttpContextAbstract context) {
+    public LHttpContext when(LHttpContextAbstract context) {
         LHttpContext ctx = new LHttpContext(context);
         handlerMap.put(context, ctx);
         return ctx;

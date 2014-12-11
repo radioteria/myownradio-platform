@@ -2,10 +2,7 @@ package gemini.myownradio.engine;
 
 import gemini.myownradio.tools.JDBCPool;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 /**
  * Created by Roman on 11.12.14.
@@ -29,7 +26,9 @@ public class FlowListener {
         PreparedStatement ps;
         ResultSet rs;
         try (Connection connection = JDBCPool.getConnection()) {
-            ps = connection.prepareStatement("INSERT INTO r_listener (client_ip, client_ua, stream, quality, started) VALUES (?, ?, ?, ?, NOW())");
+            ps = connection.prepareStatement(
+                    "INSERT INTO r_listener (client_ip, client_ua, stream, quality, started) VALUES (?, ?, ?, ?, NOW())",
+                    Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, this.client_ip);
             ps.setString(2, this.client_ua);
             ps.setInt(3, this.stream_id);

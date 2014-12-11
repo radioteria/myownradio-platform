@@ -75,7 +75,7 @@ class radioTrackItem extends Model {
     public function delete() {
 
         try {
-            $file = $this->getDetails()->originalFile();
+            $file = $this->getDetails()->getOriginalFile();
             $file->delete();
         } catch (patFileNotFoundException $ex) {
             misc::writeDebug("Exception: " . $ex->getMessage());

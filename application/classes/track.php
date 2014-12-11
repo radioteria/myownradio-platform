@@ -330,17 +330,16 @@ class track
         }
         else
         {
-            db::query_update("INSERT INTO r_echoprints SET  tid = ?, echoprint = ?", array($last_id, $echoprint));
             if(!is_null($stream_id))
             {
-                $stream = new stream($stream_id);
-                $stream->addNewTrack($last_id);
+                $stream = new radioStream($stream_id, true);
+                $stream->getTrackList()->addTracks(new validTrackList($last_id));
             }
         }
 
-        $temp_track = new track($last_id);
+        $temp_track = new radioTrackItem($last_id);
         
-        if(move_uploaded_file($file['tmp_name'], $temp_track->originalFile()))
+        if(move_uploaded_file($file['tmp_name'], $temp_track->getDetails()->getOriginalFile()->path()))
         {
             misc::writeDebug(sprintf("User #%s successfully uploaded track \"%s\"", user::getCurrentUserId(), $file['name']));
             return misc::outputJSON("UPLOAD_SUCCESS", $temp_track->makeArray());

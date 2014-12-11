@@ -88,7 +88,7 @@ class radioTrackItemInfo {
         return $this->object;
     }
     
-    public function originalFile() {
+    public function getOriginalFile() {
         return new File(sprintf("%s/ui_%d/a_%03d_original.%s", 
             config::getSetting("content", "content_folder"), 
             $this->getOwner(), 

@@ -66,19 +66,16 @@ class Fabric extends Model {
 
         $audio_tags = misc::get_audio_tags($file['tmp_name']);
 
-        if(empty($audio_tags['DURATION']) || $audio_tags['DURATION'] == 0)
-        {
+        if(empty($audio_tags['DURATION']) || $audio_tags['DURATION'] == 0) {
             return misc::outputJSON("UPLOAD_ERROR_CORRUPTED_AUDIO");
         }
 
-        if($audio_tags['DURATION'] > config::getSetting('upload', 'maximal_length'))
-        {
+        if($audio_tags['DURATION'] > config::getSetting('upload', 'maximal_length')) {
             return misc::outputJSON("UPLOAD_ERROR_LONG_AUDIO");
         }
 
         // todo: fix this
-        if($audio_tags['DURATION'] > $timeLeftOnAccount && $visitorPlan->getTimeLimit())
-        {
+        if($audio_tags['DURATION'] > $timeLeftOnAccount && $visitorPlan->getTimeLimit()) {
             return misc::outputJSON("UPLOAD_ERROR_NO_SPACE");
         }
 

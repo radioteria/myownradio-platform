@@ -73,7 +73,8 @@ public class StreamRadio implements Runnable {
 
                 trackItem = stream.reload().getNowPlaying(firstPlayingTrack ? preloadTime : 0);
 
-                logger.sprintf("Now playing: %s (remainder: %d ms)", trackItem.getTitle(), trackItem.getTimeRemainder());
+                logger.sprintf("Now playing: %s (start: %d ms, remainder: %d ms)",
+                        trackItem.getTitle(), trackItem.getTrackOffset(), trackItem.getTimeRemainder());
 
                 if ((trackItem.getTimeRemainder() >> 11) == 0L) {
                     ThreadTools.Sleep(trackItem.getTimeRemainder());

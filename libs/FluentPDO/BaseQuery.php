@@ -64,7 +64,9 @@ abstract class BaseQuery implements IteratorAggregate {
 		}
         if($clause == 'MATCH') {
             print_r($this->statements[$clause]);
+            echo "\n";
             print_r($this->parameters[$clause]);
+            echo "\n";
         }
 		return $this;
 	}

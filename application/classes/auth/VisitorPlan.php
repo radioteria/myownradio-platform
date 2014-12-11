@@ -8,22 +8,23 @@ class VisitorPlan extends Model
     private $plan = array();
 
     public function __construct($user_id) {
+
         parent::__construct();
         
         $result = $this->database->query_single_row(
             "SELECT * FROM r_subscriptions WHERE uid = ? AND expire > UNIX_TIMESTAMP(NOW()) ORDER BY id DESC LIMIT 1",
             array($user_id));
 
-        if($result === null) {
+        if ($result === null) {
             $this->plan['plan'] = 0;
             $this->plan['expire'] = null;
         } else {
             $this->plan = $result;
         }
         
-        $this->rights = $this->database->query_single_row(
-            "SELECT * FROM r_limitations WHERE level = ?",
+        $this->rights = $this->database->query_single_row("SELECT * FROM r_limitations WHERE level = ?",
             array($this->plan['plan']));
+
     }
 
     public function getPlanId() {
@@ -35,7 +36,7 @@ class VisitorPlan extends Model
     }
 
     public function getPlanExpireDate() {
-        return $this->rights['expire'];
+        return (int) $this->plan['expire'];
     }
 
     public function getTimeLimit() {

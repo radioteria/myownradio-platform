@@ -27,13 +27,15 @@ public class FlowListener {
         ResultSet rs;
         try (Connection connection = JDBCPool.getConnection()) {
             ps = connection.prepareStatement(
-                    "INSERT INTO r_listener (client_ip, client_ua, stream, quality, started) VALUES (?, ?, ?, ?, NOW())",
+                    "INSERT INTO r_listener (client_ip, client_ua, stream, quality, started, finished) VALUES (?, ?, ?, ?, NOW(), NULL)",
                     Statement.RETURN_GENERATED_KEYS);
+
             ps.setString(1, this.client_ip);
             ps.setString(2, this.client_ua);
             ps.setInt(3, this.stream_id);
             ps.setString(4, this.quality);
             ps.executeUpdate();
+
             rs = ps.getGeneratedKeys();
             rs.next();
             this.listener_id = rs.getInt(1);

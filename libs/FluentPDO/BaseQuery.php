@@ -48,8 +48,6 @@ abstract class BaseQuery implements IteratorAggregate {
 	 */
 	protected function addStatement($clause, $statement, $parameters = array()) {
 
-        print_r(['clause'=>$clause, 'statement'=>$statement, 'params'=>$parameters]);
-
 		if ($statement === null) {
 			return $this->resetClause($clause);
 		}

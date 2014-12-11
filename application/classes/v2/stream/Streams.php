@@ -84,11 +84,11 @@ class Streams extends Model {
 //            $prepared_query = $db->query_quote(self::STREAM_FETCH_HASHTAGS,
 //                array('+' . substr($filter, 1), $from, $limit));
 
-            $prepared_query = self::getStreamsPrefix()
+            $fluent = self::getStreamsPrefix()
                 ->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)", '+' . substr($filter, 1))
-                ->limit($limit)->offset($from)->getQuery(false);
+                ->limit($limit)->offset($from);
 
-            echo $prepared_query;
+            $prepared_query = $db->query_quote($fluent->getQuery(false), $fluent->getParameters());
 
         } else {
             $prepared_query = $db->query_quote(self::STREAM_FETCH_SEARCH,

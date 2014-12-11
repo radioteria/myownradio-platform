@@ -55,9 +55,7 @@ abstract class CommonQuery extends BaseQuery {
 				return $this->addStatement('WHERE', "$condition IN $in");
 			}
 			$condition = "$condition = ?";
-		} else if (count($args) == 2 && preg_match('~^MATCH')) {
-
-        }
+		}
 		array_shift($args);
 		return $this->addStatement('WHERE', $condition, $args);
 	}

@@ -52,7 +52,7 @@ class Optional {
      * @param callable $callable
      * @return mixed
      */
-    public function getOrElseCallback(Callable $callable) {
+    public function getOrElseCallback(callable $callable) {
         return $this->test() ? $this->value : call_user_func($callable);
     }
 
@@ -125,4 +125,4 @@ class Optional {
         return new Optional($value, function ($v) { return is_numeric($v) && $v > 0; });
     }
 
-} 
+}

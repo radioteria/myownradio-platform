@@ -18,7 +18,8 @@ class Streams extends Model {
         return $fluent
             ->from("r_streams a")->leftJoin("r_static_stream_vars b ON a.sid = b.stream_id")
             ->select(null)->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags",
-                "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count"]);
+                "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count"])
+            ->where("a.status = 1");
     }
 
     /**
@@ -38,39 +39,30 @@ class Streams extends Model {
      */
     public static function getStreamList($from = 0, $limit = 50) {
 
-        $db = Database::getInstance();
+        return self::getStreamListFiltered(null, null, $from, $limit);
 
-        $involved_users = [];
+    }
 
-        $prepared_query = self::getStreamsPrefix()->where("status = 1")->limit($limit)->offset($from);
+    /**
+     * @param int $category
+     * @param int $from
+     * @param int $limit
+     * @return array
+     */
+    public static function getStreamListCategory($category = null, $from = 0, $limit = 50) {
 
-        $streams = $db->fetchAll($prepared_query->getQuery(false), [], null, function ($row) use (&$involved_users) {
-            if (array_search($row['uid'], $involved_users) === false) {
-                $involved_users[] = $row['uid'];
-            }
-            self::processStreamRow($row);
-            return $row;
-        });
-
-        $prepared_query = self::getUsersPrefix()->where("uid", $involved_users)
-            ->getQuery();
-
-        $users = $db->query_universal($prepared_query, 'uid', function ($row) {
-            self::processUserRow($row);
-            return $row;
-        });
-
-        return ['streams' => $streams, 'users' => $users];
+        return self::getStreamListFiltered(null, $category, $from, $limit);
 
     }
 
     /**
      * @param string $filter
+     * @param int $category
      * @param int $from
      * @param int $limit
      * @return array
      */
-    public static function getStreamListFiltered($filter = "", $from = 0, $limit = 50) {
+    public static function getStreamListFiltered($filter = null, $category = null, $from = 0, $limit = 50) {
 
         $involved_users = [];
 
@@ -78,7 +70,13 @@ class Streams extends Model {
 
         $fluent = self::getStreamsPrefix();
 
-        if (substr($filter, 0, 1) === '#') {
+        if (is_numeric($category)) {
+            $fluent->where("a.category", $category);
+        }
+
+        if (empty($filter)) {
+            /* NOP */
+        } else if (substr($filter, 0, 1) === '#') {
             $fluent->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)",
                 '+' . substr($filter, 1));
         } else {
@@ -115,7 +113,8 @@ class Streams extends Model {
         $fluent = self::getStreamsPrefix();
         $fluent->where("(a.sid = :id) OR (a.permalink = :id AND a.permalink != '')", [':id' => $id]);
 
-        $stream = $db->fetchOneRow($fluent->getQuery(false), $fluent->getParameters());
+        $stream = $db->fetchOneRow($fluent->getQuery(false), $fluent->getParameters())
+            ->getOrElseThrow(new streamException("Stream not found"));
 
         if($stream !== null) {
             self::processStreamRow($stream);

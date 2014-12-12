@@ -107,7 +107,7 @@ class Database {
      * @param string $query
      * @param array $params
      * @param Callable $callback
-     * @return mixed
+     * @return Optional
      */
     public function fetchOneRow($query, $params = array(), $callback = null) {
         $res = $this->pdo->prepare($this->query_quote($query, $params));
@@ -119,7 +119,7 @@ class Database {
             $row = call_user_func($callback, $row);
         }
 
-        return $row;
+        return Optional::ofNull($row);
     }
 
     /**

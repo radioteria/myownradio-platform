@@ -4,15 +4,15 @@ class application {
 
     private static $args = NULL;
     private static $objects = array();
-    private static $utime = NULL;
+    private static $microTime = NULL;
     private static $route = "";
     static $listener_id = NULL;
 
-    static function getMicroTime($realtime = false) {
-        if (is_null(self::$utime) || ($realtime === true)) {
-            self::$utime = microtime(true) * 1000;
+    static function getMicroTime($realTime = false) {
+        if (is_null(self::$microTime) || ($realTime === true)) {
+            self::$microTime = microtime(true) * 1000;
         }
-        return self::$utime;
+        return self::$microTime;
     }
 
     static function singular() {
@@ -44,16 +44,6 @@ class application {
         return false;
     }
     
-    static function saveStat() {
-        db::query_update("INSERT INTO `r_stats_memory` VALUES (NULL, ?, ?, ?, ?, ?, NOW())", array(
-            application::getClient(),
-            user::getCurrentUserId(),
-            "http" . (isset($_SERVER['HTTPS']) ? "s" : "") .  "://" . filter_input(INPUT_SERVER, 'HTTP_HOST') . filter_input(INPUT_SERVER, 'REQUEST_URI'),
-            filter_input(INPUT_SERVER, 'HTTP_REFERER'),
-            filter_input(INPUT_SERVER, 'HTTP_USER_AGENT')
-        ));
-    }
-
     private static function init() {
         self::$args = array(
             'METHOD' =>

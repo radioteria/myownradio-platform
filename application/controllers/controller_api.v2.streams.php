@@ -30,7 +30,7 @@ class get_controller extends controller {
 
         $streams = Streams::getStreamListFiltered($filter, $category, $from, $limit);
 
-        print_r($filter);
+        print_r($_GET);
 
         //echo json_encode($streams);
 

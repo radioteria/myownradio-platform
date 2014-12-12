@@ -1,6 +1,7 @@
 <?php
 
 class Database {
+
     use Singleton;
 
     private $pdo;

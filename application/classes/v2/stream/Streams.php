@@ -8,14 +8,6 @@
  */
 class Streams extends Model {
 
-    const STREAM_FETCH_SIMILAR  = "SELECT a.sid, a.uid, a.name, a.permalink, a.info, a.hashtags, a.cover, a.created, b.bookmarks_count, b.listeners_count
-                                   FROM r_streams a LEFT JOIN r_static_stream_vars b ON a.sid = b.stream_id
-                                   WHERE a.sid != :id AND a.permalink != :id AND MATCH(a.hashtags) AGAINST(
-                                   (SELECT hashtags FROM r_streams WHERE (sid = :id) OR (permalink = :id AND permalink != ''))) LIMIT :max";
-
-    const USERS_FETCH_BY_LIST   = "SELECT uid, name, permalink, avatar FROM r_users WHERE FIND_IN_SET(uid, ?)";
-    const USERS_FETCH_BY_ID     = "SELECT uid, name, permalink, avatar FROM r_users WHERE uid = ?";
-
     const MAXIMUM_SIMILAR_COUNT = 10;
 
     /**

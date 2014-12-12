@@ -27,6 +27,7 @@ class post_controller extends authController {
 
     public function upload() {
         $fabric = new Fabric();
-        echo $fabric->uploadTrack($_FILES["file"]);
+        $optional = Optional::ofNull($_FILES["file"]);
+        echo $fabric->uploadTrack($optional->getOrElseThrow(new trackException("No file to upload!")));
     }
 }

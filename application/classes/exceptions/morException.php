@@ -22,7 +22,7 @@ class morException extends Exception
             header("HTTP/1.1 " . $this->http_errors[$this->code]);
         }
             
-        if (application::getMethod() === "GET")
+        if (application::getMethod() === "GET" && application::getParamOptional("type")->getOrElseEmpty() !== "json")
         {
             $tmpl = new Template("application/tmpl/error.template.tmpl");
             $tmpl->addVariable("header", "Error " . $this->getCode());

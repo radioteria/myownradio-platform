@@ -110,6 +110,7 @@ class Database {
      * @return Optional
      */
     public function fetchOneRow($query, $params = array(), $callback = null) {
+
         $res = $this->pdo->prepare($this->query_quote($query, $params));
         $res->execute();
 
@@ -120,6 +121,7 @@ class Database {
         }
 
         return Optional::ofBoolean($row);
+
     }
 
     /**

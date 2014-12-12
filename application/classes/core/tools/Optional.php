@@ -13,9 +13,9 @@ class Optional {
 
     /**
      * @param $value
-     * @param Callable $predicate
+     * @param callable $predicate
      */
-    public function __construct($value, Callable $predicate) {
+    public function __construct($value, callable $predicate) {
         $this->value = $value;
         $this->predicate = $predicate;
     }
@@ -88,7 +88,7 @@ class Optional {
      * @param callable $callback
      * @return Optional
      */
-    public static function ofCallback($value, Callable $callback) {
+    public static function ofCallback($value, callable $callback) {
         return new Optional($value, $callback);
     }
 
@@ -117,6 +117,10 @@ class Optional {
         return new Optional($value, function ($v) use ($object) { return $v instanceof $object; });
     }
 
+    /**
+     * @param $value
+     * @return Optional
+     */
     public static function ofPositiveNumber($value) {
         return new Optional($value, function ($v) { return is_numeric($v) && $v > 0; });
     }

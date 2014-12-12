@@ -52,10 +52,8 @@ class Validators {
 
         $optional = new Optional($password, function ($password) {
 
-            if (strlen($password) < self::PASSWORD_MIN_LENGTH) return false;
-            if (strlen($password) > self::PASSWORD_MAX_LENGTH) return false;
-
-            return true;
+            $len = strlen($password);
+            return $len >= self::PASSWORD_MIN_LENGTH && $len <= self::PASSWORD_MAX_LENGTH;
 
         });
 

@@ -3,8 +3,9 @@
 class post_controller extends authController {
 
     public function getInfo() {
-        $track = new radioTrackItem(application::getPostOptional("id")
-            ->getOrElseThrow(new morException("Incorrect parameters")));
+
+        $track = new radioTrackItem(application::getPostOptional("id")->getOrElseThrow(new morException("Incorrect parameters")));
+
         echo json_encode($track->getDetails()->toArray());
     }
 

@@ -29,3 +29,4 @@ misc::writeDebug(sprintf("%s: memory(%0.2f MB) time(%0.2f s)",
         application::get("route", "", REQ_STRING), 
         ($newMemory - $baseMemory) / 1000000, microtime(true) - $sTime));
 
+

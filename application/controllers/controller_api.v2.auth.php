@@ -4,27 +4,28 @@ class post_controller extends controller
 {
     public function login() 
     {
-        $login      = new validLogin(application::post("login", null, REQ_STRING));
-        $password   = new validPassword(application::post("password", null, REQ_STRING));
-        $saveCookie = application::post('remember', 'off', REQ_STRING);
-        
-        $uid = (new radioVerifier())->checkUserLogin($login, $password);
-                
-        if ($uid === null) {
-            throw new morException("Incorrect login or password", 3002, null, "login");
-        }
-        
-        if($saveCookie === "on")
-        {
+
+        $login      = application::getPostOptional("login")
+            ->getOrElseThrow(new morException("Login not specified"));
+
+        $password   = application::getPostOptional("password")
+            ->getOrElseThrow(new morException("Password not specified"));
+
+        $saveCookie = application::getPostOptional("remember")
+            ->getOrElse("off");
+
+        // Check for login and password correctness
+        $verifier = new radioVerifier();
+        $uid = (int) $verifier->checkUserLogin($login, $password)
+            ->getOrElseThrow(new morException("Incorrect login or password", 3002, null, "login"));
+
+        // Check for unlimited session time
+        if ($saveCookie === "on") {
             session::init(true);
         }
             
-        $database = Database::getInstance();
-                
-        $database->query_update('UPDATE `r_users` SET `last_visit_date` = ? WHERE `uid` = ?', array(time(), $uid));
-
         // Generate token
-        $token = Visitor::createToken($uid, application::getClient(), 
+        $token = Visitor::createToken($uid, application::getClient(),
             filter_input(INPUT_SERVER, 'HTTP_USER_AGENT'), session::getID());
             
         session::set('authtoken', $token);
@@ -34,16 +35,16 @@ class post_controller extends controller
     
     public function logout() 
     {
-        $database = Database::getInstance();
-        
+
         $token = session::get('authtoken');
         
-        $database->query_update("DELETE FROM `r_sessions` WHERE `token` = ?", array($token));
+        $this->database->executeUpdate("DELETE FROM r_sessions WHERE token = ?", array($token));
         
         session::remove('authtoken');
         session::end();
         
         return misc::okJSON();
+
     }
 
     public function requestRegistration()
@@ -83,10 +84,10 @@ class post_controller extends controller
             misc::writeDebug("Message off");
         }
 
-        echo json_encode(array(
+        echo json_encode([
             'status' => 1,
             'submit' => $submit
-        ));
+        ]);
     }
     
 
@@ -95,7 +96,7 @@ class post_controller extends controller
         $input_value = new validSomething(application::post("email", null, REQ_STRING), "login");
 
         // Try to find account
-        $account = $this->database->query_single_row("SELECT * FROM `r_users` WHERE `login` = :id OR `mail` = :id LIMIT 1", 
+        $account = $this->database->query_single_row("SELECT * FROM r_users WHERE login = :id OR mail = :id LIMIT 1",
                 array('id' => $input_value));
 
         if(is_null($account))

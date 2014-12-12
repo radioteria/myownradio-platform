@@ -1,19 +1,27 @@
 <?php
 
-class radioVerifier extends Model
-{
-    public function checkUserEmailExists($email)
-    {
-        return (bool) $this->database->query_single_col("SELECT COUNT(*) FROM `r_users` WHERE `mail` = ?", array($email));
+class radioVerifier extends Model {
+
+    public function checkUserEmailExists($email) {
+        return (bool) $this->database->fetchOneColumn("SELECT COUNT(*) FROM r_users WHERE mail = ?", array($email))
+            ->getOrElseThrow(new morException("Unknown database exception (checkUserEmailExists)"));
     }
-    
-    public function checkUserLogin(validLogin $login, validPassword $password) 
-    {
-        $database = Database::getInstance();
-        $data = $database->query_single_col("SELECT `uid` FROM `r_users` WHERE `login` = ? AND `password` =? LIMIT 1",
-            array($login->get(), md5($login->get() . $password->get()))
-        );
-        
-        return $data;
+
+    /**
+     * @param string $login
+     * @param string $password
+     * @return Optional
+     */
+    public function checkUserLogin($login, $password) {
+
+        $query = $this->database->getFluentPDO()->from("r_users");
+        $query->select(null)->select("uid");
+        $query->where("login", $login);
+        $query->where("password", md5($login . $password));
+        $query->limit(1);
+
+        return $this->database->fetchOneColumn($query->getQuery(false), $query->getParameters());
+
     }
+
 }

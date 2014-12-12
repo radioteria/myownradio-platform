@@ -3,9 +3,6 @@
 
 class get_controller extends controller
 {
-    public function test()
-    {
-    }
 
     public function streamStatus()
     {

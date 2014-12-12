@@ -127,6 +127,22 @@ class Database {
     /**
      * @param string $query
      * @param array $params
+     * @return Optional
+     */
+    public function fetchOneColumn($query, $params = []) {
+
+        $res = $this->pdo->prepare($this->query_quote($query, $params));
+        $res->execute();
+
+        $row = $res->fetchColumn();
+
+        return Optional::ofFalse($row);
+
+    }
+
+    /**
+     * @param string $query
+     * @param array $params
      * @return int
      */
     public function executeUpdate($query, $params = []) {

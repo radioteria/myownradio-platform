@@ -116,6 +116,8 @@ class Streams extends Model {
         $stream = $db->fetchOneRow($fluent->getQuery(false), $fluent->getParameters())
             ->getOrElseThrow(new streamException("Stream not found"));
 
+        print_r($stream);
+
         if($stream !== null) {
             self::processStreamRow($stream);
             $fluent = self::getUsersPrefix()->where('uid', $stream['uid']);

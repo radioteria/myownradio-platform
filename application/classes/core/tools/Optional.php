@@ -125,4 +125,8 @@ class Optional {
         return new Optional($value, function ($v) { return is_numeric($v) && $v > 0; });
     }
 
+    public static function ofBoolean($value) {
+        return new Optional($value, function ($v) { return $v !== false; });
+    }
+
 }

@@ -115,11 +115,11 @@ class Database {
 
         $row = $res->fetch(PDO::FETCH_ASSOC);
 
-        if (!is_null($row) && is_callable($callback)) {
+        if ($row !== false && is_callable($callback)) {
             $row = call_user_func($callback, $row);
         }
 
-        return Optional::ofNull($row);
+        return Optional::ofBoolean($row);
     }
 
     /**

@@ -20,7 +20,7 @@ class get_controller extends controller {
 
     public function getList() {
 
-        //header("Content-Type: application/json");
+        header("Content-Type: application/json");
 
         $filter     = application::getParamOptional("q")->getOrElseNull();
         $category   = application::getParamOptional("c")->getOrElseNull();
@@ -30,9 +30,8 @@ class get_controller extends controller {
 
         $streams = Streams::getStreamListFiltered($filter, $category, $from, $limit);
 
-        print_r($filter);
 
-        //echo json_encode($streams);
+        echo json_encode($streams);
 
     }
 }

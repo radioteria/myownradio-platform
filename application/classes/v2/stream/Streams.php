@@ -120,7 +120,8 @@ class Streams extends Model {
 
         $fluent = self::getUsersPrefix()->where('uid', $stream['uid']);
 
-        $stream['owner'] = $db->fetchOneRow($fluent->getQuery(false), $fluent->getParameters());
+        $stream['owner'] = $db->fetchOneRow($fluent->getQuery(false), $fluent->getParameters())
+            ->getOrElseThrow(new streamException("Stream owner not found"));
 
         return $stream;
 

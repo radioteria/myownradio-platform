@@ -120,7 +120,7 @@ class Database {
             $row = call_user_func($callback, $row);
         }
 
-        return Optional::ofBoolean($row);
+        return Optional::ofFalse($row);
 
     }
 

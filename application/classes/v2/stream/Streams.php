@@ -119,6 +119,7 @@ class Streams extends Model {
         self::processStreamRow($stream);
 
         $fluent = self::getUsersPrefix()->where('uid', $stream['uid']);
+
         $stream['owner'] = $db->fetchOneRow($fluent->getQuery(false), $fluent->getParameters());
 
         return $stream;

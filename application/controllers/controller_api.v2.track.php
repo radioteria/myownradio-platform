@@ -3,14 +3,21 @@
 class post_controller extends authController {
 
     public function getInfo() {
-        $track = new radioTrackItem(application::post("id", null, REQ_INT));
+        $track = new radioTrackItem(application::getPostOptional("id")
+            ->getOrElseThrow(new morException("Incorrect parameters")));
         echo json_encode($track->getDetails()->toArray());
     }
 
     public function putInfo() {
-        $track = new radioTrackItem(application::post("id", null, REQ_INT), true);
-        $metadata = new validMetadata(application::post("metadata", null));
+
+        $track = new radioTrackItem(
+            application::getPostOptional("id")->getOrElseThrow(new morException("Incorrect parameters")), true);
+
+        $metadata = Validators::trackMetadataValidator(
+            application::getPostOptional("metadata")->getOrElseNull());
+
         echo $track->updateMetadata($metadata);
+
     }
 
     public function truncate() {
@@ -28,6 +35,6 @@ class post_controller extends authController {
     public function upload() {
         $fabric = new Fabric();
         $optional = Optional::ofNull(@$_FILES["file"]);
-        echo $fabric->uploadTrack($optional->getOrElseThrow(new trackException("No file to upload!")));
+        echo $fabric->uploadTrack($optional->getOrElseThrow(new trackException("No file attached")));
     }
 }

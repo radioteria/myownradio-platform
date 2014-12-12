@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Class validMetadata
+ * @deprecated
+ */
 class validMetadata extends validVariable
 {
     public function __construct($data)

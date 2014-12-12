@@ -173,6 +173,13 @@ class application {
         return self::$args['ROOT'];
     }
 
+    /**
+     * @deprecated
+     * @param $param
+     * @param $default
+     * @param $type
+     * @return bool|int|null|string
+     */
     static function get($param, $default = NULL, $type = "string")
     {
         if (empty(self::$args))
@@ -217,6 +224,13 @@ class application {
         return $buffer;
     }
 
+    /**
+     * @deprecated
+     * @param $param
+     * @param $default
+     * @param $type
+     * @return bool|int|null|string
+     */
     static function post($param, $default = NULL, $type = null)
     {
         if (empty(self::$args))
@@ -240,7 +254,30 @@ class application {
                 return self::$args['POST'][$param];
         }
     }
-    
+
+    /**
+     * @param $param
+     * @return Optional
+     */
+    static function getParamOptional($param) {
+        if (empty(self::$args)) {
+            self::init();
+        }
+        return Optional::ofNull(self::$args['GET']);
+    }
+
+    /**
+     * @param $param
+     * @return Optional
+     */
+    static function getPostOptional($param) {
+        if (empty(self::$args)) {
+            self::init();
+        }
+        return Optional::ofNull(self::$args['POST']);
+    }
+
+
     static function getDocTitle($title)
     {
         return str_replace('%TITLE%', $title, config::getSetting("content", "document_title"));
@@ -255,12 +292,12 @@ class application {
             return null;
         }
         
-        $vendee = new Visitor($user_id);
-        $plan   = new VisitorPlan($user_id);
-        $stats  = new VisitorStats($user_id);
+        $visitor = new Visitor($user_id);
+        $plan    = new VisitorPlan($user_id);
+        $stats   = new VisitorStats($user_id);
         
         return array(
-            'user_data'  => $vendee->getStatus(),
+            'user_data'  => $visitor->getStatus(),
             'plan_data'  => $plan->getStatus(),
             'user_stats' => $stats->getStatus()
         );

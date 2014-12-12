@@ -263,7 +263,7 @@ class application {
         if (empty(self::$args)) {
             self::init();
         }
-        return Optional::ofNull(self::$args['GET']);
+        return Optional::ofNull(@self::$args['GET'][$param]);
     }
 
     /**
@@ -274,7 +274,7 @@ class application {
         if (empty(self::$args)) {
             self::init();
         }
-        return Optional::ofNull(self::$args['POST']);
+        return Optional::ofNull(@self::$args['POST'][$param]);
     }
 
 

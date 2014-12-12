@@ -19,19 +19,19 @@ class get_controller extends controller {
     }
 
     public function getList() {
+
         header("Content-Type: application/json");
 
-        $filter = application::get("q", null, REQ_STRING);
-        $from = application::get("from", 0, REQ_INT);
-        $limit = application::get("limit", 50, REQ_INT);
+        $filter     = application::getParamOptional("q")->getOrElseNull();
+        $category   = application::getParamOptional("c")->getOrElseNull();
 
-        if (is_null($filter)) {
-            $streams = Streams::getStreamList($from, $limit);
-        } else {
-            $streams = Streams::getStreamListFiltered($filter, $from, $limit);
-        }
+        $from       = (int) application::getParamOptional("from")->getOrElse(0);
+        $limit      = (int) application::getParamOptional("limit")->getOrElse(50);
+
+        $streams = Streams::getStreamListFiltered($filter, $category, $from, $limit);
 
         echo json_encode($streams);
+
     }
 }
 

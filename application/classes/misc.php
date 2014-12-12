@@ -140,7 +140,7 @@ class misc
     static function searchQueryFilter($text)
     {
         $query = "";
-        $words = preg_split("/(*UTF8)((?![\p{L}|\p{N}|\#])|(\s))+/", $text);
+        $words = preg_split("/(*UTF8)((?![\\p{L}|\\p{N}|\\#])|(\\s))+/", $text);
         
         
         foreach($words as $word)

@@ -75,7 +75,9 @@ class Streams extends Model {
         }
 
         if (empty($filter)) {
-            /* NOP */
+
+            /* No Operation */
+
         } else if (substr($filter, 0, 1) === '#') {
             $fluent->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)",
                 '+' . substr($filter, 1));

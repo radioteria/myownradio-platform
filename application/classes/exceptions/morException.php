@@ -18,15 +18,6 @@ class morException extends Exception {
             header("HTTP/1.1 " . $this->http_errors[$this->code]);
         }
 
-
-        if (application::getMethod() === "POST" || application::getHeader("Content-Type") === "application/json") {
-            return misc::errJSON($this->getMessage(), $this->context);
-        } else {
-            $tmpl = new Template("application/tmpl/error.template.tmpl");
-            $tmpl->addVariable("header", "Error " . $this->getCode());
-            $tmpl->addVariable("header_uc", "ERROR " . strtoupper($this->getCode()));
-            $tmpl->addVariable("description", $this->getMessage());
-            return $tmpl->makeDocument();
-        }
+        return misc::errJSON($this->getMessage(), $this->context);
     }
 }

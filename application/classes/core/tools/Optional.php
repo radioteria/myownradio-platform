@@ -29,7 +29,7 @@ class Optional {
         if ($this->test()) {
             return $this->value;
         } else {
-            throw new $exception;
+            throw $exception;
         }
     }
 

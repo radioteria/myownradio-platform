@@ -90,7 +90,7 @@ class radioTrackItem extends Model {
             misc::writeDebug("Exception: " . $ex->getMessage());
         }
 
-        $this->database->query_update("DELETE FROM r_tracks WHERE tid = ?", array($this->track_id));
+        $this->database->executeUpdate("DELETE FROM r_tracks WHERE tid = ?", array($this->track_id));
 
     }
  

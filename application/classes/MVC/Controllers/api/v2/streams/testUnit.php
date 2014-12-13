@@ -15,6 +15,6 @@ use MVC\Services\HttpResponse;
 
 class testUnit extends Controller {
     public function doGet(HttpResponse $response, User $user) {
-        $response->setMessage("OK");
+        $response->setMessage($user->getEmail());
     }
 } 

@@ -42,8 +42,16 @@ class Router {
     private function loadDependencies(array $params) {
         $dependencies = [];
         foreach ($params as $param) {
-            print_r($param->getClass()->getTraits());
+            print_r($this->isSingleton($param->getClass()));
         }
+    }
+
+    private function isSingleton(\ReflectionClass $class) {
+        $traits = $class->getTraits();
+        foreach($traits as $trait) {
+            if ($trait->isInstance(Singleton)) return true;
+        }
+        return false;
     }
 
 }

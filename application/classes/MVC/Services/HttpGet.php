@@ -6,7 +6,7 @@
  * Time: 17:50
  */
 
-namespace controller\services;
+namespace MVC\Services;
 
 use Tools\Optional;
 use Tools\Singleton;

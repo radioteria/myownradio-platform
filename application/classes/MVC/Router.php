@@ -8,8 +8,7 @@
 
 namespace MVC;
 
-
-use controller\services\HttpGet;
+use MVC\Services\HttpGet;
 
 class Router {
     private $route;

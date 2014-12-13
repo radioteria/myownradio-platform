@@ -6,6 +6,8 @@
  * Time: 18:53
  */
 
+namespace MVC\Controllers\api\v2\streams;
+
 class getOne extends \MVC\Controller {
     public function doGet() {
 

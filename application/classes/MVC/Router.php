@@ -19,6 +19,7 @@ class Router {
     }
 
     public function route() {
-        echo $this->route;
+        $class = CONTROLLERS_ROOT . $this->route;
+        $reflection = new \ReflectionClass($class);
     }
 }

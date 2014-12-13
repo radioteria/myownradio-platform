@@ -22,6 +22,8 @@ class Router {
 
     public function route() {
 
+        header("Content-Type: application/json");
+
         $request = HttpRequest::getInstance();
         $class = str_replace("/", "\\", CONTROLLERS_ROOT . $this->route);
         $method = "do" . ucfirst($request->getMethod());
@@ -35,10 +37,11 @@ class Router {
 
         // Inject dependencies
         $dependencies = $this->loadDependencies($params);
-
+        // Create instance of desired controller
         $classInstance = call_user_func([$reflection, "newInstance"]);
+        // Execute controller
         $result = call_user_func_array([$classInstance, $method], $dependencies);
-
+        // Print out json response
         echo json_encode($result);
 
     }

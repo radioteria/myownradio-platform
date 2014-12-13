@@ -36,14 +36,21 @@ class Router {
 
         $dependencies = $this->loadDependencies($params);
 
+        print_r($dependencies);
+
         //$instance = $reflection->getMe
     }
 
     private function loadDependencies(array $params) {
         $dependencies = [];
         foreach ($params as $param) {
-            print_r($this->isSingleton($param->getClass()) ? "yes" : "no");
+            if($this->isSingleton($param->getClass())) {
+                $dependencies[] = call_user_func_array([$param->getClass(), "getInstance"], []);
+            } else {
+                $dependencies[] = call_user_func_array([$param->getClass(), "newInstance"], []);
+            }
         }
+        return $dependencies;
     }
 
     private function isSingleton(\ReflectionClass $class) {

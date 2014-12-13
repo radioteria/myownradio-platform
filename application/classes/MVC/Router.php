@@ -31,8 +31,11 @@ class Router {
 
         // Try to find required method
         $method = $reflection->getMethod($method);
+        $params = $method->getParameters();
 
-        print_r($method);
+
+
+        print_r($params);
 
         //$instance = $reflection->getMe
     }

@@ -12,7 +12,7 @@ define("APP_ROOT", "application/classes");
 
 putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/games:/usr/local/sbin:/usr/local/bin:/home/admin/bin");
 
-spl_autoload_register(function ($class_name)
+/*spl_autoload_register(function ($class_name)
 {
     $filename = $class_name . '.php';
     $path = 'application/classes';
@@ -60,4 +60,4 @@ function find_file_recursive ($filename, $location)
     }
     
     throw new Exception("File not found!");
-}
+}*/

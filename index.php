@@ -4,13 +4,8 @@ include "libs/FluentPDO/FluentPDO.php";
 
 require_once "application/startup.php";
 
-$sr = new SuperRouter();
 
-$sr->when("/cool", function () {
-    echo 'Hello, World!';
-});
-
-
+/*
 $baseMemory = memory_get_usage();
 $sTime = microtime(true);
 
@@ -34,4 +29,4 @@ misc::writeDebug(sprintf("%s: memory(%0.2f MB) time(%0.2f s)",
     application::get("route", "", REQ_STRING),
     ($newMemory - $baseMemory) / 1000000, microtime(true) - $sTime));
 
-
+*/

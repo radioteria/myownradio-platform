@@ -49,7 +49,7 @@ class Router {
     private function loadDependencies(array $params) {
         $dependencies = [];
         foreach ($params as $param) {
-            if (!$param->getClass()->isInstance("Tools\\Singleton")) {
+            if (!$this->isInjectable($param->getClass())) {
                 throw new \Exception("Object could not be injected");
             }
             $dependencies[] = call_user_func_array([$param->getClass(), "newInstance"], []);
@@ -58,9 +58,17 @@ class Router {
     }
 
     private function isSingleton(\ReflectionClass $class) {
-        $traits = $class->getTraits();
-        foreach($traits as $trait) {
-            if ($trait->getShortName() === "Singleton") return true;
+        return $this->hasTrait($class, "Tools\\Singleton");
+    }
+
+    private function isInjectable(\ReflectionClass $class) {
+        return $this->hasTrait($class, "MVC\\Services\\Injectable");
+    }
+
+    private function hasTrait(\ReflectionClass $class, $traitName) {
+        foreach($class->getTraits() as $trait) {
+            if ($trait->getName() === $traitName)
+                return true;
         }
         return false;
     }

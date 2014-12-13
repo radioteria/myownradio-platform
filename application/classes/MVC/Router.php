@@ -9,6 +9,7 @@
 namespace MVC;
 
 use MVC\Services\HttpGet;
+use MVC\Services\HttpRequest;
 
 class Router {
     private $route;
@@ -19,7 +20,20 @@ class Router {
     }
 
     public function route() {
+
+        $request = HttpRequest::getInstance();
         $class = CONTROLLERS_ROOT . $this->route;
+        $method = "do" . ucfirst($request->getMethod());
+
+        // Reflect controller class
         $reflection = new \ReflectionClass($class);
+
+        // Try to find required method
+        $method = $reflection->getMethod($method);
+
+        print_r($method);
+
+        //$instance = $reflection->getMe
     }
+
 }

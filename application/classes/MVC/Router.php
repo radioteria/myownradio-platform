@@ -33,9 +33,10 @@ class Router {
         $method = $reflection->getMethod($method);
         $params = $method->getParameters();
 
+        foreach($params as $param) {
+            print_r($param->getClass()->name());
+        }
 
-
-        print_r($params);
 
         //$instance = $reflection->getMe
     }

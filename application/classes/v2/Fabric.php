@@ -81,25 +81,25 @@ class Fabric extends Model {
             return misc::outputJSON("UPLOAD_ERROR_NO_SPACE");
         }
 
-        $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
-
-        $fluent = $this->database->getFluentPDO();
-        $query = $fluent->insertInto("r_tracks")->values([
-            "uid"           => $this->visitor->getId(),
-            "filename"      => $file["name"],
-            "ext"           => $extension,
-            "track_number"  => Optional::ofEmpty($audio_tags["TRACKNUMBER"])    ->getOrElseEmpty(),
-            "artist"        => Optional::ofEmpty($audio_tags["PERFORMER"])      ->getOrElseEmpty(),
-            "title"         => Optional::ofEmpty($audio_tags["TITLE"])          ->getOrElse($file['name']),
-            "album"         => Optional::ofEmpty($audio_tags["ALBUM"])          ->getOrElseEmpty(),
-            "genre"         => Optional::ofEmpty($audio_tags["GENRE"])          ->getOrElseEmpty(),
-            "date"          => Optional::ofEmpty($audio_tags["RECORDED_DATE"])  ->getOrElseEmpty(),
-            "duration"      => $audio_tags["DURATION"],
-            "filesize"      => filesize($file["tmp_name"]),
-            'uploaded'      => time()
-        ]);
-
-        $last_id = $this->database->executeInsert($query->getQuery(false), $query->getParameters());
+        $last_id = $this->database->executeInsert($this->database->createQuery(
+            function($fpdo) use ($file, $audio_tags) {
+                $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
+                $query = $fpdo->insertInto("r_tracks")->values([
+                    "uid"           => $this->visitor->getId(),
+                    "filename"      => $file["name"],
+                    "ext"           => $extension,
+                    "track_number"  => Optional::ofEmpty($audio_tags["TRACKNUMBER"])    ->getOrElseEmpty(),
+                    "artist"        => Optional::ofEmpty($audio_tags["PERFORMER"])      ->getOrElseEmpty(),
+                    "title"         => Optional::ofEmpty($audio_tags["TITLE"])          ->getOrElse($file['name']),
+                    "album"         => Optional::ofEmpty($audio_tags["ALBUM"])          ->getOrElseEmpty(),
+                    "genre"         => Optional::ofEmpty($audio_tags["GENRE"])          ->getOrElseEmpty(),
+                    "date"          => Optional::ofEmpty($audio_tags["RECORDED_DATE"])  ->getOrElseEmpty(),
+                    "duration"      => $audio_tags["DURATION"],
+                    "filesize"      => filesize($file["tmp_name"]),
+                    'uploaded'      => time()
+                ]);
+            return $query;
+        }));
 
         if(!$last_id) {
             return misc::outputJSON("UPLOAD_WAS_NOT_ADDED");

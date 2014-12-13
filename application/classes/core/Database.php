@@ -73,6 +73,17 @@ class Database {
     }
 
     /**
+     * @param callable $callback
+     * @return string
+     */
+    public function createQuery(callable $callback) {
+        $fluent = $this->getFluentPDO();
+        /** @var BaseQuery $query */
+        $query = call_user_func($callback, $fluent);
+        return $this->query_quote($query->getQuery(false), $query->getParameters());
+    }
+
+    /**
      * @param string $query
      * @param array $params
      * @param string $key
@@ -120,7 +131,7 @@ class Database {
             $row = call_user_func($callback, $row);
         }
 
-        return Optional::ofFalse($row);
+        return Optional::ofDeceptive($row);
 
     }
 
@@ -136,7 +147,7 @@ class Database {
 
         $row = $res->fetchColumn();
 
-        return Optional::ofFalse($row);
+        return Optional::ofDeceptive($row);
 
     }
 

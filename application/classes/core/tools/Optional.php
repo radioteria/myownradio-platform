@@ -56,19 +56,25 @@ class Optional {
         return $this->test() ? $this->value : call_user_func($callable);
     }
 
+    /**
+     * @return string
+     */
     public function getOrElseEmpty() {
         return $this->test() ? $this->value : "";
     }
 
+    /**
+     * @return boolean
+     */
     public function validate() {
         return $this->test();
     }
 
     /**
-     * @return mixed
+     * @return boolean
      */
     private function test() {
-        return call_user_func($this->predicate, $this->value);
+        return boolval(call_user_func($this->predicate, $this->value));
     }
 
     /*---------------------------------------------------------------*/
@@ -78,6 +84,7 @@ class Optional {
     /**
      * @param $value
      * @return Optional
+     * Use this constructor if your variable must not be a null
      */
     public static function ofNull($value) {
         return new Optional($value, function ($v) { return !is_null($v); });
@@ -87,14 +94,16 @@ class Optional {
      * @param $value
      * @param callable $callback
      * @return Optional
+     * This constructor is alias for new Optional(...)
      */
-    public static function ofCallback($value, callable $callback) {
+    public static function of($value, callable $callback) {
         return new Optional($value, $callback);
     }
 
     /**
      * @param $value
      * @return Optional
+     * Use this constructor if your variable must not be empty
      */
     public static function ofEmpty($value) {
         return new Optional($value, function ($v) { return !empty($v); });
@@ -103,6 +112,7 @@ class Optional {
     /**
      * @param $value
      * @return Optional
+     * Use this variable if your variable must be an number
      */
     public static function ofNumber($value) {
         return new Optional($value, function ($v) { return is_numeric($v); });
@@ -112,6 +122,7 @@ class Optional {
      * @param $value
      * @param $object
      * @return Optional
+     * Use this constructor if $value must be an instance of $object
      */
     public static function ofObject($value, $object) {
         return new Optional($value, function ($v) use ($object) { return $v instanceof $object; });
@@ -120,6 +131,7 @@ class Optional {
     /**
      * @param $value
      * @return Optional
+     * Use this constructor if your variable must be a positive number
      */
     public static function ofPositiveNumber($value) {
         return new Optional($value, function ($v) { return is_numeric($v) && $v > 0; });
@@ -128,9 +140,19 @@ class Optional {
     /**
      * @param $value
      * @return Optional
+     * Use this constructor if your variable must not be a false
      */
-    public static function ofFalse($value) {
+    public static function ofDeceptive($value) {
         return new Optional($value, function ($v) { return $v !== false; });
+    }
+
+    /**
+     * @param $filePath Input File
+     * @return Optional
+     * Use this constructor if your variable must be an existent file
+     */
+    public static function ofFile($filePath) {
+        return new Optional($filePath, function ($file) { return file_exists($file); });
     }
 
 }

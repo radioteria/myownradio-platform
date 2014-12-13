@@ -61,7 +61,7 @@ class Router {
         $response = HttpResponse::getInstance();
         $reflection = new \ReflectionClass($response);
 
-        print_r($reflection);
+        print_r($reflection->getProperty("message"));
 
         //$this->outputOK($response->getMessage(), $response->getData());
 

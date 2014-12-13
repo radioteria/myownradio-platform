@@ -59,8 +59,6 @@ class Fabric extends Model {
 
         $timeLeftOnAccount = $visitorPlan->getTimeLimit() - $visitorStats->getTracksDuration();
 
-        $fileObject = new File($file);
-
         // Check file type is supported
         if(array_search($file['type'], config::getSetting('upload', 'supported_audio')) === false) {
             return misc::outputJSON("UPLOAD_ERROR_UNSUPPORTED");
@@ -82,7 +80,7 @@ class Fabric extends Model {
         }
 
         $last_id = $this->database->executeInsert($this->database->createQuery(
-            function($fpdo) use ($file, $audio_tags) {
+            function(FluentPDO $fpdo) use ($file, $audio_tags) {
                 $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
                 $query = $fpdo->insertInto("r_tracks")->values([
                     "uid"           => $this->visitor->getId(),

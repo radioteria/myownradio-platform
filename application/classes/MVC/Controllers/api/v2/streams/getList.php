@@ -27,11 +27,4 @@ class getList extends Controller {
 
         $response->setData($streams->getStreamListFiltered($filter, $category, $from, $limit));
     }
-
-    /**
-     * This method executes on POST method
-     */
-    public function doPost(HttpResponse $response) {
-        $response->setMessage("Hello, World!");
-    }
-} 
+}

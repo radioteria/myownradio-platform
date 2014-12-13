@@ -8,6 +8,7 @@ define("REQ_STRING", 'string');
 define("REQ_BOOL", 'bool');
 
 define("START_TIME", microtime(true));
+define("APP_ROOT", "application/classes");
 
 putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/games:/usr/local/sbin:/usr/local/bin:/home/admin/bin");
 

@@ -8,8 +8,11 @@
 
 namespace MVC;
 
+use MVC\Exceptions\ControllerException;
+use MVC\Exceptions\DocNotFoundException;
 use MVC\Services\HttpGet;
 use MVC\Services\HttpRequest;
+use MVC\Services\HttpResponse;
 use Tools\Singleton;
 
 class Router {
@@ -24,6 +27,18 @@ class Router {
 
         header("Content-Type: application/json");
 
+        try {
+            $this->findRoute();
+        } catch (DocNotFoundException $exception) {
+            header("HTTP/1.1 404 Not Found");
+            $this->outputFailure("Requested resource not found on this server");
+        } catch (ControllerException $exception) {
+            $this->outputFailure($exception->getMyMessage(), $exception->getMyData());
+        }
+
+    }
+
+    public function findRoute() {
         $request = HttpRequest::getInstance();
         $class = str_replace("/", "\\", CONTROLLERS_ROOT . $this->route);
         $method = "do" . ucfirst($request->getMethod());
@@ -41,9 +56,14 @@ class Router {
         $classInstance = call_user_func([$reflection, "newInstance"]);
         // Execute controller
         $result = call_user_func_array([$classInstance, $method], $dependencies);
-        // Print out json response
-        echo json_encode($result);
 
+        // Print out json response
+        $response = HttpResponse::getInstance();
+        $reflection = new \ReflectionClass($response);
+
+        print_r($reflection);
+
+        $this->outputOK($response->getMessage(), $response->getData())
     }
 
     private function loadDependencies(array $params) {
@@ -74,6 +94,22 @@ class Router {
                 return true;
         }
         return false;
+    }
+
+    private function outputOK($message = null, $data = null) {
+        $this->shout(1, $message, $data);
+    }
+
+    private function outputFailure($message = null, $data = null) {
+        $this->shout(0, $message, $data);
+    }
+
+    private function shout($code = 1, $message = null, $data = null) {
+        echo [
+            "status" => $code,
+            "message" => $message,
+            "data" => $data
+        ];
     }
 
 }

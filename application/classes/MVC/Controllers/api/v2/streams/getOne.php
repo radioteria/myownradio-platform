@@ -9,11 +9,11 @@
 namespace MVC\Controllers\api\v2\streams;
 
 use MVC\Controller;
-use MVC\Services\HttpGet;
-use MVC\Services\HttpPost;
+use MVC\Services\HttpRequest;
+use MVC\Services\HttpResponse;
 
 class getOne extends Controller {
-    public function doGet($fork) {
-
+    public function doGet(HttpRequest $request, HttpResponse $response) {
+        $response->setMessage($request->getRemoteAddress());
     }
 } 

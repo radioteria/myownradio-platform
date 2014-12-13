@@ -8,7 +8,7 @@ class misc
 
         setlocale(LC_ALL, "en_US.UTF-8");
         $fn_quote = escapeshellarg($filename);
-        $fetch_cmd = config::getSetting('getters', 'mediainfo') . "  --Inform=\"General;%Duration%\\n%Title%\\n%Track/Position%\\n%Album%\\n%Performer%\\n%Genre%\\n%Album/Performer%\\n%Recorded_Date%\" " . $fn_quote;
+        $fetch_cmd = ApplicationConfig::getSetting('getters', 'mediainfo') . "  --Inform=\"General;%Duration%\\n%Title%\\n%Track/Position%\\n%Album%\\n%Performer%\\n%Genre%\\n%Album/Performer%\\n%Recorded_Date%\" " . $fn_quote;
         exec($fetch_cmd, $tag_data, $exit);
 
         $tag_list = array('DURATION', 'TITLE', 'TRACKNUMBER', 'ALBUM', 'PERFORMER', 'GENRE', 'ALBUM_PERFORMER', 'RECORDED_DATE');
@@ -33,7 +33,7 @@ class misc
     {
         //setlocale(LC_ALL, "en_US.UTF-8");
         $fn_quote = escapeshellarg($filename);
-        $fetch_cmd = config::getSetting('getters', 'echoprint') . " " . $fn_quote . " 0 30";
+        $fetch_cmd = ApplicationConfig::getSetting('getters', 'echoprint') . " " . $fn_quote . " 0 30";
         //misc::writeDebug($fetch_cmd);
         exec($fetch_cmd, $data, $exit);
         $data = implode("", $data);

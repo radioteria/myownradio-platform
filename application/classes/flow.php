@@ -62,7 +62,7 @@ class flow
                 {
                     echo self::writeTag(); 
                 }
-                $udelay = (1 / (1.01 * config::getSetting("streaming", "lores_default_bitrate") / 8) * strlen($splits[0])) * 1000000;
+                $udelay = (1 / (1.01 * ApplicationConfig::getSetting("streaming", "lores_default_bitrate") / 8) * strlen($splits[0])) * 1000000;
                 self::delay($udelay);
                 self::$meta_buffer = isset($splits[1]) ? $splits[1] : "";
             }

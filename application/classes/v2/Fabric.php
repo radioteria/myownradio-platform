@@ -60,7 +60,7 @@ class Fabric extends Model {
         $timeLeftOnAccount = $visitorPlan->getTimeLimit() - $visitorStats->getTracksDuration();
 
         // Check file type is supported
-        if(array_search($file['type'], config::getSetting('upload', 'supported_audio')) === false) {
+        if(array_search($file['type'], ApplicationConfig::getSetting('upload', 'supported_audio')) === false) {
             return misc::outputJSON("UPLOAD_ERROR_UNSUPPORTED");
         }
 
@@ -70,7 +70,7 @@ class Fabric extends Model {
             return misc::outputJSON("UPLOAD_ERROR_CORRUPTED_AUDIO");
         }
 
-        if($audio_tags['DURATION'] > config::getSetting('upload', 'maximal_length')) {
+        if($audio_tags['DURATION'] > ApplicationConfig::getSetting('upload', 'maximal_length')) {
             return misc::outputJSON("UPLOAD_ERROR_LONG_AUDIO");
         }
 

@@ -148,8 +148,8 @@ class radioStream {
 
     public function deletePicture() {
         if ($pictureFile = $this->getDetails()->getCoverFile()) {
-            $pfPrefix = Config::getSetting("content", "content_folder")
-                . Config::getSetting("content", "stream_pictures")
+            $pfPrefix = ApplicationConfig::getSetting("content", "content_folder")
+                . ApplicationConfig::getSetting("content", "stream_pictures")
                 . "/";
             try {
                 (new File($pfPrefix . $pictureFile))->delete();

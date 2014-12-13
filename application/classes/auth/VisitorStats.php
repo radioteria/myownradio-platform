@@ -58,7 +58,7 @@ class VisitorStats extends Model
             'user_tracks_count' => $this->tracks_count,
             'user_tracks_time' => $this->tracks_duration,
             'user_tracks_size' => $this->tracks_size,
-            'max_file_size' => disk_free_space(config::getSetting("content", "content_folder"))
+            'max_file_size' => disk_free_space(ApplicationConfig::getSetting("content", "content_folder"))
         );
     }
 }

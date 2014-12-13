@@ -71,7 +71,7 @@ class user
     
     static function getUserAvatar($uid)
     {
-        return config::getSetting("content", "content_folder") . sprintf("/avatars/userpicture%d.png", $uid);
+        return ApplicationConfig::getSetting("content", "content_folder") . sprintf("/avatars/userpicture%d.png", $uid);
     }
     
     static function loginUser()

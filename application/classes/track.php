@@ -33,7 +33,7 @@ class track
     function originalFile()
     {
         return sprintf("%s/ui_%d/a_%03d_original.%s", 
-            config::getSetting("content", "content_folder"), 
+            ApplicationConfig::getSetting("content", "content_folder"),
             $this->track_object['uid'], 
             $this->track_object['tid'], 
             $this->track_object['ext']
@@ -48,7 +48,7 @@ class track
     function lowQualityFile()
     {
         return sprintf("%s/ui_%d/lores_%03d.mp3", 
-            config::getSetting("content", "content_folder"), 
+            ApplicationConfig::getSetting("content", "content_folder"),
             $this->track_object['uid'], 
             $this->track_object['tid']
         );
@@ -170,32 +170,32 @@ class track
             $builder->setUpdate("`r_tracks`")
                     ->addWhere(sprintf("`tid` = %d", $track_id));
                     
-            if($artist !== config::getSetting("tagger", "do_not_change_string"))
+            if($artist !== ApplicationConfig::getSetting("tagger", "do_not_change_string"))
             {
                 $builder->addSet(sprintf("`artist` = %s", db::quote($artist)));
             }
 
-            if($title !== config::getSetting("tagger", "do_not_change_string"))
+            if($title !== ApplicationConfig::getSetting("tagger", "do_not_change_string"))
             {
                 $builder->addSet(sprintf("`title` = %s", db::quote($title)));
             }
 
-            if($album !== config::getSetting("tagger", "do_not_change_string"))
+            if($album !== ApplicationConfig::getSetting("tagger", "do_not_change_string"))
             {
                 $builder->addSet(sprintf("`album` = %s", db::quote($album)));
             }
 
-            if($track_number !== config::getSetting("tagger", "do_not_change_string"))
+            if($track_number !== ApplicationConfig::getSetting("tagger", "do_not_change_string"))
             {
                 $builder->addSet(sprintf("`track_number` = %s", db::quote($track_number)));
             }
 
-            if($genre !== config::getSetting("tagger", "do_not_change_string"))
+            if($genre !== ApplicationConfig::getSetting("tagger", "do_not_change_string"))
             {
                 $builder->addSet(sprintf("`genre` = %s", db::quote($genre)));
             }
 
-            if($date !== config::getSetting("tagger", "do_not_change_string"))
+            if($date !== ApplicationConfig::getSetting("tagger", "do_not_change_string"))
             {
                 $builder->addSet(sprintf("`date` = %s", db::quote($date)));
             }
@@ -262,7 +262,7 @@ class track
             return misc::outputJSON("UPLOAD_ERROR_NO_FILE") ;
         }
 
-        if(array_search($file['type'], config::getSetting('upload', 'supported_audio')) == -1)
+        if(array_search($file['type'], ApplicationConfig::getSetting('upload', 'supported_audio')) == -1)
         {
             return misc::outputJSON("UPLOAD_ERROR_UNSUPPORTED");
         }
@@ -281,7 +281,7 @@ class track
             return misc::outputJSON("UPLOAD_ERROR_CORRUPTED_AUDIO");
         }
 
-        if($audio_tags['DURATION'] > config::getSetting('upload', 'maximal_length'))
+        if($audio_tags['DURATION'] > ApplicationConfig::getSetting('upload', 'maximal_length'))
         {
             return misc::outputJSON("UPLOAD_ERROR_LONG_AUDIO");
         }

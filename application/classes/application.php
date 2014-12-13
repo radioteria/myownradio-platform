@@ -270,7 +270,7 @@ class application {
 
     static function getDocTitle($title)
     {
-        return str_replace('%TITLE%', $title, config::getSetting("content", "document_title"));
+        return str_replace('%TITLE%', $title, ApplicationConfig::getSetting("content", "document_title"));
     }
     
     static function getProfileStats()

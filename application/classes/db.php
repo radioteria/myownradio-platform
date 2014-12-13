@@ -9,7 +9,7 @@ class db
 
     public static function connect()
     {
-        $settings = config::getSection('database');
+        $settings = ApplicationConfig::getSection('database');
         try
         {
             self::$pdo = new PDO("mysql:unix_socket=/tmp/mysql.sock;dbname={$settings['db_database']}", $settings['db_login'], $settings['db_password']);

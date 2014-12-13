@@ -226,7 +226,7 @@ class post_controller extends authController
     public function eventListen()
     {
         $startFrom = application::post("s", 0, REQ_INT);
-        $waitTime  = config::getSetting("status", "event_interval", 15);
+        $waitTime  = ApplicationConfig::getSetting("status", "event_interval", 15);
         $startTime = time();
 
         do 
@@ -284,7 +284,7 @@ class get_controller extends authController
             exit(module::getModule("error.static.404"));
         }
 
-        $cmd = sprintf(config::getSetting("streaming", "track_preview"), escapeshellarg($file));
+        $cmd = sprintf(ApplicationConfig::getSetting("streaming", "track_preview"), escapeshellarg($file));
 
         $fh = popen($cmd, "r");
 

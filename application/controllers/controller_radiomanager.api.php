@@ -39,9 +39,9 @@ class post_controller extends authController
                     {
                         $tagger[$key] = $track_data[$key];
                     }
-                    elseif($tagger[$key] !== config::getSetting("tagger", "do_not_change_string") && $track_data[$key] !== $tagger[$key])
+                    elseif($tagger[$key] !== ApplicationConfig::getSetting("tagger", "do_not_change_string") && $track_data[$key] !== $tagger[$key])
                     {
-                        $tagger[$key] = config::getSetting("tagger", "do_not_change_string");
+                        $tagger[$key] = ApplicationConfig::getSetting("tagger", "do_not_change_string");
                     }
                 }
                 unset($track_data);

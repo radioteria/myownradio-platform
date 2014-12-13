@@ -91,7 +91,7 @@ class Registrator {
      */
     private static function createUserDirectory($user_id)
     {
-        $new_path = sprintf("%s/ui_%d", config::getSetting("content", "content_folder"), $user_id);
+        $new_path = sprintf("%s/ui_%d", ApplicationConfig::getSetting("content", "content_folder"), $user_id);
         if (!is_dir($new_path))
         {
             return mkdir($new_path, NEW_DIR_RIGHTS, true);

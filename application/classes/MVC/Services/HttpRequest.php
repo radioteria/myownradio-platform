@@ -114,6 +114,20 @@ class HttpRequest {
     }
 
     /**
+     * @return HttpGet
+     */
+    public function getParameters() {
+        return HttpGet::getInstance();
+    }
+
+    /**
+     * @return HttpPost
+     */
+    public function getPost() {
+        return HttpPost::getInstance();
+    }
+
+    /**
      * @param string $param
      * @return mixed
      */

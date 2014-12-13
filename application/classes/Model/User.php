@@ -22,7 +22,7 @@ class User extends Model {
         parent::__construct();
 
         $uid = $this->getIdBySessionToken();
-
+        echo '1';
         $user = $this->db->fetchOneRow("SELECT * FROM r_users WHERE uid = ?", array($uid))
             ->getOrElseThrow(new UnauthorizedException());
 

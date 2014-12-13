@@ -17,8 +17,17 @@ putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/games:/usr/local/sbin:/usr/local
 spl_autoload_register("loadClass");
 
 function loadClass($class_name) {
-    $filename = str_replace("\\", "/", $class_name) . '.php';
-    include APP_ROOT . $filename;
+    $filename = APP_ROOT . str_replace("\\", "/", $class_name) . '.php';
+    include $filename;
+}
+
+function loadClassOrThrow($class_name, Exception $exception) {
+    $filename = APP_ROOT . str_replace("\\", "/", $class_name) . '.php';
+    if (file_exists($filename)) {
+        include APP_ROOT . $filename;
+    } else {
+        throw $exception;
+    }
 }
 
 /*

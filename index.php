@@ -6,6 +6,8 @@ require_once "application/startup.php";
 
 $get = new controller\services\HttpGet();
 
+echo $get->getParameter("id")->getOrElse("0");
+
 /*
 $baseMemory = memory_get_usage();
 $sTime = microtime(true);

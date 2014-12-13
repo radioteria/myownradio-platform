@@ -16,11 +16,11 @@ use REST\Streams;
 
 class getList extends Controller {
     public function doGet(HttpGet $get, HttpResponse $response, Streams $streams) {
-        $filter = $get->getParameter("q")->getOrElseEmpty();
-        $category = $get->getParameter("c")->getOrElseNull();
+        $filter     = $get->getParameter("q")->getOrElseEmpty();
+        $category   = $get->getParameter("c")->getOrElseNull();
 
-        $from = $get->getParameter("from")->getOrElse(0);
-        $limit = $get->getParameter("limit")->getOrElse(50);
+        $from       = $get->getParameter("from")->getOrElse(0);
+        $limit      = $get->getParameter("limit")->getOrElse(50);
 
         $response->setData($streams->getStreamListFiltered($filter, $category, $from, $limit));
     }

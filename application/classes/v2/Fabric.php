@@ -10,7 +10,7 @@ class Fabric extends Model {
 
     public function __construct() {
         parent::__construct();
-        $this->visitor = new Visitor(user::getCurrentUserId());
+        $this->visitor = new User(user::getCurrentUserId());
     }
 
     /**

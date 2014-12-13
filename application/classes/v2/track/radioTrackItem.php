@@ -8,7 +8,7 @@ class radioTrackItem extends Model {
         $this->track_id = $id;
         $this->reload();
         
-        $client = Visitor::getInstance();
+        $client = User::getInstance();
         
         if (($write === true) && ($this->getDetails()->getOwner() !== $client->getId())) {
             throw new patNoPermissionException();

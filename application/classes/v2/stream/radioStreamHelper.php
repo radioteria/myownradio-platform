@@ -26,7 +26,7 @@ class radioStreamHelper
         }
 
         $this->database = Database::getInstance();
-        $this->vendee = Visitor::getInstance();
+        $this->vendee = User::getInstance();
         $this->object = $stream;
         
         /* Stat values */

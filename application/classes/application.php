@@ -282,7 +282,7 @@ class application {
             return null;
         }
         
-        $visitor = new Visitor($user_id);
+        $visitor = new User($user_id);
         $plan    = new VisitorPlan($user_id);
         $stats   = new VisitorStats($user_id);
         

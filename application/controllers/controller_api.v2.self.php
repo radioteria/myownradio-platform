@@ -5,7 +5,7 @@ class post_controller extends authController
 
     public function getProfile()
     {
-        $profile = Visitor::getInstance();
+        $profile = User::getInstance();
         $plan    = new VisitorPlan($profile->getId());
         misc::dataJSON(array(
             'main' => $profile->getStatus(),
@@ -15,7 +15,7 @@ class post_controller extends authController
     
     public function getStats()
     {
-        $profile = Visitor::getInstance();
+        $profile = User::getInstance();
         $stats = new VisitorStats($profile->getId());
         misc::dataJSON(array(
             'stats' => $stats->getStatus(),

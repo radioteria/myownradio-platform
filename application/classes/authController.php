@@ -6,7 +6,7 @@ class authController extends controller {
 
         parent::__construct($route);
 
-        $visitor = Visitor::getInstance();
+        $visitor = User::getInstance();
 
         if ($visitor->getId() === 0) {
             throw new patNoPermissionException();

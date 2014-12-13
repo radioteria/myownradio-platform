@@ -28,7 +28,7 @@ class radioStream {
 
     public function __construct($stream_id, $write = false) {
         $this->database = Database::getInstance();
-        $this->visitor = Visitor::getInstance();
+        $this->visitor = User::getInstance();
         $this->reload($stream_id);
 
         /* CHECK PERMISSION */

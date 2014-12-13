@@ -74,7 +74,7 @@ class get_controller extends authController
         
         header("Content-Type: text/plain");
         
-        $vendee = new Visitor($user_id);
+        $vendee = new User($user_id);
         $plan   = new VisitorPlan($user_id);
         $stats  = new VisitorStats($user_id);
         

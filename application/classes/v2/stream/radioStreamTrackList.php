@@ -7,7 +7,7 @@ class radioStreamTrackList extends Model
     public function __construct($stream_id, $parent = null)
     {
         parent::__construct();
-        $this->vendee = Visitor::getInstance();
+        $this->vendee = User::getInstance();
         $this->stream_id = $stream_id;
         $this->parent = $parent;
     }

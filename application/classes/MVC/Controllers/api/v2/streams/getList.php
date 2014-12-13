@@ -8,7 +8,6 @@
 
 namespace MVC\Controllers\api\v2\streams;
 
-
 use MVC\Controller;
 use MVC\Services\HttpGet;
 use MVC\Services\HttpResponse;

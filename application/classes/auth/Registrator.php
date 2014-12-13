@@ -70,7 +70,7 @@ class Registrator {
         $login = $json['login'];
         $passw = $json['passwd'];
 
-        $account = new Visitor($login, $passw);
+        $account = new User($login, $passw);
 
         if (!$account->isAuthorized())
         {

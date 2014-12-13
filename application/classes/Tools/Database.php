@@ -8,7 +8,6 @@ use FluentPDO;
 use MVC\Services\ApplicationConfig;
 use PDO;
 use PDOStatement;
-use Tools\Optional;
 use Tools\Singleton;
 
 class Database {
@@ -148,15 +147,15 @@ class Database {
     /**
      * @param string $query
      * @param array $params
-     * @param int $row
+     * @param int $column
      * @return Optional
      */
-    public function fetchOneColumn($query, $params = [], $row = 0) {
+    public function fetchOneColumn($query, $params = [], $column = 0) {
 
         $res = $this->pdo->prepare($this->query_quote($query, $params));
         $res->execute();
 
-        $row = $res->fetchColumn($row);
+        $row = $res->fetchColumn($column);
 
         return Optional::ofDeceptive($row);
 

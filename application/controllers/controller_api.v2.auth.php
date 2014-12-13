@@ -25,7 +25,7 @@ class post_controller extends controller
         }
             
         // Generate token
-        $token = Visitor::createToken($uid, application::getClient(),
+        $token = User::createToken($uid, application::getClient(),
             filter_input(INPUT_SERVER, 'HTTP_USER_AGENT'), session::getID());
             
         session::set('authtoken', $token);

@@ -4,7 +4,7 @@ include "libs/FluentPDO/FluentPDO.php";
 
 require_once "application/startup.php";
 
-
+$get = new controller\services\HttpGet();
 
 /*
 $baseMemory = memory_get_usage();

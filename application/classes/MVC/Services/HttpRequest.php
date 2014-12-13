@@ -13,7 +13,7 @@ use Tools\Optional;
 use Tools\Singleton;
 
 class HttpRequest {
-    use Singleton;
+    use Singleton, Injectable;
 
     /**
      * @return string

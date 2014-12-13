@@ -12,7 +12,7 @@ use Tools\Optional;
 use Tools\Singleton;
 
 class HttpFile {
-    use Singleton;
+    use Singleton, Injectable;
 
     public function getFile($file) {
         return Optional::ofNull(@$_FILES[$file]);

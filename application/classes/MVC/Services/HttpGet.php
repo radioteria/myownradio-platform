@@ -12,7 +12,7 @@ use Tools\Optional;
 use Tools\Singleton;
 
 class HttpGet {
-    use Singleton;
+    use Singleton, Injectable;
 
     public function getParameter($key) {
         return Optional::ofNull(FILTER_INPUT(INPUT_GET, $key));

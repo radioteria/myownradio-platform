@@ -52,7 +52,10 @@ class Router {
             if (!$this->isInjectable($param->getClass())) {
                 throw new \Exception("Object could not be injected");
             }
-            $dependencies[] = call_user_func_array([$param->getClass(), "newInstance"], []);
+            $dependencies[] =
+                $this->isSingleton($param->getClass()) ?
+                $param->getClass()->getMethod("getInstance")->invoke(null) :
+                $param->getClass()->newInstance();
         }
         return $dependencies;
     }

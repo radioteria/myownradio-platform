@@ -34,8 +34,6 @@ class Router {
         $method = $reflection->getMethod($method);
         $params = $method->getParameters();
 
-        echo 'Test';
-
         $dependencies = $this->loadDependencies($params);
 
         //$instance = $reflection->getMe

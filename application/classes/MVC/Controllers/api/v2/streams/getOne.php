@@ -14,6 +14,6 @@ use MVC\Services\HttpPost;
 
 class getOne extends Controller {
     public function doGet(HttpGet $get, HttpPost $post) {
-        echo $get->getParameter("id")->getOrElse("no id");
+        return $get->getParameter("id")->getOrElse("no id");
     }
 } 

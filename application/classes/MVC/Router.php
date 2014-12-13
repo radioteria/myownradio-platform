@@ -49,7 +49,9 @@ class Router {
     private function loadDependencies(array $params) {
         $dependencies = [];
         foreach ($params as $param) {
-            /** @var ReflectionParameter $param */
+            if (!$param->getClass()->isInstance("Tools\\Singleton")) {
+                throw new \Exception("Object could not be injected");
+            }
             $dependencies[] = call_user_func_array([$param->getClass(), "newInstance"], []);
         }
         return $dependencies;

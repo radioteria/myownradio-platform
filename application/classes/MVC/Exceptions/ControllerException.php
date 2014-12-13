@@ -13,7 +13,7 @@ class ControllerException extends \Exception {
     private $myMessage = null;
     private $myData = [];
 
-    function __construct($message, $data) {
+    function __construct($message = null, $data = null) {
         $this->myMessage = $message;
         $this->myData = $data;
     }

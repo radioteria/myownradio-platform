@@ -1,6 +1,6 @@
 <?php
 
-namespace Database;
+namespace Tools;
 
 use BaseQuery;
 use Exception;
@@ -9,6 +9,7 @@ use MVC\Services\ApplicationConfig;
 use PDO;
 use PDOStatement;
 use Tools\Optional;
+use Tools\Singleton;
 
 class Database {
 
@@ -19,7 +20,11 @@ class Database {
     private $debug = 0;
 
     public function __construct() {
-        $settings = ApplicationConfig::getInstance()->getSection('database');
+        $settings = ApplicationConfig::getInstance()->getSection('database')->getOrElse([
+            "db_database" => "myownradio",
+            "db_login" => "root",
+            "db_password" => ""
+        ]);
         $this->pdo = new PDO("mysql:unix_socket=/tmp/mysql.sock;dbname={$settings['db_database']}",
             $settings['db_login'], $settings['db_password'], array(PDO::ATTR_PERSISTENT => true));
         $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
@@ -143,14 +148,15 @@ class Database {
     /**
      * @param string $query
      * @param array $params
+     * @param int $row
      * @return Optional
      */
-    public function fetchOneColumn($query, $params = []) {
+    public function fetchOneColumn($query, $params = [], $row = 0) {
 
         $res = $this->pdo->prepare($this->query_quote($query, $params));
         $res->execute();
 
-        $row = $res->fetchColumn();
+        $row = $res->fetchColumn($row);
 
         return Optional::ofDeceptive($row);
 

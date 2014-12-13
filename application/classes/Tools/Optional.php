@@ -8,6 +8,8 @@
 
 namespace Tools;
 
+use Exception;
+
 class Optional {
 
     private $value;

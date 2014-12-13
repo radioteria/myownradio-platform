@@ -34,6 +34,9 @@ class Router {
             $this->outputFailure("Requested resource not found on this server");
         } catch (ControllerException $exception) {
             $this->outputFailure($exception->getMyMessage(), $exception->getMyData());
+        } catch (\ReflectionException $exception) {
+            header("HTTP/1.1 501 Not Implemented");
+            $this->outputFailure("Method not implemented");
         }
 
     }

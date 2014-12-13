@@ -22,7 +22,6 @@ class User extends Model {
         parent::__construct();
 
         $uid = $this->getIdBySessionToken();
-        echo '1';
         $user = $this->db->fetchOneRow("SELECT * FROM r_users WHERE uid = ?", array($uid))
             ->getOrElseThrow(new UnauthorizedException());
 
@@ -60,10 +59,13 @@ class User extends Model {
 
 
     public function getIdBySessionToken() {
+        $exception = new UnauthorizedException();
         $token = \session::get('authtoken');
-        $this->userToken = $token;
+        if (is_null($token)) {
+            throw $exception;
+        }
         return $this->db->fetchOneColumn("SELECT b.uid FROM r_sessions a LEFT JOIN r_users b ON a.uid = b.uid WHERE a.token = ?", array($token))
-            ->getOrElseThrow(new UnauthorizedException());
+            ->getOrElseThrow($exception);
     }
     
 

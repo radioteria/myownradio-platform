@@ -57,7 +57,7 @@ class Database {
      * @param array $params
      * @return string
      */
-    public function query_quote($query, $params = array()) {
+    public function query_quote($query, $params = []) {
 
         $position = 0;
 
@@ -68,6 +68,7 @@ class Database {
             }
             return is_numeric($params[$array_key]) ? $params[$array_key] : $this->pdo->quote($params[$array_key], PDO::PARAM_STR);
         }, $query);
+
 
         return $arguments;
 
@@ -151,6 +152,8 @@ class Database {
      * @return Optional
      */
     public function fetchOneColumn($query, $params = [], $column = 0) {
+
+
 
         $res = $this->pdo->prepare($this->query_quote($query, $params));
         $res->execute();

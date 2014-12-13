@@ -22,7 +22,7 @@ class Router {
     public function route() {
 
         $request = HttpRequest::getInstance();
-        $class = CONTROLLERS_ROOT . $this->route;
+        $class = str_replace("/", "\\", CONTROLLERS_ROOT . $this->route);
         $method = "do" . ucfirst($request->getMethod());
 
         // Reflect controller class

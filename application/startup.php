@@ -18,7 +18,6 @@ spl_autoload_register("loadClass");
 
 function loadClass($class_name) {
     $filename = str_replace("\\", "/", $class_name) . '.php';
-    echo "Including " . APP_ROOT . $filename . "<br />";
     include APP_ROOT . $filename;
 }
 

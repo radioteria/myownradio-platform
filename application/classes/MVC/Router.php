@@ -44,8 +44,9 @@ class Router {
     private function loadDependencies(array $params) {
         $dependencies = [];
         foreach ($params as $param) {
+            print_r($param);
             if($this->isSingleton($param->getClass())) {
-                $dependencies[] = call_user_func_array([$param->getClass(), "getInstance"], []);
+                $dependencies[] = $param->getClass()->invoke("getInstance");
             } else {
                 $dependencies[] = call_user_func_array([$param->getClass(), "newInstance"], []);
             }

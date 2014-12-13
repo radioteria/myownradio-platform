@@ -15,6 +15,9 @@ use MVC\Services\HttpResponse;
 use REST\Streams;
 
 class getList extends Controller {
+    /**
+     * This method executes on GET method
+     */
     public function doGet(HttpGet $get, HttpResponse $response, Streams $streams) {
         $filter     = $get->getParameter("q")->getOrElseEmpty();
         $category   = $get->getParameter("c")->getOrElseNull();
@@ -23,5 +26,12 @@ class getList extends Controller {
         $limit      = $get->getParameter("limit")->getOrElse(50);
 
         $response->setData($streams->getStreamListFiltered($filter, $category, $from, $limit));
+    }
+
+    /**
+     * This method executes on POST method
+     */
+    public function doPost(HttpResponse $response) {
+        $response->setMessage("Hello, World!");
     }
 } 

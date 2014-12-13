@@ -9,11 +9,12 @@
 namespace MVC\Controllers\api\v2\streams;
 
 
+use Model\User;
 use MVC\Controller;
 use MVC\Services\HttpResponse;
 
 class testUnit extends Controller {
-    public function doGet(HttpResponse $response) {
+    public function doGet(HttpResponse $response, User $user) {
         $response->setMessage("OK");
     }
 } 

@@ -4,9 +4,9 @@ include "libs/FluentPDO/FluentPDO.php";
 
 require_once "application/startup.php";
 
-$get = new controller\services\HttpGet();
+$router = new \MVC\Router();
 
-echo $get->getParameter("id")->getOrElse("0");
+$router->route();
 
 /*
 $baseMemory = memory_get_usage();

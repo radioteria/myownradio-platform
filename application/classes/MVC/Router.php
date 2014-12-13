@@ -44,7 +44,7 @@ class Router {
         $method = "do" . ucfirst($request->getMethod());
 
         // Reflect controller class
-        loadClass($class);
+        loadClassOrThrow($class, new DocNotFoundException());
         $reflection = new \ReflectionClass($class);
 
         // Try to find required method

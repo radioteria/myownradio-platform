@@ -8,7 +8,9 @@
 
 namespace MVC\Controllers\api\v2\streams;
 
-class getOne extends \MVC\Controller {
+use MVC\Controller;
+
+class getOne extends Controller {
     public function doGet() {
 
     }

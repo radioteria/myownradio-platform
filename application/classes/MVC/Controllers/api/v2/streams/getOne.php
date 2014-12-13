@@ -9,9 +9,10 @@
 namespace MVC\Controllers\api\v2\streams;
 
 use MVC\Controller;
+use MVC\Services\HttpGet;
 
 class getOne extends Controller {
-    public function doGet() {
-
+    public function doGet(HttpGet $get) {
+        echo $get->getParameter("id")->getOrElse("no id");
     }
 } 

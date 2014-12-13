@@ -10,7 +10,7 @@ define("REQ_BOOL", 'bool');
 define("START_TIME", microtime(true));
 define("APP_ROOT", "application/classes/");
 
-define("CONTROLLERS_ROOT", "application/classes/MVC/Controllers/");
+define("CONTROLLERS_ROOT", "MVC/Controllers/");
 
 putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/games:/usr/local/sbin:/usr/local/bin:/home/admin/bin");
 

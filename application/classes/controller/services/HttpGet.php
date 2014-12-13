@@ -8,7 +8,10 @@
 
 namespace controller\services;
 
+use Tools\Optional;
 
 class HttpGet {
-
+    public function getParameter($key) {
+        return Optional::ofNull(FILTER_INPUT(INPUT_GET, $key));
+    }
 } 

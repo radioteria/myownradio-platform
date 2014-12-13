@@ -6,6 +6,8 @@
  * Time: 23:17
  */
 
+namespace Tools;
+
 class Optional {
 
     private $value;

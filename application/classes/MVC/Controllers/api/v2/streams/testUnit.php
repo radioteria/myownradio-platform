@@ -15,6 +15,6 @@ use MVC\Services\HttpResponse;
 
 class testUnit extends Controller {
     public function doGet(HttpResponse $response, User $user) {
-        $response->setMessage($user->getEmail());
+        $response->setMessage("If you're here means that you are logged in");
     }
 } 

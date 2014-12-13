@@ -64,9 +64,10 @@ class Router {
         $msg = $reflection->getProperty("message");
         $msg->setAccessible(true);
 
-        print_r($msg->getValue($response));
+        $data = $reflection->getProperty("data");
+        $data->setAccessible(true);
 
-        //$this->outputOK($response->getMessage(), $response->getData());
+        $this->outputOK($msg->getValue($response), $data->getValue($response));
 
     }
 

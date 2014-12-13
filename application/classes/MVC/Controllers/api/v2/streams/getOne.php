@@ -12,7 +12,7 @@ use MVC\Controller;
 use MVC\Services\HttpGet;
 
 class getOne extends Controller {
-    public function doGet(HttpGet $get) {
+    public function doGet($get) {
         echo $get->getParameter("id")->getOrElse("no id");
     }
 } 

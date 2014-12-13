@@ -34,7 +34,7 @@ class Router {
         $params = $method->getParameters();
 
         foreach($params as $param) {
-            print_r($param->getClass()->name());
+            print_r($param->getClass());
         }
 
 

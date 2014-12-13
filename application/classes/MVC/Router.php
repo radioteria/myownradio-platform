@@ -35,13 +35,14 @@ class Router {
         } catch (ControllerException $exception) {
             $this->outputFailure($exception->getMyMessage(), $exception->getMyData());
         } catch (\ReflectionException $exception) {
-            header("HTTP/1.1 501 Not Implemented");
+            header("HTTP/1.1 501 Not implemented");
             $this->outputFailure("Method not implemented");
         }
 
     }
 
     public function findRoute() {
+
         $request = HttpRequest::getInstance();
         $class = str_replace("/", "\\", CONTROLLERS_ROOT . $this->route);
         $method = "do" . ucfirst($request->getMethod());

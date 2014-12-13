@@ -46,7 +46,11 @@ class User extends Model {
     {
         return $this->userEmail;
     }
-    
+
+    public function getName() {
+        return $this->userName;
+    }
+
     public function getToken()
     {
         return $this->userToken;

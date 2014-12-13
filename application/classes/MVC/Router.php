@@ -42,7 +42,7 @@ class Router {
     private function loadDependencies(array $params) {
         $dependencies = [];
         foreach ($params as $param) {
-            echo $param->getClass();
+            print_r($param->getClass());
         }
     }
 

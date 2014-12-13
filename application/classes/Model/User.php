@@ -29,7 +29,7 @@ class User extends Model {
         $this->userId       = intval($user['uid']);
         $this->userLogin    = $user['login'];
         $this->userName     = $user['name'];
-        $this->userEmail    = $user['email'];
+        $this->userEmail    = $user['mail'];
 
     }
     

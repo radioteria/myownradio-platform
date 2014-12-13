@@ -10,6 +10,7 @@ namespace MVC;
 
 use MVC\Services\HttpGet;
 use MVC\Services\HttpRequest;
+use Tools\Singleton;
 
 class Router {
     private $route;
@@ -33,12 +34,21 @@ class Router {
         $method = $reflection->getMethod($method);
         $params = $method->getParameters();
 
+        $dependencies = $this->loadDependencies($params);
+
         foreach($params as $param) {
             print_r($param->getClass());
         }
 
 
         //$instance = $reflection->getMe
+    }
+
+    private function loadDependencies(array $params) {
+        $dependencies = [];
+        foreach ($params as $param) {
+            echo $param->getClass() instanceof Singleton ? 1 : 0;
+        }
     }
 
 }

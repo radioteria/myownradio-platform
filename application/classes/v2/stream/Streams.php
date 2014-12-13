@@ -32,38 +32,4 @@ class Streams extends Model {
 
     }
 
-
-
-    /**
-     * @param $id
-     * @return array
-     */
-    public static function getSimilarTo($id) {
-
-        $involved_users = [];
-
-        $db = Database::getInstance();
-
-        $fluent = self::getStreamsPrefix();
-        $fluent->where("a.sid != :id");
-        $fluent->where("a.permalink != :id");
-        $fluent->where("MATCH(a.hashtags) AGAINST((SELECT hashtags FROM r_streams WHERE (sid = :id) OR
-                                                            (permalink = :id AND permalink != '')))", [':id' => $id]);
-        $fluent->limit(self::MAXIMUM_SIMILAR_COUNT);
-
-        $streams = $db->fetchAll($fluent->getQuery(false), $fluent->getParameters(), null, function ($row) use (&$involved_users) {
-            if (array_search($row['uid'], $involved_users) === false) {
-                $involved_users[] = $row['uid'];
-            }
-            self::processStreamRow($row);
-            return $row;
-        });
-
-        $users = self::getUsersList($db, $involved_users);
-
-        return ['streams' => $streams, 'users' => $users];
-
-    }
-
-
 }

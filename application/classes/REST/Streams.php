@@ -122,6 +122,35 @@ class Streams {
 
     }
 
+    /**
+     * @param $id
+     * @return array
+     */
+    public function getSimilarTo($id) {
+
+        $involved_users = [];
+
+        $fluent = $this->getStreamsPrefix();
+        $fluent->where("a.sid != :id");
+        $fluent->where("a.permalink != :id");
+        $fluent->where("MATCH(a.hashtags) AGAINST((SELECT hashtags FROM r_streams WHERE (sid = :id) OR
+                                                            (permalink = :id AND permalink != '')))", [':id' => $id]);
+        $fluent->limit(self::MAXIMUM_SIMILAR_COUNT);
+
+        $streams = $this->db->fetchAll($fluent->getQuery(false), $fluent->getParameters(), null, function ($row) use (&$involved_users) {
+            if (array_search($row['uid'], $involved_users) === false) {
+                $involved_users[] = $row['uid'];
+            }
+            $this->processStreamRow($row);
+            return $row;
+        });
+
+        $users = $this->getUsersList($involved_users);
+
+        return ['streams' => $streams, 'users' => $users];
+
+    }
+
 
 
     /**

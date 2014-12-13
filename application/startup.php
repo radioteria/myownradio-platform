@@ -8,12 +8,14 @@ define("REQ_STRING", 'string');
 define("REQ_BOOL", 'bool');
 
 define("START_TIME", microtime(true));
-define("APP_ROOT", "application/classes");
+define("APP_ROOT", realpath(__DIR__) . "/application/classes");
 
 putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/games:/usr/local/sbin:/usr/local/bin:/home/admin/bin");
 
-/*spl_autoload_register(function ($class_name)
-{
+spl_autoload_register(function ($class_name) {
+
+    echo 'Class: ' . $class_name;
+
     $filename = $class_name . '.php';
     $path = 'application/classes';
     
@@ -27,6 +29,7 @@ putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/games:/usr/local/sbin:/usr/local
     }
 });
 
+/*
 function find_file_recursive ($filename, $location)
 {
     if(!file_exists($location)) { throw new Exception("Directory not found!"); }

@@ -36,18 +36,13 @@ class Router {
 
         $dependencies = $this->loadDependencies($params);
 
-        foreach($params as $param) {
-            print_r($param->getClass());
-        }
-
-
         //$instance = $reflection->getMe
     }
 
     private function loadDependencies(array $params) {
         $dependencies = [];
         foreach ($params as $param) {
-            echo $param->getClass() instanceof Singleton ? 1 : 0;
+            echo $param->getClass();
         }
     }
 

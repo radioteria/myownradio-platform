@@ -9,6 +9,7 @@
 namespace MVC\Controllers\api\v2\streams;
 
 use MVC\Controller;
+use MVC\Exceptions\NotImplementedException;
 use MVC\Services\HttpGet;
 use MVC\Services\HttpResponse;
 use REST\Streams;
@@ -25,5 +26,9 @@ class getList extends Controller {
         $limit      = $get->getParameter("limit")->getOrElse(50);
 
         $response->setData($streams->getStreamListFiltered($filter, $category, $from, $limit));
+    }
+
+    public function doPost() {
+        throw new NotImplementedException();
     }
 }

@@ -10,6 +10,7 @@ namespace MVC;
 
 use MVC\Exceptions\ControllerException;
 use MVC\Exceptions\DocNotFoundException;
+use MVC\Exceptions\NotImplementedException;
 use MVC\Services\HttpGet;
 use MVC\Services\HttpRequest;
 use MVC\Services\HttpResponse;
@@ -35,6 +36,9 @@ class Router {
         } catch (ControllerException $exception) {
             $this->outputFailure($exception->getMyMessage(), $exception->getMyData());
         } catch (\ReflectionException $exception) {
+            header("HTTP/1.1 400 Bad request");
+            $this->outputFailure("Bad request");
+        } catch (NotImplementedException $exception) {
             header("HTTP/1.1 501 Not implemented");
             $this->outputFailure("Method not implemented");
         }

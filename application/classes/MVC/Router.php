@@ -42,7 +42,7 @@ class Router {
     private function loadDependencies(array $params) {
         $dependencies = [];
         foreach ($params as $param) {
-            print_r($this->isSingleton($param->getClass()));
+            print_r($this->isSingleton($param->getClass()) ? "yes" : "no");
         }
     }
 

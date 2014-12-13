@@ -13,7 +13,7 @@ use MVC\Services\HttpGet;
 use MVC\Services\HttpPost;
 
 class getOne extends Controller {
-    public function doGet(HttpGet $get, HttpPost $post) {
-        return $get->getParameter("id")->getOrElse("no id");
+    public function doGet($fork) {
+
     }
 } 

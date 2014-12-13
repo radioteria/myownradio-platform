@@ -38,7 +38,11 @@ class Router {
 
         print_r($dependencies);
 
-        //$instance = $reflection->getMe
+        $classInstance = call_user_func([$reflection, "newInstance"]);
+        $result = call_user_func_array([$classInstance, $method], $dependencies);
+
+        echo json_encode($result);
+
     }
 
     private function loadDependencies(array $params) {

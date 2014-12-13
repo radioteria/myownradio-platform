@@ -14,6 +14,6 @@ use MVC\Services\HttpResponse;
 
 class getOne extends Controller {
     public function doGet(HttpRequest $request, HttpResponse $response) {
-        $response->setMessage($request->getRemoteAddress());
+
     }
 } 

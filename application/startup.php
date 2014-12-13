@@ -29,39 +29,3 @@ function loadClassOrThrow($class_name, Exception $exception) {
         throw $exception;
     }
 }
-
-/*
-function find_file_recursive ($filename, $location)
-{
-    if(!file_exists($location)) { throw new Exception("Directory not found!"); }
-    
-    $dir_handle = opendir($location);
-    
-    if(!$dir_handle) { throw new Exception("IO Error!"); }
-    
-    while($file = readdir($dir_handle))
-    {
-        if($file === "." || $file === "..")
-        {
-            continue;
-        }
-        if($file === $filename)
-        {
-            unset($dir_handle);
-            return $location . "/" . $file;
-        }
-        if(is_dir($location . "/" . $file))
-        {
-            try
-            {
-                return find_file_recursive($filename, $location . "/" . $file);
-            }
-            catch(Exception $ex) 
-            {
-                
-            }
-        }
-    }
-    
-    throw new Exception("File not found!");
-}*/

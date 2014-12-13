@@ -24,5 +24,4 @@ class HttpResponse {
     public function setMessage($message) {
         $this->message = $message;
     }
-
 }

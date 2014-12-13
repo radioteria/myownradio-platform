@@ -40,4 +40,12 @@ class post_controller extends authController {
         echo $fabric->uploadTrack($optional->getOrElseThrow(new trackException("No file attached")));
 
     }
+
+    public function test() {
+        $function = function ($arg1, $arg2) {
+            echo 'Hello, World!';
+        };
+        $reflection = new ReflectionFunction($function);
+        print_r($reflection->getParameters());
+    }
 }

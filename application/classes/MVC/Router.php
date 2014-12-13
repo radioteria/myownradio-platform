@@ -63,7 +63,8 @@ class Router {
 
         print_r($reflection);
 
-        $this->outputOK($response->getMessage(), $response->getData())
+        //$this->outputOK($response->getMessage(), $response->getData());
+
     }
 
     private function loadDependencies(array $params) {

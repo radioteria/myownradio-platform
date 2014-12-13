@@ -31,12 +31,10 @@ class Router {
         $reflection = new \ReflectionClass($class);
 
         // Try to find required method
-        $method = $reflection->getMethod($method);
-        $params = $method->getParameters();
+        $params = $reflection->getMethod($method)->getParameters();
 
+        // Inject dependencies
         $dependencies = $this->loadDependencies($params);
-
-        print_r($dependencies);
 
         $classInstance = call_user_func([$reflection, "newInstance"]);
         $result = call_user_func_array([$classInstance, $method], $dependencies);

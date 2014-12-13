@@ -30,3 +30,4 @@ function loadClassOrThrow($class_name, Exception $exception) {
         throw $exception;
     }
 }
+

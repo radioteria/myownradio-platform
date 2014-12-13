@@ -44,7 +44,7 @@ class Router {
     private function loadDependencies(array $params) {
         $dependencies = [];
         foreach ($params as $param) {
-            print_r($param);
+            print_r($param->getClass());
         }
     }
 

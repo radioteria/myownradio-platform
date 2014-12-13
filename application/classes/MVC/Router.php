@@ -49,6 +49,7 @@ class Router {
     private function isSingleton(\ReflectionClass $class) {
         $traits = $class->getTraits();
         foreach($traits as $trait) {
+            echo $trait->getName() . "<br />";
             if ($trait->getName() === "Singleton") return true;
         }
         return false;

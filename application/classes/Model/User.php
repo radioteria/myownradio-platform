@@ -9,7 +9,7 @@ use Tools\Singleton;
 class User extends Model {
 
     use Singleton, Injectable;
-    
+
     private $userId;
     private $userLogin;
     private $userName;

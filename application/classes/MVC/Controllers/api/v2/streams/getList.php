@@ -16,7 +16,7 @@ use REST\Streams;
 
 class getList extends Controller {
     /**
-     * This method executes on GET method
+     * This method invoked on GET method
      */
     public function doGet(HttpGet $get, HttpResponse $response, Streams $streams) {
         $filter     = $get->getParameter("q")->getOrElseEmpty();
@@ -28,6 +28,9 @@ class getList extends Controller {
         $response->setData($streams->getStreamListFiltered($filter, $category, $from, $limit));
     }
 
+    /*
+     * This method invoked on POST method
+     */
     public function doPost() {
         throw new NotImplementedException();
     }

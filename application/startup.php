@@ -24,7 +24,7 @@ function loadClass($class_name) {
 function loadClassOrThrow($class_name, Exception $exception) {
     $filename = APP_ROOT . str_replace("\\", "/", $class_name) . '.php';
     if (file_exists($filename)) {
-        include APP_ROOT . $filename;
+        include $filename;
     } else {
         throw $exception;
     }

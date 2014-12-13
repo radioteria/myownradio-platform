@@ -110,11 +110,11 @@ class Router {
     }
 
     private function shout($code = 1, $message = null, $data = null) {
-        echo [
+        echo json_encode([
             "status" => $code,
             "message" => $message,
             "data" => $data
-        ];
+        ]);
     }
 
 }

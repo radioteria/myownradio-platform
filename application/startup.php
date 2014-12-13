@@ -17,6 +17,7 @@ putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/games:/usr/local/sbin:/usr/local
 spl_autoload_register(function ($class_name) {
 
     $filename = str_replace("\\", "/", $class_name) . '.php';
+    echo 'fn: ' . $filename;
     include APP_ROOT . $filename;
 
 });

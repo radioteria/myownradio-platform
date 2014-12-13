@@ -14,13 +14,12 @@ define("CONTROLLERS_ROOT", "MVC/Controllers/");
 
 putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/games:/usr/local/sbin:/usr/local/bin:/home/admin/bin");
 
-spl_autoload_register(function ($class_name) {
+spl_autoload_register(loadClass);
 
+function loadClass($class_name) {
     $filename = str_replace("\\", "/", $class_name) . '.php';
-    echo 'fn: ' . $filename;
     include APP_ROOT . $filename;
-
-});
+}
 
 /*
 function find_file_recursive ($filename, $location)

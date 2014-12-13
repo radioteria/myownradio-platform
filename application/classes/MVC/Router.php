@@ -26,6 +26,7 @@ class Router {
         $method = "do" . ucfirst($request->getMethod());
 
         // Reflect controller class
+        loadClass($class);
         $reflection = new \ReflectionClass($class);
 
         // Try to find required method

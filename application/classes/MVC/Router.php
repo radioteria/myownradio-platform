@@ -49,7 +49,7 @@ class Router {
     private function loadDependencies(array $params) {
         $dependencies = [];
         foreach ($params as $param) {
-            if (!$this->isInjectable($param->getClass())) {
+            if (is_null($param->getClass()) || !$this->isInjectable($param->getClass())) {
                 throw new \Exception("Object could not be injected");
             }
             $dependencies[] =

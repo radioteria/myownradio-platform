@@ -12,6 +12,7 @@ namespace REST;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Injectable;
 use SelectQuery;
+use Tools\Common;
 use Tools\Database;
 use Tools\Singleton;
 
@@ -73,6 +74,55 @@ class Streams {
         return $stream;
 
     }
+
+    /**
+     * @param string $filter
+     * @param int $category
+     * @param int $from
+     * @param int $limit
+     * @return array
+     */
+    public function getStreamListFiltered($filter = null, $category = null, $from = 0, $limit = 50) {
+
+        $involved_users = [];
+
+        $fluent = $this->getStreamsPrefix();
+
+        if (is_numeric($category)) {
+            $fluent->where("a.category", $category);
+        }
+
+        if (empty($filter)) {
+
+            /* No Operation */
+
+        } else if (substr($filter, 0, 1) === '#') {
+            $fluent->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)",
+                '+' . substr($filter, 1));
+        } else {
+            $fluent->where("MATCH(a.name, a.permalink, a.hashtags) AGAINST (? IN BOOLEAN MODE)",
+                Common::searchQueryFilter($filter));
+        }
+
+        $fluent->limit($limit)->offset($from);
+
+        $prepared_query = $this->db->query_quote($fluent->getQuery(false), $fluent->getParameters());
+
+        $streams = $this->db->fetchAll($prepared_query, null, null, function ($row) use (&$involved_users) {
+            if (array_search($row['uid'], $involved_users) === false) {
+                $involved_users[] = $row['uid'];
+            }
+            $this->processStreamRow($row);
+            return $row;
+        });
+
+        $users = $this->getUsersList($involved_users);
+
+        return ['streams' => $streams, 'users' => $users];
+
+    }
+
+
 
     /**
      * @param $row

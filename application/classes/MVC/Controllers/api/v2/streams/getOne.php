@@ -19,8 +19,6 @@ class getOne extends Controller {
         $id = $request->getParameters()->getParameter("id")
             ->getOrElseThrow(new ControllerException("Stream ID is not specified"));
 
-        $streamObject = $streams->getOneStream($id);
-
-        $response->setData($streamObject);
+        $response->setData($streams->getOneStream($id));
     }
 } 

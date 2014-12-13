@@ -32,55 +32,6 @@ class Streams extends Model {
 
     }
 
-    /**
-     * @param string $filter
-     * @param int $category
-     * @param int $from
-     * @param int $limit
-     * @return array
-     */
-    public static function getStreamListFiltered($filter = null, $category = null, $from = 0, $limit = 50) {
-
-        $involved_users = [];
-
-        $db = Database::getInstance();
-
-        $fluent = self::getStreamsPrefix();
-
-        if (is_numeric($category)) {
-            $fluent->where("a.category", $category);
-        }
-
-        if (empty($filter)) {
-
-            /* No Operation */
-
-        } else if (substr($filter, 0, 1) === '#') {
-            $fluent->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)",
-                '+' . substr($filter, 1));
-        } else {
-            $fluent->where("MATCH(a.name, a.permalink, a.hashtags) AGAINST (? IN BOOLEAN MODE)",
-                misc::searchQueryFilter($filter));
-        }
-
-        $fluent->limit($limit)->offset($from);
-
-        $prepared_query = $db->query_quote($fluent->getQuery(false), $fluent->getParameters());
-
-        $streams = $db->fetchAll($prepared_query, null, null, function ($row) use (&$involved_users) {
-            if (array_search($row['uid'], $involved_users) === false) {
-                $involved_users[] = $row['uid'];
-            }
-            self::processStreamRow($row);
-            return $row;
-        });
-
-        $users = self::getUsersList($db, $involved_users);
-
-        return ['streams' => $streams, 'users' => $users];
-
-    }
-
 
 
     /**

@@ -22,6 +22,7 @@ class InputValidator {
     const EMAIL_REGEXP_PATTERN = "~^[\\w\\S]+@[\\w\\S]+\\.[\\w]{2,4}$~m";
 
     const PERMALINK_REGEXP_PATTERN = "~(^[a-z0-9\\-]*$)~m";
+    const TRACKS_LIST_PATTERN = "~^[0-9]+(,[0-9]+)*$~m";
 
     const LOGIN_MIN_LENGTH = 3;
 
@@ -32,7 +33,7 @@ class InputValidator {
      * @return array
      * @throws ControllerException
      */
-    public function trackMetadataValidator(array $metadata) {
+    public function validateTrackMetadata(array $metadata) {
 
         $optional = new Optional($metadata, function ($variable) {
 
@@ -58,7 +59,7 @@ class InputValidator {
      * @return string
      * @throws ControllerException
      */
-    public function ValidatePassword($password) {
+    public function validatePassword($password) {
 
         $optional = new Optional($password, function ($password) {
 
@@ -108,6 +109,12 @@ class InputValidator {
 
     }
 
+    /**
+     * @param $permalink
+     * @param bool|int $selfCheck
+     * @return mixed
+     * @throws ControllerException
+     */
     public function validateStreamPermalink($permalink, $selfCheck = false) {
 
         $optional = new Optional($permalink, function ($permalink) use ($selfCheck) {
@@ -148,6 +155,18 @@ class InputValidator {
         return $optional->getOrElseThrow(
             new ControllerException(sprintf("'%s' is not valid stream permalink", $permalink))
         );
+
+    }
+
+    public function validateTracksList($tracks) {
+
+        $optional = new Optional($tracks, function ($tracks) {
+
+            return preg_match(self::TRACKS_LIST_PATTERN, $tracks);
+
+        });
+
+        return $optional->getOrElseThrow(new ControllerException("Invalid tracks list", $tracks));
 
     }
 

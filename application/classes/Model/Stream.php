@@ -9,13 +9,14 @@
 namespace Model;
 
 
+use Model\Traits\StreamTracksList;
 use MVC\Exceptions\ControllerException;
 use ReflectionClass;
 use Tools\Singleton;
 
 class Stream extends Model {
 
-    use Singleton;
+    use Singleton, StreamTracksList;
 
     private $bean_key = "sid";
     private $bean_fields = [
@@ -26,7 +27,8 @@ class Stream extends Model {
         "name", "permalink", "info", "access", "category", "hashtags"
     ];
 
-    private $sid;
+    protected $sid;
+
     private $uid;
     private $name;
     private $permalink;

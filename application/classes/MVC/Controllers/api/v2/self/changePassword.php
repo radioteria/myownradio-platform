@@ -19,7 +19,7 @@ class changePassword extends Controller {
     public function doPost(HttpPost $post, InputValidator $validator, User $user) {
         $rawPassword = $post->getParameter("password")
             ->getOrElseThrow(ControllerException::noArgument("password"));
-        $validPassword = $validator->ValidatePassword($rawPassword);
+        $validPassword = $validator->validatePassword($rawPassword);
         $user->changePassword($validPassword);
     }
 } 

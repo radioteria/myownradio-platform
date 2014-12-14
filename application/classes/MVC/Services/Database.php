@@ -122,6 +122,7 @@ class Database {
 
     }
 
+
     /**
      * @param string $query
      * @param array $params
@@ -158,6 +159,40 @@ class Database {
         $row = $res->fetchColumn($column);
 
         return Optional::ofDeceptive($row);
+
+    }
+
+    /**
+     * @param string $query
+     * @param array $params
+     * @param string $class
+     * @return Optional
+     */
+    public function fetchOneObject($query, $params = [], $class) {
+
+        $res = $this->pdo->prepare($this->queryQuote($query, $params));
+        $res->execute();
+
+        $object = $res->fetchObject($class);
+
+        return Optional::ofDeceptive($object);
+
+    }
+
+    /**
+     * @param string $query
+     * @param array $params
+     * @param $class
+     * @return array
+     */
+    public function fetchAllObjects($query, $params = [], $class) {
+
+        $res = $this->pdo->prepare($this->queryQuote($query, $params));
+        $res->execute();
+
+        $objects = $res->fetchAll(PDO::FETCH_CLASS, $class);
+
+        return $objects;
 
     }
 

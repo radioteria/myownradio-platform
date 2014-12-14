@@ -41,6 +41,9 @@ class Router {
         } catch (NotImplementedException $exception) {
             header("HTTP/1.1 501 Not implemented");
             $this->outputFailure("Method not implemented");
+        } catch (\Exception $exception) {
+            header("HTTP/1.1 505 Internal Server Error");
+            $this->outputFailure($exception->getMessage(), $exception->getTrace());
         }
 
     }
@@ -54,6 +57,11 @@ class Router {
         // Reflect controller class
         loadClassOrThrow($class, new DocNotFoundException());
         $reflection = new \ReflectionClass($class);
+
+        // Check for valid reflector
+        if ($reflection->getParentClass() === false || $reflection->getParentClass()->getName() !== "MVC\\Controller") {
+            throw new \BadFunctionCallException("Incorrect controller");
+        }
 
         // Try to find required method
         $params = $reflection->getMethod($method)->getParameters();

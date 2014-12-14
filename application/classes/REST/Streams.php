@@ -106,7 +106,7 @@ class Streams {
 
         $fluent->limit($limit)->offset($from);
 
-        $prepared_query = $this->db->query_quote($fluent->getQuery(false), $fluent->getParameters());
+        $prepared_query = $this->db->queryQuote($fluent->getQuery(false), $fluent->getParameters());
 
         $streams = $this->db->fetchAll($prepared_query, null, null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {

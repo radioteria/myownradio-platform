@@ -37,4 +37,8 @@ class ControllerException extends \Exception {
     public static function noStream($name) {
         return new self(sprintf("Stream with key '%s' not found", $name));
     }
-} 
+
+    public static function noPermission() {
+        return new self("You have no permission to access this resource");
+    }
+}

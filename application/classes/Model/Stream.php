@@ -49,8 +49,16 @@ class Stream extends Model {
     }
 
     private function load($sid) {
+
+        $user = User::getInstance()->getId();
+
         $object = $this->db->fetchOneRow("SELECT * FROM r_streams WHERE sid = ?", [$sid])
             ->getOrElseThrow(ControllerException::noStream($sid));
+
+        if (intval($object["uid"]) !== $user) {
+            throw ControllerException::noPermission();
+        }
+
         try {
             $reflection = new ReflectionClass($this);
             foreach ($this->bean_fields as $field) {

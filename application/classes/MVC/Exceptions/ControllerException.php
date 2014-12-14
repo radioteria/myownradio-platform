@@ -26,4 +26,7 @@ class ControllerException extends \Exception {
         return $this->myMessage;
     }
 
+    public static function noArgument($name) {
+        return new self(sprintf("No value for argument '%s' specified", $name));
+    }
 } 

@@ -17,7 +17,7 @@ use REST\Streams;
 class getOne extends Controller {
     public function doGet(HttpGet $get, HttpResponse $response, Streams $streams) {
         $id = $get->getParameter("id")
-            ->getOrElseThrow(new ControllerException("id parameter is not specified"));
+            ->getOrElseThrow(ControllerException::noArgument("id"));
 
         $response->setData($streams->getOneStream($id));
     }

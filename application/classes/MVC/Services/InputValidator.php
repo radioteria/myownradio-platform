@@ -6,7 +6,15 @@
  * Time: 9:35
  */
 
-class Validators {
+namespace MVC\Services;
+
+use MVC\Exceptions\ControllerException;
+use Tools\Optional;
+use Tools\Singleton;
+
+class InputValidator {
+
+    use Singleton, Injectable;
 
     const PASSWORD_MIN_LENGTH = 3;
     const PASSWORD_MAX_LENGTH = 32;
@@ -20,9 +28,9 @@ class Validators {
     /**
      * @param array $metadata
      * @return array
-     * @throws validException
+     * @throws ControllerException
      */
-    public static function trackMetadataValidator(array $metadata) {
+    public function trackMetadataValidator(array $metadata) {
 
         $optional = new Optional($metadata, function ($variable) {
 
@@ -39,16 +47,16 @@ class Validators {
         });
 
         return $optional->getOrElseThrow(
-            new validException("Incorrect metadata"));
+            new ControllerException("Incorrect metadata"));
 
     }
 
     /**
      * @param string $password
      * @return string
-     * @throws validException
+     * @throws ControllerException
      */
-    public static function userPasswordValidator($password) {
+    public function ValidatePassword($password) {
 
         $optional = new Optional($password, function ($password) {
 
@@ -58,16 +66,16 @@ class Validators {
         });
 
         return $optional->getOrElseThrow(
-            new validException("Password length must be between 3 and 32 chars"));
+            new ControllerException("Password length must be between 3 and 32 chars"));
 
     }
 
     /**
      * @param string $email
      * @return string
-     * @throws validException
+     * @throws ControllerException
      */
-    public static function emailValidator($email) {
+    public function validateEmail($email) {
 
         $optional = new Optional($email, function ($email) {
 
@@ -76,16 +84,16 @@ class Validators {
         });
 
         return $optional->getOrElseThrow(
-            new validException("Incorrect email format"));
+            new ControllerException("Incorrect email format"));
 
     }
 
     /**
      * @param string $name
      * @return string
-     * @throws validException
+     * @throws ControllerException
      */
-    public static function streamNameValidator($name) {
+    public function validateStreamName($name) {
 
         $optional = new Optional($name, function ($name) {
 
@@ -94,7 +102,7 @@ class Validators {
         });
 
         return $optional->getOrElseThrow(
-            new validException("Stream name must contain at least 3 chars"));
+            new ControllerException("Stream name must contain at least 3 chars"));
 
     }
 

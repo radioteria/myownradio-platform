@@ -14,7 +14,7 @@ class post_controller extends authController {
         $track = new radioTrackItem(
             application::getPostOptional("id")->getOrElseThrow(new morException("Incorrect parameters")), true);
 
-        $metadata = Validators::trackMetadataValidator(
+        $metadata = InputValidator::trackMetadataValidator(
             application::getPostOptional("metadata")->getOrElseNull());
 
         echo $track->updateMetadata($metadata);

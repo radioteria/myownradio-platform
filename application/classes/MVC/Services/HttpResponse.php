@@ -15,7 +15,7 @@ class HttpResponse {
     use Singleton, Injectable;
 
     private $data = null;
-    private $message = null;
+    private $message = "OK";
 
     public function setData($data) {
         $this->data = $data;

@@ -2,6 +2,6 @@
 
 class validStreamName extends validVariable {
     function __construct($data) {
-        $this->variable = Validators::streamNameValidator($data);
+        $this->variable = InputValidator::streamNameValidator($data);
     }
 }

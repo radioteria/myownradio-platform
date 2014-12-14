@@ -184,10 +184,10 @@ class Streams {
      * @return SelectQuery
      */
     private function getUsersList(array $users) {
-        $fluent = self::getUsersPrefix();
+        $fluent = $this->getUsersPrefix();
         $fluent->where("uid", $users);
         $users = $this->db->fetchAll($fluent->getQuery(false), $fluent->getParameters(), "uid", function ($row) {
-            self::processUserRow($row);
+            $this->processUserRow($row);
             return $row;
         });
         return $users;

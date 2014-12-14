@@ -11,6 +11,8 @@ namespace Tools;
 
 class Common {
 
+    const GENERATED_ID_LENGTH = 8;
+
     public static function searchQueryFilter($text) {
 
         $query = "";
@@ -27,5 +29,19 @@ class Common {
         return $query;
 
     }
+
+    static function generateUniqueId() {
+
+        $idCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        $id = "";
+
+        for ($i = 0; $i < self::GENERATED_ID_LENGTH; $i++) {
+            $id .= substr($idCharacters, rand(0, strlen($idCharacters) - 1), 1);
+        }
+
+        return $id;
+
+    }
+
 
 } 

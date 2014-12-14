@@ -41,4 +41,8 @@ class ControllerException extends \Exception {
     public static function noPermission() {
         return new self("You have no permission to access this resource");
     }
+
+    public static function noEntity($name) {
+        return new self("No entity with key '%s' found", $name);
+    }
 }

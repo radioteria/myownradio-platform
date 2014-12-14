@@ -159,4 +159,8 @@ class Optional {
         return new Optional($filePath, function ($file) { return file_exists($file); });
     }
 
+    public function __toString() {
+        return "Optional:" . ($this->test() ? "true" : "false");
+    }
+
 }

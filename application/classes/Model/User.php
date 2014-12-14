@@ -2,6 +2,7 @@
 
 namespace Model;
 
+use MVC\Exceptions\ControllerException;
 use MVC\Exceptions\UnauthorizedException;
 use MVC\Services\Injectable;
 use Tools\Singleton;
@@ -24,7 +25,7 @@ class User extends Model {
 
         $uid = $this->getIdBySessionToken();
         $user = $this->db->fetchOneRow("SELECT * FROM r_users WHERE uid = ?", array($uid))
-            ->getOrElseThrow(new UnauthorizedException());
+            ->getOrElseThrow(ControllerException::noPermission());
 
         $this->userId       = intval($user['uid']);
         $this->userLogin    = $user['login'];

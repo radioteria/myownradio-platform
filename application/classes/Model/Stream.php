@@ -29,19 +29,19 @@ class Stream extends Model {
 
     protected $sid;
 
-    private $uid;
-    private $name;
-    private $permalink;
-    private $info;
+    protected $uid;
+    protected $name;
+    protected $permalink;
+    protected $info;
 
-    private $status;
-    private $started;
-    private $started_from;
-    private $access;
-    private $category;
-    private $hashtags;
-    private $cover;
-    private $created;
+    protected $status;
+    protected $started;
+    protected $started_from;
+    protected $access;
+    protected $category;
+    protected $hashtags;
+    protected $cover;
+    protected $created;
 
     public function __construct($sid) {
         parent::__construct();
@@ -50,12 +50,12 @@ class Stream extends Model {
 
     private function load($sid) {
 
-        $user = User::getInstance()->getId();
+        $userId = User::getInstance()->getId();
 
         $object = $this->db->fetchOneRow("SELECT * FROM r_streams WHERE sid = ?", [$sid])
             ->getOrElseThrow(ControllerException::noStream($sid));
 
-        if (intval($object["uid"]) !== $user) {
+        if (intval($object["uid"]) !== $userId) {
             throw ControllerException::noPermission();
         }
 
@@ -69,6 +69,9 @@ class Stream extends Model {
         } catch (\ReflectionException $exception) {
             throw new ControllerException($exception->getMessage());
         }
+
+        $this->reloadTrackListStats();
+
     }
 
     public function save() {
@@ -98,148 +101,135 @@ class Stream extends Model {
 
     }
 
+
     /**
-     * @return mixed
+     * @return int
      */
     public function getSid() {
-        return $this->sid;
+        return intval($this->sid);
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getStarted() {
-        return $this->started;
+        return intval($this->started);
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getAccess() {
         return $this->access;
     }
 
     /**
-     * @return mixed
+     * @return int|null
      */
     public function getCategory() {
-        return $this->category;
+        return is_null($this->category) ? null : intval($this->category);
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getCover() {
         return $this->cover;
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getCreated() {
-        return $this->created;
+        return intval($this->created);
     }
 
     /**
-     * @return \MVC\Services\Database
+     * @return string
      */
-    public function getDb() {
-        return $this->db;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getHashtags() {
+    public function getHashTags() {
         return $this->hashtags;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getInfo() {
         return $this->info;
     }
 
     /**
-     * @return mixed
-     */
-    public function getKey() {
-        return $this->key;
-    }
-
-    /**
-     * @return mixed
+     * @return string
      */
     public function getName() {
         return $this->name;
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
     public function getPermalink() {
         return $this->permalink;
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getStartedFrom() {
-        return $this->started_from;
+        return intval($this->started_from);
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getStatus() {
-        return $this->status;
+        return intval($this->status);
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getUid() {
-        return $this->uid;
+        return int($this->uid);
     }
 
     /**
-     * @param mixed $access
+     * @param string $access
      */
     public function setAccess($access) {
         $this->access = $access;
     }
 
     /**
-     * @param mixed $category
+     * @param int|null $category
      */
     public function setCategory($category) {
         $this->category = $category;
     }
 
     /**
-     * @param mixed $hashtags
+     * @param string $hashtags
      */
     public function setHashtags($hashtags) {
         $this->hashtags = $hashtags;
     }
 
     /**
-     * @param mixed $info
+     * @param string $info
      */
     public function setInfo($info) {
         $this->info = $info;
     }
 
     /**
-     * @param mixed $name
+     * @param string $name
      */
     public function setName($name) {
         $this->name = $name;
     }
 
     /**
-     * @param mixed $permalink
+     * @param string|null $permalink
      */
     public function setPermalink($permalink) {
         $this->permalink = $permalink;

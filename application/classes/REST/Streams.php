@@ -38,8 +38,7 @@ class Streams {
         return $fluent
             ->from("r_streams a")->leftJoin("r_static_stream_vars b ON a.sid = b.stream_id")
             ->select(null)->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags",
-                "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count"])
-            ->where("a.status = 1");
+                "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count"]);
     }
 
     /**
@@ -59,7 +58,7 @@ class Streams {
     public function getOneStream($id) {
 
         $fluent = $this->getStreamsPrefix();
-        $fluent->where("(a.sid = :id) OR (a.permalink = :id AND a.permalink != '')", [':id' => $id]);
+        $fluent->where("(a.sid = :id) OR (a.permalink = :id)", [':id' => $id]);
 
         $stream = $this->db->fetchOneRow($fluent->getQuery(false), $fluent->getParameters())
             ->getOrElseThrow(new ControllerException("Stream not found"));
@@ -104,6 +103,8 @@ class Streams {
                 Common::searchQueryFilter($filter));
         }
 
+        $fluent->where("a.status = 1");
+
         $fluent->limit($limit)->offset($from);
 
         $prepared_query = $this->db->queryQuote($fluent->getQuery(false), $fluent->getParameters());
@@ -133,8 +134,9 @@ class Streams {
         $fluent = $this->getStreamsPrefix();
         $fluent->where("a.sid != :id");
         $fluent->where("a.permalink != :id");
-        $fluent->where("MATCH(a.hashtags) AGAINST((SELECT hashtags FROM r_streams WHERE (sid = :id) OR
-                                                            (permalink = :id AND permalink != '')))", [':id' => $id]);
+        $fluent->where("a.status = 1");
+        $fluent->where("MATCH(a.hashtags) AGAINST((SELECT hashtags FROM r_streams WHERE (sid = :id) OR (permalink = :id)))",
+            [':id' => $id]);
         $fluent->limit(self::MAXIMUM_SIMILAR_COUNT);
 
         $streams = $this->db->fetchAll($fluent->getQuery(false), $fluent->getParameters(), null, function ($row) use (&$involved_users) {

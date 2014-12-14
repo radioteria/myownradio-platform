@@ -3,24 +3,23 @@
  * Created by PhpStorm.
  * User: roman
  * Date: 14.12.14
- * Time: 15:24
+ * Time: 17:22
  */
 
 namespace MVC\Controllers\api\v2\stream;
 
 
-use Model\Fabric;
-use Model\User;
+use Model\Stream;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
 use MVC\Services\HttpResponse;
 use MVC\Services\InputValidator;
 
-class create extends Controller {
-    public function doPost(HttpPost $post, InputValidator $validator, Fabric $fabric, User $user, HttpResponse $response) {
-
+class modify extends Controller {
+    public function doPost(HttpPost $post, InputValidator $validator, HttpResponse $response) {
         // Get user input parameters
+        $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
         $name = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));
         $info = $post->getParameter("info")->getOrElseEmpty();
         $tags = $post->getParameter("tags")->getOrElseEmpty();
@@ -29,14 +28,19 @@ class create extends Controller {
 
         // Validate parameters
         $validator->validateStreamName($name);
-        $validator->validateStreamPermalink($permalink);
+        $validator->validateStreamPermalink($permalink, $id);
 
-        // Create new stream using fabric
-        $creator = $user->getId();
-        $stream = $fabric->createStream($name, $info, $tags, $category, $permalink, $creator);
+        $stream = Stream::getInstance($id);
 
-        // Write out new stream object
-        $response->setData($stream);
+        $stream->setName($name);
+        $stream->setInfo($info);
+        $stream->setHashtags($tags);
+        $stream->setPermalink($permalink);
+        $stream->setCategory($category);
+
+        $stream->save();
+
+        $response->setData($stream->getName());
 
     }
 } 

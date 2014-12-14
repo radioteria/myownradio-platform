@@ -130,7 +130,8 @@ class Database {
      */
     public function fetchOneRow($query, $params = array(), $callback = null) {
 
-        $res = $this->pdo->prepare($this->queryQuote($query, $params));
+        $queryString = $this->queryQuote($query, $params);
+        $res = $this->pdo->prepare($queryString);
         $res->execute();
 
         $row = $res->fetch(PDO::FETCH_ASSOC);

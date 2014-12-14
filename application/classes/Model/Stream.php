@@ -17,7 +17,14 @@ class Stream extends Model {
 
     use Singleton;
 
-    private $key;
+    private $bean_key = "sid";
+    private $bean_fields = [
+        "sid", "uid", "name", "permalink", "info", "status", "started", "started_from",
+        "access", "category", "hashtags", "cover", "created"
+    ];
+    private $bean_update = [
+        "name", "permalink", "info", "access", "category", "hashtags"
+    ];
 
     private $sid;
     private $uid;
@@ -34,25 +41,51 @@ class Stream extends Model {
     private $cover;
     private $created;
 
-    public function __construct($streamId) {
+    public function __construct($sid) {
         parent::__construct();
-        $this->key = $streamId;
-        $this->load();
+        $this->load($sid);
     }
 
-    private function load() {
-        $object = $this->db->fetchOneRow("SELECT * FROM r_streams WHERE sid = ? OR (permalink = ? AND permalink != '')",
-            [$this->key])->getOrElseThrow(ControllerException::noStream($this->key));
+    private function load($sid) {
+        $object = $this->db->fetchOneRow("SELECT * FROM r_streams WHERE sid = ?", [$sid])
+            ->getOrElseThrow(ControllerException::noStream($sid));
         try {
             $reflection = new ReflectionClass($this);
-            foreach ($object as $key=>$value) {
-                $prop = $reflection->getProperty($key);
+            foreach ($this->bean_fields as $field) {
+                $prop = $reflection->getProperty($field);
                 $prop->setAccessible(true);
-                $prop->setValue($this, $value);
+                $prop->setValue($this, $object[$field]);
             }
         } catch (\ReflectionException $exception) {
             throw new ControllerException($exception->getMessage());
         }
+    }
+
+    public function save() {
+
+        $fluent = $this->db->getFluentPDO();
+        $query = $fluent->update("r_streams");
+
+        try {
+
+            $reflection = new ReflectionClass($this);
+
+            $keyProperty = $reflection->getProperty($this->bean_key);
+            $keyProperty->setAccessible(true);
+            $query->where($this->bean_key, $keyProperty->getValue($this));
+
+            foreach ($this->bean_update as $field) {
+                $property = $reflection->getProperty($field);
+                $property->setAccessible(true);
+                $query->set($property->getName(), $property->getValue($this));
+            }
+
+            $this->db->executeUpdate($query->getQuery(), $query->getParameters());
+
+        } catch (\ReflectionException $exception) {
+            throw new ControllerException($exception->getMessage());
+        }
+
     }
 
     /**
@@ -158,6 +191,48 @@ class Stream extends Model {
      */
     public function getUid() {
         return $this->uid;
+    }
+
+    /**
+     * @param mixed $access
+     */
+    public function setAccess($access) {
+        $this->access = $access;
+    }
+
+    /**
+     * @param mixed $category
+     */
+    public function setCategory($category) {
+        $this->category = $category;
+    }
+
+    /**
+     * @param mixed $hashtags
+     */
+    public function setHashtags($hashtags) {
+        $this->hashtags = $hashtags;
+    }
+
+    /**
+     * @param mixed $info
+     */
+    public function setInfo($info) {
+        $this->info = $info;
+    }
+
+    /**
+     * @param mixed $name
+     */
+    public function setName($name) {
+        $this->name = $name;
+    }
+
+    /**
+     * @param mixed $permalink
+     */
+    public function setPermalink($permalink) {
+        $this->permalink = $permalink;
     }
 
 

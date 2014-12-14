@@ -108,20 +108,38 @@ class InputValidator {
 
     }
 
-    public function validateStreamPermalink($permalink) {
+    public function validateStreamPermalink($permalink, $selfCheck = false) {
 
-        $optional = new Optional($permalink, function ($permalink) {
+        $optional = new Optional($permalink, function ($permalink) use ($selfCheck) {
 
+            // Permalink can be NULL. It means that stream has no permalink.
             if ($permalink === null) {
                 return true;
             }
 
+            // Permalink must be a string
+            if (!is_string($permalink)) {
+                return false;
+            }
+
+            // Permalink could not be an empty string
+            if (strlen($permalink) == 0) {
+                return false;
+            }
+
+            // Permalink must match pattern
             if (!preg_match(self::PERMALINK_REGEXP_PATTERN, $permalink)) {
                 return false;
             }
 
-            $test = Database::getInstance()->fetchOneColumn("SELECT COUNT(*) FROM r_streams WHERE permalink = ?",
-                [$permalink])->getOrElseThrow(ControllerException::databaseError());
+            // Permalink must be unique
+            if ($selfCheck === false) {
+                $test = Database::getInstance()->fetchOneColumn("SELECT COUNT(*) FROM r_streams WHERE permalink = ?",
+                    [$permalink])->getOrElseThrow(ControllerException::databaseError());
+            } else {
+                $test = Database::getInstance()->fetchOneColumn("SELECT COUNT(*) FROM r_streams WHERE permalink = ? AND sid != ?",
+                    [$permalink, $selfCheck])->getOrElseThrow(ControllerException::databaseError());
+            }
 
             return !boolval($test);
 

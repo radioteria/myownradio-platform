@@ -11,6 +11,7 @@ namespace Model;
 
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Injectable;
+use REST\Streams;
 use Tools\Singleton;
 
 class Fabric extends Model {
@@ -23,7 +24,7 @@ class Fabric extends Model {
      * @param int|null $category
      * @param string|null $permalink
      * @param int $creator
-     * @return Stream
+     * @return array
      * @throws ControllerException
      */
     public function createStream($name, $info, $hashtags, $category, $permalink, $creator) {
@@ -32,7 +33,7 @@ class Fabric extends Model {
             [$creator, $name, $info, $hashtags, $category, $permalink])
             ->getOrElseThrow(ControllerException::databaseError());
 
-        return Stream::getInstance($id);
+        return Streams::getInstance()->getOneStream($id);
     }
 
 } 

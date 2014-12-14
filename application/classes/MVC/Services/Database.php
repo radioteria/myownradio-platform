@@ -3,7 +3,6 @@
 namespace MVC\Services;
 
 use BaseQuery;
-use Exception;
 use FluentPDO;
 use PDO;
 use Tools\Optional;
@@ -65,9 +64,10 @@ class Database {
         $arguments = preg_replace_callback("/(\\?)|(\\:\\w+)/", function ($match) use ($params, &$position) {
             $array_key = $match[0] === '?' ? $position++ : $match[0];
             if (!isset($params[$array_key])) {
-                throw new Exception(sprintf("No value for variable %s present in parameters array!", $match[0]));
+                return 'NULL';
             }
-            return is_numeric($params[$array_key]) ? $params[$array_key] : $this->pdo->quote($params[$array_key], PDO::PARAM_STR);
+            return is_numeric($params[$array_key]) ? $params[$array_key] : $this->pdo->quote($params[$array_key],
+                PDO::PARAM_STR);
         }, $query);
 
 
@@ -177,20 +177,16 @@ class Database {
     /**
      * @param string $query
      * @param array $params
-     * @param string $key
-     * @return int
+     * @return Optional
      */
-    public function executeInsert($query, $params = [], $key = null) {
+    public function executeInsert($query, $params = []) {
 
-        $res = $this->pdo->prepare($this->queryQuote($query, $params));
-        $res->execute();
+        $queryString = $this->queryQuote($query, $params);
+        $resource = $this->pdo->prepare($queryString);
+        $result = $resource->execute();
 
-        return $this->pdo->lastInsertId($key);
+        return Optional::ofNull($result ? $this->pdo->lastInsertId(null) : null);
 
-    }
-
-    public function lastInsertId($name = null) {
-        return $this->pdo->lastInsertId($name);
     }
 
 }

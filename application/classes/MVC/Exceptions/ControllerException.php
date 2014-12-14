@@ -29,4 +29,12 @@ class ControllerException extends \Exception {
     public static function noArgument($name) {
         return new self(sprintf("No value for argument '%s' specified", $name));
     }
+
+    public static function databaseError() {
+        return new self(sprintf("Something wrong with database"));
+    }
+
+    public static function noStream($name) {
+        return new self(sprintf("Stream with key '%s' not found", $name));
+    }
 } 

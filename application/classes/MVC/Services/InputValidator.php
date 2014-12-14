@@ -21,6 +21,8 @@ class InputValidator {
 
     const EMAIL_REGEXP_PATTERN = "~^[\\w\\S]+@[\\w\\S]+\\.[\\w]{2,4}$~m";
 
+    const PERMALINK_REGEXP_PATTERN = "~(^[a-z0-9\\-]*$)~m";
+
     const LOGIN_MIN_LENGTH = 3;
 
     const STREAM_NAME_MIN_LENGTH = 3;
@@ -103,6 +105,31 @@ class InputValidator {
 
         return $optional->getOrElseThrow(
             new ControllerException("Stream name must contain at least 3 chars"));
+
+    }
+
+    public function validateStreamPermalink($permalink) {
+
+        $optional = new Optional($permalink, function ($permalink) {
+
+            if ($permalink === null) {
+                return true;
+            }
+
+            if (!preg_match(self::PERMALINK_REGEXP_PATTERN, $permalink)) {
+                return false;
+            }
+
+            $test = Database::getInstance()->fetchOneColumn("SELECT COUNT(*) FROM r_streams WHERE permalink = ?",
+                [$permalink])->getOrElseThrow(ControllerException::databaseError());
+
+            return !boolval($test);
+
+        });
+
+        return $optional->getOrElseThrow(
+            new ControllerException(sprintf("'%s' is not valid stream permalink", $permalink))
+        );
 
     }
 

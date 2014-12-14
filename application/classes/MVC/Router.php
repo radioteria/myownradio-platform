@@ -37,7 +37,7 @@ class Router {
             $this->outputFailure($exception->getMyMessage(), $exception->getMyData());
         } catch (\ReflectionException $exception) {
             header("HTTP/1.1 400 Bad request");
-            $this->outputFailure("Bad request");
+            $this->outputFailure("Bad request", $exception->getTrace());
         } catch (NotImplementedException $exception) {
             header("HTTP/1.1 501 Not implemented");
             $this->outputFailure("Method not implemented");

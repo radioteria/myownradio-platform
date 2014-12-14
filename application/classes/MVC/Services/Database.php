@@ -1,13 +1,12 @@
 <?php
 
-namespace Tools;
+namespace MVC\Services;
 
 use BaseQuery;
 use Exception;
 use FluentPDO;
-use MVC\Services\ApplicationConfig;
-use MVC\Services\Injectable;
 use PDO;
+use Tools\Optional;
 use Tools\Singleton;
 
 class Database {
@@ -18,7 +17,7 @@ class Database {
 
     public function __construct() {
 
-        $settings = ApplicationConfig::getInstance()->getSection('database')->getOrElse([
+        $settings = Config::getInstance()->getSection('database')->getOrElse([
             "db_database" => "myownradio",
             "db_login" => "root",
             "db_password" => ""

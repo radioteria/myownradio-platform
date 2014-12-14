@@ -63,7 +63,7 @@ class Router {
             throw new \BadFunctionCallException("Incorrect controller");
         }
 
-        // Try to find required method
+        // Try to find required method and get parameters
         $params = $reflection->getMethod($method)->getParameters();
 
         // Inject dependencies
@@ -71,7 +71,7 @@ class Router {
         // Create instance of desired controller
         $classInstance = call_user_func([$reflection, "newInstance"]);
         // Execute controller
-        $result = call_user_func_array([$classInstance, $method], $dependencies);
+        call_user_func_array([$classInstance, $method], $dependencies);
 
         // Print out json response
         $response = HttpResponse::getInstance();

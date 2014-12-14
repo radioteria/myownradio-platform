@@ -8,7 +8,8 @@
 
 namespace Model;
 
-use Tools\Database;
+
+use MVC\Services\Database;
 
 class Model {
 

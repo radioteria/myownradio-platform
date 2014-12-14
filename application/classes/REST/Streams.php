@@ -10,10 +10,10 @@ namespace REST;
 
 
 use MVC\Exceptions\ControllerException;
+use MVC\Services\Database;
 use MVC\Services\Injectable;
 use SelectQuery;
 use Tools\Common;
-use Tools\Database;
 use Tools\Singleton;
 
 class Streams {

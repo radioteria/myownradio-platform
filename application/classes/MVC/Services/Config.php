@@ -5,7 +5,7 @@ namespace MVC\Services;
 use Tools\Optional;
 use Tools\Singleton;
 
-class ApplicationConfig {
+class Config {
 
     use Singleton;
 

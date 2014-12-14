@@ -14,6 +14,7 @@ class User extends Model {
     private $userLogin;
     private $userName;
     private $userEmail;
+    private $userInfo;
 
     private $userToken;
     
@@ -29,6 +30,7 @@ class User extends Model {
         $this->userLogin    = $user['login'];
         $this->userName     = $user['name'];
         $this->userEmail    = $user['mail'];
+        $this->userInfo     = $user['info'];
 
     }
     
@@ -61,6 +63,33 @@ class User extends Model {
         $this->db->executeUpdate("UPDATE r_users SET password = ? WHERE uid = ?", array($newPassword, $this->userId));
     }
 
+    /**
+     * @param mixed $email
+     * @return self
+     */
+    public function setUserEmail($email) {
+        $this->userEmail = $email;
+        return $this;
+    }
+
+    /**
+     * @param mixed $name
+     * @return self
+     */
+    public function setName($name) {
+        $this->userName = $name;
+        return $this;
+    }
+
+    /**
+     * @param mixed $info
+     * @return self
+     */
+    public function setInfo($info) {
+        $this->userInfo = $info;
+        return $this;
+    }
+
 
     public function getIdBySessionToken() {
         $exception = new UnauthorizedException();
@@ -71,7 +100,11 @@ class User extends Model {
         return $this->db->fetchOneColumn("SELECT b.uid FROM r_sessions a LEFT JOIN r_users b ON a.uid = b.uid WHERE a.token = ?", array($token))
             ->getOrElseThrow($exception);
     }
-    
+
+    public function update() {
+        $this->db->executeUpdate("UPDATE r_users SET name = ?, info = ?, mail = ? WHERE uid = ?",
+        [$this->userName, $this->userInfo, $this->userEmail, $this->userId]);
+    }
 
     static function createToken($userId, $userIP, $userAgent, $sessionId) {
 /*        do

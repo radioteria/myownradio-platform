@@ -22,7 +22,6 @@ class Users {
      * @return User
      */
     public static function authorizeByLoginPassword($login, $password) {
-
         $session = HttpSession::getInstance();
 
         $user = Database::getInstance()->fetchOneRow("SELECT * FROM r_users WHERE login = ? AND password = ?", [$login,
@@ -40,16 +39,19 @@ class Users {
 
     }
 
+    /**
+     * @param $userId
+     * @param $clientAddress
+     * @param $clientUserAgent
+     * @param $sessionId
+     * @return string
+     */
     private static function createToken($userId, $clientAddress, $clientUserAgent, $sessionId) {
-
         $database = Database::getInstance();
 
         do {
-
             $token = md5($userId . $clientAddress . rand(1, 1000000) . "tokenizer" . time());
-
-        } while ($database->fetchOneColumn("SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])
-            ->getOrElseThrow(ControllerException::databaseError("Token Generator")) > 0);
+        } while ($database->fetchOneColumn("SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->getOrElse(0) > 0);
 
         $database->executeInsert("INSERT INTO r_sessions SET uid = ?, ip = ?, token = ?, permanent = 1,
             authorized = NOW(), http_user_agent = ?, session_id = ?, expires = NOW() + INTERVAL 1 YEAR",
@@ -60,6 +62,9 @@ class Users {
 
     }
 
+    /**
+     * @return void
+     */
     public static function unAuthorize() {
         $session = HttpSession::getInstance();
         $session->get("TOKEN")->then(function ($token) {

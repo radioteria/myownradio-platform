@@ -25,6 +25,7 @@ class User extends Model {
         parent::__construct();
 
         $uid = $this->getIdBySessionToken();
+
         $user = $this->db->fetchOneRow("SELECT * FROM r_users WHERE uid = ?", array($uid))
             ->getOrElseThrow(ControllerException::noPermission());
 

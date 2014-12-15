@@ -241,7 +241,6 @@ class StreamTrackList extends Model {
                 ->then(function ($offset) use ($track) {
 
                     $cursor = $track["cursor"];
-
                     $query = "UPDATE r_streams SET started_from = :from, started = :time, status = 1 WHERE sid = :id";
 
                     $this->db->executeUpdate($query, [
@@ -293,8 +292,7 @@ class StreamTrackList extends Model {
 
             $generated = Common::generateUniqueId();
 
-        } while ($this->db->fetchOneColumn("SELECT COUNT(*) FROM r_link WHERE unique_id = ?", array($generated))
-                ->getRaw() > 0);
+        } while ($this->db->fetchOneColumn("SELECT COUNT(*) FROM r_link WHERE unique_id = ?", [$generated])->getRaw());
 
         return $generated;
 
@@ -304,7 +302,7 @@ class StreamTrackList extends Model {
         self::notifyAllStreamers($this->key);
     }
 
-    public static  function notifyAllStreamers($streamId) {
+    public static function notifyAllStreamers($streamId) {
         $ch = curl_init('http://127.0.0.1:7778/notify?s=' . $streamId);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_VERBOSE, true);

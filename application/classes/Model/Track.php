@@ -141,21 +141,21 @@ class Track extends Model {
     /**
      * @return string
      */
-    public function getExt() {
+    public function getExtension() {
         return $this->ext;
     }
 
     /**
      * @return string
      */
-    public function getFilename() {
+    public function getFileName() {
         return $this->filename;
     }
 
     /**
      * @return int
      */
-    public function getFilesize() {
+    public function getFileSize() {
         return intval($this->filesize);
     }
 
@@ -169,7 +169,7 @@ class Track extends Model {
     /**
      * @return int
      */
-    public function getTid() {
+    public function getId() {
         return intval($this->tid);
     }
 

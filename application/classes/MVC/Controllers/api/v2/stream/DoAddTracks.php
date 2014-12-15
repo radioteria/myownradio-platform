@@ -10,6 +10,7 @@ namespace MVC\Controllers\api\v2\stream;
 
 
 use Model\Stream;
+use Model\StreamTrackList;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -23,7 +24,7 @@ class DoAddTracks extends Controller {
 
         $validator->validateTracksList($tracks);
 
-        Stream::getInstance($id)->addTracks($tracks);
+        StreamTrackList::getInstance($id)->addTracks($tracks);
 
     }
 } 

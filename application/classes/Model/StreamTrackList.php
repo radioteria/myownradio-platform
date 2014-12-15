@@ -9,6 +9,7 @@
 namespace Model;
 
 use MVC\Exceptions\ControllerException;
+use Tools\Common;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\System;
@@ -59,6 +60,9 @@ class StreamTrackList extends Model {
 
     }
 
+    /**
+     * @return Optional
+     */
     public function getStreamPosition() {
 
         if ($this->tracks_duration == 0) {
@@ -74,6 +78,50 @@ class StreamTrackList extends Model {
         $position = ($time - $this->started + $this->started_from) % $this->tracks_duration;
 
         return Optional::ofNull($position);
+
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTrackInStream() {
+        return $this->tracks_count;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getStreamDuration() {
+        return $this->tracks_duration;
+    }
+
+    /**
+     * @param $tracks
+     * @return $this
+     */
+    public function addTracks($tracks) {
+
+        $this->doAtomic(function () use (&$tracks) {
+
+            $tracksToAdd = explode(",", $tracks);
+            $initialPosition = $this->tracks_count;
+            $initialTimeOffset = $this->tracks_duration;
+
+            foreach($tracksToAdd as $track) {
+
+                $trackObject = new Track($track);
+                $uniqueId = $this->generateUniqueId();
+
+                $this->db->executeInsert("INSERT INTO r_link VALUES (NULL, ?, ?, ?, ?, ?)",
+                    [$this->key, $trackObject->getId(), ++$initialPosition, $uniqueId, $initialTimeOffset]);
+
+                $initialTimeOffset += $trackObject->getDuration();
+
+            }
+
+        });
+
+        return $this;
 
     }
 
@@ -116,19 +164,25 @@ class StreamTrackList extends Model {
     }
 
 
-
+    /**
+     * @param callable $callable
+     * @return $this
+     */
     private function doAtomic(callable $callable) {
 
         $track = $this->getCurrentTrack();
 
-        $result = call_user_func($callable);
+        call_user_func($callable);
 
         $this->setCurrentTrack($track);
 
-        return $result;
+        return $this;
 
     }
 
+    /**
+     * @param Optional $track
+     */
     private function setCurrentTrack(Optional $track) {
 
         $track->then(function ($track) {
@@ -145,6 +199,20 @@ class StreamTrackList extends Model {
             return $this;
 
         });
+
+    }
+
+
+    public function generateUniqueId() {
+
+        do {
+
+            $generated = Common::generateUniqueId();
+
+        } while ($this->db->fetchOneColumn("SELECT COUNT(*) FROM r_link WHERE unique_id = ?", array($generated))
+                ->getRaw() > 0);
+
+        return $generated;
 
     }
 

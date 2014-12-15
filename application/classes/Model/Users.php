@@ -74,4 +74,23 @@ class Users {
         });
         $session->destroy();
     }
+
+    public static function authorizeById($id) {
+
+        $session = HttpSession::getInstance();
+
+        $user = Database::getInstance()->fetchOneRow("SELECT * FROM r_users WHERE uid = ?", [$id])
+            ->getOrElseThrow(ControllerException::noPermission());
+
+        $clientAddress = HttpRequest::getInstance()->getRemoteAddress();
+        $clientUserAgent = HttpRequest::getInstance()->getHttpUserAgent()->getOrElse("None");
+
+        $token = self::createToken($user["uid"], $clientAddress, $clientUserAgent,
+            $session->getSessionId());
+
+        $session->set("TOKEN", $token);
+
+        return User::getInstance();
+
+    }
 }

@@ -235,13 +235,19 @@ class StreamTrackList extends Model {
 
         $track->then(function ($track) {
 
-            $this->db->fetchOneColumn("SELECT time_offset FROM r_link WHERE unique_id = ? AND stream_id = ?",
-                [$track["unique_id"], $this->key])->then(function ($offset) use ($track) {
+            $query = "SELECT time_offset FROM r_link WHERE unique_id = ? AND stream_id = ?";
+
+            $this->db->fetchOneColumn($query, [$track["unique_id"], $this->key])
+                ->then(function ($offset) use ($track) {
 
                     $cursor = $track["cursor"];
-                    $this->db->executeUpdate("UPDATE r_streams SET started_from = :from, started = :time, status = 1
-                                              WHERE sid = :id",
-                        [":id" => $this->key, ":time" => System::time(), ":from" => $offset + $cursor]);
+
+                    $query = "UPDATE r_streams SET started_from = :from, started = :time, status = 1 WHERE sid = :id";
+
+                    $this->db->executeUpdate($query, [
+                        ":id" => $this->key,
+                        ":time" => System::time(),
+                        ":from" => $offset + $cursor]);
 
                 });
 
@@ -263,10 +269,13 @@ class StreamTrackList extends Model {
      */
     public function setPlayFrom($track) {
 
-        $track = $this->db->fetchOneRow("SELECT a.*, b.unique_id, b.t_order, b.time_offset FROM r_tracks a
-            LEFT JOIN r_link b ON a.tid = b.track_id WHERE b.unique_id = :unique AND b.stream_id = :id",
-            [":unique" => $track, ":id" => $this->key])
+        $query = $this->db->getFluentPDO()->from("r_tracks a")->
+            leftJoin("r_link b ON a.tid = b.track_id")
+            ->where("b.unique_id", $track)
+            ->where("b.stream_id", $this->key)
+            ->select(["b.unique_id", "b.time_offset"]);
 
+        $track = $this->db->fetchOneRow($query->getQuery(false), $query->getParameters())
             ->then(function (&$track) { $track["cursor"] = 0; });
 
         $track->justThrow(ControllerException::noTrack($track));

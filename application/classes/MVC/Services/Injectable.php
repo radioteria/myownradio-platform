@@ -8,7 +8,14 @@
 
 namespace MVC\Services;
 
-
+/**
+ * Class Injectable
+ * @package MVC\Services
+ *
+ * Used as marker for dependency injection ready classes.
+ * Also classes must have constructor without arguments and
+ * may be Singleton.
+ */
 trait Injectable {
 
 } 

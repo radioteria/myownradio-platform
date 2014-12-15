@@ -90,10 +90,10 @@ class User extends Model {
 
 
     public function getIdBySessionToken() {
-        $exception = new UnauthorizedException();
+        $exception = ControllerException::noPermission();
         $token = HttpSession::getInstance()->get("TOKEN")->getOrElseThrow($exception);
-        return $this->db->fetchOneColumn("SELECT b.uid FROM r_sessions a LEFT JOIN r_users b ON a.uid = b.uid WHERE a.token = ?", array($token))
-            ->getOrElseThrow($exception);
+        return $this->db->fetchOneColumn("SELECT b.uid FROM r_sessions a LEFT JOIN r_users b ON a.uid = b.uid WHERE a.token = ?",
+            [$token])->getOrElseThrow($exception);
     }
 
     public function update() {

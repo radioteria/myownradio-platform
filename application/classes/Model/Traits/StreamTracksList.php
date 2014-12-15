@@ -42,29 +42,6 @@ trait StreamTracksList {
 
     }
 
-    public function getStreamPosition() {
-
-        if ($this->getStatus() === 0 || $this->getTracksDuration() === 0) {
-            return Optional::ofNull(null);
-        }
-
-        $time = System::time();
-
-        $position = ($time - $this->getStarted() + $this->getStartedFrom()) % $this->getTracksDuration();
-
-        return Optional::ofNull($position);
-
-    }
-
-    private function doAtomic(callable $callable) {
-
-        //$position = $this->getStreamPosition()->getOrElseNull();
-
-        $result = call_user_func($callable);
-
-        return $result;
-
-    }
 
     public function generateUniqueId() {
 

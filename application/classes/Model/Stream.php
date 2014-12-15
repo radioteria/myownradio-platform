@@ -16,7 +16,7 @@ use Tools\Singleton;
 
 class Stream extends Model {
 
-    use Singleton, StreamTracksList;
+    use Singleton;
 
     private $bean_key = "sid";
     private $bean_fields = [
@@ -27,8 +27,9 @@ class Stream extends Model {
         "name", "permalink", "info", "access", "category", "hashtags"
     ];
 
-    protected $sid;
+    protected $key;
 
+    protected $sid;
     protected $uid;
     protected $name;
     protected $permalink;
@@ -43,17 +44,18 @@ class Stream extends Model {
     protected $cover;
     protected $created;
 
-    public function __construct($sid) {
+    public function __construct($id) {
         parent::__construct();
-        $this->load($sid);
+        $this->key = $id;
+        $this->load();
     }
 
-    private function load($sid) {
+    private function load() {
 
         $userId = User::getInstance()->getId();
 
-        $object = $this->db->fetchOneRow("SELECT * FROM r_streams WHERE sid = ?", [$sid])
-            ->getOrElseThrow(ControllerException::noStream($sid));
+        $object = $this->db->fetchOneRow("SELECT * FROM r_streams WHERE sid = ?", [$this->key])
+            ->getOrElseThrow(ControllerException::noStream($this->key));
 
         if (intval($object["uid"]) !== $userId) {
             throw ControllerException::noPermission();
@@ -69,8 +71,6 @@ class Stream extends Model {
         } catch (\ReflectionException $exception) {
             throw new ControllerException($exception->getMessage());
         }
-
-        $this->reloadTrackListStats();
 
     }
 
@@ -105,7 +105,7 @@ class Stream extends Model {
     /**
      * @return int
      */
-    public function getSid() {
+    public function getId() {
         return intval($this->sid);
     }
 
@@ -193,6 +193,8 @@ class Stream extends Model {
         return int($this->uid);
     }
 
+
+
     /**
      * @param string $access
      */
@@ -210,7 +212,7 @@ class Stream extends Model {
     /**
      * @param string $hashtags
      */
-    public function setHashtags($hashtags) {
+    public function setHashTags($hashtags) {
         $this->hashtags = $hashtags;
     }
 
@@ -234,7 +236,5 @@ class Stream extends Model {
     public function setPermalink($permalink) {
         $this->permalink = $permalink;
     }
-
-
 
 } 

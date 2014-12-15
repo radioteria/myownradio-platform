@@ -53,6 +53,13 @@ class Optional {
     }
 
     /**
+     * @return mixed
+     */
+    public function getRaw() {
+        return $this->value;
+    }
+
+    /**
      * @param callable $callable
      * @return mixed
      */
@@ -85,7 +92,7 @@ class Optional {
      */
     public function then(callable $callable) {
         if ($this->test()) {
-            call_user_func($callable, $this->value);
+            call_user_func_array($callable, [&$this->value]);
         }
         return $this;
     }
@@ -96,7 +103,7 @@ class Optional {
      */
     public function otherwise(callable $callable) {
         if (!$this->test()) {
-            call_user_func($callable);
+            call_user_func_array($callable, [&$this->value]);
         }
         return $this;
     }
@@ -125,7 +132,7 @@ class Optional {
      * Use this constructor if your variable must not be a null
      */
     public static function ofNull($value) {
-        return new Optional($value, function ($v) { return !is_null($v); });
+        return new self($value, function ($v) { return !is_null($v); });
     }
 
     /**
@@ -135,7 +142,7 @@ class Optional {
      * This constructor is alias for new Optional(...)
      */
     public static function of($value, callable $callback) {
-        return new Optional($value, $callback);
+        return new self($value, $callback);
     }
 
     /**
@@ -144,7 +151,7 @@ class Optional {
      * Use this constructor if your variable must not be empty
      */
     public static function ofEmpty($value) {
-        return new Optional($value, function ($v) { return !empty($v); });
+        return new self($value, function ($v) { return !empty($v); });
     }
 
     /**
@@ -153,7 +160,7 @@ class Optional {
      * Use this variable if your variable must be an number
      */
     public static function ofNumber($value) {
-        return new Optional($value, function ($v) { return is_numeric($v); });
+        return new self($value, function ($v) { return is_numeric($v); });
     }
 
     /**
@@ -163,7 +170,7 @@ class Optional {
      * Use this constructor if $value must be an instance of $object
      */
     public static function ofObject($value, $object) {
-        return new Optional($value, function ($v) use ($object) { return $v instanceof $object; });
+        return new self($value, function ($v) use ($object) { return $v instanceof $object; });
     }
 
     /**
@@ -172,7 +179,7 @@ class Optional {
      * Use this constructor if your variable must be a positive number
      */
     public static function ofPositiveNumber($value) {
-        return new Optional($value, function ($v) { return is_numeric($v) && $v > 0; });
+        return new self($value, function ($v) { return is_numeric($v) && $v > 0; });
     }
 
     /**
@@ -181,18 +188,28 @@ class Optional {
      * Use this constructor if your variable must not be a false
      */
     public static function ofDeceptive($value) {
-        return new Optional($value, function ($v) { return $v !== false; });
+        return new self($value, function ($v) { return $v !== false; });
     }
 
     /**
-     * @param $filePath Input File
+     * @param $filePath
      * @return Optional
      * Use this constructor if your variable must be an existent file
      */
     public static function ofFile($filePath) {
-        return new Optional($filePath, function ($file) { return file_exists($file); });
+        return new self($filePath, function ($file) { return file_exists($file); });
     }
 
+    /**
+     * @return Optional
+     */
+    public static function bad() {
+        return self::ofNull(null);
+    }
+
+    /**
+     * @return string
+     */
     public function __toString() {
         return "Optional:" . ($this->test() ? "true" : "false");
     }

@@ -34,15 +34,21 @@ class ControllerException extends \Exception {
         return new self("Something wrong with database", $message);
     }
 
-    public static function noStream($name) {
-        return new self(sprintf("No stream with key '%s' found", $name));
+    public static function noStream($key) {
+        return new self(sprintf("No stream with key '%s' found", $key));
     }
 
     public static function noPermission() {
         return new self("You don't have permission to access this resource");
     }
 
-    public static function noEntity($name) {
-        return new self("No entity with key '%s' found", $name);
+    public static function noEntity($key) {
+        return new self("No entity with key '%s' found", $key);
     }
+
+    public static function noTrack($key) {
+        return new self(sprintf("No track with key '%s' found", $key));
+    }
+
+
 }

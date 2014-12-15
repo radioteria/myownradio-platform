@@ -123,6 +123,8 @@ class StreamTrackList extends Model {
 
         $result = call_user_func($callable);
 
+        $this->setCurrentTrack($track);
+
         return $result;
 
     }

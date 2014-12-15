@@ -15,6 +15,20 @@ use Tools\Singleton;
 class HttpRequest {
     use Singleton, Injectable;
 
+    private $headers;
+
+    function __construct() {
+        $this->headers = http_get_request_headers();
+    }
+
+    /**
+     * @param string $key
+     * @return Optional
+     */
+    public function getHeader($key) {
+        return Optional::ofNull(@$this->headers[$key]);
+    }
+
     /**
      * @return string
      */

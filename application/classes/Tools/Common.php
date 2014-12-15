@@ -43,5 +43,28 @@ class Common {
 
     }
 
+    static function pageExists($url) {
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if($httpCode != 404 && $httpCode != 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    static function toAscii($str) {
+        $clean = preg_replace("/[^a-zA-Z0-9\\/_|+ -]/", '', $str);
+        $clean = strtolower(trim($clean, '-'));
+        $clean = preg_replace("/[\\/_|+ -]+/", '-', $clean);
+        return $clean;
+    }
+
 
 } 

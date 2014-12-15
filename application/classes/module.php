@@ -5,7 +5,7 @@ class module
 
     static function parseModules($contents, $history = array(), $_MODULE = null)
     {
-        return preg_replace_callback("/\<\!\-\-\s+module\:(.+)\s+\-\-\>/", function ($match) use ($history, $_MODULE)
+        return preg_replace_callback("/\\<\\!\\-\\-\\s+module\\:(.+)\\s+\\-\\-\\>/", function ($match) use ($history, $_MODULE)
         {
             return self::getModule($match[1], $history, $_MODULE);
         }, $contents);
@@ -13,7 +13,7 @@ class module
 
     static function getModuleNameByAlias($alias)
     {
-        return db::query_single_col("SELECT `name` FROM `r_modules` WHERE `alias` = ? LIMIT 1", array($alias));
+        return db::query_single_col("SELECT name FROM r_modules WHERE alias = ? LIMIT 1", array($alias));
     }
 
     static function getModule($data, $history = array(), $_MODULE = NULL)

@@ -257,6 +257,26 @@ class StreamTrackList extends Model {
 
     }
 
+    /**
+     * @param $track
+     * @return $this
+     */
+    public function setPlayFrom($track) {
+
+        $track = $this->db->fetchOneRow("SELECT a.*, b.unique_id, b.t_order, b.time_offset FROM r_tracks a
+            LEFT JOIN r_link b ON a.tid = b.track_id WHERE b.unique_id = :unique AND b.stream_id = :id",
+            [":unique" => $track, ":id" => $this->key])
+
+            ->then(function (&$track) { $track["cursor"] = 0; });
+
+        $track->justThrow(ControllerException::noTrack($track));
+
+        $this->setCurrentTrack($track, true);
+
+        return $this;
+
+    }
+
 
     public function generateUniqueId() {
 

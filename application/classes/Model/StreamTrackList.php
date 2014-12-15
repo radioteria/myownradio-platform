@@ -272,7 +272,11 @@ class StreamTrackList extends Model {
     }
 
     private function notifyStreamers() {
-        $ch = curl_init('http://127.0.0.1:7778/notify?s=' . $this->key);
+        self::notifyAllStreamers($this->key);
+    }
+
+    public static  function notifyAllStreamers($streamId) {
+        $ch = curl_init('http://127.0.0.1:7778/notify?s=' . $streamId);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_VERBOSE, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 5);

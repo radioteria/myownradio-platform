@@ -35,6 +35,17 @@ class Fabric extends Model {
         return Streams::getInstance()->getOneStream($id);
     }
 
+    public function deleteStream($id) {
+        $result = $this->db->executeUpdate("DELETE FROM r_streams WHERE sid = ? AND uid = ?",
+            [$id, User::getInstance()->getId()]);
+
+        if ($result === 0) {
+            throw new ControllerException("Stream not found or no permission");
+        } else {
+            StreamTrackList::notifyAllStreamers($id);
+        }
+    }
+
     public function uploadFile($file, $addToStream = null) {
         // todo: do this 16/12/2014
     }

@@ -67,10 +67,38 @@ class Optional {
         return $this->test() ? $this->value : "";
     }
 
+    /**
+     * @param Exception $exception
+     * @throws Exception
+     * @return $this
+     */
+    public function justThrow(Exception $exception) {
+        if (!$this->test()) {
+            throw $exception;
+        }
+        return $this;
+    }
+
+    /**
+     * @param callable $callable
+     * @return $this
+     */
     public function then(callable $callable) {
         if ($this->test()) {
             call_user_func($callable, $this->value);
         }
+        return $this;
+    }
+
+    /**
+     * @param callable $callable
+     * @return $this
+     */
+    public function otherwise(callable $callable) {
+        if (!$this->test()) {
+            call_user_func($callable);
+        }
+        return $this;
     }
 
     /**

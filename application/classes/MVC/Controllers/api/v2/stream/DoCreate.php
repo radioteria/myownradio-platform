@@ -10,15 +10,14 @@ namespace MVC\Controllers\api\v2\stream;
 
 
 use Model\Fabric;
-use Model\User;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
-use MVC\Services\JsonResponse;
 use MVC\Services\InputValidator;
+use MVC\Services\JsonResponse;
 
 class DoCreate extends Controller {
-    public function doPost(HttpPost $post, InputValidator $validator, Fabric $fabric, User $user, JsonResponse $response) {
+    public function doPost(HttpPost $post, InputValidator $validator, Fabric $fabric, JsonResponse $response) {
 
         // Get user input parameters
         $name = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));
@@ -32,8 +31,7 @@ class DoCreate extends Controller {
         $validator->validateStreamPermalink($permalink);
 
         // Create new stream using fabric
-        $creator = $user->getId();
-        $stream = $fabric->createStream($name, $info, $tags, $category, $permalink, $creator);
+        $stream = $fabric->createStream($name, $info, $tags, $category, $permalink);
 
         // Write out new stream object
         $response->setData($stream);

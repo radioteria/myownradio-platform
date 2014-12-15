@@ -23,6 +23,6 @@ class DoModifyProfile extends Controller {
 
         $validator->validateEmail($email);
 
-        $user->setName($name)->setInfo($info)->setUserEmail($email);
+        $user->setName($name)->setInfo($info)->setUserEmail($email)->update();
     }
 } 

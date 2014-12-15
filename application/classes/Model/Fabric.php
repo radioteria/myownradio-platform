@@ -23,15 +23,14 @@ class Fabric extends Model {
      * @param string $hashtags
      * @param int|null $category
      * @param string|null $permalink
-     * @param int $creator
      * @return array
      * @throws ControllerException
      */
-    public function createStream($name, $info, $hashtags, $category, $permalink, $creator) {
+    public function createStream($name, $info, $hashtags, $category, $permalink) {
         $id = $this->db->executeInsert(
             "INSERT INTO r_streams (uid, name, info, hashtags, category, permalink) VALUES (?, ?, ?, ?, ?, ?)",
-            [$creator, $name, $info, $hashtags, $category, $permalink])
-            ->getOrElseThrow(ControllerException::databaseError());
+            [User::getInstance()->getId(), $name, $info, $hashtags, $category, $permalink])
+            ->getOrElseThrow(ControllerException::databaseError("CREATE STREAM"));
 
         return Streams::getInstance()->getOneStream($id);
     }

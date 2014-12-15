@@ -195,7 +195,6 @@ class StreamTrackList extends Model {
 
     }
 
-
     /**
      * @param callable $callable
      * @return $this

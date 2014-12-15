@@ -3,7 +3,6 @@
 namespace Model;
 
 use MVC\Exceptions\ControllerException;
-use MVC\Exceptions\UnauthorizedException;
 use MVC\Services\HttpSession;
 use MVC\Services\Injectable;
 use Tools\Singleton;

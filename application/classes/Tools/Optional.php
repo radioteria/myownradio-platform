@@ -67,6 +67,12 @@ class Optional {
         return $this->test() ? $this->value : "";
     }
 
+    public function then(callable $callable) {
+        if ($this->test()) {
+            call_user_func($callable, $this->value);
+        }
+    }
+
     /**
      * @return boolean
      */

@@ -10,13 +10,16 @@ namespace MVC\Controllers\api\v2;
 
 
 use Model\Beans\StreamBean;
+use Model\User;
+use Model\Users;
 use MVC\Controller;
 use MVC\Services\Database;
 use MVC\Services\HttpResponse;
+use MVC\Services\HttpSession;
 use MVC\Services\JsonResponse;
 
 class DoTest extends Controller {
-    public function doPost() {
+    public function doGet(User $user, HttpResponse $response) {
 
     }
 } 

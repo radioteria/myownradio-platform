@@ -9,6 +9,7 @@
 namespace MVC\Services;
 
 
+use Tools\Optional;
 use Tools\Singleton;
 
 class HttpSession {
@@ -17,16 +18,34 @@ class HttpSession {
     const SESSION_EXPIRE_FAST = 0;
     const SESSION_EXPIRE_MONTH = 2592000;
 
-    public function __construct($expire = self::SESSION_EXPIRE_FAST) {
-        session_set_cookie_params($expire);
+    public function __construct() {
+        session_set_cookie_params(self::SESSION_EXPIRE_MONTH);
         session_start();
     }
 
+    /**
+     * @param $key
+     * @return Optional
+     */
     public function get($key) {
-        return $_SESSION[$key];
+        return Optional::ofNull(@$_SESSION[$key]);
     }
 
-    public function put($key, $value) {
+    /**
+     * @param $key
+     * @param $value
+     */
+    public function set($key, $value) {
         $_SESSION[$key] = $value;
     }
+
+    public function getSessionId() {
+        return session_id();
+    }
+
+    public function destroy() {
+        session_unset();
+        session_destroy();
+    }
+
 }

@@ -4,6 +4,7 @@ namespace Model;
 
 use MVC\Exceptions\ControllerException;
 use MVC\Exceptions\UnauthorizedException;
+use MVC\Services\HttpSession;
 use MVC\Services\Injectable;
 use Tools\Singleton;
 
@@ -94,10 +95,7 @@ class User extends Model {
 
     public function getIdBySessionToken() {
         $exception = new UnauthorizedException();
-        $token = \session::get('authtoken');
-        if (is_null($token)) {
-            throw $exception;
-        }
+        $token = HttpSession::getInstance()->get("TOKEN")->getOrElseThrow($exception);
         return $this->db->fetchOneColumn("SELECT b.uid FROM r_sessions a LEFT JOIN r_users b ON a.uid = b.uid WHERE a.token = ?", array($token))
             ->getOrElseThrow($exception);
     }
@@ -107,17 +105,6 @@ class User extends Model {
         [$this->userName, $this->userInfo, $this->userEmail, $this->userId]);
     }
 
-    static function createToken($userId, $userIP, $userAgent, $sessionId) {
-/*        do
-        {
-            $token = md5($uid . $ip . rand(1,1000000) . "tokenizer" . time());
-        }
-        while(db::query_single_col("SELECT COUNT(*) FROM `r_sessions` WHERE `token` = ?", array($token)) > 0);
-        
-        db::query_update("INSERT INTO `r_sessions` SET `uid` = ?, `ip` = ?, `token` = ?, `permanent` = 1, `authorized` = NOW(), `http_user_agent` = ?, `session_id` = ?, `expires` = NOW() + INTERVAL 1 YEAR", array(
-            $uid, $ip, $token, $ua, $session_id
-        ));
-        
-        return $token;*/
-    }
+
+
 }

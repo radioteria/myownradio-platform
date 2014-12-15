@@ -29,6 +29,7 @@ class Router {
         $count = count($routeParts);
         $routeParts[$count - 1] = "Do" . ucfirst($routeParts[$count - 1]);
         $this->route = implode("/", $routeParts);
+
     }
 
     public function route() {

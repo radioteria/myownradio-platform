@@ -17,11 +17,13 @@ use MVC\Services\InputValidator;
 
 class DoChangePassword extends Controller {
     public function doPost(HttpPost $post, InputValidator $validator, User $user) {
-        $rawPassword = $post->getParameter("password")
+
+        $password = $post->getParameter("password")
             ->getOrElseThrow(ControllerException::noArgument("password"));
 
-        $validator->validatePassword($rawPassword);
+        $validator->validatePassword($password);
 
-        $user->changePassword($rawPassword);
+        $user->changePassword($password);
+
     }
 } 

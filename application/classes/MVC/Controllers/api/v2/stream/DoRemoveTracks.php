@@ -10,10 +10,11 @@ namespace MVC\Controllers\api\v2\stream;
 
 
 use Model\StreamTrackList;
+use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
 
-class DoRemoveTracks {
+class DoRemoveTracks extends Controller {
 
     public function doPost(HttpPost $post) {
         $id     = $post->getParameter("id")     ->getOrElseThrow(ControllerException::noArgument("id"));

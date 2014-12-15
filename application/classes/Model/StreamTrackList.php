@@ -158,6 +158,21 @@ class StreamTrackList extends Model {
     }
 
     /**
+     * @param $unique
+     * @param $index
+     * @return $this
+     */
+    public function moveTrack($unique, $index) {
+
+        $this->doAtomic(function () use ($unique, $index) {
+            $this->db->executeUpdate("SELECT NEW_STREAM_SORT(?, ?, ?)", [$this->key, $unique, $index]);
+        });
+
+        return $this;
+
+    }
+
+    /**
      * @return Optional
      */
     public function getCurrentTrack() {

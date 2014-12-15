@@ -9,10 +9,11 @@
 namespace MVC\Controllers\api\v2;
 
 
+use Model\User;
 use MVC\Controller;
 
 class DoTest extends Controller {
-    public function doGet() {
+    public function doGet(User $user) {
 
     }
 } 

@@ -51,7 +51,8 @@ class Users {
 
         do {
             $token = md5($userId . $clientAddress . rand(1, 1000000) . "tokenizer" . time());
-        } while ($database->fetchOneColumn("SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->getOrElse(0) > 0);
+        } while ($database->fetchOneColumn(
+                "SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->getOrElse(0) > 0);
 
         $database->executeInsert("INSERT INTO r_sessions SET uid = ?, ip = ?, token = ?, permanent = 1,
             authorized = NOW(), http_user_agent = ?, session_id = ?, expires = NOW() + INTERVAL 1 YEAR",

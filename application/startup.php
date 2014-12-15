@@ -1,15 +1,11 @@
 <?php
 
 define("NEW_DIR_RIGHTS", 0770);
-define("REG_MAIL", 'noreply@myownradio.biz');
-
-define("REQ_INT", 'int');
-define("REQ_STRING", 'string');
-define("REQ_BOOL", 'bool');
+define("REG_MAIL", 'no-reply@myownradio.biz');
 
 define("START_TIME", microtime(true));
-define("APP_ROOT", "application/classes/");
 
+define("APP_ROOT", "application/classes/");
 define("CONTROLLERS_ROOT", "MVC/Controllers/");
 
 putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/games:/usr/local/sbin:/usr/local/bin:/home/admin/bin");
@@ -29,4 +25,3 @@ function loadClassOrThrow($class_name, Exception $exception) {
         throw $exception;
     }
 }
-

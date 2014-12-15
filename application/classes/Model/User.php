@@ -36,18 +36,15 @@ class User extends Model {
 
     }
     
-    public function getId()
-    {
+    public function getId() {
         return $this->userId;
     }
     
-    public function getLogin()
-    {
+    public function getLogin() {
         return $this->userLogin;
     }
     
-    public function getEmail()
-    {
+    public function getEmail() {
         return $this->userEmail;
     }
 
@@ -55,8 +52,7 @@ class User extends Model {
         return $this->userName;
     }
 
-    public function getToken()
-    {
+    public function getToken() {
         return $this->userToken;
     }
 

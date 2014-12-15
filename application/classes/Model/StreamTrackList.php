@@ -126,6 +126,38 @@ class StreamTrackList extends Model {
     }
 
     /**
+     * @param $tracks
+     * @return $this
+     */
+    public function removeTracks($tracks) {
+
+        $this->doAtomic(function () use (&$tracks) {
+
+            $this->db->executeUpdate("DELETE FROM r_link WHERE FIND_IN_SET(unique_id, ?)", [$tracks]);
+            $this->db->executeUpdate("CALL POptimizeStream(?)", [$this->key]);
+
+        });
+
+        return $this;
+
+    }
+
+    /**
+     * @return $this
+     */
+    public function shuffleTracks() {
+
+        $this->doAtomic(function () {
+
+            $this->db->executeUpdate("CALL PShuffleStream(?)", [$this->key]);
+
+        });
+
+        return $this;
+
+    }
+
+    /**
      * @return Optional
      */
     public function getCurrentTrack() {
@@ -182,23 +214,32 @@ class StreamTrackList extends Model {
 
     /**
      * @param Optional $track
+     * @param bool $force
+     * @return $this
      */
-    private function setCurrentTrack(Optional $track) {
+    private function setCurrentTrack(Optional $track, $force = false) {
 
         $track->then(function ($track) {
 
             $this->db->fetchOneColumn("SELECT time_offset FROM r_link WHERE unique_id = ? AND stream_id = ?",
                 [$track["unique_id"], $this->key])->then(function ($offset) use ($track) {
 
+                    $cursor = $track["cursor"];
                     $this->db->executeUpdate("UPDATE r_streams SET started_from = :from, started = :time, status = 1
                                               WHERE sid = :id",
-                        [":id" => $this->key, ":time" => System::time(), ":from" => $offset]);
+                        [":id" => $this->key, ":time" => System::time(), ":from" => $offset + $cursor]);
 
                 });
 
-            return $this;
+                // TODO: Otherwise method needs to be implemented
 
         });
+
+        if ($force) {
+            $this->notifyStreamers();
+        }
+
+        return $this;
 
     }
 
@@ -214,6 +255,15 @@ class StreamTrackList extends Model {
 
         return $generated;
 
+    }
+
+    private function notifyStreamers() {
+        $ch = curl_init('http://127.0.0.1:7778/notify?s=' . $this->key);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_VERBOSE, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+        curl_exec($ch);
+        curl_close($ch);
     }
 
 } 

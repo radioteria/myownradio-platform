@@ -19,6 +19,8 @@ class User extends Model {
     private $userInfo;
 
     private $userToken;
+
+    private $modifiedFlag = false;
     
     public function __construct() {
 
@@ -68,6 +70,8 @@ class User extends Model {
      */
     public function setUserEmail($email) {
         $this->userEmail = $email;
+        $this->modifiedFlag = true;
+
         return $this;
     }
 
@@ -77,6 +81,8 @@ class User extends Model {
      */
     public function setName($name) {
         $this->userName = $name;
+        $this->modifiedFlag = true;
+
         return $this;
     }
 
@@ -86,12 +92,15 @@ class User extends Model {
      */
     public function setInfo($info) {
         $this->userInfo = $info;
+        $this->modifiedFlag = true;
+
         return $this;
     }
 
 
     public function getIdBySessionToken() {
         $exception = ControllerException::noPermission();
+
         $token = HttpSession::getInstance()->get("TOKEN")->getOrElseThrow($exception);
         return $this->db->fetchOneColumn("SELECT b.uid FROM r_sessions a LEFT JOIN r_users b ON a.uid = b.uid WHERE a.token = ?",
             [$token])->getOrElseThrow($exception);
@@ -100,8 +109,14 @@ class User extends Model {
     public function update() {
         $this->db->executeUpdate("UPDATE r_users SET name = ?, info = ?, mail = ? WHERE uid = ?",
         [$this->userName, $this->userInfo, $this->userEmail, $this->userId]);
+        $this->modifiedFlag = false;
     }
 
+    public function __destruct() {
+        if ($this->modifiedFlag) {
+            $this->update();
+        }
+    }
 
 
 }

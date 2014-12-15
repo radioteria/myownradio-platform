@@ -92,9 +92,7 @@ class Optional {
      */
     public function then(callable $callable) {
         if ($this->test()) {
-            $value = $this->value;
-            call_user_func_array($callable, [&$value]);
-            return new self($value, $this->predicate);
+            call_user_func_array($callable, [&$this->value]);
         }
         return $this;
     }
@@ -105,9 +103,7 @@ class Optional {
      */
     public function otherwise(callable $callable) {
         if (!$this->test()) {
-            $value = $this->value;
-            call_user_func_array($callable, [&$value]);
-            return new self($value, $this->predicate);
+            call_user_func($callable);
         }
         return $this;
     }

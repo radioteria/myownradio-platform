@@ -9,7 +9,6 @@
 namespace MVC\Controllers\api\v2\stream;
 
 
-use Model\Stream;
 use Model\StreamTrackList;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;

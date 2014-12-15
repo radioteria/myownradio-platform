@@ -10,9 +10,6 @@ namespace MVC\Controllers\api\v2;
 
 
 use MVC\Controller;
-use MVC\Services\HttpGet;
-use MVC\Services\HttpPost;
-use MVC\Services\HttpRequest;
 
 class DoTest extends Controller {
     public function doGet() {

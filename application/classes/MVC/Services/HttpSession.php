@@ -39,10 +39,16 @@ class HttpSession {
         $_SESSION[$key] = $value;
     }
 
+    /**
+     * @return string
+     */
     public function getSessionId() {
         return session_id();
     }
 
+    /**
+     * @return void;
+     */
     public function destroy() {
         session_unset();
         session_destroy();

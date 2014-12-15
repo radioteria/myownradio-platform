@@ -204,14 +204,14 @@ class Optional {
      * @return Optional
      */
     public static function bad() {
-        return self::ofNull(null);
+        return new self(null, function () { return false; });
     }
 
     /**
      * @return string
      */
     public function __toString() {
-        return "Optional:" . ($this->test() ? "true" : "false");
+        return "[Optional:" . ($this->test() ? "Has Value" : "Has No Value") . "]";
     }
 
 }

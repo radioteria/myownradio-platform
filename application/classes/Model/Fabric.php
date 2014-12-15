@@ -35,4 +35,8 @@ class Fabric extends Model {
         return Streams::getInstance()->getOneStream($id);
     }
 
+    public function uploadFile($file, $addToStream = null) {
+        // todo: do this 16/12/2014
+    }
+
 } 

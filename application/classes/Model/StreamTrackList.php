@@ -136,7 +136,8 @@ class StreamTrackList extends Model {
             $this->db->fetchOneColumn("SELECT time_offset FROM r_link WHERE unique_id = ? AND stream_id = ?",
                 [$track["unique_id"], $this->key])->then(function ($offset) use ($track) {
 
-                    $this->db->executeUpdate("UPDATE r_streams SET started_from = :from, started = :time, status = 1 WHERE sid = :id",
+                    $this->db->executeUpdate("UPDATE r_streams SET started_from = :from, started = :time, status = 1
+                                              WHERE sid = :id",
                         [":id" => $this->key, ":time" => System::time(), ":from" => $offset]);
 
                 });

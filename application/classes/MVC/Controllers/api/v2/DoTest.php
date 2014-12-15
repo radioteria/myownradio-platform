@@ -9,16 +9,10 @@
 namespace MVC\Controllers\api\v2;
 
 
-use Model\StreamTrackList;
 use MVC\Controller;
-use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpGet;
-use MVC\Services\JsonResponse;
 
 class DoTest extends Controller {
-    public function doGet(JsonResponse $response, HttpGet $get) {
-        $id = $get->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
-        $stream = StreamTrackList::getInstance($id);
-        $response->setMessage($stream->getCurrentTrack()->getOrElse("Nothing playing"));
+    public function doGet(HttpGet $get) {
     }
 } 

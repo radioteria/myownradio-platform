@@ -74,15 +74,14 @@ class Router {
 
         // Inject dependencies
         $dependencies = $this->loadDependencies($params);
+
         // Create instance of desired controller
         $classInstance = call_user_func([$reflection, "newInstance"]);
+
         // Execute controller
         call_user_func_array([$classInstance, $method], $dependencies);
 
-        // Print out json response
-        if (HttpResponse::hasInstance()) {
 
-        } else {
             $response = JsonResponse::getInstance();
             $reflection = new ReflectionClass($response);
 
@@ -93,7 +92,6 @@ class Router {
             $data->setAccessible(true);
 
             $this->outputOK($msg->getValue($response), $data->getValue($response));
-        }
 
     }
 

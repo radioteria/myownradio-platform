@@ -17,12 +17,12 @@ use MVC\Services\InputValidator;
 
 class DoModifyProfile extends Controller {
     public function doPost(HttpPost $post, User $user, InputValidator $validator) {
-        $rawName = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));
-        $rawInfo = $post->getParameter("info")->getOrElseThrow(ControllerException::noArgument("info"));
-        $rawEmail = $post->getParameter("email")->getOrElseThrow(ControllerException::noArgument("email"));
+        $name = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));
+        $info = $post->getParameter("info")->getOrElseThrow(ControllerException::noArgument("info"));
+        $email = $post->getParameter("email")->getOrElseThrow(ControllerException::noArgument("email"));
 
-        $verifiedEmail = $validator->validateEmail($rawEmail);
+        $validator->validateEmail($email);
 
-        $user->setName($rawName)->setInfo($rawInfo)->setUserEmail($rawEmail)->update();
+        $user->setName($name)->setInfo($info)->setUserEmail($email)->update();
     }
 } 

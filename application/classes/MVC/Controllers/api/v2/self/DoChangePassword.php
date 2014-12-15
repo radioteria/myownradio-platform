@@ -15,7 +15,7 @@ use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
 use MVC\Services\InputValidator;
 
-class changePassword extends Controller {
+class DoChangePassword extends Controller {
     public function doPost(HttpPost $post, InputValidator $validator, User $user) {
         $rawPassword = $post->getParameter("password")
             ->getOrElseThrow(ControllerException::noArgument("password"));

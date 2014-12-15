@@ -15,7 +15,7 @@ use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
 use MVC\Services\InputValidator;
 
-class addTracks extends Controller {
+class DoAddTracks extends Controller {
     public function doPost(HttpPost $post, InputValidator $validator) {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));

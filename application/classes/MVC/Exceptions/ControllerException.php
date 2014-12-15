@@ -30,16 +30,16 @@ class ControllerException extends \Exception {
         return new self(sprintf("No value for argument '%s' specified", $name));
     }
 
-    public static function databaseError() {
-        return new self(sprintf("Something wrong with database"));
+    public static function databaseError($message) {
+        return new self("Something wrong with database", $message);
     }
 
     public static function noStream($name) {
-        return new self(sprintf("Stream with key '%s' not found", $name));
+        return new self(sprintf("No stream with key '%s' found", $name));
     }
 
     public static function noPermission() {
-        return new self("You have no permission to access this resource");
+        return new self("You don't have permission to access this resource");
     }
 
     public static function noEntity($name) {

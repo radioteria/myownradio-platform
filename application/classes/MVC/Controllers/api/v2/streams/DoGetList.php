@@ -11,14 +11,14 @@ namespace MVC\Controllers\api\v2\streams;
 use MVC\Controller;
 use MVC\Exceptions\NotImplementedException;
 use MVC\Services\HttpGet;
-use MVC\Services\HttpResponse;
+use MVC\Services\JsonResponse;
 use REST\Streams;
 
-class getList extends Controller {
+class DoGetList extends Controller {
     /**
      * This method invoked on GET method
      */
-    public function doGet(HttpGet $get, HttpResponse $response, Streams $streams) {
+    public function doGet(HttpGet $get, JsonResponse $response, Streams $streams) {
         $filter     = $get->getParameter("q")->getOrElseEmpty();
         $category   = $get->getParameter("c")->getOrElseNull();
 

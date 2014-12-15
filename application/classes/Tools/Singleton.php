@@ -19,4 +19,9 @@ trait Singleton {
         }
         return self::$_instance[$hash];
     }
+
+    final public static function hasInstance() {
+        $hash = serialize(func_get_args());
+        return isset(self::$_instance[$hash]) ? true : false;
+    }
 }

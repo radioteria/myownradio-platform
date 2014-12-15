@@ -8,12 +8,15 @@
 
 namespace MVC;
 
+use Exception;
 use MVC\Exceptions\ControllerException;
 use MVC\Exceptions\DocNotFoundException;
 use MVC\Exceptions\NotImplementedException;
 use MVC\Services\HttpGet;
 use MVC\Services\HttpRequest;
 use MVC\Services\HttpResponse;
+use MVC\Services\JsonResponse;
+use ReflectionClass;
 use Tools\Singleton;
 
 class Router {
@@ -21,12 +24,14 @@ class Router {
 
     function __construct() {
         $httpGet = HttpGet::getInstance();
-        $this->route = preg_replace('/(\.(html|php)$)|(\/$)/', '', $httpGet->getParameter("route")->getOrElse("index"));
+
+        $routeParts = explode("/", preg_replace('/(\.(html|php)$)|(\/$)/', '', $httpGet->getParameter("route")->getOrElse("index")));
+        $count = count($routeParts);
+        $routeParts[$count - 1] = "Do" . ucfirst($routeParts[$count - 1]);
+        $this->route = implode("/", $routeParts);
     }
 
     public function route() {
-
-        header("Content-Type: application/json");
 
         try {
             $this->findRoute();
@@ -74,16 +79,20 @@ class Router {
         call_user_func_array([$classInstance, $method], $dependencies);
 
         // Print out json response
-        $response = HttpResponse::getInstance();
-        $reflection = new \ReflectionClass($response);
+        if (HttpResponse::hasInstance()) {
 
-        $msg = $reflection->getProperty("message");
-        $msg->setAccessible(true);
+        } else {
+            $response = JsonResponse::getInstance();
+            $reflection = new ReflectionClass($response);
 
-        $data = $reflection->getProperty("data");
-        $data->setAccessible(true);
+            $msg = $reflection->getProperty("message");
+            $msg->setAccessible(true);
 
-        $this->outputOK($msg->getValue($response), $data->getValue($response));
+            $data = $reflection->getProperty("data");
+            $data->setAccessible(true);
+
+            $this->outputOK($msg->getValue($response), $data->getValue($response));
+        }
 
     }
 
@@ -91,7 +100,7 @@ class Router {
         $dependencies = [];
         foreach ($params as $param) {
             if (is_null($param->getClass()) || !$this->isInjectable($param->getClass())) {
-                throw new \Exception("Object could not be injected");
+                throw new Exception("Object could not be injected");
             }
             $dependencies[] =
                 $this->isSingleton($param->getClass()) ?
@@ -126,6 +135,7 @@ class Router {
     }
 
     private function shout($code = 1, $message = null, $data = null) {
+        header("Content-Type: application/json");
         echo json_encode([
             "status" => $code,
             "message" => $message,

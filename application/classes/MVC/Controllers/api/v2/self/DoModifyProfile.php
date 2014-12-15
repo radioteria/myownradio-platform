@@ -15,7 +15,7 @@ use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
 use MVC\Services\InputValidator;
 
-class modifyProfile extends Controller {
+class DoModifyProfile extends Controller {
     public function doPost(HttpPost $post, User $user, InputValidator $validator) {
         $rawName = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));
         $rawInfo = $post->getParameter("info")->getOrElseThrow(ControllerException::noArgument("info"));

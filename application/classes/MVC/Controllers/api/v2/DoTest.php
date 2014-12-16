@@ -10,12 +10,11 @@ namespace MVC\Controllers\api\v2;
 
 
 use Model\AuthorizedUser;
-use Model\User;
 use MVC\Controller;
+use MVC\Services\JsonResponse;
 
 class DoTest extends Controller {
-    public function doGet(AuthorizedUser $user) {
-
-
+    public function doGet(AuthorizedUser $user, JsonResponse $response) {
+        $response->setMessage(date("M d, Y", $user->getActivePlanExpire()));
     }
 } 

@@ -2,6 +2,7 @@
 
 namespace Model;
 
+use Model\Traits\Stats;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Injectable;
 use Tools\Singleton;
@@ -12,7 +13,9 @@ use Tools\Singleton;
  */
 class User extends Model {
 
-    private $userId;
+    use Stats;
+
+    protected $userID;
     private $userLogin;
     private $userName;
     private $userEmail;
@@ -20,6 +23,8 @@ class User extends Model {
     private $userPassword;
 
     private $userToken;
+    private $activePlan;
+    private $planExpire;
 
     private $modifiedFlag = false;
     
@@ -46,17 +51,47 @@ class User extends Model {
 
         }
 
-        $this->userId       = intval($user['uid']);
+        $active = $this->db->fetchOneRow("SELECT * FROM r_subscriptions
+            WHERE uid = ? AND expire > UNIX_TIMESTAMP(NOW()) ORDER BY id DESC LIMIT 1", [$user["uid"]])
+            ->getOrElse(["plan" => 0, "expire" => null]);
+
+        $this->userID       = intval($user['uid']);
         $this->userLogin    = $user['login'];
         $this->userName     = $user['name'];
         $this->userEmail    = $user['mail'];
         $this->userInfo     = $user['info'];
         $this->userPassword = $user["password"];
 
+        $this->activePlan   = intval($active["plan"]);
+        $this->planExpire   = intval($active["expire"]);
+
+        $this->loadStats();
+
     }
-    
+
+    /**
+     * @return mixed
+     */
+    public function getActivePlanId() {
+        return $this->activePlan;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getActivePlanExpire() {
+        return $this->planExpire;
+    }
+
+    /**
+     * @return Plan
+     */
+    public function getActivePlan() {
+        return Plan::getInstance($this->activePlan);
+    }
+
     public function getId() {
-        return $this->userId;
+        return $this->userID;
     }
     
     public function getLogin() {
@@ -77,7 +112,7 @@ class User extends Model {
 
     public function changePassword($password) {
         $newPassword = md5($this->getLogin() . $password);
-        $this->db->executeUpdate("UPDATE r_users SET password = ? WHERE uid = ?", array($newPassword, $this->userId));
+        $this->db->executeUpdate("UPDATE r_users SET password = ? WHERE uid = ?", array($newPassword, $this->userID));
     }
 
     /**
@@ -117,7 +152,7 @@ class User extends Model {
 
     public function update() {
         $this->db->executeUpdate("UPDATE r_users SET name = ?, info = ?, mail = ? WHERE uid = ?",
-        [$this->userName, $this->userInfo, $this->userEmail, $this->userId]);
+        [$this->userName, $this->userInfo, $this->userEmail, $this->userID]);
         $this->modifiedFlag = false;
     }
 

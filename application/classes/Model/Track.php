@@ -10,7 +10,9 @@ namespace Model;
 
 
 use Model\Traits\Bean;
+use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
+use MVC\Services\Config;
 use ReflectionClass;
 use Tools\Singleton;
 
@@ -201,6 +203,15 @@ class Track extends Model {
         return intval($this->uploaded);
     }
 
-
+    public function getOriginalFile() {
+        $config = Config::getInstance();
+        return sprintf("%s/ui_%d/a_%03d_original.%s",
+            $config->getSetting("content", "content_folder")->getOrElseThrow(
+                ApplicationException::of("CONTENT FOLDER NOT SET")),
+            $this->getUid(),
+            $this->getId(),
+            $this->getExtension()
+        );
+    }
 
 }

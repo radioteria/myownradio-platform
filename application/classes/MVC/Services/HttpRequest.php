@@ -65,6 +65,13 @@ class HttpRequest {
     }
 
     /**
+     * @return Optional
+     */
+    public function getLanguage() {
+        return Optional::ofDeceptive(substr(@filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE'), 0, 2));
+    }
+
+    /**
      * @return mixed
      */
     public function getQueryString() {

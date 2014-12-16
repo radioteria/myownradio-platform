@@ -3,31 +3,7 @@
 class misc
 {
     public static $test = 0;
-    static function get_audio_tags($filename)
-    {
 
-        setlocale(LC_ALL, "en_US.UTF-8");
-        $fn_quote = escapeshellarg($filename);
-        $fetch_cmd = ApplicationConfig::getSetting('getters', 'mediainfo') . "  --Inform=\"General;%Duration%\\n%Title%\\n%Track/Position%\\n%Album%\\n%Performer%\\n%Genre%\\n%Album/Performer%\\n%Recorded_Date%\" " . $fn_quote;
-        exec($fetch_cmd, $tag_data, $exit);
-
-        $tag_list = array('DURATION', 'TITLE', 'TRACKNUMBER', 'ALBUM', 'PERFORMER', 'GENRE', 'ALBUM_PERFORMER', 'RECORDED_DATE');
-
-        if (count($tag_data) != count($tag_list))
-            return null;
-
-        if(array_search(application::getLanguage(), array('uk', 'ru')) !== false)
-        {
-            foreach($tag_data as &$tag)
-            {
-                $tag = misc::cp1252dec($tag);
-            }
-        }
-        
-        $tag_array = array_combine($tag_list, $tag_data);
-
-        return $tag_array;
-    }
     
     static function get_audio_echoprint($filename)
     {
@@ -260,19 +236,7 @@ class misc
         )));
     }
     
-    static function cp1252dec($chars)
-    {
-        $test = @iconv("UTF-8", "CP1252", $chars);
-        if($test)
-        {
-            return iconv("CP1251", "UTF-8", $test);
-        }
-        else
-        {
-            return $chars;
-        }
-    }
-    
+
     static function execute($data, $_MODULE = NULL)
     {
         ob_start();

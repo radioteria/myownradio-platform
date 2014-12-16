@@ -9,6 +9,11 @@
 namespace Tools;
 
 
+use MVC\Exceptions\ApplicationException;
+use MVC\Exceptions\ControllerException;
+use MVC\Services\Config;
+use MVC\Services\HttpRequest;
+
 class Common {
 
     const GENERATED_ID_LENGTH = 8;
@@ -64,6 +69,53 @@ class Common {
         $clean = strtolower(trim($clean, '-'));
         $clean = preg_replace("/[\\/_|+ -]+/", '-', $clean);
         return $clean;
+    }
+
+    static function getAudioTags($filename) {
+
+        $fetcher = Config::getInstance()->getSetting("getters", "mediainfo")
+            ->getOrElseThrow(ApplicationException::of("NO MEDIA INFO GETTER"));
+
+        $request = HttpRequest::getInstance();
+
+        setlocale(LC_ALL, "en_US.UTF-8");
+
+        $fnQuote = escapeshellarg($filename);
+
+        $fetchCommand = $fetcher . "  --Inform=\"General;%Duration%\\n%Title%\\n%Track/Position%\\n%Album%\\n%Performer%\\n%Genre%\\n%Album/Performer%\\n%Recorded_Date%\" " . $fnQuote;
+
+        exec($fetchCommand, $tagsData, $exit);
+
+        $tagsList = array('DURATION', 'TITLE', 'TRACKNUMBER', 'ALBUM', 'PERFORMER', 'GENRE', 'ALBUM_PERFORMER', 'RECORDED_DATE');
+
+        if (count($tagsData) != count($tagsList)) {
+            throw new ControllerException("Uploaded file has incorrect tags");
+        }
+
+        $request->getLanguage()->then(function ($language) use ($tagsData) {
+            if(array_search($language, array('uk', 'ru')) !== false) {
+                foreach($tagsData as &$tag) {
+                    $tag = self::cp1252dec($tag);
+                }
+            }
+        });
+
+        $tagsArray = array_combine($tagsList, $tagsData);
+
+        return $tagsArray;
+
+    }
+
+    static function cp1252dec($chars) {
+
+        $test = @iconv("UTF-8", "CP1252", $chars);
+
+        if($test) {
+            return iconv("CP1251", "UTF-8", $test);
+        } else {
+            return $chars;
+        }
+
     }
 
 

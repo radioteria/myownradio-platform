@@ -45,6 +45,18 @@ class Database {
         return $this->pdo;
     }
 
+    public function beginTransaction() {
+        return $this->pdo->beginTransaction();
+    }
+
+    public function commit() {
+        return $this->pdo->commit();
+    }
+
+    public function rollback() {
+        return $this->pdo->rollBack();
+    }
+
     /**
      * @deprecated
      * @param string $value
@@ -247,7 +259,7 @@ class Database {
     /**
      * @param string $query
      * @param array $params
-     * @return Optional
+     * @return mixed
      * @throws ControllerException
      */
     public function executeInsert($query, $params = []) {
@@ -260,7 +272,7 @@ class Database {
             throw new ControllerException($resource->errorInfo()[2]);
         }
 
-        return Optional::ofNull($result ? $this->pdo->lastInsertId(null) : null);
+        return $this->pdo->lastInsertId(null);
 
     }
 

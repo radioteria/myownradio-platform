@@ -15,15 +15,13 @@ use MVC\Services\Config;
 use MVC\Services\Database;
 use MVC\Services\HttpRequest;
 use MVC\Services\HttpSession;
-use MVC\Services\Mailer;
-use MVC\Template;
 use Tools\File;
 
 class Users {
 
     /**
-     * @param $login
-     * @param $password
+     * @param string $login
+     * @param string $password
      * @return User
      */
     public static function authorizeByLoginPassword($login, $password) {
@@ -40,7 +38,7 @@ class Users {
 
         $session->set("TOKEN", $token);
 
-        return User::getInstance();
+        return AuthorizedUser::getInstance();
 
     }
 
@@ -52,17 +50,19 @@ class Users {
      * @return string
      */
     private static function createToken($userId, $clientAddress, $clientUserAgent, $sessionId) {
+
         $database = Database::getInstance();
 
         do {
+
             $token = md5($userId . $clientAddress . rand(1, 1000000) . "tokenizer" . time());
+
         } while ($database->fetchOneColumn(
                 "SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->getOrElse(0) > 0);
 
         $database->executeInsert("INSERT INTO r_sessions SET uid = ?, ip = ?, token = ?, permanent = 1,
             authorized = NOW(), http_user_agent = ?, session_id = ?, expires = NOW() + INTERVAL 1 YEAR",
-            [$userId, $clientAddress, $token, $clientUserAgent, $sessionId])->getOrElseThrow(
-                ControllerException::databaseError("Token Creator"));
+            [$userId, $clientAddress, $token, $clientUserAgent, $sessionId]);
 
         return $token;
 
@@ -72,14 +72,22 @@ class Users {
      * @return void
      */
     public static function unAuthorize() {
+
         $session = HttpSession::getInstance();
+
         $session->get("TOKEN")->then(function ($token) {
             $database = Database::getInstance();
             $database->executeUpdate("DELETE FROM r_sessions WHERE token = ?", [$token]);
         });
+
         $session->destroy();
+
     }
 
+    /**
+     * @param $id
+     * @return mixed
+     */
     public static function authorizeById($id) {
 
         $session = HttpSession::getInstance();
@@ -99,13 +107,22 @@ class Users {
 
     }
 
+    /**
+     * @param $code
+     * @param $login
+     * @param $password
+     * @param $name
+     * @param $info
+     * @param $permalink
+     * @return User
+     */
     public static function completeRegistration($code, $login, $password, $name, $info, $permalink) {
 
         $email = self::parseRegistrationCode($code);
 
         $arguments = [$email, $login, md5($login . $password), $name, $info, $permalink, time()];
         $id = Database::getInstance()->executeInsert("INSERT INTO r_users (mail, login, password, name, info,
-            permalink, registration_date) VALUES (?, ?, ?, ?, ?, ?, ?)", $arguments)->getOrElseThrow(ApplicationException::databaseException());
+            permalink, registration_date) VALUES (?, ?, ?, ?, ?, ?, ?)", $arguments);
 
         self::createUserDirectory($id);
 
@@ -113,6 +130,10 @@ class Users {
 
     }
 
+    /**
+     * @param $code
+     * @param $password
+     */
     public static function completePasswordReset($code, $password) {
 
         $credentials = self::parseResetPasswordCode($code);
@@ -123,7 +144,9 @@ class Users {
 
     }
 
-
+    /**
+     * @param $id
+     */
     private static function createUserDirectory($id) {
 
         $path = new File(sprintf("%s/ui_%d", Config::getInstance()->getSetting("content", "content_folder")
@@ -133,6 +156,11 @@ class Users {
 
     }
 
+    /**
+     * @param $code
+     * @return mixed
+     * @throws \MVC\Exceptions\ControllerException
+     */
     public static function parseRegistrationCode($code) {
 
         $exception = new ControllerException("Entered security code is not correct");
@@ -153,6 +181,11 @@ class Users {
 
     }
 
+    /**
+     * @param $code
+     * @return mixed
+     * @throws \MVC\Exceptions\ControllerException
+     */
     public static function parseResetPasswordCode($code) {
 
         $exception = new ControllerException("Entered security code is not correct");

@@ -17,4 +17,10 @@ class HttpFile {
     public function getFile($file) {
         return Optional::ofEmpty(@$_FILES[$file]);
     }
+
+    public function each(callable $callback) {
+        foreach ($_FILES as $file) {
+            call_user_func($callback, $file);
+        }
+    }
 } 

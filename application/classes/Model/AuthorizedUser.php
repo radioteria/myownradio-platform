@@ -10,6 +10,7 @@ namespace Model;
 
 
 use MVC\Exceptions\ControllerException;
+use MVC\Services\Database;
 use MVC\Services\HttpSession;
 use MVC\Services\Injectable;
 use Tools\Singleton;
@@ -27,7 +28,7 @@ class AuthorizedUser extends User {
         $exception = ControllerException::noPermission();
 
         $token = HttpSession::getInstance()->get("TOKEN")->getOrElseThrow($exception);
-        return $this->db->fetchOneColumn("SELECT b.uid FROM r_sessions a LEFT JOIN r_users b ON a.uid = b.uid WHERE a.token = ?",
+        return Database::getInstance()->fetchOneColumn("SELECT b.uid FROM r_sessions a LEFT JOIN r_users b ON a.uid = b.uid WHERE a.token = ?",
             [$token])->getOrElseThrow($exception);
     }
 

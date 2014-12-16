@@ -13,6 +13,8 @@ use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
 use MVC\Services\HttpRequest;
 use MVC\Services\HttpSession;
+use MVC\Services\Mailer;
+use MVC\Template;
 
 class Users {
 
@@ -91,6 +93,29 @@ class Users {
         $session->set("TOKEN", $token);
 
         return User::getInstance();
+
+    }
+
+    public static function sendRegistrationLetter($email) {
+
+        $code = md5($email . "@myownradio.biz@" . $email);
+        $confirm = base64_encode(json_encode(['email' => $email, 'code' => $code]));
+
+        $template = new Template("application/tmpl/reg.request.mail.tmpl");
+        $mailer = new Mailer("no-reply@myownradio.biz", "The MyOwnRadio Team");
+
+        $template->addVariable("confirm", $confirm, true);
+
+        $mailer->addAddress($email);
+        $mailer->setContentType("text/html");
+        $mailer->setSubject("Registration on myownradio.biz");
+        $mailer->setBody($template->makeDocument());
+
+        try {
+            $mailer->send();
+        } catch (\Exception $exception) {
+            throw new ControllerException($exception->getMessage());
+        }
 
     }
 }

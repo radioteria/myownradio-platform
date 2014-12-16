@@ -25,6 +25,7 @@ class InputValidator {
     const TRACKS_LIST_PATTERN = "~^[0-9]+(,[0-9]+)*$~m";
 
     const LOGIN_MIN_LENGTH = 3;
+    const LOGIN_PATTERN = "~^[0-9a-z\\_]$~m";
 
     const STREAM_NAME_MIN_LENGTH = 3;
 
@@ -105,7 +106,26 @@ class InputValidator {
         });
 
         return $optional->getOrElseThrow(
-            new ControllerException("Stream name must contain at least 3 chars"));
+            new ControllerException("Stream name must contain at least 3 chars")
+        );
+
+    }
+
+    public function validateLogin($login) {
+
+        $optional = new Optional($login, function ($login) {
+
+            if (strlen($login) < self::LOGIN_MIN_LENGTH) {
+                return false;
+            }
+
+            return preg_match(self::LOGIN_PATTERN, $login);
+
+        });
+
+        return $optional->getOrElseThrow(
+            new ControllerException("Login must contain only 'a-z, 0-9, _' and be at least 3 chars long")
+        );
 
     }
 
@@ -158,6 +178,29 @@ class InputValidator {
 
     }
 
+    /**
+     * @param $email
+     * @return mixed
+     */
+    public function validateUniqueUserEmail($email) {
+
+        $optional = new Optional($email, function ($email) {
+
+            return !boolval(Database::getInstance()->fetchOneColumn(
+                "SELECT COUNT(*) FROM r_users WHERE mail = ?", [$email])->getRaw());
+
+        });
+
+        return $optional->getOrElseThrow(
+            new ControllerException(sprintf("User with email '%s' already exists", $email))
+        );
+
+    }
+
+    /**
+     * @param $tracks
+     * @return mixed
+     */
     public function validateTracksList($tracks) {
 
         $optional = new Optional($tracks, function ($tracks) {
@@ -167,6 +210,72 @@ class InputValidator {
         });
 
         return $optional->getOrElseThrow(new ControllerException("Invalid tracks list", $tracks));
+
+    }
+
+    /**
+     * @param $code
+     * @return mixed
+     */
+    public function validateRegistrationCode($code) {
+
+        $optional = new Optional($code, function ($code) {
+
+            $json = base64_decode($code);
+
+            if ($json === false) {
+                return false;
+            }
+
+            $decoded = json_decode($json, true);
+
+            if (is_null($decoded) || empty($decoded["email"]) || empty($decoded["code"])) {
+                return false;
+            }
+
+            return md5($decoded['email'] . "@myownradio.biz@" . $decoded['email']) === $decoded['code'];
+
+        });
+
+        return $optional->getOrElseThrow(new ControllerException("Incorrect code"));
+
+    }
+
+    public function validateUserPermalink($permalink, $selfCheck = false) {
+
+        $optional = new Optional($permalink, function ($permalink) use ($selfCheck) {
+
+            if ($permalink === null) {
+                return true;
+            }
+
+            if (!is_string($permalink)) {
+                return false;
+            }
+
+            if (strlen($permalink) == 0) {
+                return false;
+            }
+
+            if (!preg_match(self::PERMALINK_REGEXP_PATTERN, $permalink)) {
+                return false;
+            }
+
+            if ($selfCheck === false) {
+                $test = Database::getInstance()->fetchOneColumn("SELECT COUNT(*) FROM r_users WHERE permalink = ?",
+                    [$permalink])->getOrElseThrow(ControllerException::databaseError());
+            } else {
+                $test = Database::getInstance()->fetchOneColumn("SELECT COUNT(*) FROM r_users WHERE permalink = ? AND uid != ?",
+                    [$permalink, $selfCheck])->getOrElseThrow(ControllerException::databaseError());
+            }
+
+            return !boolval($test);
+
+        });
+
+        return $optional->getOrElseThrow(
+            new ControllerException(sprintf("'%s' is not valid stream permalink", $permalink))
+        );
 
     }
 

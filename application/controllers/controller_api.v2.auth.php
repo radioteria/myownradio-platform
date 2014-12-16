@@ -65,7 +65,7 @@ class post_controller extends controller
             $confirm = base64_encode(json_encode(array('email' => $email->get(), 'code' => $code)));
             
             $subject    = "Registration on myownradio.biz";
-            $sender     = "The MyOwnRadio Team <noreply@myownradio.biz>";
+            $sender     = "The MyOwnRadio Team <no-reply@myownradio.biz>";
             $flag       = "-fno-reply@myownradio.biz";
             
             $headers    = "Content-Type: text/html; charset=\"UTF-8\"\r\n";

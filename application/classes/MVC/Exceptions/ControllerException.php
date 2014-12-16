@@ -30,8 +30,8 @@ class ControllerException extends \Exception {
         return new self(sprintf("No value for argument '%s' specified", $name));
     }
 
-    public static function databaseError($message) {
-        return new self("Something wrong with database", $message);
+    public static function databaseError($message = "Something wrong with database") {
+        return new self($message);
     }
 
     public static function noStream($key) {

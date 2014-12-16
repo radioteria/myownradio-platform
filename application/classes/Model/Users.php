@@ -135,16 +135,18 @@ class Users {
 
     public static function parseRegistrationCode($code) {
 
+        $exception = new ControllerException("Entered security code is not correct");
+
         $json = base64_decode($code);
 
         if ($json === false) {
-            throw new ControllerException("Incorrect code");
+            throw $exception;
         }
 
         $decoded = json_decode($json, true);
 
         if (is_null($decoded) || empty($decoded["email"]) || empty($decoded["code"])) {
-            throw new ControllerException("Incorrect code");
+            throw $exception;
         }
 
         return $decoded["email"];
@@ -153,17 +155,23 @@ class Users {
 
     public static function parseResetPasswordCode($code) {
 
+        $exception = new ControllerException("Entered security code is not correct");
+
         $json = base64_decode($code);
 
         if ($json === false) {
-            throw new ControllerException("Incorrect code");
+            throw $exception;
         }
 
         $decoded = json_decode($json, true);
 
         if (empty($decoded["login"]) || empty($decoded["password"])) {
-            throw new ControllerException("Incorrect code");
+            throw $exception;
         }
+
+        Database::getInstance()->fetchOneRow("SELECT * FROM r_users WHERE login = ? AND password =?", [
+            $decoded["login"], $decoded["password"]
+        ])->getOrElseThrow(new ControllerException("Entered security code is not actual"));
 
         return $decoded;
 

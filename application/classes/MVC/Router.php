@@ -58,7 +58,7 @@ class Router {
 
     }
 
-    public function findRoute() {
+    private function findRoute() {
 
         $request = HttpRequest::getInstance();
         $class = str_replace("/", "\\", CONTROLLERS_ROOT . $this->route);

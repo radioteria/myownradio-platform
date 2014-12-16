@@ -52,6 +52,10 @@ class Track extends Model {
         $this->reload();
     }
 
+    /**
+     * @return $this
+     * @throws \MVC\Exceptions\ControllerException
+     */
     public function reload() {
 
         $userID = AuthorizedUser::getInstance()->getId();
@@ -203,6 +207,9 @@ class Track extends Model {
         return intval($this->uploaded);
     }
 
+    /**
+     * @return string
+     */
     public function getOriginalFile() {
         $config = Config::getInstance();
         return sprintf("%s/ui_%d/a_%03d_original.%s",
@@ -212,6 +219,40 @@ class Track extends Model {
             $this->getId(),
             $this->getExtension()
         );
+    }
+
+    /**
+     * @param $artist
+     * @param $title
+     * @param $album
+     * @param $trackNR
+     * @param $genre
+     * @param $date
+     * @param $color
+     */
+    public function edit($artist, $title, $album, $trackNR, $genre, $date, $color) {
+
+        $this->artist       = $artist;
+        $this->title        = $title;
+        $this->album        = $album;
+        $this->track_number = $trackNR;
+        $this->genre        = $genre;
+        $this->date         = $date;
+        $this->color        = $color;
+
+        $this->save();
+
+    }
+
+    /**
+     * @return void
+     */
+    public function delete() {
+
+        unlink($this->getOriginalFile());
+
+        $this->db->executeUpdate("DELETE FROM r_tracks WHERE tid = ?", [$this->key]);
+
     }
 
 }

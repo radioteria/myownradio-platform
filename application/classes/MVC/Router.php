@@ -61,6 +61,7 @@ class Router {
     private function findRoute() {
 
         $request = HttpRequest::getInstance();
+
         $class = str_replace("/", "\\", CONTROLLERS_ROOT . $this->route);
         $method = "do" . ucfirst($request->getMethod());
 
@@ -130,14 +131,14 @@ class Router {
     }
 
     private function outputOK($message = null, $data = null) {
-        $this->shout(1, $message, $data);
+        $this->outputJSON(1, $message, $data);
     }
 
     private function outputFailure($message = null, $data = null) {
-        $this->shout(0, $message, $data);
+        $this->outputJSON(0, $message, $data);
     }
 
-    private function shout($code = 1, $message = null, $data = null) {
+    private function outputJSON($code = 1, $message = null, $data = null) {
         header("Content-Type: application/json");
         echo json_encode([
             "status" => $code,

@@ -30,7 +30,7 @@ class StreamTrackList extends Model {
 
     public function __construct($id) {
         parent::__construct();
-        $this->user = new User();
+        $this->user = AuthorizedUser::getInstance();
         $this->key = $id;
         $this->reload();
     }

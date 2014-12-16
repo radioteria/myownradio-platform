@@ -99,29 +99,6 @@ class Users {
 
     }
 
-    public static function sendRegistrationLetter($email) {
-
-        $code = md5($email . "@myownradio.biz@" . $email);
-        $confirm = base64_encode(json_encode(['email' => $email, 'code' => $code]));
-
-        $template = new Template("application/tmpl/reg.request.mail.tmpl");
-        $mailer = new Mailer("no-reply@myownradio.biz", "The MyOwnRadio Team");
-
-        $template->addVariable("confirm", $confirm, true);
-
-        $mailer->addAddress($email);
-        $mailer->setContentType("text/html");
-        $mailer->setSubject("Registration on myownradio.biz");
-        $mailer->setBody($template->makeDocument());
-
-        try {
-            $mailer->send();
-        } catch (\Exception $exception) {
-            throw new ControllerException($exception->getMessage());
-        }
-
-    }
-
     public static function completeRegistration($code, $login, $password, $name, $info, $permalink) {
 
         $email = self::parseRegistrationCode($code);
@@ -131,6 +108,8 @@ class Users {
             permalink, registration_date) VALUES (?, ?, ?, ?, ?, ?, ?)", $arguments)->getOrElseThrow(ApplicationException::databaseException());
 
         self::createUserDirectory($id);
+
+        return new User($id);
 
     }
 
@@ -158,6 +137,24 @@ class Users {
         }
 
         return $decoded["email"];
+
+    }
+
+    public static function parseResetPasswordCode($code) {
+
+        $json = base64_decode($code);
+
+        if ($json === false) {
+            throw new ControllerException("Incorrect code");
+        }
+
+        $decoded = json_decode($json, true);
+
+        if (empty($decoded["login"]) || empty($decoded["password"])) {
+            throw new ControllerException("Incorrect code");
+        }
+
+        return $decoded;
 
     }
 }

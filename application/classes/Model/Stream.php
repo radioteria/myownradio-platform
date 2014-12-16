@@ -52,7 +52,7 @@ class Stream extends Model {
 
     private function load() {
 
-        $userId = User::getInstance()->getId();
+        $userId = AuthorizedUser::getInstance()->getId();
 
         $object = $this->db->fetchOneRow("SELECT * FROM r_streams WHERE sid = ?", [$this->key])
             ->getOrElseThrow(ControllerException::noStream($this->key));

@@ -52,12 +52,12 @@ class Track extends Model {
 
     public function reload() {
 
-        $userId = User::getInstance()->getId();
+        $userID = AuthorizedUser::getInstance()->getId();
 
         $object = $this->db->fetchOneRow("SELECT * FROM r_tracks WHERE tid = ?", [$this->key])
             ->getOrElseThrow(ControllerException::noTrack($this->key));
 
-        if (intval($object["uid"]) !== $userId) {
+        if (intval($object["uid"]) !== $userID) {
             throw ControllerException::noPermission();
         }
 

@@ -15,6 +15,6 @@ class HttpGet {
     use Singleton, Injectable;
 
     public function getParameter($key) {
-        return Optional::ofNull(FILTER_INPUT(INPUT_GET, $key));
+        return Optional::ofEmpty(FILTER_INPUT(INPUT_GET, $key));
     }
 } 

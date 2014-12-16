@@ -15,6 +15,6 @@ class HttpPost {
     use Singleton, Injectable;
 
     public function getParameter($key) {
-        return Optional::ofNull(FILTER_INPUT(INPUT_POST, $key));
+        return Optional::ofEmpty(FILTER_INPUT(INPUT_POST, $key));
     }
 } 

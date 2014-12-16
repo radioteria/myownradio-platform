@@ -4,12 +4,13 @@ namespace Tools;
 
 
 trait Singleton {
+
     protected static $_instance = [];
 
     /**
      * @return static
      */
-    final public static function getInstance() {
+    public static function getInstance() {
         $calledClass = get_called_class();
         $calledArgs  = func_get_args();
         $hash = serialize($calledArgs);
@@ -23,7 +24,7 @@ trait Singleton {
     /**
      * @return bool
      */
-    final public static function hasInstance() {
+    public static function hasInstance() {
         $hash = serialize(func_get_args());
         return isset(self::$_instance[$hash]) ? true : false;
     }

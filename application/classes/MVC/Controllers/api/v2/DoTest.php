@@ -9,26 +9,13 @@
 namespace MVC\Controllers\api\v2;
 
 
+use Model\AuthorizedUser;
+use Model\User;
 use MVC\Controller;
-use MVC\Services\HttpGet;
-use MVC\Services\JsonResponse;
 
 class DoTest extends Controller {
-    public function doGet(HttpGet $get, JsonResponse $response) {
+    public function doGet(AuthorizedUser $user) {
 
-        $get->getParameter("id")
-
-            ->then(function ($id) use ($response) {
-
-                $response->setMessage("ID = " . $id);
-
-            })
-
-            ->otherwise(function () use ($response) {
-
-                $response->setMessage("No ID :(");
-
-            });
 
     }
 } 

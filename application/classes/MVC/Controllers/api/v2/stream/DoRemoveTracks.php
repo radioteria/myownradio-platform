@@ -17,10 +17,12 @@ use MVC\Services\HttpPost;
 class DoRemoveTracks extends Controller {
 
     public function doPost(HttpPost $post) {
+
         $id     = $post->getParameter("id")     ->getOrElseThrow(ControllerException::noArgument("id"));
         $tracks = $post->getParameter("tracks") ->getOrElseThrow(ControllerException::noArgument("tracks"));
 
         StreamTrackList::getInstance($id)->removeTracks($tracks);
+
     }
 
 } 

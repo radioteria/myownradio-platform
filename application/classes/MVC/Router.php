@@ -17,19 +17,23 @@ use MVC\Services\HttpRequest;
 use MVC\Services\HttpResponse;
 use MVC\Services\JsonResponse;
 use ReflectionClass;
+use Tools\Module;
 use Tools\Singleton;
 
 class Router {
     private $route;
+    private $legacyRoute;
 
     function __construct() {
         $httpGet = HttpGet::getInstance();
 
-        $routeParts = explode("/", preg_replace('/(\.(html|php)$)|(\/$)/', '', $httpGet->getParameter("route")->getOrElse("index")));
+        $this->legacyRoute = preg_replace('/(\.(html|php)$)|(\/$)/', '', $httpGet->getParameter("route")->getOrElse("index"));
+
+        $routeParts = explode("/", $this->legacyRoute);
+
         $count = count($routeParts);
         $routeParts[$count - 1] = "Do" . ucfirst($routeParts[$count - 1]);
         $this->route = implode("/", $routeParts);
-
     }
 
     public function route() {
@@ -82,16 +86,16 @@ class Router {
         call_user_func_array([$classInstance, $method], $dependencies);
 
 
-            $response = JsonResponse::getInstance();
-            $reflection = new ReflectionClass($response);
+        $response = JsonResponse::getInstance();
+        $reflection = new ReflectionClass($response);
 
-            $msg = $reflection->getProperty("message");
-            $msg->setAccessible(true);
+        $msg = $reflection->getProperty("message");
+        $msg->setAccessible(true);
 
-            $data = $reflection->getProperty("data");
-            $data->setAccessible(true);
+        $data = $reflection->getProperty("data");
+        $data->setAccessible(true);
 
-            $this->outputOK($msg->getValue($response), $data->getValue($response));
+        $this->outputOK($msg->getValue($response), $data->getValue($response));
 
     }
 

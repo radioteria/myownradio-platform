@@ -9,14 +9,14 @@
 namespace MVC\Controllers\api\v2\self;
 
 
-use Model\User;
+use Model\AuthorizedUser;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
 use MVC\Services\InputValidator;
 
 class DoChangePassword extends Controller {
-    public function doPost(HttpPost $post, InputValidator $validator, User $user) {
+    public function doPost(HttpPost $post, InputValidator $validator, AuthorizedUser $user) {
 
         $password = $post->getParameter("password")
             ->getOrElseThrow(ControllerException::noArgument("password"));

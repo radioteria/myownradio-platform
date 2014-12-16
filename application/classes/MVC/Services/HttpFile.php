@@ -15,6 +15,6 @@ class HttpFile {
     use Singleton, Injectable;
 
     public function getFile($file) {
-        return Optional::ofNull(@$_FILES[$file]);
+        return Optional::ofEmpty(@$_FILES[$file]);
     }
 } 

@@ -9,7 +9,7 @@
 namespace MVC\Controllers\api\v2\self;
 
 
-use Model\Users;
+use Model\Letters;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -24,7 +24,7 @@ class DoSignUpBegin extends Controller {
         $validator->validateEmail($email);
         $validator->validateUniqueUserEmail($email);
 
-        Users::sendRegistrationLetter($email);
+        Letters::sendRegistrationLetter($email);
 
     }
 

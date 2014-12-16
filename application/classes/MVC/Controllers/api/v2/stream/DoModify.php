@@ -18,7 +18,7 @@ use MVC\Services\InputValidator;
 
 class DoModify extends Controller {
     public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response) {
-        // Get user input parameters
+
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
         $name = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));
         $info = $post->getParameter("info")->getOrElseEmpty();
@@ -26,7 +26,6 @@ class DoModify extends Controller {
         $permalink = $post->getParameter("permalink")->getOrElseNull();
         $category = $post->getParameter("category")->getOrElseNull();
 
-        // Validate parameters
         $validator->validateStreamName($name);
         $validator->validateStreamPermalink($permalink, $id);
 

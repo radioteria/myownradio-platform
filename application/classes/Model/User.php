@@ -3,19 +3,21 @@
 namespace Model;
 
 use MVC\Exceptions\ControllerException;
-use MVC\Services\HttpSession;
 use MVC\Services\Injectable;
 use Tools\Singleton;
 
+/**
+ * Class User
+ * @package Model
+ */
 class User extends Model {
-
-    use Singleton, Injectable;
 
     private $userId;
     private $userLogin;
     private $userName;
     private $userEmail;
     private $userInfo;
+    private $userPassword;
 
     private $userToken;
 
@@ -25,16 +27,31 @@ class User extends Model {
 
         parent::__construct();
 
-        $uid = $this->getIdBySessionToken();
+        if (func_num_args() == 1) {
 
-        $user = $this->db->fetchOneRow("SELECT * FROM r_users WHERE uid = ?", array($uid))
-            ->getOrElseThrow(ControllerException::noPermission());
+            $user = $this->db->fetchOneRow("SELECT * FROM r_users WHERE uid = :id OR mail = :id",
+                [":id" => func_get_arg(0)])
+                ->getOrElseThrow(new ControllerException(sprintf("User with login or email '%s' not exists",
+                    func_get_arg(0))));
+
+        } elseif (func_num_args() == 2) {
+
+            $user = $this->db->fetchOneRow("SELECT * FROM r_users WHERE login = ? AND password = ?",
+                array(func_get_arg(0), func_get_arg(1)))
+                ->getOrElseThrow(ControllerException::noPermission());
+
+        } else {
+
+            throw new \Exception("Incorrect number of arguments");
+
+        }
 
         $this->userId       = intval($user['uid']);
         $this->userLogin    = $user['login'];
         $this->userName     = $user['name'];
         $this->userEmail    = $user['mail'];
         $this->userInfo     = $user['info'];
+        $this->userPassword = $user["password"];
 
     }
     
@@ -97,13 +114,6 @@ class User extends Model {
     }
 
 
-    public function getIdBySessionToken() {
-        $exception = ControllerException::noPermission();
-
-        $token = HttpSession::getInstance()->get("TOKEN")->getOrElseThrow($exception);
-        return $this->db->fetchOneColumn("SELECT b.uid FROM r_sessions a LEFT JOIN r_users b ON a.uid = b.uid WHERE a.token = ?",
-            [$token])->getOrElseThrow($exception);
-    }
 
     public function update() {
         $this->db->executeUpdate("UPDATE r_users SET name = ?, info = ?, mail = ? WHERE uid = ?",
@@ -115,6 +125,18 @@ class User extends Model {
         if ($this->modifiedFlag) {
             $this->update();
         }
+    }
+
+    public function getPassword() {
+
+        return $this->userPassword;
+
+    }
+
+    public function getDisplayName() {
+
+        return empty($this->getName()) ? $this->getLogin() : $this->getName();
+
     }
 
 

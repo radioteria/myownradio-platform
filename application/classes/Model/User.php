@@ -148,8 +148,6 @@ class User extends Model {
         return $this;
     }
 
-
-
     public function update() {
         $this->db->executeUpdate("UPDATE r_users SET name = ?, info = ?, mail = ? WHERE uid = ?",
         [$this->userName, $this->userInfo, $this->userEmail, $this->userID]);

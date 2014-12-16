@@ -15,6 +15,6 @@ use MVC\Services\JsonResponse;
 
 class DoTest extends Controller {
     public function doGet(AuthorizedUser $user, JsonResponse $response) {
-        $response->setMessage(date("M d, Y", $user->getActivePlanExpire()));
+        $response->setData(date("M d, Y", $user->getActivePlanExpire()));
     }
 } 

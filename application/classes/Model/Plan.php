@@ -32,7 +32,7 @@ class Plan extends Model {
         $this->id = $plan["level"];
         $this->name = $plan["name"];
         $this->stream_limit = $plan["streams_max"];
-        $this->upload_limit = $plan["upload_limit"];
+        $this->upload_limit = intval($plan["upload_limit"]) * 60000;
         $this->price = $plan["price"];
 
     }

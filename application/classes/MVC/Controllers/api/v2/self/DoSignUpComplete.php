@@ -9,6 +9,7 @@
 namespace MVC\Controllers\api\v2\self;
 
 
+use Model\Users;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -21,13 +22,16 @@ class DoSignUpComplete extends Controller {
         $code       = $post->getParameter("code")       ->getOrElseThrow(ControllerException::noArgument("code"));
         $login      = $post->getParameter("login")      ->getOrElseThrow(ControllerException::noArgument("login"));
         $password   = $post->getParameter("password")   ->getOrElseThrow(ControllerException::noArgument("password"));
-        $name       = $post->getParameter("name")       ->getOrElseEmpty();
-        $info       = $post->getParameter("info")       ->getOrElseEmpty();
+        $name       = $post->getParameter("name")       ->getOrElseNull();
+        $info       = $post->getParameter("info")       ->getOrElseNull();
         $permalink  = $post->getParameter("permalink")  ->getOrElseNull();
 
         $validator->validateRegistrationCode($code);
         $validator->validatePassword($password);
+        $validator->validateLogin($login);
         $validator->validateUserPermalink($permalink);
+
+        Users::completeRegistration($code, $login, $password, $name, $info, $permalink);
 
     }
 

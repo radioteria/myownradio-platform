@@ -4,6 +4,8 @@ namespace MVC\Services;
 
 use BaseQuery;
 use FluentPDO;
+use MVC\Exceptions\ApplicationException;
+use MVC\Exceptions\ControllerException;
 use PDO;
 use Tools\Optional;
 use Tools\Singleton;
@@ -95,14 +97,20 @@ class Database {
      * @param string $key
      * @param Callable $callback
      * @return array
+     * @throws ControllerException
      */
     public function fetchAll($query, $params = array(), $key = null, $callback = null) {
 
-        $res = $this->pdo->prepare($this->queryQuote($query, $params));
-        $res->execute();
+        $resource = $this->pdo->prepare($this->queryQuote($query, $params));
+        $resource->execute();
+
+        if ($resource->errorCode() !== "00000") {
+            throw new ControllerException($resource->errorInfo()[2]);
+        }
+
         $result = [];
 
-        while ($row = $res->fetch(PDO::FETCH_ASSOC)) {
+        while ($row = $resource->fetch(PDO::FETCH_ASSOC)) {
 
             if (is_callable($callback)) {
                 $row = call_user_func($callback, $row);
@@ -128,14 +136,19 @@ class Database {
      * @param array $params
      * @param Callable $callback
      * @return Optional
+     * @throws ControllerException
      */
     public function fetchOneRow($query, $params = array(), $callback = null) {
 
         $queryString = $this->queryQuote($query, $params);
-        $res = $this->pdo->prepare($queryString);
-        $res->execute();
+        $resource = $this->pdo->prepare($queryString);
+        $resource->execute();
 
-        $row = $res->fetch(PDO::FETCH_ASSOC);
+        if ($resource->errorCode() !== "00000") {
+            throw new ControllerException($resource->errorInfo()[2]);
+        }
+
+        $row = $resource->fetch(PDO::FETCH_ASSOC);
 
         if ($row !== false && is_callable($callback)) {
             $row = call_user_func($callback, $row);
@@ -150,13 +163,18 @@ class Database {
      * @param array $params
      * @param int $column
      * @return Optional
+     * @throws ControllerException
      */
     public function fetchOneColumn($query, $params = [], $column = 0) {
 
-        $res = $this->pdo->prepare($this->queryQuote($query, $params));
-        $res->execute();
+        $resource = $this->pdo->prepare($this->queryQuote($query, $params));
+        $resource->execute();
 
-        $row = $res->fetchColumn($column);
+        if ($resource->errorCode() !== "00000") {
+            throw new ControllerException($resource->errorInfo()[2]);
+        }
+
+        $row = $resource->fetchColumn($column);
 
         return Optional::ofDeceptive($row);
 
@@ -167,13 +185,19 @@ class Database {
      * @param array $params
      * @param string $class
      * @return Optional
+     * @throws ControllerException
      */
     public function fetchOneObject($query, $params = [], $class) {
 
-        $res = $this->pdo->prepare($this->queryQuote($query, $params));
-        $res->execute();
+        $resource = $this->pdo->prepare($this->queryQuote($query, $params));
+        $resource->execute();
 
-        $object = $res->fetchObject($class);
+        if ($resource->errorCode() !== "00000") {
+            throw new ControllerException($resource->errorInfo()[2]);
+        }
+
+
+        $object = $resource->fetchObject($class);
 
         return Optional::ofDeceptive($object);
 
@@ -184,13 +208,18 @@ class Database {
      * @param array $params
      * @param $class
      * @return array
+     * @throws ControllerException
      */
     public function fetchAllObjects($query, $params = [], $class) {
 
-        $res = $this->pdo->prepare($this->queryQuote($query, $params));
-        $res->execute();
+        $resource = $this->pdo->prepare($this->queryQuote($query, $params));
+        $resource->execute();
 
-        $objects = $res->fetchAll(PDO::FETCH_CLASS, $class);
+        if ($resource->errorCode() !== "00000") {
+            throw new ControllerException($resource->errorInfo()[2]);
+        }
+
+        $objects = $resource->fetchAll(PDO::FETCH_CLASS, $class);
 
         return $objects;
 
@@ -200,13 +229,18 @@ class Database {
      * @param string $query
      * @param array $params
      * @return int
+     * @throws ControllerException
      */
     public function executeUpdate($query, $params = []) {
 
-        $res = $this->pdo->prepare($this->queryQuote($query, $params));
-        $res->execute();
+        $resource = $this->pdo->prepare($this->queryQuote($query, $params));
+        $resource->execute();
 
-        return $res->rowCount();
+        if ($resource->errorCode() !== "00000") {
+            throw new ControllerException($resource->errorInfo()[2]);
+        }
+
+        return $resource->rowCount();
 
     }
 
@@ -214,12 +248,17 @@ class Database {
      * @param string $query
      * @param array $params
      * @return Optional
+     * @throws ControllerException
      */
     public function executeInsert($query, $params = []) {
 
         $queryString = $this->queryQuote($query, $params);
         $resource = $this->pdo->prepare($queryString);
         $result = $resource->execute();
+
+        if ($resource->errorCode() !== "00000") {
+            throw new ControllerException($resource->errorInfo()[2]);
+        }
 
         return Optional::ofNull($result ? $this->pdo->lastInsertId(null) : null);
 

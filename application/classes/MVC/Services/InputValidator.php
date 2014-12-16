@@ -25,7 +25,7 @@ class InputValidator {
     const TRACKS_LIST_PATTERN = "~^[0-9]+(,[0-9]+)*$~m";
 
     const LOGIN_MIN_LENGTH = 3;
-    const LOGIN_PATTERN = "~^[0-9a-z\\_]$~m";
+    const LOGIN_PATTERN = "~^[0-9a-z_]+$~m";
 
     const STREAM_NAME_MIN_LENGTH = 3;
 

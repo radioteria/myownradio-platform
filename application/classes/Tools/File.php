@@ -132,12 +132,12 @@ class File {
         return $this;
     }
     
-    public function createNewDirectory($recursive = false) {
+    public function createNewDirectory($rights = 0777, $recursive = false) {
         if ($this->exists()) {
             throw FileException::fileExists($this->file);
         }
         
-        $result = mkdir($this->file, 0777, $recursive);
+        $result = mkdir($this->file, NEW_DIR_RIGHTS, $recursive);
         if ($result === false) {
             throw FileException::noAccess($this->file);
         }

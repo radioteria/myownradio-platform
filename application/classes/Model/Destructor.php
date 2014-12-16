@@ -23,4 +23,18 @@ class Destructor extends Model {
         }
     }
 
+    public function deleteFromStreams($tracks) {
+
+        $streams = $this->db->fetchAll("SELECT stream_id, GROUP_CONCAT(unique_id) as unique_ids
+            FROM r_link WHERE FIND_IN_SET(track_id, ?) GROUP BY stream_id", [$tracks]);
+
+        foreach($streams as $streamID => $uniqueIDs) {
+
+            $stream = new StreamTrackList($streamID);
+            $stream->removeTracks($uniqueIDs);
+
+        }
+
+    }
+
 } 

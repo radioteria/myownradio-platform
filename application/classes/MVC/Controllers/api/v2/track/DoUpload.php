@@ -11,7 +11,6 @@ namespace MVC\Controllers\api\v2\track;
 
 use Model\Factory;
 use MVC\Controller;
-use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpFile;
 use MVC\Services\HttpPost;
 

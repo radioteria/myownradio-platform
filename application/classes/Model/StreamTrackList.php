@@ -184,7 +184,7 @@ class StreamTrackList extends Model {
             return $this->getTrackByTime($time->getRaw());
         }
 
-        return Optional::bad();
+        return Optional::noValue();
 
     }
 
@@ -238,6 +238,7 @@ class StreamTrackList extends Model {
             $query = "SELECT time_offset FROM r_link WHERE unique_id = ? AND stream_id = ?";
 
             $this->db->fetchOneColumn($query, [$track["unique_id"], $this->key])
+
                 ->then(function ($offset) use ($track) {
 
                     $cursor = $track["cursor"];
@@ -250,7 +251,7 @@ class StreamTrackList extends Model {
 
                 });
 
-                // TODO: Otherwise method needs to be implemented
+                // TODO: Otherwise method needs to be implemented (if track not found)
 
         });
 
@@ -271,7 +272,6 @@ class StreamTrackList extends Model {
         $query = $this->db->getFluentPDO()->from("r_tracks a")->
             leftJoin("r_link b ON a.tid = b.track_id")
             ->where("b.unique_id", $track)
-            ->where("b.stream_id", $this->key)
             ->select(["b.unique_id", "b.time_offset"]);
 
         $track = $this->db->fetchOneRow($query->getQuery(false), $query->getParameters())

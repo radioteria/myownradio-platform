@@ -203,7 +203,7 @@ class Optional {
     /**
      * @return Optional
      */
-    public static function bad() {
+    public static function noValue() {
         return new self(null, function () { return false; });
     }
 

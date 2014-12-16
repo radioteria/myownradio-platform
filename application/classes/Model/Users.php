@@ -113,6 +113,17 @@ class Users {
 
     }
 
+    public static function completePasswordReset($code, $password) {
+
+        $credentials = self::parseResetPasswordCode($code);
+
+        $user = new User($credentials["login"], $credentials["password"]);
+
+        $user->changePassword($password);
+
+    }
+
+
     private static function createUserDirectory($id) {
 
         $path = new File(sprintf("%s/ui_%d", Config::getInstance()->getSetting("content", "content_folder")
@@ -157,4 +168,5 @@ class Users {
         return $decoded;
 
     }
+
 }

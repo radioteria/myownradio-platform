@@ -22,8 +22,8 @@ class Letters {
         $code = md5($email . "@myownradio.biz@" . $email);
         $confirm = base64_encode(json_encode(['email' => $email, 'code' => $code]));
 
-        $template = new Template("application/tmpl/reg.request.mail.tmpl");
-        $mailer = new Mailer(REG_MAIL, REG_NAME);
+        $template   = new Template("application/tmpl/reg.request.mail.tmpl");
+        $mailer     = new Mailer(REG_MAIL, REG_NAME);
 
         $template->addVariable("confirm", $confirm, false);
 
@@ -32,9 +32,8 @@ class Letters {
         $mailer->setSubject("Registration on myownradio.biz");
         $mailer->setBody($template->makeDocument());
 
-        try {
-            $mailer->send();
-        } catch (\Exception $exception) {
+        try { $mailer->send(); }
+        catch (\Exception $exception) {
             throw new ControllerException($exception->getMessage());
         }
 
@@ -47,8 +46,8 @@ class Letters {
 
         $code = base64_encode(json_encode(["login" => $user->getLogin(), "password" => $user->getPassword()]));
 
-        $template = new Template("application/tmpl/reg.reset.password.tmpl");
-        $mailer = new Mailer(REG_MAIL, REG_NAME);
+        $template   = new Template("application/tmpl/reg.reset.password.tmpl");
+        $mailer     = new Mailer(REG_MAIL, REG_NAME);
 
         $template->addVariable("name", $user->getDisplayName(), false);
         $template->addVariable("code", $code, false);

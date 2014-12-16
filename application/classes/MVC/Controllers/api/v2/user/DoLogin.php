@@ -6,7 +6,7 @@
  * Time: 9:50
  */
 
-namespace MVC\Controllers\api\v2\self;
+namespace MVC\Controllers\api\v2\user;
 
 
 use Model\Users;
@@ -20,4 +20,5 @@ class DoLogin extends Controller {
         $password = $post->getParameter("password")->getOrElseThrow(ControllerException::noArgument("password"));
         Users::authorizeByLoginPassword($login, $password);
     }
+
 } 

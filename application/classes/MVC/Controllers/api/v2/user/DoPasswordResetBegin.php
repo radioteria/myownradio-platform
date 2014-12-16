@@ -14,7 +14,7 @@ use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
 
-class DoResetPasswordBegin extends Controller {
+class DoPasswordResetBegin extends Controller {
 
     public function doPost(HttpPost $post) {
 

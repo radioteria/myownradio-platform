@@ -35,14 +35,14 @@ class Factory extends Model {
     public function createStream($name, $info, $hashtags, $category, $permalink) {
         $id = $this->db->executeInsert(
             "INSERT INTO r_streams (uid, name, info, hashtags, category, permalink) VALUES (?, ?, ?, ?, ?, ?)",
-            [User::getInstance()->getId(), $name, $info, $hashtags, $category, $permalink]);
+            [AuthorizedUser::getInstance()->getId(), $name, $info, $hashtags, $category, $permalink]);
 
         return Streams::getInstance()->getOneStream($id);
     }
 
     public function deleteStream($id) {
         $result = $this->db->executeUpdate("DELETE FROM r_streams WHERE sid = ? AND uid = ?",
-            [$id, User::getInstance()->getId()]);
+            [$id, AuthorizedUser::getInstance()->getId()]);
 
         if ($result === 0) {
             throw new ControllerException("Stream not found or no permission");
@@ -51,6 +51,7 @@ class Factory extends Model {
         }
     }
 
+    // todo: Need to verify user plan
     public function uploadFile(array $file, Optional $addToStream) {
 
         $user = AuthorizedUser::getInstance();

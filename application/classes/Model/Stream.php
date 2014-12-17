@@ -44,6 +44,8 @@ class Stream extends Model {
     protected $cover;
     protected $created;
 
+    protected $user;
+
     public function __construct($id) {
         parent::__construct();
         $this->key = $id;

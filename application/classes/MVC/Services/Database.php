@@ -2,9 +2,6 @@
 
 namespace MVC\Services;
 
-use BaseQuery;
-use FluentPDO;
-use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\DB\DBQuery;
 use MVC\Services\DB\Query\QueryBuilder;
@@ -23,10 +20,9 @@ class Database {
     public function __construct() {
 
         $this->settings = Config::getInstance()->getSection('database')->getOrElse([
-            "db_database" => "myownradio",
-            "db_login" => "root",
+            "db_login"    => "root",
             "db_password" => "",
-            "db_hostname" => "127.0.0.1"
+            "db_dsn"      => "mysql:host=localhost;dbname=myownradio"
         ]);
 
         $this->connect();
@@ -38,10 +34,10 @@ class Database {
      */
     public function connect() {
 
-        $this->pdo = new PDO("mysql:unix_socket=/tmp/mysql.sock;dbname={$this->settings['db_database']}",
-            $this->settings['db_login'], $this->settings['db_password'], array(PDO::ATTR_PERSISTENT => true));
-
-        $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+        $this->pdo = new PDO($this->settings['db_dsn'], $this->settings['db_login'], $this->settings['db_password'], [
+            PDO::ATTR_EMULATE_PREPARES  => false,
+            PDO::ATTR_PERSISTENT        => true
+        ]);
 
         return $this;
 
@@ -58,17 +54,28 @@ class Database {
 
     }
 
+    /**
+     * @param callable $callable
+     * @return mixed
+     */
     public static function doInTransaction(callable $callable) {
 
         $connection = new self();
         $connection->beginTransaction();
 
-        $result = call_user_func_array($callable, [$connection, DBQuery::getInstance()]);
+        $result = call_user_func_array($callable, [$connection]);
 
         $connection->disconnect();
 
         return $result;
 
+    }
+
+    /**
+     * @return DBQuery
+     */
+    public function getDBQuery() {
+        return DBQuery::getInstance();
     }
 
     /**

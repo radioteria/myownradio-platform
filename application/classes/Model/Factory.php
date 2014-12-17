@@ -21,6 +21,7 @@ use Tools\Optional;
 use Tools\Singleton;
 
 class Factory extends Model {
+
     use Singleton, Injectable;
 
     /**
@@ -32,31 +33,64 @@ class Factory extends Model {
      * @return array
      * @throws ControllerException
      */
+
+    /** @var User */
+    private $user;
+
+    function __construct() {
+        $this->user = AuthorizedUser::getInstance();
+    }
+
+
     public function createStream($name, $info, $hashtags, $category, $permalink) {
-        $id = $this->db->executeInsert(
-            "INSERT INTO r_streams (uid, name, info, hashtags, category, permalink) VALUES (?, ?, ?, ?, ?, ?)",
-            [AuthorizedUser::getInstance()->getId(), $name, $info, $hashtags, $category, $permalink]);
+
+
+
+        $id = Database::doInTransaction(function (Database $db)
+                                        use ($name, $info, $hashtags, $category, $permalink) {
+
+            $query = $db->getDBQuery()->insertInto("r_streams");
+            $query->values([
+                "uid"       => $this->user->getId(),
+                "name"      => $name,
+                "info"      => $info,
+                "hashtags"  => $hashtags,
+                "category"  => $category,
+                "permalink" => $permalink
+            ]);
+
+            $uid = $db->executeInsert($query);
+
+            $db->commit();
+
+            return $uid;
+
+        });
 
         return Streams::getInstance()->getOneStream($id);
+
     }
 
     public function deleteStream($id) {
-        $result = $this->db->executeUpdate("DELETE FROM r_streams WHERE sid = ? AND uid = ?",
-            [$id, AuthorizedUser::getInstance()->getId()]);
 
-        if ($result === 0) {
-            throw new ControllerException("Stream not found or no permission");
-        } else {
-            StreamTrackList::notifyAllStreamers($id);
-        }
+        Database::doInTransaction(function (Database $db) use ($id) {
+
+            $result = $db->executeUpdate("DELETE FROM r_streams WHERE sid = ? AND uid = ?",
+                [$id, $this->user->getId()]);
+
+            if ($result === 0) {
+                throw new ControllerException("Stream not found or no permission");
+            } else {
+                StreamTrackList::notifyAllStreamers($id);
+            }
+
+        });
+
     }
 
-    // todo: Need to verify user plan
     public function uploadFile(array $file, Optional $addToStream) {
 
-        $user = AuthorizedUser::getInstance();
         $config = Config::getInstance();
-        $database = Database::getInstance();
 
         // Check file type is supported
         if(array_search($file['type'], $config->getSetting('upload', 'supported_audio')->getOrElse([])) === false) {
@@ -65,61 +99,68 @@ class Factory extends Model {
 
         $audioTags = Common::getAudioTags($file['tmp_name']);
 
-        if(empty($audioTags['DURATION']) || $audioTags['DURATION'] == 0) {
-            throw new ControllerException("Uploaded file has no duration");
-        }
 
-        if($audioTags['DURATION'] > $config->getSetting('upload', 'maximal_length')->getOrElseThrow(
+        $duration = $audioTags['DURATION']
+            ->getOrElseThrow(new ControllerException("Uploaded file has zero duration"));
+
+        if($duration > $config->getSetting('upload', 'maximal_length')->getOrElseThrow(
                 ApplicationException::of("MAXIMAL TRACK DURATION NOT SPECIFIED"))
         ) {
-            throw new ControllerException("Uploaded file is too long: " . $audioTags["DURATION"]);
+            throw new ControllerException("Uploaded file is too long: " . $duration);
         }
 
-        $database->beginTransaction();
+        $uploadTimeLeft = $this->user->getActivePlan()->getUploadLimit() - $this->user->getTracksDuration();
 
-        $id = $database->executeInsert($database->createQuery(
-            function(FluentPDO $fpdo) use ($file, $audioTags, $user) {
-                $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
-                $query = $fpdo->insertInto("r_tracks")->values([
-                    "uid"           => $user->getId(),
-                    "filename"      => $file["name"],
-                    "ext"           => $extension,
-                    "track_number"  => Optional::ofEmpty($audioTags["TRACKNUMBER"])    ->getOrElseEmpty(),
-                    "artist"        => Optional::ofEmpty($audioTags["PERFORMER"])      ->getOrElseEmpty(),
-                    "title"         => Optional::ofEmpty($audioTags["TITLE"])          ->getOrElse($file['name']),
-                    "album"         => Optional::ofEmpty($audioTags["ALBUM"])          ->getOrElseEmpty(),
-                    "genre"         => Optional::ofEmpty($audioTags["GENRE"])          ->getOrElseEmpty(),
-                    "date"          => Optional::ofEmpty($audioTags["RECORDED_DATE"])  ->getOrElseEmpty(),
-                    "duration"      => $audioTags["DURATION"],
-                    "filesize"      => filesize($file["tmp_name"]),
-                    'uploaded'      => time()
-                ]);
-                return $query;
-            }));
-
-        $track = new Track($id);
-
-        $result = move_uploaded_file($file['tmp_name'], $track->getOriginalFile());
-
-        if($result) {
-
-            $database->commit();
-
-            $addToStream->then(function ($streamID) use ($track) {
-
-                $streamObject = new StreamTrackList($streamID);
-                $streamObject->addTracks($track->getId());
-
-            });
-
-
-        } else {
-
-            $database->rollback();
-
-            throw ApplicationException::of("FILE COULD NOT BE MOVED TO USER FOLDER");
-
+        if ($uploadTimeLeft < $duration) {
+            throw new ControllerException("You are exceeded available upload time. Please upgrade your account.");
         }
+
+        Database::doInTransaction(function (Database $db) use ($file, $audioTags, $addToStream, $duration) {
+
+            $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
+
+            $query = $db->getDBQuery()->insertInto("r_tracks")->values([
+                "uid"           => $this->user->getId(),
+                "filename"      => $file["name"],
+                "ext"           => $extension,
+                "track_number"  => $audioTags["TRACKNUMBER"]->getOrElseEmpty(),
+                "artist"        => $audioTags["PERFORMER"]->getOrElseEmpty(),
+                "title"         => $audioTags["TITLE"]->getOrElse($file['name']),
+                "album"         => $audioTags["ALBUM"]->getOrElseEmpty(),
+                "genre"         => $audioTags["GENRE"]->getOrElseEmpty(),
+                "date"          => $audioTags["RECORDED_DATE"]->getOrElseEmpty(),
+                "duration"      => $duration,
+                "filesize"      => filesize($file["tmp_name"]),
+                'uploaded'      => time()
+            ]);
+
+            $id = $db->executeInsert($query);
+
+            $track = new Track($id);
+
+            $result = move_uploaded_file($file['tmp_name'], $track->getOriginalFile());
+
+            if ($result !== false) {
+
+                $db->commit();
+
+                $addToStream->then(function ($streamID) use ($track) {
+
+                    $streamObject = new StreamTrackList($streamID);
+                    $streamObject->addTracks($track->getId());
+
+                });
+
+
+            } else {
+
+                $db->rollback();
+
+                throw ApplicationException::of("FILE COULD NOT BE MOVED TO USER FOLDER");
+
+            }
+
+        });
 
     }
 

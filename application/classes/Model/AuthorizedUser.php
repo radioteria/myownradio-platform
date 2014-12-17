@@ -20,16 +20,32 @@ class AuthorizedUser extends User {
     use Singleton, Injectable;
 
     function __construct() {
+
         $uid = $this->getIdBySessionToken();
+
         parent::__construct($uid);
+
     }
 
     public function getIdBySessionToken() {
+
         $exception = ControllerException::noPermission();
 
         $token = HttpSession::getInstance()->get("TOKEN")->getOrElseThrow($exception);
-        return Database::getInstance()->fetchOneColumn("SELECT b.uid FROM r_sessions a LEFT JOIN r_users b ON a.uid = b.uid WHERE a.token = ?",
-            [$token])->getOrElseThrow($exception);
+
+        $uid = Database::doInTransaction(function (Database $db) use ($token, $exception) {
+
+            $query = $db->getDBQuery()
+                ->selectFrom("r_sessions a")->leftJoin("r_users b", "a.uid = b.uid")
+                ->where("a.token", $token);
+
+            return $db->fetchOneColumn($query)
+                ->getOrElseThrow($exception);
+
+        });
+
+        return $uid;
+
     }
 
 }

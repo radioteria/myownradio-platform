@@ -10,6 +10,7 @@ namespace Model;
 
 
 use MVC\Exceptions\ControllerException;
+use MVC\Services\Database;
 use Tools\Singleton;
 
 class Plan extends Model {
@@ -26,14 +27,18 @@ class Plan extends Model {
 
         parent::__construct();
 
-        $plan = $this->db->fetchOneRow("SELECT * FROM r_limitations WHERE level = ?", [$id])
-            ->getOrElseThrow(new ControllerException(sprintf("Plan with ID = %s not exists", $id)));
+        Database::doInTransaction(function (Database $db) use ($id) {
 
-        $this->id = $plan["level"];
-        $this->name = $plan["name"];
-        $this->stream_limit = $plan["streams_max"];
-        $this->upload_limit = intval($plan["upload_limit"]) * 60000;
-        $this->price = $plan["price"];
+            $plan = $db->fetchOneRow("SELECT * FROM r_limitations WHERE level = ?", [$id])
+                ->getOrElseThrow(new ControllerException(sprintf("Plan with ID = %s not exists", $id)));
+
+            $this->id = $plan["level"];
+            $this->name = $plan["name"];
+            $this->stream_limit = $plan["streams_max"];
+            $this->upload_limit = intval($plan["upload_limit"]) * 60000;
+            $this->price = $plan["price"];
+
+        });
 
     }
 

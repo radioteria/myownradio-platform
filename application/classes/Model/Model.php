@@ -9,15 +9,12 @@
 namespace Model;
 
 
-use MVC\Services\Database;
-
+/**
+ * Class Model
+ * @package Model
+ */
 class Model {
 
-    /** @var Database */
-    protected $db;
-
     function __construct() {
-        $this->db = Database::getInstance();
     }
-
 }

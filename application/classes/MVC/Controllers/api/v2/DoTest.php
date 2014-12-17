@@ -14,15 +14,15 @@ use MVC\Services\Database;
 use MVC\Services\JsonResponse;
 
 class DoTest extends Controller {
+
     public function doGet(JsonResponse $response) {
 
-        $track = Database::doInTransaction(function (Database $db) {
+        Database::doInTransaction(function (Database $db) {
 
-            return $db->fetchOneRow("SELECT 1")->getOrElse("No track");
+            $db->fetchOneColumn("SELECT COUNT(r_tracks)");
 
         });
 
-        $response->setData($track);
-
     }
+
 } 

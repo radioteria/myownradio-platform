@@ -71,6 +71,11 @@ class Common {
         return $clean;
     }
 
+    /**
+     * @param $filename
+     * @return Optional[]
+     * @throws \MVC\Exceptions\ControllerException
+     */
     static function getAudioTags($filename) {
 
         $fetcher = Config::getInstance()->getSetting("getters", "mediainfo")
@@ -99,6 +104,10 @@ class Common {
                 }
             }
         });
+
+        foreach($tagsData as &$tag) {
+            $tag = Optional::ofEmpty($tag);
+        }
 
         $tagsArray = array_combine($tagsList, $tagsData);
 

@@ -20,8 +20,7 @@ class Destructor extends Model {
     public function deleteTrack($tracks) {
 
         foreach (explode(",", $tracks) as $track) {
-            $object = new Track($track);
-            $object->delete();
+            (new Track($track))->delete();
         }
 
     }
@@ -43,8 +42,8 @@ class Destructor extends Model {
 
         foreach($streams as $streamID => $uniqueIDs) {
 
-            $stream = new StreamTrackList($streamID);
-            $stream->removeTracks($uniqueIDs);
+            (new StreamTrackList($streamID))
+                ->removeTracks($uniqueIDs);
 
         }
 

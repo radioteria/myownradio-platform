@@ -16,8 +16,8 @@ use MVC\Services\HttpPost;
 
 class DoLogin extends Controller {
     public function doPost(HttpPost $post) {
-        $login = $post->getParameter("login")->getOrElseThrow(ControllerException::noArgument("login"));
-        $password = $post->getParameter("password")->getOrElseThrow(ControllerException::noArgument("password"));
+        $login      = $post->getParameter("login")->getOrElseThrow(ControllerException::noArgument("login"));
+        $password   = $post->getParameter("password")->getOrElseThrow(ControllerException::noArgument("password"));
         Users::authorizeByLoginPassword($login, $password);
     }
 

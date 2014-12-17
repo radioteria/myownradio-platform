@@ -11,6 +11,7 @@ namespace Model;
 
 use Model\Traits\StreamTracksList;
 use MVC\Exceptions\ControllerException;
+use MVC\Services\Database;
 use ReflectionClass;
 use Tools\Singleton;
 
@@ -44,22 +45,26 @@ class Stream extends Model {
     protected $cover;
     protected $created;
 
+    /** @var User $user */
     protected $user;
 
     public function __construct($id) {
         parent::__construct();
+        $this->user = AuthorizedUser::getInstance();
         $this->key = $id;
         $this->load();
     }
 
     private function load() {
 
-        $userId = AuthorizedUser::getInstance()->getId();
+        $object = Database::doInTransaction(function (Database $db) {
 
-        $object = $this->db->fetchOneRow("SELECT * FROM r_streams WHERE sid = ?", [$this->key])
-            ->getOrElseThrow(ControllerException::noStream($this->key));
+            return $db->fetchOneRow("SELECT * FROM r_streams WHERE sid = ?", [$this->key])
+                ->getOrElseThrow(ControllerException::noStream($this->key));
 
-        if (intval($object["uid"]) !== $userId) {
+        });
+
+        if (intval($object["uid"]) !== $this->user->getId()) {
             throw ControllerException::noPermission();
         }
 
@@ -78,28 +83,33 @@ class Stream extends Model {
 
     public function save() {
 
-        $fluent = $this->db->getFluentPDO();
-        $query = $fluent->update("r_streams");
+        Database::doInTransaction(function (Database $db) {
 
-        try {
+            $query = $db->getDBQuery()->updateTable("r_streams");
 
-            $reflection = new ReflectionClass($this);
+            try {
 
-            $keyProperty = $reflection->getProperty($this->bean_key);
-            $keyProperty->setAccessible(true);
-            $query->where($this->bean_key, $keyProperty->getValue($this));
+                $reflection = new ReflectionClass($this);
 
-            foreach ($this->bean_update as $field) {
-                $property = $reflection->getProperty($field);
-                $property->setAccessible(true);
-                $query->set($property->getName(), $property->getValue($this));
+                $keyProperty = $reflection->getProperty($this->bean_key);
+                $keyProperty->setAccessible(true);
+                $query->where($this->bean_key, $keyProperty->getValue($this));
+
+                foreach ($this->bean_update as $field) {
+                    $property = $reflection->getProperty($field);
+                    $property->setAccessible(true);
+                    $query->set($property->getName(), $property->getValue($this));
+                }
+
+                $db->executeUpdate($query);
+
+                $db->commit();
+
+            } catch (\ReflectionException $exception) {
+                throw new ControllerException($exception->getMessage());
             }
 
-            $this->db->executeUpdate($query->getQuery(), $query->getParameters());
-
-        } catch (\ReflectionException $exception) {
-            throw new ControllerException($exception->getMessage());
-        }
+        });
 
     }
 
@@ -192,9 +202,8 @@ class Stream extends Model {
      * @return int
      */
     public function getUid() {
-        return int($this->uid);
+        return intval($this->uid);
     }
-
 
 
     /**

@@ -26,7 +26,6 @@ abstract class BaseQuery {
     protected $limit = null;
     protected $offset = null;
 
-
     protected function quoteColumnName($column) {
         return "`" . $column . "`";
     }

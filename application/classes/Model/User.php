@@ -4,6 +4,7 @@ namespace Model;
 
 use Model\Traits\Stats;
 use MVC\Exceptions\ControllerException;
+use MVC\Services\Database;
 use MVC\Services\Injectable;
 use Tools\Singleton;
 
@@ -32,18 +33,28 @@ class User extends Model {
 
         parent::__construct();
 
+
         if (func_num_args() == 1) {
 
-            $user = $this->db->fetchOneRow("SELECT * FROM r_users WHERE uid = :id OR mail = :id",
-                [":id" => func_get_arg(0)])
-                ->getOrElseThrow(new ControllerException(sprintf("User with login or email '%s' not exists",
-                    func_get_arg(0))));
+            $key = func_get_arg(0);
+
+            $user = Database::doInTransaction(function(Database $db) use ($key) {
+                return $db->fetchOneRow("SELECT * FROM r_users WHERE uid = :id OR mail = :id", [":id" => $key])
+                    ->getOrElseThrow(
+                        new ControllerException(sprintf("User with login or email '%s' not exists", $key))
+                    );
+            });
+
 
         } elseif (func_num_args() == 2) {
 
-            $user = $this->db->fetchOneRow("SELECT * FROM r_users WHERE login = ? AND password = ?",
-                array(func_get_arg(0), func_get_arg(1)))
-                ->getOrElseThrow(ControllerException::noPermission());
+            $login = func_get_arg(0);
+            $password = func_get_arg(1);
+
+            $user = Database::doInTransaction(function(Database $db) use ($login, $password) {
+                return $db->fetchOneRow("SELECT * FROM r_users WHERE login = ? AND password = ?", [$login, $password])
+                    ->getOrElseThrow(ControllerException::noPermission());
+            });
 
         } else {
 
@@ -51,9 +62,20 @@ class User extends Model {
 
         }
 
-        $active = $this->db->fetchOneRow("SELECT * FROM r_subscriptions
-            WHERE uid = ? AND expire > UNIX_TIMESTAMP(NOW()) ORDER BY id DESC LIMIT 1", [$user["uid"]])
-            ->getOrElse(["plan" => 0, "expire" => null]);
+        $active = Database::doInTransaction(function (Database $db) use ($user) {
+
+            $query = $db->getDBQuery()->selectFrom("r_subscriptions");
+            $query->select("*");
+            $query->where("uid", $user["uid"]);
+            $query->where("expire > UNIX_TIMESTAMP(NOW())");
+            $query->addOrderBy("id DESC");
+            $query->limit(1);
+
+            return $db->fetchOneRow($query)
+                ->getOrElse(["plan" => 0, "expire" => null]);
+
+        });
+
 
         $this->userID       = intval($user['uid']);
         $this->userLogin    = $user['login'];
@@ -111,8 +133,15 @@ class User extends Model {
     }
 
     public function changePassword($password) {
+
         $newPassword = md5($this->getLogin() . $password);
-        $this->db->executeUpdate("UPDATE r_users SET password = ? WHERE uid = ?", array($newPassword, $this->userID));
+
+        Database::doInTransaction(function (Database $db) use ($newPassword) {
+            $db->executeUpdate("UPDATE r_users SET password = ? WHERE uid = ?",
+                array($newPassword, $this->userID));
+            $db->commit();
+        });
+
     }
 
     /**
@@ -149,8 +178,13 @@ class User extends Model {
     }
 
     public function update() {
-        $this->db->executeUpdate("UPDATE r_users SET name = ?, info = ?, mail = ? WHERE uid = ?",
-        [$this->userName, $this->userInfo, $this->userEmail, $this->userID]);
+
+        Database::doInTransaction(function (Database $db) {
+            $db->executeUpdate("UPDATE r_users SET name = ?, info = ?, mail = ? WHERE uid = ?",
+                [$this->userName, $this->userInfo, $this->userEmail, $this->userID]);
+            $db->commit();
+        });
+
         $this->modifiedFlag = false;
     }
 

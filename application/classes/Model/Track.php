@@ -13,6 +13,7 @@ use Model\Traits\Bean;
 use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Config;
+use MVC\Services\Database;
 use ReflectionClass;
 use Tools\Singleton;
 
@@ -46,8 +47,12 @@ class Track extends Model {
     protected $color;
     protected $uploaded;
 
+    /** @var User $user */
+    protected $user;
+
     public function __construct($id) {
         parent::__construct();
+        $this->user = AuthorizedUser::getInstance();
         $this->key = $id;
         $this->reload();
     }
@@ -58,25 +63,29 @@ class Track extends Model {
      */
     public function reload() {
 
-        $userID = AuthorizedUser::getInstance()->getId();
+        Database::doInTransaction(function (Database $db) {
 
-        $object = $this->db->fetchOneRow("SELECT * FROM r_tracks WHERE tid = ?", [$this->key])
-            ->getOrElseThrow(ControllerException::noTrack($this->key));
+            $object = $db->fetchOneRow("SELECT * FROM r_tracks WHERE tid = ?", [$this->key])
+                ->getOrElseThrow(ControllerException::noTrack($this->key));
 
-        if (intval($object["uid"]) !== $userID) {
-            throw ControllerException::noPermission();
-        }
-
-        try {
-            $reflection = new ReflectionClass($this);
-            foreach ($this->bean_fields as $field) {
-                $prop = $reflection->getProperty($field);
-                $prop->setAccessible(true);
-                $prop->setValue($this, $object[$field]);
+            if (intval($object["uid"]) !== $this->user->getId()) {
+                throw ControllerException::noPermission();
             }
-        } catch (\ReflectionException $exception) {
-            throw new ControllerException($exception->getMessage());
-        }
+
+            try {
+                $reflection = new ReflectionClass($this);
+                foreach ($this->bean_fields as $field) {
+                    $prop = $reflection->getProperty($field);
+                    $prop->setAccessible(true);
+                    $prop->setValue($this, $object[$field]);
+                }
+            } catch (\ReflectionException $exception) {
+                throw new ControllerException($exception->getMessage());
+            }
+
+        });
+
+
 
         return $this;
 
@@ -84,28 +93,33 @@ class Track extends Model {
 
     public function save() {
 
-        $fluent = $this->db->getFluentPDO();
-        $query = $fluent->update("r_tracks");
+        Database::doInTransaction(function (Database $db) {
 
-        try {
+            $query = $db->getDBQuery()->updateTable("r_tracks");
 
-            $reflection = new ReflectionClass($this);
+            try {
 
-            $keyProperty = $reflection->getProperty($this->bean_key);
-            $keyProperty->setAccessible(true);
-            $query->where($this->bean_key, $keyProperty->getValue($this));
+                $reflection = new ReflectionClass($this);
 
-            foreach ($this->bean_update as $field) {
-                $property = $reflection->getProperty($field);
-                $property->setAccessible(true);
-                $query->set($property->getName(), $property->getValue($this));
+                $keyProperty = $reflection->getProperty($this->bean_key);
+                $keyProperty->setAccessible(true);
+                $query->where($this->bean_key, $keyProperty->getValue($this));
+
+                foreach ($this->bean_update as $field) {
+                    $property = $reflection->getProperty($field);
+                    $property->setAccessible(true);
+                    $query->set($property->getName(), $property->getValue($this));
+                }
+
+                $db->executeUpdate($query);
+                $db->commit();
+
+            } catch (\ReflectionException $exception) {
+                throw new ControllerException($exception->getMessage());
             }
 
-            $this->db->executeUpdate($query->getQuery(), $query->getParameters());
 
-        } catch (\ReflectionException $exception) {
-            throw new ControllerException($exception->getMessage());
-        }
+        });
 
     }
 
@@ -251,7 +265,10 @@ class Track extends Model {
 
         unlink($this->getOriginalFile());
 
-        $this->db->executeUpdate("DELETE FROM r_tracks WHERE tid = ?", [$this->key]);
+        Database::doInTransaction(function (Database $db) {
+            $db->executeUpdate("DELETE FROM r_tracks WHERE tid = ?", [$this->key]);
+        });
+
 
     }
 

@@ -9,6 +9,7 @@
 namespace Model;
 
 use MVC\Exceptions\ControllerException;
+use MVC\Services\Database;
 use Tools\Common;
 use Tools\Optional;
 use Tools\Singleton;
@@ -19,6 +20,8 @@ class StreamTrackList extends Model {
     use Singleton;
 
     private $key;
+
+    /** @var User $user */
     private $user;
 
     private $tracks_count;
@@ -27,6 +30,7 @@ class StreamTrackList extends Model {
     private $status;
     private $started_from;
     private $started;
+
 
     public function __construct($id) {
         parent::__construct();
@@ -41,20 +45,28 @@ class StreamTrackList extends Model {
      */
     public function reload() {
 
-        $stats = $this->db->fetchOneRow("SELECT a.uid,a.started, a.started_from, a.status, b.tracks_count, b.tracks_duration
-            FROM r_streams a LEFT JOIN r_static_stream_vars b on a.sid = b.stream_id WHERE a.sid = ?",
-            [$this->key])->getOrElseThrow(ControllerException::noStream($this->key));
+        Database::doInTransaction(function (Database $db) {
 
-        if (intval($stats["uid"]) !== $this->user->getId()) {
-            throw ControllerException::noPermission();
-        }
+            $query = $db->getDBQuery()->selectFrom("r_streams a")
+                ->leftJoin("r_static_stream_vars b", "a.sid = b.stream_id")
+                ->where("a.sid", $this->key)
+                ->select("a.uid, a.started, a.started_from, a.status, b.tracks_count, b.tracks_duration");
 
-        $this->tracks_count = intval($stats["tracks_count"]);
-        $this->tracks_duration = intval($stats["tracks_duration"]);
+            $stats = $db->fetchOneRow($query)
+                ->getOrElseThrow(ControllerException::noStream($this->key));
 
-        $this->status = intval($stats["status"]);
-        $this->started = intval($stats["started"]);
-        $this->started_from = intval($stats["started_from"]);
+            if (intval($stats["uid"]) !== $this->user->getId()) {
+                throw ControllerException::noPermission();
+            }
+
+            $this->tracks_count = intval($stats["tracks_count"]);
+            $this->tracks_duration = intval($stats["tracks_duration"]);
+
+            $this->status = intval($stats["status"]);
+            $this->started = intval($stats["started"]);
+            $this->started_from = intval($stats["started_from"]);
+
+        });
 
         return $this;
 
@@ -107,17 +119,33 @@ class StreamTrackList extends Model {
             $initialPosition = $this->tracks_count;
             $initialTimeOffset = $this->tracks_duration;
 
-            foreach($tracksToAdd as $track) {
+            Database::doInTransaction(function (Database $db)
+                                      use ($tracksToAdd, $initialPosition, $initialTimeOffset) {
 
-                $trackObject = new Track($track);
-                $uniqueId = $this->generateUniqueId();
+                foreach($tracksToAdd as $track) {
 
-                $this->db->executeInsert("INSERT INTO r_link VALUES (NULL, ?, ?, ?, ?, ?)",
-                    [$this->key, $trackObject->getId(), ++$initialPosition, $uniqueId, $initialTimeOffset]);
+                    $trackObject = new Track($track);
+                    $uniqueId = $this->generateUniqueId();
 
-                $initialTimeOffset += $trackObject->getDuration();
+                    $query = $db->getDBQuery()->insertInto("r_link")
+                        ->values([
+                            "stream_id"     => $this->key,
+                            "track_id"      => $trackObject->getId(),
+                            "t_order"       => ++$initialPosition,
+                            "unique_id"     => $uniqueId,
+                            "time_offset"   => $initialTimeOffset
+                        ]);
 
-            }
+                    $db->executeInsert($query);
+
+                    $initialTimeOffset += $trackObject->getDuration();
+
+                }
+
+                $db->commit();
+
+            });
+
 
         });
 
@@ -133,8 +161,11 @@ class StreamTrackList extends Model {
 
         $this->doAtomic(function () use (&$tracks) {
 
-            $this->db->executeUpdate("DELETE FROM r_link WHERE FIND_IN_SET(unique_id, ?)", [$tracks]);
-            $this->db->executeUpdate("CALL POptimizeStream(?)", [$this->key]);
+            Database::doInTransaction(function (Database $db) use ($tracks) {
+                $db->executeUpdate("DELETE FROM r_link WHERE FIND_IN_SET(unique_id, ?)", [$tracks]);
+                $db->executeUpdate("CALL POptimizeStream(?)", [$this->key]);
+                $db->commit();
+            });
 
         });
 
@@ -149,7 +180,10 @@ class StreamTrackList extends Model {
 
         $this->doAtomic(function () {
 
-            $this->db->executeUpdate("CALL PShuffleStream(?)", [$this->key]);
+            Database::doInTransaction(function (Database $db) {
+                $db->executeUpdate("CALL PShuffleStream(?)", [$this->key]);
+                $db->commit();
+            });
 
         });
 
@@ -165,7 +199,12 @@ class StreamTrackList extends Model {
     public function moveTrack($unique, $index) {
 
         $this->doAtomic(function () use ($unique, $index) {
-            $this->db->executeUpdate("SELECT NEW_STREAM_SORT(?, ?, ?)", [$this->key, $unique, $index]);
+
+            Database::doInTransaction(function (Database $db) use ($unique, $index) {
+                $db->executeUpdate("SELECT NEW_STREAM_SORT(?, ?, ?)", [$this->key, $unique, $index]);
+                $db->commit();
+            });
+
         });
 
         return $this;
@@ -194,19 +233,36 @@ class StreamTrackList extends Model {
      */
     public function getTrackByTime($time) {
 
-        $track = $this->db->fetchOneRow("
+        Database::doInTransaction(function (Database $db) use ($time) {
 
-            SELECT a.*, b.unique_id, b.t_order, b.time_offset
-            FROM r_tracks a LEFT JOIN r_link b ON a.tid = b.track_id
-            WHERE b.time_offset <= :time AND b.time_offset + a.duration >= :time AND b.stream_id = :id
+            $query = $db->getDBQuery()->selectFrom("r_tracks a")->leftJoin("r_link b", "a.tid = b.track_id");
 
-            ", [":time" => $time, ":id" => $this->key])
+            $query->select("a.*, b.unique_id, b.t_order, b.time_offset");
+            $query->where("b.time_offset <= :time");
+            $query->where("b.time_offset + a.duration >= :time", [":time" => $time]);
+            $query->where("b.stream_id", $this->key);
 
-            ->then(function (&$track) use ($time) {
+            $track = $db->fetchOneRow($query)->then(function (&$track) use ($time) {
                 $track['cursor'] = $time - $track['time_offset'];
             });
 
-        return $track;
+            return $track;
+
+        });
+
+//        $track = $this->db->fetchOneRow("
+//
+//            SELECT a.*, b.unique_id, b.t_order, b.time_offset
+//            FROM r_tracks a LEFT JOIN r_link b ON a.tid = b.track_id
+//            WHERE b.time_offset <= :time AND b.time_offset + a.duration >= :time AND b.stream_id = :id
+//
+//            ", [":time" => $time, ":id" => $this->key])
+//
+//            ->then(function (&$track) use ($time) {
+//                $track['cursor'] = $time - $track['time_offset'];
+//            });
+//
+//        return $track;
 
     }
 
@@ -235,23 +291,32 @@ class StreamTrackList extends Model {
 
         $track->then(function ($track) {
 
-            $query = "SELECT time_offset FROM r_link WHERE unique_id = ? AND stream_id = ?";
+            Database::doInTransaction(function (Database $db) use ($track) {
 
-            $this->db->fetchOneColumn($query, [$track["unique_id"], $this->key])
+                $query = "SELECT time_offset FROM r_link WHERE unique_id = ? AND stream_id = ?";
 
-                ->then(function ($offset) use ($track) {
+                $db->fetchOneColumn($query, [$track["unique_id"], $this->key])
 
-                    $cursor = $track["cursor"];
-                    $query = "UPDATE r_streams SET started_from = :from, started = :time, status = 1 WHERE sid = :id";
+                    ->then(function ($offset) use ($track, $db) {
 
-                    $this->db->executeUpdate($query, [
-                        ":id" => $this->key,
-                        ":time" => System::time(),
-                        ":from" => $offset + $cursor]);
+                        $cursor = $track["cursor"];
+                        //$query = "UPDATE r_streams SET started_from = :from, started = :time, status = 1 WHERE sid = :id";
+                        $query = $db->getDBQuery()->updateTable("r_streams")
+                            ->set("started_from", $offset + $cursor)
+                            ->set("started", System::time())
+                            ->set("status", 1)
+                            ->where(sid, $this->key);
 
-                });
+                        $db->executeUpdate($query);
+
+                    });
 
                 // TODO: Otherwise method needs to be implemented (if track not found)
+
+                $db->commit();
+
+            });
+
 
         });
 
@@ -264,20 +329,26 @@ class StreamTrackList extends Model {
     }
 
     /**
-     * @param $track
+     * @param $uniqueID
      * @return $this
      */
-    public function setPlayFrom($track) {
+    public function setPlayFrom($uniqueID) {
 
-        $query = $this->db->getFluentPDO()->from("r_tracks a")->
-            leftJoin("r_link b ON a.tid = b.track_id")
-            ->where("b.unique_id", $track)
-            ->select(["b.unique_id", "b.time_offset"]);
+        $track = Database::doInTransaction(function (Database $db) use ($uniqueID) {
 
-        $track = $this->db->fetchOneRow($query->getQuery(false), $query->getParameters())
-            ->then(function (&$track) { $track["cursor"] = 0; });
+            $query = $db->getDBQuery()->selectFrom("r_tracks a")
+                ->leftJoin("r_link b", "a.tid = b.track_id")
+                ->where("b.unique_id", $uniqueID)
+                ->select("b.unique_id", "b.time_offset");
 
-        $track->justThrow(ControllerException::noTrack($track));
+            $track = $db->fetchOneRow($query)
+                ->then(function (&$track) { $track["cursor"] = 0; });
+
+            $track->justThrow(ControllerException::noTrack($uniqueID));
+
+            return $track;
+
+        });
 
         $this->setCurrentTrack($track, true);
 
@@ -288,13 +359,15 @@ class StreamTrackList extends Model {
 
     public function generateUniqueId() {
 
-        do {
+        return Database::doInTransaction(function (Database $db) {
 
-            $generated = Common::generateUniqueId();
+            do { $generated = Common::generateUniqueId(); }
+            while ($db->fetchOneColumn("SELECT COUNT(*) FROM r_link WHERE unique_id = ?", [$generated])->getRaw());
 
-        } while ($this->db->fetchOneColumn("SELECT COUNT(*) FROM r_link WHERE unique_id = ?", [$generated])->getRaw());
+            return $generated;
 
-        return $generated;
+        });
+
 
     }
 

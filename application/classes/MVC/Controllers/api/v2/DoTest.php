@@ -17,11 +17,7 @@ class DoTest extends Controller {
 
     public function doGet(JsonResponse $response) {
 
-        Database::doInTransaction(function (Database $db) {
-
-            $db->fetchOneColumn("SELECT COUNT(r_tracks)");
-
-        });
+          $response->setData($_SERVER);
 
     }
 

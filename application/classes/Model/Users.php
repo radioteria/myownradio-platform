@@ -25,10 +25,14 @@ class Users {
      * @return User
      */
     public static function authorizeByLoginPassword($login, $password) {
+
         $session = HttpSession::getInstance();
 
-        $user = Database::getInstance()->fetchOneRow("SELECT * FROM r_users WHERE login = ? AND password = ?", [$login,
-            md5($login . $password)])->getOrElseThrow(ControllerException::noPermission());
+        $user = Database::doInTransaction(function (Database $db) use ($login, $password) {
+            return $db->fetchOneRow("SELECT * FROM r_users WHERE login = ? AND password = ?",
+                [$login, md5($login . $password)])->getOrElseThrow(ControllerException::noPermission());
+
+        });
 
         $clientAddress = HttpRequest::getInstance()->getRemoteAddress();
         $clientUserAgent = HttpRequest::getInstance()->getHttpUserAgent()->getOrElse("None");
@@ -51,18 +55,27 @@ class Users {
      */
     private static function createToken($userId, $clientAddress, $clientUserAgent, $sessionId) {
 
-        $database = Database::getInstance();
+        $token = Database::doInTransaction(function (Database $db) use ($userId, $clientAddress, $clientUserAgent, $sessionId) {
 
-        do {
+            do { $token = md5($userId . $clientAddress . rand(1, 1000000) . "tokenizer" . time()); }
+            while ($db->fetchOneColumn("SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->getOrElse(0) > 0);
 
-            $token = md5($userId . $clientAddress . rand(1, 1000000) . "tokenizer" . time());
+            $query = $db->getDBQuery()->insertInto("r_sessions");
+            $query->values("uid", $userId);
+            $query->values("ip", $clientAddress);
+            $query->values("token", $token);
+            $query->values("permanent", 1);
+            $query->values("authorized = NOW()");
+            $query->values("http_user_agent", $clientUserAgent);
+            $query->values("session_id", $sessionId);
+            $query->values("expires = NOW() + INTERVAL 1 YEAR");
 
-        } while ($database->fetchOneColumn(
-                "SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->getOrElse(0) > 0);
+            $db->executeInsert($query);
+            $db->commit();
 
-        $database->executeInsert("INSERT INTO r_sessions SET uid = ?, ip = ?, token = ?, permanent = 1,
-            authorized = NOW(), http_user_agent = ?, session_id = ?, expires = NOW() + INTERVAL 1 YEAR",
-            [$userId, $clientAddress, $token, $clientUserAgent, $sessionId]);
+            return $token;
+
+        });
 
         return $token;
 
@@ -77,7 +90,9 @@ class Users {
 
         $session->get("TOKEN")->then(function ($token) {
             $database = Database::getInstance();
-            $database->executeUpdate("DELETE FROM r_sessions WHERE token = ?", [$token]);
+            Database::doInTransaction(function (Database $db) use ($token) {
+                $db->executeUpdate("DELETE FROM r_sessions WHERE token = ?", [$token]);
+            });
         });
 
         $session->destroy();

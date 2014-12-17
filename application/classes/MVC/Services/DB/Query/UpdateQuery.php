@@ -38,6 +38,7 @@ class UpdateQuery extends BaseQuery implements QueryBuilder {
     public function set($column, $value) {
         $this->parameters["SET"][] = $value;
         $this->sets[] = $column;
+        return $this;
     }
 
     public function buildSets() {

@@ -9,12 +9,13 @@
 namespace MVC\Controllers\api\v2\streams;
 
 
+use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpGet;
 use MVC\Services\JsonResponse;
 use REST\Streams;
 
-class DoGetSimilarTo {
+class DoGetSimilarTo extends Controller {
     public function doGet(HttpGet $get, JsonResponse $response, Streams $streams) {
         $id = $get->getParameter("id")
             ->getOrElseThrow(new ControllerException("id parameter is not specified"));

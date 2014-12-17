@@ -137,15 +137,15 @@ class Database {
     private function createResource($query, $params) {
 
         if ($query instanceof QueryBuilder) {
-            $queryString = $query->getQuery($this->pdo);
-            $queryParams = $query->getParameters();
+            $queryString = $this->queryQuote(
+                $query->getQuery($this->pdo),
+                $query->getParameters());
         } else {
             $queryString = $this->queryQuote($query, $params);
-            $queryParams = null;
         }
 
         $resource = $this->pdo->prepare($queryString);
-        $resource->execute($queryParams);
+        $resource->execute();
 
         if ($resource->errorCode() !== "00000") {
             throw new ControllerException($resource->errorInfo()[2]);

@@ -30,6 +30,18 @@ trait WhereSection {
         return $this;
     }
 
+    /**
+     * @param $column
+     * @param $values
+     * @return $this
+     */
+    public function whereFindInSet($column, $values) {
+        $this->wheres[] = "FIND_IN_SET(" . $column . ", ?)";
+        $this->parameters["WHERE"][] = $values;
+        return $this;
+    }
+
+
     private function whereSimple($column, $value = null) {
         if (is_null($value)) {
             $this->wheres[] = $column;

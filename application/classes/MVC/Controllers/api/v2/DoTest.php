@@ -10,22 +10,22 @@ namespace MVC\Controllers\api\v2;
 
 
 use MVC\Controller;
-use MVC\Services\Database;
-use MVC\Services\DB\DBQuery;
 use MVC\Services\JsonResponse;
+use REST\Streams;
 
 class DoTest extends Controller {
 
     public function doGet(JsonResponse $response) {
 
-        Database::doInConnection(function (Database $db) use ($response) {
+        $streams = [];
 
-            $query = DBQuery::getInstance()->selectFrom("table")->select("*")
-                ->where("id", [1,2,3,4,5]);
+        $fabric = new Streams();
 
-            $response->setMessage($query->getQuery($db->getPDO()));
+        foreach($fabric as $stream) {
+            $streams[] = $stream;
+        }
 
-        });
+        $response->setData($streams);
 
     }
 

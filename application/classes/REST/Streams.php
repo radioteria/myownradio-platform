@@ -11,8 +11,9 @@ namespace REST;
 
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
+use MVC\Services\DB\DBQuery;
+use MVC\Services\DB\Query\SelectQuery;
 use MVC\Services\Injectable;
-use SelectQuery;
 use Tools\Common;
 use Tools\Singleton;
 
@@ -20,25 +21,20 @@ class Streams {
 
     use Singleton, Injectable;
 
-    /** @var Database */
-    private $db;
-
     const MAXIMUM_SIMILAR_COUNT = 10;
-
-    function __construct() {
-        $this->db = Database::getInstance();
-    }
-
 
     /**
      * @return SelectQuery
      */
     private function getStreamsPrefix() {
-        $fluent = $this->db->getFluentPDO();
-        return $fluent
-            ->from("r_streams a")->leftJoin("r_static_stream_vars b ON a.sid = b.stream_id")
-            ->select(null)->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags",
+
+        $prefix = (new SelectQuery("r_streams a"))
+            ->leftJoin("r_static_stream_vars b", "a.sid = b.stream_id")
+            ->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags",
                 "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count"]);
+
+        return $prefix;
+
     }
 
     /**
@@ -46,8 +42,10 @@ class Streams {
      */
     private function getUsersPrefix() {
 
-        $fluentPDO = $this->db->getFluentPDO();
-        return $fluentPDO->from("r_users")->select(null)->select(["uid", "name", "permalink", "avatar"]);
+        $prefix = (new SelectQuery("r_users"))
+            ->select(["uid", "name", "permalink", "avatar"]);
+
+        return $prefix;
 
     }
 
@@ -57,18 +55,24 @@ class Streams {
      */
     public function getOneStream($id) {
 
-        $fluent = $this->getStreamsPrefix();
-        $fluent->where("(a.sid = :id) OR (a.permalink = :id)", [':id' => $id]);
+        $stream = Database::doInTransaction(function(Database $db) use ($id) {
 
-        $stream = $this->db->fetchOneRow($fluent->getQuery(false), $fluent->getParameters())
-            ->getOrElseThrow(new ControllerException("Stream not found"));
+            $queryStream = $this->getStreamsPrefix();
+            $queryStream->where("(a.sid = :id) OR (a.permalink = :id)", [':id' => $id]);
 
-        $this->processStreamRow($stream);
+            $stream = $db->fetchOneRow($queryStream)
+                ->getOrElseThrow(new ControllerException("Stream not found"));
 
-        $fluent = $this->getUsersPrefix()->where('uid', $stream['uid']);
+            $this->processStreamRow($stream);
 
-        $stream['owner'] = $this->db->fetchOneRow($fluent->getQuery(false), $fluent->getParameters())
-            ->getOrElseThrow(new ControllerException("Stream owner not found"));
+            $queryUser = $this->getUsersPrefix()->where('uid', $stream['uid']);
+
+            $stream['owner'] = $db->fetchOneRow($queryUser)
+                ->getOrElseThrow(new ControllerException("Stream owner not found"));
+
+            return $stream;
+
+        });
 
         return $stream;
 
@@ -83,43 +87,47 @@ class Streams {
      */
     public function getStreamListFiltered($filter = null, $category = null, $from = 0, $limit = 50) {
 
-        $involved_users = [];
+        $result = Database::doInTransaction(function (Database $db, DBQuery $query)
+                                            use ($filter, $category, $from, $limit) {
 
-        $fluent = $this->getStreamsPrefix();
+            $involved_users = [];
 
-        if (is_numeric($category)) {
-            $fluent->where("a.category", $category);
-        }
+            $queryStream = $this->getStreamsPrefix();
 
-        if (empty($filter)) {
-
-            /* No Operation */
-
-        } else if (substr($filter, 0, 1) === '#') {
-            $fluent->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)",
-                '+' . substr($filter, 1));
-        } else {
-            $fluent->where("MATCH(a.name, a.permalink, a.hashtags) AGAINST (? IN BOOLEAN MODE)",
-                Common::searchQueryFilter($filter));
-        }
-
-        $fluent->where("a.status = 1");
-
-        $fluent->limit($limit)->offset($from);
-
-        $prepared_query = $this->db->queryQuote($fluent->getQuery(false), $fluent->getParameters());
-
-        $streams = $this->db->fetchAll($prepared_query, null, null, function ($row) use (&$involved_users) {
-            if (array_search($row['uid'], $involved_users) === false) {
-                $involved_users[] = $row['uid'];
+            if (is_numeric($category)) {
+                $queryStream->where("a.category", $category);
             }
-            $this->processStreamRow($row);
-            return $row;
+
+            if (empty($filter)) {
+
+                /* No Operation */
+
+            } else if (substr($filter, 0, 1) === '#') {
+                $queryStream->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)",
+                    '+' . substr($filter, 1));
+            } else {
+                $queryStream->where("MATCH(a.name, a.permalink, a.hashtags) AGAINST (? IN BOOLEAN MODE)",
+                    Common::searchQueryFilter($filter));
+            }
+
+            $queryStream->where("a.status = 1");
+            $queryStream->limit($limit)->offset($from);
+
+            $streams = $db->fetchAll($queryStream, null, null, function ($row) use (&$involved_users) {
+                if (array_search($row['uid'], $involved_users) === false) {
+                    $involved_users[] = $row['uid'];
+                }
+                $this->processStreamRow($row);
+                return $row;
+            });
+
+            $users = $this->getUsersList($db, $involved_users);
+
+            return ['streams' => $streams, 'users' => $users];
+
         });
 
-        $users = $this->getUsersList($involved_users);
-
-        return ['streams' => $streams, 'users' => $users];
+        return $result;
 
     }
 
@@ -129,27 +137,33 @@ class Streams {
      */
     public function getSimilarTo($id) {
 
-        $involved_users = [];
+        $result = Database::doInTransaction(function (Database $db, DBQuery $query) use ($id) {
 
-        $fluent = $this->getStreamsPrefix();
-        $fluent->where("a.sid != :id");
-        $fluent->where("a.permalink != :id");
-        $fluent->where("a.status = 1");
-        $fluent->where("MATCH(a.hashtags) AGAINST((SELECT hashtags FROM r_streams WHERE (sid = :id) OR (permalink = :id)))",
-            [':id' => $id]);
-        $fluent->limit(self::MAXIMUM_SIMILAR_COUNT);
+            $involved_users = [];
 
-        $streams = $this->db->fetchAll($fluent->getQuery(false), $fluent->getParameters(), null, function ($row) use (&$involved_users) {
-            if (array_search($row['uid'], $involved_users) === false) {
-                $involved_users[] = $row['uid'];
-            }
-            $this->processStreamRow($row);
-            return $row;
+            $queryStream = $this->getStreamsPrefix();
+            $queryStream->where("a.sid != :id");
+            $queryStream->where("a.permalink != :id");
+            $queryStream->where("a.status = 1");
+            $queryStream->where("MATCH(a.hashtags) AGAINST((SELECT hashtags FROM r_streams WHERE (sid = :id) OR (permalink = :id)))",
+                [':id' => $id]);
+            $queryStream->limit(self::MAXIMUM_SIMILAR_COUNT);
+
+            $streams = $db->fetchAll($queryStream->getQuery(false), $queryStream->getParameters(), null, function ($row) use (&$involved_users) {
+                if (array_search($row['uid'], $involved_users) === false) {
+                    $involved_users[] = $row['uid'];
+                }
+                $this->processStreamRow($row);
+                return $row;
+            });
+
+            $users = $this->getUsersList($db, $involved_users);
+
+            return ['streams' => $streams, 'users' => $users];
+
         });
 
-        $users = $this->getUsersList($involved_users);
-
-        return ['streams' => $streams, 'users' => $users];
+        return $result;
 
     }
 
@@ -182,13 +196,14 @@ class Streams {
     }
 
     /**
+     * @param Database $db
      * @param array $users
      * @return SelectQuery
      */
-    private function getUsersList(array $users) {
+    private function getUsersList(Database $db, array $users) {
         $fluent = $this->getUsersPrefix();
         $fluent->where("uid", $users);
-        $users = $this->db->fetchAll($fluent->getQuery(false), $fluent->getParameters(), "uid", function ($row) {
+        $users = $db->fetchAll($fluent, null, "uid", function ($row) {
             $this->processUserRow($row);
             return $row;
         });

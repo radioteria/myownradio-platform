@@ -9,13 +9,21 @@
 namespace MVC\Controllers\api\v2;
 
 
-use Model\User;
 use MVC\Controller;
+use MVC\Services\Database;
+use MVC\Services\DB\Query\InsertQuery;
 use MVC\Services\JsonResponse;
 
 class DoTest extends Controller {
     public function doGet(JsonResponse $response) {
-        $user = new User(73);
-        $response->setData($user->getActivePlan()->getName());
+
+        $pdo = Database::getInstance()->getPDO();
+
+        $query = new InsertQuery("r_streams");
+        $query->values("access", 1);
+
+        $response->setMessage($query->getQuery($pdo));
+        $response->setData($query->getParameters());
+
     }
 } 

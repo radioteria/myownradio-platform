@@ -6,6 +6,8 @@ use BaseQuery;
 use FluentPDO;
 use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
+use MVC\Services\DB\DBQuery;
+use MVC\Services\DB\Query\QueryBuilder;
 use PDO;
 use Tools\Optional;
 use Tools\Singleton;
@@ -14,28 +16,59 @@ class Database {
 
     use Singleton, Injectable;
 
+    /** @var PDO $pdo */
     private $pdo;
+    private $settings;
 
     public function __construct() {
 
-        $settings = Config::getInstance()->getSection('database')->getOrElse([
+        $this->settings = Config::getInstance()->getSection('database')->getOrElse([
             "db_database" => "myownradio",
             "db_login" => "root",
-            "db_password" => ""
+            "db_password" => "",
+            "db_hostname" => "127.0.0.1"
         ]);
 
-        $this->pdo = new PDO("mysql:unix_socket=/tmp/mysql.sock;dbname={$settings['db_database']}",
-            $settings['db_login'], $settings['db_password'], array(PDO::ATTR_PERSISTENT => true));
-
-        $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+        $this->connect();
 
     }
 
     /**
-     * @return FluentPDO
+     * @return $this
      */
-    public function getFluentPDO() {
-        return new FluentPDO($this->getPDO());
+    public function connect() {
+
+        $this->pdo = new PDO("mysql:unix_socket=/tmp/mysql.sock;dbname={$this->settings['db_database']}",
+            $this->settings['db_login'], $this->settings['db_password'], array(PDO::ATTR_PERSISTENT => true));
+
+        $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+
+        return $this;
+
+    }
+
+    /**
+     * @return $this
+     */
+    public function disconnect() {
+
+        $this->pdo = null;
+
+        return $this;
+
+    }
+
+    public static function doInTransaction(callable $callable) {
+
+        $connection = new self();
+        $connection->beginTransaction();
+
+        $result = call_user_func_array($callable, [$connection, DBQuery::getInstance()]);
+
+        $connection->disconnect();
+
+        return $result;
+
     }
 
     /**
@@ -55,15 +88,6 @@ class Database {
 
     public function rollback() {
         return $this->pdo->rollBack();
-    }
-
-    /**
-     * @deprecated
-     * @param string $value
-     * @return string
-     */
-    public function quote($value) {
-        return $this->pdo->quote($value);
     }
 
     /**
@@ -92,6 +116,7 @@ class Database {
     /**
      * @param callable $callback
      * @return string
+     * @deprecated
      */
     public function createQuery(callable $callback) {
 
@@ -104,6 +129,33 @@ class Database {
     }
 
     /**
+     * @param $query
+     * @param $params
+     * @return \PDOStatement
+     * @throws ControllerException
+     */
+    private function createResource($query, $params) {
+
+        if ($query instanceof QueryBuilder) {
+            $queryString = $query->getQuery($this->pdo);
+            $queryParams = $query->getParameters();
+        } else {
+            $queryString = $this->queryQuote($query, $params);
+            $queryParams = null;
+        }
+
+        $resource = $this->pdo->prepare($queryString);
+        $resource->execute($queryParams);
+
+        if ($resource->errorCode() !== "00000") {
+            throw new ControllerException($resource->errorInfo()[2]);
+        }
+
+        return $resource;
+
+    }
+
+    /**
      * @param string $query
      * @param array $params
      * @param string $key
@@ -111,14 +163,9 @@ class Database {
      * @return array
      * @throws ControllerException
      */
-    public function fetchAll($query, $params = array(), $key = null, $callback = null) {
+    public function fetchAll($query, $params = [], $key = null, $callback = null) {
 
-        $resource = $this->pdo->prepare($this->queryQuote($query, $params));
-        $resource->execute();
-
-        if ($resource->errorCode() !== "00000") {
-            throw new ControllerException($resource->errorInfo()[2]);
-        }
+        $resource = $this->createResource($query, $params);
 
         $result = [];
 
@@ -152,13 +199,7 @@ class Database {
      */
     public function fetchOneRow($query, $params = array(), $callback = null) {
 
-        $queryString = $this->queryQuote($query, $params);
-        $resource = $this->pdo->prepare($queryString);
-        $resource->execute();
-
-        if ($resource->errorCode() !== "00000") {
-            throw new ControllerException($resource->errorInfo()[2]);
-        }
+        $resource = $this->createResource($query, $params);
 
         $row = $resource->fetch(PDO::FETCH_ASSOC);
 
@@ -179,12 +220,7 @@ class Database {
      */
     public function fetchOneColumn($query, $params = [], $column = 0) {
 
-        $resource = $this->pdo->prepare($this->queryQuote($query, $params));
-        $resource->execute();
-
-        if ($resource->errorCode() !== "00000") {
-            throw new ControllerException($resource->errorInfo()[2]);
-        }
+        $resource = $this->createResource($query, $params);
 
         $row = $resource->fetchColumn($column);
 
@@ -201,13 +237,7 @@ class Database {
      */
     public function fetchOneObject($query, $params = [], $class) {
 
-        $resource = $this->pdo->prepare($this->queryQuote($query, $params));
-        $resource->execute();
-
-        if ($resource->errorCode() !== "00000") {
-            throw new ControllerException($resource->errorInfo()[2]);
-        }
-
+        $resource = $this->createResource($query, $params);
 
         $object = $resource->fetchObject($class);
 
@@ -224,12 +254,7 @@ class Database {
      */
     public function fetchAllObjects($query, $params = [], $class) {
 
-        $resource = $this->pdo->prepare($this->queryQuote($query, $params));
-        $resource->execute();
-
-        if ($resource->errorCode() !== "00000") {
-            throw new ControllerException($resource->errorInfo()[2]);
-        }
+        $resource = $this->createResource($query, $params);
 
         $objects = $resource->fetchAll(PDO::FETCH_CLASS, $class);
 
@@ -245,12 +270,7 @@ class Database {
      */
     public function executeUpdate($query, $params = []) {
 
-        $resource = $this->pdo->prepare($this->queryQuote($query, $params));
-        $resource->execute();
-
-        if ($resource->errorCode() !== "00000") {
-            throw new ControllerException($resource->errorInfo()[2]);
-        }
+        $resource = $this->createResource($query, $params);
 
         return $resource->rowCount();
 
@@ -264,13 +284,7 @@ class Database {
      */
     public function executeInsert($query, $params = []) {
 
-        $queryString = $this->queryQuote($query, $params);
-        $resource = $this->pdo->prepare($queryString);
-        $result = $resource->execute();
-
-        if ($resource->errorCode() !== "00000") {
-            throw new ControllerException($resource->errorInfo()[2]);
-        }
+        $this->createResource($query, $params);
 
         return $this->pdo->lastInsertId(null);
 

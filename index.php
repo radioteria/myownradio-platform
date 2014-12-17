@@ -1,6 +1,5 @@
 <?php
 
-include "libs/FluentPDO/FluentPDO.php";
 
 require_once "application/startup.php";
 

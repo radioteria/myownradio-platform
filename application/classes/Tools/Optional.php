@@ -214,6 +214,9 @@ class Optional {
         return "[Optional:" . ($this->test() ? "Has Value" : "Has No Value") . "]";
     }
 
+    /**
+     * @return mixed
+     */
     public function getOrElseFalse() {
         return $this->getOrElse(false);
     }

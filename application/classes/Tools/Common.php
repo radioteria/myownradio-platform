@@ -105,8 +105,10 @@ class Common {
             }
         });
 
-        foreach($tagsData as &$tag) {
-            $tag = Optional::ofEmpty($tag);
+        $tagsData[0] = Optional::ofZero($tagsData[0]);
+
+        for ($i = 1; $i < count($tagsData); $i++) {
+            $tagsData = Optional::ofEmpty($tagsData);
         }
 
         $tagsArray = array_combine($tagsList, $tagsData);

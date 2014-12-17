@@ -9,7 +9,6 @@
 namespace Model;
 
 
-use FluentPDO;
 use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Config;
@@ -92,24 +91,23 @@ class Factory extends Model {
 
         $config = Config::getInstance();
 
-        // Check file type is supported
         if(array_search($file['type'], $config->getSetting('upload', 'supported_audio')->getOrElse([])) === false) {
             throw new ControllerException("Unsupported type of file: " . $file["type"]);
         }
 
         $audioTags = Common::getAudioTags($file['tmp_name']);
 
+        $maximalDuration = $config->getSetting('upload', 'maximal_length')->getOrElseThrow(
+            ApplicationException::of("MAXIMAL TRACK DURATION NOT SPECIFIED"));
 
         $duration = $audioTags['DURATION']
             ->getOrElseThrow(new ControllerException("Uploaded file has zero duration"));
 
-        if($duration > $config->getSetting('upload', 'maximal_length')->getOrElseThrow(
-                ApplicationException::of("MAXIMAL TRACK DURATION NOT SPECIFIED"))
-        ) {
+        $uploadTimeLeft = $this->user->getActivePlan()->getUploadLimit() - $this->user->getTracksDuration() - $duration;
+
+        if ($duration > $maximalDuration) {
             throw new ControllerException("Uploaded file is too long: " . $duration);
         }
-
-        $uploadTimeLeft = $this->user->getActivePlan()->getUploadLimit() - $this->user->getTracksDuration();
 
         if ($uploadTimeLeft < $duration) {
             throw new ControllerException("You are exceeded available upload time. Please upgrade your account.");
@@ -123,12 +121,12 @@ class Factory extends Model {
                 "uid"           => $this->user->getId(),
                 "filename"      => $file["name"],
                 "ext"           => $extension,
-                "track_number"  => $audioTags["TRACKNUMBER"]->getOrElseEmpty(),
-                "artist"        => $audioTags["PERFORMER"]->getOrElseEmpty(),
-                "title"         => $audioTags["TITLE"]->getOrElse($file['name']),
-                "album"         => $audioTags["ALBUM"]->getOrElseEmpty(),
-                "genre"         => $audioTags["GENRE"]->getOrElseEmpty(),
-                "date"          => $audioTags["RECORDED_DATE"]->getOrElseEmpty(),
+                "track_number"  => $audioTags["TRACKNUMBER"]    ->getOrElseEmpty(),
+                "artist"        => $audioTags["PERFORMER"]      ->getOrElseEmpty(),
+                "title"         => $audioTags["TITLE"]          ->getOrElse($file['name']),
+                "album"         => $audioTags["ALBUM"]          ->getOrElseEmpty(),
+                "genre"         => $audioTags["GENRE"]          ->getOrElseEmpty(),
+                "date"          => $audioTags["RECORDED_DATE"]  ->getOrElseEmpty(),
                 "duration"      => $duration,
                 "filesize"      => filesize($file["tmp_name"]),
                 'uploaded'      => time()

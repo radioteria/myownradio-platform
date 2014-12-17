@@ -137,6 +137,14 @@ class Optional {
 
     /**
      * @param $value
+     * @return Optional
+     */
+    public static function ofZero($value) {
+        return new self($value, function ($v) { return intval($v) > 0; } );
+    }
+
+    /**
+     * @param $value
      * @param callable $callback
      * @return Optional
      * This constructor is alias for new Optional(...)

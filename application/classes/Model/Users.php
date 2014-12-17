@@ -29,6 +29,7 @@ class Users {
         $session = HttpSession::getInstance();
 
         $user = Database::doInTransaction(function (Database $db) use ($login, $password) {
+
             return $db->fetchOneRow("SELECT * FROM r_users WHERE login = ? AND password = ?",
                 [$login, md5($login . $password)])->getOrElseThrow(ControllerException::noPermission());
 

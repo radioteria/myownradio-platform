@@ -87,7 +87,7 @@ class Streams {
      */
     public function getStreamListFiltered($filter = null, $category = null, $from = 0, $limit = 50) {
 
-        $result = Database::doInTransaction(function (Database $db, DBQuery $query)
+        $result = Database::doInTransaction(function (Database $db)
                                             use ($filter, $category, $from, $limit) {
 
             $involved_users = [];
@@ -137,7 +137,7 @@ class Streams {
      */
     public function getSimilarTo($id) {
 
-        $result = Database::doInTransaction(function (Database $db, DBQuery $query) use ($id) {
+        $result = Database::doInTransaction(function (Database $db) use ($id) {
 
             $involved_users = [];
 

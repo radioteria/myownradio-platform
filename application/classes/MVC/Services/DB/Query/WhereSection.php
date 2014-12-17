@@ -74,7 +74,7 @@ trait WhereSection {
             if (count($where) == 1 && is_string($where)) {
                 $build[] = $where;
             } else if (count($where) == 2 && is_array($where[1])) {
-                $build[] = $where[0] . " IN (" . $this->quote($pdo, $where[1]) . ")";
+                $build[] = $where[0] . " IN (" . implode(", ", $this->quote($pdo, $where[1])) . ")";
             } else {
                 $build[] = $where[0] . " = " . $where[1];
             }

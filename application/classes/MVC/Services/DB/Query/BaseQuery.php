@@ -41,7 +41,7 @@ abstract class BaseQuery {
     protected function quote(PDO $pdo, array $values) {
         $result = [];
         foreach($values as $value) {
-            $result = $pdo->quote($value);
+            $result[] = $pdo->quote($value);
         }
         return $result;
     }

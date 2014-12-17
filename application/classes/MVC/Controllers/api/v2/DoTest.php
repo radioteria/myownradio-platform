@@ -11,21 +11,12 @@ namespace MVC\Controllers\api\v2;
 
 use MVC\Controller;
 use MVC\Services\JsonResponse;
-use REST\Streams;
 
 class DoTest extends Controller {
 
     public function doGet(JsonResponse $response) {
 
-        $streams = [];
 
-        $fabric = new Streams();
-
-        foreach($fabric as $stream) {
-            $streams[] = $stream;
-        }
-
-        $response->setData($streams);
 
     }
 

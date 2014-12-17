@@ -11,7 +11,6 @@ namespace REST;
 
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
-use MVC\Services\DB\DBQuery;
 use MVC\Services\DB\Query\SelectQuery;
 use MVC\Services\Injectable;
 use Tools\Common;
@@ -55,7 +54,7 @@ class Streams {
      */
     public function getOneStream($id) {
 
-        $stream = Database::doInTransaction(function(Database $db) use ($id) {
+        $stream = Database::doInConnection(function(Database $db) use ($id) {
 
             $queryStream = $this->getStreamsPrefix();
             $queryStream->where("(a.sid = :id) OR (a.permalink = :id)", [':id' => $id]);
@@ -87,7 +86,7 @@ class Streams {
      */
     public function getStreamListFiltered($filter = null, $category = null, $from = 0, $limit = 50) {
 
-        $result = Database::doInTransaction(function (Database $db)
+        $result = Database::doInConnection(function (Database $db)
                                             use ($filter, $category, $from, $limit) {
 
             $involved_users = [];
@@ -137,7 +136,7 @@ class Streams {
      */
     public function getSimilarTo($id) {
 
-        $result = Database::doInTransaction(function (Database $db) use ($id) {
+        $result = Database::doInConnection(function (Database $db) use ($id) {
 
             $involved_users = [];
 

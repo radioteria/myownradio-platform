@@ -10,7 +10,6 @@ namespace MVC\Controllers\api\v2;
 
 
 use MVC\Controller;
-use MVC\Services\Database;
 use MVC\Services\JsonResponse;
 
 class DoTest extends Controller {

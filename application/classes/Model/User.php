@@ -14,7 +14,7 @@ use Tools\Singleton;
  */
 class User extends Model {
 
-    use Stats;
+    use Stats, Singleton;
 
     protected $userID;
     private $userLogin;
@@ -38,7 +38,7 @@ class User extends Model {
 
             $key = func_get_arg(0);
 
-            $user = Database::doInTransaction(function(Database $db) use ($key) {
+            $user = Database::doInConnection(function(Database $db) use ($key) {
                 return $db->fetchOneRow("SELECT * FROM r_users WHERE uid = :id OR mail = :id", [":id" => $key])
                     ->getOrElseThrow(
                         new ControllerException(sprintf("User with login or email '%s' not exists", $key))
@@ -51,7 +51,7 @@ class User extends Model {
             $login = func_get_arg(0);
             $password = func_get_arg(1);
 
-            $user = Database::doInTransaction(function(Database $db) use ($login, $password) {
+            $user = Database::doInConnection(function(Database $db) use ($login, $password) {
                 return $db->fetchOneRow("SELECT * FROM r_users WHERE login = ? AND password = ?", [$login, $password])
                     ->getOrElseThrow(ControllerException::noPermission());
             });
@@ -62,7 +62,7 @@ class User extends Model {
 
         }
 
-        $active = Database::doInTransaction(function (Database $db) use ($user) {
+        $active = Database::doInConnection(function (Database $db) use ($user) {
 
             $query = $db->getDBQuery()->selectFrom("r_subscriptions");
             $query->select("*");
@@ -136,7 +136,7 @@ class User extends Model {
 
         $newPassword = md5($this->getLogin() . $password);
 
-        Database::doInTransaction(function (Database $db) use ($newPassword) {
+        Database::doInConnection(function (Database $db) use ($newPassword) {
             $db->executeUpdate("UPDATE r_users SET password = ? WHERE uid = ?",
                 array($newPassword, $this->userID));
             $db->commit();
@@ -179,7 +179,7 @@ class User extends Model {
 
     public function update() {
 
-        Database::doInTransaction(function (Database $db) {
+        Database::doInConnection(function (Database $db) {
             $db->executeUpdate("UPDATE r_users SET name = ?, info = ?, mail = ? WHERE uid = ?",
                 [$this->userName, $this->userInfo, $this->userEmail, $this->userID]);
             $db->commit();

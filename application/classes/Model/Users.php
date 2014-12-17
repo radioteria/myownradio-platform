@@ -28,7 +28,7 @@ class Users {
 
         $session = HttpSession::getInstance();
 
-        $user = Database::doInTransaction(function (Database $db) use ($login, $password) {
+        $user = Database::doInConnection(function (Database $db) use ($login, $password) {
 
             return $db->fetchOneRow("SELECT * FROM r_users WHERE login = ? AND password = ?",
                 [$login, md5($login . $password)])->getOrElseThrow(ControllerException::noPermission());
@@ -43,7 +43,7 @@ class Users {
 
         $session->set("TOKEN", $token);
 
-        return AuthorizedUser::getInstance();
+        return User::getInstance($user["uid"]);
 
     }
 
@@ -56,7 +56,7 @@ class Users {
      */
     private static function createToken($userId, $clientAddress, $clientUserAgent, $sessionId) {
 
-        $token = Database::doInTransaction(function (Database $db) use ($userId, $clientAddress, $clientUserAgent, $sessionId) {
+        $token = Database::doInConnection(function (Database $db) use ($userId, $clientAddress, $clientUserAgent, $sessionId) {
 
             do { $token = md5($userId . $clientAddress . rand(1, 1000000) . "tokenizer" . time()); }
             while ($db->fetchOneColumn("SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->getOrElse(0) > 0);
@@ -90,8 +90,7 @@ class Users {
         $session = HttpSession::getInstance();
 
         $session->get("TOKEN")->then(function ($token) {
-            $database = Database::getInstance();
-            Database::doInTransaction(function (Database $db) use ($token) {
+            Database::doInConnection(function (Database $db) use ($token) {
                 $db->executeUpdate("DELETE FROM r_sessions WHERE token = ?", [$token]);
             });
         });
@@ -108,14 +107,15 @@ class Users {
 
         $session = HttpSession::getInstance();
 
-        $user = Database::getInstance()->fetchOneRow("SELECT * FROM r_users WHERE uid = ?", [$id])
-            ->getOrElseThrow(ControllerException::noPermission());
+        $user = Database::doInConnection(function (Database $db) use ($id) {
+            return $db->fetchOneRow("SELECT * FROM r_users WHERE uid = ?", [$id])
+                ->getOrElseThrow(ControllerException::noPermission());
+        });
 
         $clientAddress = HttpRequest::getInstance()->getRemoteAddress();
         $clientUserAgent = HttpRequest::getInstance()->getHttpUserAgent()->getOrElse("None");
 
-        $token = self::createToken($user["uid"], $clientAddress, $clientUserAgent,
-            $session->getSessionId());
+        $token = self::createToken($user["uid"], $clientAddress, $clientUserAgent, $session->getSessionId());
 
         $session->set("TOKEN", $token);
 
@@ -136,9 +136,24 @@ class Users {
 
         $email = self::parseRegistrationCode($code);
 
-        $arguments = [$email, $login, md5($login . $password), $name, $info, $permalink, time()];
-        $id = Database::getInstance()->executeInsert("INSERT INTO r_users (mail, login, password, name, info,
-            permalink, registration_date) VALUES (?, ?, ?, ?, ?, ?, ?)", $arguments);
+        $id = Database::doInConnection(function (Database $db) use ($email, $login, $password, $name,
+                                                                    $info, $permalink) {
+            $query = $db->getDBQuery()->insertInto("r_users");
+            $query->values([
+                "mail"              => $email,
+                "login"             => $login,
+                "password"          => md5($login . $password),
+                "name"              => $name,
+                "info"              => $info,
+                "permalink"         => $permalink,
+                "registration_date" => time()
+            ]);
+
+            $id = Database::getInstance()->executeInsert($query);
+
+            return $id;
+
+        });
 
         self::createUserDirectory($id);
 
@@ -165,8 +180,10 @@ class Users {
      */
     private static function createUserDirectory($id) {
 
-        $path = new File(sprintf("%s/ui_%d", Config::getInstance()->getSetting("content", "content_folder")
-            ->getOrElseThrow(ApplicationException::of("CONTENT FOLDER NOT SPECIFIED")), $id));
+        $contentFolder = Config::getInstance()->getSetting("content", "content_folder")
+            ->getOrElseThrow(ApplicationException::of("CONTENT FOLDER NOT SPECIFIED"));
+
+        $path = new File(sprintf("%s/ui_%d", $contentFolder, $id));
 
         $path->createNewDirectory(NEW_DIR_RIGHTS, true);
 
@@ -218,9 +235,17 @@ class Users {
             throw $exception;
         }
 
-        Database::getInstance()->fetchOneRow("SELECT * FROM r_users WHERE login = ? AND password =?", [
-            $decoded["login"], $decoded["password"]
-        ])->getOrElseThrow(new ControllerException("Entered security code is not actual"));
+        Database::doInConnection(function (Database $db) use ($decoded) {
+
+            $query = $db->getDBQuery()->selectFrom("r_users");
+            $query->where("login", $decoded["login"]);
+            $query->where("password", $decoded["password"]);
+            $query->select("*");
+
+            $db->fetchOneRow($query)->getOrElseThrow(new ControllerException("Entered security code is not actual"));
+
+        });
+
 
         return $decoded;
 

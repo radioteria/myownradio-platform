@@ -63,7 +63,7 @@ class Track extends Model {
      */
     public function reload() {
 
-        Database::doInTransaction(function (Database $db) {
+        Database::doInConnection(function (Database $db) {
 
             $object = $db->fetchOneRow("SELECT * FROM r_tracks WHERE tid = ?", [$this->key])
                 ->getOrElseThrow(ControllerException::noTrack($this->key));
@@ -93,7 +93,7 @@ class Track extends Model {
 
     public function save() {
 
-        Database::doInTransaction(function (Database $db) {
+        Database::doInConnection(function (Database $db) {
 
             $query = $db->getDBQuery()->updateTable("r_tracks");
 
@@ -265,7 +265,7 @@ class Track extends Model {
 
         unlink($this->getOriginalFile());
 
-        Database::doInTransaction(function (Database $db) {
+        Database::doInConnection(function (Database $db) {
             $db->executeUpdate("DELETE FROM r_tracks WHERE tid = ?", [$this->key]);
         });
 

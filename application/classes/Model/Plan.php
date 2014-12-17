@@ -27,7 +27,7 @@ class Plan extends Model {
 
         parent::__construct();
 
-        Database::doInTransaction(function (Database $db) use ($id) {
+        Database::doInConnection(function (Database $db) use ($id) {
 
             $plan = $db->fetchOneRow("SELECT * FROM r_limitations WHERE level = ?", [$id])
                 ->getOrElseThrow(new ControllerException(sprintf("Plan with ID = %s not exists", $id)));

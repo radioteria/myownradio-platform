@@ -2,6 +2,7 @@
 
 namespace MVC\Services;
 
+use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\DB\DBQuery;
 use MVC\Services\DB\Query\QueryBuilder;
@@ -25,19 +26,22 @@ class Database {
             "db_dsn"      => "mysql:host=localhost;dbname=myownradio"
         ]);
 
-        $this->connect();
-
     }
 
     /**
      * @return $this
+     * @throws ApplicationException
      */
     public function connect() {
 
-        $this->pdo = new PDO($this->settings['db_dsn'], $this->settings['db_login'], $this->settings['db_password'], [
-            PDO::ATTR_EMULATE_PREPARES  => false,
-            PDO::ATTR_PERSISTENT        => true
-        ]);
+        try {
+            $this->pdo = new PDO($this->settings['db_dsn'], $this->settings['db_login'], $this->settings['db_password'], [
+                PDO::ATTR_EMULATE_PREPARES  => false,
+                PDO::ATTR_PERSISTENT        => true
+            ]);
+        } catch (\PDOException $e) {
+            throw ApplicationException::of($e->getMessage(), $e->getTrace());
+        }
 
         return $this;
 
@@ -55,17 +59,31 @@ class Database {
     }
 
     /**
-     * @param callable $callable
+     * @param callable(Database) $callable
      * @return mixed
      */
-    public static function doInTransaction(callable $callable) {
+    public static function doInConnection(callable $callable) {
 
         $connection = new self();
-        $connection->beginTransaction();
+        $connection->connect();
 
-        $result = call_user_func_array($callable, [$connection]);
+        $result = $connection->doInTransaction($callable);
 
         $connection->disconnect();
+
+        return $result;
+
+    }
+
+    /**
+     * @param callable(Database) $callable
+     * @return mixed
+     */
+    public function doInTransaction(callable $callable) {
+
+        $this->beginTransaction();
+        $result = call_user_func($callable, $this);
+        $this->finishTransaction();
 
         return $result;
 
@@ -95,6 +113,12 @@ class Database {
 
     public function rollback() {
         return $this->pdo->rollBack();
+    }
+
+    public function finishTransaction() {
+        if ($this->pdo->inTransaction()) {
+            $this->pdo->rollBack();
+        }
     }
 
     /**

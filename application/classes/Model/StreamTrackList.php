@@ -45,7 +45,7 @@ class StreamTrackList extends Model {
      */
     public function reload() {
 
-        Database::doInTransaction(function (Database $db) {
+        Database::doInConnection(function (Database $db) {
 
             $query = $db->getDBQuery()->selectFrom("r_streams a")
                 ->leftJoin("r_static_stream_vars b", "a.sid = b.stream_id")
@@ -119,7 +119,7 @@ class StreamTrackList extends Model {
             $initialPosition = $this->tracks_count;
             $initialTimeOffset = $this->tracks_duration;
 
-            Database::doInTransaction(function (Database $db)
+            Database::doInConnection(function (Database $db)
                                       use ($tracksToAdd, $initialPosition, $initialTimeOffset) {
 
                 foreach($tracksToAdd as $track) {
@@ -161,7 +161,7 @@ class StreamTrackList extends Model {
 
         $this->doAtomic(function () use (&$tracks) {
 
-            Database::doInTransaction(function (Database $db) use ($tracks) {
+            Database::doInConnection(function (Database $db) use ($tracks) {
                 $db->executeUpdate("DELETE FROM r_link WHERE FIND_IN_SET(unique_id, ?)", [$tracks]);
                 $db->executeUpdate("CALL POptimizeStream(?)", [$this->key]);
                 $db->commit();
@@ -180,7 +180,7 @@ class StreamTrackList extends Model {
 
         $this->doAtomic(function () {
 
-            Database::doInTransaction(function (Database $db) {
+            Database::doInConnection(function (Database $db) {
                 $db->executeUpdate("CALL PShuffleStream(?)", [$this->key]);
                 $db->commit();
             });
@@ -200,7 +200,7 @@ class StreamTrackList extends Model {
 
         $this->doAtomic(function () use ($unique, $index) {
 
-            Database::doInTransaction(function (Database $db) use ($unique, $index) {
+            Database::doInConnection(function (Database $db) use ($unique, $index) {
                 $db->executeUpdate("SELECT NEW_STREAM_SORT(?, ?, ?)", [$this->key, $unique, $index]);
                 $db->commit();
             });
@@ -233,7 +233,7 @@ class StreamTrackList extends Model {
      */
     public function getTrackByTime($time) {
 
-        Database::doInTransaction(function (Database $db) use ($time) {
+        Database::doInConnection(function (Database $db) use ($time) {
 
             $query = $db->getDBQuery()->selectFrom("r_tracks a")->leftJoin("r_link b", "a.tid = b.track_id");
 
@@ -291,7 +291,7 @@ class StreamTrackList extends Model {
 
         $track->then(function ($track) {
 
-            Database::doInTransaction(function (Database $db) use ($track) {
+            Database::doInConnection(function (Database $db) use ($track) {
 
                 $query = "SELECT time_offset FROM r_link WHERE unique_id = ? AND stream_id = ?";
 
@@ -334,7 +334,7 @@ class StreamTrackList extends Model {
      */
     public function setPlayFrom($uniqueID) {
 
-        $track = Database::doInTransaction(function (Database $db) use ($uniqueID) {
+        $track = Database::doInConnection(function (Database $db) use ($uniqueID) {
 
             $query = $db->getDBQuery()->selectFrom("r_tracks a")
                 ->leftJoin("r_link b", "a.tid = b.track_id")
@@ -359,7 +359,7 @@ class StreamTrackList extends Model {
 
     public function generateUniqueId() {
 
-        return Database::doInTransaction(function (Database $db) {
+        return Database::doInConnection(function (Database $db) {
 
             do { $generated = Common::generateUniqueId(); }
             while ($db->fetchOneColumn("SELECT COUNT(*) FROM r_link WHERE unique_id = ?", [$generated])->getRaw());

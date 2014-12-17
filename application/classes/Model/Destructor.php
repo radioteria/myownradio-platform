@@ -27,7 +27,7 @@ class Destructor extends Model {
 
     public function deleteFromStreams($tracks) {
 
-        $streams = Database::doInTransaction(function (Database $db) use ($tracks) {
+        $streams = Database::doInConnection(function (Database $db) use ($tracks) {
 
             $query = $db->getDBQuery()
                 ->selectFrom("r_link")

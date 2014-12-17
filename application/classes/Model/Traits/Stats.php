@@ -20,7 +20,7 @@ trait Stats {
 
     protected function loadStats() {
 
-        Database::doInTransaction(function (Database $db) {
+        Database::doInConnection(function (Database $db) {
 
             $stats = $db->fetchOneRow("SELECT * FROM r_static_user_vars WHERE user_id = ?", [$this->userID])
                 ->getOrElseThrow(ApplicationException::of("NO_STATIC_USER_VARS"));

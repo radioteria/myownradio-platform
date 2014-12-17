@@ -46,7 +46,7 @@ class Factory extends Model {
 
 
 
-        $id = Database::doInTransaction(function (Database $db)
+        $id = Database::doInConnection(function (Database $db)
                                         use ($name, $info, $hashtags, $category, $permalink) {
 
             $query = $db->getDBQuery()->insertInto("r_streams");
@@ -73,7 +73,7 @@ class Factory extends Model {
 
     public function deleteStream($id) {
 
-        Database::doInTransaction(function (Database $db) use ($id) {
+        Database::doInConnection(function (Database $db) use ($id) {
 
             $result = $db->executeUpdate("DELETE FROM r_streams WHERE sid = ? AND uid = ?",
                 [$id, $this->user->getId()]);
@@ -115,7 +115,7 @@ class Factory extends Model {
             throw new ControllerException("You are exceeded available upload time. Please upgrade your account.");
         }
 
-        Database::doInTransaction(function (Database $db) use ($file, $audioTags, $addToStream, $duration) {
+        Database::doInConnection(function (Database $db) use ($file, $audioTags, $addToStream, $duration) {
 
             $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
 

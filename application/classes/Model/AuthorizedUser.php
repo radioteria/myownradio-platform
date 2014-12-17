@@ -17,7 +17,7 @@ use Tools\Singleton;
 
 class AuthorizedUser extends User {
 
-    use Singleton, Injectable;
+    use Injectable;
 
     function __construct() {
 
@@ -33,7 +33,7 @@ class AuthorizedUser extends User {
 
         $token = HttpSession::getInstance()->get("TOKEN")->getOrElseThrow($exception);
 
-        $uid = Database::doInTransaction(function (Database $db) use ($token, $exception) {
+        $uid = Database::doInConnection(function (Database $db) use ($token, $exception) {
 
             $query = $db->getDBQuery()
                 ->selectFrom("r_sessions a")->leftJoin("r_users b", "a.uid = b.uid")

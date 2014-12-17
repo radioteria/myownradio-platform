@@ -57,7 +57,7 @@ class Stream extends Model {
 
     private function load() {
 
-        $object = Database::doInTransaction(function (Database $db) {
+        $object = Database::doInConnection(function (Database $db) {
 
             return $db->fetchOneRow("SELECT * FROM r_streams WHERE sid = ?", [$this->key])
                 ->getOrElseThrow(ControllerException::noStream($this->key));
@@ -83,7 +83,7 @@ class Stream extends Model {
 
     public function save() {
 
-        Database::doInTransaction(function (Database $db) {
+        Database::doInConnection(function (Database $db) {
 
             $query = $db->getDBQuery()->updateTable("r_streams");
 

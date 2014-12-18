@@ -24,7 +24,8 @@ class User extends Model {
 
     /** @var UserAR */
     private $userBean;
-    
+
+    // todo: Unbox this bean ^^
     public function __construct() {
 
         parent::__construct();

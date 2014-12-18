@@ -248,11 +248,11 @@ class Database {
      * @param string $query
      * @param array $params
      * @param string $class
-     * @param array $args
+     * @param array|null $args
      * @return Optional
      * @throws ControllerException
      */
-    public function fetchOneObject($query, array $params, $class, $args = []) {
+    public function fetchOneObject($query, array $params, $class, array $args = null) {
 
         $resource = $this->createResource($query, $params);
 

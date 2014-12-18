@@ -294,18 +294,18 @@ class StreamTrackList extends Model {
 
                         $db->executeUpdate($query);
 
-                    });
+                    })->otherwise(function () {
+                        // TODO: Otherwise method needs to be implemented (if track not found)
 
-                // TODO: Otherwise method needs to be implemented (if track not found)
+                    });
 
                 $db->commit();
 
             });
 
-
         });
 
-        if ($force) {
+        if ($force == true) {
             $this->notifyStreamers();
         }
 

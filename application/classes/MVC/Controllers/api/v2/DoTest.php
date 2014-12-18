@@ -17,9 +17,10 @@ class DoTest extends Controller {
 
     public function doGet(JsonResponse $response) {
 
-        $user = UserAR::getByID(1);
+        /** @var UserAR $user */
+        $user = UserAR::getByID(1)->getOrElseNull();
 
-        $response->setData($user->getOrElseNull());
+        $response->setData($user->exportArray());
 
     }
 

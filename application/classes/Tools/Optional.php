@@ -12,11 +12,12 @@ use Exception;
 
 class Optional {
 
+    /** @var Object $value */
     private $value;
     private $predicate;
 
     /**
-     * @param $value
+     * @param Object $value
      * @param callable $predicate
      */
     public function __construct($value, callable $predicate) {
@@ -39,21 +40,21 @@ class Optional {
 
     /**
      * @param $value
-     * @return mixed
+     * @return Object
      */
     public function getOrElse($value) {
         return $this->test() ? $this->value : $value;
     }
 
     /**
-     * @return mixed|null
+     * @return Object|null
      */
     public function getOrElseNull() {
         return $this->getOrElse(null);
     }
 
     /**
-     * @return mixed
+     * @return Object
      */
     public function getRaw() {
         return $this->value;

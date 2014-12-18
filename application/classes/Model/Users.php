@@ -146,7 +146,7 @@ class Users {
         $newUser->setPermalink($permalink);
         $newUser->setRegistrationDate(time());
 
-        $newUser->beanSave();
+        $newUser->save();
 
         self::createUserDirectory($newUser->getID());
 

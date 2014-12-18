@@ -42,8 +42,8 @@ class ControllerException extends \Exception {
         return new self("You don't have permission to access this resource");
     }
 
-    public static function noEntity($key) {
-        return new self("No entity with key '%s' found", $key);
+    public static function noEntity($name) {
+        return new self(sprintf("No entity '%s' found", $name));
     }
 
     public static function noTrack($key) {

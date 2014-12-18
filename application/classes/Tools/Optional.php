@@ -216,6 +216,13 @@ class Optional {
     }
 
     /**
+     * @return Optional
+     */
+    public static function hasValue($value) {
+        return new self($value, function () { return true; });
+    }
+
+    /**
      * @return string
      */
     public function __toString() {

@@ -10,23 +10,33 @@ namespace Model\Beans;
 
 
 use MVC\MicroORM;
+use Tools\Optional;
 
 trait BeanTools {
 
-    public function beanSave() {
+    public function save() {
         return MicroORM::getInstance()->saveObject($this);
     }
 
-    public function beanDelete() {
+    public function delete() {
         MicroORM::getInstance()->deleteObject($this);
     }
 
     /**
      * @param int $id
-     * @return static
+     * @return Optional
      */
-    public static function beanLoad($id) {
+    public static function getByID($id) {
         return MicroORM::getInstance()->getObjectByID(get_called_class(), $id);
+    }
+
+    /**
+     * @param string $filter
+     * @param array $args
+     * @return Optional
+     */
+    public static function getByFilter($filter, array $args = null) {
+        return MicroORM::getInstance()->getObjectByFilter(get_called_class(), $filter, $args);
     }
 
     /**
@@ -34,7 +44,7 @@ trait BeanTools {
      * @param null $offset
      * @return static[]
      */
-    public static function getAll($limit = null, $offset = null) {
+    public static function getList($limit = null, $offset = null) {
         return MicroORM::getInstance()->getListOfObjects(get_called_class(), null, null, $limit, $offset);
     }
 
@@ -45,7 +55,7 @@ trait BeanTools {
      * @param null $offset
      * @return static[]
      */
-    public static function findByFilter($filter, array $args = null, $limit = null, $offset = null) {
+    public static function getFilteredList($filter, array $args = null, $limit = null, $offset = null) {
         return MicroORM::getInstance()->getFilteredListOfObjects(get_called_class(), $filter, $args, $limit, $offset);
     }
 

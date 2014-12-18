@@ -13,6 +13,7 @@ use Model\Beans\BeanObject;
 use MVC\Exceptions\ORMException;
 use MVC\Services\Database;
 use MVC\Services\DB\Query\SelectQuery;
+use Tools\Optional;
 use Tools\Singleton;
 
 /**
@@ -26,14 +27,13 @@ class MicroORM extends FilterORM {
     /**
      * @param string $bean
      * @param int $id
-     * @return object
+     * @return Optional
      */
     public function getObjectByID($bean, $id) {
 
         $reflection = new \ReflectionClass($bean);
 
-        $beanComment = $reflection->getDocComment();
-        $beanConfig = $this->getBeanConfig($beanComment);
+        $beanConfig = $this->getBeanConfig($reflection);
 
         return $this->_loadObject($reflection, $beanConfig, $id);
 
@@ -43,12 +43,12 @@ class MicroORM extends FilterORM {
      * @param string $bean
      * @param string $filter
      * @param array $args
-     * @return Object
+     * @return Optional
      */
     public function getObjectByFilter($bean, $filter, array $args = null) {
 
         $reflection = new \ReflectionClass($bean);
-        $beanConfig = $this->getBeanConfig($reflection->getDocComment());
+        $beanConfig = $this->getBeanConfig($reflection);
         return $this->_getObjectByFilter($reflection, $beanConfig, $filter, $args);
 
     }
@@ -60,8 +60,7 @@ class MicroORM extends FilterORM {
 
         $reflection  = new \ReflectionClass($object);
 
-        $beanComment = $reflection->getDocComment();
-        $beanConfig = $this->getBeanConfig($beanComment);
+        $beanConfig = $this->getBeanConfig($reflection);
 
         $param = $reflection->getProperty($beanConfig["@key"]);
         $param->setAccessible(true);
@@ -80,14 +79,13 @@ class MicroORM extends FilterORM {
      * @param string $bean
      * @param int|null $limit
      * @param int|null $offset
-     * @return object
+     * @return Object[]
      */
     public function getListOfObjects($bean, $limit = null, $offset = null) {
 
         $reflection = new \ReflectionClass($bean);
 
-        $beanComment = $reflection->getDocComment();
-        $beanConfig = $this->getBeanConfig($beanComment);
+        $beanConfig = $this->getBeanConfig($reflection);
 
         return $this->_loadObjects($reflection, $beanConfig, null, null, $limit, $offset);
 
@@ -106,8 +104,7 @@ class MicroORM extends FilterORM {
 
         $reflection = new \ReflectionClass($bean);
 
-        $beanComment = $reflection->getDocComment();
-        $beanConfig = $this->getBeanConfig($beanComment);
+        $beanConfig = $this->getBeanConfig($reflection);
 
         if (!isset($beanConfig["@do" . $filter])) {
             throw new ORMException("No action '" . $filter . "' found");
@@ -185,7 +182,7 @@ class MicroORM extends FilterORM {
      * @param \ReflectionClass $reflection
      * @param array $config
      * @param int $id
-     * @return object $bean
+     * @return Optional
      */
     private function _loadObject($reflection, array $config, $id) {
 
@@ -203,7 +200,7 @@ class MicroORM extends FilterORM {
      * @param array $config
      * @param $filter
      * @param array $args
-     * @return Object
+     * @return Optional
      */
     private function _getObjectByFilter($reflection, array $config, $filter, array $args = null) {
 
@@ -263,14 +260,18 @@ class MicroORM extends FilterORM {
     /**
      * @param SelectQuery $query
      * @param \ReflectionClass $reflection
-     * @return BeanObject[]
+     * @return Optional
      */
     protected function _getSingleObject(SelectQuery $query, \ReflectionClass $reflection) {
 
         $object = Database::doInConnection(function (Database $db) use ($query, $reflection) {
 
             $row = $db->fetchOneRow($query)
-                ->getOrElseThrow(new ORMException("No matching object found"));
+                ->getOrElseNull();
+
+            if ($row === null) {
+                return Optional::noValue();
+            }
 
             $instance = $reflection->newInstance();
 
@@ -279,7 +280,7 @@ class MicroORM extends FilterORM {
                 $prop->setValue($instance, @$row[$prop->getName()]);
             }
 
-            return $instance;
+            return Optional::hasValue($instance);
 
         });
 
@@ -332,12 +333,12 @@ class MicroORM extends FilterORM {
     }
 
     /**
-     * @param string $comments
+     * @param \ReflectionClass $reflection
      * @return array
      */
-    private function parseDocComments($comments) {
+    private function parseDocComments(\ReflectionClass $reflection) {
         $parameters = [];
-        preg_match_all("~(\\@\\w+)\\s+(.+)~m", $comments, $matches, PREG_SET_ORDER);
+        preg_match_all("~(\\@\\w+)\\s+(.+)~m", $reflection, $matches, PREG_SET_ORDER);
         foreach ($matches as $match) {
             $parameters[$match[1]] = trim($match[2]);
         }
@@ -354,11 +355,11 @@ class MicroORM extends FilterORM {
         $beanConfig = $this->parseDocComments($beanComment);
 
         if (empty($beanConfig["@table"])) {
-            throw new ORMException("No 'table' comment present");
+            throw new ORMException("No comment '@table' present");
         }
 
         if (empty($beanConfig["@key"])) {
-            throw new ORMException("No 'key' comment present");
+            throw new ORMException("No comment '@key' present");
         }
 
         return $beanConfig;

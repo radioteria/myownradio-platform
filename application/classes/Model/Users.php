@@ -9,6 +9,7 @@
 namespace Model;
 
 
+use Model\Beans\UserBean;
 use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Config;
@@ -136,28 +137,39 @@ class Users {
 
         $email = self::parseRegistrationCode($code);
 
-        $id = Database::doInConnection(function (Database $db) use ($email, $login, $password, $name,
-                                                                    $info, $permalink) {
-            $query = $db->getDBQuery()->insertInto("r_users");
-            $query->values([
-                "mail"              => $email,
-                "login"             => $login,
-                "password"          => md5($login . $password),
-                "name"              => $name,
-                "info"              => $info,
-                "permalink"         => $permalink,
-                "registration_date" => time()
-            ]);
+        $newUser = new UserBean();
+        $newUser->setEmail($email);
+        $newUser->setLogin($login);
+        $newUser->setPassword(md5($login . $password));
+        $newUser->setName($name);
+        $newUser->setInfo($info);
+        $newUser->setPermalink($permalink);
+        $newUser->setRegistrationDate(time());
 
-            $id = Database::getInstance()->executeInsert($query);
+        $newUser->beanSave();
 
-            return $id;
+//        $id = Database::doInConnection(function (Database $db) use ($email, $login, $password, $name,
+//                                                                    $info, $permalink) {
+//            $query = $db->getDBQuery()->insertInto("r_users");
+//            $query->values([
+//                "mail"              => $email,
+//                "login"             => $login,
+//                "password"          => md5($login . $password),
+//                "name"              => $name,
+//                "info"              => $info,
+//                "permalink"         => $permalink,
+//                "registration_date" => time()
+//            ]);
+//
+//            $id = Database::getInstance()->executeInsert($query);
+//
+//            return $id;
+//
+//        });
 
-        });
+        self::createUserDirectory($newUser->getID());
 
-        self::createUserDirectory($id);
-
-        return new User($id);
+        return new User($newUser->getID());
 
     }
 

@@ -28,6 +28,6 @@ class DeleteQuery extends BaseQuery implements QueryBuilder {
         $query[] = $this->buildOrderBy();
         $query[] = $this->buildLimits();
 
-        return implode(" ", $query);
+        return implode(" ", $build);
     }
 }

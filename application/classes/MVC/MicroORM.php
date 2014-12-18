@@ -22,6 +22,8 @@ class MicroORM {
 
     use Singleton;
 
+    private $queriesLog = [];
+
     /**
      * @param string $bean
      * @param int $id
@@ -53,6 +55,8 @@ class MicroORM {
         if (!is_null($id)) {
             $this->_deleteObject($reflection, $beanConfig, $id);
         }
+
+        $param->setValue($object, null);
 
     }
 
@@ -133,6 +137,8 @@ class MicroORM {
 
                 $result = $db->executeInsert($query);
 
+                $keyProp->setValue($bean, $result);
+
             } else {
 
                 $query = $db->getDBQuery()->updateTable($beanConfig["@table"]);
@@ -153,13 +159,11 @@ class MicroORM {
 
                 }
 
-                $result = $db->executeUpdate($query);
+                $db->executeUpdate($query);
 
             }
 
             $db->commit();
-
-            return $result;
 
         });
 
@@ -211,9 +215,10 @@ class MicroORM {
 
         Database::doInConnection(function (Database $db) use ($reflection, $config, $id) {
 
-            $query = "DELETE FROM " . $config["@table"] . " WHERE " . $config["@key"] . " = ?";
+            $query = $db->getDBQuery()->deleteFrom($config["@table"]);
+            $query->where($config["@key"], $id);
 
-            $db->executeUpdate($query, [$id]);
+            $db->executeUpdate($query);
 
             $db->commit();
 

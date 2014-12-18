@@ -9,6 +9,7 @@
 namespace MVC\Services\DB;
 
 
+use MVC\Services\DB\Query\DeleteQuery;
 use MVC\Services\DB\Query\InsertQuery;
 use MVC\Services\DB\Query\SelectQuery;
 use MVC\Services\DB\Query\UpdateQuery;
@@ -40,6 +41,14 @@ class DBQuery {
      */
     public function updateTable($tableName) {
         return new UpdateQuery($tableName);
+    }
+
+    /**
+     * @param $tableName
+     * @return DeleteQuery
+     */
+    public function deleteFrom($tableName) {
+        return new DeleteQuery($tableName);
     }
 
 } 

@@ -143,7 +143,7 @@ class UserBean implements BeanObject {
      * @param mixed $mail
      * @return $this
      */
-    public function setMail($mail) {
+    public function setEmail($mail) {
         $this->mail = $mail;
         return $this;
     }

@@ -16,7 +16,7 @@ class StreamTrackAR extends TrackAR {
 
     protected $unique_id, $t_order, $time_offset;
 
-    function StreamTrackAR() {
+    function __construct() {
     }
 
     public function getTrackOrder() {

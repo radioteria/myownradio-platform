@@ -127,7 +127,7 @@ class StreamTrackList extends Model implements \Countable {
                 foreach($tracksToAdd as $track) {
 
                     $trackObject = new Track($track);
-                    $uniqueId = $this->generateUniqueId();
+                    $uniqueId = $this->generateUniqueId($db);
 
                     $query = $db->getDBQuery()->insertInto("r_link")
                         ->values([
@@ -398,17 +398,12 @@ class StreamTrackList extends Model implements \Countable {
     }
 
 
-    public function generateUniqueId() {
-
-        return Database::doInConnection(function (Database $db) {
+    public function generateUniqueId(Database $connection) {
 
             do { $generated = Common::generateUniqueId(); }
-            while ($db->fetchOneColumn("SELECT COUNT(*) FROM r_link WHERE unique_id = ?", [$generated])->getRaw());
+            while ($connection->fetchOneColumn("SELECT COUNT(*) FROM r_link WHERE unique_id = ?", [$generated])->getRaw());
 
             return $generated;
-
-        });
-
 
     }
 

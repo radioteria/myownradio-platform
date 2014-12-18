@@ -16,12 +16,6 @@ class StreamTrackBean extends TrackBean {
 
     protected $unique_id, $t_order, $time_offset;
 
-    protected $__time;
-
-    function __construct($time) {
-        $this->__time = $time;
-    }
-
     public function getTrackOrder() {
         return $this->t_order;
     }
@@ -32,10 +26,6 @@ class StreamTrackBean extends TrackBean {
 
     public function getUniqueID() {
         return $this->unique_id;
-    }
-
-    public function getCursor() {
-        return $this->__time - $this->getTimeOffset();
     }
 
 } 

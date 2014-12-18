@@ -15,6 +15,7 @@ use MVC\Exceptions\ControllerException;
 use MVC\Services\Config;
 use MVC\Services\Database;
 use ReflectionClass;
+use Tools\Folders;
 use Tools\Singleton;
 
 class Track extends Model {
@@ -227,14 +228,7 @@ class Track extends Model {
      * @return string
      */
     public function getOriginalFile() {
-        $config = Config::getInstance();
-        return sprintf("%s/ui_%d/a_%03d_original.%s",
-            $config->getSetting("content", "content_folder")->getOrElseThrow(
-                ApplicationException::of("CONTENT FOLDER NOT SET")),
-            $this->getUid(),
-            $this->getId(),
-            $this->getExtension()
-        );
+        return Folders::getInstance()->getRealTrackPath($this);
     }
 
     /**

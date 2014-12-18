@@ -9,25 +9,14 @@
 namespace MVC\Controllers\api\v2;
 
 
+use Model\Beans\StreamBean;
 use MVC\Controller;
-use MVC\Exceptions\ControllerException;
-use MVC\MicroORM;
-use MVC\Services\Database;
 use MVC\Services\JsonResponse;
 
 class DoTest extends Controller {
 
     public function doGet(JsonResponse $response) {
 
-        $orm = new MicroORM();
-
-        $track = $orm->fetchObject("Model\\Beans\\TrackBean", 924);
-
-        $track->setColor(1);
-
-        $res = $orm->saveObject($track);
-
-        $response->setData($res);
 
     }
 

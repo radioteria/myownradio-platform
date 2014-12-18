@@ -50,7 +50,7 @@ class MicroORM {
         $beanComment = $reflection->getDocComment();
         $beanConfig = $this->getBeanConfig($beanComment);
 
-        if (isset($beanConfig["@readonly"])) {
+        if (isset($beanConfig["@readOnly"])) {
             throw new ORMException("Save not allowed");
         }
 
@@ -117,10 +117,11 @@ class MicroORM {
 
         $object = Database::doInConnection(function (Database $db) use ($reflection, $bean, $config, $id) {
             $query = $db->getDBQuery()->selectFrom($config["@table"])
-                ->select("*")->where($config["@key"], $id);
+                ->select($config["@table"] . ".*")->where($config["@key"], $id);
 
-            if (isset($config["@join"], $config["@on"])) {
-                $query->leftJoin($config["@join"], $config["@on"]);
+            if (isset($config["@leftJoin"], $config["@on"])) {
+                $query->leftJoin($config["@leftJoin"], $config["@on"]);
+                $query->select($config["@leftJoin"] . ".*");
             }
 
             $row = $db->fetchOneRow($query)
@@ -132,7 +133,7 @@ class MicroORM {
 
             foreach ($reflection->getProperties() as $prop) {
                 $prop->setAccessible(true);
-                $prop->setValue($instance, $row[$prop->getName()]);
+                $prop->setValue($instance, @$row[$prop->getName()]);
             }
 
             return $instance;

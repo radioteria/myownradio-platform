@@ -55,7 +55,8 @@ class Factory extends Model {
                 "info"      => $info,
                 "hashtags"  => $hashtags,
                 "category"  => $category,
-                "permalink" => $permalink
+                "permalink" => $permalink,
+                "created"   => time()
             ]);
 
             $uid = $db->executeInsert($query);

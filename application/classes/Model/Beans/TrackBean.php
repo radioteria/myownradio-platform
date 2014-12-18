@@ -14,6 +14,8 @@ namespace Model\Beans;
  */
 class TrackBean implements BeanObject {
 
+    use BeanTools;
+
     protected
         $tid, $uid, $filename, $ext,
         $artist, $title, $album,
@@ -100,22 +102,6 @@ class TrackBean implements BeanObject {
         $this->date = $date;
     }
 
-    public function setDuration($duration) {
-        $this->duration = $duration;
-    }
-
-    public function setExt($ext) {
-        $this->ext = $ext;
-    }
-
-    public function setFilename($filename) {
-        $this->filename = $filename;
-    }
-
-    public function setFilesize($filesize) {
-        $this->filesize = $filesize;
-    }
-
     public function setGenre($genre) {
         $this->genre = $genre;
     }
@@ -126,14 +112,6 @@ class TrackBean implements BeanObject {
 
     public function setTrackNumber($track_number) {
         $this->track_number = $track_number;
-    }
-
-    public function setUid($uid) {
-        $this->uid = $uid;
-    }
-
-    public function setUploaded($uploaded) {
-        $this->uploaded = $uploaded;
     }
 
 }

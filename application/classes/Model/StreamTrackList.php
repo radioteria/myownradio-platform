@@ -8,14 +8,16 @@
 
 namespace Model;
 
+use Model\Beans\StreamTrackBean;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
+use MVC\Services\DB\DBQuery;
 use Tools\Common;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\System;
 
-class StreamTrackList extends Model {
+class StreamTrackList extends Model implements \Countable {
 
     use Singleton;
 
@@ -212,18 +214,51 @@ class StreamTrackList extends Model {
     }
 
     /**
+     * @return \MVC\Services\DB\Query\SelectQuery
+     */
+    private function getTrackQueryPrefix() {
+
+        $query = DBQuery::getInstance()->selectFrom("r_tracks a")
+            ->leftJoin("r_link b", "a.tid = b.track_id");
+
+        $query->select("a.*, b.unique_id, b.t_order, b.time_offset");
+
+        return $query;
+
+    }
+
+    /**
      * @return Optional
      */
     public function getCurrentTrack() {
 
         $time = $this->getStreamPosition();
 
-
         if ($time->validate()) {
             return $this->getTrackByTime($time->getRaw());
         }
 
         return Optional::noValue();
+
+    }
+
+    /**
+     * @param $id
+     * @return Optional
+     */
+    public function getTrackByOrder($id) {
+
+        return Database::doInConnection(function (Database $db) use ($id) {
+
+            $query = $this->getTrackQueryPrefix();
+            $query->where("b.t_order", $id);
+            $query->where("b.stream_id", $this->key);
+
+            $trackObject = $db->fetchOneObject($query, null, "Model\\Beans\\StreamTrackBean", [System::time()]);
+
+            return Optional::ofNull($trackObject->getOrElseNull());
+
+        });
 
     }
 
@@ -235,9 +270,7 @@ class StreamTrackList extends Model {
 
         Database::doInConnection(function (Database $db) use ($time) {
 
-            $query = $db->getDBQuery()->selectFrom("r_tracks a")->leftJoin("r_link b", "a.tid = b.track_id");
-
-            $query->select("a.*, b.unique_id, b.t_order, b.time_offset");
+            $query = $this->getTrackQueryPrefix();
             $query->where("b.time_offset <= :time");
             $query->where("b.time_offset + a.duration >= :time", [":time" => $time]);
             $query->where("b.stream_id", $this->key);
@@ -256,6 +289,7 @@ class StreamTrackList extends Model {
      */
     private function doAtomic(callable $callable) {
 
+        $time = $this->getStreamPosition();
         $track = $this->getCurrentTrack();
 
         call_user_func($callable);
@@ -263,6 +297,10 @@ class StreamTrackList extends Model {
         $this->setCurrentTrack($track);
 
         return $this;
+
+    }
+
+    private function restorePlayingTrack(Optional $track, Optional $time) {
 
     }
 
@@ -294,8 +332,9 @@ class StreamTrackList extends Model {
 
                         $db->executeUpdate($query);
 
-                    })->otherwise(function () {
-                        // TODO: Otherwise method needs to be implemented (if track not found)
+                    })->otherwise(function () use ($track) {
+
+                        $order = $track->getTrackOrder();
 
                     });
 
@@ -310,6 +349,23 @@ class StreamTrackList extends Model {
         }
 
         return $this;
+
+    }
+
+    private function _setCurrentTrack(StreamTrackBean $trackBean, $startFrom = 0, $notify = true) {
+
+        Database::doInConnection(function (Database $db) use ($trackBean, $startFrom) {
+            $query = $db->getDBQuery()->updateTable("r_streams")
+                ->set("started_from", $trackBean->getTimeOffset() + $startFrom)
+                ->set("started", System::time())
+                ->set("status", 1)
+                ->where("sid", $this->key);
+            $db->executeUpdate($query);
+        });
+
+        if ($notify == true) {
+            $this->notifyStreamers();
+        }
 
     }
 
@@ -368,5 +424,14 @@ class StreamTrackList extends Model {
         curl_exec($ch);
         curl_close($ch);
     }
+
+    /**
+     * @return int
+     */
+    public function count() {
+        return intval($this->tracks_count);
+    }
+
+
 
 } 

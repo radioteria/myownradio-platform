@@ -9,6 +9,7 @@
 namespace MVC;
 
 
+use MVC\Exceptions\ORMException;
 use MVC\Services\DB\DBQuery;
 
 abstract class FilterORM {
@@ -43,6 +44,8 @@ abstract class FilterORM {
 
         if (isset($config["@do_" . $filter])) {
             $query->where($config["@do_" . $filter], $args);
+        } else {
+            throw new ORMException(sprintf("No filter '%s' described", $filter));
         }
     }
 

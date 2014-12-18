@@ -22,7 +22,7 @@ trait Stats {
 
         Database::doInConnection(function (Database $db) {
 
-            $stats = $db->fetchOneRow("SELECT * FROM r_static_user_vars WHERE user_id = ?", [$this->userID])
+            $stats = $db->fetchOneRow("SELECT * FROM r_static_user_vars WHERE user_id = ?", [$this->getID()])
                 ->getOrElseThrow(ApplicationException::of("NO_STATIC_USER_VARS"));
 
             $this->tracks_count = $stats["tracks_count"];

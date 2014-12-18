@@ -18,17 +18,9 @@ class User extends Model {
     use Stats, Singleton;
 
     protected $userID;
-    private $userLogin;
-    private $userName;
-    private $userEmail;
-    private $userInfo;
-    private $userPassword;
 
-    private $userToken;
     private $activePlan;
     private $planExpire;
-
-    private $modifiedFlag = false;
 
     /** @var UserBean */
     private $userBean;
@@ -37,28 +29,29 @@ class User extends Model {
 
         parent::__construct();
 
+        if (func_num_args() == 1 && is_numeric(func_get_arg(0))) {
 
-        if (func_num_args() == 1) {
+            $id = func_get_arg(0);
+
+            $this->userBean = UserBean::getByID($id)->getOrElseThrow(
+                    new ControllerException(sprintf("User with id '%s' not exists", $id)));
+
+        } elseif (func_num_args() == 1) {
 
             $key = func_get_arg(0);
 
-            $user = Database::doInConnection(function(Database $db) use ($key) {
-                return $db->fetchOneRow("SELECT * FROM r_users WHERE uid = :id OR mail = :id", [":id" => $key])
-                    ->getOrElseThrow(
-                        new ControllerException(sprintf("User with login or email '%s' not exists", $key))
-                    );
-            });
-
+            $this->userBean = UserBean::getByFilter("FIND_BY_KEY_PARAMS", [":id" => $key])
+                ->getOrElseThrow(
+                    new ControllerException(sprintf("User with login or email '%s' not exists", $key))
+                );
 
         } elseif (func_num_args() == 2) {
 
             $login = func_get_arg(0);
             $password = func_get_arg(1);
 
-            $user = Database::doInConnection(function(Database $db) use ($login, $password) {
-                return $db->fetchOneRow("SELECT * FROM r_users WHERE login = ? AND password = ?", [$login, $password])
-                    ->getOrElseThrow(ControllerException::noPermission());
-            });
+            $this->userBean = UserBean::getByFilter("FIND_BY_CREDENTIALS", [$login, $password])
+                ->getOrElseThrow(ControllerException::noPermission());
 
         } else {
 
@@ -66,11 +59,11 @@ class User extends Model {
 
         }
 
-        $active = Database::doInConnection(function (Database $db) use ($user) {
+        $active = Database::doInConnection(function (Database $db) {
 
             $query = $db->getDBQuery()->selectFrom("r_subscriptions");
             $query->select("*");
-            $query->where("uid", $user["uid"]);
+            $query->where("uid", $this->userBean->getID());
             $query->where("expire > UNIX_TIMESTAMP(NOW())");
             $query->addOrderBy("id DESC");
             $query->limit(1);
@@ -81,12 +74,12 @@ class User extends Model {
         });
 
 
-        $this->userID       = intval($user['uid']);
+/*        $this->userID       = intval($user['uid']);
         $this->userLogin    = $user['login'];
         $this->userName     = $user['name'];
         $this->userEmail    = $user['mail'];
         $this->userInfo     = $user['info'];
-        $this->userPassword = $user["password"];
+        $this->userPassword = $user["password"];*/
 
         $this->activePlan   = intval($active["plan"]);
         $this->planExpire   = intval($active["expire"]);
@@ -117,34 +110,27 @@ class User extends Model {
     }
 
     public function getId() {
-        return $this->userID;
+        return $this->userBean->getID();
     }
     
     public function getLogin() {
-        return $this->userLogin;
+        return $this->userBean->getLogin();
     }
     
     public function getEmail() {
-        return $this->userEmail;
+        return $this->userBean->getEmail();
     }
 
     public function getName() {
-        return $this->userName;
+        return $this->userBean->getName();
     }
 
-    public function getToken() {
-        return $this->userToken;
-    }
 
     public function changePassword($password) {
 
         $newPassword = md5($this->getLogin() . $password);
 
-        Database::doInConnection(function (Database $db) use ($newPassword) {
-            $db->executeUpdate("UPDATE r_users SET password = ? WHERE uid = ?",
-                array($newPassword, $this->userID));
-            $db->commit();
-        });
+        $this->userBean->setPassword($newPassword)->save();
 
     }
 
@@ -153,9 +139,7 @@ class User extends Model {
      * @return self
      */
     public function setUserEmail($email) {
-        $this->userEmail = $email;
-        $this->modifiedFlag = true;
-
+        $this->userBean->setEmail($email);
         return $this;
     }
 
@@ -164,9 +148,7 @@ class User extends Model {
      * @return self
      */
     public function setName($name) {
-        $this->userName = $name;
-        $this->modifiedFlag = true;
-
+        $this->userBean->setName($name);
         return $this;
     }
 
@@ -175,32 +157,13 @@ class User extends Model {
      * @return self
      */
     public function setInfo($info) {
-        $this->userInfo = $info;
-        $this->modifiedFlag = true;
-
+        $this->userBean->setInfo($info);
         return $this;
     }
 
     public function update() {
 
-        Database::doInConnection(function (Database $db) {
-            $db->executeUpdate("UPDATE r_users SET name = ?, info = ?, mail = ? WHERE uid = ?",
-                [$this->userName, $this->userInfo, $this->userEmail, $this->userID]);
-            $db->commit();
-        });
-
-        $this->modifiedFlag = false;
-    }
-
-    public function __destruct() {
-        if ($this->modifiedFlag) {
-            $this->update();
-        }
-    }
-
-    public function getPassword() {
-
-        return $this->userPassword;
+        $this->userBean->save();
 
     }
 
@@ -208,6 +171,13 @@ class User extends Model {
 
         return empty($this->getName()) ? $this->getLogin() : $this->getName();
 
+    }
+
+    /**
+     * @return mixed|UserBean
+     */
+    public function getBean() {
+        return $this->userBean;
     }
 
 

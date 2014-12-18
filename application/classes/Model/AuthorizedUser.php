@@ -19,12 +19,11 @@ class AuthorizedUser extends User {
 
     use Injectable;
 
+    protected $userToken;
+
     function __construct() {
-
         $uid = $this->getIdBySessionToken();
-
         parent::__construct($uid);
-
     }
 
     public function getIdBySessionToken() {
@@ -37,15 +36,24 @@ class AuthorizedUser extends User {
 
             $query = $db->getDBQuery()
                 ->selectFrom("r_sessions a")->innerJoin("r_users b", "a.uid = b.uid")
+                ->select("*")
                 ->where("a.token", $token);
 
-            return $db->fetchOneColumn($query)
-                ->getOrElseThrow($exception);
+            $id = $db->fetchOneColumn($query)->getOrElseThrow($exception);
+
+            $this->userToken = $token;
+
+            return $id;
 
         });
 
         return $uid;
 
+    }
+
+
+    public function getToken() {
+        return $this->userToken;
     }
 
 }

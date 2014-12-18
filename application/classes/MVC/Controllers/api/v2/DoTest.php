@@ -9,19 +9,15 @@
 namespace MVC\Controllers\api\v2;
 
 
-use Model\Beans\UserBean;
+use Model\AuthorizedUser;
 use MVC\Controller;
-use MVC\Exceptions\ControllerException;
 use MVC\Services\JsonResponse;
 
 class DoTest extends Controller {
 
-    public function doGet(JsonResponse $response) {
+    public function doGet(AuthorizedUser $user, JsonResponse $response) {
 
-        $user = UserBean::getByFilter("FIND_BY_PARAMS", [ ":key" => "roman@homefs.biz11"])
-            ->getOrElseThrow(ControllerException::noEntity("user"));
-
-        $response->setData($user->exportArray());
+        $response->setData($user->getBean()->exportArray());
 
     }
 

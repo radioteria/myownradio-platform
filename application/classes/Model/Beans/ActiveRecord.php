@@ -9,6 +9,6 @@
 namespace Model\Beans;
 
 
-interface BeanObject {
+interface ActiveRecord {
 
 } 

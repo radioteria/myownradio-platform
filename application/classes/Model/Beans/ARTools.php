@@ -12,7 +12,7 @@ namespace Model\Beans;
 use MVC\MicroORM;
 use Tools\Optional;
 
-trait BeanTools {
+trait ARTools {
 
     public function save() {
         return MicroORM::getInstance()->saveObject($this);

@@ -9,7 +9,7 @@
 namespace Model;
 
 
-use Model\Beans\UserBean;
+use Model\Beans\UserAR;
 use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Config;
@@ -136,14 +136,17 @@ class Users {
     public static function completeRegistration($code, $login, $password, $name, $info, $permalink) {
 
         $email = self::parseRegistrationCode($code);
+        $md5Password = md5($login . $password);
 
-        $newUser = new UserBean();
+        $newUser = new UserAR();
+
         $newUser->setEmail($email);
         $newUser->setLogin($login);
-        $newUser->setPassword(md5($login . $password));
+        $newUser->setPassword($md5Password);
         $newUser->setName($name);
         $newUser->setInfo($info);
         $newUser->setPermalink($permalink);
+        $newUser->setRights(1);
         $newUser->setRegistrationDate(time());
 
         $newUser->save();

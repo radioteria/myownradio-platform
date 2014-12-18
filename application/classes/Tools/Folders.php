@@ -2,6 +2,7 @@
 
 namespace Tools;
 
+use Model\Beans\TrackAR;
 use Model\Track;
 use MVC\Services\Injectable;
 
@@ -50,13 +51,13 @@ class Folders {
     }
 
     /**
-     * @param Track $track
+     * @param TrackAR $track
      * @return string
      */
-    function getRealTrackPath(Track $track) {
+    function getRealTrackPath(TrackAR $track) {
         return sprintf("%s/a_%03d_original.%s",
-            $this->getUserContentFolder($track->getUid()),
-            $track->getId(),
+            $this->getUserContentFolder($track->getUserID()),
+            $track->getID(),
             $track->getExtension()
         );
     }

@@ -9,7 +9,7 @@
 namespace MVC;
 
 
-use Model\Beans\BeanObject;
+use Model\Beans\ActiveRecord;
 use MVC\Exceptions\ORMException;
 use MVC\Services\Database;
 use MVC\Services\DB\Query\SelectQuery;
@@ -54,9 +54,9 @@ class MicroORM extends FilterORM {
     }
 
     /**
-     * @param BeanObject $object
+     * @param ActiveRecord $object
      */
-    public function deleteObject(BeanObject $object) {
+    public function deleteObject(ActiveRecord $object) {
 
         $reflection  = new \ReflectionClass($object);
 
@@ -115,16 +115,15 @@ class MicroORM extends FilterORM {
     }
 
     /**
-     * @param BeanObject $bean
+     * @param ActiveRecord $bean
      * @return mixed
      * @throws ORMException
      */
-    public function saveObject(BeanObject $bean) {
+    public function saveObject(ActiveRecord $bean) {
 
         $reflection = new \ReflectionClass($bean);
 
-        $beanComment = $reflection->getDocComment();
-        $beanConfig = $this->getBeanConfig($beanComment);
+        $beanConfig = $this->getBeanConfig($reflection);
 
         return Database::doInConnection(function (Database $db) use ($reflection, $beanConfig, $bean) {
 
@@ -293,7 +292,7 @@ class MicroORM extends FilterORM {
      * @param \ReflectionClass $reflection
      * @param null|int $limit
      * @param null|int $offset
-     * @return BeanObject[]
+     * @return ActiveRecord[]
      */
     protected function _getListOfObjects(SelectQuery $query, \ReflectionClass $reflection, $limit = null, $offset = null) {
 

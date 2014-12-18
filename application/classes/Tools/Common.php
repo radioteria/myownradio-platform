@@ -108,7 +108,7 @@ class Common {
         $tagsData[0] = Optional::ofZero($tagsData[0]);
 
         for ($i = 1; $i < count($tagsData); $i++) {
-            $tagsData = Optional::ofEmpty($tagsData);
+            $tagsData[$i] = Optional::ofEmpty($tagsData[$i]);
         }
 
         $tagsArray = array_combine($tagsList, $tagsData);

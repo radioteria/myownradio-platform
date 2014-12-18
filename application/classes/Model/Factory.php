@@ -9,6 +9,7 @@
 namespace Model;
 
 
+use Model\Beans\TrackAR;
 use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Config;
@@ -114,52 +115,45 @@ class Factory extends Model {
             throw new ControllerException("You are exceeded available upload time. Please upgrade your account.");
         }
 
-        Database::doInConnection(function (Database $db) use ($file, $audioTags, $addToStream, $duration) {
+        $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
 
-            $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
+        $track = new TrackAR();
 
-            $query = $db->getDBQuery()->insertInto("r_tracks")->values([
-                "uid"           => $this->user->getId(),
-                "filename"      => $file["name"],
-                "ext"           => $extension,
-                "track_number"  => $audioTags["TRACKNUMBER"]    ->getOrElseEmpty(),
-                "artist"        => $audioTags["PERFORMER"]      ->getOrElseEmpty(),
-                "title"         => $audioTags["TITLE"]          ->getOrElse($file['name']),
-                "album"         => $audioTags["ALBUM"]          ->getOrElseEmpty(),
-                "genre"         => $audioTags["GENRE"]          ->getOrElseEmpty(),
-                "date"          => $audioTags["RECORDED_DATE"]  ->getOrElseEmpty(),
-                "duration"      => $duration,
-                "filesize"      => filesize($file["tmp_name"]),
-                'uploaded'      => time()
-            ]);
+        $track->setUserID($this->user->getId());
+        $track->setFileName($file["name"]);
+        $track->setExtension($extension);
+        $track->setTrackNumber($audioTags["TRACKNUMBER"]->getOrElseEmpty());
+        $track->setArtist($audioTags["PERFORMER"]->getOrElseEmpty());
+        $track->setTitle($audioTags["TITLE"]->getOrElse($file['name']));
+        $track->setAlbum($audioTags["ALBUM"]->getOrElseEmpty());
+        $track->setGenre($audioTags["GENRE"]->getOrElseEmpty());
+        $track->setDate($audioTags["RECORDED_DATE"]->getOrElseEmpty());
+        $track->setDuration($duration);
+        $track->setFileSize(filesize($file["tmp_name"]));
+        $track->setUploaded(time());
+        $track->setColor(0);
 
-            $id = $db->executeInsert($query);
+        $track->save();
 
-            $track = new Track($id);
+        $result = move_uploaded_file($file['tmp_name'], $track->getOriginalFile());
 
-            $result = move_uploaded_file($file['tmp_name'], $track->getOriginalFile());
+        if ($result !== false) {
 
-            if ($result !== false) {
+            $addToStream->then(function ($streamID) use ($track) {
 
-                $db->commit();
+                $streamObject = new StreamTrackList($streamID);
+                $streamObject->addTracks($track->getID());
 
-                $addToStream->then(function ($streamID) use ($track) {
-
-                    $streamObject = new StreamTrackList($streamID);
-                    $streamObject->addTracks($track->getId());
-
-                });
+            });
 
 
-            } else {
+        } else {
 
-                $db->rollback();
+            $track->delete();
 
-                throw ApplicationException::of("FILE COULD NOT BE MOVED TO USER FOLDER");
+            throw ApplicationException::of("FILE COULD NOT BE MOVED TO USER FOLDER");
 
-            }
-
-        });
+        }
 
     }
 

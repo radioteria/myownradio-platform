@@ -2,7 +2,7 @@
 
 namespace Model;
 
-use Model\Beans\UserBean;
+use Model\Beans\UserAR;
 use Model\Traits\Stats;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
@@ -22,7 +22,7 @@ class User extends Model {
     private $activePlan;
     private $planExpire;
 
-    /** @var UserBean */
+    /** @var UserAR */
     private $userBean;
     
     public function __construct() {
@@ -33,14 +33,14 @@ class User extends Model {
 
             $id = func_get_arg(0);
 
-            $this->userBean = UserBean::getByID($id)->getOrElseThrow(
+            $this->userBean = UserAR::getByID($id)->getOrElseThrow(
                     new ControllerException(sprintf("User with id '%s' not exists", $id)));
 
         } elseif (func_num_args() == 1) {
 
             $key = func_get_arg(0);
 
-            $this->userBean = UserBean::getByFilter("FIND_BY_KEY_PARAMS", [":id" => $key])
+            $this->userBean = UserAR::getByFilter("FIND_BY_KEY_PARAMS", [":id" => $key])
                 ->getOrElseThrow(
                     new ControllerException(sprintf("User with login or email '%s' not exists", $key))
                 );
@@ -50,7 +50,7 @@ class User extends Model {
             $login = func_get_arg(0);
             $password = func_get_arg(1);
 
-            $this->userBean = UserBean::getByFilter("FIND_BY_CREDENTIALS", [$login, $password])
+            $this->userBean = UserAR::getByFilter("FIND_BY_CREDENTIALS", [$login, $password])
                 ->getOrElseThrow(ControllerException::noPermission());
 
         } else {
@@ -174,7 +174,7 @@ class User extends Model {
     }
 
     /**
-     * @return mixed|UserBean
+     * @return mixed|UserAR
      */
     public function getBean() {
         return $this->userBean;

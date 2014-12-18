@@ -213,7 +213,7 @@ class Track extends Model {
     /**
      * @return int
      */
-    public function getUid() {
+    public function getUserID() {
         return intval($this->uid);
     }
 

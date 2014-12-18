@@ -8,7 +8,7 @@
 
 namespace Model;
 
-use Model\Beans\StreamTrackBean;
+use Model\Beans\StreamTrackAR;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
 use MVC\Services\DB\DBQuery;
@@ -254,7 +254,7 @@ class StreamTrackList extends Model implements \Countable {
             $query->where("b.t_order", $id);
             $query->where("b.stream_id", $this->key);
 
-            $trackObject = $db->fetchOneObject($query, null, "Model\\Beans\\StreamTrackBean", [System::time()]);
+            $trackObject = $db->fetchOneObject($query, null, "Model\\Beans\\StreamTrackAR", null);
 
             return Optional::ofNull($trackObject->getOrElseNull());
 
@@ -264,7 +264,7 @@ class StreamTrackList extends Model implements \Countable {
 
     /**
      * @param $time
-     * @return \Model\Beans\StreamTrackBean
+     * @return \Model\Beans\StreamTrackAR
      */
     public function getTrackByTime($time) {
 
@@ -275,7 +275,7 @@ class StreamTrackList extends Model implements \Countable {
             $query->where("b.time_offset + a.duration >= :time", [":time" => $time]);
             $query->where("b.stream_id", $this->key);
 
-            $track = $db->fetchOneObject($query, [], "Model\\Beans\\StreamTrackBean", [$time]);
+            $track = $db->fetchOneObject($query, [], "Model\\Beans\\StreamTrackAR", [$time]);
 
             return $track;
 
@@ -313,7 +313,7 @@ class StreamTrackList extends Model implements \Countable {
 
         $track->then(function ($track) {
 
-            /** @var \Model\Beans\StreamTrackBean $track */
+            /** @var \Model\Beans\StreamTrackAR $track */
 
             Database::doInConnection(function (Database $db) use ($track) {
 
@@ -352,7 +352,7 @@ class StreamTrackList extends Model implements \Countable {
 
     }
 
-    private function _setCurrentTrack(StreamTrackBean $trackBean, $startFrom = 0, $notify = true) {
+    private function _setCurrentTrack(StreamTrackAR $trackBean, $startFrom = 0, $notify = true) {
 
         Database::doInConnection(function (Database $db) use ($trackBean, $startFrom) {
             $query = $db->getDBQuery()->updateTable("r_streams")

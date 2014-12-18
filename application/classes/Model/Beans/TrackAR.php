@@ -7,14 +7,15 @@
  */
 
 namespace Model\Beans;
+use Tools\Folders;
 
 /**
  * @table r_tracks
  * @key tid
  */
-class TrackBean implements BeanObject {
+class TrackAR implements ActiveRecord {
 
-    use BeanTools;
+    use ARTools;
 
     protected
         $tid, $uid, $filename, $ext,
@@ -74,7 +75,7 @@ class TrackBean implements BeanObject {
         return $this->track_number;
     }
 
-    public function getOwnerID() {
+    public function getUserID() {
         return $this->uid;
     }
 
@@ -112,6 +113,34 @@ class TrackBean implements BeanObject {
 
     public function setTrackNumber($track_number) {
         $this->track_number = $track_number;
+    }
+
+    public function setDuration($duration) {
+        $this->duration = $duration;
+    }
+
+    public function setExtension($ext) {
+        $this->ext = $ext;
+    }
+
+    public function setFileName($filename) {
+        $this->filename = $filename;
+    }
+
+    public function setFileSize($filesize) {
+        $this->filesize = $filesize;
+    }
+
+    public function setUserID($uid) {
+        $this->uid = $uid;
+    }
+
+    public function setUploaded($uploaded) {
+        $this->uploaded = $uploaded;
+    }
+
+    public function getOriginalFile() {
+        return Folders::getInstance()->getRealTrackPath($this);
     }
 
 }

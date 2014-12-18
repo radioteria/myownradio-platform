@@ -9,7 +9,7 @@
 namespace Model\Beans;
 
 /**
- * Class UserBean
+ * Class UserAR
  * @package Model\Beans
  * @table r_users
  * @key uid
@@ -17,9 +17,9 @@ namespace Model\Beans;
  * @do_FIND_BY_KEY_PARAMS login = :key OR mail = :key
  * @do_FIND_BY_CREDENTIALS login = ? AND password = ?
  */
-class UserBean implements BeanObject {
+class UserAR implements ActiveRecord {
 
-    use BeanTools;
+    use ARTools;
 
     protected
         $uid, $mail, $login, $password,

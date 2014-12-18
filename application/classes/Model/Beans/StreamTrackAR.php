@@ -9,12 +9,15 @@
 namespace Model\Beans;
 
 /**
- * Class StreamTrackBean
+ * Class StreamTrackAR
  * @package Model\Beans
  */
-class StreamTrackBean extends TrackBean {
+class StreamTrackAR extends TrackAR {
 
     protected $unique_id, $t_order, $time_offset;
+
+    function StreamTrackAR() {
+    }
 
     public function getTrackOrder() {
         return $this->t_order;

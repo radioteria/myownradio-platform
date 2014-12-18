@@ -182,7 +182,7 @@ class MicroORM {
                                                                                                     $offset = null) {
 
         $objects = Database::doInConnection(function (Database $db)
-                                    use ($filter, $filterArgs, $reflection, $config, $offset, $limit) {
+                                            use ($filter, $filterArgs, $reflection, $config, $offset, $limit) {
 
             $array = [];
 

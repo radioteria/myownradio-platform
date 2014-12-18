@@ -42,7 +42,7 @@ trait BeanTools {
      * @return static[]
      */
     public static function findByFilter($filter, array $args = null, $limit = null, $offset = null) {
-        return MicroORM::getInstance()->doActionOnObject(get_called_class(), $filter, $args, $limit, $offset);
+        return MicroORM::getInstance()->getFilteredListOfObjects(get_called_class(), $filter, $args, $limit, $offset);
     }
 
     public function __toString() {

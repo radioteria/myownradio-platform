@@ -38,6 +38,12 @@ class MicroORM {
 
     }
 
+    /**
+     * @param string $bean
+     * @param int|null $limit
+     * @param int|null $offset
+     * @return object
+     */
     public function getListOfObjects($bean, $limit = null, $offset = null) {
 
         $reflection = new \ReflectionClass($bean);
@@ -49,7 +55,16 @@ class MicroORM {
 
     }
 
-    public function doActionOnObject($bean, $filter, $filterArgs = null, $limit = null, $offset = null) {
+    /**
+     * @param string $bean
+     * @param string $filter
+     * @param array|null $filterArgs
+     * @param int|null $limit
+     * @param int|null $offset
+     * @return object
+     * @throws Exceptions\ORMException
+     */
+    public function getFilteredListOfObjects($bean, $filter, array $filterArgs = null, $limit = null, $offset = null) {
 
         $reflection = new \ReflectionClass($bean);
 

@@ -14,7 +14,7 @@ use MVC\MicroORM;
 trait BeanTools {
 
     public function beanSave() {
-        MicroORM::getInstance()->saveObject($this);
+        return MicroORM::getInstance()->saveObject($this);
     }
 
     public function beanDelete() {
@@ -50,7 +50,17 @@ trait BeanTools {
     }
 
     public function __toString() {
-        return "Hello";
+        return json_encode($this->exportArray());
+    }
+
+    public function exportArray() {
+        $object = [];
+        $reflection = new \ReflectionClass($this);
+        foreach($reflection->getProperties() as $property) {
+            $property->setAccessible(true);
+            $object[$property->getName()] = $property->getValue($this);
+        }
+        return $object;
     }
 
 } 

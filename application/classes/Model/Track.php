@@ -23,10 +23,12 @@ class Track extends Model {
 
     protected $bean_type = "track";
     protected $bean_key = "tid";
+
     protected $bean_fields = [
         "tid", "uid", "filename", "ext", "artist", "title", "album", "track_number",
         "genre", "date", "duration", "filesize", "color", "uploaded"
     ];
+
     protected $bean_update = [
         "artist", "title", "album", "track_number", "genre", "date", "color"
     ];

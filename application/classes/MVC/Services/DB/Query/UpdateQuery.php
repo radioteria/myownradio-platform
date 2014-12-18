@@ -36,9 +36,12 @@ class UpdateQuery extends BaseQuery implements QueryBuilder {
     }
 
     private function setPair($column, $value) {
+
         $this->parameters["SET"][] = $value;
         $this->sets[] = $column;
+
         return $this;
+
     }
 
     private function setPairs(array $sets) {
@@ -48,9 +51,10 @@ class UpdateQuery extends BaseQuery implements QueryBuilder {
     }
 
     public function set() {
+
         if (func_num_args() == 1 && is_array(func_get_arg(0))) {
             $this->setPairs(func_get_arg(0));
-        } elseif (func_num_args() == 2 && is_string(func_get_arg(0)) && is_string(func_get_arg(1))) {
+        } elseif (func_num_args() == 2 && is_string(func_get_arg(0))) {
             $this->setPair(func_get_arg(0), func_get_arg(1));
         }
         return $this;

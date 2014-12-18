@@ -145,21 +145,6 @@ class Database {
     }
 
     /**
-     * @param callable $callback
-     * @return string
-     * @deprecated
-     */
-    public function createQuery(callable $callback) {
-
-        $fluent = $this->getFluentPDO();
-        /** @var BaseQuery $query */
-        $query = call_user_func($callback, $fluent);
-
-        return $this->queryQuote($query->getQuery(false), $query->getParameters());
-
-    }
-
-    /**
      * @param $query
      * @param $params
      * @return \PDOStatement
@@ -194,7 +179,7 @@ class Database {
      * @return array
      * @throws ControllerException
      */
-    public function fetchAll($query, $params = [], $key = null, $callback = null) {
+    public function fetchAll($query, array $params = null, $key = null, $callback = null) {
 
         $resource = $this->createResource($query, $params);
 
@@ -228,7 +213,7 @@ class Database {
      * @return Optional
      * @throws ControllerException
      */
-    public function fetchOneRow($query, $params = array(), $callback = null) {
+    public function fetchOneRow($query, array $params = null, $callback = null) {
 
         $resource = $this->createResource($query, $params);
 
@@ -249,7 +234,7 @@ class Database {
      * @return Optional
      * @throws ControllerException
      */
-    public function fetchOneColumn($query, $params = [], $column = 0) {
+    public function fetchOneColumn($query, array $params = null, $column = 0) {
 
         $resource = $this->createResource($query, $params);
 
@@ -263,14 +248,15 @@ class Database {
      * @param string $query
      * @param array $params
      * @param string $class
+     * @param array $args
      * @return Optional
      * @throws ControllerException
      */
-    public function fetchOneObject($query, $params = [], $class) {
+    public function fetchOneObject($query, array $params, $class, $args = []) {
 
         $resource = $this->createResource($query, $params);
 
-        $object = $resource->fetchObject($class);
+        $object = $resource->fetchObject($class, $args);
 
         return Optional::ofDeceptive($object);
 
@@ -278,16 +264,17 @@ class Database {
 
     /**
      * @param string $query
-     * @param array $params
+     * @param array|null $params
      * @param $class
+     * @param array|null $args
      * @return array
      * @throws ControllerException
      */
-    public function fetchAllObjects($query, $params = [], $class) {
+    public function fetchAllObjects($query, array $params = null, $class, array $args = null) {
 
         $resource = $this->createResource($query, $params);
 
-        $objects = $resource->fetchAll(PDO::FETCH_CLASS, $class);
+        $objects = $resource->fetchAll(PDO::FETCH_CLASS, $class, $args);
 
         return $objects;
 
@@ -295,11 +282,11 @@ class Database {
 
     /**
      * @param string $query
-     * @param array $params
+     * @param array|null $params
      * @return int
      * @throws ControllerException
      */
-    public function executeUpdate($query, $params = []) {
+    public function executeUpdate($query, array $params = null) {
 
         $resource = $this->createResource($query, $params);
 
@@ -309,11 +296,11 @@ class Database {
 
     /**
      * @param string $query
-     * @param array $params
+     * @param array|null $params
      * @return mixed
      * @throws ControllerException
      */
-    public function executeInsert($query, $params = []) {
+    public function executeInsert($query, array $params = null) {
 
         $this->createResource($query, $params);
 

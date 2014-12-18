@@ -14,6 +14,7 @@ use MVC\Services\Database;
 use MVC\Services\DB\Query\SelectQuery;
 use MVC\Services\Injectable;
 use Tools\Common;
+use Tools\Folders;
 use Tools\Singleton;
 
 class Streams implements \ArrayAccess, \Countable {
@@ -182,7 +183,7 @@ class Streams implements \ArrayAccess, \Countable {
         $row['listeners_count'] = (int) $row['listeners_count'];
         $row['bookmarks_count'] = (int) $row['bookmarks_count'];
 
-        $row['cover_url'] = \Folders::genStreamCoverUrl($row['cover']);
+        $row['cover_url'] = Folders::getInstance()->genStreamCoverUrl($row['cover']);
         $row['key'] = empty($row['permalink']) ? $row['sid'] : $row['permalink'];
         $row['hashtags_array'] = strlen($row['hashtags']) ? preg_split("/\\s*\\,\\s*/", $row['hashtags']) : null;
     }
@@ -193,7 +194,7 @@ class Streams implements \ArrayAccess, \Countable {
     private function processUserRow(&$row) {
         $row['uid'] = (int) $row['uid'];
 
-        $row['avatar_url'] = \Folders::genAvatarUrl($row['avatar']);
+        $row['avatar_url'] = Folders::getInstance()->genAvatarUrl($row['avatar']);
 
         $row['key'] = empty($row['permalink']) ? $row['uid'] : $row['permalink'];
     }

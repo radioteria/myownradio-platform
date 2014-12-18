@@ -14,6 +14,7 @@ use PDO;
 trait WhereSection {
 
     protected $wheres = [];
+    protected $whereGlue = "AND";
 
     // Where section
 
@@ -92,8 +93,17 @@ trait WhereSection {
             }
         }
 
-        return "WHERE " . implode(" AND ", $build);
+        return "WHERE " . (count($build) > 0 ? implode(" {$this->whereGlue} ", $build) : "1");
 
+    }
+
+    /**
+     * @param string $glue
+     * @return $this
+     */
+    public function setWhereGlue($glue) {
+        $this->whereGlue = strval($glue);
+        return $this;
     }
 
 

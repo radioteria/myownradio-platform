@@ -13,6 +13,9 @@ namespace Model\Beans;
  * @package Model\Beans
  * @table r_users
  * @key uid
+ *
+ * @doFIND_BY_PARAMS login = :key OR mail = :key
+ * @doFIND_BY_CREDENTIALS login = ? AND password = ?
  */
 class UserBean implements BeanObject {
 

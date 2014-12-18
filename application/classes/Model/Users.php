@@ -148,25 +148,6 @@ class Users {
 
         $newUser->beanSave();
 
-//        $id = Database::doInConnection(function (Database $db) use ($email, $login, $password, $name,
-//                                                                    $info, $permalink) {
-//            $query = $db->getDBQuery()->insertInto("r_users");
-//            $query->values([
-//                "mail"              => $email,
-//                "login"             => $login,
-//                "password"          => md5($login . $password),
-//                "name"              => $name,
-//                "info"              => $info,
-//                "permalink"         => $permalink,
-//                "registration_date" => time()
-//            ]);
-//
-//            $id = Database::getInstance()->executeInsert($query);
-//
-//            return $id;
-//
-//        });
-
         self::createUserDirectory($newUser->getID());
 
         return new User($newUser->getID());

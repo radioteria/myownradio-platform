@@ -2,6 +2,7 @@
 
 namespace Model;
 
+use Model\Beans\UserBean;
 use Model\Traits\Stats;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
@@ -28,6 +29,9 @@ class User extends Model {
     private $planExpire;
 
     private $modifiedFlag = false;
+
+    /** @var UserBean */
+    private $userBean;
     
     public function __construct() {
 

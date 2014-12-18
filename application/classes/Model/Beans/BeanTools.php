@@ -26,7 +26,7 @@ trait BeanTools {
      * @return static
      */
     public static function beanLoad($id) {
-        return MicroORM::getInstance()->fetchObject(get_called_class(), $id);
+        return MicroORM::getInstance()->getObjectByID(get_called_class(), $id);
     }
 
     /**

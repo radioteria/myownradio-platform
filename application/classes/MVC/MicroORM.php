@@ -12,24 +12,23 @@ namespace MVC;
 use Model\Beans\BeanObject;
 use MVC\Exceptions\ORMException;
 use MVC\Services\Database;
+use MVC\Services\DB\Query\SelectQuery;
 use Tools\Singleton;
 
 /**
  * Class MicroORM
  * @package MVC
  */
-class MicroORM {
+class MicroORM extends FilterORM {
 
     use Singleton;
-
-    private $queriesLog = [];
 
     /**
      * @param string $bean
      * @param int $id
      * @return object
      */
-    public function fetchObject($bean, $id) {
+    public function getObjectByID($bean, $id) {
 
         $reflection = new \ReflectionClass($bean);
 
@@ -40,6 +39,23 @@ class MicroORM {
 
     }
 
+    /**
+     * @param string $bean
+     * @param string $filter
+     * @param array $args
+     * @return Object
+     */
+    public function getObjectByFilter($bean, $filter, array $args = null) {
+
+        $reflection = new \ReflectionClass($bean);
+        $beanConfig = $this->getBeanConfig($reflection->getDocComment());
+        return $this->_getObjectByFilter($reflection, $beanConfig, $filter, $args);
+
+    }
+
+    /**
+     * @param BeanObject $object
+     */
     public function deleteObject(BeanObject $object) {
 
         $reflection  = new \ReflectionClass($object);
@@ -113,10 +129,6 @@ class MicroORM {
         $beanComment = $reflection->getDocComment();
         $beanConfig = $this->getBeanConfig($beanComment);
 
-        if (isset($beanConfig["@readOnly"])) {
-            throw new ORMException("Save not allowed");
-        }
-
         return Database::doInConnection(function (Database $db) use ($reflection, $beanConfig, $bean) {
 
             $keyProp = $reflection->getProperty($beanConfig["@key"]);
@@ -175,34 +187,31 @@ class MicroORM {
      * @param int $id
      * @return object $bean
      */
-    private function _loadObject($reflection, $config, $id) {
+    private function _loadObject($reflection, array $config, $id) {
 
-        $object = Database::doInConnection(function (Database $db) use ($reflection, $config, $id) {
-            $query = $db->getDBQuery()->selectFrom($config["@table"])
-                ->select($config["@table"] . ".*")->where($config["@key"], $id);
+        $query = $this->createBaseSelectRequest($config);
 
-            if (isset($config["@innerJoin"], $config["@on"])) {
-                $query->innerJoin($config["@innerJoin"], $config["@on"]);
-                $query->select($config["@innerJoin"] . ".*");
-            }
+        $this->applyKey($query, $config, $id);
+        $this->applyInnerJoin($query, $config);
 
-            $row = $db->fetchOneRow($query)
-                ->getOrElseThrow(
-                    new ORMException(sprintf("No object '%s' with key '%s' exists", $config["@table"], $id))
-                );
+        return $this->_getSingleObject($query, $reflection);
 
-            $instance = $reflection->newInstance();
+    }
 
-            foreach ($reflection->getProperties() as $prop) {
-                $prop->setAccessible(true);
-                $prop->setValue($instance, @$row[$prop->getName()]);
-            }
+    /**
+     * @param \ReflectionClass $reflection
+     * @param array $config
+     * @param $filter
+     * @param array $args
+     * @return Object
+     */
+    private function _getObjectByFilter($reflection, array $config, $filter, array $args = null) {
 
-            return $instance;
+        $query = $this->createBaseSelectRequest($config);
+        $this->applyInnerJoin($query, $config);
+        $this->applyFilter($query, $filter, $config, $args);
 
-        });
-
-        return $object;
+        return $this->_getSingleObject($query, $reflection);
 
     }
 
@@ -238,18 +247,58 @@ class MicroORM {
     private function _loadObjects($reflection, $config, $filter = null, $filterArgs = null, $limit = null,
                                                                                                     $offset = null) {
 
-        $objects = Database::doInConnection(function (Database $db)
-                                            use ($filter, $filterArgs, $reflection, $config, $offset, $limit) {
+        $query = $this->createBaseSelectRequest($config);
+
+        $this->applyInnerJoin($query, $config);
+
+        if (is_string(($filter))) {
+            $this->applyFilter($query, $filter, $config, $filterArgs);
+        }
+
+
+        return $this->_getListOfObjects($query, $reflection, $limit, $offset);
+
+    }
+
+    /**
+     * @param SelectQuery $query
+     * @param \ReflectionClass $reflection
+     * @return BeanObject[]
+     */
+    protected function _getSingleObject(SelectQuery $query, \ReflectionClass $reflection) {
+
+        $object = Database::doInConnection(function (Database $db) use ($query, $reflection) {
+
+            $row = $db->fetchOneRow($query)
+                ->getOrElseThrow(new ORMException("No matching object found"));
+
+            $instance = $reflection->newInstance();
+
+            foreach ($reflection->getProperties() as $prop) {
+                $prop->setAccessible(true);
+                $prop->setValue($instance, @$row[$prop->getName()]);
+            }
+
+            return $instance;
+
+        });
+
+        return $object;
+
+    }
+
+    /**
+     * @param SelectQuery $query
+     * @param \ReflectionClass $reflection
+     * @param null|int $limit
+     * @param null|int $offset
+     * @return BeanObject[]
+     */
+    protected function _getListOfObjects(SelectQuery $query, \ReflectionClass $reflection, $limit = null, $offset = null) {
+
+        $objects = Database::doInConnection(function (Database $db) use ($query, $reflection, $limit, $offset) {
 
             $array = [];
-
-            $query = $db->getDBQuery()->selectFrom($config["@table"])
-                ->select($config["@table"] . ".*");
-
-            if (isset($config["@leftJoin"], $config["@on"])) {
-                $query->innerJoin($config["@leftJoin"], $config["@on"]);
-                $query->select($config["@leftJoin"] . ".*");
-            }
 
             if (is_numeric($limit)) {
                 $query->limit($limit);
@@ -259,15 +308,9 @@ class MicroORM {
                 $query->offset($offset);
             }
 
-            if (is_string(($filter))) {
-                $query->where($filter, $filterArgs);
-            } else {
-                $query->where("1");
-            }
-
             $rows = $db->fetchAll($query);
 
-            foreach($rows as $row) {
+            foreach ($rows as $row) {
 
                 $instance = $reflection->newInstance();
 

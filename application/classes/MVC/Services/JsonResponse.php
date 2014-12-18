@@ -12,6 +12,7 @@ namespace MVC\Services;
 use Tools\Singleton;
 
 class JsonResponse {
+
     use Singleton, Injectable;
 
     private $data = null;
@@ -24,4 +25,5 @@ class JsonResponse {
     public function setMessage($message) {
         $this->message = $message;
     }
+
 }

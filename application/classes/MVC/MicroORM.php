@@ -56,11 +56,11 @@ class MicroORM {
         $beanComment = $reflection->getDocComment();
         $beanConfig = $this->getBeanConfig($beanComment);
 
-        if (empty($beanConfig["@do" . $filter])) {
+        if (!isset($beanConfig["@do" . $filter])) {
             throw new ORMException("No action '" . $filter . "' found");
         }
 
-        return $this->_loadObjects($reflection, $beanConfig, $filter, $filterArgs, $limit, $offset);
+        return $this->_loadObjects($reflection, $beanConfig, $beanConfig["@do" . $filter], $filterArgs, $limit, $offset);
 
     }
 
@@ -203,7 +203,7 @@ class MicroORM {
             }
 
             if (is_string(($filter))) {
-                $query->where($config["@do" . $filter], $filterArgs);
+                $query->where($filter, $filterArgs);
             } else {
                 $query->where("1");
             }
@@ -239,7 +239,7 @@ class MicroORM {
         $parameters = [];
         preg_match_all("~(\\@\\w+)\\s+(.+)~m", $comments, $matches, PREG_SET_ORDER);
         foreach ($matches as $match) {
-            $parameters[$match[1]] = $match[2];
+            $parameters[$match[1]] = trim($match[2]);
         }
         return $parameters;
     }

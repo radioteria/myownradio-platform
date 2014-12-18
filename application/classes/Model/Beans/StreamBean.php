@@ -14,8 +14,8 @@ namespace Model\Beans;
  * @table r_streams
  * @key sid
  *
- * @doSEARCH_BY_HASHTAGS MATCH(hashtags) AGAINST(? IN BOOLEAN MODE)
- * @doSEARCH_BY_ANYTHING MATCH(name, permalink, hashtags) AGAINST (? IN BOOLEAN MODE)
+ * @do_SEARCH_BY_HASHTAGS MATCH(hashtags) AGAINST(? IN BOOLEAN MODE)
+ * @do_SEARCH_BY_ANYTHING MATCH(name, permalink, hashtags) AGAINST (? IN BOOLEAN MODE)
  */
 class StreamBean implements BeanObject {
 

@@ -41,8 +41,9 @@ abstract class FilterORM {
      */
     protected function applyFilter(&$query, $filter, array $config, array $args = null) {
 
-        $query->where($config["@do" . $filter], $args);
-
+        if (isset($config["@do_" . $filter])) {
+            $query->where($config["@do_" . $filter], $args);
+        }
     }
 
     /**

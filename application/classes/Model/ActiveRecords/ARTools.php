@@ -23,6 +23,14 @@ trait ARTools {
     }
 
     /**
+     * @param array $data
+     * @return static
+     */
+    public static function getByData(array $data) {
+        return MicroORM::getInstance()->getObjectByData(get_called_class(), $data);
+    }
+
+    /**
      * @param int $id
      * @return Optional
      */

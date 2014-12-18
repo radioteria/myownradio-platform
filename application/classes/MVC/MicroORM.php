@@ -26,6 +26,27 @@ class MicroORM extends FilterORM {
 
     /**
      * @param string $bean
+     * @param array $data
+     * @return object
+     */
+    public function getObjectByData($bean, array $data) {
+
+        $reflection = new \ReflectionClass($bean);
+
+        $instance = $reflection->newInstance();
+
+        /** @var \ReflectionProperty $prop */
+        foreach ($reflection->getProperties() as $prop) {
+            $prop->setAccessible(true);
+            $prop->setValue($instance, @$data[$prop->getName()]);
+        }
+
+        return $instance;
+
+    }
+
+    /**
+     * @param string $bean
      * @param int $id
      * @return Optional
      */

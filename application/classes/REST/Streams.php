@@ -28,7 +28,7 @@ class Streams implements \ArrayAccess, \Countable {
     private function getStreamsPrefix() {
 
         $prefix = (new SelectQuery("r_streams a"))
-            ->leftJoin("r_static_stream_vars b", "a.sid = b.stream_id")
+            ->innerJoin("r_static_stream_vars b", "a.sid = b.stream_id")
             ->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags",
                 "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count"]);
 

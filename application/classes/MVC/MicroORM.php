@@ -38,6 +38,24 @@ class MicroORM {
 
     }
 
+    public function deleteObject(BeanObject $object) {
+
+        $reflection  = new \ReflectionClass($object);
+
+        $beanComment = $reflection->getDocComment();
+        $beanConfig = $this->getBeanConfig($beanComment);
+
+        $param = $reflection->getProperty($beanConfig["@key"]);
+        $param->setAccessible(true);
+
+        $id = $param->getValue($object);
+
+        if (!is_null($id)) {
+            $this->_deleteObject($reflection, $beanConfig, $id);
+        }
+
+    }
+
     /**
      * @param string $bean
      * @param int|null $limit
@@ -159,9 +177,9 @@ class MicroORM {
             $query = $db->getDBQuery()->selectFrom($config["@table"])
                 ->select($config["@table"] . ".*")->where($config["@key"], $id);
 
-            if (isset($config["@leftJoin"], $config["@on"])) {
-                $query->leftJoin($config["@leftJoin"], $config["@on"]);
-                $query->select($config["@leftJoin"] . ".*");
+            if (isset($config["@innerJoin"], $config["@on"])) {
+                $query->innerJoin($config["@innerJoin"], $config["@on"]);
+                $query->select($config["@innerJoin"] . ".*");
             }
 
             $row = $db->fetchOneRow($query)
@@ -187,6 +205,25 @@ class MicroORM {
     /**
      * @param \ReflectionClass $reflection
      * @param $config
+     * @param $id
+     */
+    private function _deleteObject($reflection, $config, $id) {
+
+        Database::doInConnection(function (Database $db) use ($reflection, $config, $id) {
+
+            $query = "DELETE FROM " . $config["@table"] . " WHERE " . $config["@key"] . " = ?";
+
+            $db->executeUpdate($query, [$id]);
+
+            $db->commit();
+
+        });
+
+    }
+
+    /**
+     * @param \ReflectionClass $reflection
+     * @param $config
      * @param string|null $filter
      * @param array|null $filterArgs
      * @param int|null $limit
@@ -205,7 +242,7 @@ class MicroORM {
                 ->select($config["@table"] . ".*");
 
             if (isset($config["@leftJoin"], $config["@on"])) {
-                $query->leftJoin($config["@leftJoin"], $config["@on"]);
+                $query->innerJoin($config["@leftJoin"], $config["@on"]);
                 $query->select($config["@leftJoin"] . ".*");
             }
 

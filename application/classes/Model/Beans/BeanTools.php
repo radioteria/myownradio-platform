@@ -17,6 +17,10 @@ trait BeanTools {
         MicroORM::getInstance()->saveObject($this);
     }
 
+    public function beanDelete() {
+        MicroORM::getInstance()->deleteObject($this);
+    }
+
     /**
      * @param int $id
      * @return static

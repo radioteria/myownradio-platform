@@ -16,8 +16,8 @@ use MVC\Services\JsonResponse;
 class DoTest extends Controller {
 
     public function doGet(JsonResponse $response) {
-        $stream = StreamBean::findByFilter("SEARCH_BY_ANYTHING", [""]);
-        $response->setData($stream);
+        $stream = StreamBean::beanLoad(48);
+        $stream->beanDelete();
     }
 
 } 

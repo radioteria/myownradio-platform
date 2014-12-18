@@ -50,7 +50,7 @@ class StreamTrackList extends Model implements \Countable {
         Database::doInConnection(function (Database $db) {
 
             $query = $db->getDBQuery()->selectFrom("r_streams a")
-                ->leftJoin("r_static_stream_vars b", "a.sid = b.stream_id")
+                ->innerJoin("r_static_stream_vars b", "a.sid = b.stream_id")
                 ->where("a.sid", $this->key)
                 ->select("a.uid, a.started, a.started_from, a.status, b.tracks_count, b.tracks_duration");
 
@@ -219,7 +219,7 @@ class StreamTrackList extends Model implements \Countable {
     private function getTrackQueryPrefix() {
 
         $query = DBQuery::getInstance()->selectFrom("r_tracks a")
-            ->leftJoin("r_link b", "a.tid = b.track_id");
+            ->innerJoin("r_link b", "a.tid = b.track_id");
 
         $query->select("a.*, b.unique_id, b.t_order, b.time_offset");
 
@@ -378,7 +378,7 @@ class StreamTrackList extends Model implements \Countable {
         $track = Database::doInConnection(function (Database $db) use ($uniqueID) {
 
             $query = $db->getDBQuery()->selectFrom("r_tracks a")
-                ->leftJoin("r_link b", "a.tid = b.track_id")
+                ->innerJoin("r_link b", "a.tid = b.track_id")
                 ->where("b.unique_id", $uniqueID)
                 ->select("b.unique_id", "b.time_offset");
 

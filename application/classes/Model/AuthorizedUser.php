@@ -36,7 +36,7 @@ class AuthorizedUser extends User {
         $uid = Database::doInConnection(function (Database $db) use ($token, $exception) {
 
             $query = $db->getDBQuery()
-                ->selectFrom("r_sessions a")->leftJoin("r_users b", "a.uid = b.uid")
+                ->selectFrom("r_sessions a")->innerJoin("r_users b", "a.uid = b.uid")
                 ->where("a.token", $token);
 
             return $db->fetchOneColumn($query)

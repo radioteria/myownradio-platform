@@ -18,7 +18,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
 
     protected $groups = [];
 
-    private $leftJoin = [];
+    private $innerJoin = [];
 
     public function __construct($tableName) {
         $this->tableName = $tableName;
@@ -27,9 +27,9 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
 
     // Left join builder section
 
-    public function leftJoin($table, $on) {
+    public function innerJoin($table, $on) {
 
-        $this->leftJoin[] = [$table, $on];
+        $this->innerJoin[] = [$table, $on];
 
         return $this;
 
@@ -63,7 +63,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
         $query[] = "SELECT";
         $query[] = $this->buildSelect();
         $query[] = "FROM " . $this->tableName;
-        $query[] = $this->buildLeftJoins();
+        $query[] = $this->buildInnerJoins();
         $query[] = $this->buildWheres($pdo);
         $query[] = $this->buildGroupBy();
         $query[] = $this->buildOrderBy();
@@ -73,12 +73,12 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
 
     }
 
-    private function buildLeftJoins() {
+    private function buildInnerJoins() {
 
         $build = [];
 
-        foreach($this->leftJoin as $join) {
-            $build[] = "LEFT JOIN " . $join[0] . " ON " . $join[1];
+        foreach($this->innerJoin as $join) {
+            $build[] = "INNER JOIN " . $join[0] . " ON " . $join[1];
         }
 
         return implode(" ", $build);

@@ -37,9 +37,12 @@ class Database {
     public function connect() {
 
         try {
-            $this->pdo = new PDO($this->settings['db_dsn'], $this->settings['db_login'], $this->settings['db_password'], [
-                PDO::ATTR_EMULATE_PREPARES  => false,
-                PDO::ATTR_PERSISTENT        => true
+            $this->pdo = new PDO($this->settings['db_dsn'],
+                $this->settings['db_login'],
+                $this->settings['db_password'], [
+                    PDO::ATTR_EMULATE_PREPARES  => false,
+                    PDO::ATTR_PERSISTENT        => true,
+                    PDO::ATTR_AUTOCOMMIT        => false
             ]);
         } catch (\PDOException $e) {
             throw ApplicationException::of($e->getMessage(), $e);
@@ -66,12 +69,20 @@ class Database {
      */
     public static function doInConnection(callable $callable) {
 
-        $connection = new self();
-        $connection->connect();
+        if (self::hasInstance()) {
 
-        $result = $connection->doInTransaction($callable);
+            $result = self::getInstance()->doInTransaction($callable);
 
-        $connection->disconnect();
+        } else {
+
+            $conn = self::getInstance();
+            $conn->connect();
+            $result = $conn->doInTransaction($callable);
+            $conn->disconnect();
+
+            self::killInstance();
+
+        }
 
         return $result;
 
@@ -83,9 +94,7 @@ class Database {
      */
     public function doInTransaction(callable $callable) {
 
-        $this->beginTransaction();
         $result = call_user_func($callable, $this);
-        $this->finishTransaction();
 
         return $result;
 

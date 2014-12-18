@@ -28,4 +28,9 @@ trait Singleton {
         $hash = serialize(func_get_args());
         return isset(self::$_instance[$hash]) ? true : false;
     }
+
+    public static function killInstance() {
+        $hash = serialize(func_get_args());
+        unset(self::$_instance[$hash]);
+    }
 }

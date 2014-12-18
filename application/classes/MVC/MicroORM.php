@@ -41,6 +41,7 @@ class MicroORM {
     /**
      * @param BeanObject $bean
      * @return mixed
+     * @throws ORMException
      */
     public function saveObject(BeanObject $bean) {
 
@@ -48,6 +49,10 @@ class MicroORM {
 
         $beanComment = $reflection->getDocComment();
         $beanConfig = $this->getBeanConfig($beanComment);
+
+        if (isset($beanConfig["@readonly"])) {
+            throw new ORMException("Save not allowed");
+        }
 
         return Database::doInConnection(function (Database $db) use ($reflection, $beanConfig, $bean) {
 
@@ -113,6 +118,10 @@ class MicroORM {
         $object = Database::doInConnection(function (Database $db) use ($reflection, $bean, $config, $id) {
             $query = $db->getDBQuery()->selectFrom($config["@table"])
                 ->select("*")->where($config["@key"], $id);
+
+            if (isset($config["@join"], $config["@on"])) {
+                $query->leftJoin($config["@join"], $config["@on"]);
+            }
 
             $row = $db->fetchOneRow($query)
                 ->getOrElseThrow(

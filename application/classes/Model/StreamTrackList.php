@@ -229,7 +229,7 @@ class StreamTrackList extends Model {
 
     /**
      * @param $time
-     * @return $this
+     * @return \Model\Beans\StreamTrackBean
      */
     public function getTrackByTime($time) {
 
@@ -242,27 +242,11 @@ class StreamTrackList extends Model {
             $query->where("b.time_offset + a.duration >= :time", [":time" => $time]);
             $query->where("b.stream_id", $this->key);
 
-            $track = $db->fetchOneRow($query)->then(function (&$track) use ($time) {
-                $track['cursor'] = $time - $track['time_offset'];
-            });
+            $track = $db->fetchOneObject($query, [], "Model\\Beans\\StreamTrackBean", [$time]);
 
             return $track;
 
         });
-
-//        $track = $this->db->fetchOneRow("
-//
-//            SELECT a.*, b.unique_id, b.t_order, b.time_offset
-//            FROM r_tracks a LEFT JOIN r_link b ON a.tid = b.track_id
-//            WHERE b.time_offset <= :time AND b.time_offset + a.duration >= :time AND b.stream_id = :id
-//
-//            ", [":time" => $time, ":id" => $this->key])
-//
-//            ->then(function (&$track) use ($time) {
-//                $track['cursor'] = $time - $track['time_offset'];
-//            });
-//
-//        return $track;
 
     }
 
@@ -291,21 +275,22 @@ class StreamTrackList extends Model {
 
         $track->then(function ($track) {
 
+            /** @var \Model\Beans\StreamTrackBean $track */
+
             Database::doInConnection(function (Database $db) use ($track) {
 
                 $query = "SELECT time_offset FROM r_link WHERE unique_id = ? AND stream_id = ?";
 
-                $db->fetchOneColumn($query, [$track["unique_id"], $this->key])
+                $db->fetchOneColumn($query, [$track->getUniqueID(), $this->key])
 
                     ->then(function ($offset) use ($track, $db) {
 
-                        $cursor = $track["cursor"];
-                        //$query = "UPDATE r_streams SET started_from = :from, started = :time, status = 1 WHERE sid = :id";
+                        $cursor = $track->getCursor();
                         $query = $db->getDBQuery()->updateTable("r_streams")
                             ->set("started_from", $offset + $cursor)
                             ->set("started", System::time())
                             ->set("status", 1)
-                            ->where(sid, $this->key);
+                            ->where("sid", $this->key);
 
                         $db->executeUpdate($query);
 

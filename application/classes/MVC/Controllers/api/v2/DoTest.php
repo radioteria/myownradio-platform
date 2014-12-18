@@ -9,15 +9,18 @@
 namespace MVC\Controllers\api\v2;
 
 
-use Model\AuthorizedUser;
+use Model\Beans\UserBean;
 use MVC\Controller;
 use MVC\Services\JsonResponse;
 
 class DoTest extends Controller {
 
-    public function doGet(AuthorizedUser $user, JsonResponse $response) {
+    public function doGet(JsonResponse $response) {
 
-        $response->setData($user->getBean()->exportArray());
+        /** @var UserBean $test */
+        $test = UserBean::getByID(1)->getOrElseNull();
+
+        $response->setData($test->exportArray());
 
     }
 

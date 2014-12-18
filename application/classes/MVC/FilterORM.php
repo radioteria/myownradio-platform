@@ -11,11 +11,12 @@ namespace MVC;
 
 use MVC\Exceptions\ORMException;
 use MVC\Services\DB\DBQuery;
+use MVC\Services\DB\Query\SelectQuery;
 
 abstract class FilterORM {
     /**
      * @param array $config
-     * @return \MVC\Services\DB\Query\SelectQuery
+     * @return SelectQuery
      */
     protected function createBaseSelectRequest(array $config) {
         $query = DBQuery::getInstance()->selectFrom($config["@table"])
@@ -24,7 +25,7 @@ abstract class FilterORM {
     }
 
     /**
-     * @param \MVC\Services\DB\Query\SelectQuery $query
+     * @param SelectQuery $query
      * @param array $config
      */
     protected function applyInnerJoin(&$query, array $config) {
@@ -35,22 +36,35 @@ abstract class FilterORM {
     }
 
     /**
-     * @param \MVC\Services\DB\Query\SelectQuery $query
+     * @param SelectQuery $query
      * @param string $filter
-     * @param array $config
-     * @param array $args
+     * @param array|null $config
+     * @param array|null $args
+     * @throws ORMException
      */
-    protected function applyFilter(&$query, $filter, array $config, array $args = null) {
+    protected function applyFilter(SelectQuery &$query, $filter, array $config, array $args = null) {
 
         if (isset($config["@do_" . $filter])) {
             $query->where($config["@do_" . $filter], $args);
         } else {
-            throw new ORMException(sprintf("No filter '%s' described", $filter));
+            $this->applyCustomFilter($query, $filter, $args);
         }
+
     }
 
     /**
-     * @param \MVC\Services\DB\Query\SelectQuery $query
+     * @param SelectQuery $query
+     * @param $filter
+     * @param array $args
+     */
+    protected function applyCustomFilter(SelectQuery &$query, $filter, array $args = null) {
+
+        $query->where($filter, $args);
+
+    }
+
+    /**
+     * @param SelectQuery $query
      * @param $config
      * @param $id
      */

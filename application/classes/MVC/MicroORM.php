@@ -34,7 +34,33 @@ class MicroORM {
         $beanComment = $reflection->getDocComment();
         $beanConfig = $this->getBeanConfig($beanComment);
 
-        return $this->_loadObject($reflection, $bean, $beanConfig, $id);
+        return $this->_loadObject($reflection, $beanConfig, $id);
+
+    }
+
+    public function getListOfObjects($bean, $limit = null, $offset = null) {
+
+        $reflection = new \ReflectionClass($bean);
+
+        $beanComment = $reflection->getDocComment();
+        $beanConfig = $this->getBeanConfig($beanComment);
+
+        return $this->_loadObjects($reflection, $beanConfig, null, null, $limit, $offset);
+
+    }
+
+    public function doActionOnObject($bean, $filter, $filterArgs = null, $limit = null, $offset = null) {
+
+        $reflection = new \ReflectionClass($bean);
+
+        $beanComment = $reflection->getDocComment();
+        $beanConfig = $this->getBeanConfig($beanComment);
+
+        if (empty($beanConfig["@do" . $filter])) {
+            throw new ORMException("No action '" . $filter . "' found");
+        }
+
+        return $this->_loadObjects($reflection, $beanConfig, $filter, $filterArgs, $limit, $offset);
 
     }
 
@@ -108,14 +134,13 @@ class MicroORM {
 
     /**
      * @param \ReflectionClass $reflection
-     * @param string $bean
      * @param array $config
      * @param int $id
      * @return object $bean
      */
-    private function _loadObject($reflection, $bean, $config, $id) {
+    private function _loadObject($reflection, $config, $id) {
 
-        $object = Database::doInConnection(function (Database $db) use ($reflection, $bean, $config, $id) {
+        $object = Database::doInConnection(function (Database $db) use ($reflection, $config, $id) {
             $query = $db->getDBQuery()->selectFrom($config["@table"])
                 ->select($config["@table"] . ".*")->where($config["@key"], $id);
 
@@ -145,12 +170,74 @@ class MicroORM {
     }
 
     /**
+     * @param \ReflectionClass $reflection
+     * @param $config
+     * @param string|null $filter
+     * @param array|null $filterArgs
+     * @param int|null $limit
+     * @param int|null $offset
+     * @return mixed
+     */
+    private function _loadObjects($reflection, $config, $filter = null, $filterArgs = null, $limit = null,
+                                                                                                    $offset = null) {
+
+        $objects = Database::doInConnection(function (Database $db)
+                                    use ($filter, $filterArgs, $reflection, $config, $offset, $limit) {
+
+            $array = [];
+
+            $query = $db->getDBQuery()->selectFrom($config["@table"])
+                ->select($config["@table"] . ".*");
+
+            if (isset($config["@leftJoin"], $config["@on"])) {
+                $query->leftJoin($config["@leftJoin"], $config["@on"]);
+                $query->select($config["@leftJoin"] . ".*");
+            }
+
+            if (is_numeric($limit)) {
+                $query->limit($limit);
+            }
+
+            if (is_numeric($offset)) {
+                $query->offset($offset);
+            }
+
+            if (is_string(($filter))) {
+                $query->where($config["@do" . $filter], $filterArgs);
+            } else {
+                $query->where("1");
+            }
+
+            $rows = $db->fetchAll($query);
+
+            foreach($rows as $row) {
+
+                $instance = $reflection->newInstance();
+
+                foreach ($reflection->getProperties() as $prop) {
+                    $prop->setAccessible(true);
+                    $prop->setValue($instance, @$row[$prop->getName()]);
+                }
+
+                $array[] = $instance;
+
+            }
+
+            return $array;
+
+        });
+
+        return $objects;
+
+    }
+
+    /**
      * @param string $comments
      * @return array
      */
     private function parseDocComments($comments) {
         $parameters = [];
-        preg_match_all("~(\\@\\w+)\\s+(\\w+)~m", $comments, $matches, PREG_SET_ORDER);
+        preg_match_all("~(\\@\\w+)\\s+(.+)~m", $comments, $matches, PREG_SET_ORDER);
         foreach ($matches as $match) {
             $parameters[$match[1]] = $match[2];
         }

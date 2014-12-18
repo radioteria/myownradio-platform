@@ -102,11 +102,15 @@ class Streams implements \ArrayAccess, \Countable {
                 /* No Operation */
 
             } else if (substr($filter, 0, 1) === '#') {
+
                 $queryStream->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)",
                     '+' . substr($filter, 1));
+
             } else {
+
                 $queryStream->where("MATCH(a.name, a.permalink, a.hashtags) AGAINST (? IN BOOLEAN MODE)",
                     Common::searchQueryFilter($filter));
+
             }
 
             $queryStream->where("a.status = 1");

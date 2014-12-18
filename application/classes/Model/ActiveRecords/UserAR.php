@@ -6,11 +6,11 @@
  * Time: 14:48
  */
 
-namespace Model\Beans;
+namespace Model\ActiveRecords;
 
 /**
  * Class UserAR
- * @package Model\Beans
+ * @package Model\ActiveRecords
  * @table r_users
  * @key uid
  *

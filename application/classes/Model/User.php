@@ -2,7 +2,7 @@
 
 namespace Model;
 
-use Model\Beans\UserAR;
+use Model\ActiveRecords\UserAR;
 use Model\Traits\Stats;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;

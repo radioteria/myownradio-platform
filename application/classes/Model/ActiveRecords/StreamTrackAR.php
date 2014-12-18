@@ -6,11 +6,11 @@
  * Time: 10:47
  */
 
-namespace Model\Beans;
+namespace Model\ActiveRecords;
 
 /**
  * Class StreamTrackAR
- * @package Model\Beans
+ * @package Model\ActiveRecords
  */
 class StreamTrackAR extends TrackAR {
 

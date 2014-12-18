@@ -9,7 +9,7 @@
 namespace MVC\Controllers\api\v2;
 
 
-use Model\Beans\UserAR;
+use Model\ActiveRecords\UserAR;
 use MVC\Controller;
 use MVC\Services\JsonResponse;
 
@@ -17,10 +17,9 @@ class DoTest extends Controller {
 
     public function doGet(JsonResponse $response) {
 
-        /** @var UserAR $test */
-        $test = UserAR::getByID(1)->getOrElseNull();
+        $user = UserAR::getByID(1);
 
-        $response->setData($test->exportArray());
+        $response->setData($user->getOrElseNull());
 
     }
 

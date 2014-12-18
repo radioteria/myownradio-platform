@@ -9,7 +9,7 @@
 namespace Model;
 
 
-use Model\Beans\TrackAR;
+use Model\ActiveRecords\TrackAR;
 use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Config;

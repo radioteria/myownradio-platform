@@ -6,7 +6,7 @@
  * Time: 9:01
  */
 
-namespace Model\Beans;
+namespace Model\ActiveRecords;
 use Tools\Folders;
 
 /**

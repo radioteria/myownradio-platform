@@ -8,10 +8,11 @@
 
 namespace Model;
 
-use Model\Beans\StreamTrackAR;
+use Model\ActiveRecords\StreamTrackAR;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
 use MVC\Services\DB\DBQuery;
+use MVC\Services\DB\DBQueryPool;
 use Tools\Common;
 use Tools\Optional;
 use Tools\Singleton;
@@ -121,32 +122,27 @@ class StreamTrackList extends Model implements \Countable {
             $initialPosition = $this->tracks_count;
             $initialTimeOffset = $this->tracks_duration;
 
-            Database::doInConnection(function (Database $db)
-                                      use ($tracksToAdd, $initialPosition, $initialTimeOffset) {
+            $pool = new DBQueryPool();
 
-                foreach($tracksToAdd as $track) {
+            foreach($tracksToAdd as $track) {
 
-                    $trackObject = new Track($track);
-                    $uniqueId = $this->generateUniqueId($db);
+                $trackObject = new Track($track);
+                //$uniqueId = $this->generateUniqueId($db);
 
-                    $query = $db->getDBQuery()->insertInto("r_link")
-                        ->values([
-                            "stream_id"     => $this->key,
-                            "track_id"      => $trackObject->getId(),
-                            "t_order"       => ++$initialPosition,
-                            "unique_id"     => $uniqueId,
-                            "time_offset"   => $initialTimeOffset
-                        ]);
+                $query = $db->getDBQuery()->insertInto("r_link")
+                    ->values([
+                        "stream_id"     => $this->key,
+                        "track_id"      => $trackObject->getId(),
+                        "t_order"       => ++$initialPosition,
+                        "unique_id"     => $uniqueId,
+                        "time_offset"   => $initialTimeOffset
+                    ]);
 
-                    $db->executeInsert($query);
+                $db->executeInsert($query);
 
-                    $initialTimeOffset += $trackObject->getDuration();
+                $initialTimeOffset += $trackObject->getDuration();
 
-                }
-
-                $db->commit();
-
-            });
+            }
 
 
         });
@@ -254,7 +250,7 @@ class StreamTrackList extends Model implements \Countable {
             $query->where("b.t_order", $id);
             $query->where("b.stream_id", $this->key);
 
-            $trackObject = $db->fetchOneObject($query, null, "Model\\Beans\\StreamTrackAR", null);
+            $trackObject = $db->fetchOneObject($query, null, "Model\\ActiveRecords\\StreamTrackAR", null);
 
             return Optional::ofNull($trackObject->getOrElseNull());
 
@@ -264,7 +260,7 @@ class StreamTrackList extends Model implements \Countable {
 
     /**
      * @param $time
-     * @return \Model\Beans\StreamTrackAR
+     * @return \Model\ActiveRecords\StreamTrackAR
      */
     public function getTrackByTime($time) {
 
@@ -275,7 +271,7 @@ class StreamTrackList extends Model implements \Countable {
             $query->where("b.time_offset + a.duration >= :time", [":time" => $time]);
             $query->where("b.stream_id", $this->key);
 
-            $track = $db->fetchOneObject($query, [], "Model\\Beans\\StreamTrackAR", [$time]);
+            $track = $db->fetchOneObject($query, [], "Model\\ActiveRecords\\StreamTrackAR", [$time]);
 
             return $track;
 
@@ -313,7 +309,7 @@ class StreamTrackList extends Model implements \Countable {
 
         $track->then(function ($track) {
 
-            /** @var \Model\Beans\StreamTrackAR $track */
+            /** @var \Model\ActiveRecords\StreamTrackAR $track */
 
             Database::doInConnection(function (Database $db) use ($track) {
 

@@ -9,7 +9,7 @@
 namespace MVC;
 
 
-use Model\Beans\ActiveRecord;
+use Model\ActiveRecords\ActiveRecord;
 use MVC\Exceptions\ORMException;
 use MVC\Services\Database;
 use MVC\Services\DB\Query\SelectQuery;

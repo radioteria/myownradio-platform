@@ -6,7 +6,7 @@
  * Time: 10:01
  */
 
-namespace Model\Beans;
+namespace Model\ActiveRecords;
 
 
 interface ActiveRecord {

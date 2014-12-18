@@ -6,11 +6,11 @@
  * Time: 12:09
  */
 
-namespace Model\Beans;
+namespace Model\ActiveRecords;
 
 /**
  * Class StreamAR
- * @package Model\Beans
+ * @package Model\ActiveRecords
  * @table r_streams
  * @key sid
  *

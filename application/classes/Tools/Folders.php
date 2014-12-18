@@ -2,8 +2,7 @@
 
 namespace Tools;
 
-use Model\Beans\TrackAR;
-use Model\Track;
+use Model\ActiveRecords\TrackAR;
 use MVC\Services\Injectable;
 
 class Folders {

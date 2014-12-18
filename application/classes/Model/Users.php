@@ -9,7 +9,7 @@
 namespace Model;
 
 
-use Model\Beans\UserAR;
+use Model\ActiveRecords\UserAR;
 use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Config;

@@ -5,6 +5,8 @@ namespace MVC\Services;
 use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\DB\DBQuery;
+use MVC\Services\DB\DBQueryPool;
+use MVC\Services\DB\DBQueryWrapper;
 use MVC\Services\DB\Query\QueryBuilder;
 use PDO;
 use Tools\Optional;
@@ -40,7 +42,7 @@ class Database {
                 PDO::ATTR_PERSISTENT        => true
             ]);
         } catch (\PDOException $e) {
-            throw ApplicationException::of($e->getMessage(), $e->getTrace());
+            throw ApplicationException::of($e->getMessage(), $e);
         }
 
         return $this;
@@ -59,7 +61,7 @@ class Database {
     }
 
     /**
-     * @param callable(Database) $callable
+     * @param callable $callable
      * @return mixed
      */
     public static function doInConnection(callable $callable) {
@@ -104,7 +106,7 @@ class Database {
     }
 
     public function beginTransaction() {
-        return $this->pdo->beginTransaction();
+        $this->pdo->beginTransaction();
     }
 
     public function commit() {
@@ -116,9 +118,7 @@ class Database {
     }
 
     public function finishTransaction() {
-        if ($this->pdo->inTransaction()) {
-            $this->pdo->rollBack();
-        }
+        return $this->pdo->rollBack();
     }
 
     /**
@@ -142,6 +142,22 @@ class Database {
 
         return $arguments;
 
+    }
+
+    public function executePool(DBQueryPool $pool) {
+        /** @var DBQueryWrapper $wrapper */
+        foreach($pool as $wrapper) {
+            $this->justExecute($wrapper->getQueryBody(), $wrapper->getQueryParams());
+        }
+    }
+
+    public static function executePoolInConnection(DBQueryPool $pool) {
+        $connection = new self();
+        $connection->connect();
+        $connection->beginTransaction();
+        $connection->executePool($pool);
+        $connection->commit();
+        $connection->disconnect();
     }
 
     /**
@@ -307,5 +323,16 @@ class Database {
         return $this->pdo->lastInsertId(null);
 
     }
+
+    /**
+     * @param string|QueryBuilder $query
+     * @param array $params
+     */
+    public function justExecute($query, array $params = null) {
+
+        $this->createResource($query, $params)->closeCursor();
+
+    }
+
 
 }

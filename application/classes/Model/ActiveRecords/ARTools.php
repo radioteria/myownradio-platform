@@ -6,7 +6,7 @@
  * Time: 12:04
  */
 
-namespace Model\Beans;
+namespace Model\ActiveRecords;
 
 
 use MVC\MicroORM;

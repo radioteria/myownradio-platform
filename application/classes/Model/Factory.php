@@ -82,7 +82,7 @@ class Factory extends Model {
             if ($result === 0) {
                 throw new ControllerException("Stream not found or no permission");
             } else {
-                StreamTrackList::notifyAllStreamers($id);
+                StreamTrackListModel::notifyAllStreamers($id);
             }
 
         });
@@ -141,7 +141,7 @@ class Factory extends Model {
 
             $addToStream->then(function ($streamID) use ($track) {
 
-                $streamObject = new StreamTrackList($streamID);
+                $streamObject = new StreamTrackListModel($streamID);
                 $streamObject->addTracks($track->getID());
 
             });

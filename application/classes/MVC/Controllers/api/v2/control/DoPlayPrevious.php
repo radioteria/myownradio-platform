@@ -1,9 +1,9 @@
 <?php
 /**
  * Created by PhpStorm.
- * UserModel: Roman
- * Date: 15.12.14
- * Time: 15:39
+ * User: Roman
+ * Date: 19.12.14
+ * Time: 16:14
  */
 
 namespace MVC\Controllers\api\v2\control;
@@ -14,14 +14,13 @@ use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
 
-class DoShuffle extends Controller {
+class DoPlayPrevious extends Controller {
 
     public function doPost(HttpPost $post) {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
 
-        StreamTrackListModel::getInstance($id)->shuffleTracks();
-
+        StreamTrackListModel::getInstance($id)->scPlayPrevious();
     }
 
 } 

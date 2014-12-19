@@ -6,7 +6,7 @@
  * Time: 17:22
  */
 
-namespace MVC\Controllers\api\v2\stream;
+namespace MVC\Controllers\api\v2\control;
 
 
 use Model\Stream;

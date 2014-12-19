@@ -6,10 +6,10 @@
  * Time: 15:48
  */
 
-namespace MVC\Controllers\api\v2\stream;
+namespace MVC\Controllers\api\v2\control;
 
 
-use Model\StreamTrackList;
+use Model\StreamTrackListModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -22,7 +22,7 @@ class DoMoveTrack extends Controller {
         $uniqueId  = $post->getParameter("unique_id")->getOrElseThrow(ControllerException::noArgument("unique_id"));
         $index     = $post->getParameter("new_index")->getOrElseThrow(ControllerException::noArgument("new_index"));
 
-        StreamTrackList::getInstance($id)->moveTrack($uniqueId, $index);
+        StreamTrackListModel::getInstance($id)->moveTrack($uniqueId, $index);
 
     }
 

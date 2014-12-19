@@ -9,7 +9,7 @@
 namespace Model\ActiveRecords;
 
 /**
- * Class StreamTrackAR
+ * Class StreamTrack
  * @package Model\ActiveRecords
  */
 class StreamTrack extends Track {

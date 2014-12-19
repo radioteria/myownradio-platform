@@ -12,20 +12,24 @@ use Model\ActiveRecords\Link;
 use Model\ActiveRecords\StreamAR;
 use Model\ActiveRecords\StreamTrack;
 use Model\ActiveRecords\Track;
+use Model\Traits\StreamControl;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
 use MVC\Services\DB\DBQuery;
-use MVC\Services\DB\DBQueryPool;
 use Tools\Common;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\System;
 
-class StreamTrackList extends Model implements \Countable {
+/**
+ * Class StreamTrackListModel
+ * @package Model
+ */
+class StreamTrackListModel extends Model implements \Countable {
 
-    use Singleton;
+    use Singleton, StreamControl;
 
-    private $key;
+    protected $key;
 
     /** @var UserModel $user */
     private $user;
@@ -79,9 +83,10 @@ class StreamTrackList extends Model implements \Countable {
     }
 
     /**
+     * @param int|null $time
      * @return Optional
      */
-    public function getStreamPosition() {
+    public function getStreamPosition($time = null) {
 
         if ($this->tracks_duration == 0) {
             return Optional::ofNull(0);
@@ -91,7 +96,9 @@ class StreamTrackList extends Model implements \Countable {
             return Optional::ofNull(null);
         }
 
-        $time = System::time();
+        if (is_null($time)) {
+            $time = System::time();
+        }
 
         $position = ($time - $this->started + $this->started_from) % $this->tracks_duration;
 
@@ -228,13 +235,15 @@ class StreamTrackList extends Model implements \Countable {
 
     /**
      * @param $time
-     * @return \Model\ActiveRecords\StreamTrack
+     * @return StreamTrack
      */
     public function getTrackByTime($time) {
 
+        $mod = $time % $this->getStreamDuration();
+
         return $this->_getPlaylistTrack(
             "b.time_offset <= :time AND b.time_offset + a.duration >= :time AND b.stream_id = :id",
-            [":time" => $time, ":id" => $this->key]
+            [":time" => $mod, ":id" => $this->key]
         );
 
     }
@@ -245,11 +254,14 @@ class StreamTrackList extends Model implements \Countable {
      */
     private function doAtomic(callable $callable) {
 
-        $this->getStreamPosition()->then(function ($streamPosition) use ($callable) {
-            /** @var Optional $streamPosition */
-            $track = $this->getTrackByTime($streamPosition);
-            $trackPosition = $streamPosition->get() - $track->getTimeOffset();
+        $this->getPlayingTrack()->then(function ($track) use ($callable) {
+
+            /** @var StreamTrack $track */
+            $position = $this->getStreamPosition()->get();
+            $trackPosition = $position - $track->getTimeOffset();
+
             call_user_func($callable);
+
             $this->_setCurrentTrack($track, $trackPosition, false);
 
         })->getOrElseCallback($callable);
@@ -258,6 +270,27 @@ class StreamTrackList extends Model implements \Countable {
 
     }
 
+    /**
+     * @param int|null $time
+     * @return Optional
+     */
+    protected function getPlayingTrack($time = null) {
+
+        $position = $this->getStreamPosition($time)->getOrElseNull();
+
+        if (is_null($position)) {
+            return Optional::noValue();
+        }
+
+        return $this->getTrackByTime($position);
+
+    }
+
+    /**
+     * @param StreamTrack $trackBean
+     * @param int $startFrom
+     * @param bool $notify
+     */
     private function _setCurrentTrack(StreamTrack $trackBean, $startFrom = 0, $notify = true) {
 
         StreamAR::getByID($this->key)
@@ -292,16 +325,6 @@ class StreamTrackList extends Model implements \Countable {
 
     }
 
-    public function setRandomTrack() {
-
-        $this->_getRandomTrack()
-            ->then(function ($track) {
-                $this->_setCurrentTrack($track, 0, true);
-            });
-
-    }
-
-
     public function generateUniqueId() {
 
         return Database::doInConnection(function (Database $conn) {
@@ -321,7 +344,7 @@ class StreamTrackList extends Model implements \Countable {
      * @param array $args
      * @return Optional
      */
-    private function _getPlaylistTrack($filter, array $args = null) {
+    protected function _getPlaylistTrack($filter, array $args = null) {
 
         return Database::doInConnection(function (Database $db) use ($filter, $args) {
 
@@ -338,7 +361,7 @@ class StreamTrackList extends Model implements \Countable {
     /**
      * @return Optional
      */
-    private function _getRandomTrack() {
+    protected function _getRandomTrack() {
 
         return Database::doInConnection(function (Database $db) {
 

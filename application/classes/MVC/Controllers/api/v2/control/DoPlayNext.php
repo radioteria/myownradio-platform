@@ -1,27 +1,27 @@
 <?php
 /**
  * Created by PhpStorm.
- * UserModel: Roman
+ * User: Roman
  * Date: 19.12.14
- * Time: 10:22
+ * Time: 16:09
  */
 
-namespace MVC\Controllers\api\v2\stream;
+namespace MVC\Controllers\api\v2\control;
 
 
-use Model\StreamTrackList;
+use Model\StreamTrackListModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
 
-class DoPlayRandomTrack extends Controller {
+class DoPlayNext extends Controller {
 
     public function doPost(HttpPost $post) {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
 
-        StreamTrackList::getInstance($id)->setRandomTrack();
+        StreamTrackListModel::getInstance($id)->scPlayNext();
 
     }
 
-} 
+}

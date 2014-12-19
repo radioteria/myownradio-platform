@@ -42,7 +42,7 @@ class Destructor extends Model {
 
         foreach($streams as $streamID => $uniqueIDs) {
 
-            (new StreamTrackList($streamID))
+            (new StreamTrackListModel($streamID))
                 ->removeTracks($uniqueIDs);
 
         }

@@ -6,10 +6,10 @@
  * Time: 15:33
  */
 
-namespace MVC\Controllers\api\v2\stream;
+namespace MVC\Controllers\api\v2\control;
 
 
-use Model\StreamTrackList;
+use Model\StreamTrackListModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -21,7 +21,7 @@ class DoRemoveTracks extends Controller {
         $id     = $post->getParameter("id")     ->getOrElseThrow(ControllerException::noArgument("id"));
         $tracks = $post->getParameter("tracks") ->getOrElseThrow(ControllerException::noArgument("tracks"));
 
-        StreamTrackList::getInstance($id)->removeTracks($tracks);
+        StreamTrackListModel::getInstance($id)->removeTracks($tracks);
 
     }
 

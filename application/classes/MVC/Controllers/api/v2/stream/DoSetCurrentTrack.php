@@ -6,10 +6,10 @@
  * Time: 20:47
  */
 
-namespace MVC\Controllers\api\v2\stream;
+namespace MVC\Controllers\api\v2\control;
 
 
-use Model\StreamTrackList;
+use Model\StreamTrackListModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -21,7 +21,7 @@ class DoSetCurrentTrack extends Controller {
         $id     = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
         $track  = $post->getParameter("track")->getOrElseThrow(ControllerException::noArgument("track"));
 
-        StreamTrackList::getInstance($id)->setPlayFrom($track);
+        StreamTrackListModel::getInstance($id)->setPlayFrom($track);
 
     }
 

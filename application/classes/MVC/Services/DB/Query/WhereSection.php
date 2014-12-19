@@ -56,12 +56,11 @@ trait WhereSection {
         foreach ($parameters as $key=>$parameter) {
             if (is_numeric($key)) {
                 $this->parameters["WHERE"][] = $parameter;
-                $this->wheres[] = $clause;
-            } else if (is_string($key)) {
+            } else {
                 $this->parameters["WHERE"][$key] = $parameter;
-                $this->wheres[] = $clause;
             }
         }
+        $this->wheres[] = $clause;
     }
 
     private function whereArray($column, array $values) {

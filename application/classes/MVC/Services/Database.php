@@ -42,7 +42,7 @@ class Database {
                 $this->settings['db_password'], [
                     PDO::ATTR_EMULATE_PREPARES  => false,
                     PDO::ATTR_PERSISTENT        => true,
-                    PDO::ATTR_AUTOCOMMIT        => false
+                    PDO::ATTR_AUTOCOMMIT        => true
             ]);
         } catch (\PDOException $e) {
             throw ApplicationException::of($e->getMessage(), $e);
@@ -185,7 +185,13 @@ class Database {
             $queryString = $this->queryQuote($query, $params);
         }
 
+
         $resource = $this->pdo->prepare($queryString);
+
+        if ($resource === false) {
+            throw new ControllerException($this->pdo->errorInfo()[2]);
+        }
+
         $resource->execute();
 
         if ($resource->errorCode() !== "00000") {
@@ -270,14 +276,14 @@ class Database {
     }
 
     /**
-     * @param string $query
+     * @param string|QueryBuilder $query
      * @param array $params
      * @param string $class
      * @param array|null $args
      * @return Optional
      * @throws ControllerException
      */
-    public function fetchOneObject($query, array $params, $class, array $args = null) {
+    public function fetchOneObject($query, array $params = null, $class, array $args = []) {
 
         $resource = $this->createResource($query, $params);
 

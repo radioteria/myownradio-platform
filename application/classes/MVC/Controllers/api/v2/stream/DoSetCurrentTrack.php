@@ -17,10 +17,12 @@ use MVC\Services\HttpPost;
 class DoSetCurrentTrack extends Controller {
 
     public function doPost(HttpPost $post) {
+
         $id     = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
         $track  = $post->getParameter("track")->getOrElseThrow(ControllerException::noArgument("track"));
 
         StreamTrackList::getInstance($id)->setPlayFrom($track);
+
     }
 
 } 

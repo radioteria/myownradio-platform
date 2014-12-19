@@ -228,7 +228,7 @@ class Streams implements \ArrayAccess, \Countable {
      */
     public function offsetExists($offset) {
         return Database::doInConnection(function (Database $db) use ($offset) {
-            return boolval($db->fetchOneColumn("SELECT COUNT(*) FROM r_streams WHERE sid = ?", [$offset])->getRaw());
+            return boolval($db->fetchOneColumn("SELECT COUNT(*) FROM r_streams WHERE sid = ?", [$offset])->get());
         });
     }
 

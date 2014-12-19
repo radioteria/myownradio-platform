@@ -54,9 +54,9 @@ class Optional {
     }
 
     /**
-     * @return Object
+     * @return mixed
      */
-    public function getRaw() {
+    public function get() {
         return $this->value;
     }
 

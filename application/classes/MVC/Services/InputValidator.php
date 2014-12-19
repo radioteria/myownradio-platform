@@ -187,7 +187,7 @@ class InputValidator {
         $optional = new Optional($email, function ($email) {
 
             return !boolval(Database::getInstance()->fetchOneColumn(
-                "SELECT COUNT(*) FROM r_users WHERE mail = ?", [$email])->getRaw());
+                "SELECT COUNT(*) FROM r_users WHERE mail = ?", [$email])->get());
 
         });
 

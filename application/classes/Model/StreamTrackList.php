@@ -8,6 +8,7 @@
 
 namespace Model;
 
+use Model\ActiveRecords\StreamAR;
 use Model\ActiveRecords\StreamTrackAR;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
@@ -190,22 +191,158 @@ class StreamTrackList extends Model implements \Countable {
     }
 
     /**
-     * @param $unique
+     * @param $uniqueID
      * @param $index
      * @return $this
      */
-    public function moveTrack($unique, $index) {
+    public function moveTrack($uniqueID, $index) {
 
-        $this->doAtomic(function () use ($unique, $index) {
+        $this->doAtomic(function () use (&$uniqueID, &$index) {
 
-            Database::doInConnection(function (Database $db) use ($unique, $index) {
-                $db->executeUpdate("SELECT NEW_STREAM_SORT(?, ?, ?)", [$this->key, $unique, $index]);
-                $db->commit();
+            Database::doInConnection(function (Database $db) use (&$uniqueID, &$index) {
+                $db->executeUpdate("SELECT NEW_STREAM_SORT(?, ?, ?)", [$this->key, $uniqueID, $index]);
             });
 
         });
 
         return $this;
+
+    }
+
+    /**
+     * @param $id
+     * @return Optional
+     */
+    public function getTrackByOrder($id) {
+
+        return $this->_getPlaylistTrack("b.t_order = ? AND b.stream_id = ?", [$id, $this->key]);
+
+    }
+
+    /**
+     * @param $time
+     * @return \Model\ActiveRecords\StreamTrackAR
+     */
+    public function getTrackByTime($time) {
+
+        return $this->_getPlaylistTrack(
+            "b.time_offset <= :time AND b.time_offset + a.duration >= :time AND b.stream_id = :id",
+            [":time" => $time, ":id" => $this->key]
+        );
+
+    }
+
+    /**
+     * @param callable $callable
+     * @return $this
+     */
+    private function doAtomic(callable $callable) {
+
+        $this->getStreamPosition()->then(function ($streamPosition) use ($callable) {
+            /** @var Optional $streamPosition */
+            $track = $this->getTrackByTime($streamPosition);
+            $trackPosition = $streamPosition->get() - $track->getTimeOffset();
+            call_user_func($callable);
+            $this->_setCurrentTrack($track, $trackPosition, false);
+
+        })->getOrElseCallback($callable);
+
+        return $this;
+
+    }
+
+    private function _setCurrentTrack(StreamTrackAR $trackBean, $startFrom = 0, $notify = true) {
+
+        StreamAR::getByID($this->key)
+            ->then(function ($stream) use ($trackBean, $startFrom) {
+                /** @var StreamAR $stream */
+                $stream->setStartedFrom($trackBean->getTimeOffset() + $startFrom);
+                $stream->setStarted(System::time());
+                $stream->setStatus(1);
+                $stream->save();
+            });
+
+
+        if ($notify == true) {
+            $this->notifyStreamers();
+        }
+
+    }
+
+    /**
+     * @param $uniqueID
+     * @return $this
+     */
+    public function setPlayFrom($uniqueID) {
+
+        $this->_getPlaylistTrack("b.unique_id = ? AND b.stream_id = ?", [$uniqueID, $this->key])
+            ->then(function ($track) {
+                $this->_setCurrentTrack($track, 0, true);
+            })->justThrow(ControllerException::noTrack($uniqueID));
+
+
+        return $this;
+
+    }
+
+    public function setRandomTrack() {
+
+        $this->_getRandomTrack()
+            ->then(function ($track) {
+                $this->_setCurrentTrack($track, 0, true);
+            });
+
+    }
+
+
+    public function generateUniqueId() {
+
+        return Database::doInConnection(function (Database $conn) {
+
+            do { $generated = Common::generateUniqueID(); }
+            while ($conn->fetchOneColumn("SELECT COUNT(*) FROM r_link WHERE unique_id = ?", [$generated])->get());
+
+            return $generated;
+
+        });
+
+
+    }
+
+    /**
+     * @param string $filter
+     * @param array $args
+     * @return Optional
+     */
+    private function _getPlaylistTrack($filter, array $args = null) {
+
+        return Database::doInConnection(function (Database $db) use ($filter, $args) {
+
+            $query = $this->getTrackQueryPrefix();
+            $query->limit(1);
+            $query->where($filter, $args);
+
+            return $db->fetchOneObject($query, null, "Model\\ActiveRecords\\StreamTrackAR");
+
+        });
+
+    }
+
+    /**
+     * @return Optional
+     */
+    private function _getRandomTrack() {
+
+        return Database::doInConnection(function (Database $db) {
+
+            $query = $this->getTrackQueryPrefix();
+            $query->addOrderBy("RAND()");
+            $query->limit(1);
+            $query->where("b.stream_id", $this->key);
+
+            return $db->fetchOneObject($query, null, "Model\\ActiveRecords\\StreamTrackAR");
+
+        });
 
     }
 
@@ -223,197 +360,20 @@ class StreamTrackList extends Model implements \Countable {
 
     }
 
-    /**
-     * @return Optional
-     */
-    public function getCurrentTrack() {
-
-        $time = $this->getStreamPosition();
-
-        if ($time->validate()) {
-            return $this->getTrackByTime($time->getRaw());
-        }
-
-        return Optional::noValue();
-
-    }
-
-    /**
-     * @param $id
-     * @return Optional
-     */
-    public function getTrackByOrder($id) {
-
-        return Database::doInConnection(function (Database $db) use ($id) {
-
-            $query = $this->getTrackQueryPrefix();
-            $query->where("b.t_order", $id);
-            $query->where("b.stream_id", $this->key);
-
-            $trackObject = $db->fetchOneObject($query, null, "Model\\ActiveRecords\\StreamTrackAR", null);
-
-            return Optional::ofNull($trackObject->getOrElseNull());
-
-        });
-
-    }
-
-    /**
-     * @param $time
-     * @return \Model\ActiveRecords\StreamTrackAR
-     */
-    public function getTrackByTime($time) {
-
-        Database::doInConnection(function (Database $db) use ($time) {
-
-            $query = $this->getTrackQueryPrefix();
-            $query->where("b.time_offset <= :time");
-            $query->where("b.time_offset + a.duration >= :time", [":time" => $time]);
-            $query->where("b.stream_id", $this->key);
-
-            $track = $db->fetchOneObject($query, [], "Model\\ActiveRecords\\StreamTrackAR", [$time]);
-
-            return $track;
-
-        });
-
-    }
-
-    /**
-     * @param callable $callable
-     * @return $this
-     */
-    private function doAtomic(callable $callable) {
-
-        $time = $this->getStreamPosition();
-        $track = $this->getCurrentTrack();
-
-        call_user_func($callable);
-
-        $this->setCurrentTrack($track);
-
-        return $this;
-
-    }
-
-    private function restorePlayingTrack(Optional $track, Optional $time) {
-
-    }
-
-    /**
-     * @param Optional $track
-     * @param bool $force
-     * @return $this
-     */
-    private function setCurrentTrack(Optional $track, $force = false) {
-
-        $track->then(function ($track) {
-
-            /** @var \Model\ActiveRecords\StreamTrackAR $track */
-
-            Database::doInConnection(function (Database $db) use ($track) {
-
-                $query = "SELECT time_offset FROM r_link WHERE unique_id = ? AND stream_id = ?";
-
-                $db->fetchOneColumn($query, [$track->getUniqueID(), $this->key])
-
-                    ->then(function ($offset) use ($track, $db) {
-
-                        $cursor = $track->getCursor();
-                        $query = $db->getDBQuery()->updateTable("r_streams")
-                            ->set("started_from", $offset + $cursor)
-                            ->set("started", System::time())
-                            ->set("status", 1)
-                            ->where("sid", $this->key);
-
-                        $db->executeUpdate($query);
-
-                    })->otherwise(function () use ($track) {
-
-                        $order = $track->getTrackOrder();
-
-                    });
-
-                $db->commit();
-
-            });
-
-        });
-
-        if ($force == true) {
-            $this->notifyStreamers();
-        }
-
-        return $this;
-
-    }
-
-    private function _setCurrentTrack(StreamTrackAR $trackBean, $startFrom = 0, $notify = true) {
-
-        Database::doInConnection(function (Database $db) use ($trackBean, $startFrom) {
-            $query = $db->getDBQuery()->updateTable("r_streams")
-                ->set("started_from", $trackBean->getTimeOffset() + $startFrom)
-                ->set("started", System::time())
-                ->set("status", 1)
-                ->where("sid", $this->key);
-            $db->executeUpdate($query);
-        });
-
-        if ($notify == true) {
-            $this->notifyStreamers();
-        }
-
-    }
-
-    /**
-     * @param $uniqueID
-     * @return $this
-     */
-    public function setPlayFrom($uniqueID) {
-
-        $track = Database::doInConnection(function (Database $db) use ($uniqueID) {
-
-            $query = $db->getDBQuery()->selectFrom("r_tracks a")
-                ->innerJoin("r_link b", "a.tid = b.track_id")
-                ->where("b.unique_id", $uniqueID)
-                ->select("b.unique_id", "b.time_offset");
-
-            $track = $db->fetchOneRow($query)
-                ->then(function (&$track) { $track["cursor"] = 0; });
-
-            $track->justThrow(ControllerException::noTrack($uniqueID));
-
-            return $track;
-
-        });
-
-        $this->setCurrentTrack($track, true);
-
-        return $this;
-
-    }
-
-
-    public function generateUniqueId(Database $connection) {
-
-            do { $generated = Common::generateUniqueId(); }
-            while ($connection->fetchOneColumn("SELECT COUNT(*) FROM r_link WHERE unique_id = ?", [$generated])->getRaw());
-
-            return $generated;
-
-    }
-
     private function notifyStreamers() {
         self::notifyAllStreamers($this->key);
     }
 
-    public static function notifyAllStreamers($streamId) {
-        $ch = curl_init('http://127.0.0.1:7778/notify?s=' . $streamId);
+    public static function notifyAllStreamers($streamID) {
+
+        $ch = curl_init("http://127.0.0.1:7778/notify?s=" . $streamID);
+
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_VERBOSE, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 5);
         curl_exec($ch);
         curl_close($ch);
+
     }
 
     /**
@@ -422,7 +382,6 @@ class StreamTrackList extends Model implements \Countable {
     public function count() {
         return intval($this->tracks_count);
     }
-
 
 
 } 

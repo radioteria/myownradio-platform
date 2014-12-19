@@ -35,7 +35,7 @@ class Common {
 
     }
 
-    static function generateUniqueId() {
+    static function generateUniqueID() {
 
         $idCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         $id = "";

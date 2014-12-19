@@ -192,8 +192,6 @@ class MicroORM extends FilterORM {
 
             }
 
-            $db->commit();
-
         });
 
     }
@@ -246,8 +244,6 @@ class MicroORM extends FilterORM {
 
             $db->executeUpdate($query);
 
-            $db->commit();
-
         });
 
     }
@@ -285,6 +281,8 @@ class MicroORM extends FilterORM {
     protected function _getSingleObject(SelectQuery $query, \ReflectionClass $reflection) {
 
         $object = Database::doInConnection(function (Database $db) use ($query, $reflection) {
+
+            $query->limit(1);
 
             $row = $db->fetchOneRow($query)
                 ->getOrElseNull();

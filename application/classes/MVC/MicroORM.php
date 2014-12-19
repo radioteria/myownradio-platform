@@ -364,7 +364,7 @@ class MicroORM extends FilterORM {
     }
 
     /**
-     * @param string $beanComment
+     * @param \ReflectionClass $beanComment
      * @return array
      * @throws Exceptions\ORMException
      */

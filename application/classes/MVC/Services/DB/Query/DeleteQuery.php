@@ -10,14 +10,19 @@ namespace MVC\Services\DB\Query;
 
 
 use PDO;
+use Tools\Lang;
 
 class DeleteQuery extends BaseQuery implements QueryBuilder {
 
     use WhereSection;
 
-    function __construct($tableName) {
+    function __construct($tableName, $key = null, $value = null) {
         $this->tableName = $tableName;
+        if (!Lang::isNull($key, $value)) {
+            $this->where($key, $value);
+        }
     }
+
 
     public function getQuery(PDO $pdo) {
         $build = [];

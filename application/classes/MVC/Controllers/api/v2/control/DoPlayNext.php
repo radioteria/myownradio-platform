@@ -14,7 +14,6 @@ use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
 use MVC\Services\JsonResponse;
-use Tools\System;
 
 class DoPlayNext extends Controller {
 
@@ -23,10 +22,6 @@ class DoPlayNext extends Controller {
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
 
         PlaylistModel::getInstance($id)->scPlayNext();
-
-        $track = PlaylistModel::getInstance($id)->getPlayingTrack(System::realTime())->getOrElseNull();
-
-        $response->setData($track->exportArray());
 
     }
 

@@ -11,6 +11,7 @@ namespace Model;
 
 use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
+use MVC\Exceptions\UnauthorizedException;
 use MVC\Services\Config;
 use MVC\Services\Database;
 use MVC\Services\HttpRequest;
@@ -81,7 +82,7 @@ class UsersModel {
     /**
      * @return void
      */
-    public static function unAuthorize() {
+    public static function logout() {
 
         $session = HttpSession::getInstance();
 
@@ -105,7 +106,7 @@ class UsersModel {
 
         $user = Database::doInConnection(function (Database $db) use ($id) {
             return $db->fetchOneRow("SELECT * FROM r_users WHERE uid = ?", [$id])
-                ->getOrElseThrow(ControllerException::noPermission());
+                ->getOrElseThrow(UnauthorizedException::noUserExists($id));
         });
 
         $clientAddress = HttpRequest::getInstance()->getRemoteAddress();

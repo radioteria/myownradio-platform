@@ -23,10 +23,6 @@ class DoPlay extends Controller {
 
         PlaylistModel::getInstance($id)->scPlay();
 
-        $track = PlaylistModel::getInstance($id)->getPlayingTrack()->getOrElseNull();
-
-        $response->setData($track->exportArray());
-
     }
 
 } 

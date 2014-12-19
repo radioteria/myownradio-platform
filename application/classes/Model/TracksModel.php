@@ -32,6 +32,12 @@ class TracksModel {
         $this->user = AuthUserModel::getInstance();
     }
 
+    /**
+     * @param array $file
+     * @param Optional $addToStream
+     * @throws \MVC\Exceptions\ApplicationException
+     * @throws \MVC\Exceptions\ControllerException
+     */
     public function upload(array $file, Optional $addToStream) {
 
         $config = Config::getInstance();
@@ -99,6 +105,9 @@ class TracksModel {
 
     }
 
+    /**
+     * @param $tracks
+     */
     public function delete($tracks) {
 
         foreach (explode(",", $tracks) as $track) {
@@ -110,7 +119,9 @@ class TracksModel {
 
     }
 
-
+    /**
+     * @param $tracks
+     */
     public function deleteFromStreams($tracks) {
 
         $streams = Database::doInConnection(function (Database $db) use ($tracks) {

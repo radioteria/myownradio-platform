@@ -189,13 +189,13 @@ class Database {
         $resource = $this->pdo->prepare($queryString);
 
         if ($resource === false) {
-            throw new ControllerException($this->pdo->errorInfo()[2]);
+            throw new ControllerException($this->pdo->errorInfo()[2], $queryString);
         }
 
         $resource->execute();
 
         if ($resource->errorCode() !== "00000") {
-            throw new ControllerException($resource->errorInfo()[2]);
+            throw new ControllerException($resource->errorInfo()[2], $queryString);
         }
 
         return $resource;

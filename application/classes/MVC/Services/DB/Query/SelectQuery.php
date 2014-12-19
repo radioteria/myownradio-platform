@@ -10,6 +10,7 @@ namespace MVC\Services\DB\Query;
 
 
 use PDO;
+use Tools\Lang;
 
 class SelectQuery extends BaseQuery implements QueryBuilder {
 
@@ -20,8 +21,11 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
 
     private $innerJoin = [];
 
-    public function __construct($tableName) {
+    public function __construct($tableName, $key = null, $value = null) {
         $this->tableName = $tableName;
+        if (!Lang::isNull($key, $value)) {
+            $this->where($key, $value);
+        }
     }
 
 
@@ -41,7 +45,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
      * @return $this
      */
     public function limit($limit) {
-        $this->limit = intval($limit);
+        $this->limit = $limit;
         return $this;
     }
 
@@ -50,7 +54,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
      * @return $this
      */
     public function offset($offset) {
-        $this->offset = intval($offset);
+        $this->offset = $offset;
         return $this;
     }
 

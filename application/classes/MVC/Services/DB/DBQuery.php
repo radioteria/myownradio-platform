@@ -29,26 +29,32 @@ class DBQuery {
 
     /**
      * @param $tableName
+     * @param string $key
+     * @param mixed $value
      * @return SelectQuery
      */
-    public function selectFrom($tableName) {
-        return new SelectQuery($tableName);
+    public function selectFrom($tableName, $key = null, $value = null) {
+        return new SelectQuery($tableName, $key, $value);
     }
 
     /**
      * @param $tableName
+     * @param string $key
+     * @param mixed $value
      * @return UpdateQuery
      */
-    public function updateTable($tableName) {
-        return new UpdateQuery($tableName);
+    public function updateTable($tableName, $key = null, $value = null) {
+        return new UpdateQuery($tableName, $key, $value);
     }
 
     /**
      * @param $tableName
+     * @param string $key
+     * @param mixed $value
      * @return DeleteQuery
      */
-    public function deleteFrom($tableName) {
-        return new DeleteQuery($tableName);
+    public function deleteFrom($tableName, $key = null, $value = null) {
+        return new DeleteQuery($tableName, $key, $value);
     }
 
 } 

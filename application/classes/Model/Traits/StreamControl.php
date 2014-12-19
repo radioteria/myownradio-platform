@@ -8,7 +8,7 @@
 
 namespace Model\Traits;
 
-use Objects\Playlist;
+use Objects\PlaylistTrack;
 use Objects\Stream;
 use Tools\System;
 
@@ -20,13 +20,13 @@ trait StreamControl {
 
     public function scPlayNext() {
 
-        $this->getPlayingTrack()->then(function (Playlist $track) {
+        $this->getPlayingTrack()->then(function (PlaylistTrack $track) {
 
             $next = ($track->getTrackOrder() + 1) % count($this);
 
             $this->_getPlaylistTrack("b.t_order = ? AND b.stream_id = ?", [$next, $this->key])
 
-                ->then(function (Playlist $track) {
+                ->then(function (PlaylistTrack $track) {
 
                     $this->_setCurrentTrack($track, 0, true);
 
@@ -39,7 +39,7 @@ trait StreamControl {
 
     public function scPlayPrevious() {
 
-        $this->getPlayingTrack()->then(function (Playlist $track) {
+        $this->getPlayingTrack()->then(function (PlaylistTrack $track) {
 
             if ($track->getTrackOrder() < 2) {
                 $prev = count($this);
@@ -49,7 +49,7 @@ trait StreamControl {
 
             $this->_getPlaylistTrack("b.t_order = ? AND b.stream_id = ?", [$prev, $this->key])
 
-                ->then(function (Playlist $track) {
+                ->then(function (PlaylistTrack $track) {
 
                     $this->_setCurrentTrack($track, 0, true);
 

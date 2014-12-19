@@ -9,9 +9,12 @@
 namespace MVC\Services\DB;
 
 
+use Tools\Singleton;
 use Traversable;
 
 class DBQueryPool implements \IteratorAggregate, \Countable {
+
+    use Singleton;
 
     private $queryPool = [];
 

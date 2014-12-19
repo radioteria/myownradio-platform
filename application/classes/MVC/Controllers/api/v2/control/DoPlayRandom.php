@@ -23,10 +23,6 @@ class DoPlayRandom extends Controller {
 
         PlaylistModel::getInstance($id)->scPlayRandom();
 
-        $track = PlaylistModel::getInstance($id)->getPlayingTrack()->getOrElseNull();
-
-        $response->setData($track->exportArray());
-
     }
 
 } 

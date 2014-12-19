@@ -13,7 +13,7 @@ use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
 use MVC\Services\DB\DBQuery;
 use Objects\Link;
-use Objects\Playlist;
+use Objects\PlaylistTrack;
 use Objects\Stream;
 use Objects\Track;
 use Tools\Common;
@@ -236,7 +236,7 @@ class PlaylistModel extends Model implements \Countable {
 
     /**
      * @param $time
-     * @return Playlist
+     * @return PlaylistTrack
      */
     public function getTrackByTime($time) {
 
@@ -257,7 +257,7 @@ class PlaylistModel extends Model implements \Countable {
 
         $this->getPlayingTrack()->then(function ($track) use ($callable) {
 
-            /** @var Playlist $track */
+            /** @var PlaylistTrack $track */
             $position = $this->getStreamPosition()->get();
             $trackPosition = $position - $track->getTimeOffset();
 
@@ -288,11 +288,11 @@ class PlaylistModel extends Model implements \Countable {
     }
 
     /**
-     * @param Playlist $trackBean
+     * @param PlaylistTrack $trackBean
      * @param int $startFrom
      * @param bool $notify
      */
-    protected function _setCurrentTrack(Playlist $trackBean, $startFrom = 0, $notify = true) {
+    protected function _setCurrentTrack(PlaylistTrack $trackBean, $startFrom = 0, $notify = true) {
 
         Stream::getByID($this->key)
             ->then(function ($stream) use ($trackBean, $startFrom) {
@@ -380,7 +380,7 @@ class PlaylistModel extends Model implements \Countable {
             $query->limit(1);
             $query->where($filter, $args);
 
-            return $db->fetchOneObject($query, null, "Objects\\Playlist");
+            return $db->fetchOneObject($query, null, "Objects\\PlaylistTrack");
 
         });
 
@@ -398,7 +398,7 @@ class PlaylistModel extends Model implements \Countable {
             $query->limit(1);
             $query->where("b.stream_id", $this->key);
 
-            return $db->fetchOneObject($query, null, "Objects\\Playlist");
+            return $db->fetchOneObject($query, null, "Objects\\PlaylistTrack");
 
         });
 

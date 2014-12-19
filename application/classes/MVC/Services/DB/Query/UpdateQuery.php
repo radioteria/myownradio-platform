@@ -10,6 +10,7 @@ namespace MVC\Services\DB\Query;
 
 
 use PDO;
+use Tools\Lang;
 
 class UpdateQuery extends BaseQuery implements QueryBuilder {
 
@@ -17,8 +18,11 @@ class UpdateQuery extends BaseQuery implements QueryBuilder {
 
     private $sets = [];
 
-    function __construct($tableName) {
+    function __construct($tableName, $key = null, $value = null) {
         $this->tableName = $tableName;
+        if (!Lang::isNull($key, $value)) {
+            $this->where($key, $value);
+        }
     }
 
     public function getQuery(PDO $pdo) {

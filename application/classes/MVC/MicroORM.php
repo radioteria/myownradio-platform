@@ -103,12 +103,17 @@ class MicroORM extends FilterORM {
 
     /**
      * @param ActiveRecord $object
+     * @throws ORMException
      */
     public function deleteObject(ActiveRecord $object) {
 
         $reflection  = new \ReflectionClass($object);
 
         $beanConfig = $this->getBeanConfig($reflection);
+
+        if (isset($beanConfig["@view"])) {
+            throw new ORMException("Object has read only access");
+        }
 
         $param = $reflection->getProperty($beanConfig["@key"]);
         $param->setAccessible(true);
@@ -172,6 +177,10 @@ class MicroORM extends FilterORM {
         $reflection = new \ReflectionClass($bean);
 
         $beanConfig = $this->getBeanConfig($reflection);
+
+        if (isset($beanConfig["@view"])) {
+            throw new ORMException("Object has read only access");
+        }
 
         return Database::doInConnection(function (Database $db) use ($reflection, $beanConfig, $bean) {
 

@@ -9,12 +9,13 @@
 namespace Objects;
 
 /**
- * Class Playlist
+ * Class PlaylistTrack
  * @package Objects
  * @table mor_stream_tracklist_view
  * @key unique_id
+ * @view
  */
-class Playlist extends Track {
+class PlaylistTrack extends Track {
 
     protected $id, $stream_id, $t_order, $unique_id, $time_offset;
 

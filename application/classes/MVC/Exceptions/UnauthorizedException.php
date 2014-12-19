@@ -23,4 +23,8 @@ class UnauthorizedException extends ControllerException {
         return new self("Incorrect login or password");
     }
 
+    static function noUserExists($id) {
+        return new self("User with id %d not exists", $id);
+    }
+
 }

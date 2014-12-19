@@ -9,9 +9,11 @@
 namespace MVC\Services\DB\Query;
 
 
+use MVC\Services\Database;
 use PDO;
+use Tools\Optional;
 
-abstract class BaseQuery {
+abstract class BaseQuery implements \Countable {
 
     protected $tableName;
 
@@ -79,5 +81,77 @@ abstract class BaseQuery {
 
     }
 
+    /* Fetchers shortcuts */
+
+    /**
+     * @return Optional
+     */
+    public function fetchOneRow() {
+        return Database::doInConnection(function (Database $db) {
+            $query = clone $this;
+            $query->limit(1);
+            return $db->fetchOneRow($query);
+        });
+    }
+
+    /**
+     * @param int $column
+     * @return Optional
+     */
+    public function fetchOneColumn($column = 0) {
+        return Database::doInConnection(function (Database $db) use (&$column) {
+            $query = clone $this;
+            $query->limit(1);
+            return $db->fetchOneColumn($query, null, $column);
+        });
+    }
+
+    /**
+     * @param string|null $key
+     * @param callable $callback
+     * @return array
+     */
+    public function fetchAll($key = null, callable $callback = null) {
+        return Database::doInConnection(function (Database $db) use (&$key, &$callback) {
+            return $db->fetchAll($this, null, $key, $callback);
+        });
+    }
+
+    /**
+     * @param $className
+     * @param array $ctor_args
+     * @return Optional
+     */
+    public function fetchObject($className, array $ctor_args = []) {
+        return Database::doInConnection(function (Database $db) use (&$className, &$ctor_args) {
+            $query = clone $this;
+            $query->limit(1);
+            return $db->fetchOneObject($query, null, $className, $ctor_args);
+        });
+    }
+
+    /**
+     * @param $className
+     * @param array $ctor_args
+     * @return Object[]
+     */
+    public function fetchAllObjects($className, array $ctor_args = []) {
+        return Database::doInConnection(function (Database $db) use (&$className, &$ctor_args) {
+            return $db->fetchAllObjects($this, null, $className, $ctor_args);
+        });
+    }
+
+    /**
+     * @return int
+     */
+    public function count() {
+        return Database::doInConnection(function (Database $db) use (&$className, &$ctor_args) {
+            $query = clone $this;
+            $query->selectNone()->selCount();
+            $query->limit(null);
+            $query->offset(null);
+            return intval($db->fetchOneColumn($query)->get());
+        });
+    }
 
 } 

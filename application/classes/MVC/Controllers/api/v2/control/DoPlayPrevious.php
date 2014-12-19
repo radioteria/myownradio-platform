@@ -23,10 +23,6 @@ class DoPlayPrevious extends Controller {
 
         PlaylistModel::getInstance($id)->scPlayPrevious();
 
-        $track = PlaylistModel::getInstance($id)->getPlayingTrack()->getOrElseNull();
-
-        $response->setData($track->exportArray());
-
     }
 
 } 

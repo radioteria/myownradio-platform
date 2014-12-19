@@ -128,6 +128,10 @@ class UserModel extends Model {
         return $this->user->getName();
     }
 
+    public function getPassword() {
+        return $this->user->getPassword();
+    }
+
     public function changePassword($password) {
 
         $newPassword = md5($this->getLogin() . $password);

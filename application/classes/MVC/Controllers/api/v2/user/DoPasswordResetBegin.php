@@ -9,7 +9,7 @@
 namespace MVC\Controllers\api\v2\self;
 
 
-use Model\Letters;
+use Model\LettersModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -20,7 +20,7 @@ class DoPasswordResetBegin extends Controller {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
 
-        Letters::sendResetPasswordLetter($id);
+        LettersModel::sendResetPasswordLetter($id);
 
     }
 

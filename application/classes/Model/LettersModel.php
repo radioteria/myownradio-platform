@@ -13,8 +13,7 @@ use MVC\Exceptions\ControllerException;
 use MVC\Services\Mailer;
 use MVC\Template;
 
-class Letters {
-
+class LettersModel {
 
     public static function sendRegistrationLetter($email) {
 
@@ -56,9 +55,8 @@ class Letters {
         $mailer->setSubject("Reset password on myownradio.biz");
         $mailer->setBody($template->makeDocument());
 
-        try {
-            $mailer->send();
-        } catch (\Exception $exception) {
+        try { $mailer->send(); }
+        catch (\Exception $exception) {
             throw new ControllerException($exception->getMessage());
         }
 

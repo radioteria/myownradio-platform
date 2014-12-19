@@ -23,10 +23,6 @@ class DoNotify extends Controller {
 
         PlaylistModel::getInstance($id)->notifyStreamers();
 
-        $track = PlaylistModel::getInstance($id)->getPlayingTrack()->getOrElseNull();
-
-        $response->setData($track->exportArray());
-
     }
 
 } 

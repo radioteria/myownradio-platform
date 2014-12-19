@@ -15,7 +15,7 @@ use MVC\Controller;
 class DoLogout extends Controller {
 
     public function doPost() {
-        UsersModel::unAuthorize();
+        UsersModel::logout();
     }
 
 } 

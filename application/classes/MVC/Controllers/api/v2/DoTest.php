@@ -9,20 +9,22 @@
 namespace MVC\Controllers\api\v2;
 
 
-use Model\Objects\User;
 use MVC\Controller;
-use Tools\String;
+use MVC\Services\DB\DBQuery;
+use MVC\Services\JsonResponse;
+
+//use Tools\String;
 
 class DoTest extends Controller {
 
-    public function doGet() {
+    public function doGet(JsonResponse $response) {
 
 
-        $string = new String("Hello, World! Давай, до свиданья!");
+//        $string = new String("Hello, World! Давай, до свиданья!");
 
-        echo $string;
+        $query = DBQuery::getInstance()->selectFrom("r_tracks")->limit(50)->offset(100);
 
-        die();
+        $response->setData(count($query));
 
     }
 

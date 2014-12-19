@@ -25,6 +25,33 @@ class MicroORM extends FilterORM {
     use Singleton;
 
     /**
+     * @param ActiveRecord $object
+     * @return ActiveRecord
+     */
+    public function cloneObject(ActiveRecord $object) {
+
+        $reflection = new \ReflectionClass($object);
+        $beanConfig = $this->getBeanConfig($reflection);
+
+        /** @var \ReflectionClass $copy */
+        $copy = $reflection->newInstanceWithoutConstructor();
+
+
+        foreach ($reflection->getProperties() as $prop) {
+            /** Don't clone primary key value */
+            if ($prop->getName() == $beanConfig["@key"]) {
+                continue;
+            }
+            $prop->setAccessible(true);
+            $value = $prop->getValue($object);
+            $prop->setValue($copy, $value);
+        }
+
+        return $copy;
+
+    }
+
+    /**
      * @param string $bean
      * @param array $data
      * @return object

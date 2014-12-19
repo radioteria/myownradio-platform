@@ -67,10 +67,16 @@ trait ARTools {
         return MicroORM::getInstance()->getFilteredListOfObjects(get_called_class(), $filter, $args, $limit, $offset);
     }
 
+    /**
+     * @return string
+     */
     public function __toString() {
         return json_encode($this->exportArray());
     }
 
+    /**
+     * @return array
+     */
     public function exportArray() {
         $object = [];
         $reflection = new \ReflectionClass($this);
@@ -79,6 +85,13 @@ trait ARTools {
             $object[$property->getName()] = $property->getValue($this);
         }
         return $object;
+    }
+
+    /**
+     * @return $this
+     */
+    public function cloneObject() {
+        return MicroORM::getInstance()->cloneObject($this);
     }
 
 } 

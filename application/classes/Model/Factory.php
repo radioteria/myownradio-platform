@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: roman
+ * UserModel: roman
  * Date: 14.12.14
  * Time: 15:57
  */
@@ -9,7 +9,7 @@
 namespace Model;
 
 
-use Model\ActiveRecords\TrackAR;
+use Model\ActiveRecords\Track;
 use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Config;
@@ -34,7 +34,7 @@ class Factory extends Model {
      * @throws ControllerException
      */
 
-    /** @var User */
+    /** @var UserModel */
     private $user;
 
     function __construct() {
@@ -51,7 +51,7 @@ class Factory extends Model {
 
             $query = $db->getDBQuery()->insertInto("r_streams");
             $query->values([
-                "uid"       => $this->user->getId(),
+                "uid"       => $this->user->getID(),
                 "name"      => $name,
                 "info"      => $info,
                 "hashtags"  => $hashtags,
@@ -77,7 +77,7 @@ class Factory extends Model {
         Database::doInConnection(function (Database $db) use ($id) {
 
             $result = $db->executeUpdate("DELETE FROM r_streams WHERE sid = ? AND uid = ?",
-                [$id, $this->user->getId()]);
+                [$id, $this->user->getID()]);
 
             if ($result === 0) {
                 throw new ControllerException("Stream not found or no permission");
@@ -117,9 +117,9 @@ class Factory extends Model {
 
         $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
 
-        $track = new TrackAR();
+        $track = new Track();
 
-        $track->setUserID($this->user->getId());
+        $track->setUserID($this->user->getID());
         $track->setFileName($file["name"]);
         $track->setExtension($extension);
         $track->setTrackNumber($audioTags["TRACKNUMBER"]->getOrElseEmpty());

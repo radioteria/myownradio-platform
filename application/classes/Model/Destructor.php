@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Roman
+ * UserModel: Roman
  * Date: 16.12.14
  * Time: 17:05
  */
@@ -20,7 +20,7 @@ class Destructor extends Model {
     public function deleteTrack($tracks) {
 
         foreach (explode(",", $tracks) as $track) {
-            (new Track($track))->delete();
+            (new TrackModel($track))->delete();
         }
 
     }

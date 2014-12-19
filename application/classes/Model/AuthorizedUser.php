@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Roman
+ * UserModel: Roman
  * Date: 16.12.14
  * Time: 13:10
  */
@@ -15,7 +15,7 @@ use MVC\Services\HttpSession;
 use MVC\Services\Injectable;
 use Tools\Singleton;
 
-class AuthorizedUser extends User {
+class AuthorizedUser extends UserModel {
 
     use Injectable;
 

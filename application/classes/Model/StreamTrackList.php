@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Roman
+ * UserModel: Roman
  * Date: 15.12.14
  * Time: 11:49
  */
@@ -9,7 +9,7 @@
 namespace Model;
 
 use Model\ActiveRecords\StreamAR;
-use Model\ActiveRecords\StreamTrackAR;
+use Model\ActiveRecords\StreamTrack;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
 use MVC\Services\DB\DBQuery;
@@ -25,7 +25,7 @@ class StreamTrackList extends Model implements \Countable {
 
     private $key;
 
-    /** @var User $user */
+    /** @var UserModel $user */
     private $user;
 
     private $tracks_count;
@@ -59,7 +59,7 @@ class StreamTrackList extends Model implements \Countable {
             $stats = $db->fetchOneRow($query)
                 ->getOrElseThrow(ControllerException::noStream($this->key));
 
-            if (intval($stats["uid"]) !== $this->user->getId()) {
+            if (intval($stats["uid"]) !== $this->user->getID()) {
                 throw ControllerException::noPermission();
             }
 
@@ -127,13 +127,13 @@ class StreamTrackList extends Model implements \Countable {
 
             foreach($tracksToAdd as $track) {
 
-                $trackObject = new Track($track);
+                $trackObject = new TrackModel($track);
                 //$uniqueId = $this->generateUniqueId($db);
 
                 $query = $db->getDBQuery()->insertInto("r_link")
                     ->values([
                         "stream_id"     => $this->key,
-                        "track_id"      => $trackObject->getId(),
+                        "track_id"      => $trackObject->getID(),
                         "t_order"       => ++$initialPosition,
                         "unique_id"     => $uniqueId,
                         "time_offset"   => $initialTimeOffset
@@ -221,7 +221,7 @@ class StreamTrackList extends Model implements \Countable {
 
     /**
      * @param $time
-     * @return \Model\ActiveRecords\StreamTrackAR
+     * @return \Model\ActiveRecords\StreamTrack
      */
     public function getTrackByTime($time) {
 
@@ -251,7 +251,7 @@ class StreamTrackList extends Model implements \Countable {
 
     }
 
-    private function _setCurrentTrack(StreamTrackAR $trackBean, $startFrom = 0, $notify = true) {
+    private function _setCurrentTrack(StreamTrack $trackBean, $startFrom = 0, $notify = true) {
 
         StreamAR::getByID($this->key)
             ->then(function ($stream) use ($trackBean, $startFrom) {

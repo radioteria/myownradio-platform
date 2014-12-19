@@ -341,7 +341,7 @@ class track
         
         if(move_uploaded_file($file['tmp_name'], $temp_track->getDetails()->getOriginalFile()->path()))
         {
-            misc::writeDebug(sprintf("User #%s successfully uploaded track \"%s\"", user::getCurrentUserId(), $file['name']));
+            misc::writeDebug(sprintf("UserModel #%s successfully uploaded track \"%s\"", user::getCurrentUserId(), $file['name']));
             return misc::outputJSON("UPLOAD_SUCCESS", $temp_track->makeArray());
         }
         else

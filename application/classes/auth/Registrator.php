@@ -33,7 +33,7 @@ class Registrator {
         }
 
         if (db::query_single_col("SELECT COUNT(`uid`) FROM `r_users` WHERE `mail` = ?", array($codeArray['email'])) > 0) {
-            throw new morException("User with this email already exists", 3005, null);
+            throw new morException("UserModel with this email already exists", 3005, null);
         }
 
         $inserted = $database->query_update(
@@ -46,7 +46,7 @@ class Registrator {
             self::createUserDirectory($uid);
             return misc::okJSON();
         } else {
-            throw new morException("User could not be registered!", 3006, null);
+            throw new morException("UserModel could not be registered!", 3006, null);
         }
     }
 

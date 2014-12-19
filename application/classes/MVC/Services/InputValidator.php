@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Roman
+ * UserModel: Roman
  * Date: 12.12.14
  * Time: 9:35
  */
@@ -192,7 +192,7 @@ class InputValidator {
         });
 
         return $optional->getOrElseThrow(
-            new ControllerException(sprintf("User with email '%s' already exists", $email))
+            new ControllerException(sprintf("UserModel with email '%s' already exists", $email))
         );
 
     }

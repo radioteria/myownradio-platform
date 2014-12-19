@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Roman
+ * UserModel: Roman
  * Date: 18.12.14
  * Time: 10:47
  */
@@ -12,7 +12,7 @@ namespace Model\ActiveRecords;
  * Class StreamTrackAR
  * @package Model\ActiveRecords
  */
-class StreamTrackAR extends TrackAR {
+class StreamTrack extends Track {
 
     protected $unique_id, $t_order, $time_offset;
 

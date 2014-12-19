@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Roman
+ * UserModel: Roman
  * Date: 16.12.14
  * Time: 13:21
  */
@@ -42,7 +42,7 @@ class Letters {
 
     public static function sendResetPasswordLetter($id) {
 
-        $user = new User($id);
+        $user = new UserModel($id);
 
         $code = base64_encode(json_encode(["login" => $user->getLogin(), "password" => $user->getPassword()]));
 

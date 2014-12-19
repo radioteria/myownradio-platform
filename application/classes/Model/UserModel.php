@@ -2,7 +2,7 @@
 
 namespace Model;
 
-use Model\ActiveRecords\UserAR;
+use Model\ActiveRecords\User;
 use Model\Traits\Stats;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
@@ -10,10 +10,10 @@ use MVC\Services\Injectable;
 use Tools\Singleton;
 
 /**
- * Class User
+ * Class UserModel
  * @package Model
  */
-class User extends Model {
+class UserModel extends Model {
 
     use Stats, Singleton;
 
@@ -22,7 +22,7 @@ class User extends Model {
     private $activePlan;
     private $planExpire;
 
-    /** @var UserAR */
+    /** @var User */
     private $userBean;
 
     // todo: Unbox this bean ^^
@@ -34,14 +34,14 @@ class User extends Model {
 
             $id = func_get_arg(0);
 
-            $this->userBean = UserAR::getByID($id)->getOrElseThrow(
+            $this->userBean = User::getByID($id)->getOrElseThrow(
                     new ControllerException(sprintf("User with id '%s' not exists", $id)));
 
         } elseif (func_num_args() == 1) {
 
             $key = func_get_arg(0);
 
-            $this->userBean = UserAR::getByFilter("FIND_BY_KEY_PARAMS", [":id" => $key])
+            $this->userBean = User::getByFilter("FIND_BY_KEY_PARAMS", [":id" => $key])
                 ->getOrElseThrow(
                     new ControllerException(sprintf("User with login or email '%s' not exists", $key))
                 );
@@ -51,7 +51,7 @@ class User extends Model {
             $login = func_get_arg(0);
             $password = func_get_arg(1);
 
-            $this->userBean = UserAR::getByFilter("FIND_BY_CREDENTIALS", [$login, $password])
+            $this->userBean = User::getByFilter("FIND_BY_CREDENTIALS", [$login, $password])
                 ->getOrElseThrow(ControllerException::noPermission());
 
         } else {
@@ -60,7 +60,21 @@ class User extends Model {
 
         }
 
-        $active = Database::doInConnection(function (Database $db) {
+        $active = $this->readActivePlan();
+
+        $this->activePlan   = intval($active["plan"]);
+        $this->planExpire   = intval($active["expire"]);
+
+        $this->loadStats();
+
+    }
+
+    /**
+     * @return mixed
+     */
+    private function readActivePlan() {
+
+        return Database::doInConnection(function (Database $db) {
 
             $query = $db->getDBQuery()->selectFrom("r_subscriptions");
             $query->select("*");
@@ -73,19 +87,6 @@ class User extends Model {
                 ->getOrElse(["plan" => 0, "expire" => null]);
 
         });
-
-
-/*        $this->userID       = intval($user['uid']);
-        $this->userLogin    = $user['login'];
-        $this->userName     = $user['name'];
-        $this->userEmail    = $user['mail'];
-        $this->userInfo     = $user['info'];
-        $this->userPassword = $user["password"];*/
-
-        $this->activePlan   = intval($active["plan"]);
-        $this->planExpire   = intval($active["expire"]);
-
-        $this->loadStats();
 
     }
 
@@ -110,7 +111,7 @@ class User extends Model {
         return Plan::getInstance($this->activePlan);
     }
 
-    public function getId() {
+    public function getID() {
         return $this->userBean->getID();
     }
     
@@ -175,7 +176,7 @@ class User extends Model {
     }
 
     /**
-     * @return mixed|UserAR
+     * @return mixed|User
      */
     public function getBean() {
         return $this->userBean;

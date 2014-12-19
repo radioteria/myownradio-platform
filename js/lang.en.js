@@ -65,7 +65,7 @@ var lang = {
         'ERROR_WRONG_PERMISSION'        : "No access to this object"
     },
     'user' : {
-        'SESSION_LOGIN_SUCCESS'         : "User successfully logged in by session",
+        'SESSION_LOGIN_SUCCESS'         : "UserModel successfully logged in by session",
         'SESSION_LOGIN_FAILED'          : "Unable to login by session. Incorrect login or password",
         
         'LOGIN_SUCCESS'                 : "Successfully logged in",
@@ -73,10 +73,10 @@ var lang = {
         
         'REG_MESSAGE_SENT'              : "Registration letter sent.",
         'REG_MESSAGE_DIDNT_SEND'        : "Registration letter wasn't sent.",
-        'REG_ERROR_EMAIL_EXISTS'        : "User with this email already exists.",
+        'REG_ERROR_EMAIL_EXISTS'        : "UserModel with this email already exists.",
         'REG_ERROR_INCORRECT_EMAIL'     : "Email has incorrect format. Retype it.",
         'REG_ERROR_NOT_ENOUTH_PARAMS'   : "Not all fields was filled correctly.",
-        'REG_ERROR_USER_EXISTS'         : "Registration error. User already exists.",
+        'REG_ERROR_USER_EXISTS'         : "Registration error. UserModel already exists.",
         'REG_COMPLETE'                  : "Registration successfully completed.",
         'REG_ERROR_PASSWORDS_MISMATCH'  : "Passwords mismatch.",
         'REG_ERROR_SHORT_LOGIN'         : "Minimal length of login is 3 symbols",
@@ -87,7 +87,7 @@ var lang = {
     },
     'track' : {
         'UPDATE_ERROR_TRACK_NOT_EXISTS' : "Can't update info. File not exists.",
-        'UPDATE_ERROR_NOT_OWNER'        : "Can't update info. User isn't owner of this file.",
+        'UPDATE_ERROR_NOT_OWNER'        : "Can't update info. UserModel isn't owner of this file.",
         'UPDATE_SUCCESS'                : "Information updated successfully.",
         'UPDATE_NOT_MODIFIED'           : "Information wasn't changed.",
         

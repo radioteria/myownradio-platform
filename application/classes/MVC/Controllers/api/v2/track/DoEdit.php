@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Roman
+ * UserModel: Roman
  * Date: 16.12.14
  * Time: 16:34
  */
@@ -9,7 +9,7 @@
 namespace MVC\Controllers\api\v2\track;
 
 
-use Model\Track;
+use Model\TrackModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -29,7 +29,7 @@ class DoEdit extends Controller {
 
         $color   = $post->getParameter("color")->getOrElse(0);
 
-        $track = Track::getInstance($id);
+        $track = TrackModel::getInstance($id);
 
         $track->edit($artist, $title, $album, $trackNR, $genre, $date, $color);
 

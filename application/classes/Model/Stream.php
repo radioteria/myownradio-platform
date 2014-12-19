@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: roman
+ * UserModel: roman
  * Date: 14.12.14
  * Time: 16:06
  */
@@ -45,7 +45,7 @@ class Stream extends Model {
     protected $cover;
     protected $created;
 
-    /** @var User $user */
+    /** @var UserModel $user */
     protected $user;
 
     public function __construct($id) {

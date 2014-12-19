@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Roman
+ * UserModel: Roman
  * Date: 15.12.14
  * Time: 9:32
  */
@@ -9,7 +9,7 @@
 namespace Model;
 
 
-use Model\ActiveRecords\UserAR;
+use Model\ActiveRecords\User;
 use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Config;
@@ -23,7 +23,7 @@ class Users {
     /**
      * @param string $login
      * @param string $password
-     * @return User
+     * @return UserModel
      */
     public static function authorizeByLoginPassword($login, $password) {
 
@@ -44,7 +44,7 @@ class Users {
 
         $session->set("TOKEN", $token);
 
-        return User::getInstance($user["uid"]);
+        return UserModel::getInstance($user["uid"]);
 
     }
 
@@ -120,7 +120,7 @@ class Users {
 
         $session->set("TOKEN", $token);
 
-        return User::getInstance();
+        return UserModel::getInstance();
 
     }
 
@@ -131,14 +131,14 @@ class Users {
      * @param $name
      * @param $info
      * @param $permalink
-     * @return User
+     * @return UserModel
      */
     public static function completeRegistration($code, $login, $password, $name, $info, $permalink) {
 
         $email = self::parseRegistrationCode($code);
         $md5Password = md5($login . $password);
 
-        $newUser = new UserAR();
+        $newUser = new User();
 
         $newUser->setEmail($email);
         $newUser->setLogin($login);
@@ -153,7 +153,7 @@ class Users {
 
         self::createUserDirectory($newUser->getID());
 
-        return new User($newUser->getID());
+        return new UserModel($newUser->getID());
 
     }
 
@@ -165,7 +165,7 @@ class Users {
 
         $credentials = self::parseResetPasswordCode($code);
 
-        $user = new User($credentials["login"], $credentials["password"]);
+        $user = new UserModel($credentials["login"], $credentials["password"]);
 
         $user->changePassword($password);
 

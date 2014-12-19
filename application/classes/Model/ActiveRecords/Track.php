@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Roman
+ * UserModel: Roman
  * Date: 18.12.14
  * Time: 9:01
  */
@@ -13,12 +13,11 @@ use Tools\Folders;
  * @table r_tracks
  * @key tid
  */
-class TrackAR implements ActiveRecord {
+class Track implements ActiveRecord {
 
     use ARTools;
 
-    protected
-        $tid, $uid, $filename, $ext,
+    protected $tid, $uid, $filename, $ext,
         $artist, $title, $album,
         $track_number, $genre, $date,
         $duration, $filesize, $color,
@@ -51,11 +50,11 @@ class TrackAR implements ActiveRecord {
         return $this->ext;
     }
 
-    public function getFilename() {
+    public function getFileName() {
         return $this->filename;
     }
 
-    public function getFilesize() {
+    public function getFileSize() {
         return $this->filesize;
     }
 

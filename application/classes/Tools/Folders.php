@@ -2,7 +2,7 @@
 
 namespace Tools;
 
-use Model\ActiveRecords\TrackAR;
+use Model\ActiveRecords\Track;
 use MVC\Services\Injectable;
 
 class Folders {
@@ -50,10 +50,10 @@ class Folders {
     }
 
     /**
-     * @param TrackAR $track
+     * @param Track $track
      * @return string
      */
-    function getRealTrackPath(TrackAR $track) {
+    function getRealTrackPath(Track $track) {
         return sprintf("%s/a_%03d_original.%s",
             $this->getUserContentFolder($track->getUserID()),
             $track->getID(),

@@ -2,7 +2,7 @@
 
 /**
  * Created by PhpStorm.
- * User: Roman
+ * UserModel: Roman
  * Date: 03.12.14
  * Time: 10:02
  */

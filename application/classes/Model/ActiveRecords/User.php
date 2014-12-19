@@ -1,7 +1,7 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Roman
+ * UserModel: Roman
  * Date: 18.12.14
  * Time: 14:48
  */
@@ -9,7 +9,7 @@
 namespace Model\ActiveRecords;
 
 /**
- * Class UserAR
+ * Class User
  * @package Model\ActiveRecords
  * @table r_users
  * @key uid
@@ -17,7 +17,7 @@ namespace Model\ActiveRecords;
  * @do_FIND_BY_KEY_PARAMS login = :key OR mail = :key
  * @do_FIND_BY_CREDENTIALS login = ? AND password = ?
  */
-class UserAR implements ActiveRecord {
+class User implements ActiveRecord {
 
     use ARTools;
 

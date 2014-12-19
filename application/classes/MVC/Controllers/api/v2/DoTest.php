@@ -19,9 +19,8 @@ class DoTest extends Controller {
 
         /** @var UserAR $user */
         $user = UserAR::getByID(1)->getOrElseNull();
-        $clone = $user->cloneObject();
 
-        $response->setData($clone->exportArray());
+        $response->setData($user->exportArray());
 
     }
 

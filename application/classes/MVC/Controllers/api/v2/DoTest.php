@@ -10,17 +10,23 @@ namespace MVC\Controllers\api\v2;
 
 
 use Model\ActiveRecords\User;
+use Model\AuthUserModel;
+use Model\UserModel;
+use Model\Users;
 use MVC\Controller;
 use MVC\Services\JsonResponse;
+use Tools\String;
 
 class DoTest extends Controller {
 
-    public function doGet(JsonResponse $response) {
+    public function doGet() {
 
-        /** @var User $user */
-        $user = User::getByID(1)->getOrElseNull();
 
-        $response->setData($user->exportArray());
+        $string = new String("Hello, World! Давай, до свиданья!");
+
+        echo $string;
+
+        die();
 
     }
 

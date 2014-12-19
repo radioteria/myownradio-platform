@@ -12,7 +12,7 @@ namespace Model\ActiveRecords;
 use MVC\MicroORM;
 use Tools\Optional;
 
-trait ARTools {
+trait ActiveRecordObject {
 
     public function save() {
         return MicroORM::getInstance()->saveObject($this);

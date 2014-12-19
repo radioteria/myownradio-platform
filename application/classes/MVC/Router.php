@@ -83,6 +83,8 @@ class Router {
         // Create instance of desired controller
         $classInstance = call_user_func([$reflection, "newInstance"]);
 
+        unset($params, $request);
+
         // Execute controller
         call_user_func_array([$classInstance, $method], $dependencies);
 

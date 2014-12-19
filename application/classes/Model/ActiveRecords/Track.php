@@ -15,7 +15,7 @@ use Tools\Folders;
  */
 class Track implements ActiveRecord {
 
-    use ARTools;
+    use ActiveRecordObject;
 
     protected $tid, $uid, $filename, $ext,
         $artist, $title, $album,

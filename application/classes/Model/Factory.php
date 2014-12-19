@@ -38,7 +38,7 @@ class Factory extends Model {
     private $user;
 
     function __construct() {
-        $this->user = AuthorizedUser::getInstance();
+        $this->user = AuthUserModel::getInstance();
     }
 
 

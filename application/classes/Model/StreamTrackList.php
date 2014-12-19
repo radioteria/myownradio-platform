@@ -8,8 +8,10 @@
 
 namespace Model;
 
+use Model\ActiveRecords\Link;
 use Model\ActiveRecords\StreamAR;
 use Model\ActiveRecords\StreamTrack;
+use Model\ActiveRecords\Track;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
 use MVC\Services\DB\DBQuery;
@@ -38,7 +40,7 @@ class StreamTrackList extends Model implements \Countable {
 
     public function __construct($id) {
         parent::__construct();
-        $this->user = AuthorizedUser::getInstance();
+        $this->user = AuthUserModel::getInstance();
         $this->key = $id;
         $this->reload();
     }
@@ -123,28 +125,33 @@ class StreamTrackList extends Model implements \Countable {
             $initialPosition = $this->tracks_count;
             $initialTimeOffset = $this->tracks_duration;
 
-            $pool = new DBQueryPool();
-
             foreach($tracksToAdd as $track) {
 
-                $trackObject = new TrackModel($track);
-                //$uniqueId = $this->generateUniqueId($db);
+                Track::getByID($track)
+                    ->then(function ($trackObject) use (&$initialPosition, &$initialTimeOffset) {
 
-                $query = $db->getDBQuery()->insertInto("r_link")
-                    ->values([
-                        "stream_id"     => $this->key,
-                        "track_id"      => $trackObject->getID(),
-                        "t_order"       => ++$initialPosition,
-                        "unique_id"     => $uniqueId,
-                        "time_offset"   => $initialTimeOffset
-                    ]);
+                        /** @var Track $trackObject */
 
-                $db->executeInsert($query);
+                        // Skip foreign tracks
+                        if ($trackObject->getUserID() != $this->user->getID()) return;
 
-                $initialTimeOffset += $trackObject->getDuration();
+                        $uniqueID = $this->generateUniqueId();
+
+                        $linker = new Link();
+
+                        $linker->setStreamID($this->key);
+                        $linker->setTrackID($trackObject->getID());
+                        $linker->setTrackOrder(++$initialPosition);
+                        $linker->setUniqueID($uniqueID);
+                        $linker->setTimeOffset($initialTimeOffset);
+
+                        $linker->save();
+
+                        $initialTimeOffset += $trackObject->getDuration();
+
+                    });
 
             }
-
 
         });
 
@@ -322,7 +329,7 @@ class StreamTrackList extends Model implements \Countable {
             $query->limit(1);
             $query->where($filter, $args);
 
-            return $db->fetchOneObject($query, null, "Model\\ActiveRecords\\StreamTrackAR");
+            return $db->fetchOneObject($query, null, "Model\\ActiveRecords\\StreamTrack");
 
         });
 
@@ -340,7 +347,7 @@ class StreamTrackList extends Model implements \Countable {
             $query->limit(1);
             $query->where("b.stream_id", $this->key);
 
-            return $db->fetchOneObject($query, null, "Model\\ActiveRecords\\StreamTrackAR");
+            return $db->fetchOneObject($query, null, "Model\\ActiveRecords\\StreamTrack");
 
         });
 

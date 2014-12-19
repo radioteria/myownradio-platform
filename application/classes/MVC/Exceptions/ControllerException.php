@@ -18,12 +18,20 @@ class ControllerException extends \Exception {
         $this->myData = $data;
     }
 
+    public static function noBasis($id) {
+        return new self(sprintf("No payment basis with key '%s' found", $id));
+    }
+
     public function getMyData() {
         return $this->myData;
     }
 
     public function getMyMessage() {
         return $this->myMessage;
+    }
+
+    public static function wrongLogin() {
+        return new self("Incorrect login or password");
     }
 
     public static function noArgument($name) {

@@ -19,7 +19,7 @@ namespace Model\ActiveRecords;
  */
 class User implements ActiveRecord {
 
-    use ARTools;
+    use ActiveRecordObject;
 
     protected
         $uid, $mail, $login, $password,

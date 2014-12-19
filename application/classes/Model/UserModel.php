@@ -2,6 +2,7 @@
 
 namespace Model;
 
+use Model\ActiveRecords\Subscription;
 use Model\ActiveRecords\User;
 use Model\Traits\Stats;
 use MVC\Exceptions\ControllerException;
@@ -23,9 +24,8 @@ class UserModel extends Model {
     private $planExpire;
 
     /** @var User */
-    private $userBean;
+    private $user;
 
-    // todo: Unbox this bean ^^
     public function __construct() {
 
         parent::__construct();
@@ -34,14 +34,14 @@ class UserModel extends Model {
 
             $id = func_get_arg(0);
 
-            $this->userBean = User::getByID($id)->getOrElseThrow(
+            $this->user = User::getByID($id)->getOrElseThrow(
                     new ControllerException(sprintf("User with id '%s' not exists", $id)));
 
         } elseif (func_num_args() == 1) {
 
             $key = func_get_arg(0);
 
-            $this->userBean = User::getByFilter("FIND_BY_KEY_PARAMS", [":id" => $key])
+            $this->user = User::getByFilter("FIND_BY_KEY_PARAMS", [":id" => $key])
                 ->getOrElseThrow(
                     new ControllerException(sprintf("User with login or email '%s' not exists", $key))
                 );
@@ -51,8 +51,8 @@ class UserModel extends Model {
             $login = func_get_arg(0);
             $password = func_get_arg(1);
 
-            $this->userBean = User::getByFilter("FIND_BY_CREDENTIALS", [$login, $password])
-                ->getOrElseThrow(ControllerException::noPermission());
+            $this->user = User::getByFilter("FIND_BY_CREDENTIALS", [$login, $password])
+                ->getOrElseThrow(ControllerException::wrongLogin());
 
         } else {
 
@@ -78,7 +78,7 @@ class UserModel extends Model {
 
             $query = $db->getDBQuery()->selectFrom("r_subscriptions");
             $query->select("*");
-            $query->where("uid", $this->userBean->getID());
+            $query->where("uid", $this->user->getID());
             $query->where("expire > UNIX_TIMESTAMP(NOW())");
             $query->addOrderBy("id DESC");
             $query->limit(1);
@@ -105,26 +105,26 @@ class UserModel extends Model {
     }
 
     /**
-     * @return Plan
+     * @return PlanModel
      */
     public function getActivePlan() {
-        return Plan::getInstance($this->activePlan);
+        return PlanModel::getInstance($this->activePlan);
     }
 
     public function getID() {
-        return $this->userBean->getID();
+        return $this->user->getID();
     }
     
     public function getLogin() {
-        return $this->userBean->getLogin();
+        return $this->user->getLogin();
     }
     
     public function getEmail() {
-        return $this->userBean->getEmail();
+        return $this->user->getEmail();
     }
 
     public function getName() {
-        return $this->userBean->getName();
+        return $this->user->getName();
     }
 
 
@@ -132,40 +132,18 @@ class UserModel extends Model {
 
         $newPassword = md5($this->getLogin() . $password);
 
-        $this->userBean->setPassword($newPassword)->save();
+        $this->user->setPassword($newPassword)->save();
 
     }
 
-    /**
-     * @param mixed $email
-     * @return self
-     */
-    public function setUserEmail($email) {
-        $this->userBean->setEmail($email);
-        return $this;
-    }
+    public function changeActivePlan(PlanModel $plan, BasisModel $basis) {
 
-    /**
-     * @param mixed $name
-     * @return self
-     */
-    public function setName($name) {
-        $this->userBean->setName($name);
-        return $this;
-    }
-
-    /**
-     * @param mixed $info
-     * @return self
-     */
-    public function setInfo($info) {
-        $this->userBean->setInfo($info);
-        return $this;
-    }
-
-    public function update() {
-
-        $this->userBean->save();
+        $object = new Subscription();
+        $object->setUserID($this->getID());
+        $object->setPlan($plan->getID());
+        $object->setPaymentInfo($basis->getInfo());
+        $object->setExpire(time() + $basis->getDuration());
+        $object->save();
 
     }
 
@@ -174,13 +152,5 @@ class UserModel extends Model {
         return empty($this->getName()) ? $this->getLogin() : $this->getName();
 
     }
-
-    /**
-     * @return mixed|User
-     */
-    public function getBean() {
-        return $this->userBean;
-    }
-
 
 }

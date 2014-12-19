@@ -19,7 +19,7 @@ namespace Model\ActiveRecords;
  */
 class StreamAR implements ActiveRecord {
 
-    use ARTools;
+    use ActiveRecordObject;
 
     protected $sid, $uid, $name, $permalink,
         $info, $status, $started, $started_from,

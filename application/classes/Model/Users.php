@@ -28,23 +28,19 @@ class Users {
     public static function authorizeByLoginPassword($login, $password) {
 
         $session = HttpSession::getInstance();
+        $md5Password = md5($login . $password);
 
-        $user = Database::doInConnection(function (Database $db) use ($login, $password) {
-
-            return $db->fetchOneRow("SELECT * FROM r_users WHERE login = ? AND password = ?",
-                [$login, md5($login . $password)])->getOrElseThrow(ControllerException::noPermission());
-
-        });
+        $user = new UserModel($login, $md5Password);
 
         $clientAddress = HttpRequest::getInstance()->getRemoteAddress();
         $clientUserAgent = HttpRequest::getInstance()->getHttpUserAgent()->getOrElse("None");
 
-        $token = self::createToken($user["uid"], $clientAddress, $clientUserAgent,
+        $token = self::createToken($user->getID(), $clientAddress, $clientUserAgent,
             $session->getSessionId());
 
         $session->set("TOKEN", $token);
 
-        return UserModel::getInstance($user["uid"]);
+        return UserModel::getInstance($user->getID());
 
     }
 
@@ -60,7 +56,7 @@ class Users {
         $token = Database::doInConnection(function (Database $db) use ($userId, $clientAddress, $clientUserAgent, $sessionId) {
 
             do { $token = md5($userId . $clientAddress . rand(1, 1000000) . "tokenizer" . time()); }
-            while ($db->fetchOneColumn("SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->getOrElse(0) > 0);
+            while ($db->fetchOneColumn("SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->get() > 0);
 
             $query = $db->getDBQuery()->insertInto("r_sessions");
             $query->values("uid", $userId);
@@ -73,7 +69,6 @@ class Users {
             $query->values("expires = NOW() + INTERVAL 1 YEAR");
 
             $db->executeInsert($query);
-            $db->commit();
 
             return $token;
 

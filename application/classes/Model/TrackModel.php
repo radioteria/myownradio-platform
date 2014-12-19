@@ -30,7 +30,7 @@ class TrackModel extends Model {
 
         parent::__construct();
 
-        $this->user = AuthorizedUser::getInstance();
+        $this->user = AuthUserModel::getInstance();
         $this->key = $id;
         $this->reload();
 

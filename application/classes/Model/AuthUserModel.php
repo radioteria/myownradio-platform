@@ -15,7 +15,7 @@ use MVC\Services\HttpSession;
 use MVC\Services\Injectable;
 use Tools\Singleton;
 
-class AuthorizedUser extends UserModel {
+class AuthUserModel extends UserModel {
 
     use Injectable;
 

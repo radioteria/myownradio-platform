@@ -50,7 +50,7 @@ class Stream extends Model {
 
     public function __construct($id) {
         parent::__construct();
-        $this->user = AuthorizedUser::getInstance();
+        $this->user = AuthUserModel::getInstance();
         $this->key = $id;
         $this->load();
     }

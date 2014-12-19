@@ -9,14 +9,14 @@
 namespace MVC\Controllers\api\v2\self;
 
 
-use Model\AuthorizedUser;
+use Model\AuthUserModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
 use MVC\Services\InputValidator;
 
 class DoModifyProfile extends Controller {
-    public function doPost(HttpPost $post, AuthorizedUser $user, InputValidator $validator) {
+    public function doPost(HttpPost $post, AuthUserModel $user, InputValidator $validator) {
         $name = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));
         $info = $post->getParameter("info")->getOrElseThrow(ControllerException::noArgument("info"));
         $email = $post->getParameter("email")->getOrElseThrow(ControllerException::noArgument("email"));

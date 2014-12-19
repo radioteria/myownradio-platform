@@ -13,14 +13,20 @@ use Model\StreamTrackListModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
+use MVC\Services\JsonResponse;
 
 class DoPlayPrevious extends Controller {
 
-    public function doPost(HttpPost $post) {
+    public function doPost(HttpPost $post, JsonResponse $response) {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
 
         StreamTrackListModel::getInstance($id)->scPlayPrevious();
+
+        $track = StreamTrackListModel::getInstance($id)->getPlayingTrack()->getOrElseNull();
+
+        $response->setData($track->exportArray());
+
     }
 
 } 

@@ -6,7 +6,7 @@
  * Time: 17:22
  */
 
-namespace MVC\Controllers\api\v2\control;
+namespace MVC\Controllers\api\v2\stream;
 
 
 use Model\Stream;
@@ -17,6 +17,7 @@ use MVC\Services\JsonResponse;
 use MVC\Services\InputValidator;
 
 class DoModify extends Controller {
+
     public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response) {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));

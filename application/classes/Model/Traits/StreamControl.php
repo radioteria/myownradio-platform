@@ -8,7 +8,9 @@
 
 namespace Model\Traits;
 
+use Model\ActiveRecords\StreamAR;
 use Model\ActiveRecords\StreamTrack;
+use Tools\System;
 
 /**
  * Class StreamControl
@@ -63,6 +65,36 @@ trait StreamControl {
             ->then(function ($track) {
                 $this->_setCurrentTrack($track, 0, true);
             });
+
+    }
+
+    public function scStop() {
+
+        StreamAR::getByID($this->key)
+            ->then(function ($stream) {
+                /** @var StreamAR $stream */
+                $stream->setStartedFrom(null);
+                $stream->setStarted(null);
+                $stream->setStatus(0);
+                $stream->save();
+            });
+
+        $this->notifyStreamers();
+
+    }
+
+    public function scPlay() {
+
+        StreamAR::getByID($this->key)
+            ->then(function ($stream) {
+                /** @var StreamAR $stream */
+                $stream->setStartedFrom(0);
+                $stream->setStarted(System::time());
+                $stream->setStatus(1);
+                $stream->save();
+            });
+
+        $this->notifyStreamers();
 
     }
 

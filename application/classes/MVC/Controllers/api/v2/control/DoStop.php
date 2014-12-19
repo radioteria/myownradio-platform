@@ -1,12 +1,12 @@
 <?php
 /**
  * Created by PhpStorm.
- * UserModel: Roman
- * Date: 15.12.14
- * Time: 15:39
+ * User: Roman
+ * Date: 19.12.14
+ * Time: 16:30
  */
 
-namespace MVC\Controllers\api\v2\stream;
+namespace MVC\Controllers\api\v2\control;
 
 
 use Model\StreamTrackListModel;
@@ -14,13 +14,13 @@ use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
 
-class DoShuffle extends Controller {
+class DoStop extends Controller {
 
     public function doPost(HttpPost $post) {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
 
-        StreamTrackListModel::getInstance($id)->shuffleTracks();
+        StreamTrackListModel::getInstance($id)->scStop();
 
     }
 

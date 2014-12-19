@@ -8,6 +8,7 @@ use Model\Traits\Stats;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
 use MVC\Services\Injectable;
+use MVC\Services\InputValidator;
 use Tools\Singleton;
 
 /**
@@ -149,6 +150,20 @@ class UserModel extends Model {
     public function getDisplayName() {
 
         return empty($this->getName()) ? $this->getLogin() : $this->getName();
+
+    }
+
+    public function edit($name, $info, $email) {
+
+        $validator = InputValidator::getInstance();
+
+        $validator->validateEmail($email);
+
+        $this->user->setName($name);
+        $this->user->setInfo($info);
+        $this->user->setEmail($email);
+
+        $this->user->save();
 
     }
 

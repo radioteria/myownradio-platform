@@ -195,7 +195,6 @@ class StreamTrackListModel extends Model implements \Countable {
 
             Database::doInConnection(function (Database $db) {
                 $db->executeUpdate("CALL PShuffleStream(?)", [$this->key]);
-                $db->commit();
             });
 
         });
@@ -274,7 +273,7 @@ class StreamTrackListModel extends Model implements \Countable {
      * @param int|null $time
      * @return Optional
      */
-    protected function getPlayingTrack($time = null) {
+    public function getPlayingTrack($time = null) {
 
         $position = $this->getStreamPosition($time)->getOrElseNull();
 
@@ -291,7 +290,7 @@ class StreamTrackListModel extends Model implements \Countable {
      * @param int $startFrom
      * @param bool $notify
      */
-    private function _setCurrentTrack(StreamTrack $trackBean, $startFrom = 0, $notify = true) {
+    protected function _setCurrentTrack(StreamTrack $trackBean, $startFrom = 0, $notify = true) {
 
         StreamAR::getByID($this->key)
             ->then(function ($stream) use ($trackBean, $startFrom) {
@@ -308,6 +307,8 @@ class StreamTrackListModel extends Model implements \Countable {
         }
 
     }
+
+
 
     /**
      * @param $uniqueID
@@ -390,7 +391,7 @@ class StreamTrackListModel extends Model implements \Countable {
 
     }
 
-    private function notifyStreamers() {
+    public function notifyStreamers() {
         self::notifyAllStreamers($this->key);
     }
 

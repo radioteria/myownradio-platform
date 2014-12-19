@@ -6,7 +6,7 @@
  * Time: 16:47
  */
 
-namespace MVC\Controllers\api\v2\control;
+namespace MVC\Controllers\api\v2\stream;
 
 
 use Model\Factory;

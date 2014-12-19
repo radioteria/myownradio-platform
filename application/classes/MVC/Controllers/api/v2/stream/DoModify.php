@@ -9,12 +9,12 @@
 namespace MVC\Controllers\api\v2\stream;
 
 
-use Model\Stream;
+use Model\StreamModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
-use MVC\Services\JsonResponse;
 use MVC\Services\InputValidator;
+use MVC\Services\JsonResponse;
 
 class DoModify extends Controller {
 
@@ -30,7 +30,7 @@ class DoModify extends Controller {
         $validator->validateStreamName($name);
         $validator->validateStreamPermalink($permalink, $id);
 
-        $stream = Stream::getInstance($id);
+        $stream = StreamModel::getInstance($id);
 
         $stream->setName($name);
         $stream->setInfo($info);

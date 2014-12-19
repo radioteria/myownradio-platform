@@ -9,7 +9,7 @@
 namespace MVC\Controllers\api\v2\control;
 
 
-use Model\StreamTrackListModel;
+use Model\PlaylistModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -21,9 +21,9 @@ class DoPlayRandom extends Controller {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
 
-        StreamTrackListModel::getInstance($id)->scPlayRandom();
+        PlaylistModel::getInstance($id)->scPlayRandom();
 
-        $track = StreamTrackListModel::getInstance($id)->getPlayingTrack()->getOrElseNull();
+        $track = PlaylistModel::getInstance($id)->getPlayingTrack()->getOrElseNull();
 
         $response->setData($track->exportArray());
 

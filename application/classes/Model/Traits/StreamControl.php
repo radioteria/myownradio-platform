@@ -8,8 +8,8 @@
 
 namespace Model\Traits;
 
-use Model\ActiveRecords\StreamAR;
-use Model\ActiveRecords\StreamTrack;
+use Objects\Playlist;
+use Objects\Stream;
 use Tools\System;
 
 /**
@@ -20,13 +20,13 @@ trait StreamControl {
 
     public function scPlayNext() {
 
-        $this->getPlayingTrack()->then(function (StreamTrack $track) {
+        $this->getPlayingTrack()->then(function (Playlist $track) {
 
             $next = ($track->getTrackOrder() + 1) % count($this);
 
             $this->_getPlaylistTrack("b.t_order = ? AND b.stream_id = ?", [$next, $this->key])
 
-                ->then(function (StreamTrack $track) {
+                ->then(function (Playlist $track) {
 
                     $this->_setCurrentTrack($track, 0, true);
 
@@ -39,7 +39,7 @@ trait StreamControl {
 
     public function scPlayPrevious() {
 
-        $this->getPlayingTrack()->then(function (StreamTrack $track) {
+        $this->getPlayingTrack()->then(function (Playlist $track) {
 
             if ($track->getTrackOrder() < 2) {
                 $prev = count($this);
@@ -49,7 +49,7 @@ trait StreamControl {
 
             $this->_getPlaylistTrack("b.t_order = ? AND b.stream_id = ?", [$prev, $this->key])
 
-                ->then(function (StreamTrack $track) {
+                ->then(function (Playlist $track) {
 
                     $this->_setCurrentTrack($track, 0, true);
 
@@ -70,9 +70,9 @@ trait StreamControl {
 
     public function scStop() {
 
-        StreamAR::getByID($this->key)
+        Stream::getByID($this->key)
             ->then(function ($stream) {
-                /** @var StreamAR $stream */
+                /** @var Stream $stream */
                 $stream->setStartedFrom(null);
                 $stream->setStarted(null);
                 $stream->setStatus(0);
@@ -85,9 +85,9 @@ trait StreamControl {
 
     public function scPlay() {
 
-        StreamAR::getByID($this->key)
+        Stream::getByID($this->key)
             ->then(function ($stream) {
-                /** @var StreamAR $stream */
+                /** @var Stream $stream */
                 $stream->setStartedFrom(0);
                 $stream->setStarted(System::time());
                 $stream->setStatus(1);

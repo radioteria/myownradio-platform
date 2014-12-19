@@ -9,7 +9,7 @@
 namespace MVC\Controllers\api\v2\stream;
 
 
-use Model\StreamTrackListModel;
+use Model\PlaylistModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -20,7 +20,7 @@ class DoShuffle extends Controller {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
 
-        StreamTrackListModel::getInstance($id)->shuffleTracks();
+        PlaylistModel::getInstance($id)->shuffleTracks();
 
     }
 

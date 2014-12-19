@@ -9,11 +9,12 @@
 namespace MVC\Controllers\api\v2\control;
 
 
-use Model\StreamTrackListModel;
+use Model\PlaylistModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
 use MVC\Services\JsonResponse;
+use Tools\System;
 
 class DoPlayNext extends Controller {
 
@@ -21,12 +22,11 @@ class DoPlayNext extends Controller {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
 
-        StreamTrackListModel::getInstance($id)->scPlayNext();
+        PlaylistModel::getInstance($id)->scPlayNext();
 
-        $track = StreamTrackListModel::getInstance($id)->getPlayingTrack()->getOrElseNull();
+        $track = PlaylistModel::getInstance($id)->getPlayingTrack(System::realTime())->getOrElseNull();
 
         $response->setData($track->exportArray());
-
 
     }
 

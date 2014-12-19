@@ -9,7 +9,7 @@
 namespace MVC\Controllers\api\v2\stream;
 
 
-use Model\StreamTrackListModel;
+use Model\PlaylistModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -22,7 +22,7 @@ class DoMoveTrack extends Controller {
         $uniqueId  = $post->getParameter("unique_id")->getOrElseThrow(ControllerException::noArgument("unique_id"));
         $index     = $post->getParameter("new_index")->getOrElseThrow(ControllerException::noArgument("new_index"));
 
-        StreamTrackListModel::getInstance($id)->moveTrack($uniqueId, $index);
+        PlaylistModel::getInstance($id)->moveTrack($uniqueId, $index);
 
     }
 

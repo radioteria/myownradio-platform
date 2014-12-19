@@ -9,9 +9,8 @@
 namespace Model;
 
 
-use Model\ActiveRecords\Plan;
 use MVC\Exceptions\ControllerException;
-use MVC\Services\Database;
+use Objects\Plan;
 use Tools\Singleton;
 
 class PlanModel extends Model {

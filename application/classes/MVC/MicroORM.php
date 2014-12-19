@@ -9,10 +9,10 @@
 namespace MVC;
 
 
-use Model\ActiveRecords\ActiveRecord;
 use MVC\Exceptions\ORMException;
 use MVC\Services\Database;
 use MVC\Services\DB\Query\SelectQuery;
+use Objects\ActiveRecord;
 use Tools\Optional;
 use Tools\Singleton;
 

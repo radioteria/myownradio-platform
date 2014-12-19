@@ -9,7 +9,7 @@
 namespace MVC\Controllers\api\v2\stream;
 
 
-use Model\StreamTrackListModel;
+use Model\PlaylistModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -23,7 +23,7 @@ class DoAddTracks extends Controller {
 
         $validator->validateTracksList($tracks);
 
-        StreamTrackListModel::getInstance($id)->addTracks($tracks);
+        PlaylistModel::getInstance($id)->addTracks($tracks);
 
     }
 } 

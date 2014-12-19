@@ -9,7 +9,7 @@
 namespace MVC\Controllers\api\v2\self;
 
 
-use Model\Users;
+use Model\UsersModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -31,7 +31,7 @@ class DoSignUpComplete extends Controller {
         $validator->validateLogin($login);
         $validator->validateUserPermalink($permalink);
 
-        Users::completeRegistration($code, $login, $password, $name, $info, $permalink);
+        UsersModel::completeRegistration($code, $login, $password, $name, $info, $permalink);
 
     }
 

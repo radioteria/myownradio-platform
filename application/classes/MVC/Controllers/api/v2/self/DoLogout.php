@@ -9,13 +9,13 @@
 namespace MVC\Controllers\api\v2\self;
 
 
-use Model\Users;
+use Model\UsersModel;
 use MVC\Controller;
 
 class DoLogout extends Controller {
 
     public function doPost() {
-        Users::unAuthorize();
+        UsersModel::unAuthorize();
     }
 
 } 

@@ -9,7 +9,7 @@
 namespace MVC\Controllers\api\v2\stream;
 
 
-use Model\StreamTrackListModel;
+use Model\PlaylistModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -21,7 +21,7 @@ class DoSetCurrentTrack extends Controller {
         $id     = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
         $track  = $post->getParameter("track")->getOrElseThrow(ControllerException::noArgument("track"));
 
-        StreamTrackListModel::getInstance($id)->setPlayFrom($track);
+        PlaylistModel::getInstance($id)->setPlayFrom($track);
 
     }
 

@@ -9,7 +9,7 @@
 namespace MVC\Controllers\api\v2\stream;
 
 
-use Model\StreamTrackListModel;
+use Model\PlaylistModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -21,7 +21,7 @@ class DoRemoveTracks extends Controller {
         $id     = $post->getParameter("id")     ->getOrElseThrow(ControllerException::noArgument("id"));
         $tracks = $post->getParameter("tracks") ->getOrElseThrow(ControllerException::noArgument("tracks"));
 
-        StreamTrackListModel::getInstance($id)->removeTracks($tracks);
+        PlaylistModel::getInstance($id)->removeTracks($tracks);
 
     }
 

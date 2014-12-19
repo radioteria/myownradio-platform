@@ -9,7 +9,7 @@
 namespace MVC\Controllers\api\v2\user;
 
 
-use Model\Users;
+use Model\UsersModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -24,7 +24,7 @@ class DoPasswordResetComplete extends Controller {
 
         $validator->validatePassword($password);
 
-        Users::completePasswordReset($code, $password);
+        UsersModel::completePasswordReset($code, $password);
 
     }
 } 

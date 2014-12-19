@@ -2,13 +2,13 @@
 
 namespace Model;
 
-use Model\ActiveRecords\Subscription;
-use Model\ActiveRecords\User;
 use Model\Traits\Stats;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\Database;
 use MVC\Services\Injectable;
 use MVC\Services\InputValidator;
+use Objects\Subscription;
+use Objects\User;
 use Tools\Singleton;
 
 /**

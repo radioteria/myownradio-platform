@@ -271,6 +271,10 @@ class Database {
 
         $row = $resource->fetchColumn($column);
 
+        if (is_numeric($row)) {
+            $row = intval($row);
+        }
+
         return Optional::ofDeceptive($row);
 
     }

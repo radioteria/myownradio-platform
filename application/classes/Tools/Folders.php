@@ -2,7 +2,7 @@
 
 namespace Tools;
 
-use Model\ActiveRecords\Track;
+use Model\Objects\Track;
 use MVC\Services\Injectable;
 
 class Folders {

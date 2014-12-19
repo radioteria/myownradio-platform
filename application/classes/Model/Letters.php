@@ -10,7 +10,6 @@ namespace Model;
 
 
 use MVC\Exceptions\ControllerException;
-use MVC\Services\Database;
 use MVC\Services\Mailer;
 use MVC\Template;
 

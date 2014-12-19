@@ -9,12 +9,8 @@
 namespace MVC\Controllers\api\v2;
 
 
-use Model\ActiveRecords\User;
-use Model\AuthUserModel;
-use Model\UserModel;
-use Model\Users;
+use Model\Objects\User;
 use MVC\Controller;
-use MVC\Services\JsonResponse;
 use Tools\String;
 
 class DoTest extends Controller {

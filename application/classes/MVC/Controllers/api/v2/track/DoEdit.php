@@ -23,15 +23,13 @@ class DoEdit extends Controller {
         $artist  = $post->getParameter("artist")->getOrElseEmpty();
         $title   = $post->getParameter("title")->getOrElseEmpty();
         $album   = $post->getParameter("album")->getOrElseEmpty();
-        $trackNR = $post->getParameter("track_number")->getOrElseEmpty();
+        $number  = $post->getParameter("track_number")->getOrElseEmpty();
         $genre   = $post->getParameter("genre")->getOrElseEmpty();
         $date    = $post->getParameter("date")->getOrElseEmpty();
 
         $color   = $post->getParameter("color")->getOrElse(0);
 
-        $track = TrackModel::getInstance($id);
-
-        $track->edit($artist, $title, $album, $trackNR, $genre, $date, $color);
+        TrackModel::getInstance($id)->edit($artist, $title, $album, $number, $genre, $date, $color);
 
     }
 

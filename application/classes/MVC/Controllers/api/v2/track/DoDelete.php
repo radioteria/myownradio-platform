@@ -9,7 +9,7 @@
 namespace MVC\Controllers\api\v2\track;
 
 
-use Model\Destructor;
+use Model\TracksModel;
 use MVC\Controller;
 use MVC\Exceptions\ControllerException;
 use MVC\Services\HttpPost;
@@ -20,16 +20,16 @@ use MVC\Services\HttpPost;
  */
 class DoDelete extends Controller {
 
-    public function doPost(HttpPost $post, Destructor $destructor) {
+    public function doPost(HttpPost $post, TracksModel $model) {
 
         $id = $post->getParameter("id")
             ->getOrElseThrow(ControllerException::noArgument("id"));
 
         // Delete tracks from streams where they appears
-        $destructor->deleteFromStreams($id);
+        $model->deleteFromStreams($id);
 
         // Delete tracks from service
-        $destructor->deleteTrack($id);
+        $model->delete($id);
 
     }
 

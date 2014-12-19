@@ -9,9 +9,9 @@
 namespace Model;
 
 
-use Model\ActiveRecords\Track;
-use Model\Traits\Bean;
 use MVC\Exceptions\ControllerException;
+use MVC\Exceptions\UnauthorizedException;
+use Objects\Track;
 use Tools\Singleton;
 
 class TrackModel extends Model {
@@ -38,7 +38,7 @@ class TrackModel extends Model {
 
     /**
      * @return $this
-     * @throws \MVC\Exceptions\ControllerException
+     * @throws \MVC\Exceptions\UnauthorizedException
      */
     public function reload() {
 
@@ -46,7 +46,7 @@ class TrackModel extends Model {
             ->getOrElseThrow(ControllerException::noTrack($this->key));
 
         if ($this->object->getUserID() != $this->user->getID()) {
-            throw ControllerException::noPermission();
+            throw UnauthorizedException::noAccess();
         }
 
     }

@@ -52,7 +52,7 @@ abstract class BaseQuery implements \Countable {
         return array_merge($this->parameters["INSERT"], $this->parameters["SET"], $this->parameters["WHERE"]);
     }
 
-    public function addOrderBy($column) {
+    public function orderBy($column) {
         $this->orders[] = $column;
         return $this;
     }

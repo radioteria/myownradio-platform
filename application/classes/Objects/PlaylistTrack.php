@@ -7,6 +7,7 @@
  */
 
 namespace Objects;
+use MVC\Services\DB\DBQuery;
 
 /**
  * Class PlaylistTrack
@@ -32,6 +33,19 @@ class PlaylistTrack extends Track {
 
     public function getUniqueID() {
         return $this->unique_id;
+    }
+
+    /**
+     * @param $streamID
+     * @return \Tools\Optional
+     */
+    public static function getRandom($streamID) {
+
+        return DBQuery::getInstance()
+            ->selectFrom("mor_stream_tracklist_view", "stream_id", $streamID)
+            ->limit(1)->orderBy("RAND()")
+            ->fetchObject("Objects\\PlaylistTrack");
+
     }
 
 } 

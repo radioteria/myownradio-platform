@@ -142,7 +142,7 @@ class PlaylistModel extends Model implements \Countable {
                         // Skip foreign tracks
                         if ($trackObject->getUserID() != $this->user->getID()) return;
 
-                        $uniqueID = $this->generateUniqueId();
+                        $uniqueID = $this->generateUniqueID();
 
                         $linker = new Link();
 
@@ -328,7 +328,7 @@ class PlaylistModel extends Model implements \Countable {
 
     }
 
-    public function generateUniqueId() {
+    public function generateUniqueID() {
 
         return Database::doInConnection(function (Database $conn) {
 
@@ -394,7 +394,7 @@ class PlaylistModel extends Model implements \Countable {
         return Database::doInConnection(function (Database $db) {
 
             $query = $this->getTrackQueryPrefix();
-            $query->addOrderBy("RAND()");
+            $query->orderBy("RAND()");
             $query->limit(1);
             $query->where("b.stream_id", $this->key);
 

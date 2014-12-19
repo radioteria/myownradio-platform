@@ -81,7 +81,7 @@ class UserModel extends Model {
             $query->select("*");
             $query->where("uid", $this->user->getID());
             $query->where("expire > UNIX_TIMESTAMP(NOW())");
-            $query->addOrderBy("id DESC");
+            $query->orderBy("id DESC");
             $query->limit(1);
 
             return $db->fetchOneRow($query)

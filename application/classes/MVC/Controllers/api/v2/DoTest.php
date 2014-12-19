@@ -9,8 +9,8 @@
 namespace MVC\Controllers\api\v2;
 
 
+use Model\PlaylistTracksModel;
 use MVC\Controller;
-use MVC\Services\DB\DBQuery;
 use MVC\Services\JsonResponse;
 
 //use Tools\String;
@@ -22,9 +22,11 @@ class DoTest extends Controller {
 
 //        $string = new String("Hello, World! Давай, до свиданья!");
 
-        $query = DBQuery::getInstance()->selectFrom("r_tracks")->limit(50)->offset(100);
+        $ptm = PlaylistTracksModel::getInstance(36);
 
-        $response->setData(count($query));
+        //$query = DBQuery::getInstance()->selectFrom("r_tracks")->limit(50)->offset(100);
+
+        //$response->setData($ptm->getRandom());
 
     }
 

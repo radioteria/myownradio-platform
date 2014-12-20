@@ -9,7 +9,7 @@
 namespace Model;
 
 
-use MVC\Exceptions\ControllerException;
+use MVC\Exceptions\UnauthorizedException;
 use MVC\Services\Database;
 use MVC\Services\HttpSession;
 use MVC\Services\Injectable;
@@ -28,7 +28,7 @@ class AuthUserModel extends UserModel {
 
     public function getIdBySessionToken() {
 
-        $exception = ControllerException::noPermission();
+        $exception = UnauthorizedException::noAccess();
 
         $token = HttpSession::getInstance()->get("TOKEN")->getOrElseThrow($exception);
 

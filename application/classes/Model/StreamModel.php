@@ -10,42 +10,23 @@ namespace Model;
 
 
 use MVC\Exceptions\ControllerException;
-use MVC\Services\Database;
-use ReflectionClass;
+use MVC\Exceptions\UnauthorizedException;
+use MVC\Services\InputValidator;
+use Objects\Stream;
 use Tools\Singleton;
 
 class StreamModel extends Model {
 
     use Singleton;
 
-    private $bean_key = "sid";
-    private $bean_fields = [
-        "sid", "uid", "name", "permalink", "info", "status", "started", "started_from",
-        "access", "category", "hashtags", "cover", "created"
-    ];
-    private $bean_update = [
-        "name", "permalink", "info", "access", "category", "hashtags"
-    ];
-
     protected $key;
 
-    protected $sid;
-    protected $uid;
-    protected $name;
-    protected $permalink;
-    protected $info;
-
-    protected $status;
-    protected $started;
-    protected $started_from;
-    protected $access;
-    protected $category;
-    protected $hashtags;
-    protected $cover;
-    protected $created;
 
     /** @var UserModel $user */
     protected $user;
+
+    /** @var Stream $stream  */
+    protected $stream;
 
     public function __construct($id) {
         parent::__construct();
@@ -56,195 +37,123 @@ class StreamModel extends Model {
 
     private function load() {
 
-        $object = Database::doInConnection(function (Database $db) {
+        $this->stream = Stream::getByID($this->key)
+            ->getOrElseThrow(ControllerException::noStream($this->key));
 
-            return $db->fetchOneRow("SELECT * FROM r_streams WHERE sid = ?", [$this->key])
-                ->getOrElseThrow(ControllerException::noStream($this->key));
-
-        });
-
-        if (intval($object["uid"]) !== $this->user->getId()) {
-            throw ControllerException::noPermission();
-        }
-
-        try {
-            $reflection = new ReflectionClass($this);
-            foreach ($this->bean_fields as $field) {
-                $prop = $reflection->getProperty($field);
-                $prop->setAccessible(true);
-                $prop->setValue($this, $object[$field]);
-            }
-        } catch (\ReflectionException $exception) {
-            throw new ControllerException($exception->getMessage());
+        if ($this->stream->getUserID() !== $this->user->getID()) {
+            throw UnauthorizedException::noAccess();
         }
 
     }
-
-    public function save() {
-
-        Database::doInConnection(function (Database $db) {
-
-            $query = $db->getDBQuery()->updateTable("r_streams");
-
-            try {
-
-                $reflection = new ReflectionClass($this);
-
-                $keyProperty = $reflection->getProperty($this->bean_key);
-                $keyProperty->setAccessible(true);
-                $query->where($this->bean_key, $keyProperty->getValue($this));
-
-                foreach ($this->bean_update as $field) {
-                    $property = $reflection->getProperty($field);
-                    $property->setAccessible(true);
-                    $query->set($property->getName(), $property->getValue($this));
-                }
-
-                $db->executeUpdate($query);
-
-                $db->commit();
-
-            } catch (\ReflectionException $exception) {
-                throw new ControllerException($exception->getMessage());
-            }
-
-        });
-
-    }
-
 
     /**
      * @return int
      */
-    public function getId() {
-        return intval($this->sid);
+    public function getID() {
+        return $this->stream->getID();
     }
 
     /**
      * @return int
      */
     public function getStarted() {
-        return intval($this->started);
+        return $this->stream->getStarted();
     }
 
     /**
      * @return string
      */
     public function getAccess() {
-        return $this->access;
+        return $this->stream->getAccess();
     }
 
     /**
      * @return int|null
      */
     public function getCategory() {
-        return is_null($this->category) ? null : intval($this->category);
+        return $this->stream->getCategory();
     }
 
     /**
      * @return string
      */
     public function getCover() {
-        return $this->cover;
+        return $this->stream->getCover();
     }
 
     /**
      * @return int
      */
     public function getCreated() {
-        return intval($this->created);
+        return $this->stream->getCover();
     }
 
     /**
      * @return string
      */
     public function getHashTags() {
-        return $this->hashtags;
+        return $this->stream->getHashTags();
     }
 
     /**
      * @return string
      */
     public function getInfo() {
-        return $this->info;
+        return $this->stream->getInfo();
     }
 
     /**
      * @return string
      */
     public function getName() {
-        return $this->name;
+        return $this->stream->getName();
     }
 
     /**
      * @return string|null
      */
     public function getPermalink() {
-        return $this->permalink;
+        return $this->stream->getPermalink();
     }
 
     /**
      * @return int
      */
     public function getStartedFrom() {
-        return intval($this->started_from);
+        return $this->stream->getStartedFrom();
     }
 
     /**
      * @return int
      */
     public function getStatus() {
-        return intval($this->status);
+        return $this->stream->getStatus();
     }
 
     /**
      * @return int
      */
-    public function getUid() {
-        return intval($this->uid);
+    public function getUserID() {
+        return $this->stream->getUserID();
     }
 
+    public function update($name, $info, $permalink, $hashtags, $category, $access) {
 
-    /**
-     * @param string $access
-     */
-    public function setAccess($access) {
-        $this->access = $access;
-    }
+        $validator = InputValidator::getInstance();
 
-    /**
-     * @param int|null $category
-     */
-    public function setCategory($category) {
-        $this->category = $category;
-    }
+        $validator->validateUserPermalink($permalink, $this->key);
+        $validator->validateStreamCategory($category);
+        $validator->validateStreamAccess($access);
 
-    /**
-     * @param string $hashtags
-     */
-    public function setHashTags($hashtags) {
-        $this->hashtags = $hashtags;
-    }
+        $this->stream
+            ->setName($name)
+            ->setInfo($info)
+            ->setPermalink($permalink)
+            ->setHashTags($hashtags)
+            ->setCategory($category)
+            ->setAccess($access)
+            ->save();
 
-    /**
-     * @param string $info
-     */
-    public function setInfo($info) {
-        $this->info = $info;
-    }
-
-    /**
-     * @param string $name
-     */
-    public function setName($name) {
-        $this->name = $name;
-    }
-
-    /**
-     * @param string|null $permalink
-     */
-    public function setPermalink($permalink) {
-        $this->permalink = $permalink;
     }
 
 } 

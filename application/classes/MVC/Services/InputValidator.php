@@ -9,6 +9,7 @@
 namespace MVC\Services;
 
 use MVC\Exceptions\ControllerException;
+use Objects\Category;
 use Tools\Optional;
 use Tools\Singleton;
 
@@ -275,6 +276,34 @@ class InputValidator {
 
         return $optional->getOrElseThrow(
             new ControllerException(sprintf("'%s' is not valid stream permalink", $permalink))
+        );
+
+    }
+
+    public function validateStreamCategory($category) {
+
+        $optional = new Optional($category, function ($category) {
+
+            return Category::getByID($category)->validate();
+
+        });
+
+        return $optional->getOrElseThrow(
+            new ControllerException(sprintf("'%s' is not valid stream category", $category))
+        );
+
+    }
+
+    public function validateStreamAccess($access) {
+
+        $optional = new Optional($access, function ($access) {
+
+            return array_search($access, ['PUBLIC', 'UNLISTED', 'PRIVATE']) !== false;
+
+        });
+
+        return $optional->getOrElseThrow(
+            new ControllerException(sprintf("'%s' is not valid stream access mode", $access))
         );
 
     }

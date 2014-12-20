@@ -16,7 +16,7 @@ use MVC\Services\HttpPost;
 
 class DoUpload extends Controller {
 
-    public function doPost(HttpPost $post, HttpFile $file, TracksModel $model) {
+    public function doPost(HttpFile $file, HttpPost $post, TracksModel $model) {
 
         $streamID   = $post->getParameter("id");
 

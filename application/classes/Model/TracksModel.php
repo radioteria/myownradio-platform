@@ -24,12 +24,17 @@ class TracksModel {
 
     use Singleton, Injectable;
 
-    /** @var UserModel $user */
+    /** @var AuthUserModel $user */
 
     protected $user;
 
-    function __constructor() {
+    function __construct() {
         $this->user = AuthUserModel::getInstance();
+    }
+
+
+    public function getUserModel() {
+        return $this->user;
     }
 
     /**
@@ -52,6 +57,7 @@ class TracksModel {
 
         $duration = $audioTags['DURATION']
             ->getOrElseThrow(new ControllerException("Uploaded file has zero duration"));
+
 
         $uploadTimeLeft = $this->user->getActivePlan()->getUploadLimit() - $this->user->getTracksDuration() - $duration;
 

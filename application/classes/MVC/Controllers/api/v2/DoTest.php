@@ -9,24 +9,13 @@
 namespace MVC\Controllers\api\v2;
 
 
-use Model\PlaylistTracksModel;
+use Model\AuthUserModel;
 use MVC\Controller;
 use MVC\Services\JsonResponse;
 
-//use Tools\String;
-
 class DoTest extends Controller {
 
-    public function doGet(JsonResponse $response) {
-
-
-//        $string = new String("Hello, World! Давай, до свиданья!");
-
-        $ptm = PlaylistTracksModel::getInstance(36);
-
-        //$query = DBQuery::getInstance()->selectFrom("r_tracks")->limit(50)->offset(100);
-
-        //$response->setData($ptm->getRandom());
+    public function doGet(AuthUserModel $user, JsonResponse $response) {
 
     }
 

@@ -9,15 +9,14 @@
 namespace MVC;
 
 use Exception;
+use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Exceptions\DocNotFoundException;
-use MVC\Exceptions\NotImplementedException;
 use MVC\Services\HttpGet;
 use MVC\Services\HttpRequest;
 use MVC\Services\HttpResponse;
 use MVC\Services\JsonResponse;
 use ReflectionClass;
-use Tools\Module;
 use Tools\Singleton;
 
 class Router {
@@ -38,23 +37,7 @@ class Router {
 
     public function route() {
 
-        try {
-            $this->findRoute();
-        } catch (DocNotFoundException $exception) {
-            header("HTTP/1.1 404 Not Found");
-            $this->outputFailure("Requested resource not found on this server");
-        } catch (ControllerException $exception) {
-            $this->outputFailure($exception->getMyMessage(), $exception->getMyData());
-        } catch (\ReflectionException $exception) {
-            header("HTTP/1.1 400 Bad request");
-            $this->outputFailure("Bad request", $exception->getTrace());
-        } catch (NotImplementedException $exception) {
-            header("HTTP/1.1 501 Not implemented");
-            $this->outputFailure("Method not implemented");
-        } catch (\Exception $exception) {
-            header("HTTP/1.1 505 Internal Server Error");
-            $this->outputFailure($exception->getMessage(), $exception->getTrace());
-        }
+        $this->findRoute();
 
     }
 
@@ -83,35 +66,60 @@ class Router {
         // Create instance of desired controller
         $classInstance = call_user_func([$reflection, "newInstance"]);
 
-        unset($params, $request);
+        unset($params, $request, $reflection);
 
         // Execute controller
-        call_user_func_array([$classInstance, $method], $dependencies);
-
+        try {
+            call_user_func_array([$classInstance, $method], $dependencies);
+        } catch (Exception $e) {
+            $this->exceptionRouter($e);
+        }
 
         $response = JsonResponse::getInstance();
-        $reflection = new ReflectionClass($response);
 
-        $msg = $reflection->getProperty("message");
-        $msg->setAccessible(true);
+        callPrivateMethod($response, "write");
 
-        $data = $reflection->getProperty("data");
-        $data->setAccessible(true);
+    }
 
-        $this->outputOK($msg->getValue($response), $data->getValue($response));
+    private function exceptionRouter(Exception $exception) {
+
+        $response = JsonResponse::getInstance();
+
+        if ($exception instanceof ControllerException) {
+            $response->setMessage($exception->getMyMessage());
+            $response->setData($exception->getMyData());
+            $response->setCode(0);
+        } else if ($exception instanceof DocNotFoundException)  {
+            $response->setResponseCode(404);
+            $response->setMessage($exception->getMessage());
+            $response->setData($exception->getTrace());
+        } else if ($exception instanceof ApplicationException) {
+            $response->setMessage($exception->getMessage());
+            $response->setData($exception->getTrace());
+            $response->setCode(0);
+        } else {
+            $response->setMessage($exception->getMessage());
+            $response->setData($exception->getTrace());
+            $response->setCode(0);
+            $response->setResponseCode(500);
+        }
 
     }
 
     private function loadDependencies(array $params) {
         $dependencies = [];
         foreach ($params as $param) {
+            /** @var \ReflectionParameter $param */
             if (is_null($param->getClass()) || !$this->isInjectable($param->getClass())) {
                 throw new Exception("Object could not be injected");
             }
-            $dependencies[] =
-                $this->isSingleton($param->getClass()) ?
-                $param->getClass()->getMethod("getInstance")->invoke(null) :
-                $param->getClass()->newInstance();
+
+            if ($this->isSingleton($param->getClass())) {
+                $dependencies[] = $param->getClass()->getMethod("getInstance")->invoke(null);
+            } else {
+                $dependencies[] = $param->getClass()->newInstanceArgs();
+            }
+
         }
         return $dependencies;
     }

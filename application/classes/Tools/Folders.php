@@ -2,8 +2,8 @@
 
 namespace Tools;
 
-use Model\Objects\Track;
 use MVC\Services\Injectable;
+use Objects\Track;
 
 class Folders {
 

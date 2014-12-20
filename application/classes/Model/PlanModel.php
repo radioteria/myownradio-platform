@@ -23,6 +23,8 @@ class PlanModel extends Model {
     const MONTH_PAYMENT = 2678400;
     const YEAR_PAYMENT = 31536000;
 
+    const MULTIPLY = 60000;
+
     public function __construct($id) {
 
         parent::__construct();
@@ -57,7 +59,7 @@ class PlanModel extends Model {
      * @return mixed
      */
     public function getUploadLimit() {
-        return $this->plan->getUploadLimit();
+        return $this->plan->getUploadLimit() * self::MULTIPLY;
     }
 
     /**

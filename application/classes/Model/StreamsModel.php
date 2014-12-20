@@ -22,6 +22,10 @@ class StreamsModel {
 
     use Singleton, Injectable;
 
+    const ACCESS_PUBLIC = 'PUBLIC';
+    const ACCESS_UNLISTED = 'UNLISTED';
+    const ACCESS_PRIVATE = 'PRIVATE';
+
     /** @var UserModel $user  */
 
     protected $user;
@@ -47,6 +51,7 @@ class StreamsModel {
         $stream->setCategory($category);
         $stream->setPermalink($permalink->getOrElse($this->generatePermalink($name)));
         $stream->setCreated(time());
+        $stream->setAccess(self::ACCESS_PUBLIC);
 
         $stream->save();
 

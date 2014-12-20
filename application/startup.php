@@ -1,5 +1,6 @@
 <?php
 
+header("Access-Control-Allow-Origin: *");
 
 define("NEW_DIR_RIGHTS", 0770);
 define("REG_MAIL", 'no-reply@myownradio.biz');

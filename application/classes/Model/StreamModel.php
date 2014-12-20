@@ -189,7 +189,9 @@ class StreamModel extends Model {
 
         $this->removeCover();
 
-        $newImageFile = sprintf("stream%05d_%s_%s", $this->key, $random, strtolower($file['name']));
+        $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
+
+        $newImageFile = sprintf("stream%05d_%s.%s", $this->key, $random, strtolower($extension));
         $newImagePath = $folders->genStreamCoverPath($newImageFile);
 
         $result = move_uploaded_file($file['tmp_name'], $newImagePath);

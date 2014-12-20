@@ -22,6 +22,10 @@ class ControllerException extends \Exception {
         return new self(sprintf("No payment basis with key '%s' found", $id));
     }
 
+    public static function noImageAttached() {
+        return new self("No image file attached");
+    }
+
     public function getMyData() {
         return $this->myData;
     }

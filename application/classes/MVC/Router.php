@@ -37,41 +37,9 @@ class Router {
 
     public function route() {
 
-        $this->findRoute();
-
-    }
-
-    private function findRoute() {
-
-        $request = HttpRequest::getInstance();
-
-        $class = str_replace("/", "\\", CONTROLLERS_ROOT . $this->route);
-        $method = "do" . ucfirst($request->getMethod());
-
         try {
 
-            // Reflect controller class
-            loadClassOrThrow($class, new DocNotFoundException());
-            $reflection = new \ReflectionClass($class);
-
-            // Check for valid reflector
-            if ($reflection->getParentClass() === false || $reflection->getParentClass()->getName() !== "MVC\\Controller") {
-                throw new \BadFunctionCallException("Incorrect controller");
-            }
-
-            // Try to find required method and get parameters
-            $params = $reflection->getMethod($method)->getParameters();
-
-            // Inject dependencies
-            $dependencies = $this->loadDependencies($params);
-
-            // Create instance of desired controller
-            $classInstance = call_user_func([$reflection, "newInstance"]);
-
-            unset($params, $request, $reflection);
-
-            // Execute controller
-            call_user_func_array([$classInstance, $method], $dependencies);
+            $this->findRoute();
 
         } catch (Exception $e) {
 
@@ -82,6 +50,38 @@ class Router {
         $response = JsonResponse::getInstance();
 
         callPrivateMethod($response, "write");
+
+    }
+
+    private function findRoute() {
+
+        $request = HttpRequest::getInstance();
+
+        $class = str_replace("/", "\\", CONTROLLERS_ROOT . $this->route);
+        $method = "do" . ucfirst($request->getMethod());
+
+        // Reflect controller class
+        loadClassOrThrow($class, new DocNotFoundException());
+        $reflection = new \ReflectionClass($class);
+
+        // Check for valid reflector
+        if ($reflection->getParentClass() === false || $reflection->getParentClass()->getName() !== "MVC\\Controller") {
+            throw new \BadFunctionCallException("Incorrect controller");
+        }
+
+        // Try to find required method and get parameters
+        $params = $reflection->getMethod($method)->getParameters();
+
+        // Inject dependencies
+        $dependencies = $this->loadDependencies($params);
+
+        // Create instance of desired controller
+        $classInstance = call_user_func([$reflection, "newInstance"]);
+
+        unset($params, $request, $reflection);
+
+        // Execute controller
+        call_user_func_array([$classInstance, $method], $dependencies);
 
     }
 

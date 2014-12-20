@@ -9,6 +9,9 @@ use MVC\Services\Injectable;
 use MVC\Services\InputValidator;
 use Objects\Subscription;
 use Objects\User;
+use Tools\Common;
+use Tools\File;
+use Tools\Folders;
 use Tools\Singleton;
 
 /**
@@ -24,7 +27,7 @@ class UserModel extends Model {
     private $activePlan;
     private $planExpire;
 
-    /** @var User */
+    /** @var User $user */
     private $user;
 
     public function __construct() {
@@ -65,6 +68,7 @@ class UserModel extends Model {
 
         $this->activePlan   = intval($active["plan"]);
         $this->planExpire   = intval($active["expire"]);
+        $this->userID       = $this->user->getID();
 
         $this->loadStats();
 
@@ -168,6 +172,59 @@ class UserModel extends Model {
         $this->user->setEmail($email);
 
         $this->user->save();
+
+    }
+
+
+    public function removeAvatar() {
+
+        $folders = Folders::getInstance();
+
+        if (!is_null($this->user->getAvatar())) {
+
+            $file = new File($folders->genAvatarPath($this->user->getAvatar()));
+
+            if ($file->exists()) {
+                $file->delete();
+            }
+
+            $this->user->setAvatar(null)->save();
+
+        }
+
+    }
+
+    public function changeAvatar($file) {
+
+        $folders = Folders::getInstance();
+
+        $validator = InputValidator::getInstance();
+
+        $validator->validateImageMIME($file["tmp_name"]);
+
+        $random = Common::generateUniqueID();
+
+        $this->removeAvatar();
+
+        $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
+
+
+        $newImageFile = sprintf("avatar%05d_%s.%s", $this->userID, $random, strtolower($extension));
+        $newImagePath = $folders->genAvatarPath($newImageFile);
+
+        $result = move_uploaded_file($file['tmp_name'], $newImagePath);
+
+        if ($result !== false) {
+
+            $this->user->setAvatar($newImageFile)->save();
+
+            return $folders->genAvatarUrl($newImageFile);
+
+        } else {
+
+            return null;
+
+        }
 
     }
 

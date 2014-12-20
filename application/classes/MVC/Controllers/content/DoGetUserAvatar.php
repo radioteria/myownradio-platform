@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: roman
  * Date: 20.12.14
- * Time: 16:01
+ * Time: 17:32
  */
 
 namespace MVC\Controllers\content;
@@ -17,7 +17,7 @@ use MVC\Services\JsonResponse;
 use Tools\File;
 use Tools\Folders;
 
-class DoGetStreamCover extends Controller {
+class DoGetUserAvatar extends Controller {
 
     public function doGet(HttpGet $get, JsonResponse $response) {
 
@@ -28,7 +28,7 @@ class DoGetStreamCover extends Controller {
 
         $folders = Folders::getInstance();
 
-        $path = new File($folders->genStreamCoverPath($fn));
+        $path = new File($folders->genAvatarPath($fn));
 
         if (!$path->exists()) {
             throw new DocNotFoundException();

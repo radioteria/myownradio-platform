@@ -39,9 +39,9 @@ class JsonResponse {
 
     private function write() {
 
-        if ($this->enabled) {
+        http_response_code($this->response);
 
-            http_response_code($this->response);
+        if ($this->enabled) {
 
             header("Content-Type: application/json");
 
@@ -50,6 +50,10 @@ class JsonResponse {
                 "message" => $this->message,
                 "data" => $this->data
             ]);
+
+        } else if ($this->code == 0) {
+
+            echo "<h1>ERROR: {$this->message}</h1>";
 
         }
 

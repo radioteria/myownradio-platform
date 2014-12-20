@@ -13,7 +13,7 @@ use Exception;
 
 class DocNotFoundException  extends \Exception {
     public function __construct() {
-        parent::__construct();
+        parent::__construct("File not found");
     }
 
 }

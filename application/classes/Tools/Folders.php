@@ -10,7 +10,7 @@ class Folders implements Injectable, SingletonInterface {
     use Singleton;
 
     /* Common constants */
-    const MOR_REST_DOMAIN           = "http://myownradio.biz";
+    const MOR_REST_DOMAIN           = "http://api.myownradio.biz";
     const MOR_HEAP_FOLDER           = "/media/www/myownradio.biz/heap";
     const MOR_CONTENT_FOLDER        = "/media/www/myownradio.biz/content";
 

@@ -23,6 +23,14 @@ class HttpFile implements \ArrayAccess {
     }
 
     /**
+     * @return Optional
+     */
+    public function getFirstFile() {
+        $first = reset($_FILES);
+        return Optional::ofDeceptive($first);
+    }
+
+    /**
      * @param callable $callback
      */
     public function each(callable $callback) {

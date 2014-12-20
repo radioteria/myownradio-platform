@@ -19,6 +19,7 @@ class JsonResponse {
     private $data = null;
     private $message = "OK";
     private $response = 200;
+    private $enabled = true;
 
     public function setData($data) {
         $this->data = $data;
@@ -38,15 +39,24 @@ class JsonResponse {
 
     private function write() {
 
-        http_response_code($this->response);
+        if ($this->enabled) {
 
-        header("Content-Type: application/json");
+            http_response_code($this->response);
 
-        echo json_encode([
-            "code" => $this->code,
-            "message" => $this->message,
-            "data" => $this->data
-        ]);
+            header("Content-Type: application/json");
+
+            echo json_encode([
+                "code" => $this->code,
+                "message" => $this->message,
+                "data" => $this->data
+            ]);
+
+        }
+
+    }
+
+    public function disable() {
+        $this->enabled = false;
     }
 
 }

@@ -13,6 +13,9 @@ use MVC\Exceptions\ControllerException;
 use MVC\Exceptions\UnauthorizedException;
 use MVC\Services\InputValidator;
 use Objects\Stream;
+use Tools\Common;
+use Tools\File;
+use Tools\Folders;
 use Tools\Singleton;
 
 class StreamModel extends Model {
@@ -153,6 +156,55 @@ class StreamModel extends Model {
             ->setCategory($category)
             ->setAccess($access)
             ->save();
+
+    }
+
+    public function removeCover() {
+
+        $folders = Folders::getInstance();
+
+        if (!is_null($this->stream->getCover())) {
+
+            $file = new File($folders->genStreamCoverPath($this->stream->getCover()));
+
+            if ($file->exists()) {
+                $file->delete();
+            }
+
+            $this->stream->setCover(null)->save();
+
+        }
+
+    }
+
+    public function changeCover($file) {
+
+        $folders = Folders::getInstance();
+
+        $validator = InputValidator::getInstance();
+
+        $validator->validateImageMIME($file["tmp_name"]);
+
+        $random = Common::generateUniqueID();
+
+        $this->removeCover();
+
+        $newImageFile = sprintf("stream%05d_%s_%s", $this->key, $random, strtolower($file['name']));
+        $newImagePath = $folders->genStreamCoverPath($newImageFile);
+
+        $result = move_uploaded_file($file['tmp_name'], $newImagePath);
+
+        if ($result !== false) {
+
+            $this->stream->setCover($newImageFile)->save();
+
+            return $folders->genStreamCoverUrl($newImageFile);
+
+        } else {
+
+            return null;
+
+        }
 
     }
 

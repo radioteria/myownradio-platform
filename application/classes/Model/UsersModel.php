@@ -18,15 +18,18 @@ use MVC\Services\HttpRequest;
 use MVC\Services\HttpSession;
 use Objects\User;
 use Tools\File;
+use Tools\Singleton;
 
 class UsersModel {
+
+    use Singleton;
 
     /**
      * @param string $login
      * @param string $password
      * @return UserModel
      */
-    public static function authorizeByLoginPassword($login, $password) {
+    public function authorizeByLoginPassword($login, $password) {
 
         $session = HttpSession::getInstance();
         $md5Password = md5($login . $password);
@@ -52,7 +55,7 @@ class UsersModel {
      * @param $sessionId
      * @return string
      */
-    private static function createToken($userId, $clientAddress, $clientUserAgent, $sessionId) {
+    private function createToken($userId, $clientAddress, $clientUserAgent, $sessionId) {
 
         $token = Database::doInConnection(function (Database $db) use ($userId, $clientAddress, $clientUserAgent, $sessionId) {
 
@@ -82,7 +85,7 @@ class UsersModel {
     /**
      * @return void
      */
-    public static function logout() {
+    public function logout() {
 
         $session = HttpSession::getInstance();
 
@@ -100,7 +103,7 @@ class UsersModel {
      * @param $id
      * @return mixed
      */
-    public static function authorizeById($id) {
+    public function authorizeById($id) {
 
         $session = HttpSession::getInstance();
 
@@ -129,7 +132,7 @@ class UsersModel {
      * @param $permalink
      * @return UserModel
      */
-    public static function completeRegistration($code, $login, $password, $name, $info, $permalink) {
+    public function completeRegistration($code, $login, $password, $name, $info, $permalink) {
 
         $email = self::parseRegistrationCode($code);
         $md5Password = md5($login . $password);
@@ -157,7 +160,7 @@ class UsersModel {
      * @param $code
      * @param $password
      */
-    public static function completePasswordReset($code, $password) {
+    public function completePasswordReset($code, $password) {
 
         $credentials = self::parseResetPasswordCode($code);
 
@@ -170,7 +173,7 @@ class UsersModel {
     /**
      * @param $id
      */
-    private static function createUserDirectory($id) {
+    private function createUserDirectory($id) {
 
         $contentFolder = Config::getInstance()->getSetting("content", "content_folder")
             ->getOrElseThrow(ApplicationException::of("CONTENT FOLDER NOT SPECIFIED"));
@@ -186,7 +189,7 @@ class UsersModel {
      * @return mixed
      * @throws \MVC\Exceptions\ControllerException
      */
-    public static function parseRegistrationCode($code) {
+    public function parseRegistrationCode($code) {
 
         $exception = new ControllerException("Entered security code is not correct");
 
@@ -211,7 +214,7 @@ class UsersModel {
      * @return mixed
      * @throws \MVC\Exceptions\ControllerException
      */
-    public static function parseResetPasswordCode($code) {
+    public function parseResetPasswordCode($code) {
 
         $exception = new ControllerException("Entered security code is not correct");
 

@@ -48,31 +48,35 @@ class Router {
         $class = str_replace("/", "\\", CONTROLLERS_ROOT . $this->route);
         $method = "do" . ucfirst($request->getMethod());
 
-        // Reflect controller class
-        loadClassOrThrow($class, new DocNotFoundException());
-        $reflection = new \ReflectionClass($class);
-
-        // Check for valid reflector
-        if ($reflection->getParentClass() === false || $reflection->getParentClass()->getName() !== "MVC\\Controller") {
-            throw new \BadFunctionCallException("Incorrect controller");
-        }
-
-        // Try to find required method and get parameters
-        $params = $reflection->getMethod($method)->getParameters();
-
-        // Inject dependencies
-        $dependencies = $this->loadDependencies($params);
-
-        // Create instance of desired controller
-        $classInstance = call_user_func([$reflection, "newInstance"]);
-
-        unset($params, $request, $reflection);
-
-        // Execute controller
         try {
+
+            // Reflect controller class
+            loadClassOrThrow($class, new DocNotFoundException());
+            $reflection = new \ReflectionClass($class);
+
+            // Check for valid reflector
+            if ($reflection->getParentClass() === false || $reflection->getParentClass()->getName() !== "MVC\\Controller") {
+                throw new \BadFunctionCallException("Incorrect controller");
+            }
+
+            // Try to find required method and get parameters
+            $params = $reflection->getMethod($method)->getParameters();
+
+            // Inject dependencies
+            $dependencies = $this->loadDependencies($params);
+
+            // Create instance of desired controller
+            $classInstance = call_user_func([$reflection, "newInstance"]);
+
+            unset($params, $request, $reflection);
+
+            // Execute controller
             call_user_func_array([$classInstance, $method], $dependencies);
+
         } catch (Exception $e) {
+
             $this->exceptionRouter($e);
+
         }
 
         $response = JsonResponse::getInstance();

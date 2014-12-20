@@ -4,6 +4,7 @@ $memory = memory_get_usage(true);
 
 require_once "application/startup.php";
 require_once "application/libs/functions.php";
+require_once "application/libs/acResizeImage.php";
 
 
 $router = new \MVC\Router();

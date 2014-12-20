@@ -308,4 +308,12 @@ class InputValidator {
 
     }
 
+    public function validateImageMIME($file) {
+        $finfo = new \finfo();
+        $mime = $finfo->file($file, FILEINFO_MIME);
+        if (strpos($mime, "image", 0) !== 0) {
+            throw new ControllerException("File is not valid image file");
+        }
+    }
+
 }

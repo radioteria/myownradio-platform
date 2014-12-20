@@ -9,14 +9,15 @@
 namespace MVC\Controllers\api\v2;
 
 
-use Model\AuthUserModel;
 use MVC\Controller;
-use MVC\Services\JsonResponse;
+use MVC\Services\HttpFile;
 
 class DoTest extends Controller {
 
-    public function doGet(AuthUserModel $user, JsonResponse $response) {
-
+    public function doPost(HttpFile $files) {
+        $first = $files->getFirstFile();
+        $file = $first->get();
+        echo gettype($file);
     }
 
 } 

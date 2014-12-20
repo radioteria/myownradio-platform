@@ -15,8 +15,11 @@ use Framework\Services\HttpPost;
 use Model\UsersModel;
 
 class DoHack implements Controller {
-    public function doPost(HttpPost $post) {
+    public function doPost(HttpPost $post, UsersModel $users) {
+
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
-        UsersModel::authorizeById($id);
+
+        $users->authorizeById($id);
+
     }
 } 

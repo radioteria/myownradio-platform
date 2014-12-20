@@ -6,7 +6,7 @@
  * Time: 15:39
  */
 
-namespace Framework\Controllers\api\v2\stream;
+namespace Framework\Controllers\api\v2\control;
 
 
 use Framework\Controller;

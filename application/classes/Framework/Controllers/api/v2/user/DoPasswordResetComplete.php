@@ -17,14 +17,14 @@ use Model\UsersModel;
 
 class DoPasswordResetComplete implements Controller {
 
-    public function doPost(HttpPost $post, InputValidator $validator) {
+    public function doPost(HttpPost $post, InputValidator $validator, UsersModel $users) {
 
         $code       = $post->getParameter("code")     ->getOrElseThrow(ControllerException::noArgument("code"));
         $password   = $post->getParameter("password") ->getOrElseThrow(ControllerException::noArgument("password"));
 
         $validator->validatePassword($password);
 
-        UsersModel::completePasswordReset($code, $password);
+        $users->completePasswordReset($code, $password);
 
     }
 } 

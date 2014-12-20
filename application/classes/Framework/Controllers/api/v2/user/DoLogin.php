@@ -15,10 +15,14 @@ use Framework\Services\HttpPost;
 use Model\UsersModel;
 
 class DoLogin implements Controller {
-    public function doPost(HttpPost $post) {
+
+    public function doPost(HttpPost $post, UsersModel $users) {
+
         $login      = $post->getParameter("login")->getOrElseThrow(ControllerException::noArgument("login"));
         $password   = $post->getParameter("password")->getOrElseThrow(ControllerException::noArgument("password"));
-        UsersModel::authorizeByLoginPassword($login, $password);
+
+        $users->authorizeByLoginPassword($login, $password);
+
     }
 
-} 
+}

@@ -17,7 +17,7 @@ use Model\UsersModel;
 
 class DoSignUpComplete implements Controller {
 
-    public function doPost(HttpPost $post, InputValidator $validator) {
+    public function doPost(HttpPost $post, InputValidator $validator, UsersModel $users) {
 
         $code       = $post->getParameter("code")       ->getOrElseThrow(ControllerException::noArgument("code"));
         $login      = $post->getParameter("login")      ->getOrElseThrow(ControllerException::noArgument("login"));
@@ -31,7 +31,7 @@ class DoSignUpComplete implements Controller {
         $validator->validateLogin($login);
         $validator->validateUserPermalink($permalink);
 
-        UsersModel::completeRegistration($code, $login, $password, $name, $info, $permalink);
+        $users->completeRegistration($code, $login, $password, $name, $info, $permalink);
 
     }
 

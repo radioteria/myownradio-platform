@@ -15,12 +15,16 @@ use Tools\Singleton;
 
 trait ActiveRecordObject {
 
-    use Singleton;
-
+    /**
+     * @return mixed
+     */
     public function save() {
         return MicroORM::getInstance()->saveObject($this);
     }
 
+    /**
+     * @return void
+     */
     public function delete() {
         MicroORM::getInstance()->deleteObject($this);
     }

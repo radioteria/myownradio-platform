@@ -14,8 +14,10 @@ use Model\UsersModel;
 
 class DoLogout implements Controller {
 
-    public function doPost() {
-        UsersModel::logout();
+    public function doPost(UsersModel $users) {
+
+        $users->logout();
+
     }
 
 } 

@@ -9,10 +9,10 @@
 namespace Model;
 
 
-use MVC\Exceptions\UnauthorizedException;
-use MVC\Services\Database;
-use MVC\Services\HttpSession;
-use MVC\Services\Injectable;
+use Framework\Exceptions\UnauthorizedException;
+use Framework\Services\Database;
+use Framework\Services\HttpSession;
+use Framework\Services\Injectable;
 use Tools\Singleton;
 
 class AuthUserModel extends UserModel {

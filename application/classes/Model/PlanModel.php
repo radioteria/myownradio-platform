@@ -9,7 +9,7 @@
 namespace Model;
 
 
-use MVC\Exceptions\ControllerException;
+use Framework\Exceptions\ControllerException;
 use Objects\Plan;
 use Tools\Singleton;
 

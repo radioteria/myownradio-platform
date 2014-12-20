@@ -9,9 +9,9 @@
 namespace Model;
 
 
-use MVC\Exceptions\ControllerException;
-use MVC\Exceptions\UnauthorizedException;
-use MVC\Services\InputValidator;
+use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
+use Framework\Services\InputValidator;
 use Objects\Stream;
 use Tools\Common;
 use Tools\File;

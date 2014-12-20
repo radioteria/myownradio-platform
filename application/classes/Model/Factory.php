@@ -9,9 +9,9 @@
 namespace Model;
 
 
-use MVC\Exceptions\ControllerException;
-use MVC\Services\Database;
-use MVC\Services\Injectable;
+use Framework\Exceptions\ControllerException;
+use Framework\Services\Database;
+use Framework\Services\Injectable;
 use Tools\Singleton;
 
 class Factory extends Model {

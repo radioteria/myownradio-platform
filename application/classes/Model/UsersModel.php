@@ -9,13 +9,13 @@
 namespace Model;
 
 
-use MVC\Exceptions\ApplicationException;
-use MVC\Exceptions\ControllerException;
-use MVC\Exceptions\UnauthorizedException;
-use MVC\Services\Config;
-use MVC\Services\Database;
-use MVC\Services\HttpRequest;
-use MVC\Services\HttpSession;
+use Framework\Exceptions\ApplicationException;
+use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
+use Framework\Services\Config;
+use Framework\Services\Database;
+use Framework\Services\HttpRequest;
+use Framework\Services\HttpSession;
 use Objects\User;
 use Tools\File;
 use Tools\Singleton;
@@ -187,7 +187,7 @@ class UsersModel {
     /**
      * @param $code
      * @return mixed
-     * @throws \MVC\Exceptions\ControllerException
+     * @throws \Framework\Exceptions\ControllerException
      */
     public function parseRegistrationCode($code) {
 
@@ -212,7 +212,7 @@ class UsersModel {
     /**
      * @param $code
      * @return mixed
-     * @throws \MVC\Exceptions\ControllerException
+     * @throws \Framework\Exceptions\ControllerException
      */
     public function parseResetPasswordCode($code) {
 

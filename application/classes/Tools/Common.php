@@ -9,10 +9,10 @@
 namespace Tools;
 
 
-use MVC\Exceptions\ApplicationException;
-use MVC\Exceptions\ControllerException;
-use MVC\Services\Config;
-use MVC\Services\HttpRequest;
+use Framework\Exceptions\ApplicationException;
+use Framework\Exceptions\ControllerException;
+use Framework\Services\Config;
+use Framework\Services\HttpRequest;
 
 class Common {
 
@@ -74,7 +74,7 @@ class Common {
     /**
      * @param $filename
      * @return Optional[]
-     * @throws \MVC\Exceptions\ControllerException
+     * @throws \Framework\Exceptions\ControllerException
      */
     static function getAudioTags($filename) {
 

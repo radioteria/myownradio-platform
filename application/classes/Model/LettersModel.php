@@ -9,9 +9,9 @@
 namespace Model;
 
 
-use MVC\Exceptions\ControllerException;
-use MVC\Services\Mailer;
-use MVC\Template;
+use Framework\Exceptions\ControllerException;
+use Framework\Services\Mailer;
+use Framework\Template;
 
 class LettersModel {
 

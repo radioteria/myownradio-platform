@@ -2,11 +2,11 @@
 
 namespace Model;
 
+use Framework\Exceptions\ControllerException;
+use Framework\Services\Database;
+use Framework\Services\Injectable;
+use Framework\Services\InputValidator;
 use Model\Traits\Stats;
-use MVC\Exceptions\ControllerException;
-use MVC\Services\Database;
-use MVC\Services\Injectable;
-use MVC\Services\InputValidator;
 use Objects\Subscription;
 use Objects\User;
 use Tools\Common;

@@ -9,9 +9,9 @@
 namespace Model;
 
 
-use MVC\Services\Database;
-use MVC\Services\Injectable;
-use MVC\Services\InputValidator;
+use Framework\Services\Database;
+use Framework\Services\Injectable;
+use Framework\Services\InputValidator;
 use Objects\Stream;
 use REST\Streams;
 use Tools\Common;

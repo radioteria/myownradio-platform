@@ -9,9 +9,9 @@
 namespace REST;
 
 
-use MVC\Exceptions\ControllerException;
-use MVC\Services\DB\Query\SelectQuery;
-use MVC\Services\Injectable;
+use Framework\Exceptions\ControllerException;
+use Framework\Services\DB\Query\SelectQuery;
+use Framework\Services\Injectable;
 use Tools\Common;
 use Tools\Folders;
 use Tools\Singleton;

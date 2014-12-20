@@ -7,7 +7,7 @@ require_once "application/libs/functions.php";
 require_once "application/libs/acResizeImage.php";
 
 
-$router = new \MVC\Router();
+$router = new \Framework\Router();
 
 $router->route();
 

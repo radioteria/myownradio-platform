@@ -8,7 +8,7 @@ define("REG_NAME", "The MyOwnRadio Team");
 define("START_TIME", microtime(true));
 
 define("APP_ROOT", "application/classes/");
-define("CONTROLLERS_ROOT", "MVC/Controllers/");
+define("CONTROLLERS_ROOT", "Framework/Controllers/");
 
 putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/games:/usr/local/sbin:/usr/local/bin:/home/admin/bin");
 

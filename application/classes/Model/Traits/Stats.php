@@ -9,8 +9,8 @@
 namespace Model\Traits;
 
 
-use MVC\Exceptions\ApplicationException;
-use MVC\Services\Database;
+use Framework\Exceptions\ApplicationException;
+use Framework\Services\Database;
 
 trait Stats {
     protected $tracks_count;

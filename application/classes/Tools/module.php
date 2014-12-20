@@ -3,8 +3,8 @@
 namespace Tools;
 
 
-use MVC\Services\Database;
-use MVC\Services\HttpRequest;
+use Framework\Services\Database;
+use Framework\Services\HttpRequest;
 
 class Module
 {

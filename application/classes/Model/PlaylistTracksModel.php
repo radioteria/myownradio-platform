@@ -9,7 +9,7 @@
 namespace Model;
 
 
-use MVC\Services\Injectable;
+use Framework\Services\Injectable;
 use Objects\PlaylistTrack;
 use Tools\Optional;
 use Tools\Singleton;

@@ -9,9 +9,9 @@
 namespace Model;
 
 
-use MVC\Exceptions\ControllerException;
-use MVC\Exceptions\UnauthorizedException;
-use MVC\Services\Config;
+use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
+use Framework\Services\Config;
 use Objects\Track;
 use Tools\Singleton;
 
@@ -39,7 +39,7 @@ class TrackModel extends Model {
 
     /**
      * @return $this
-     * @throws \MVC\Exceptions\UnauthorizedException
+     * @throws \Framework\Exceptions\UnauthorizedException
      */
     public function reload() {
 

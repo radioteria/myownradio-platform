@@ -1,0 +1,24 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * UserModel: roman
+ * Date: 13.12.14
+ * Time: 18:53
+ */
+
+namespace Framework\Controllers\api\v2\streams;
+
+use Framework\Controller;
+use Framework\Exceptions\ControllerException;
+use Framework\Services\HttpGet;
+use Framework\Services\JsonResponse;
+use REST\Streams;
+
+class DoGetOne extends Controller {
+    public function doGet(HttpGet $get, JsonResponse $response, Streams $streams) {
+        $id = $get->getParameter("id")
+            ->getOrElseThrow(ControllerException::noArgument("id"));
+
+        $response->setData($streams->getOneStream($id));
+    }
+} 

@@ -7,7 +7,7 @@
  */
 
 namespace Objects;
-use MVC\Services\DB\DBQuery;
+use Framework\Services\DB\DBQuery;
 
 /**
  * Class PlaylistTrack

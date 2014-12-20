@@ -9,12 +9,12 @@
 namespace Model;
 
 
-use MVC\Exceptions\ApplicationException;
-use MVC\Exceptions\ControllerException;
-use MVC\Exceptions\UnauthorizedException;
-use MVC\Services\Config;
-use MVC\Services\Database;
-use MVC\Services\Injectable;
+use Framework\Exceptions\ApplicationException;
+use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
+use Framework\Services\Config;
+use Framework\Services\Database;
+use Framework\Services\Injectable;
 use Objects\Track;
 use Tools\Common;
 use Tools\Optional;
@@ -40,8 +40,8 @@ class TracksModel {
     /**
      * @param array $file
      * @param Optional $addToStream
-     * @throws \MVC\Exceptions\ApplicationException
-     * @throws \MVC\Exceptions\ControllerException
+     * @throws \Framework\Exceptions\ApplicationException
+     * @throws \Framework\Exceptions\ControllerException
      */
     public function upload(array $file, Optional $addToStream) {
 

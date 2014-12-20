@@ -9,7 +9,7 @@
 namespace Objects;
 
 
-use MVC\MicroORM;
+use Framework\MicroORM;
 use Tools\Optional;
 use Tools\Singleton;
 

@@ -9,7 +9,7 @@
 namespace Model;
 
 
-use MVC\Exceptions\ControllerException;
+use Framework\Exceptions\ControllerException;
 use Objects\Basis;
 
 class BasisModel extends Model {

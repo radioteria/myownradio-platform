@@ -8,10 +8,10 @@
 
 namespace Model;
 
+use Framework\Exceptions\ControllerException;
+use Framework\Services\Database;
+use Framework\Services\DB\DBQuery;
 use Model\Traits\StreamControl;
-use MVC\Exceptions\ControllerException;
-use MVC\Services\Database;
-use MVC\Services\DB\DBQuery;
 use Objects\Link;
 use Objects\PlaylistTrack;
 use Objects\Stream;
@@ -405,7 +405,7 @@ class PlaylistModel extends Model implements \Countable {
     }
 
     /**
-     * @return \MVC\Services\DB\Query\SelectQuery
+     * @return \Framework\Services\DB\Query\SelectQuery
      */
     private function getTrackQueryPrefix() {
 

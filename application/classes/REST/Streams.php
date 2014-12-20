@@ -12,10 +12,13 @@ namespace REST;
 use Framework\Exceptions\ControllerException;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Injectable;
+use Model\PlaylistModel;
+use Objects\PlaylistTrack;
 use Tools\Common;
 use Tools\Folders;
 use Tools\Singleton;
 use Tools\SingletonInterface;
+use Tools\System;
 
 class Streams implements \Countable, Injectable, SingletonInterface {
 
@@ -197,6 +200,27 @@ class Streams implements \Countable, Injectable, SingletonInterface {
     public function count() {
 
         return count((new SelectQuery("r_streams"))->where("status", 1));
+
+    }
+
+    // todo: make it without objects
+    public function getStreamStatus($id) {
+
+        $model = PlaylistModel::getInstance($id);
+
+        $position = $model->getStreamPosition(System::time() - 5000)->getOrElseNull();
+
+        if (is_null($position)) { return null; }
+
+        /** @var PlaylistTrack $track */
+        $track = $model->getTrackByTime($position)->get();
+
+        return [
+            "artist"    => $track->getArtist(),
+            "title"     => $track->getTitle(),
+            "duration"  => $track->getDuration(),
+            "position"  => $position - $track->getTimeOffset()
+        ];
 
     }
 

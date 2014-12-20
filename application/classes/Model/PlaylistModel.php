@@ -237,7 +237,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     /**
      * @param $time
-     * @return PlaylistTrack
+     * @return Optional
      */
     public function getTrackByTime($time) {
 

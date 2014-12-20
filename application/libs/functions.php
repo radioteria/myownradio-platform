@@ -28,3 +28,4 @@ function logger($message) {
     fprintf($file, "%s %s\n", date("d-m-Y, h:i:s"), $message);
     fclose($file);
 }
+

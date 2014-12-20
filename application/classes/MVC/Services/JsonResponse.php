@@ -51,10 +51,6 @@ class JsonResponse {
                 "data" => $this->data
             ]);
 
-        } else if ($this->code == 0) {
-
-            echo "<h1>ERROR: {$this->message}</h1>";
-
         }
 
     }

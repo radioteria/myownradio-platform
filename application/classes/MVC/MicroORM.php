@@ -36,7 +36,6 @@ class MicroORM extends FilterORM {
         /** @var \ReflectionClass $copy */
         $copy = $reflection->newInstanceWithoutConstructor();
 
-
         foreach ($reflection->getProperties() as $prop) {
             /** Don't clone primary key value */
             if ($prop->getName() == $beanConfig["@key"]) {

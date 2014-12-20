@@ -11,6 +11,7 @@ namespace Model;
 
 use MVC\Exceptions\ControllerException;
 use MVC\Exceptions\UnauthorizedException;
+use MVC\Services\Config;
 use Objects\Track;
 use Tools\Singleton;
 
@@ -193,6 +194,28 @@ class TrackModel extends Model {
         unlink($this->getOriginalFile());
 
         $this->object->delete();
+
+    }
+
+    public function preview() {
+
+        $config = Config::getInstance();
+
+        $trackFile = $this->getOriginalFile();
+        $streamer = $config->getSetting("streaming", "track_preview")->get();
+
+        $command = sprintf($streamer, escapeshellarg($trackFile));
+
+        $fh = popen($command, "r");
+
+        header("Content-Type: audio/mpeg");
+
+        while($data = fread($fh, 4096)) {
+            echo $data;
+            flush();
+        }
+
+        pclose($fh);
 
     }
 

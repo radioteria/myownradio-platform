@@ -9,9 +9,9 @@
 namespace MVC;
 
 use Exception;
-use MVC\Exceptions\ApplicationException;
 use MVC\Exceptions\ControllerException;
 use MVC\Exceptions\DocNotFoundException;
+use MVC\Exceptions\NotImplementedException;
 use MVC\Services\HttpGet;
 use MVC\Services\HttpRequest;
 use MVC\Services\HttpResponse;
@@ -41,9 +41,21 @@ class Router {
 
             $this->findRoute();
 
-        } catch (Exception $e) {
+        } catch (ControllerException $e) {
 
             $this->exceptionRouter($e);
+
+        } catch (DocNotFoundException $e) {
+
+            http_response_code(404);
+            echo '<h1>E404: File not found</h1>';
+            return;
+
+        } catch (NotImplementedException $e) {
+
+            http_response_code(501);
+            echo '<h1>E501: Method not implemented</h1>';
+            return;
 
         }
 
@@ -58,7 +70,7 @@ class Router {
         $request = HttpRequest::getInstance();
 
         $class = str_replace("/", "\\", CONTROLLERS_ROOT . $this->route);
-        $method = "do" . ucfirst($request->getMethod());
+        $method = "do" . ucfirst(strtolower($request->getMethod()));
 
         // Reflect controller class
         loadClassOrThrow($class, new DocNotFoundException());
@@ -66,11 +78,17 @@ class Router {
 
         // Check for valid reflector
         if ($reflection->getParentClass() === false || $reflection->getParentClass()->getName() !== "MVC\\Controller") {
-            throw new \BadFunctionCallException("Incorrect controller");
+            throw new DocNotFoundException("Incorrect controller");
         }
 
-        // Try to find required method and get parameters
-        $params = $reflection->getMethod($method)->getParameters();
+        try {
+            // Try to find required method and get parameters
+            $params = $reflection->getMethod($method)->getParameters();
+        } catch (\ReflectionException $e) {
+
+            throw new NotImplementedException();
+
+        };
 
         // Inject dependencies
         $dependencies = $this->loadDependencies($params);
@@ -85,28 +103,13 @@ class Router {
 
     }
 
-    private function exceptionRouter(Exception $exception) {
+    private function exceptionRouter(ControllerException $exception) {
 
         $response = JsonResponse::getInstance();
 
-        if ($exception instanceof ControllerException) {
-            $response->setMessage($exception->getMyMessage());
-            $response->setData($exception->getMyData());
-            $response->setCode(0);
-        } else if ($exception instanceof DocNotFoundException)  {
-            $response->setResponseCode(404);
-            $response->setMessage($exception->getMessage());
-            $response->setData($exception->getTrace());
-        } else if ($exception instanceof ApplicationException) {
-            $response->setMessage($exception->getMessage());
-            $response->setData($exception->getTrace());
-            $response->setCode(0);
-        } else {
-            $response->setMessage($exception->getMessage());
-            $response->setData($exception->getTrace());
-            $response->setCode(0);
-            $response->setResponseCode(500);
-        }
+        $response->setMessage($exception->getMyMessage());
+        $response->setData($exception->getMyData());
+        $response->setCode(0);
 
     }
 

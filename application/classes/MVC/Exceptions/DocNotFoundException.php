@@ -12,8 +12,8 @@ namespace MVC\Exceptions;
 use Exception;
 
 class DocNotFoundException  extends \Exception {
-    public function __construct() {
-        parent::__construct("File not found");
+    public function __construct($message = null) {
+        parent::__construct($message);
     }
 
 }

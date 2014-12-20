@@ -11,8 +11,11 @@ namespace Objects;
 
 use MVC\MicroORM;
 use Tools\Optional;
+use Tools\Singleton;
 
 trait ActiveRecordObject {
+
+    use Singleton;
 
     public function save() {
         return MicroORM::getInstance()->saveObject($this);

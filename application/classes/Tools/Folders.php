@@ -5,9 +5,9 @@ namespace Tools;
 use Framework\Services\Injectable;
 use Objects\Track;
 
-class Folders {
+class Folders implements Injectable, SingletonInterface {
 
-    use Singleton, Injectable;
+    use Singleton;
 
     /* Common constants */
     const MOR_REST_DOMAIN           = "http://myownradio.biz";

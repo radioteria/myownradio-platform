@@ -15,7 +15,7 @@ use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
 use Model\PlaylistModel;
 
-class DoAddTracks extends Controller {
+class DoAddTracks implements Controller {
     public function doPost(HttpPost $post, InputValidator $validator) {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));

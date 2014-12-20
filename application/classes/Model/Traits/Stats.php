@@ -9,7 +9,6 @@
 namespace Model\Traits;
 
 
-use Framework\Exceptions\ApplicationException;
 use Framework\Services\Database;
 
 trait Stats {
@@ -22,8 +21,7 @@ trait Stats {
 
         Database::doInConnection(function (Database $db) {
 
-            $stats = $db->fetchOneRow("SELECT * FROM r_static_user_vars WHERE user_id = ?", [$this->getID()])
-                ->getOrElseThrow(ApplicationException::of("NO_STATIC_USER_VARS"));
+            $stats = $db->fetchOneRow("SELECT * FROM r_static_user_vars WHERE user_id = ?", [$this->getID()])->get();
 
             $this->tracks_count = $stats["tracks_count"];
             $this->tracks_duration = $stats["tracks_duration"];

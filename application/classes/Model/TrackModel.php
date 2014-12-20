@@ -14,8 +14,9 @@ use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\Config;
 use Objects\Track;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class TrackModel extends Model {
+class TrackModel extends Model implements SingletonInterface {
 
     use Singleton;
 

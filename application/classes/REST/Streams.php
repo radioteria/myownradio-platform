@@ -15,10 +15,11 @@ use Framework\Services\Injectable;
 use Tools\Common;
 use Tools\Folders;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class Streams implements \Countable {
+class Streams implements \Countable, Injectable, SingletonInterface {
 
-    use Singleton, Injectable;
+    use Singleton;
 
     const MAXIMUM_SIMILAR_COUNT = 10;
 

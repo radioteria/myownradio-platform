@@ -12,7 +12,7 @@ namespace Framework\Controllers\api\v2\self;
 use Framework\Controller;
 use Model\AuthUserModel;
 
-class DoRemoveAvatar extends Controller {
+class DoRemoveAvatar implements Controller {
 
     public function doPost(AuthUserModel $user) {
         $user->removeAvatar();

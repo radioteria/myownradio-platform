@@ -15,7 +15,7 @@ use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
 use Model\UsersModel;
 
-class DoPasswordResetComplete extends Controller {
+class DoPasswordResetComplete implements Controller {
 
     public function doPost(HttpPost $post, InputValidator $validator) {
 

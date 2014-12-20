@@ -10,14 +10,15 @@ namespace Framework\Services;
 
 use Tools\Optional;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
 /**
  * Class HttpGet
  * @package MVC\Services
  */
-class HttpGet implements \ArrayAccess {
+class HttpGet implements \ArrayAccess, SingletonInterface, Injectable {
 
-    use Singleton, Injectable;
+    use Singleton;
 
     public function getParameter($key) {
         return Optional::ofEmpty(FILTER_INPUT(INPUT_GET, $key));

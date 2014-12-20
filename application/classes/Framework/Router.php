@@ -76,13 +76,16 @@ class Router {
         $reflection = new \ReflectionClass($class);
 
         // Check for valid reflector
-        if ($reflection->getParentClass() === false || $reflection->getParentClass()->getName() !== "MVC\\Controller") {
-            throw new DocNotFoundException("Incorrect controller");
+        if (! $reflection->implementsInterface("Framework\\Controller")) {
+            throw new DocNotFoundException("Controller must implement Framework\\Controller interface");
         }
 
         try {
+
             // Try to find required method and get parameters
-            $params = $reflection->getMethod($method)->getParameters();
+            $invoker = $reflection->getMethod($method);
+            $params = $invoker->getParameters();
+
         } catch (\ReflectionException $e) {
 
             throw new NotImplementedException();
@@ -93,12 +96,9 @@ class Router {
         $dependencies = $this->loadDependencies($params);
 
         // Create instance of desired controller
-        $classInstance = call_user_func([$reflection, "newInstance"]);
-
-        unset($params, $request, $reflection);
-
+        $classInstance = $reflection->newInstance();
         // Execute controller
-        call_user_func_array([$classInstance, $method], $dependencies);
+        $invoker->invokeArgs($classInstance, $dependencies);
 
     }
 
@@ -115,12 +115,13 @@ class Router {
     private function loadDependencies(array $params) {
         $dependencies = [];
         foreach ($params as $param) {
+
             /** @var \ReflectionParameter $param */
-            if (is_null($param->getClass()) || !$this->isInjectable($param->getClass())) {
+            if (! $param->getClass()->implementsInterface("Framework\\Services\\Injectable")) {
                 throw new Exception("Object could not be injected");
             }
 
-            if ($this->isSingleton($param->getClass())) {
+            if ($param->getClass()->implementsInterface("Tools\\SingletonInterface")) {
                 $dependencies[] = $param->getClass()->getMethod("getInstance")->invoke(null);
             } else {
                 $dependencies[] = $param->getClass()->newInstanceArgs();
@@ -135,7 +136,7 @@ class Router {
     }
 
     private function isInjectable(\ReflectionClass $class) {
-        return $this->hasTrait($class, "MVC\\Services\\Injectable");
+        return $this->hasTrait($class, "Framework\\Services\\Injectable");
     }
 
     private function hasTrait(\ReflectionClass $class, $traitName) {
@@ -144,23 +145,6 @@ class Router {
                 return true;
         }
         return false;
-    }
-
-    private function outputOK($message = null, $data = null) {
-        $this->outputJSON(1, $message, $data);
-    }
-
-    private function outputFailure($message = null, $data = null) {
-        $this->outputJSON(0, $message, $data);
-    }
-
-    private function outputJSON($code = 1, $message = null, $data = null) {
-        header("Content-Type: application/json");
-        echo json_encode([
-            "status" => $code,
-            "message" => $message,
-            "data" => $data
-        ]);
     }
 
 }

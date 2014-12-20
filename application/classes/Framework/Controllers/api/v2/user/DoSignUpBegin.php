@@ -15,7 +15,7 @@ use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
 use Model\LettersModel;
 
-class DoSignUpBegin extends Controller {
+class DoSignUpBegin implements Controller {
 
     public function doPost(HttpPost $post, InputValidator $validator) {
 

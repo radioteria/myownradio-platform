@@ -12,7 +12,7 @@ namespace Framework\Controllers\api\v2\self;
 use Framework\Controller;
 use Model\UsersModel;
 
-class DoLogout extends Controller {
+class DoLogout implements Controller {
 
     public function doPost() {
         UsersModel::logout();

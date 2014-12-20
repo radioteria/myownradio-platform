@@ -12,7 +12,7 @@ namespace Framework\Controllers\api\v2;
 use Framework\Controller;
 use Framework\Services\HttpFile;
 
-class DoTest extends Controller {
+class DoTest implements Controller {
 
     public function doPost(HttpFile $files) {
         $first = $files->getFirstFile();

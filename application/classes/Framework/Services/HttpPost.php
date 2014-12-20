@@ -11,8 +11,9 @@ namespace Framework\Services;
 use Tools\Optional;
 use Tools\Singleton;
 
-class HttpPost implements \ArrayAccess {
-    use Singleton, Injectable;
+class HttpPost implements \ArrayAccess, Injectable {
+
+    use Singleton;
 
     public function getParameter($key) {
         return Optional::ofEmpty(FILTER_INPUT(INPUT_POST, $key));

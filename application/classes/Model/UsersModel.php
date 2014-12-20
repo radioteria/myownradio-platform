@@ -16,11 +16,13 @@ use Framework\Services\Config;
 use Framework\Services\Database;
 use Framework\Services\HttpRequest;
 use Framework\Services\HttpSession;
+use Framework\Services\Injectable;
 use Objects\User;
 use Tools\File;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class UsersModel {
+class UsersModel implements SingletonInterface, Injectable {
 
     use Singleton;
 

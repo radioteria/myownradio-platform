@@ -8,6 +8,6 @@
 
 namespace Framework;
 
-abstract class Controller {
+interface Controller {
 
 }

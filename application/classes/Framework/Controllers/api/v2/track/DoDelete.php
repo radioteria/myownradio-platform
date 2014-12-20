@@ -18,7 +18,7 @@ use Model\TracksModel;
  * Class DoDelete
  * @package MVC\Controllers\api\v2\track
  */
-class DoDelete extends Controller {
+class DoDelete implements Controller {
 
     public function doPost(HttpPost $post, TracksModel $model) {
 

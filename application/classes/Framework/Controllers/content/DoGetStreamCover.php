@@ -17,7 +17,7 @@ use Framework\Services\JsonResponse;
 use Tools\File;
 use Tools\Folders;
 
-class DoGetStreamCover extends Controller {
+class DoGetStreamCover implements Controller {
 
     public function doGet(HttpGet $get, JsonResponse $response) {
 

@@ -16,7 +16,7 @@ use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 use Framework\Services\Services;
 
-class DoChangeCover extends Controller {
+class DoChangeCover implements Controller {
 
     function doPost(HttpPost $post, HttpFile $file, Services $svc, JsonResponse $response) {
 

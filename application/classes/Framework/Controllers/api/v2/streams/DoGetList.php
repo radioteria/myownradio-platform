@@ -14,7 +14,7 @@ use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
 use REST\Streams;
 
-class DoGetList extends Controller {
+class DoGetList implements Controller {
     /**
      * This method invoked on GET method
      */

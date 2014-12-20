@@ -11,10 +11,11 @@ use Framework\Services\DB\Query\QueryBuilder;
 use PDO;
 use Tools\Optional;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class Database {
+class Database implements SingletonInterface, Injectable {
 
-    use Singleton, Injectable;
+    use Singleton;
 
     /** @var PDO $pdo */
     private $pdo;

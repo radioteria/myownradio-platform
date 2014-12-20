@@ -15,7 +15,7 @@ use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 use Model\PlaylistModel;
 
-class DoPlayRandom extends Controller {
+class DoPlayRandom implements Controller {
 
     public function doPost(HttpPost $post, JsonResponse $response) {
 

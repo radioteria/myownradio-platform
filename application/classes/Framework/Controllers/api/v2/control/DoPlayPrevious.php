@@ -15,7 +15,7 @@ use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 use Model\PlaylistModel;
 
-class DoPlayPrevious extends Controller {
+class DoPlayPrevious implements Controller {
 
     public function doPost(HttpPost $post, JsonResponse $response) {
 

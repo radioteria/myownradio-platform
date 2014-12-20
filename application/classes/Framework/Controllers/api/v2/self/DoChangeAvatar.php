@@ -15,7 +15,7 @@ use Framework\Services\HttpFile;
 use Framework\Services\JsonResponse;
 use Model\AuthUserModel;
 
-class DoChangeAvatar extends Controller {
+class DoChangeAvatar implements Controller {
 
     public function doPost(HttpFile $file, AuthUserModel $user, JsonResponse $response) {
 

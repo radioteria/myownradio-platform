@@ -14,7 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpPost;
 use Model\PlaylistModel;
 
-class DoSetCurrentTrack extends Controller {
+class DoSetCurrentTrack implements Controller {
 
     public function doPost(HttpPost $post) {
 

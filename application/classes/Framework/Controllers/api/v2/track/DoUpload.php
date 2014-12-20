@@ -14,7 +14,7 @@ use Framework\Services\HttpFile;
 use Framework\Services\HttpPost;
 use Model\TracksModel;
 
-class DoUpload extends Controller {
+class DoUpload implements Controller {
 
     public function doPost(HttpFile $file, HttpPost $post, TracksModel $model) {
 

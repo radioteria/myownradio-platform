@@ -15,7 +15,7 @@ use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
 use Model\AuthUserModel;
 
-class DoChangePassword extends Controller {
+class DoChangePassword implements Controller {
     public function doPost(HttpPost $post, InputValidator $validator, AuthUserModel $user) {
 
         $password = $post->getParameter("password")

@@ -14,7 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpPost;
 use Model\PlaylistModel;
 
-class DoMoveTrack extends Controller {
+class DoMoveTrack implements Controller {
 
     public function doPost(HttpPost $post) {
 

@@ -16,6 +16,6 @@ namespace Framework\Services;
  * Also classes must have constructor without arguments and
  * may be Singleton.
  */
-trait Injectable {
+interface Injectable {
 
 } 

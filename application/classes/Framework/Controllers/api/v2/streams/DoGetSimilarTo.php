@@ -15,7 +15,7 @@ use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
 use REST\Streams;
 
-class DoGetSimilarTo extends Controller {
+class DoGetSimilarTo implements Controller {
     public function doGet(HttpGet $get, JsonResponse $response, Streams $streams) {
         $id = $get->getParameter("id")
             ->getOrElseThrow(new ControllerException("id parameter is not specified"));

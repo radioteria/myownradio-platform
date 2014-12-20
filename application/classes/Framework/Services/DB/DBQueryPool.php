@@ -9,32 +9,34 @@
 namespace Framework\Services\DB;
 
 
+use Framework\Services\DB\Query\QueryBuilder;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 use Traversable;
 
-class DBQueryPool implements \IteratorAggregate, \Countable {
+class DBQueryPool implements \IteratorAggregate, \Countable, SingletonInterface {
 
     use Singleton;
 
     private $queryPool = [];
 
     /**
-     * @param DBQueryWrapper $query
+     * @param QueryBuilder $query
      */
-    public function put(DBQueryWrapper $query) {
+    public function put(QueryBuilder $query) {
         $this->queryPool[] = $query;
     }
 
     /**
      * @param $offset
-     * @return DBQueryWrapper
+     * @return QueryBuilder
      */
     public function get($offset) {
         return $this->queryPool[$offset];
     }
 
     /**
-     * @return DBQueryWrapper
+     * @return QueryBuilder
      */
     public function shift() {
         return array_shift($this->queryPool);

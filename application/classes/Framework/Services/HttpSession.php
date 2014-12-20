@@ -12,8 +12,9 @@ namespace Framework\Services;
 use Tools\Optional;
 use Tools\Singleton;
 
-class HttpSession {
-    use Singleton, Injectable;
+class HttpSession implements Injectable {
+
+    use Singleton;
 
     const SESSION_EXPIRE_FAST = 0;
     const SESSION_EXPIRE_MONTH = 2592000;

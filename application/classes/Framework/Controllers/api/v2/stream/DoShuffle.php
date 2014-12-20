@@ -14,7 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpPost;
 use Model\PlaylistModel;
 
-class DoShuffle extends Controller {
+class DoShuffle implements Controller {
 
     public function doPost(HttpPost $post) {
 

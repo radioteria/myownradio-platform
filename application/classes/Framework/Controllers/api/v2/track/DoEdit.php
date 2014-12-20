@@ -14,7 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpPost;
 use Model\TrackModel;
 
-class DoEdit extends Controller {
+class DoEdit implements Controller {
 
     public function doPost(HttpPost $post) {
 

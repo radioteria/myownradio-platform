@@ -4,8 +4,9 @@ namespace Framework\Services;
 
 use Tools\Optional;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class Config {
+class Config implements SingletonInterface {
 
     use Singleton;
 

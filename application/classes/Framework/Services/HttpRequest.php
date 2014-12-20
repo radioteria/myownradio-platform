@@ -12,8 +12,9 @@ namespace Framework\Services;
 use Tools\Optional;
 use Tools\Singleton;
 
-class HttpRequest {
-    use Singleton, Injectable;
+class HttpRequest implements Injectable {
+
+    use Singleton;
 
     private $headers;
 

@@ -14,7 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpPost;
 use Model\UsersModel;
 
-class DoLogin extends Controller {
+class DoLogin implements Controller {
     public function doPost(HttpPost $post) {
         $login      = $post->getParameter("login")->getOrElseThrow(ControllerException::noArgument("login"));
         $password   = $post->getParameter("password")->getOrElseThrow(ControllerException::noArgument("password"));

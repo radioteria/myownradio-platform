@@ -15,7 +15,7 @@ use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
 use Framework\Services\Services;
 
-class DoPreview extends Controller {
+class DoPreview implements Controller {
 
     public function doGet(HttpGet $get, Services $services, JsonResponse $response) {
 

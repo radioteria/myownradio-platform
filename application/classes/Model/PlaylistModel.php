@@ -19,13 +19,14 @@ use Objects\Track;
 use Tools\Common;
 use Tools\Optional;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 use Tools\System;
 
 /**
  * Class PlaylistModel
  * @package Model
  */
-class PlaylistModel extends Model implements \Countable {
+class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     use Singleton, StreamControl;
 

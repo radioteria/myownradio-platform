@@ -14,8 +14,9 @@ use Framework\Services\DB\Query\InsertQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\DB\Query\UpdateQuery;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class DBQuery {
+class DBQuery implements SingletonInterface {
 
     use Singleton;
 

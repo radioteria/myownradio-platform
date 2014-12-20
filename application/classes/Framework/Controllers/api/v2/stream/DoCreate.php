@@ -15,7 +15,7 @@ use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 use Model\StreamsModel;
 
-class DoCreate extends Controller {
+class DoCreate implements Controller {
     public function doPost(HttpPost $post, StreamsModel $model, JsonResponse $response) {
 
         // Get user input parameters

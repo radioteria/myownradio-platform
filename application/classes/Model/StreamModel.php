@@ -17,8 +17,9 @@ use Tools\Common;
 use Tools\File;
 use Tools\Folders;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class StreamModel extends Model {
+class StreamModel extends Model implements SingletonInterface {
 
     use Singleton;
 

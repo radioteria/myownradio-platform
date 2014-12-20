@@ -14,7 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpPost;
 use Model\LettersModel;
 
-class DoPasswordResetBegin extends Controller {
+class DoPasswordResetBegin implements Controller {
 
     public function doPost(HttpPost $post) {
 

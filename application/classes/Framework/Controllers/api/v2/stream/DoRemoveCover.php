@@ -14,7 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpPost;
 use Framework\Services\Services;
 
-class DoRemoveCover extends Controller {
+class DoRemoveCover implements Controller {
 
     public function doPost(HttpPost $post, Services $svc) {
 

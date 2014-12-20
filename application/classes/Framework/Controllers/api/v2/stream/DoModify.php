@@ -16,7 +16,7 @@ use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
 use Model\StreamModel;
 
-class DoModify extends Controller {
+class DoModify implements Controller {
 
     public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response) {
 

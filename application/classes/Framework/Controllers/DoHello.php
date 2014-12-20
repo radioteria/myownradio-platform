@@ -11,7 +11,7 @@ namespace Framework\Controllers;
 
 use Framework\Controller;
 
-class DoHello extends Controller {
+class DoHello implements Controller {
 
     public function doGet() {
 

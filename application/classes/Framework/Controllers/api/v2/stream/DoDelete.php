@@ -14,7 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpPost;
 use Model\Factory;
 
-class DoDelete extends Controller {
+class DoDelete implements Controller {
 
     public function doPost(HttpPost $post, Factory $fabric) {
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));

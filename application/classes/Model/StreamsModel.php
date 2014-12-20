@@ -17,10 +17,11 @@ use REST\Streams;
 use Tools\Common;
 use Tools\Optional;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class StreamsModel {
+class StreamsModel implements Injectable, SingletonInterface {
 
-    use Singleton, Injectable;
+    use Singleton;
 
     const ACCESS_PUBLIC = 'PUBLIC';
     const ACCESS_UNLISTED = 'UNLISTED';

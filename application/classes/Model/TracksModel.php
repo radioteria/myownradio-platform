@@ -19,10 +19,11 @@ use Objects\Track;
 use Tools\Common;
 use Tools\Optional;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class TracksModel {
+class TracksModel implements Injectable, SingletonInterface {
 
-    use Singleton, Injectable;
+    use Singleton;
 
     /** @var AuthUserModel $user */
 

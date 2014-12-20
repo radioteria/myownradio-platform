@@ -14,7 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpPost;
 use Model\AuthUserModel;
 
-class DoModifyProfile extends Controller {
+class DoModifyProfile implements Controller {
     public function doPost(HttpPost $post, AuthUserModel $user) {
 
         $name = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));

@@ -18,9 +18,9 @@ use Model\UserModel;
 use Model\UsersModel;
 use Tools\Singleton;
 
-class Services {
+class Services implements Injectable {
 
-    use Singleton, Injectable;
+    use Singleton;
 
     /**
      * @param $id

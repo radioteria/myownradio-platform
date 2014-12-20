@@ -10,10 +10,11 @@ namespace Framework\Services;
 
 
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class JsonResponse {
+class JsonResponse implements Injectable, SingletonInterface {
 
-    use Singleton, Injectable;
+    use Singleton;
 
     private $code = 1;
     private $data = null;

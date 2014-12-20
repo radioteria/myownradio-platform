@@ -12,8 +12,9 @@ namespace Model;
 use Framework\Exceptions\ControllerException;
 use Objects\Plan;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class PlanModel extends Model {
+class PlanModel extends Model implements SingletonInterface {
 
     use Singleton;
 

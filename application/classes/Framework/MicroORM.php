@@ -12,6 +12,7 @@ namespace Framework;
 use Framework\Exceptions\ORMException;
 use Framework\Services\Database;
 use Framework\Services\DB\Query\SelectQuery;
+use Framework\Services\Injectable;
 use Objects\ActiveRecord;
 use Tools\Optional;
 use Tools\Singleton;
@@ -20,7 +21,7 @@ use Tools\Singleton;
  * Class MicroORM
  * @package MVC
  */
-class MicroORM extends FilterORM {
+class MicroORM extends FilterORM implements Injectable {
 
     use Singleton;
 

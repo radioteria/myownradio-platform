@@ -14,7 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpPost;
 use Model\UsersModel;
 
-class DoHack extends Controller {
+class DoHack implements Controller {
     public function doPost(HttpPost $post) {
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
         UsersModel::authorizeById($id);

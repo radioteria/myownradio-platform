@@ -13,10 +13,11 @@ use Framework\Exceptions\ControllerException;
 use Framework\Services\Database;
 use Framework\Services\Injectable;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class Factory extends Model {
+class Factory extends Model implements Injectable, SingletonInterface {
 
-    use Singleton, Injectable;
+    use Singleton;
 
     /**
      * @param string $name

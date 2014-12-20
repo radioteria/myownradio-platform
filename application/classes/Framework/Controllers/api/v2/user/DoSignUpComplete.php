@@ -15,7 +15,7 @@ use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
 use Model\UsersModel;
 
-class DoSignUpComplete extends Controller {
+class DoSignUpComplete implements Controller {
 
     public function doPost(HttpPost $post, InputValidator $validator) {
 

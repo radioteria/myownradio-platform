@@ -10,9 +10,11 @@ namespace Framework\Services;
 
 use Tools\Optional;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class HttpFile implements \ArrayAccess {
-    use Singleton, Injectable;
+class HttpFile implements \ArrayAccess, SingletonInterface, Injectable {
+
+    use Singleton;
 
     /**
      * @param $file

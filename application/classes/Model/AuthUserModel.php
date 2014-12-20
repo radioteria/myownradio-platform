@@ -15,9 +15,7 @@ use Framework\Services\HttpSession;
 use Framework\Services\Injectable;
 use Tools\Singleton;
 
-class AuthUserModel extends UserModel {
-
-    use Injectable;
+class AuthUserModel extends UserModel implements Injectable {
 
     protected $userToken;
 

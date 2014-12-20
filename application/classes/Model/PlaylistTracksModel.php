@@ -9,12 +9,12 @@
 namespace Model;
 
 
-use Framework\Services\Injectable;
 use Objects\PlaylistTrack;
 use Tools\Optional;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class PlaylistTracksModel {
+class PlaylistTracksModel implements SingletonInterface {
 
     use Singleton;
 

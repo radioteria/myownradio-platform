@@ -4,7 +4,6 @@ namespace Model;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Services\Database;
-use Framework\Services\Injectable;
 use Framework\Services\InputValidator;
 use Model\Traits\Stats;
 use Objects\Subscription;
@@ -13,12 +12,13 @@ use Tools\Common;
 use Tools\File;
 use Tools\Folders;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
 /**
  * Class UserModel
  * @package Model
  */
-class UserModel extends Model {
+class UserModel extends Model implements SingletonInterface {
 
     use Stats, Singleton;
 

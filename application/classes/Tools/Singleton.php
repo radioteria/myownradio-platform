@@ -18,6 +18,7 @@ trait Singleton {
         if(!isset(self::$_instance[$hash])) {
             $reflector = new \ReflectionClass($calledClass);
             self::$_instance[$hash] = $reflector->newInstanceArgs($calledArgs);
+            //$constructor->invokeArgs(self::$_instance[$hash], $calledArgs);
         }
         return self::$_instance[$hash];
     }

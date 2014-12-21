@@ -17,6 +17,7 @@ use Tools\Folders;
  *
  * @do_SEARCH_BY_HASHTAGS MATCH(hashtags) AGAINST(? IN BOOLEAN MODE)
  * @do_SEARCH_BY_ANYTHING MATCH(name, permalink, hashtags) AGAINST (? IN BOOLEAN MODE)
+ * @do_FIND_SIMILAR sid != :id AND permalink != :id AND status = 1 AND MATCH(hashtags) AGAINST((SELECT hashtags FROM r_streams WHERE (sid = :id) OR (permalink = :id)))
  */
 class Stream extends ActiveRecordObject implements ActiveRecord {
 

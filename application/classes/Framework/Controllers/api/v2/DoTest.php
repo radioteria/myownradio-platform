@@ -16,7 +16,7 @@ use Objects\Stream;
 class DoTest implements Controller {
 
     public function doGet(JsonResponse $response) {
-        $objects = Stream::getList();
+        $objects = Stream::getListByFilter("FIND_SIMILAR", [":id" => 36]);
         $response->setData($objects);
     }
 

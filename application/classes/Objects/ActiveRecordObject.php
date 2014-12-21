@@ -71,28 +71,8 @@ abstract class ActiveRecordObject implements JsonSerializable {
      * @param null $offset
      * @return static[]
      */
-    public static function getFilteredList($filter, array $args = null, $limit = null, $offset = null) {
+    public static function getListByFilter($filter, array $args = null, $limit = null, $offset = null) {
         return MicroORM::getInstance()->getFilteredListOfObjects(get_called_class(), $filter, $args, $limit, $offset);
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString() {
-        return json_encode($this->exportArray());
-    }
-
-    /**
-     * @return array
-     */
-    public function exportArray() {
-        $object = [];
-        $reflection = new \ReflectionClass($this);
-        foreach($reflection->getProperties() as $property) {
-            $property->setAccessible(true);
-            $object[$property->getName()] = $property->getValue($this);
-        }
-        return $object;
     }
 
     /**

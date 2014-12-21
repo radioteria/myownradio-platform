@@ -160,11 +160,7 @@ class MicroORM extends FilterORM implements Injectable {
 
         $beanConfig = $this->getBeanConfig($reflection);
 
-        if (!isset($beanConfig["@do" . $filter])) {
-            throw new ORMException("No action '" . $filter . "' found");
-        }
-
-        return $this->_loadObjects($reflection, $beanConfig, $beanConfig["@do" . $filter], $filterArgs, $limit, $offset);
+        return $this->_loadObjects($reflection, $beanConfig, $filter, $filterArgs, $limit, $offset);
 
     }
 

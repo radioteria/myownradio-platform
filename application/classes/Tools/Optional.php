@@ -10,7 +10,7 @@ namespace Tools;
 
 use Exception;
 
-class Optional {
+class Optional implements \JsonSerializable {
 
     /** @var Object $value */
     private $value;
@@ -235,6 +235,10 @@ class Optional {
      */
     public function getOrElseFalse() {
         return $this->getOrElse(false);
+    }
+
+    public function jsonSerialize() {
+        return ["test" => $this->test() ? "true" : "false", "value" => $this->value];
     }
 
 }

@@ -12,6 +12,7 @@ use Framework\Controller;
 use Framework\Exceptions\NotImplementedException;
 use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
+use Objects\Stream;
 use REST\Streams;
 
 class DoGetList implements Controller {
@@ -22,10 +23,11 @@ class DoGetList implements Controller {
         $filter     = $get->getParameter("q")->getOrElseEmpty();
         $category   = $get->getParameter("c")->getOrElseNull();
 
-        $from       = $get->getParameter("from")->getOrElse(0);
+        $offset     = $get->getParameter("from")->getOrElse(0);
         $limit      = $get->getParameter("limit")->getOrElse(50);
 
-        $response->setData($streams->getStreamListFiltered($filter, $category, $from, $limit));
+        //$response->setData($streams->getStreamListFiltered($filter, $category, $offset, $limit));
+        $response->setData(Stream::getList($limit, $offset));
     }
 
     /*

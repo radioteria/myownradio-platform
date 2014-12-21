@@ -77,7 +77,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
 
     /**
      * @param string $filter
-     * @param int $category
+     * @param int|null $category
      * @param int $from
      * @param int $limit
      * @return array

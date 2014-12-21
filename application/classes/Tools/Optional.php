@@ -40,14 +40,14 @@ class Optional implements \JsonSerializable {
 
     /**
      * @param $value
-     * @return Object
+     * @return mixed
      */
     public function getOrElse($value) {
         return $this->test() ? $this->value : $value;
     }
 
     /**
-     * @return Object|null
+     * @return mixed|null
      */
     public function getOrElseNull() {
         return $this->getOrElse(null);
@@ -69,7 +69,7 @@ class Optional implements \JsonSerializable {
     }
 
     /**
-     * @return string
+     * @return mixed
      */
     public function getOrElseEmpty() {
         return $this->test() ? $this->value : "";

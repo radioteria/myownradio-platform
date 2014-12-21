@@ -7,6 +7,7 @@
  */
 
 namespace Objects;
+use Tools\Folders;
 
 /**
  * Class User
@@ -69,9 +70,9 @@ class User extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return mixed
      */
-    public function getPassword() {
-        return $this->password;
-    }
+//    public function getPassword() {
+//        return $this->password;
+//    }
 
     /**
      * @return mixed
@@ -203,7 +204,12 @@ class User extends ActiveRecordObject implements ActiveRecord {
         return $this;
     }
 
+    public function getKey() {
+        return isset($this->permalink) ? $this->permalink : $this->uid;
+    }
 
-
+    public function getAvatarUrl() {
+        return Folders::getInstance()->genAvatarUrl($this->avatar);
+    }
 
 } 

@@ -99,11 +99,12 @@ class Common {
 
         $request->getLanguage()->then(function ($language) use ($tagsData) {
             if(array_search($language, array('uk', 'ru')) !== false) {
-                foreach($tagsData as &$tag) {
-                    $tag = self::cp1252dec($tag);
-                }
             }
         });
+
+        foreach($tagsData as &$tag) {
+            $tag = self::cp1252dec($tag);
+        }
 
         $tagsData[0] = Optional::ofZero($tagsData[0]);
 

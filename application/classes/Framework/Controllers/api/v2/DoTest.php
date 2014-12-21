@@ -10,11 +10,11 @@ namespace Framework\Controllers\api\v2;
 
 
 use Framework\Controller;
-use Framework\Services\HttpFile;
+use Framework\Services\HttpFiles;
 
 class DoTest implements Controller {
 
-    public function doPost(HttpFile $files) {
+    public function doPost(HttpFiles $files) {
         $first = $files->getFirstFile();
         $file = $first->get();
         echo gettype($file);

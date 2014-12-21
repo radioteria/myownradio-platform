@@ -211,7 +211,7 @@ class Database implements SingletonInterface, Injectable {
      * @return array
      * @throws ControllerException
      */
-    public function fetchAll($query, array $params = null, $key = null, $callback = null) {
+    public function fetchAll($query, array $params = null, $key = null, callable $callback = null) {
 
         $resource = $this->createResource($query, $params);
 
@@ -237,6 +237,21 @@ class Database implements SingletonInterface, Injectable {
 
     }
 
+    /**
+     * @param $query
+     * @param array $params
+     * @param callable $callback
+     */
+    public function eachRow($query, array $params = null, callable $callback) {
+
+        $resource = $this->createResource($query, $params);
+
+        while ($row = $resource->fetch(PDO::FETCH_ASSOC)) {
+            call_user_func($callback, $row);
+            unset($row);
+        }
+
+    }
 
     /**
      * @param string $query

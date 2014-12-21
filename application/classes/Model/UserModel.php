@@ -228,4 +228,8 @@ class UserModel extends Model implements SingletonInterface {
 
     }
 
+    public function touchLastLoginDate() {
+        $this->user->setLastVisitDate(time())->save();
+    }
+
 }

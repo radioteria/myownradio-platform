@@ -22,6 +22,7 @@ class AuthUserModel extends UserModel implements Injectable {
     function __construct() {
         $uid = $this->getIdBySessionToken();
         parent::__construct($uid);
+        parent::touchLastLoginDate();
     }
 
     public function getIdBySessionToken() {

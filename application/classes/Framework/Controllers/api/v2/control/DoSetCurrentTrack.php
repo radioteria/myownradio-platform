@@ -21,7 +21,7 @@ class DoSetCurrentTrack implements Controller {
         $id     = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
         $track  = $post->getParameter("track")->getOrElseThrow(ControllerException::noArgument("track"));
 
-        PlaylistModel::getInstance($id)->setPlayFrom($track);
+        PlaylistModel::getInstance($id)->scPlayByUniqueID($track);
 
     }
 

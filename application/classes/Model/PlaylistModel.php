@@ -256,15 +256,21 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      */
     private function doAtomic(callable $callable) {
 
+        logger("Doing atomic action...");
+
         $this->getPlayingTrack()->then(function ($track) use ($callable) {
 
             /** @var PlaylistTrack $track */
             $position = $this->getStreamPosition()->get();
             $trackPosition = $position - $track->getTimeOffset();
 
+            logger("Now playing: " . $track->getFileName());
+            logger("Offset: " . number_format($trackPosition / 1000));
+
+            logger("Doing action...");
             call_user_func($callable);
 
-            $this->_setCurrentTrack($track, $trackPosition, false);
+            $this->scPlayByUniqueID($track->getUniqueID(), $trackPosition, false);
 
         })->getOrElseCallback($callable);
 
@@ -297,6 +303,10 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
         Stream::getByID($this->key)
             ->then(function ($stream) use ($trackBean, $startFrom) {
+
+                logger("Restored: " . $trackBean->getFileName());
+                logger("Offset: " . number_format($startFrom / 1000));
+
                 /** @var Stream $stream */
                 $stream->setStartedFrom($trackBean->getTimeOffset() + $startFrom);
                 $stream->setStarted(System::time());
@@ -308,24 +318,6 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
         if ($notify == true) {
             $this->notifyStreamers();
         }
-
-    }
-
-
-
-    /**
-     * @param $uniqueID
-     * @return $this
-     */
-    public function setPlayFrom($uniqueID) {
-
-        $this->_getPlaylistTrack("b.unique_id = ? AND b.stream_id = ?", [$uniqueID, $this->key])
-            ->then(function ($track) {
-                $this->_setCurrentTrack($track, 0, true);
-            })->justThrow(ControllerException::noTrack($uniqueID));
-
-
-        return $this;
 
     }
 
@@ -346,26 +338,24 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     public function optimize() {
 
         Database::doInConnection(function (Database $db) {
-            $tracks = $db->fetchAll("SELECT * FROM mor_stream_tracklist_view WHERE stream_id = ?", [$this->key]);
             $timeOffset = 0;
             $orderIndex = 1;
-            foreach ($tracks as $track) {
-                /** @var Link $link */
-                Link::getByID($track["id"])
-                    ->then(function ($link) use (&$timeOffset, &$orderIndex) {
-                        /** @var Link $link */
-                        $link->setTimeOffset($timeOffset);
-                        $link->setTrackOrder($orderIndex++);
-                        $link->save();
-                    });
-                $timeOffset += $track["duration"];
-            }
+            $db->eachRow("SELECT * FROM mor_stream_tracklist_view WHERE stream_id = ?",
+                [$this->key],
+                function ($track) use (&$timeOffset, &$orderIndex) {
+                    /** @var Link $link */
+                    Link::getByID($track["id"])
+                        ->then(function ($link) use (&$timeOffset, &$orderIndex) {
+                            /** @var Link $link */
+                            $link->setTimeOffset($timeOffset);
+                            $link->setTrackOrder($orderIndex++);
+                            $link->save();
+                        });
+                    $timeOffset += $track["duration"];
+                });
         });
 
-        return $this;
-
     }
-
 
 
     /**

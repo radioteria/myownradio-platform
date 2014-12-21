@@ -12,7 +12,7 @@ use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-class HttpFile implements \ArrayAccess, SingletonInterface, Injectable {
+class HttpFiles implements \ArrayAccess, SingletonInterface, Injectable {
 
     use Singleton;
 

@@ -11,14 +11,14 @@ namespace Framework\Controllers\api\v2\stream;
 
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
-use Framework\Services\HttpFile;
+use Framework\Services\HttpFiles;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 use Framework\Services\Services;
 
 class DoChangeCover implements Controller {
 
-    function doPost(HttpPost $post, HttpFile $file, Services $svc, JsonResponse $response) {
+    function doPost(HttpPost $post, HttpFiles $file, Services $svc, JsonResponse $response) {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
         $file = $file->getFirstFile()->getOrElseThrow(new ControllerException("No image file attached"));

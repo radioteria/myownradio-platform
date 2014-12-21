@@ -8,6 +8,7 @@
 
 namespace Model\Traits;
 
+use Framework\Exceptions\ControllerException;
 use Objects\PlaylistTrack;
 use Objects\Stream;
 use Tools\System;
@@ -95,6 +96,23 @@ trait StreamControl {
             });
 
         $this->notifyStreamers();
+
+    }
+
+    /**
+     * @param $uniqueID
+     * @param int $offset
+     * @param bool $notify
+     * @return $this
+     */
+    public function scPlayByUniqueID($uniqueID, $offset = 0, $notify = true) {
+
+        $this->_getPlaylistTrack("b.unique_id = ? AND b.stream_id = ?", [$uniqueID, $this->key])
+            ->then(function ($track) use ($offset, $notify) {
+                $this->_setCurrentTrack($track, $offset, $notify);
+            })->justThrow(ControllerException::noTrack($uniqueID));
+
+        return $this;
 
     }
 

@@ -10,18 +10,31 @@ namespace Framework\Controllers\api\v2\track;
 
 
 use Framework\Controller;
-use Framework\Services\HttpFile;
+use Framework\Services\HttpFiles;
 use Framework\Services\HttpPost;
 use Model\TracksModel;
 
 class DoUpload implements Controller {
 
-    public function doPost(HttpFile $file, HttpPost $post, TracksModel $model) {
+    public function doPost(HttpFiles $file, HttpPost $post, TracksModel $model) {
 
         $streamID   = $post->getParameter("id");
 
         $file->each(function ($file) use ($streamID, $model) {
-            $model->upload($file, $streamID);
+            if (is_array($file["name"])) {
+                for ($i = 0; $i < count($file["name"]); $i++) {
+                    $tmp = [
+                        "name"      => $file["name"][$i],
+                        "type"      => $file["type"][$i],
+                        "tmp_name"  => $file["tmp_name"][$i],
+                        "error"     => $file["error"][$i],
+                        "size"      => $file["size"][$i]
+                    ];
+                    $model->upload($tmp, $streamID);
+                }
+            } else {
+                $model->upload($file, $streamID);
+            }
         });
 
     }

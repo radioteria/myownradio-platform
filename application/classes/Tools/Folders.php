@@ -22,7 +22,6 @@ class Folders implements Injectable, SingletonInterface {
     const MOR_DIR_STREAM_COVERS     = "%s/streamcovers/%s";
     const MOR_DIR_USER_AVATARS      = "%s/avatars/%s";
 
-
     /* Url generators */
     function genStreamCoverUrl($filename) {
         if ($filename === null) return null;

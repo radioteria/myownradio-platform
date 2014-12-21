@@ -27,8 +27,7 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \Iterator, \Js
 
     public function offsetGet($offset) {
         return MicroORM::getInstance()
-            ->getObjectByID($this->objectName, $this->collection[$offset])
-            ->get();
+            ->getObjectByData($this->objectName, $this->collection[$offset]);
     }
 
     public function offsetSet($offset, $value) {

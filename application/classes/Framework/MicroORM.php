@@ -139,9 +139,9 @@ class MicroORM extends FilterORM implements Injectable {
 
         $reflection = new \ReflectionClass($bean);
 
-        $beanConfig = $this->getBeanConfig($reflection);
+        $config = $this->getBeanConfig($reflection);
 
-        return $this->_loadObjects($reflection, $beanConfig, null, null, $limit, $offset);
+        return $this->_loadObjects($reflection, $config, null, null, $limit, $offset);
 
     }
 
@@ -295,7 +295,7 @@ class MicroORM extends FilterORM implements Injectable {
 
         $query = $this->createBaseSelectRequest($config);
 
-        $this->applyInnerJoin($query, $config);
+        //$this->applyInnerJoin($query, $config);
 
         if (is_string(($filter))) {
             $this->applyFilter($query, $filter, $config, $filterArgs);
@@ -348,31 +348,25 @@ class MicroORM extends FilterORM implements Injectable {
      */
     protected function _getListOfObjects(SelectQuery $query, \ReflectionClass $reflection, array $config, $limit = null, $offset = null) {
 
-        $objects = Database::doInConnection(function (Database $db) use ($query, $reflection, $config, $limit, $offset) {
+        $array = new ActiveRecordCollection($reflection->getName());
 
-            $array = new ActiveRecordCollection($reflection->getName());
+        if (is_numeric($limit)) {
+            $query->limit($limit);
+        }
 
-            if (is_numeric($limit)) {
-                $query->limit($limit);
-            }
+        if (is_numeric($offset)) {
+            $query->offset($offset);
+        }
 
-            if (is_numeric($offset)) {
-                $query->offset($offset);
-            }
+        //$query->selectNone()->select($config["@key"]);
 
-            $query->selectNone()->select($config["@key"]);
+        $query->eachRow(function ($row) use (&$array, &$config) {
 
-            $query->eachRow(function ($row) use (&$array, &$config) {
-
-                $array[] = $row[$config["@key"]];
-
-            });
-
-            return $array;
+            $array[] = $row;
 
         });
 
-        return $objects;
+        return $array;
 
     }
 

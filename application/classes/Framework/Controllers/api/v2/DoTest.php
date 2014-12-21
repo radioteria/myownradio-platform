@@ -11,13 +11,13 @@ namespace Framework\Controllers\api\v2;
 
 use Framework\Controller;
 use Framework\Services\JsonResponse;
-use Objects\User;
+use Objects\Stream;
 
 class DoTest implements Controller {
 
     public function doGet(JsonResponse $response) {
-        $users = User::getList();
-        $response->setData($users);
+        $objects = Stream::getList();
+        $response->setData($objects);
     }
 
 } 

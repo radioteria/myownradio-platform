@@ -212,4 +212,4 @@ class User extends ActiveRecordObject implements ActiveRecord {
         return Folders::getInstance()->genAvatarUrl($this->avatar);
     }
 
-} 
+}

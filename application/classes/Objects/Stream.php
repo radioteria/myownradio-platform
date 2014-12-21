@@ -7,6 +7,7 @@
  */
 
 namespace Objects;
+use Tools\Folders;
 
 /**
  * Class StreamAR
@@ -240,8 +241,25 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
     public function getKey() {
         return isset($this->permalink) ? $this->permalink : $this->sid;
+    }
+
+    /**
+     * @return User
+     */
+    public function getUser() {
+        return User::getByID($this->getUserID())->get();
+    }
+
+    /**
+     * @return null|string
+     */
+    public function getCoverUrl() {
+        return Folders::getInstance()->genStreamCoverUrl($this->cover);
     }
 
 } 

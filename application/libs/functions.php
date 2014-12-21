@@ -24,9 +24,10 @@ function callPrivateMethod($class, $method, array $args = []) {
 function logger($message) {
     $path = "/usr/local/myownradio/logs/rest-server.log";
 
-    $file = fopen($path, "a+");
+    $file = fopen($path, "a");
     fprintf($file, "%s %s\n", date("d-m-Y, h:i:s"), $message);
     fclose($file);
+    flush();
 }
 
 function camelToUnderscore($input) {

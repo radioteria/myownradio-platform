@@ -14,9 +14,7 @@ namespace Objects;
  * @table r_subscriptions
  * @key id
  */
-class Subscription implements ActiveRecord {
-
-    use ActiveRecordObject;
+class Subscription extends ActiveRecordObject implements ActiveRecord {
 
     protected $id, $uid, $plan, $payment_info, $expire;
 

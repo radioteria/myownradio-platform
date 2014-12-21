@@ -13,9 +13,7 @@ use Tools\Folders;
  * @table r_tracks
  * @key tid
  */
-class Track implements ActiveRecord {
-
-    use ActiveRecordObject;
+class Track extends ActiveRecordObject implements ActiveRecord {
 
     protected $tid, $uid, $filename, $ext,
         $artist, $title, $album,

@@ -14,9 +14,7 @@ namespace Objects;
  * @table r_limitations
  * @key level
  */
-class Plan implements ActiveRecord {
-
-    use ActiveRecordObject;
+class Plan extends ActiveRecordObject implements ActiveRecord {
 
     protected $level, $name, $upload_limit, $streams_max, $price;
 

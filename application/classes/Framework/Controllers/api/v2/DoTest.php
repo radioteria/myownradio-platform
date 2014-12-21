@@ -10,14 +10,14 @@ namespace Framework\Controllers\api\v2;
 
 
 use Framework\Controller;
-use Framework\Services\HttpFiles;
+use Framework\Services\JsonResponse;
+use Objects\Stream;
 
 class DoTest implements Controller {
 
-    public function doPost(HttpFiles $files) {
-        $first = $files->getFirstFile();
-        $file = $first->get();
-        echo gettype($file);
+    public function doGet(JsonResponse $response) {
+        $streams = Stream::getList();
+        $response->setData($streams);
     }
 
 } 

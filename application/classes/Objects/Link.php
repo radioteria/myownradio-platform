@@ -16,9 +16,7 @@ namespace Objects;
  * @table r_link
  * @key id
  */
-class Link implements ActiveRecord {
-
-    use ActiveRecordObject;
+class Link extends ActiveRecordObject implements ActiveRecord {
 
     protected $id, $stream_id, $track_id, $t_order, $unique_id, $time_offset;
 

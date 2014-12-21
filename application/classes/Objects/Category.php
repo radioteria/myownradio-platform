@@ -15,9 +15,7 @@ namespace Objects;
  * @key id
  * @view
  */
-class Category implements ActiveRecord {
-
-    use ActiveRecordObject;
+class Category extends ActiveRecordObject implements ActiveRecord {
 
     private $id, $name, $permalink;
 

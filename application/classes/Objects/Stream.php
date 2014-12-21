@@ -17,9 +17,7 @@ namespace Objects;
  * @do_SEARCH_BY_HASHTAGS MATCH(hashtags) AGAINST(? IN BOOLEAN MODE)
  * @do_SEARCH_BY_ANYTHING MATCH(name, permalink, hashtags) AGAINST (? IN BOOLEAN MODE)
  */
-class Stream implements ActiveRecord {
-
-    use ActiveRecordObject;
+class Stream extends ActiveRecordObject implements ActiveRecord {
 
     protected
         $sid,
@@ -114,6 +112,13 @@ class Stream implements ActiveRecord {
      */
     public function getHashTags() {
         return $this->hashtags;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getHashTagsArray() {
+        return preg_split("~\\s*,\\s*~", $this->hashtags);
     }
 
     /**
@@ -233,6 +238,10 @@ class Stream implements ActiveRecord {
     public function setUserID($uid) {
         $this->uid = $uid;
         return $this;
+    }
+
+    public function getKey() {
+        return isset($this->permalink) ? $this->permalink : $this->sid;
     }
 
 } 

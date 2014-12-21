@@ -17,9 +17,7 @@ namespace Objects;
  * @do_FIND_BY_KEY_PARAMS login = :key OR mail = :key
  * @do_FIND_BY_CREDENTIALS login = ? AND password = ?
  */
-class User implements ActiveRecord {
-
-    use ActiveRecordObject;
+class User extends ActiveRecordObject implements ActiveRecord {
 
     protected
         $uid, $mail, $login, $password,

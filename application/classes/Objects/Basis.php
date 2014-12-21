@@ -15,9 +15,7 @@ namespace Objects;
  * @table mor_payment_basis
  * @key id
  */
-class Basis implements ActiveRecord {
-
-    use ActiveRecordObject;
+class Basis extends ActiveRecordObject implements ActiveRecord {
 
     protected $id, $info, $duration;
 

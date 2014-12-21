@@ -14,6 +14,7 @@ use Framework\Services\Database;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Injectable;
 use Objects\ActiveRecord;
+use Objects\ActiveRecordCollection;
 use Tools\Optional;
 use Tools\Singleton;
 
@@ -304,8 +305,7 @@ class MicroORM extends FilterORM implements Injectable {
             $this->applyFilter($query, $filter, $config, $filterArgs);
         }
 
-
-        return $this->_getListOfObjects($query, $reflection, $limit, $offset);
+        return $this->_getListOfObjects($query, $reflection, $config, $limit, $offset);
 
     }
 
@@ -345,15 +345,16 @@ class MicroORM extends FilterORM implements Injectable {
     /**
      * @param SelectQuery $query
      * @param \ReflectionClass $reflection
+     * @param array $config
      * @param null|int $limit
      * @param null|int $offset
      * @return ActiveRecord[]
      */
-    protected function _getListOfObjects(SelectQuery $query, \ReflectionClass $reflection, $limit = null, $offset = null) {
+    protected function _getListOfObjects(SelectQuery $query, \ReflectionClass $reflection, array $config, $limit = null, $offset = null) {
 
-        $objects = Database::doInConnection(function (Database $db) use ($query, $reflection, $limit, $offset) {
+        $objects = Database::doInConnection(function (Database $db) use ($query, $reflection, $config, $limit, $offset) {
 
-            $array = [];
+            $array = new ActiveRecordCollection($reflection->getName());
 
             if (is_numeric($limit)) {
                 $query->limit($limit);
@@ -363,20 +364,13 @@ class MicroORM extends FilterORM implements Injectable {
                 $query->offset($offset);
             }
 
-            $rows = $db->fetchAll($query);
+            $query->selectNone()->select($config["@key"]);
 
-            foreach ($rows as $row) {
+            $query->eachRow(function ($row) use (&$array, &$config) {
 
-                $instance = $reflection->newInstance();
+                $array[] = $row[$config["@key"]];
 
-                foreach ($reflection->getProperties() as $prop) {
-                    $prop->setAccessible(true);
-                    $prop->setValue($instance, @$row[$prop->getName()]);
-                }
-
-                $array[] = $instance;
-
-            }
+            });
 
             return $array;
 

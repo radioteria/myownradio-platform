@@ -142,6 +142,15 @@ abstract class BaseQuery implements \Countable {
     }
 
     /**
+     * @param callable $callable
+     */
+    public function eachRow(callable $callable) {
+        Database::doInConnection(function (Database $db) use (&$callable) {
+            $db->eachRow($this, null, $callable);
+        });
+    }
+
+    /**
      * @return int
      */
     public function count() {

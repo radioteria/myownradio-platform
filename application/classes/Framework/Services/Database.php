@@ -251,6 +251,8 @@ class Database implements SingletonInterface, Injectable {
             unset($row);
         }
 
+        $resource->closeCursor();
+
     }
 
     /**

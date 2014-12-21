@@ -1,5 +1,7 @@
 <?php
 
+gc_enable();
+
 $memory = memory_get_usage(true);
 
 require_once "application/startup.php";

@@ -337,10 +337,12 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     public function optimize() {
 
-        Database::doInConnection(function (Database $db) {
-            $timeOffset = 0;
-            $orderIndex = 1;
-            $db->eachRow("SELECT * FROM mor_stream_tracklist_view WHERE stream_id = ?",
+        $timeOffset = 0;
+        $orderIndex = 1;
+
+        DBQuery::getInstance()->selectFrom("mor_stream_tracklist_view")
+            ->where("stream_id", $this->key)
+            ->eachRow("SELECT * FROM mor_stream_tracklist_view WHERE stream_id = ?",
                 [$this->key],
                 function ($track) use (&$timeOffset, &$orderIndex) {
                     /** @var Link $link */
@@ -353,10 +355,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                         });
                     $timeOffset += $track["duration"];
                 });
-        });
-
     }
-
 
     /**
      * @param string $filter

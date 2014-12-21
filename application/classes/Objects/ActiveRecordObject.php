@@ -102,6 +102,9 @@ abstract class ActiveRecordObject implements JsonSerializable {
         return MicroORM::getInstance()->cloneObject($this);
     }
 
+    /**
+     * @return array|mixed
+     */
     public function jsonSerialize() {
         $data = [];
         $prefix = "get";

@@ -152,7 +152,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param int|null $limit
      * @param int|null $offset
      * @return object
-     * @throws Exceptions\ORMException
+     * @throws ORMException
      */
     public function getFilteredListOfObjects($bean, $filter, array $filterArgs = null, $limit = null, $offset = null) {
 
@@ -385,8 +385,8 @@ class MicroORM extends FilterORM implements Injectable {
 
     /**
      * @param \ReflectionClass $beanComment
+     * @throws ORMException
      * @return array
-     * @throws Exceptions\ORMException
      */
     private function getBeanConfig($beanComment) {
 

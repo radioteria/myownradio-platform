@@ -12,6 +12,7 @@ namespace REST;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\Injectable;
 use Model\AuthUserModel;
+use Model\PlaylistModel;
 use Model\StreamModel;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -73,6 +74,16 @@ class Playlist implements SingletonInterface, Injectable {
 
         return $tracks;
 
+    }
+
+    // todo: tomorrow
+    public function getNowPlaying($id) {
+
+        //$streamModel = PlaylistModel::getInstance($id);
+
+        //$position = ($time - $this->started + $this->started_from) % $this->tracks_duration;
+
+        return 'test';
     }
 
 } 

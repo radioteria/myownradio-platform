@@ -237,26 +237,5 @@ class Streams implements \Countable, Injectable, SingletonInterface {
 
     }
 
-    // todo: make it without objects
-    public function getStreamStatus($id) {
-
-        $model = PlaylistModel::getInstance($id);
-
-        $position = $model->getStreamPosition(System::time() - 5000)->getOrElseNull();
-
-        if (is_null($position)) { return null; }
-
-        /** @var PlaylistTrack $track */
-        $track = $model->getTrackByTime($position)->get();
-
-        return [
-            "artist"    => $track->getArtist(),
-            "title"     => $track->getTitle(),
-            "duration"  => $track->getDuration(),
-            "position"  => $position - $track->getTimeOffset()
-        ];
-
-    }
-
 
 }

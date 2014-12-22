@@ -9,10 +9,17 @@
 namespace Framework\Controllers\api\v2\streams;
 
 
-class DoGetBookmarks {
+use Framework\Controller;
+use Framework\Services\JsonResponse;
+use Model\AuthUserModel;
+use REST\Streams;
 
-    public function doGet() {
-        echo '123';
+class DoGetBookmarks implements Controller {
+
+    public function doGet(JsonResponse $response, Streams $streams, AuthUserModel $user) {
+
+        $response->setData($streams->getBookmarksByUser($user));
+
     }
 
 } 

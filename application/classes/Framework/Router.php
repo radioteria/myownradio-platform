@@ -58,13 +58,13 @@ class Router {
 
         }
 
-        //if (JsonResponse::hasInstance()) {
+        if (JsonResponse::hasInstance()) {
 
             $response = JsonResponse::getInstance();
 
             callPrivateMethod($response, "write");
 
-        //}
+        }
 
 
     }

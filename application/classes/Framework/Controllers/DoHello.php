@@ -10,11 +10,11 @@ namespace Framework\Controllers;
 
 
 use Framework\Controller;
+use Framework\Services\JsonResponse;
 
 class DoHello implements Controller {
 
-    public function doGet() {
-
+    public function doGet(JsonResponse $response) {
     }
 
 } 

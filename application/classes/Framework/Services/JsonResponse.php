@@ -9,6 +9,7 @@
 namespace Framework\Services;
 
 
+use Tools\JsonPrinter;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -20,7 +21,6 @@ class JsonResponse implements Injectable, SingletonInterface {
     private $data = null;
     private $message = "OK";
     private $response = 200;
-    private $enabled = true;
 
     public function setData($data) {
         $this->data = $data;
@@ -40,28 +40,20 @@ class JsonResponse implements Injectable, SingletonInterface {
 
     private function write() {
 
+        ob_start("ob_gzhandler");
+
         http_response_code($this->response);
 
-        if ($this->enabled) {
+        header("Content-Type: application/json");
 
-            header("Content-Type: application/json");
+        $printer = new JsonPrinter();
 
-            $json = json_encode([
-                "code" => $this->code,
-                "message" => $this->message,
-                "data" => $this->data
-            ]);
+        $printer->printJSON([
+            "code" => $this->code,
+            "message" => $this->message,
+            "data" => $this->data
+        ]);
 
-            logger("JSON size = " . strlen($json));
-
-            echo $json;
-
-        }
-
-    }
-
-    public function disable() {
-        $this->enabled = false;
     }
 
 }

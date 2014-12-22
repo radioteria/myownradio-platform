@@ -254,9 +254,9 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return User
      */
-    public function getUser() {
-        return User::getByID($this->getUserID())->get();
-    }
+//    public function getUser() {
+//        return User::getByID($this->getUserID())->get();
+//    }
 
     /**
      * @return null|string

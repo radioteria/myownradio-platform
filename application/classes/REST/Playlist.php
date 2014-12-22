@@ -36,12 +36,17 @@ class Playlist implements SingletonInterface, Injectable {
     }
 
     /**
+     * @param null $color
      * @return array
      */
-    public function getAllTracks() {
+    public function getAllTracks($color = null) {
 
         $query = $this->getTracksPrefix()
             ->where("uid", $this->user->getID());
+
+        if (is_numeric($color)) {
+            $query->where("color", $color);
+        }
 
         $tracks = $query->fetchAll();
 
@@ -50,14 +55,19 @@ class Playlist implements SingletonInterface, Injectable {
 
     /**
      * @param StreamModel $stream
+     * @param $color
      * @return array
      */
-    public function getTracksByStream(StreamModel $stream) {
+    public function getTracksByStream(StreamModel $stream, $color = null) {
 
         $query = $this->getTracksPrefix()
             ->where("stream_id", $stream->getID());
 
         $query->select("unique_id", "time_offset");
+
+        if (is_numeric($color)) {
+            $query->where("color", $color);
+        }
 
         $tracks = $query->fetchAll();
 

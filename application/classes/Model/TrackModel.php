@@ -187,6 +187,13 @@ class TrackModel extends Model implements SingletonInterface {
 
     }
 
+    public function changeColor($color) {
+
+        $this->object->setColor($color);
+        $this->object->save();
+
+    }
+
     /**
      * @return void
      */

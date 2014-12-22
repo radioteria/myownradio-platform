@@ -10,12 +10,14 @@ namespace Framework\Controllers\api\v2\tracks;
 
 
 use Framework\Controller;
+use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
 use REST\Playlist;
 
 class DoGetAll implements Controller {
-    public function doGet(JsonResponse $response, Playlist $playlist) {
-        $tracks = $playlist->getAllTracks();
+    public function doGet(HttpGet $get, JsonResponse $response, Playlist $playlist) {
+        $color = $get->getParameter("color")->getOrElseNull();
+        $tracks = $playlist->getAllTracks($color);
         $response->setData($tracks);
     }
 } 

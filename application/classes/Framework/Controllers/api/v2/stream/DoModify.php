@@ -18,7 +18,7 @@ use Model\StreamModel;
 
 class DoModify implements Controller {
 
-    public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response) {
+    public function doPost(HttpPost $post, JsonResponse $response) {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
         $name = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));
@@ -26,21 +26,11 @@ class DoModify implements Controller {
         $tags = $post->getParameter("tags")->getOrElseEmpty();
         $permalink = $post->getParameter("permalink")->getOrElseNull();
         $category = $post->getParameter("category")->getOrElseNull();
-
-        $validator->validateStreamName($name);
-        $validator->validateStreamPermalink($permalink, $id);
+        $access = $post->getParameter("access")->getOrElse('PUBLIC');
 
         $stream = StreamModel::getInstance($id);
 
-        $stream->setName($name);
-        $stream->setInfo($info);
-        $stream->setHashtags($tags);
-        $stream->setPermalink($permalink);
-        $stream->setCategory($category);
-
-        $stream->save();
-
-        $response->setData($stream->getName());
+        $stream->update($name, $info, $permalink, $tags, $category, $access);
 
     }
 } 

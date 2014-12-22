@@ -12,8 +12,8 @@ namespace REST;
 use Framework\Exceptions\ControllerException;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Injectable;
-use Model\AuthUserModel;
 use Model\PlaylistModel;
+use Model\UserModel;
 use Objects\PlaylistTrack;
 use Tools\Common;
 use Tools\Folders;
@@ -156,7 +156,11 @@ class Streams implements \Countable, Injectable, SingletonInterface {
 
     }
 
-    public function getBookmarksByUser(AuthUserModel $user) {
+    /**
+     * @param UserModel $user
+     * @return array
+     */
+    public function getBookmarksByUser(UserModel $user) {
 
         $query = $this->getStreamsPrefix();
         $query->where("a.sid IN (SELECT sid FROM r_bookmarks WHERE uid = ?)", [$user->getID()]);

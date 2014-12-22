@@ -9,5 +9,4 @@
 namespace Framework;
 
 interface Controller {
-
 }

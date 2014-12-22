@@ -11,10 +11,10 @@ namespace Framework\Controllers\api\v2\streams;
 use Framework\Controller;
 use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
-use Objects\Stream;
 use REST\Streams;
 
 class DoGetList implements Controller {
+
     /**
      * This method invoked on GET method
      */
@@ -26,10 +26,7 @@ class DoGetList implements Controller {
         $offset     = $get->getParameter("from")->getOrElse(0);
         $limit      = $get->getParameter("limit")->getOrElse(50);
 
-        //$streams = Stream::getList($limit, $offset);
-
         $response->setData($streams->getStreamListFiltered($filter, $category, $offset, $limit));
-        //$response->setData(Stream::getList($limit, $offset));
 
     }
 

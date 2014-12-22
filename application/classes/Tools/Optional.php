@@ -89,7 +89,7 @@ class Optional implements \JsonSerializable {
 
     /**
      * @param callable $callable
-     * @return $this
+     * @return $this|mixed
      */
     public function then(callable $callable) {
         if ($this->test()) {
@@ -100,7 +100,7 @@ class Optional implements \JsonSerializable {
 
     /**
      * @param callable $callable
-     * @return $this
+     * @return $this|mixed
      */
     public function otherwise(callable $callable) {
         if (!$this->test()) {

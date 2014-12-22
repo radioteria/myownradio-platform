@@ -174,6 +174,20 @@ class Streams implements \Countable, Injectable, SingletonInterface {
 
     }
 
+    public function getByUser(UserModel $user) {
+
+        $query = $this->getStreamsPrefix();
+        $query->where("a.uid", [$user->getID()]);
+
+        $streams = $query->fetchAll(null, function ($row) {
+            $this->processStreamRow($row);
+            return $row;
+        });
+
+        return $streams;
+
+    }
+
 
     /**
      * @param $row

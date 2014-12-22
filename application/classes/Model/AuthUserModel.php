@@ -25,7 +25,7 @@ class AuthUserModel extends UserModel implements Injectable {
         parent::touchLastLoginDate();
     }
 
-    public function getIdBySessionToken() {
+    private function getIdBySessionToken() {
 
         $exception = UnauthorizedException::noAccess();
 
@@ -49,7 +49,6 @@ class AuthUserModel extends UserModel implements Injectable {
         return $uid;
 
     }
-
 
     public function getToken() {
         return $this->userToken;

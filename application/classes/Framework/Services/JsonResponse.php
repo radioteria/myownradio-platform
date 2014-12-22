@@ -46,11 +46,15 @@ class JsonResponse implements Injectable, SingletonInterface {
 
             header("Content-Type: application/json");
 
-            echo json_encode([
+            $json = json_encode([
                 "code" => $this->code,
                 "message" => $this->message,
                 "data" => $this->data
             ]);
+
+            logger("JSON size = " . strlen($json));
+
+            echo $json;
 
         }
 

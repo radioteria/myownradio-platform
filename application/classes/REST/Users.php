@@ -32,6 +32,12 @@ class Users implements SingletonInterface, Injectable {
 
     }
 
+    /**
+     * @param null|string $filter
+     * @param null|int $limit
+     * @param null|int $offset
+     * @return array
+     */
     public function getUsersList($filter = null, $limit = null, $offset = null) {
 
         $query = $this->getUsersPrefix();

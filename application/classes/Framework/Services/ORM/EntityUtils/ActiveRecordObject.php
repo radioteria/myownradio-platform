@@ -6,10 +6,10 @@
  * Time: 12:04
  */
 
-namespace Objects;
+namespace Framework\Services\ORM\EntityUtils;
 
 
-use Framework\MicroORM;
+use Framework\Services\ORM\Core\MicroORM;
 use JsonSerializable;
 use Tools\Optional;
 use Tools\Singleton;

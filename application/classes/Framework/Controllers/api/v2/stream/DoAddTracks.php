@@ -13,10 +13,11 @@ use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
+use Framework\Services\JsonResponse;
 use Model\PlaylistModel;
 
 class DoAddTracks implements Controller {
-    public function doPost(HttpPost $post, InputValidator $validator) {
+    public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response) {
 
         $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
         $tracks = $post->getParameter("tracks")->getOrElseThrow(ControllerException::noArgument("tracks"));

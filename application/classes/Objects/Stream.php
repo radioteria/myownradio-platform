@@ -7,6 +7,8 @@
  */
 
 namespace Objects;
+use Framework\Services\ORM\EntityUtils\ActiveRecord;
+use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 use Tools\Folders;
 
 /**
@@ -261,6 +263,10 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      */
     public function getCoverUrl() {
         return Folders::getInstance()->genStreamCoverUrl($this->cover);
+    }
+
+    public function getBlahBlah() {
+        return "Hello, World!";
     }
 
 } 

@@ -6,15 +6,15 @@
  * Time: 9:31
  */
 
-namespace Framework;
+namespace Framework\Services\ORM\Core;
 
 
 use Framework\Exceptions\ORMException;
 use Framework\Services\Database;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Injectable;
-use Objects\ActiveRecord;
-use Objects\ActiveRecordCollection;
+use Framework\Services\ORM\EntityUtils\ActiveRecord;
+use Framework\Services\ORM\EntityUtils\ActiveRecordCollection;
 use Tools\Optional;
 use Tools\Singleton;
 

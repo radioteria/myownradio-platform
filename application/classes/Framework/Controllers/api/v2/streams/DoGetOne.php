@@ -15,6 +15,7 @@ use Framework\Services\JsonResponse;
 use REST\Streams;
 
 class DoGetOne implements Controller {
+
     public function doGet(HttpGet $get, JsonResponse $response, Streams $streams) {
 
         $id = $get->getParameter("id")
@@ -25,4 +26,5 @@ class DoGetOne implements Controller {
         $response->setData($result);
 
     }
+
 } 

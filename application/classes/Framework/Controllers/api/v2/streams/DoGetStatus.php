@@ -16,9 +16,11 @@ use Framework\Services\JsonResponse;
 use REST\Streams;
 
 class DoGetStatus implements Controller {
+
     public function doGet(HttpGet $get, Streams $streams, JsonResponse $response) {
         $id = $get->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
         $status = $streams->getStreamStatus($id);
         $response->setData($status);
     }
+
 } 

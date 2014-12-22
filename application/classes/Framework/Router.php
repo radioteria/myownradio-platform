@@ -58,9 +58,14 @@ class Router {
 
         }
 
-        $response = JsonResponse::getInstance();
+        //if (JsonResponse::hasInstance()) {
 
-        callPrivateMethod($response, "write");
+            $response = JsonResponse::getInstance();
+
+            callPrivateMethod($response, "write");
+
+        //}
+
 
     }
 
@@ -84,7 +89,6 @@ class Router {
 
             // Try to find required method and get parameters
             $invoker = $reflection->getMethod($method);
-            $params = $invoker->getParameters();
 
         } catch (\ReflectionException $e) {
 
@@ -92,13 +96,11 @@ class Router {
 
         };
 
-        // Inject dependencies
-        $dependencies = $this->loadDependencies($params);
-
         // Create instance of desired controller
         $classInstance = $reflection->newInstance();
+
         // Execute controller
-        $invoker->invokeArgs($classInstance, $dependencies);
+        callDependencyInjection($classInstance, $invoker);
 
     }
 
@@ -110,41 +112,6 @@ class Router {
         $response->setData($exception->getMyData());
         $response->setCode(0);
 
-    }
-
-    private function loadDependencies(array $params) {
-        $dependencies = [];
-        foreach ($params as $param) {
-
-            /** @var \ReflectionParameter $param */
-            if (! $param->getClass()->implementsInterface("Framework\\Services\\Injectable")) {
-                throw new Exception("Object could not be injected");
-            }
-
-            if ($param->getClass()->implementsInterface("Tools\\SingletonInterface")) {
-                $dependencies[] = $param->getClass()->getMethod("getInstance")->invoke(null);
-            } else {
-                $dependencies[] = $param->getClass()->newInstanceArgs();
-            }
-
-        }
-        return $dependencies;
-    }
-
-    private function isSingleton(\ReflectionClass $class) {
-        return $this->hasTrait($class, "Tools\\Singleton");
-    }
-
-    private function isInjectable(\ReflectionClass $class) {
-        return $this->hasTrait($class, "Framework\\Services\\Injectable");
-    }
-
-    private function hasTrait(\ReflectionClass $class, $traitName) {
-        foreach($class->getTraits() as $trait) {
-            if ($trait->getName() === $traitName)
-                return true;
-        }
-        return false;
     }
 
 }

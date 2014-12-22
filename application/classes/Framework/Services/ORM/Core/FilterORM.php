@@ -6,7 +6,7 @@
  * Time: 15:43
  */
 
-namespace Framework;
+namespace Framework\Services\ORM\Core;
 
 
 use Framework\Exceptions\ORMException;

@@ -13,10 +13,11 @@ use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
+use Framework\Services\JsonResponse;
 use Model\AuthUserModel;
 
 class DoChangePassword implements Controller {
-    public function doPost(HttpPost $post, InputValidator $validator, AuthUserModel $user) {
+    public function doPost(HttpPost $post, InputValidator $validator, AuthUserModel $user, JsonResponse $response) {
 
         $password = $post->getParameter("password")
             ->getOrElseThrow(ControllerException::noArgument("password"));

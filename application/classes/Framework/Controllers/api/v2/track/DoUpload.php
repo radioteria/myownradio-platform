@@ -12,11 +12,12 @@ namespace Framework\Controllers\api\v2\track;
 use Framework\Controller;
 use Framework\Services\HttpFiles;
 use Framework\Services\HttpPost;
+use Framework\Services\JsonResponse;
 use Model\TracksModel;
 
 class DoUpload implements Controller {
 
-    public function doPost(HttpFiles $file, HttpPost $post, TracksModel $model) {
+    public function doPost(HttpFiles $file, HttpPost $post, TracksModel $model, JsonResponse $response) {
 
         $streamID   = $post->getParameter("id");
 

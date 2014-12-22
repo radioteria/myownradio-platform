@@ -6,7 +6,7 @@
  * Time: 10:01
  */
 
-namespace Objects;
+namespace Framework\Services\ORM\EntityUtils;
 
 
 interface ActiveRecord {

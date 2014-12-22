@@ -19,9 +19,7 @@ use Tools\Folders;
 
 class DoGetStreamCover implements Controller {
 
-    public function doGet(HttpGet $get, JsonResponse $response) {
-
-        $response->disable();
+    public function doGet(HttpGet $get) {
 
         $fn = $get->getParameter("fn")->getOrElseThrow(ControllerException::noArgument("fn"));
         $size = $get->getParameter("size")->getOrElseNull();

@@ -6,10 +6,10 @@
  * Time: 17:40
  */
 
-namespace Objects;
+namespace Framework\Services\ORM\EntityUtils;
 
 
-use Framework\MicroORM;
+use Framework\Services\ORM\Core\MicroORM;
 
 class ActiveRecordCollection implements \ArrayAccess, \Countable, \Iterator, \JsonSerializable {
 
@@ -19,6 +19,12 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \Iterator, \Js
 
     function __construct($objectName) {
         $this->objectName = $objectName;
+    }
+
+    public function addMany(array $objects) {
+        foreach ($objects as $object) {
+            $this->offsetSet(null, $object);
+        }
     }
 
     public function offsetExists($offset) {

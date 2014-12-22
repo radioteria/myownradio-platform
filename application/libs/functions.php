@@ -21,6 +21,26 @@ function callPrivateMethod($class, $method, array $args = []) {
     return $method->invokeArgs($class, $args);
 }
 
+function callDependencyInjection($object, ReflectionMethod $method) {
+    $method->setAccessible(true);
+    $args = [];
+    foreach ($method->getParameters() as $param) {
+
+        /** @var \ReflectionParameter $param */
+        if (! $param->getClass()->implementsInterface("Framework\\Services\\Injectable")) {
+            throw new Exception("Object could not be injected");
+        }
+
+        if ($param->getClass()->implementsInterface("Tools\\SingletonInterface")) {
+            $args[] = $param->getClass()->getMethod("getInstance")->invoke(null);
+        } else {
+            $args[] = $param->getClass()->newInstanceArgs();
+        }
+
+    }
+    return $method->invokeArgs($object, $args);
+}
+
 function logger($message) {
     $path = "/usr/local/myownradio/logs/rest-server.log";
 

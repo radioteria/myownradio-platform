@@ -6,16 +6,17 @@ namespace Tools;
 use Framework\Services\Database;
 use Framework\Services\HttpRequest;
 
-class Module
-{
+class ModuleModel implements SingletonInterface {
 
-    static function parseModules($contents, $history = array(), $_MODULE = null) {
+    use Singleton;
+
+    function parseModules($contents, $history = array(), $_MODULE = null) {
         return preg_replace_callback("/\\<\\!\\-\\-\\s+module\\:(.+)\\s+\\-\\-\\>/", function ($match) use ($history, $_MODULE) {
-            return self::getModule($match[1], $history, $_MODULE);
+            return $this->getModule($match[1], $history, $_MODULE);
         }, $contents);
     }
 
-    static function getModuleNameByAlias($alias) {
+    function getModuleNameByAlias($alias) {
         return Database::getInstance()->fetchOneColumn("SELECT name FROM r_modules WHERE alias = ? LIMIT 1", [$alias])
             ->getOrElseNull();
     }

@@ -8,13 +8,14 @@
 
 namespace Framework;
 
-use Exception;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\DocNotFoundException;
 use Framework\Exceptions\NotImplementedException;
 use Framework\Services\HttpGet;
 use Framework\Services\HttpRequest;
 use Framework\Services\JsonResponse;
+use Framework\Services\Module\ModuleNotFoundException;
+use Framework\Services\Module\ModuleObject;
 use ReflectionClass;
 use Tools\Singleton;
 
@@ -36,9 +37,21 @@ class Router {
 
     public function route() {
 
+
         try {
 
-            $this->findRoute();
+
+            try {
+                $request = HttpRequest::getInstance();
+                $module = new ModuleObject($this->legacyRoute);
+                if ($request->getMethod() == "GET") {
+                    echo $module->executeHtml();
+                } elseif ($request->getMethod() == "POST") {
+                    echo $module->executePost();
+                }
+            } catch (ModuleNotFoundException $e) {
+                $this->findRoute();
+            }
 
         } catch (ControllerException $e) {
 

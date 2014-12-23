@@ -38,14 +38,6 @@ public class GetRunStateHandler implements LHttpHandler {
             }
         }
 
-        out.println("");
-        out.println("Active streamers:");
-        out.println("");
-
-        ConcurrentBufferRepository
-                .getKeys()
-                .forEach((value) -> System.out.println(" * " + value.toString()));
-
         exchange.flush();
 
     }

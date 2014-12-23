@@ -112,6 +112,7 @@ class Playlist implements SingletonInterface, Injectable {
         return [
             'time' => System::time(),
             'position' => $position,
+            'range' => self::NOW_PLAYING_TIME_RANGE * 2,
             'tracks' => $tracks
         ];
 

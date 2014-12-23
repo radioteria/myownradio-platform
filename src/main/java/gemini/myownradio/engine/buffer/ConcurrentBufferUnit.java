@@ -45,7 +45,7 @@ public class ConcurrentBufferUnit implements Cloneable {
     }
 
     private void saveData() {
-        byteBuffer = ByteBuffer.allocate(this.buffSize + 8).putLong(cursor).put(buffer).array();
+        byteBuffer = ByteBuffer.allocate(8 + this.buffSize).putLong(cursor).put(buffer).array();
     }
 
     public void write(byte[] data) throws IOException {

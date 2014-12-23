@@ -31,18 +31,18 @@ public class LHttpRequest {
         String line = requestHeaders.get(0);
 
         if (line == null || line.trim().length() == 0)
-            throw LHttpException.newBadRequest();
+            throw LHttpException.badRequest();
 
         String[] temp = line.split("\\s+"); // Split method
 
         if (temp.length != 3)
-            throw LHttpException.newBadRequest();
+            throw LHttpException.badRequest();
 
         /* Request method */
         String method = temp[0];
 
         if (!temp[2].contains("HTTP/"))
-            throw LHttpException.newBadRequest();
+            throw LHttpException.badRequest();
 
         this.protoVersion = temp[2];
 
@@ -87,7 +87,7 @@ public class LHttpRequest {
                 break;
 
             if (!line.contains(":"))
-                throw LHttpException.newBadRequest();
+                throw LHttpException.badRequest();
 
             temp = line.split(":", 2);
             this.headers.add(new CaseString(temp[0]), temp[1].trim());

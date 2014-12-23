@@ -18,7 +18,7 @@ public class GetStreamAudioHandler implements LHttpHandler {
 
     public void handler(LHttpProtocol exchange) throws IOException {
 
-        String stream = exchange.getParameter("s").orElseThrow(() -> LHttpException.newBadRequest());
+        String stream = exchange.getParameter("s").orElseThrow(() -> LHttpException.badRequest());
         boolean metadata = exchange.headerEquals("icy-metadata", "1");
 
         String format = exchange.getParameter("f", "mp3_128k");

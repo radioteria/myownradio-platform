@@ -14,7 +14,7 @@ public class LHttpException extends RuntimeException {
         return status;
     }
 
-    public static LHttpException newBadRequest() {
+    public static LHttpException badRequest() {
         return new LHttpException(LHttpStatus.STATUS_400);
     }
 

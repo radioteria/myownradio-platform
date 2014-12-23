@@ -23,7 +23,7 @@ public class SetStreamStateNotifyHandler implements LHttpHandler {
             return;
         }
 
-        final int stream_id = Integer.parseInt(exchange.getParameter("s").orElseThrow(() -> LHttpException.newBadRequest()));
+        final int stream_id = Integer.parseInt(exchange.getParameter("s").orElseThrow(() -> LHttpException.badRequest()));
 
         long notified = ConcurrentBufferRepository
                 .getKeys()

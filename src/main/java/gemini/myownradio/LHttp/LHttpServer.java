@@ -72,7 +72,8 @@ public class LHttpServer {
                     try {
                         logger.println("New connection attempt. Reading request...");
                         LHttpRequest request = readRequest(inputStream, socket);
-                        logger.sprintf("Client IP=%s, ROUTE=%s", socket.getInetAddress().getHostAddress(), request.getRequestPath());
+                        logger.sprintf("Client IP=%s, ROUTE=%s", socket.getInetAddress().getHostAddress(),
+                                request.getRequestPath());
                         routeRequest(request, outputStream);
                     } catch (LHttpException e) {
                         logger.sprintf("Unable to route request. STATUS=%s", e.getStatus().getCode());
@@ -110,7 +111,7 @@ public class LHttpServer {
             }
         }
 
-        throw LHttpException.newBadRequest();
+        throw LHttpException.badRequest();
 
     }
 

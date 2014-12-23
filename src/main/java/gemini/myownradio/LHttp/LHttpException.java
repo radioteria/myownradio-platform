@@ -26,7 +26,7 @@ public class LHttpException extends RuntimeException {
         return new LHttpException(LHttpStatus.STATUS_501);
     }
 
-    public static LHttpException newDocumentNotFound() {
+    public static LHttpException documentNotFound() {
         return new LHttpException(LHttpStatus.STATUS_404);
     }
 }

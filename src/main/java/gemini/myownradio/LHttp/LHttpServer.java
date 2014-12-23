@@ -124,7 +124,8 @@ public class LHttpServer {
                 .filter(handle -> handle.is(req.getRequestPath()))
                 .map(handle -> handlerMap.get(handle).getHandler())
                 .filter(action -> action != null)
-                .findFirst().orElseThrow(LHttpException::newDocumentNotFound)
+                .findFirst()
+                .orElseThrow(LHttpException::documentNotFound)
                 .handler(new LHttpProtocol(req, os));
 
     }

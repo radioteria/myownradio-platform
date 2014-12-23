@@ -19,7 +19,7 @@ class DoUpload implements Controller {
 
     public function doPost(HttpFiles $file, HttpPost $post, TracksModel $model, JsonResponse $response) {
 
-        $streamID   = $post->getParameter("id");
+        $streamID   = $post->getParameter("track_id");
 
         $file->each(function ($file) use ($streamID, $model) {
             if (is_array($file["name"])) {

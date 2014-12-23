@@ -18,8 +18,8 @@ use REST\Streams;
 class DoGetSimilarTo implements Controller {
 
     public function doGet(HttpGet $get, JsonResponse $response, Streams $streams) {
-        $id = $get->getParameter("id")
-            ->getOrElseThrow(new ControllerException("id parameter is not specified"));
+        $id = $get->getParameter("stream_id")
+            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
 
         $response->setData($streams->getSimilarTo($id));
     }

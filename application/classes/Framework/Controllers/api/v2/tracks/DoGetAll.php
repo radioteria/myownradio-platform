@@ -16,7 +16,7 @@ use REST\Playlist;
 
 class DoGetAll implements Controller {
     public function doGet(HttpGet $get, JsonResponse $response, Playlist $playlist) {
-        $color = $get->getParameter("color")->getOrElseNull();
+        $color = $get->getParameter("color_id")->getOrElseNull();
         $tracks = $playlist->getAllTracks($color);
         $response->setData($tracks);
     }

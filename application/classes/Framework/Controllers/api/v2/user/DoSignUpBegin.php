@@ -20,7 +20,8 @@ class DoSignUpBegin implements Controller {
 
     public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response) {
 
-        $email = $post->getParameter("email")->getOrElseThrow(ControllerException::noArgument("email"));
+        $email = $post->getParameter("email")
+            ->getOrElseThrow(ControllerException::noArgument("email"));
 
         $validator->validateEmail($email);
         $validator->validateUniqueUserEmail($email);

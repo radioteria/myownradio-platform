@@ -20,7 +20,7 @@ class DoGetByStream implements Controller {
     public function doGet(HttpGet $get, JsonResponse $response, Playlist $playlist) {
 
         $id = $get->getParameter("stream_id")->getOrElseThrow(ControllerException::noArgument("stream_id"));
-        $color = $get->getParameter("color")->getOrElseNull();
+        $color = $get->getParameter("color_id")->getOrElseNull();
 
         $stream = StreamModel::getInstance($id);
 

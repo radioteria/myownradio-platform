@@ -138,6 +138,10 @@ class UserModel extends Model implements SingletonInterface {
 
     public function changePassword($password) {
 
+        $validator = InputValidator::getInstance();
+
+        $validator->validatePassword($password);
+
         $newPassword = md5($this->getLogin() . $password);
 
         $this->user->setPassword($newPassword)->save();

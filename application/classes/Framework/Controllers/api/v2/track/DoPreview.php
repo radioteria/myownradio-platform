@@ -17,11 +17,9 @@ use Framework\Services\Services;
 
 class DoPreview implements Controller {
 
-    public function doGet(HttpGet $get, Services $services, JsonResponse $response) {
+    public function doGet(HttpGet $get, Services $services) {
 
-        $trackID = $get->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
-
-        $response->disable();
+        $trackID = $get->getParameter("track_id")->getOrElseThrow(ControllerException::noArgument("track_id"));
 
         $services->getTrackModel($trackID)->preview();
 

@@ -18,8 +18,8 @@ use Model\TrackModel;
 class DoChangeColor implements Controller {
     public function doPost(HttpPost $post, JsonResponse $response) {
 
-        $id = $post->getParameter("track_id")->getOrElseThrow(ControllerException::noArgument("id"));
-        $color = $post->getParameter("color")->getOrElseThrow(ControllerException::noArgument("color"));
+        $id = $post->getParameter("track_id")->getOrElseThrow(ControllerException::noArgument("track_id"));
+        $color = $post->getParameter("color_id")->getOrElseThrow(ControllerException::noArgument("color_id"));
 
         TrackModel::getInstance($id)->changeColor($color);
 

@@ -19,7 +19,7 @@ class DoPasswordResetBegin implements Controller {
 
     public function doPost(HttpPost $post, JsonResponse $response) {
 
-        $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
+        $id = $post->getParameter("login")->getOrElseThrow(ControllerException::noArgument("login"));
 
         LettersModel::sendResetPasswordLetter($id);
 

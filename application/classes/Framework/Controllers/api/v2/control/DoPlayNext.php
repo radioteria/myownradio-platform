@@ -19,7 +19,8 @@ class DoPlayNext implements Controller {
 
     public function doPost(HttpPost $post, JsonResponse $response) {
 
-        $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
+        $id = $post->getParameter("stream_id")
+            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
 
         PlaylistModel::getInstance($id)->scPlayNext();
 

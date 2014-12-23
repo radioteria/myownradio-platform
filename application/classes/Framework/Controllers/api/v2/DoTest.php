@@ -15,7 +15,7 @@ use Framework\Services\JsonResponse;
 class DoTest implements Controller {
 
     public function doGet(JsonResponse $response) {
-
+        $response->setMessage("All systems ready :)");
     }
 
 } 

@@ -19,8 +19,8 @@ class DoSetCurrentTrack implements Controller {
 
     public function doPost(HttpPost $post, JsonResponse $response) {
 
-        $id     = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
-        $track  = $post->getParameter("track")->getOrElseThrow(ControllerException::noArgument("track"));
+        $id     = $post->getParameter("stream_id")->getOrElseThrow(ControllerException::noArgument("stream_id"));
+        $track  = $post->getParameter("unique_id")->getOrElseThrow(ControllerException::noArgument("unique_id"));
 
         PlaylistModel::getInstance($id)->scPlayByUniqueID($track);
 

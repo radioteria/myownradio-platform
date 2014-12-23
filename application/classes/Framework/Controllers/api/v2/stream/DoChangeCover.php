@@ -20,8 +20,10 @@ class DoChangeCover implements Controller {
 
     function doPost(HttpPost $post, HttpFiles $file, Services $svc, JsonResponse $response) {
 
-        $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
-        $file = $file->getFirstFile()->getOrElseThrow(new ControllerException("No image file attached"));
+        $id = $post->getParameter("stream_id")
+            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
+        $file = $file->getFirstFile()
+            ->getOrElseThrow(new ControllerException("No image file attached"));
 
         $url = $svc->getStream($id)->changeCover($file);
 

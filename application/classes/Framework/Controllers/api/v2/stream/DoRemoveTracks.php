@@ -19,8 +19,10 @@ class DoRemoveTracks implements Controller {
 
     public function doPost(HttpPost $post, JsonResponse $response) {
 
-        $id     = $post->getParameter("id")     ->getOrElseThrow(ControllerException::noArgument("id"));
-        $tracks = $post->getParameter("tracks") ->getOrElseThrow(ControllerException::noArgument("tracks"));
+        $id     = $post->getParameter("stream_id")
+            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
+        $tracks = $post->getParameter("unique_ids")
+            ->getOrElseThrow(ControllerException::noArgument("unique_ids"));
 
         PlaylistModel::getInstance($id)->removeTracks($tracks);
 

@@ -14,7 +14,8 @@ use Framework\Services\JsonResponse;
 
 class DoHello implements Controller {
 
-    public function doGet(JsonResponse $response) {
+    public function doGet() {
+        echo 'OK';
     }
 
 } 

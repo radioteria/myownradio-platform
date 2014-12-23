@@ -18,8 +18,8 @@ class DoGetOne implements Controller {
 
     public function doGet(HttpGet $get, JsonResponse $response, Streams $streams) {
 
-        $id = $get->getParameter("id")
-            ->getOrElseThrow(ControllerException::noArgument("id"));
+        $id = $get->getParameter("stream_id")
+            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
 
         $result = $streams->getOneStream($id);
 

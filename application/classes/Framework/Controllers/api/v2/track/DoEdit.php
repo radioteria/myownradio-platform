@@ -19,7 +19,7 @@ class DoEdit implements Controller {
 
     public function doPost(HttpPost $post, JsonResponse $response) {
 
-        $id      = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
+        $id      = $post->getParameter("track_id")->getOrElseThrow(ControllerException::noArgument("track_id"));
 
         $artist  = $post->getParameter("artist")->getOrElseEmpty();
         $title   = $post->getParameter("title")->getOrElseEmpty();
@@ -28,7 +28,7 @@ class DoEdit implements Controller {
         $genre   = $post->getParameter("genre")->getOrElseEmpty();
         $date    = $post->getParameter("date")->getOrElseEmpty();
 
-        $color   = $post->getParameter("color")->getOrElse(0);
+        $color   = $post->getParameter("color_id")->getOrElse(0);
 
         TrackModel::getInstance($id)->edit($artist, $title, $album, $number, $genre, $date, $color);
 

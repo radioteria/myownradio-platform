@@ -19,9 +19,12 @@ class DoMoveTrack implements Controller {
 
     public function doPost(HttpPost $post, JsonResponse $response) {
 
-        $id        = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
-        $uniqueId  = $post->getParameter("unique_id")->getOrElseThrow(ControllerException::noArgument("unique_id"));
-        $index     = $post->getParameter("new_index")->getOrElseThrow(ControllerException::noArgument("new_index"));
+        $id        = $post->getParameter("stream_id")
+            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
+        $uniqueId  = $post->getParameter("unique_id")
+            ->getOrElseThrow(ControllerException::noArgument("unique_id"));
+        $index     = $post->getParameter("new_index")
+            ->getOrElseThrow(ControllerException::noArgument("new_index"));
 
         PlaylistModel::getInstance($id)->moveTrack($uniqueId, $index);
 

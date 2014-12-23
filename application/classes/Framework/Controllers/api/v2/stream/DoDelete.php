@@ -18,7 +18,8 @@ use Model\Factory;
 class DoDelete implements Controller {
 
     public function doPost(HttpPost $post, Factory $fabric, JsonResponse $response) {
-        $id = $post->getParameter("id")->getOrElseThrow(ControllerException::noArgument("id"));
+        $id = $post->getParameter("stream_id")
+            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
         $fabric->deleteStream($id);
     }
 

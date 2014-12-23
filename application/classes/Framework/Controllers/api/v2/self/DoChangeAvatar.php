@@ -19,7 +19,8 @@ class DoChangeAvatar implements Controller {
 
     public function doPost(HttpFiles $file, AuthUserModel $user, JsonResponse $response) {
 
-        $image = $file->getFirstFile()->getOrElseThrow(ControllerException::noImageAttached());
+        $image = $file->getFirstFile()
+            ->getOrElseThrow(ControllerException::noImageAttached());
 
         $url = $user->changeAvatar($image);
 

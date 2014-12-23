@@ -46,9 +46,6 @@ public class GetRunStateHandler implements LHttpHandler {
                 .getKeys()
                 .forEach((value) -> System.out.println(" * " + value.toString()));
 
-        out.println("");
-        out.println("You're: " + exchange.getHeader("X-Forwarded-For"));
-
         exchange.flush();
 
     }

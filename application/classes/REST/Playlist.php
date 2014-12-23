@@ -9,17 +9,21 @@
 namespace REST;
 
 
+use Framework\Exceptions\ControllerException;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\Injectable;
 use Model\AuthUserModel;
-use Model\PlaylistModel;
 use Model\StreamModel;
+use Objects\StreamStats;
 use Tools\Singleton;
 use Tools\SingletonInterface;
+use Tools\System;
 
 class Playlist implements SingletonInterface, Injectable {
 
     use Singleton;
+
+    const NOW_PLAYING_TIME_RANGE = 1800000; // 30 minutes
 
     private $user;
 
@@ -76,14 +80,41 @@ class Playlist implements SingletonInterface, Injectable {
 
     }
 
+
     // todo: tomorrow
     public function getNowPlaying($id) {
 
-        //$streamModel = PlaylistModel::getInstance($id);
+        /** @var StreamStats $stream */
 
-        //$position = ($time - $this->started + $this->started_from) % $this->tracks_duration;
+        $stream = StreamStats::getByID($id)->getOrElseThrow(ControllerException::noStream($id));
 
-        return 'test';
+        $position = (
+                System::time() -
+                $stream->getStarted() +
+                $stream->getStartedFrom()) %
+            $stream->getTracksDuration();
+
+        $query = $this->getTracksPrefix();
+
+        $lowRange = ($stream->getTracksDuration() + $position - self::NOW_PLAYING_TIME_RANGE)
+            % $stream->getTracksDuration();
+
+        $highRange = ($position + self::NOW_PLAYING_TIME_RANGE) % $stream->getTracksDuration();
+
+        $query->select("time_offset");
+
+        $query->where("time_offset > ?", [$lowRange]);
+        $query->where("time_offset + duration < ?", [$highRange]);
+        $query->where("stream_id", $id);
+
+        $tracks = $query->fetchAll();
+
+        return [
+            'time' => System::time(),
+            'position' => $position,
+            'tracks' => $tracks
+        ];
+
     }
 
 } 

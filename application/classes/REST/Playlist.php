@@ -23,7 +23,7 @@ class Playlist implements SingletonInterface, Injectable {
 
     use Singleton;
 
-    const NOW_PLAYING_TIME_RANGE = 1800000; // 30 minutes
+    const NOW_PLAYING_TIME_RANGE = 900000; // 15 minutes
 
     private $user;
 
@@ -80,8 +80,6 @@ class Playlist implements SingletonInterface, Injectable {
 
     }
 
-
-    // todo: tomorrow
     public function getNowPlaying($id) {
 
         /** @var StreamStats $stream */
@@ -103,8 +101,8 @@ class Playlist implements SingletonInterface, Injectable {
 
         $query->select("time_offset");
 
-        $query->where("time_offset > ?", [$lowRange]);
-        $query->where("time_offset + duration < ?", [$highRange]);
+        $query->where("time_offset + duration > ?", [$lowRange]);
+        $query->where("time_offset < ?", [$highRange]);
         $query->where("stream_id", $id);
 
         $tracks = $query->fetchAll();

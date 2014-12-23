@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
  *
  * Audio Buffer main unit
  */
-public class ConcurrentBufferUnit implements Cloneable {
+public class ConcurrentBufferUnit {
 
     //todo: please optimize
 

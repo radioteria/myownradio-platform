@@ -21,9 +21,6 @@ public class ConcurrentBufferUnit implements Cloneable {
     // Buffer data accessed time
     private long touched;
 
-    // Packed buffer data
-    private byte[] storage;
-
     // Use byte buffer
     protected volatile byte[] byteBuffer;
 

@@ -151,6 +151,17 @@ abstract class BaseQuery implements \Countable {
     }
 
     /**
+     * @internal param $query
+     * @internal param array $args
+     * @return mixed
+     */
+    public function executeUpdate() {
+        return Database::doInConnection(function (Database $db) {
+            return $db->executeUpdate($this, null);
+        });
+    }
+
+    /**
      * @return int
      */
     public function count() {

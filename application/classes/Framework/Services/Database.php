@@ -373,7 +373,7 @@ class Database implements SingletonInterface, Injectable {
 
     public function quote($var) {
 
-        return $this->getPDO()->quote($var);
+        return $this->pdo->quote($var, PDO::PARAM_STR);
 
     }
 

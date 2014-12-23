@@ -75,4 +75,5 @@ class UpdateQuery extends BaseQuery implements QueryBuilder {
         return "SET " . implode(",", $build);
 
     }
+
 }

@@ -17,7 +17,7 @@ public class FFDecoderBuilder {
         cmd = jingled ?
                 new String[]{
                         "ffmpeg",
-                        "-ss", new DecimalFormat("0.###").format((float) this.offset / 1000F),
+                        "-ss", new DecimalFormat("0.###").format((float) this.offset / 1_000F),
                         "-i", this.filename,
                         "-i", "/media/www/myownradio.biz/jingle.wav",
                         "-filter_complex", "[0:a]afade=t=in:ss=0:st=1:d=3[a1],[a1]amix=inputs=2:duration=first:dropout_transition=3",
@@ -29,7 +29,7 @@ public class FFDecoderBuilder {
                         "-"} :
                 new String[]{
                         "ffmpeg",
-                        "-ss", new DecimalFormat("0.###").format((float) this.offset / 1000F),
+                        "-ss", new DecimalFormat("0.###").format((float) this.offset / 1_000F),
                         "-i", this.filename,
                         "-filter", "afade=t=in:ss=0:st=0:d=1",
                         "-vn",

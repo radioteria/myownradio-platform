@@ -10,7 +10,7 @@ import java.io.OutputStream;
  */
 public class ConcurrentBuffer {
 
-    // Buffer key which depends on audio stream id and audio quality
+    // Buffer key which depends on audio stream id, audio bitrate and format
     private ConcurrentBufferKey key;
 
     // Buffer container

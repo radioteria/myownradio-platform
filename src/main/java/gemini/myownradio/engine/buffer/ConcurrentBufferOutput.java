@@ -5,6 +5,8 @@ import java.io.OutputStream;
 
 /**
  * Created by Roman on 02.10.14.
+ *
+ * OutputStream layer for audio flow generator
  */
 public class ConcurrentBufferOutput extends OutputStream {
 

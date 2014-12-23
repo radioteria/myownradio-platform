@@ -7,6 +7,8 @@ import java.sql.*;
 
 /**
  * Created by Roman on 11.12.14.
+ *
+ * Statistical object
  */
 public class FlowListener {
     private int listener_id;

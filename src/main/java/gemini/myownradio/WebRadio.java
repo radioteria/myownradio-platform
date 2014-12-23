@@ -5,11 +5,11 @@ package gemini.myownradio;
  */
 
 import gemini.myownradio.engine.FlowListener;
-import gemini.myownradio.light.ContextHandlers.GetRunStateHandler;
-import gemini.myownradio.light.ContextHandlers.GetStreamAudioHandler;
-import gemini.myownradio.light.ContextHandlers.SetStreamStateNotifyHandler;
-import gemini.myownradio.light.LHttpServer;
-import gemini.myownradio.light.context.LHttpContextString;
+import gemini.myownradio.LHttp.ContextHandlers.GetRunStateHandler;
+import gemini.myownradio.LHttp.ContextHandlers.GetStreamAudioHandler;
+import gemini.myownradio.LHttp.ContextHandlers.SetStreamStateNotifyHandler;
+import gemini.myownradio.LHttp.LHttpServer;
+import gemini.myownradio.LHttp.ContextObjects.LHttpContextString;
 import gemini.myownradio.tools.MORLogger;
 import gemini.myownradio.tools.MORSettings;
 

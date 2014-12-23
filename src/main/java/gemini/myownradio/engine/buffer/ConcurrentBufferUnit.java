@@ -5,8 +5,12 @@ import java.nio.ByteBuffer;
 
 /**
  * Created by Roman on 02.10.14.
+ *
+ * Audio Buffer main unit
  */
 public class ConcurrentBufferUnit implements Cloneable {
+
+    //todo: please optimize
 
     // Buffer data array
     private byte[] buffer;

@@ -6,7 +6,7 @@ import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
 import gemini.myownradio.engine.entity.Stream;
 import gemini.myownradio.exception.RadioException;
 import gemini.myownradio.ff.FFEncoderBuilder;
-import gemini.myownradio.light.LHttpProtocol;
+import gemini.myownradio.LHttp.LHttpProtocol;
 import gemini.myownradio.tools.MORLogger;
 import gemini.myownradio.tools.MORSettings;
 
@@ -16,7 +16,7 @@ import java.sql.SQLException;
 /**
  * Created by Roman on 01.10.14.
  */
-public class RadioBroadcasting {
+public class AudioFlowBootstrap {
 
     private LHttpProtocol exchange;
 
@@ -27,7 +27,7 @@ public class RadioBroadcasting {
 
     private static MORLogger logger = new MORLogger(MORLogger.MessageKind.PLAYER);
 
-    public RadioBroadcasting(LHttpProtocol exchange, String stream_id, FFEncoderBuilder encoder, boolean useIcyMetadata)
+    public AudioFlowBootstrap(LHttpProtocol exchange, String stream_id, FFEncoderBuilder encoder, boolean useIcyMetadata)
             throws SQLException, RadioException, IOException {
 
         this.streamObject = new Stream(stream_id);

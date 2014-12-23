@@ -1,4 +1,4 @@
-package gemini.myownradio.light.context;
+package gemini.myownradio.LHttp.ContextObjects;
 
 /**
  * Created by Roman on 29.10.14.

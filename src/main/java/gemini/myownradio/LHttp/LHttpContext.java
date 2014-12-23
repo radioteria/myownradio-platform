@@ -1,6 +1,6 @@
-package gemini.myownradio.light;
+package gemini.myownradio.LHttp;
 
-import gemini.myownradio.light.context.LHttpContextInterface;
+import gemini.myownradio.LHttp.ContextObjects.LHttpContextInterface;
 
 /**
  * Created by Roman on 15.10.14.

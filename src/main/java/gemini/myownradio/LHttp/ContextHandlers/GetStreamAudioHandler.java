@@ -1,12 +1,12 @@
-package gemini.myownradio.light.ContextHandlers;
+package gemini.myownradio.LHttp.ContextHandlers;
 
-import gemini.myownradio.engine.RadioBroadcasting;
+import gemini.myownradio.engine.AudioFlowBootstrap;
 import gemini.myownradio.exception.RadioException;
 import gemini.myownradio.ff.FFEncoderBuilder;
 import gemini.myownradio.flow.AudioFormatsRegister;
-import gemini.myownradio.light.LHttpException;
-import gemini.myownradio.light.LHttpHandler;
-import gemini.myownradio.light.LHttpProtocol;
+import gemini.myownradio.LHttp.LHttpException;
+import gemini.myownradio.LHttp.LHttpHandler;
+import gemini.myownradio.LHttp.LHttpProtocol;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -26,7 +26,7 @@ public class GetStreamAudioHandler implements LHttpHandler {
         FFEncoderBuilder decoder = AudioFormatsRegister.analyzeFormat(format);
 
         try {
-            RadioBroadcasting radio = new RadioBroadcasting(exchange, stream, decoder, metadata);
+            AudioFlowBootstrap radio = new AudioFlowBootstrap(exchange, stream, decoder, metadata);
             radio.startStreamer();
         } catch (SQLException | RadioException e) {
             e.printStackTrace();

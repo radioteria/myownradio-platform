@@ -1,10 +1,10 @@
-package gemini.myownradio.light.ContextHandlers;
+package gemini.myownradio.LHttp.ContextHandlers;
 
 import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
-import gemini.myownradio.light.LHttpException;
-import gemini.myownradio.light.LHttpHandler;
-import gemini.myownradio.light.LHttpProtocol;
-import gemini.myownradio.light.LHttpStatus;
+import gemini.myownradio.LHttp.LHttpException;
+import gemini.myownradio.LHttp.LHttpHandler;
+import gemini.myownradio.LHttp.LHttpProtocol;
+import gemini.myownradio.LHttp.LHttpStatus;
 
 import java.io.IOException;
 

@@ -1,6 +1,6 @@
-package gemini.myownradio.light;
+package gemini.myownradio.LHttp;
 
-import gemini.myownradio.light.context.LHttpContextAbstract;
+import gemini.myownradio.LHttp.ContextObjects.LHttpContextAbstract;
 import gemini.myownradio.tools.MORLogger;
 
 import java.io.*;

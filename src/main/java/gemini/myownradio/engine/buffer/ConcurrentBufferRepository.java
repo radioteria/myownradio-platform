@@ -6,6 +6,8 @@ import java.util.stream.Stream;
 
 /**
  * Created by Roman on 02.10.14.
+ *
+ * Repository of currently streaming audio flows
  */
 public class ConcurrentBufferRepository {
 

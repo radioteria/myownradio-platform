@@ -8,9 +8,9 @@ import java.io.OutputStream;
  */
 public class ConcurrentBufferOutput extends OutputStream {
 
-    private ConcurrentBufferCreator me;
+    private ConcurrentBufferUnit me;
 
-    public ConcurrentBufferOutput(ConcurrentBufferCreator me) {
+    public ConcurrentBufferOutput(ConcurrentBufferUnit me) {
         this.me = me;
     }
 
@@ -27,12 +27,17 @@ public class ConcurrentBufferOutput extends OutputStream {
 
     @Override
     public void write(byte[] b) throws IOException {
-        this.write(b, 0, b.length);
+        me.write(b);
     }
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
-        me.write(b, off, len);
+
+        byte[] tmp = new byte[len];
+
+        System.arraycopy(b, off, tmp, 0, len);
+
+        this.write(tmp);
     }
 
     @Override

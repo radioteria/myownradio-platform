@@ -38,7 +38,7 @@ public class NoisePlayer implements AbstractPlayer {
             int length;
             while ((length = in.read(buffer)) != -1) {
                 output.write(buffer, 0, length);
-                if (broadcast.isNotify()) {
+                if (broadcast.isNotified()) {
                     broadcast.resetNotify();
                     break;
                 }

@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 /**
  * Created by Roman on 02.10.14.
  */
-public class ConcurrentBufferMemory implements Cloneable {
+public class ConcurrentBufferUnit implements Cloneable {
 
     // Buffer data array
     private byte[] buffer;
@@ -27,7 +27,7 @@ public class ConcurrentBufferMemory implements Cloneable {
     protected int buffSize;
 
     // Buffer Unit initialization
-    public ConcurrentBufferMemory(int size) {
+    public ConcurrentBufferUnit(int size) {
 
         this.buffer = new byte[size];
 

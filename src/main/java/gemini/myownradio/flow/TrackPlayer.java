@@ -55,7 +55,7 @@ public class TrackPlayer implements AbstractPlayer {
                     length = err.read(buffer);
                 }
 
-                if (broadcast.isNotify()) {
+                if (broadcast.isNotified()) {
                     broadcast.resetNotify();
                     break;
                 }

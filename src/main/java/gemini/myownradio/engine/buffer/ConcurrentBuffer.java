@@ -5,23 +5,27 @@ import java.io.OutputStream;
 
 /**
  * Created by Roman on 02.10.14.
+ *
+ * Audio flow buffer main class
  */
 public class ConcurrentBuffer {
 
+    // Buffer key which depends on audio stream id and audio quality
     private ConcurrentBufferKey key;
-    private ConcurrentBufferCreator buffer;
+
+    // Buffer container
+    private ConcurrentBufferUnit buffer;
+
+    // Current track title
     private volatile String title;
 
+    // This variable used to notify audio streams about need of audio flow reset
     private volatile boolean notify = false;
 
     public ConcurrentBuffer(ConcurrentBufferKey streamKey, int size) {
         this.key = streamKey;
-        this.buffer = new ConcurrentBufferCreator(size);
+        this.buffer = new ConcurrentBufferUnit(size);
         this.title = "";
-    }
-
-    public ConcurrentBufferCreator getBCBuffer() {
-        return this.buffer;
     }
 
     public OutputStream getOutputStream() {
@@ -44,12 +48,11 @@ public class ConcurrentBuffer {
         return this.key;
     }
 
-    public boolean isNotify() {
+    public boolean isNotified() {
         return notify;
     }
 
     public ConcurrentBuffer setNotify() {
-        System.out.println(key + " notified!");
         this.notify = true;
         return this;
     }

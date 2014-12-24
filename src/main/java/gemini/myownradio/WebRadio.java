@@ -26,7 +26,7 @@ public class WebRadio {
         log.println("Starting WebRadio Server");
 
         LHttpServer httpServer = new LHttpServer();
-        int listeningPort = MORSettings.getFirstInteger("server", "listening_port", 7778);
+        int listeningPort = MORSettings.getFirstInteger("server", "listening_port").orElse(7778);
 
         log.sprintf("Starting listening on port %s", listeningPort);
         httpServer.setPort(listeningPort);

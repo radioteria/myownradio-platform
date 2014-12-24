@@ -103,7 +103,7 @@ public class LHttpProtocol {
         if (!this.headersFlushed) {
             pw.printf("%s %s\r\n", request.getProtoVersion(), status != null ? status.getResponse() : defaultStatus.getResponse());
             pw.println("Connection: close");
-            pw.printf("Server: %s\r\n", MORSettings.getFirstString("server", "title", "MOR"));
+            pw.printf("Server: %s\r\n", MORSettings.getFirstString("server", "title").orElse("MOR"));
             if (ctSize != null) {
                 pw.println(String.format("Content-Size: %d", ctSize));
             }

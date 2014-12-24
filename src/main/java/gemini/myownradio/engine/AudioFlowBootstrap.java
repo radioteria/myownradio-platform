@@ -50,7 +50,7 @@ public class AudioFlowBootstrap {
                 this.streamObject.getId()
         );
 
-        int streamingBufferLength = MORSettings.getFirstInteger("server", "streaming_buffer", 5);
+        int streamingBufferLength = MORSettings.getFirstInteger("server", "streaming_buffer").orElse(5);
 
         int bufferSize = (encoder.getAudioFormat().getBitrate() >> 3) * streamingBufferLength;
 

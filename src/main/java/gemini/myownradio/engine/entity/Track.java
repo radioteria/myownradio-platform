@@ -90,7 +90,7 @@ public class Track {
         File ff;
 
         ff = new File(String.format("%s/ui_%d/a_%03d_original.%s",
-                MORSettings.getFirstString("content", "content_folder", "content"),
+                MORSettings.getFirstString("content", "content_folder").orElse("content"),
                 this.getUserId(),
                 this.getTrackId(),
                 this.getExtension()
@@ -101,7 +101,7 @@ public class Track {
         }
 
         ff = new File(String.format("%s/ui_%d/lores_%03d.mp3",
-                MORSettings.getFirstString("content", "content_folder", "content"),
+                MORSettings.getFirstString("content", "content_folder").orElse("content"),
                 this.getUserId(),
                 this.getTrackId()
         ));

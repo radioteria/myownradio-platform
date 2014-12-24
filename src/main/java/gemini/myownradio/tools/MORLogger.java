@@ -14,7 +14,7 @@ import java.util.Formatter;
 public class MORLogger {
 
     final private static String logFile =
-            MORSettings.getFirstString("server", "server_logfile", "/tmp/mor-server.log");
+            MORSettings.getFirstString("server", "server_logfile").orElse("/tmp/mor-server.log");
     final private static PrintWriter pw;
 
     static {

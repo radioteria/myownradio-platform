@@ -60,7 +60,7 @@ public class StreamRadio implements Runnable {
         Track trackItem;
         AbstractPlayer trackPlayer;
 
-        int preloadTime = MORSettings.getFirstInteger("server", "stream_preload", 5) * 1000;
+        int preloadTime = MORSettings.getFirstInteger("server", "stream_preload").orElse(5) * 1000;
 
         logger.sprintf("Streamer preload time=%d", preloadTime);
 

@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 
 import static java.net.URLDecoder.decode;
@@ -44,7 +45,7 @@ public class MORSettings {
                 }
             }
         } catch (IOException e) {
-            /* Do nothing if settings setting file could not be read */
+            /* Do nothing if settings file could not be read */
         }
     }
 
@@ -62,18 +63,17 @@ public class MORSettings {
     /**
      * @param section     Setting section in .ini file
      * @param setting     Setting in .ini file
-     * @param alternative Alternative value if setting not set
      * @return Returns setting value or alternative (string)
      */
-    public static String getFirstString(String section, String setting, String alternative) {
+    public static Optional<String> getFirstString(String section, String setting) {
 
         if (settings.get(String.format("%s/%s", section, setting)) == null)
-            return alternative;
+            return Optional.empty();
 
         if (settings.get(String.format("%s/%s", section, setting)).get(0) == null)
-            return alternative;
+            return Optional.empty();
 
-        return settings.get(String.format("%s/%s", section, setting)).get(0);
+        return Optional.of(settings.get(String.format("%s/%s", section, setting)).get(0));
 
     }
 
@@ -88,21 +88,28 @@ public class MORSettings {
     /**
      * @param section     Setting section in .ini file
      * @param setting     Setting in .ini file
-     * @param alternative Alternative value if setting not set
      * @return Returns setting value or alternative (string)
      */
-    public static Integer getFirstInteger(String section, String setting, Integer alternative) {
+    public static Optional<Integer> getFirstInteger(String section, String setting) {
 
         if (settings.get(String.format("%s/%s", section, setting)) == null)
-            return alternative;
+            return Optional.empty();
 
         if (settings.get(String.format("%s/%s", section, setting)).get(0) == null)
-            return alternative;
+            return Optional.empty();
 
         try {
-            return Integer.parseInt(settings.get(String.format("%s/%s", section, setting)).get(0));
+
+            return Optional.of(
+                    Integer.parseInt(
+                            settings.get(String.format("%s/%s", section, setting)).get(0)
+                    )
+            );
+
         } catch (NumberFormatException e) {
-            return alternative;
+
+            return Optional.empty();
+
         }
 
     }

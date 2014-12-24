@@ -16,13 +16,7 @@ class JsonPrinter implements SingletonInterface, Injectable {
     use Singleton;
 
     public function printJSON($data) {
-        if (is_string($data)) {
-            $this->escapeJsonString($data);
-        } elseif (is_numeric($data)) {
-            echo intval($data);
-        } elseif (is_null($data)) {
-            echo 'null';
-        } elseif (is_array($data) && $this->isIndexedArray($data)) {
+        if (is_array($data) && $this->isIndexedArray($data)) {
             echo '[';
             $i = 0;
             foreach($data as &$item) {
@@ -57,11 +51,17 @@ class JsonPrinter implements SingletonInterface, Injectable {
      * @param $value
      */
     function escapeJsonString($value) {
-        echo '"';
-        $escapers       = array("\\", "/", "\"", "\n", "\r", "\t", "\x08", "\x0c");
-        $replacements   = array("\\\\", "\\/", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b");
-        echo str_replace($escapers, $replacements, $value);
-        echo '"';
+        if (is_numeric($value)) {
+            echo intval($value);
+        } elseif (is_null($value)) {
+            echo 'null';
+        } else {
+            echo '"';
+            $escape       = array("\\", "/", "\"", "\n", "\r", "\t", "\x08", "\x0c");
+            $replacements   = array("\\\\", "\\/", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b");
+            echo str_replace($escape, $replacements, strval($value));
+            echo '"';
+        }
     }
 
     private function isIndexedArray(array $array) {
@@ -101,7 +101,7 @@ class JsonPrinter implements SingletonInterface, Injectable {
 
     public function brPrintKeyValue($key, $value) {
         $this->brPrintKey($key);
-        echo $this->escapeJsonString($value);
+        $this->escapeJsonString($value);
         return $this;
     }
 
@@ -120,6 +120,18 @@ class JsonPrinter implements SingletonInterface, Injectable {
 
     public function startGZ() {
         ob_start("ob_gzhandler");
+        return $this;
+    }
+
+    public function successPrefix() {
+        $this->startGZ();
+        $this->brContentType();
+        $this->brOpenObject();
+        $this->brPrintKeyValue("status", 1);
+        $this->brComma();
+        $this->brPrintKeyValue("message", "OK");
+        $this->brComma();
+
         return $this;
     }
 

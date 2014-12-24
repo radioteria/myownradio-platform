@@ -47,14 +47,7 @@ class Playlist implements SingletonInterface, Injectable {
      */
     public function getAllTracks($color = null) {
 
-        $printer = JsonPrinter::getInstance();
-        $printer->startGZ();
-        $printer->brContentType();
-        $printer->brOpenObject();
-        $printer->brPrintKeyValue("status", 1);
-        $printer->brComma();
-        $printer->brPrintKeyValue("message", "OK");
-        $printer->brComma();
+        $printer = JsonPrinter::getInstance()->successPrefix();
 
         $query = $this->getTracksPrefix()
             ->where("uid", $this->user->getID());
@@ -88,15 +81,7 @@ class Playlist implements SingletonInterface, Injectable {
      */
     public function getTracksByStream(StreamModel $stream, $color = null) {
 
-        $printer = JsonPrinter::getInstance();
-
-//        $printer->startGZ();
-        $printer->brContentType();
-        $printer->brOpenObject();
-        $printer->brPrintKeyValue("status", 1);
-        $printer->brComma();
-        $printer->brPrintKeyValue("message", "OK");
-        $printer->brComma();
+        $printer = JsonPrinter::getInstance()->successPrefix();
 
         $query = $this->getTracksPrefix()
             ->where("stream_id", $stream->getID());

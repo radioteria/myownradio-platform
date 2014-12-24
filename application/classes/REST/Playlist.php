@@ -15,6 +15,7 @@ use Framework\Services\Injectable;
 use Model\AuthUserModel;
 use Model\StreamModel;
 use Objects\StreamStats;
+use Tools\JsonPrinter;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 use Tools\System;
@@ -46,6 +47,15 @@ class Playlist implements SingletonInterface, Injectable {
      */
     public function getAllTracks($color = null) {
 
+        $printer = JsonPrinter::getInstance();
+        $printer->startGZ();
+        $printer->brContentType();
+        $printer->brOpenObject();
+        $printer->brPrintKeyValue("status", 1);
+        $printer->brComma();
+        $printer->brPrintKeyValue("message", "OK");
+        $printer->brComma();
+
         $query = $this->getTracksPrefix()
             ->where("uid", $this->user->getID());
 
@@ -53,9 +63,22 @@ class Playlist implements SingletonInterface, Injectable {
             $query->where("color", $color);
         }
 
-        $tracks = $query->fetchAll();
+        $printer->brPrintKey("data");
+        $printer->brOpenArray();
 
-        return $tracks;
+        $index = 0;
+
+        $query->eachRow(function ($row) use ($printer, &$index) {
+            if ($index++ > 0) {
+                $printer->brComma();
+            }
+            $printer->printJSON($row);
+        });
+
+        $printer->brCloseArray();
+
+        $printer->brCloseObject();
+
     }
 
     /**
@@ -64,6 +87,16 @@ class Playlist implements SingletonInterface, Injectable {
      * @return array
      */
     public function getTracksByStream(StreamModel $stream, $color = null) {
+
+        $printer = JsonPrinter::getInstance();
+
+//        $printer->startGZ();
+        $printer->brContentType();
+        $printer->brOpenObject();
+        $printer->brPrintKeyValue("status", 1);
+        $printer->brComma();
+        $printer->brPrintKeyValue("message", "OK");
+        $printer->brComma();
 
         $query = $this->getTracksPrefix()
             ->where("stream_id", $stream->getID());
@@ -74,9 +107,21 @@ class Playlist implements SingletonInterface, Injectable {
             $query->where("color", $color);
         }
 
-        $tracks = $query->fetchAll();
+        $printer->brPrintKey("data");
+        $printer->brOpenArray();
 
-        return $tracks;
+        $index = 0;
+
+        $query->eachRow(function ($row) use ($printer, &$index) {
+            if ($index++ > 0) {
+                $printer->brComma();
+            }
+            $printer->printJSON($row);
+        });
+
+        $printer->brCloseArray();
+
+        $printer->brCloseObject();
 
     }
 

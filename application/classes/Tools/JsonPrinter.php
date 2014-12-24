@@ -74,4 +74,53 @@ class JsonPrinter implements SingletonInterface, Injectable {
         return true;
     }
 
+    public function brOpenArray() {
+        echo '[';
+        return $this;
+    }
+
+    public function brCloseArray() {
+        echo ']';
+        return $this;
+    }
+
+    public function brOpenObject() {
+        echo '{';
+        return $this;
+    }
+
+    public function brCloseObject() {
+        echo '}';
+        return $this;
+    }
+
+    public function brComma() {
+        echo ',';
+        return $this;
+    }
+
+    public function brPrintKeyValue($key, $value) {
+        $this->brPrintKey($key);
+        echo $this->escapeJsonString($value);
+        return $this;
+    }
+
+    public function brPrintKey($key) {
+        echo '"';
+        echo $key;
+        echo '"';
+        echo ':';
+        return $this;
+    }
+
+    public function brContentType() {
+        header("Content-Type: application/json");
+        return $this;
+    }
+
+    public function startGZ() {
+        ob_start("ob_gzhandler");
+        return $this;
+    }
+
 } 

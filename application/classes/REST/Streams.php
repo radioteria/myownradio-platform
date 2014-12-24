@@ -84,6 +84,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
      * @return array
      */
     public function getStreamListFiltered($filter = null, $category = null, $from = 0, $limit = 50) {
+            //todo: make this with json printer
 
             $involved_users = [];
 

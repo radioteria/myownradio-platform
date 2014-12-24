@@ -343,9 +343,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
         DBQuery::getInstance()->selectFrom("mor_stream_tracklist_view")
             ->where("stream_id", $this->key)
-            ->eachRow("SELECT * FROM mor_stream_tracklist_view WHERE stream_id = ?",
-                [$this->key],
-                function ($track) use (&$timeOffset, &$orderIndex) {
+            ->eachRow(function ($track) use (&$timeOffset, &$orderIndex) {
                     /** @var Link $link */
                     Link::getByID($track["id"])
                         ->then(function ($link) use (&$timeOffset, &$orderIndex) {
@@ -356,6 +354,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                         });
                     $timeOffset += $track["duration"];
                 });
+
     }
 
     /**

@@ -146,7 +146,9 @@ abstract class BaseQuery implements \Countable {
      */
     public function eachRow(callable $callable) {
         Database::doInConnection(function (Database $db) use (&$callable) {
+            $db->beginTransaction();
             $db->eachRow($this, null, $callable);
+            $db->commit();
         });
     }
 

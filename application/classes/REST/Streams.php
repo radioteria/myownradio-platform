@@ -76,11 +76,11 @@ class Streams implements \Countable, Injectable, SingletonInterface {
     /**
      * @param string $filter
      * @param int|null $category
-     * @param int $from
+     * @param int $offset
      * @param int $limit
      * @return array
      */
-    public function getStreamListFiltered($filter = null, $category = null, $from = 0, $limit = 50) {
+    public function getStreamListFiltered($filter = null, $category = null, $offset = 0, $limit = 50) {
         //todo: make this with json printer
 
         $involved_users = [];
@@ -108,7 +108,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         }
 
         $queryStream->where("a.status = 1");
-        $queryStream->limit($limit)->offset($from);
+        $queryStream->limit($limit)->offset($offset);
 
         $streams = $queryStream->fetchAll(null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {

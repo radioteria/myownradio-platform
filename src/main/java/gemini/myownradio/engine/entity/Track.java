@@ -27,7 +27,7 @@ public class Track {
     private int playlistTime;
 
     public Track(ResultSet rs, int playlistTime) throws SQLException {
-        this.track_id =  rs.getInt("tid");
+        this.track_id =  rs.getInt("track_id");
         this.user_id =  rs.getInt("uid");
         this.filename = rs.getString("filename");
         this.extension = rs.getString("ext");

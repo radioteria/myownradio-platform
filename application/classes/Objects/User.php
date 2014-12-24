@@ -7,6 +7,7 @@
  */
 
 namespace Objects;
+
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 use Tools\Folders;
@@ -103,8 +104,6 @@ class User extends ActiveRecordObject implements ActiveRecord {
     public function getID() {
         return $this->uid;
     }
-
-
 
 
     /**

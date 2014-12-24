@@ -19,7 +19,7 @@ class JsonPrinter implements SingletonInterface, Injectable {
         if (is_array($data) && $this->isIndexedArray($data)) {
             echo '[';
             $i = 0;
-            foreach($data as &$item) {
+            foreach ($data as &$item) {
                 if ($i++ > 0) {
                     echo ',';
                 }
@@ -29,7 +29,7 @@ class JsonPrinter implements SingletonInterface, Injectable {
         } elseif (is_array($data)) {
             echo '{';
             $i = 0;
-            foreach($data as $key=>&$item) {
+            foreach ($data as $key => &$item) {
                 if ($i++ > 0) {
                     echo ',';
                 }
@@ -40,7 +40,7 @@ class JsonPrinter implements SingletonInterface, Injectable {
                 $this->printJSON($item);
             }
             echo '}';
-        } elseif(is_object($data) && $data instanceof \JsonSerializable) {
+        } elseif (is_object($data) && $data instanceof \JsonSerializable) {
             $this->printJSON($data->jsonSerialize());
         } else {
             $this->escapeJsonString(strval($data));
@@ -57,8 +57,8 @@ class JsonPrinter implements SingletonInterface, Injectable {
             echo 'null';
         } else {
             echo '"';
-            $escape       = array("\\", "/", "\"", "\n", "\r", "\t", "\x08", "\x0c");
-            $replacements   = array("\\\\", "\\/", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b");
+            $escape = array("\\", "/", "\"", "\n", "\r", "\t", "\x08", "\x0c");
+            $replacements = array("\\\\", "\\/", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b");
             echo str_replace($escape, $replacements, strval($value));
             echo '"';
         }
@@ -66,7 +66,7 @@ class JsonPrinter implements SingletonInterface, Injectable {
 
     private function isIndexedArray(array $array) {
         $iterator = 0;
-        foreach ($array as $key=>$value) {
+        foreach ($array as $key => $value) {
             if ($key !== $iterator++) {
                 return false;
             }

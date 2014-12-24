@@ -2,7 +2,7 @@
  * Loader: Stage 2
  */
 
-(function(){
+(function () {
 
     mor.stage2 = function () {
         // Render skeleton

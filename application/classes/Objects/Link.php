@@ -7,6 +7,7 @@
  */
 
 namespace Objects;
+
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 

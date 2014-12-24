@@ -1,11 +1,11 @@
 // myownradio.biz common javascript functions
 
 // Interface tricks
-$("[auto-time]").livequery(function() {
+$("[auto-time]").livequery(function () {
     $(this).text(secondsToHms($(this).attr("auto-time")));
 });
 
-$(".dynTop, .-rm-center").livequery(function() {
+$(".dynTop, .-rm-center").livequery(function () {
     var w = $(this).width();
     var h = $(this).height();
     //$(this).width(w + w % 2).height(h + h % 2);
@@ -13,10 +13,9 @@ $(".dynTop, .-rm-center").livequery(function() {
 
 // jQuery extenstions
 $.fn.extend({
-    shuffle: function() {
+    shuffle: function () {
         var items = $(this).children();
-        for (var i = 0; i < items.length; i++)
-        {
+        for (var i = 0; i < items.length; i++) {
             var s = Math.round(Math.random() * items.length);
             items.eq(s).appendTo($(this));
         }
@@ -24,23 +23,22 @@ $.fn.extend({
 });
 
 $.fn.extend({
-    switch : function(args) {
+    switch: function (args) {
         var defs = {
             value: args.val || false,
-            sw: args.sw || function() {
+            sw: args.sw || function () {
             }
         };
 
         $(this).addClass("mor_ui_switch");
 
-        if (defs.value)
-        {
+        if (defs.value) {
             $(this).addClass("on");
         }
 
         $("<div>").addClass("rm_ui_switch_handle").appendTo($(this));
 
-        $(this).bind("click", function() {
+        $(this).bind("click", function () {
             $(this).toggleClass("on");
             var newValue = $(this).hasClass("on");
             defs.sw(newValue);
@@ -52,7 +50,7 @@ $.fn.extend({
 (function (token) {
     $.ajaxSetup({
         headers: { 'My-Own-Token': token },
-        complete: function(data, textStatus, jqXHR) {
+        complete: function (data, textStatus, jqXHR) {
             if (typeof data.responseJSON === "object") {
                 var json = data.responseJSON;
                 if (typeof json.status !== "undefined" && typeof json.message !== "undefined" && typeof json.context !== "undefined") {

@@ -81,7 +81,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
 
         $build = [];
 
-        foreach($this->innerJoin as $join) {
+        foreach ($this->innerJoin as $join) {
             $build[] = "INNER JOIN " . $join[0] . " ON " . $join[1];
         }
 

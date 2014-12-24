@@ -57,7 +57,7 @@ class Common {
         curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        if($httpCode != 404 && $httpCode != 0) {
+        if ($httpCode != 404 && $httpCode != 0) {
             return true;
         } else {
             return false;
@@ -98,11 +98,11 @@ class Common {
         }
 
         $request->getLanguage()->then(function ($language) use ($tagsData) {
-            if(array_search($language, array('uk', 'ru')) !== false) {
+            if (array_search($language, array('uk', 'ru')) !== false) {
             }
         });
 
-        foreach($tagsData as &$tag) {
+        foreach ($tagsData as &$tag) {
             $tag = self::cp1252dec($tag);
         }
 
@@ -122,7 +122,7 @@ class Common {
 
         $test = @iconv("UTF-8", "CP1252", $chars);
 
-        if($test) {
+        if ($test) {
             return iconv("CP1251", "UTF-8", $test);
         } else {
             return $chars;

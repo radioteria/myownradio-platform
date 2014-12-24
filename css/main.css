@@ -1,12 +1,13 @@
-
 /* BEGIN */
 body {
-    font-family:"Open Sans";
+    font-family: "Open Sans";
 }
+
 a {
     color: #cccccc;
     text-decoration: none;
 }
+
 a:hover {
     color: #ffffff;
 }

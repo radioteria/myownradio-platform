@@ -53,7 +53,7 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \Iterator, \Js
     }
 
     public function next() {
-        $this->position ++;
+        $this->position++;
     }
 
     public function key() {
@@ -70,7 +70,7 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \Iterator, \Js
 
     public function jsonSerialize() {
         $data = [];
-        foreach($this as $item) {
+        foreach ($this as $item) {
             $data[] = $item->jsonSerialize();
         }
         return $data;

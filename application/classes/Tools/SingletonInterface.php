@@ -14,6 +14,8 @@ namespace Tools;
  */
 interface SingletonInterface {
     public static function getInstance();
+
     public static function hasInstance();
+
     public static function killInstance();
 } 

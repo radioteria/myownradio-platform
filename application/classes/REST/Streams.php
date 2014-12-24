@@ -10,16 +10,13 @@ namespace REST;
 
 
 use Framework\Exceptions\ControllerException;
+use Framework\Models\UserModel;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Injectable;
-use Model\PlaylistModel;
-use Model\UserModel;
-use Objects\PlaylistTrack;
 use Tools\Common;
 use Tools\Folders;
 use Tools\Singleton;
 use Tools\SingletonInterface;
-use Tools\System;
 
 class Streams implements \Countable, Injectable, SingletonInterface {
 
@@ -84,46 +81,46 @@ class Streams implements \Countable, Injectable, SingletonInterface {
      * @return array
      */
     public function getStreamListFiltered($filter = null, $category = null, $from = 0, $limit = 50) {
-            //todo: make this with json printer
+        //todo: make this with json printer
 
-            $involved_users = [];
+        $involved_users = [];
 
-            $queryStream = $this->getStreamsPrefix();
+        $queryStream = $this->getStreamsPrefix();
 
-            if (is_numeric($category)) {
-                $queryStream->where("a.category", $category);
+        if (is_numeric($category)) {
+            $queryStream->where("a.category", $category);
+        }
+
+        if (empty($filter)) {
+
+            /* No Operation */
+
+        } else if (substr($filter, 0, 1) === '#') {
+
+            $queryStream->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)",
+                '+' . substr($filter, 1));
+
+        } else {
+
+            $queryStream->where("MATCH(a.name, a.permalink, a.hashtags) AGAINST (? IN BOOLEAN MODE)",
+                Common::searchQueryFilter($filter));
+
+        }
+
+        $queryStream->where("a.status = 1");
+        $queryStream->limit($limit)->offset($from);
+
+        $streams = $queryStream->fetchAll(null, function ($row) use (&$involved_users) {
+            if (array_search($row['uid'], $involved_users) === false) {
+                $involved_users[] = $row['uid'];
             }
+            $this->processStreamRow($row);
+            return $row;
+        });
 
-            if (empty($filter)) {
+        $users = $this->getUsersList($involved_users);
 
-                /* No Operation */
-
-            } else if (substr($filter, 0, 1) === '#') {
-
-                $queryStream->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)",
-                    '+' . substr($filter, 1));
-
-            } else {
-
-                $queryStream->where("MATCH(a.name, a.permalink, a.hashtags) AGAINST (? IN BOOLEAN MODE)",
-                    Common::searchQueryFilter($filter));
-
-            }
-
-            $queryStream->where("a.status = 1");
-            $queryStream->limit($limit)->offset($from);
-
-            $streams = $queryStream->fetchAll(null, function ($row) use (&$involved_users) {
-                if (array_search($row['uid'], $involved_users) === false) {
-                    $involved_users[] = $row['uid'];
-                }
-                $this->processStreamRow($row);
-                return $row;
-            });
-
-            $users = $this->getUsersList($involved_users);
-
-            return ['streams' => $streams, 'users' => $users];
+        return ['streams' => $streams, 'users' => $users];
 
     }
 

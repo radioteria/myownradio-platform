@@ -7,6 +7,7 @@
  */
 
 namespace Objects;
+
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 
@@ -19,43 +20,42 @@ use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
  */
 class Basis extends ActiveRecordObject implements ActiveRecord {
 
-    protected $id, $info, $duration;
+    protected $basis_id, $basis_info, $basis_duration;
 
     /**
      * @return mixed
      */
     public function getDuration() {
-        return $this->duration;
+        return $this->basis_duration;
     }
 
     /**
      * @return mixed
      */
     public function getId() {
-        return $this->id;
+        return $this->basis_id;
     }
 
     /**
      * @return mixed
      */
     public function getInfo() {
-        return $this->info;
+        return $this->basis_info;
     }
 
     /**
      * @param mixed $duration
      */
     public function setDuration($duration) {
-        $this->duration = $duration;
+        $this->basis_duration = $duration;
     }
 
     /**
      * @param mixed $info
      */
     public function setInfo($info) {
-        $this->info = $info;
+        $this->basis_info = $info;
     }
 
 
-
-} 
+}

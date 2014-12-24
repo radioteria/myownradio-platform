@@ -93,7 +93,7 @@ class String implements \Countable {
     function split($delimiter) {
         $parts = explode($delimiter, $this->string);
         $result = [];
-        foreach($parts as $part) {
+        foreach ($parts as $part) {
             $result[] = new self($part);
         }
         return $result;
@@ -102,7 +102,7 @@ class String implements \Countable {
     function splitRegexp($regexp) {
         $parts = preg_split($regexp, $this->string);
         $result = [];
-        foreach($parts as $part) {
+        foreach ($parts as $part) {
             $result[] = new self($part);
         }
         return $result;

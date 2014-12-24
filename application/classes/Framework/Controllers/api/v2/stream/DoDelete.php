@@ -11,9 +11,9 @@ namespace Framework\Controllers\api\v2\stream;
 
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
+use Framework\Models\Factory;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
-use Model\Factory;
 
 class DoDelete implements Controller {
 

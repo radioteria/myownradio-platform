@@ -11,9 +11,9 @@ namespace Framework\Controllers\api\v2\self;
 
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
+use Framework\Models\AuthUserModel;
 use Framework\Services\HttpFiles;
 use Framework\Services\JsonResponse;
-use Model\AuthUserModel;
 
 class DoChangeAvatar implements Controller {
 

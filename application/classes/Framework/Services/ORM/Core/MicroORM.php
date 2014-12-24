@@ -108,7 +108,7 @@ class MicroORM extends FilterORM implements Injectable {
      */
     public function deleteObject(ActiveRecord $object) {
 
-        $reflection  = new \ReflectionClass($object);
+        $reflection = new \ReflectionClass($object);
 
         $beanConfig = $this->getBeanConfig($reflection);
 
@@ -291,7 +291,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @return mixed
      */
     private function _loadObjects($reflection, $config, $filter = null, $filterArgs = null, $limit = null,
-                                                                                                    $offset = null) {
+                                  $offset = null) {
 
         $query = $this->createBaseSelectRequest($config);
 

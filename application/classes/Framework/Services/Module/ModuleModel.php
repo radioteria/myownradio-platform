@@ -29,65 +29,48 @@ class ModuleModel implements SingletonInterface {
         }
 
         $r = null;
-        if(self::moduleExists($data)) {
+        if (self::moduleExists($data)) {
 
             $history[] = $data;
             $module = self::fetchModule($data);
-            
-            if(HttpRequest::getInstance()->getMethod() === "GET")
-            {
+
+            if (HttpRequest::getInstance()->getMethod() === "GET") {
                 $module_content = $module['html'];
-                
+
                 // CSS Style Sheet
-                if(strlen($module['css']) > 0)
-                {
-                    if(strpos($module['html'], '<!-- include:css -->', 0) !== false)
-                    {
+                if (strlen($module['css']) > 0) {
+                    if (strpos($module['html'], '<!-- include:css -->', 0) !== false) {
                         $module_content = str_replace('<!-- include:css -->', "<link rel=\"stylesheet\" type=\"text/css\" href=\"/modules/css/{$data}.css\" />\r\n", $module_content);
-                    }
-                    else
-                    {
+                    } else {
                         $module_content .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"/modules/css/{$data}.css\" />\r\n";
                     }
                 }
 
                 // Templates
-                if(strlen($module['tmpl']) > 0)
-                {
-                    if(strpos($module['html'], '<!-- include:tmpl -->', 0) !== false)
-                    {
+                if (strlen($module['tmpl']) > 0) {
+                    if (strpos($module['html'], '<!-- include:tmpl -->', 0) !== false) {
                         $module_content = str_replace('<!-- include:tmpl -->', $module['tmpl'], $module_content);
-                    }
-                    else
-                    {
+                    } else {
                         $module_content .= $module['tmpl'];
                     }
                 }
-                
+
                 // JavaScript
-                if(strlen($module['js']) > 0)
-                {
-                    if(strpos($module['html'], '<!-- include:js -->', 0) !== false)
-                    {
+                if (strlen($module['js']) > 0) {
+                    if (strpos($module['html'], '<!-- include:js -->', 0) !== false) {
                         $module_content = str_replace('<!-- include:js -->', "<script src=\"/modules/js/{$data}.js\"></script>\r\n", $module_content);
-                    }
-                    else
-                    {
+                    } else {
                         $module_content .= "<script src=\"/modules/js/{$data}.js\"></script>\r\n";
                     }
                 }
 
-                $module_content = self::parseModules( $module_content, $history, $_MODULE );
-                $r = misc::execute( $module_content, $_MODULE ); 
+                $module_content = self::parseModules($module_content, $history, $_MODULE);
+                $r = misc::execute($module_content, $_MODULE);
+            } else {
+                $r = misc::execute($module['post'], $_MODULE);
             }
-            else
-            {
-                $r = misc::execute( $module['post'], $_MODULE ); 
-            } 
-            
-        }
-        else
-        {
+
+        } else {
             $r = sprintf("Module \"%s\" not found!", $data);
         }
         return $r;
@@ -98,8 +81,7 @@ class ModuleModel implements SingletonInterface {
             ->getOrElseFalse();
     }
 
-    static function fetchModule($name)
-    {
+    static function fetchModule($name) {
         return Database::getInstance()
             ->fetchOneRow("SELECT *, UNIX_TIMESTAMP(modified) as unixmtime FROM r_modules WHERE name = ?", [$name])
             ->getOrElseNull();

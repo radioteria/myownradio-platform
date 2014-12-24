@@ -39,7 +39,7 @@ trait SelectSection {
     }
 
     private function addSelectArray(array $array) {
-        foreach($array as $column) {
+        foreach ($array as $column) {
             $this->addSelect($column);
         }
     }
@@ -67,10 +67,9 @@ trait SelectSection {
             $build[] = is_array($select) ? $select[0] . " AS " . $select[1] : $select;
         }
 
-        return  count($build) == 0 ? "*" : implode(",", $build);
+        return count($build) == 0 ? "*" : implode(",", $build);
 
     }
 
 
-
-} 
+}

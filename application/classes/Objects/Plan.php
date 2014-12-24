@@ -7,6 +7,7 @@
  */
 
 namespace Objects;
+
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 
@@ -14,31 +15,31 @@ use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
  * Class Plan
  * @package Model\ActiveRecords
  * @table r_limitations
- * @key level
+ * @key plan_id
  */
 class Plan extends ActiveRecordObject implements ActiveRecord {
 
-    protected $level, $name, $upload_limit, $streams_max, $price;
+    protected $plan_id, $plan_name, $upload_limit, $streams_max;
 
     /**
      * @return mixed
      */
     public function getID() {
-        return $this->level;
+        return $this->plan_id;
     }
 
     /**
      * @param mixed $name
      */
     public function setName($name) {
-        $this->name = $name;
+        $this->plan_name = $name;
     }
 
     /**
      * @return mixed
      */
     public function getName() {
-        return $this->name;
+        return $this->plan_name;
     }
 
     /**
@@ -84,5 +85,4 @@ class Plan extends ActiveRecordObject implements ActiveRecord {
     }
 
 
-
-} 
+}

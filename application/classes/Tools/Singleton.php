@@ -12,10 +12,10 @@ trait Singleton {
      */
     public static function getInstance() {
         $calledClass = get_called_class();
-        $calledArgs  = func_get_args();
+        $calledArgs = func_get_args();
         $hash = serialize($calledArgs);
 
-        if(!isset(self::$_instance[$hash])) {
+        if (!isset(self::$_instance[$hash])) {
             $reflector = new \ReflectionClass($calledClass);
             self::$_instance[$hash] = $reflector->newInstanceArgs($calledArgs);
             //$constructor->invokeArgs(self::$_instance[$hash], $calledArgs);

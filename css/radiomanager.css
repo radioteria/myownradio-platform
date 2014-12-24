@@ -8,13 +8,14 @@ and open the template in the editor.
     Author     : Roman
 */
 
-body,html {
+body, html {
     height: 100%;
     width: 100%;
     background-color: #223344;
     color: #eeeeee;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 1);
 }
+
 div.page_wrapper {
     width: 1000px;
     margin-left: -500px;
@@ -22,13 +23,16 @@ div.page_wrapper {
     height: 100%;
     position: relative;
 }
+
 widget {
     display: block;
     padding: 8px;
 }
+
 widget h1 {
     padding-bottom: 8px;
 }
+
 div.page_wrapper div.head_section {
     top: 0;
     left: 0;
@@ -38,6 +42,7 @@ div.page_wrapper div.head_section {
     position: fixed;
     z-index: 2;
 }
+
 div.page_wrapper div.content_section {
     width: 100%;
     background-color: #223344;
@@ -46,6 +51,7 @@ div.page_wrapper div.content_section {
     top: 128px;
     display: relative;
 }
+
 div.page_wrapper div.content_section > div.streams {
     float: left;
     width: 192px;
@@ -53,34 +59,42 @@ div.page_wrapper div.content_section > div.streams {
     position: fixed;
     top: 128px;
 }
+
 div.streams_title {
     width: 100%;
     text-align: center;
     padding-top: 16px;
     padding-bottom: 16px;
 }
+
 ul.streams_list {
     list-style-type: none;
     overflow: hidden;
 }
+
 ul.streams_list > li {
     padding-top: 16px;
     padding-bottom: 16px;
     overflow: hidden;
 }
+
 ul.streams_list > li > a {
     display: block;
 }
+
 ul.streams_list > li.active {
     box-shadow: inset 2px 2px 8px #000000;
     background-color: #222222;
 }
+
 ul.streams_list > li.active a {
     color: #efefef;
 }
+
 ul.streams_list > li div.stream_item {
     text-align: center;
 }
+
 ul.streams_list > li div.stream_item > img {
     width: 64px;
 }
@@ -88,26 +102,33 @@ ul.streams_list > li div.stream_item > img {
 ul.streams_list > li div.stream_item > div.title {
     padding-top: 8px;
 }
+
 ul.streams_list > li.over div.stream_item {
     background: red;
 }
+
 div.page_wrapper div.content_section > div.tracks {
     margin-left: 192px;
     padding-left: 8px;
     padding-right: 8px;
 }
+
 ul.tracks_list {
     list-style-type: none;
 }
+
 ul.tracks_list > li:last-child {
     padding-bottom: 8px;
 }
+
 ul.tracks_list > li {
     padding-top: 8px;
 }
+
 ul.tracks_list > li.active div.track_item_wrap {
     background-color: #778899;
 }
+
 div.track_item_wrap {
     width: 100%;
     overflow: hidden;
@@ -115,12 +136,15 @@ div.track_item_wrap {
     padding: 8px;
     box-sizing: border-box;
 }
+
 div.track_item_wrap > div.title {
     font-size: 12pt;
 }
+
 div.track_item_wrap > div.title > span {
     color: #ffffff;
 }
+
 div.track_item_wrap > div.subinfo {
     position: relative;
     overflow: hidden;
@@ -129,17 +153,21 @@ div.track_item_wrap > div.subinfo {
     font-size: 10pt;
     height: 16px;
 }
+
 div.track_item_wrap > div.subinfo span.label {
     color: #bbbbbb;
 }
+
 div.track_item_wrap > div.subinfo div.sp_genre {
-    float: left; 
+    float: left;
     top: 0px;
 }
+
 div.track_item_wrap > div.subinfo div.sp_duration {
     float: right;
     top: 0px;
 }
+
 div.deleteFromStream,
 div.setCurrent {
     float: right;

@@ -11,9 +11,8 @@ namespace Framework\Controllers\api\v2\tracks;
 
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
+use Framework\Models\StreamModel;
 use Framework\Services\HttpGet;
-use Framework\Services\JsonResponse;
-use Model\StreamModel;
 use REST\Playlist;
 
 class DoGetByStream implements Controller {

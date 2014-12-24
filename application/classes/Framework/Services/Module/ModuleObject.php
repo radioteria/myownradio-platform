@@ -58,8 +58,8 @@ class ModuleObject {
         }, $this->module->getHtml());
 
         // CSS Style Sheet
-        if(strlen($this->module->getCss()) > 0) {
-            if(strpos($this->module->getHtml(), '<!-- include:css -->', 0) !== false) {
+        if (strlen($this->module->getCss()) > 0) {
+            if (strpos($this->module->getHtml(), '<!-- include:css -->', 0) !== false) {
                 $parsed = str_replace('<!-- include:css -->', "<link rel=\"stylesheet\" type=\"text/css\" href=\"/modules/css/{$this->getName()}.css\" />\r\n", $parsed);
             } else {
                 $parsed .= "<link rel=\"stylesheet\" type=\"text/css\" href=\"/modules/css/{$this->getName()}.css\" />\r\n";
@@ -67,9 +67,8 @@ class ModuleObject {
         }
 
         // Templates
-        if(strlen($this->module->getTmpl()) > 0) {
-            if(strpos($this->module->getHtml(), '<!-- include:tmpl -->', 0) !== false)
-            {
+        if (strlen($this->module->getTmpl()) > 0) {
+            if (strpos($this->module->getHtml(), '<!-- include:tmpl -->', 0) !== false) {
                 $parsed = str_replace('<!-- include:tmpl -->', $this->module->getTmpl(), $parsed);
             } else {
                 $parsed .= $this->module->getTmpl();
@@ -77,8 +76,8 @@ class ModuleObject {
         }
 
         // JavaScript
-        if(strlen($this->module->getJs()) > 0) {
-            if(strpos($this->module->getHtml(), '<!-- include:js -->', 0) !== false) {
+        if (strlen($this->module->getJs()) > 0) {
+            if (strpos($this->module->getHtml(), '<!-- include:js -->', 0) !== false) {
                 $parsed = str_replace('<!-- include:js -->', "<script src=\"/modules/js/{$this->getName()}.js\"></script>\r\n", $parsed);
             } else {
                 $parsed .= "<script src=\"/modules/js/{$this->getName()}.js\"></script>\r\n";

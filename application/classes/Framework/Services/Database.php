@@ -24,9 +24,9 @@ class Database implements SingletonInterface, Injectable {
     public function __construct() {
 
         $this->settings = Config::getInstance()->getSection('database')->getOrElse([
-            "db_login"    => "root",
+            "db_login" => "root",
             "db_password" => "",
-            "db_dsn"      => "mysql:host=localhost;dbname=myownradio"
+            "db_dsn" => "mysql:host=localhost;dbname=myownradio"
         ]);
 
     }
@@ -41,10 +41,10 @@ class Database implements SingletonInterface, Injectable {
             $this->pdo = new PDO($this->settings['db_dsn'],
                 $this->settings['db_login'],
                 $this->settings['db_password'], [
-                    PDO::ATTR_EMULATE_PREPARES  => false,
-                    PDO::ATTR_PERSISTENT        => true,
-                    PDO::ATTR_AUTOCOMMIT        => true
-            ]);
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                    PDO::ATTR_PERSISTENT => true,
+                    PDO::ATTR_AUTOCOMMIT => true
+                ]);
         } catch (\PDOException $e) {
             throw ApplicationException::of($e->getMessage(), $e);
         }
@@ -156,7 +156,7 @@ class Database implements SingletonInterface, Injectable {
 
     public function executePool(DBQueryPool $pool) {
         /** @var DBQueryWrapper $wrapper */
-        foreach($pool as $wrapper) {
+        foreach ($pool as $wrapper) {
             $this->justExecute($wrapper->getQueryBody(), $wrapper->getQueryParams());
         }
     }

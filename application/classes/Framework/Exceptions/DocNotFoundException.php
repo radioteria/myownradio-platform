@@ -11,7 +11,7 @@ namespace Framework\Exceptions;
 
 use Exception;
 
-class DocNotFoundException  extends \Exception {
+class DocNotFoundException extends \Exception {
     public function __construct($message = null) {
         parent::__construct($message);
     }

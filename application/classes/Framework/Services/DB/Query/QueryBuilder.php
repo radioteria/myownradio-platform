@@ -16,5 +16,6 @@ use PDO;
  */
 interface QueryBuilder {
     public function getQuery(PDO $pdo);
+
     public function getParameters();
 } 

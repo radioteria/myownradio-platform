@@ -89,7 +89,7 @@ abstract class ActiveRecordObject implements JsonSerializable {
         $data = [];
         $prefix = "get";
         $reflection = new \ReflectionClass($this);
-        foreach($reflection->getMethods() as $method) {
+        foreach ($reflection->getMethods() as $method) {
             if ($method->isStatic()) continue;
             if (strpos($method->getName(), $prefix, 0) === 0) {
                 $suffix = camelToUnderscore(substr($method->getName(), strlen($prefix)));

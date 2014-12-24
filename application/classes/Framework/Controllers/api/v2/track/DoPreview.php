@@ -12,7 +12,6 @@ namespace Framework\Controllers\api\v2\track;
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpGet;
-use Framework\Services\JsonResponse;
 use Framework\Services\Services;
 
 class DoPreview implements Controller {

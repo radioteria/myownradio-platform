@@ -11,7 +11,6 @@ namespace Framework\Controllers\api\v2\tracks;
 
 use Framework\Controller;
 use Framework\Services\HttpGet;
-use Framework\Services\JsonResponse;
 use REST\Playlist;
 
 class DoGetAll implements Controller {

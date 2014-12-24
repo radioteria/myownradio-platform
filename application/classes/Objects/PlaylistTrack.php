@@ -7,6 +7,7 @@
  */
 
 namespace Objects;
+
 use Framework\Services\DB\DBQuery;
 
 /**

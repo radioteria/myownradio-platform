@@ -42,7 +42,7 @@ abstract class BaseQuery implements \Countable {
 
     protected function quote(PDO $pdo, array $values) {
         $result = [];
-        foreach($values as $value) {
+        foreach ($values as $value) {
             $result[] = $pdo->quote($value);
         }
         return $result;
@@ -60,10 +60,10 @@ abstract class BaseQuery implements \Countable {
 
     public function buildLimits() {
 
-        if(is_numeric($this->limit) && is_null($this->offset)) {
+        if (is_numeric($this->limit) && is_null($this->offset)) {
             return "LIMIT " . $this->limit;
-        } else if(is_numeric($this->limit) && is_numeric($this->offset)) {
-            return "LIMIT " . $this->offset . "," .$this->limit;
+        } else if (is_numeric($this->limit) && is_numeric($this->offset)) {
+            return "LIMIT " . $this->offset . "," . $this->limit;
         } else {
             return "";
         }

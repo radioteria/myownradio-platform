@@ -22,11 +22,11 @@ class get_controller extends controller {
 
         header("Content-Type: application/json");
 
-        $filter     = application::getParamOptional("q")->getOrElseNull();
-        $category   = application::getParamOptional("c")->getOrElseNull();
+        $filter = application::getParamOptional("q")->getOrElseNull();
+        $category = application::getParamOptional("c")->getOrElseNull();
 
-        $from       = (int) application::getParamOptional("from")->getOrElse(0);
-        $limit      = (int) application::getParamOptional("limit")->getOrElse(50);
+        $from = (int)application::getParamOptional("from")->getOrElse(0);
+        $limit = (int)application::getParamOptional("limit")->getOrElse(50);
 
         $streams = Streams::getStreamListFiltered($filter, $category, $from, $limit);
 

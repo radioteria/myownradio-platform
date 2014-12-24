@@ -12,7 +12,7 @@ and open the template in the editor.
     overflow: hidden;
     display: inline-block;
     line-height: 24px;
-    
+
 }
 
 .rm-button-group > div {
@@ -47,7 +47,7 @@ and open the template in the editor.
     background: #ffffff !important;
 }
 
-.rm-button-group > .active, 
+.rm-button-group > .active,
 .rm-button-group > :active {
     background: #25749c !important;
     color: #eeeeee;

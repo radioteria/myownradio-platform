@@ -11,9 +11,9 @@ namespace Framework\Controllers\api\v2\control;
 
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
+use Framework\Models\PlaylistModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
-use Model\PlaylistModel;
 
 class DoNotify implements Controller {
 

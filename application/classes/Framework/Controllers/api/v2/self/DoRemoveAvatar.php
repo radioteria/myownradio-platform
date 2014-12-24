@@ -10,8 +10,8 @@ namespace Framework\Controllers\api\v2\self;
 
 
 use Framework\Controller;
+use Framework\Models\AuthUserModel;
 use Framework\Services\JsonResponse;
-use Model\AuthUserModel;
 
 class DoRemoveAvatar implements Controller {
 

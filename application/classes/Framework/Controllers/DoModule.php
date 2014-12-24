@@ -12,8 +12,6 @@ namespace Framework\Controllers;
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpGet;
-use Framework\Services\HttpPost;
-use Framework\Services\HttpRequest;
 use Framework\Services\Module\ModuleObject;
 
 class DoModule implements Controller {

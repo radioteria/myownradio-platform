@@ -47,7 +47,7 @@ class Router {
 //                    echo $module->executePost();
 //                }
 //            } catch (ModuleNotFoundException $e) {
-                $this->findRoute();
+            $this->findRoute();
 //            }
 
         } catch (ControllerException $e) {
@@ -91,7 +91,7 @@ class Router {
         $reflection = new \ReflectionClass($class);
 
         // Check for valid reflector
-        if (! $reflection->implementsInterface("Framework\\Controller")) {
+        if (!$reflection->implementsInterface("Framework\\Controller")) {
             throw new DocNotFoundException("Controller must implement Framework\\Controller interface");
         }
 

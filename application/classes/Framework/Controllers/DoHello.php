@@ -10,7 +10,6 @@ namespace Framework\Controllers;
 
 
 use Framework\Controller;
-use Framework\Services\JsonResponse;
 
 class DoHello implements Controller {
 

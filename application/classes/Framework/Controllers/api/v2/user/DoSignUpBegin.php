@@ -11,10 +11,10 @@ namespace Framework\Controllers\api\v2\self;
 
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
+use Framework\Models\LettersModel;
 use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
-use Model\LettersModel;
 
 class DoSignUpBegin implements Controller {
 

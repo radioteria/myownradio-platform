@@ -41,7 +41,7 @@ class InputValidator implements Injectable {
 
             $reqKeys = array("artist", "title", "album", "track_number", "genre", "date");
 
-            foreach($reqKeys as $key) {
+            foreach ($reqKeys as $key) {
                 if (array_key_exists($key, $variable) === false) {
                     return false;
                 }

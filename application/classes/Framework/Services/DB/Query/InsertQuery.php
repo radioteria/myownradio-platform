@@ -37,7 +37,7 @@ class InsertQuery extends BaseQuery implements QueryBuilder {
     }
 
     private function hashValues(array $hashMap) {
-        foreach($hashMap as $key=>$value) {
+        foreach ($hashMap as $key => $value) {
             $this->singleValue($key, $value);
         }
     }

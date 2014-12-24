@@ -141,7 +141,7 @@ class Optional implements \JsonSerializable {
      * @return Optional
      */
     public static function ofZeroable($value) {
-        return new self($value, function ($v) { return intval($v) > 0; } );
+        return new self($value, function ($v) { return intval($v) > 0; });
     }
 
     /**

@@ -20,11 +20,11 @@ class DoGetList implements Controller {
      */
     public function doGet(HttpGet $get, JsonResponse $response, Streams $streams) {
 
-        $filter     = $get->getParameter("filter")->getOrElseEmpty();
-        $category   = $get->getParameter("category")->getOrElseNull();
+        $filter = $get->getParameter("filter")->getOrElseEmpty();
+        $category = $get->getParameter("category")->getOrElseNull();
 
-        $offset     = $get->getParameter("offset")->getOrElse(0);
-        $limit      = $get->getParameter("limit")->getOrElse(50);
+        $offset = $get->getParameter("offset")->getOrElse(0);
+        $limit = $get->getParameter("limit")->getOrElse(50);
 
         $response->setData($streams->getStreamListFiltered($filter, $category, $offset, $limit));
 

@@ -10,8 +10,8 @@ namespace Framework\Controllers\api\v2\self;
 
 
 use Framework\Controller;
+use Framework\Models\UsersModel;
 use Framework\Services\JsonResponse;
-use Model\UsersModel;
 
 class DoLogout implements Controller {
 

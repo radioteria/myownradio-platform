@@ -1,18 +1,13 @@
 <?php
 
-class get_controller extends controller
-{
-    public function m3u()
-    {
-        try
-        {
+class get_controller extends controller {
+    public function m3u() {
+        try {
             $stream = application::singular("stream", application::get("stream_id", null, REQ_STRING));
-        }
-        catch(Exception $ex)
-        {
+        } catch (Exception $ex) {
             throw new patDocumentNotFoundException($ex);
         }
-        
+
         $tmpl = new template("application/tmpl/playlist.tmpl");
         $tmpl
             ->addVariable("stream_name", $stream->getStreamName())
@@ -20,7 +15,7 @@ class get_controller extends controller
 
         header("Content-Type: application/octet-stream; charset=utf-8");
         header(sprintf(
-            "Content-Disposition: attachment; filename=\"%s (#%d) @ myownradio.biz.m3u\"", 
+            "Content-Disposition: attachment; filename=\"%s (#%d) @ myownradio.biz.m3u\"",
             $stream->getStreamName(),
             $stream->getStreamId()
         ));
@@ -31,7 +26,7 @@ class get_controller extends controller
         $data = array();
         $templates = new File("application/tmpl");
 
-        foreach($templates->getDirContents() as $file) {
+        foreach ($templates->getDirContents() as $file) {
             $key = $file->filename();
             $content = $file->getContents();
             $data[$key] = $content;

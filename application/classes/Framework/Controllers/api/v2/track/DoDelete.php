@@ -11,9 +11,9 @@ namespace Framework\Controllers\api\v2\track;
 
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
+use Framework\Models\TracksModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
-use Model\TracksModel;
 
 /**
  * Class DoDelete

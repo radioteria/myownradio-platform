@@ -20,7 +20,7 @@ class Mailer {
     private $senderName = "The MyOwnRadio Team";
 
     function __construct($sender, $name) {
-        if(empty($sender) || empty($name)) {
+        if (empty($sender) || empty($name)) {
             throw new Exception("Sender address and name must be specified");
         }
         $this->sender = $sender;
@@ -49,13 +49,13 @@ class Mailer {
 
     public function send() {
 
-        $senderString   = sprintf("%s <%s>", $this->senderName, $this->sender);
-        $flag           = "-f" . $this->sender;
+        $senderString = sprintf("%s <%s>", $this->senderName, $this->sender);
+        $flag = "-f" . $this->sender;
 
-        $headers        = "Content-Type: " . $this->contentType . "\r\n";
-        $headers       .= "From: {$senderString}\r\n";
+        $headers = "Content-Type: " . $this->contentType . "\r\n";
+        $headers .= "From: {$senderString}\r\n";
 
-        $targets        = implode(",", $this->address);
+        $targets = implode(",", $this->address);
 
         $result = mail($targets, $this->subject, $this->body, $headers, $flag);
 

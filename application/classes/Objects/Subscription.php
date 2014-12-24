@@ -7,6 +7,7 @@
  */
 
 namespace Objects;
+
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 
@@ -14,11 +15,11 @@ use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
  * Class Subscription
  * @package Model\ActiveRecords
  * @table r_subscriptions
- * @key id
+ * @key sub_id
  */
 class Subscription extends ActiveRecordObject implements ActiveRecord {
 
-    protected $id, $uid, $plan, $payment_info, $expire;
+    protected $sub_id, $user_id, $plan_id, $payment_info, $expire;
 
     /**
      * @param mixed $expire
@@ -38,7 +39,7 @@ class Subscription extends ActiveRecordObject implements ActiveRecord {
      * @return mixed
      */
     public function getID() {
-        return $this->id;
+        return $this->sub_id;
     }
 
     /**
@@ -59,30 +60,29 @@ class Subscription extends ActiveRecordObject implements ActiveRecord {
      * @param mixed $plan
      */
     public function setPlan($plan) {
-        $this->plan = $plan;
+        $this->plan_id = $plan;
     }
 
     /**
      * @return mixed
      */
     public function getPlan() {
-        return $this->plan;
+        return $this->plan_id;
     }
 
     /**
      * @param mixed $uid
      */
     public function setUserID($uid) {
-        $this->uid = $uid;
+        $this->user_id = $uid;
     }
 
     /**
      * @return mixed
      */
     public function getUserID() {
-        return $this->uid;
+        return $this->user_id;
     }
 
 
-
-} 
+}

@@ -11,16 +11,16 @@ namespace Framework\Controllers\api\v2\control;
 
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
+use Framework\Models\PlaylistModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
-use Model\PlaylistModel;
 
 class DoSetCurrentTrack implements Controller {
 
     public function doPost(HttpPost $post, JsonResponse $response) {
 
-        $id     = $post->getParameter("stream_id")->getOrElseThrow(ControllerException::noArgument("stream_id"));
-        $track  = $post->getParameter("unique_id")->getOrElseThrow(ControllerException::noArgument("unique_id"));
+        $id = $post->getParameter("stream_id")->getOrElseThrow(ControllerException::noArgument("stream_id"));
+        $track = $post->getParameter("unique_id")->getOrElseThrow(ControllerException::noArgument("unique_id"));
 
         PlaylistModel::getInstance($id)->scPlayByUniqueID($track);
 

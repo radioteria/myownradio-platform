@@ -10,10 +10,10 @@ namespace Framework\Controllers\api\v2\streams;
 
 
 use Framework\Controller;
+use Framework\Models\AuthUserModel;
+use Framework\Models\UserModel;
 use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
-use Model\AuthUserModel;
-use Model\UserModel;
 use REST\Streams;
 
 class DoGetStreamsByUser implements Controller {

@@ -7,6 +7,7 @@
  */
 
 namespace Objects;
+
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 
@@ -19,27 +20,27 @@ use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
  */
 class Category extends ActiveRecordObject implements ActiveRecord {
 
-    private $id, $name, $permalink;
+    private $category_id, $category_name, $category_permalink;
 
     /**
      * @return mixed
      */
     public function getID() {
-        return $this->id;
+        return $this->category_id;
     }
 
     /**
      * @return mixed
      */
     public function getName() {
-        return $this->name;
+        return $this->category_name;
     }
 
     /**
      * @return mixed
      */
     public function getPermalink() {
-        return $this->permalink;
+        return $this->category_permalink;
     }
 
 } 

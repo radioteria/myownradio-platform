@@ -54,7 +54,10 @@ class Users implements SingletonInterface, Injectable {
             $query->where("MATCH (name) AGAINST (? IN BOOLEAN MODE)", [Common::searchQueryFilter($filter)]);
         }
 
-        return $query->fetchAll(null, function ($row) { $this->processUserRow($row); return $row; });
+        return $query->fetchAll(null, function ($row) {
+            $this->processUserRow($row);
+            return $row;
+        });
 
     }
 

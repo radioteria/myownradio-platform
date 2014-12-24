@@ -53,7 +53,7 @@ trait WhereSection {
     }
 
     private function whereParameters($clause, array $parameters) {
-        foreach ($parameters as $key=>$parameter) {
+        foreach ($parameters as $key => $parameter) {
             if (is_numeric($key)) {
                 $this->parameters["WHERE"][] = $parameter;
             } else {
@@ -72,7 +72,7 @@ trait WhereSection {
     }
 
     private function whereHashMap(array $map) {
-        foreach($map as $key=>$value) {
+        foreach ($map as $key => $value) {
             $this->whereSimple($key, $value);
         }
     }
@@ -82,7 +82,7 @@ trait WhereSection {
 
         $build = [];
 
-        foreach($this->wheres as $where) {
+        foreach ($this->wheres as $where) {
             if (count($where) == 1 && is_string($where)) {
                 $build[] = $where;
             } else if (count($where) == 2 && is_array($where[1])) {

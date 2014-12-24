@@ -27,7 +27,7 @@ function callDependencyInjection($object, ReflectionMethod $method) {
     foreach ($method->getParameters() as $param) {
 
         /** @var \ReflectionParameter $param */
-        if (! $param->getClass()->implementsInterface("Framework\\Services\\Injectable")) {
+        if (!$param->getClass()->implementsInterface("Framework\\Services\\Injectable")) {
             throw new Exception("Object could not be injected");
         }
 

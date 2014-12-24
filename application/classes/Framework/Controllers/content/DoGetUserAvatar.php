@@ -13,7 +13,6 @@ use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\DocNotFoundException;
 use Framework\Services\HttpGet;
-use Framework\Services\JsonResponse;
 use Tools\File;
 use Tools\Folders;
 

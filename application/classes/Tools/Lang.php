@@ -11,8 +11,10 @@ namespace Tools;
 
 class Lang {
     public static function isNull($mixed) {
-        foreach(func_get_args() as $arg) {
-            if (is_null($arg)) { return true; }
+        foreach (func_get_args() as $arg) {
+            if (is_null($arg)) {
+                return true;
+            }
         }
         return false;
     }

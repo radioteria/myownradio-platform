@@ -10,10 +10,10 @@ namespace REST;
 
 
 use Framework\Exceptions\ControllerException;
+use Framework\Models\AuthUserModel;
+use Framework\Models\StreamModel;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\Injectable;
-use Model\AuthUserModel;
-use Model\StreamModel;
 use Objects\StreamStats;
 use Tools\JsonPrinter;
 use Tools\Singleton;

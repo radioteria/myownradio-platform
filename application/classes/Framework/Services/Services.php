@@ -9,13 +9,13 @@
 namespace Framework\Services;
 
 
-use Model\AuthUserModel;
-use Model\StreamModel;
-use Model\StreamsModel;
-use Model\TrackModel;
-use Model\TracksModel;
-use Model\UserModel;
-use Model\UsersModel;
+use Framework\Models\AuthUserModel;
+use Framework\Models\StreamModel;
+use Framework\Models\StreamsModel;
+use Framework\Models\TrackModel;
+use Framework\Models\TracksModel;
+use Framework\Models\UserModel;
+use Framework\Models\UsersModel;
 use Tools\Singleton;
 
 class Services implements Injectable {

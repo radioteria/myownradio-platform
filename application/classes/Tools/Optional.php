@@ -160,7 +160,11 @@ class Optional implements \JsonSerializable {
      * Use this constructor if your variable must not be empty
      */
     public static function ofEmpty($value) {
-        return new self($value, function ($v) { return !empty($v) || ($v == 0) ; });
+        return new self($value, function ($v) {
+            if (is_null($v)) return false;
+            if (strlen($v) == 0) return false;
+            return true;
+        });
     }
 
     /**

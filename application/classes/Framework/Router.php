@@ -49,7 +49,6 @@ class Router {
 //            } catch (ModuleNotFoundException $e) {
             $this->findRoute();
 //            }
-
         } catch (ControllerException $e) {
 
             $this->exceptionRouter($e);
@@ -104,13 +103,13 @@ class Router {
 
             throw new NotImplementedException();
 
-        };
+        }
 
         // Create instance of desired controller
         $classInstance = $reflection->newInstance();
 
         // Execute controller
-        callDependencyInjection($classInstance, $invoker);
+        $this->callDependencyInjection($classInstance, $invoker);
 
     }
 
@@ -122,6 +121,27 @@ class Router {
         $response->setData($exception->getMyData());
         $response->setCode(0);
 
+    }
+
+
+    private function callDependencyInjection($object, \ReflectionMethod $method) {
+        $method->setAccessible(true);
+        $args = [];
+        foreach ($method->getParameters() as $param) {
+
+            /** @var \ReflectionParameter $param */
+            if (!$param->getClass()->implementsInterface("Framework\\Services\\Injectable")) {
+                throw new \Exception("Object could not be injected");
+            }
+
+            if ($param->getClass()->implementsInterface("Tools\\SingletonInterface")) {
+                $args[] = $param->getClass()->getMethod("getInstance")->invoke(null);
+            } else {
+                $args[] = $param->getClass()->newInstanceArgs();
+            }
+
+        }
+        return $method->invokeArgs($object, $args);
     }
 
 }

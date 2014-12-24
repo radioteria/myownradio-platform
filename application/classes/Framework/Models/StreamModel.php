@@ -11,6 +11,8 @@ namespace Framework\Models;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
+use Framework\Services\DB\Query\DeleteQuery;
+use Framework\Services\DB\Query\UpdateQuery;
 use Framework\Services\InputValidator;
 use Objects\Stream;
 use Tools\Common;
@@ -208,6 +210,13 @@ class StreamModel extends Model implements SingletonInterface {
             return null;
 
         }
+
+    }
+
+    public function delete() {
+
+        $query = new DeleteQuery("r_streams");
+        $query->where("sid", $this->getID())->executeUpdate();
 
     }
 

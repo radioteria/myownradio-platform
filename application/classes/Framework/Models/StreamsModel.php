@@ -10,6 +10,7 @@ namespace Framework\Models;
 
 
 use Framework\Services\Database;
+use Framework\Services\DB\DBQuery;
 use Framework\Services\Injectable;
 use Framework\Services\InputValidator;
 use Objects\Stream;

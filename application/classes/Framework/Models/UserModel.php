@@ -3,10 +3,16 @@
 namespace Framework\Models;
 
 use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\Stats;
 use Framework\Services\Database;
+use Framework\Services\DB\Query\DeleteQuery;
+use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\InputValidator;
+use Objects\Link;
+use Objects\Stream;
 use Objects\Subscription;
+use Objects\Track;
 use Objects\User;
 use Tools\Common;
 use Tools\File;
@@ -229,6 +235,32 @@ class UserModel extends Model implements SingletonInterface {
             return null;
 
         }
+
+    }
+
+    public function delete($password) {
+
+        $md5 = md5($this->getLogin() . $password);
+
+        if ($md5 != $this->user->getPassword()) {
+            throw UnauthorizedException::wrongPassword();
+        }
+
+        $streams = Stream::getListByFilter("uid", [$this->user->getID()]);
+
+        foreach($streams as $stream) {
+            $stream->delete();
+        }
+
+
+        $tracks = Track::getListByFilter("uid", [$this->user->getID()]);
+
+        foreach($tracks as $track) {
+            $model = new TrackModel($track->getID());
+            $model->delete();
+        }
+
+        $this->user->delete();
 
     }
 

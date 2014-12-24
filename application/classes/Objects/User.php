@@ -73,9 +73,9 @@ class User extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return mixed
      */
-//    public function getPassword() {
-//        return $this->password;
-//    }
+    public function getPassword() {
+        return $this->password;
+    }
 
     /**
      * @return mixed

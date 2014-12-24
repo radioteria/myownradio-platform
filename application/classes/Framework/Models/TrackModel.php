@@ -199,6 +199,8 @@ class TrackModel extends Model implements SingletonInterface {
      */
     public function delete() {
 
+        logger("deleting track...");
+
         unlink($this->getOriginalFile());
 
         $this->object->delete();

@@ -27,7 +27,7 @@ class HttpRequest implements Injectable {
      * @return Optional
      */
     public function getHeader($key) {
-        return Optional::ofNull(@$this->headers[$key]);
+        return Optional::ofNullable(@$this->headers[$key]);
     }
 
     /**
@@ -83,35 +83,35 @@ class HttpRequest implements Injectable {
      * @return Optional
      */
     public function getHttpAccept() {
-        return Optional::ofNull($this->filterInputServer("HTTP_ACCEPT"));
+        return Optional::ofNullable($this->filterInputServer("HTTP_ACCEPT"));
     }
 
     /**
      * @return Optional
      */
     public function getHttpHost() {
-        return Optional::ofNull($this->filterInputServer("HTTP_HOST"));
+        return Optional::ofNullable($this->filterInputServer("HTTP_HOST"));
     }
 
     /**
      * @return Optional
      */
     public function getHttpReferer() {
-        return Optional::ofNull($this->filterInputServer("HTTP_REFERER"));
+        return Optional::ofNullable($this->filterInputServer("HTTP_REFERER"));
     }
 
     /**
      * @return Optional
      */
     public function getHttpUserAgent() {
-        return Optional::ofNull($this->filterInputServer("HTTP_USER_AGENT"));
+        return Optional::ofNullable($this->filterInputServer("HTTP_USER_AGENT"));
     }
 
     /**
      * @return Optional
      */
     public function getHttps() {
-        return Optional::ofNull($this->filterInputServer("HTTPS"));
+        return Optional::ofNullable($this->filterInputServer("HTTPS"));
     }
 
     /**

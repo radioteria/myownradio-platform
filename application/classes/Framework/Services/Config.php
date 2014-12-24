@@ -18,7 +18,7 @@ class Config implements SingletonInterface {
      * @return Optional
      */
     public function getSetting($section, $setting) {
-        return Optional::ofNull(@$this->config[$section][$setting]);
+        return Optional::ofNullable(@$this->config[$section][$setting]);
     }
 
     /**
@@ -26,7 +26,7 @@ class Config implements SingletonInterface {
      * @return Optional
      */
     public function getSection($section) {
-        return Optional::ofNull(@$this->config[$section]);
+        return Optional::ofNullable(@$this->config[$section]);
     }
 
     function __construct() {

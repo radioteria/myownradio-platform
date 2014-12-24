@@ -29,7 +29,7 @@ class HttpSession implements Injectable {
      * @return Optional
      */
     public function get($key) {
-        return Optional::ofNull(@$_SESSION[$key]);
+        return Optional::ofNullable(@$_SESSION[$key]);
     }
 
     /**

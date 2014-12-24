@@ -106,7 +106,7 @@ class Common {
             $tag = self::cp1252dec($tag);
         }
 
-        $tagsData[0] = Optional::ofZero($tagsData[0]);
+        $tagsData[0] = Optional::ofZeroable($tagsData[0]);
 
         for ($i = 1; $i < count($tagsData); $i++) {
             $tagsData[$i] = Optional::ofEmpty($tagsData[$i]);

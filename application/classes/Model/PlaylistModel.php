@@ -90,11 +90,11 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     public function getStreamPosition($time = null) {
 
         if ($this->tracks_duration == 0) {
-            return Optional::ofNull(0);
+            return Optional::ofNullable(0);
         }
 
         if ($this->status == 0) {
-            return Optional::ofNull(null);
+            return Optional::ofNullable(null);
         }
 
         if (is_null($time)) {
@@ -103,7 +103,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
         $position = ($time - $this->started + $this->started_from) % $this->tracks_duration;
 
-        return Optional::ofNull($position);
+        return Optional::ofNullable($position);
 
     }
 

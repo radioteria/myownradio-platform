@@ -132,7 +132,7 @@ class Optional implements \JsonSerializable {
      * @return Optional
      * Use this constructor if your variable must not be a null
      */
-    public static function ofNull($value) {
+    public static function ofNullable($value) {
         return new self($value, function ($v) { return !is_null($v); });
     }
 
@@ -140,7 +140,7 @@ class Optional implements \JsonSerializable {
      * @param $value
      * @return Optional
      */
-    public static function ofZero($value) {
+    public static function ofZeroable($value) {
         return new self($value, function ($v) { return intval($v) > 0; } );
     }
 
@@ -160,7 +160,7 @@ class Optional implements \JsonSerializable {
      * Use this constructor if your variable must not be empty
      */
     public static function ofEmpty($value) {
-        return new self($value, function ($v) { return !empty($v); });
+        return new self($value, function ($v) { return !empty($v) || ($v == 0) ; });
     }
 
     /**
@@ -217,6 +217,7 @@ class Optional implements \JsonSerializable {
     }
 
     /**
+     * @param $value
      * @return Optional
      */
     public static function hasValue($value) {

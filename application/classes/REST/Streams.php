@@ -66,8 +66,10 @@ class Streams implements \Countable, Injectable, SingletonInterface {
 
         $queryUser = $this->getUsersPrefix()->where('uid', $stream['uid']);
 
-        $stream['owner'] = $queryUser->fetchOneRow()
+        $stream["owner"] = $queryUser->fetchOneRow()
             ->getOrElseThrow(new ControllerException("Stream owner not found"));
+
+        $this->processUserRow($stream["owner"]);
 
         return $stream;
 

@@ -22,7 +22,7 @@ public class ConcurrentBufferUnit {
     private long touched;
 
     // Use byte buffer
-    protected volatile byte[] byteBuffer;
+    protected volatile byte[] byteBuffer; // todo: I believe it could work without this thing
 
     // Buffer size variable
     protected int buffSize;

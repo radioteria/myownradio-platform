@@ -29,4 +29,8 @@ public class LHttpException extends RuntimeException {
     public static LHttpException documentNotFound() {
         return new LHttpException(LHttpStatus.STATUS_404);
     }
+
+    public static LHttpException forbidden() {
+        return new LHttpException(LHttpStatus.STATUS_403);
+    }
 }

@@ -1,10 +1,10 @@
 package gemini.myownradio.LHttp.ContextHandlers;
 
-import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
 import gemini.myownradio.LHttp.LHttpException;
 import gemini.myownradio.LHttp.LHttpHandler;
 import gemini.myownradio.LHttp.LHttpProtocol;
-import gemini.myownradio.LHttp.LHttpStatus;
+import gemini.myownradio.engine.buffer.ConcurrentBuffer;
+import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
 
 import java.io.IOException;
 
@@ -16,21 +16,23 @@ public class SetStreamStateNotifyHandler implements LHttpHandler {
     public void handler(LHttpProtocol exchange) throws IOException {
 
         if (!exchange.getClientIP().equals("127.0.0.1")) {
-            exchange.setStatus(LHttpStatus.STATUS_403);
-            exchange.setContentType("text/html");
-            exchange.getPrinter().println("<h1>HTTP/1.1 403 Forbidden</h1>");
-            exchange.flush();
-            return;
+            throw LHttpException.forbidden();
         }
 
-        final int stream_id = Integer.parseInt(exchange.getParameter("s").orElseThrow(() -> LHttpException.badRequest()));
+        int stream_id;
+
+        try {
+            stream_id = Integer.parseInt(exchange.getParameter("s").orElseThrow(LHttpException::badRequest));
+        } catch (NumberFormatException e) {
+            throw LHttpException.badRequest();
+        }
 
         long notified = ConcurrentBufferRepository
                 .getKeys()
                 .parallel()
                 .filter(o -> o.getStream() == stream_id)
-                .map(s -> ConcurrentBufferRepository.getBC(s))
-                .map(o -> o.setNotify())
+                .map(ConcurrentBufferRepository::getBC)
+                .map(ConcurrentBuffer::setNotify)
                 .count();
 
         exchange.getPrinter().println("STREAMERS_NOTIFIED = " + notified);

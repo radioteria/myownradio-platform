@@ -2,8 +2,11 @@ package gemini.myownradio.engine.entity;
 
 import gemini.myownradio.tools.MORSettings;
 
+import javax.xml.transform.Result;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Created by Roman on 01.10.14.
@@ -23,19 +26,18 @@ public class Track {
 
     private int playlistTime;
 
-    public Track(int track_id, int user_id, String filename, String extension, String artist, String title,
-                 long duration, long fileSize, String uniqueId, long timeOffset, long orderIndex, int playlistTime) {
-        this.track_id = track_id;
-        this.user_id = user_id;
-        this.filename = filename;
-        this.extension = extension;
-        this.artist = artist;
-        this.title = title;
-        this.duration = duration;
-        this.fileSize = fileSize;
-        this.uniqueId = uniqueId;
-        this.timeOffset = timeOffset;
-        this.orderIndex = orderIndex;
+    public Track(ResultSet rs, int playlistTime) throws SQLException {
+        this.track_id =  rs.getInt("tid");
+        this.user_id =  rs.getInt("uid");
+        this.filename = rs.getString("filename");
+        this.extension = rs.getString("ext");
+        this.artist = rs.getString("artist");
+        this.title = rs.getString("title");
+        this.duration = rs.getLong("duration");
+        this.fileSize = rs.getLong("filesize");
+        this.uniqueId = rs.getString("unique_id");
+        this.timeOffset = rs.getLong("time_offset");
+        this.orderIndex = rs.getLong("t_order");
         this.playlistTime = playlistTime;
     }
 

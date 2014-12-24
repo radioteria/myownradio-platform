@@ -11,12 +11,14 @@ namespace Framework\Models;
 
 use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\DatabaseException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\Config;
 use Framework\Services\Database;
 use Framework\Services\HttpRequest;
 use Framework\Services\HttpSession;
 use Framework\Services\Injectable;
+use Framework\Services\InputValidator;
 use Objects\User;
 use Tools\File;
 use Tools\Singleton;
@@ -137,8 +139,12 @@ class UsersModel implements SingletonInterface, Injectable {
      */
     public function completeRegistration($code, $login, $password, $name, $info, $permalink) {
 
+        $validator = InputValidator::getInstance();
+
         $email = self::parseRegistrationCode($code);
         $md5Password = md5($login . $password);
+
+        $validator->validateUniqueUserEmail($email);
 
         $newUser = new User();
 

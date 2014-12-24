@@ -9,6 +9,7 @@
 namespace Framework\Services;
 
 use Framework\Exceptions\ControllerException;
+use Framework\Services\DB\Query\SelectQuery;
 use Objects\Category;
 use Tools\Optional;
 use Tools\Singleton;
@@ -187,13 +188,12 @@ class InputValidator implements Injectable {
 
         $optional = new Optional($email, function ($email) {
 
-            return !boolval(Database::getInstance()->fetchOneColumn(
-                "SELECT COUNT(*) FROM r_users WHERE mail = ?", [$email])->get());
+            return !boolval(count((new SelectQuery("r_users"))->where("mail", $email)));
 
         });
 
         return $optional->getOrElseThrow(
-            new ControllerException(sprintf("UserModel with email '%s' already exists", $email))
+            new ControllerException(sprintf("User with email '%s' already exists", $email))
         );
 
     }

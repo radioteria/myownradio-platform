@@ -57,6 +57,9 @@ class DBQueryPool implements \IteratorAggregate, \Countable, SingletonInterface 
         return count($this->queryPool);
     }
 
+    /**
+     * @return void
+     */
     public function execute() {
         Database::doInConnection(function (Database $db) {
             $db->beginTransaction();

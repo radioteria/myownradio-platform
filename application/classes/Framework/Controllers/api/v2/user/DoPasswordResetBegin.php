@@ -6,7 +6,7 @@
  * Time: 12:40
  */
 
-namespace Framework\Controllers\api\v2\self;
+namespace Framework\Controllers\api\v2\user;
 
 
 use Framework\Controller;

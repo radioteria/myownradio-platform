@@ -55,7 +55,6 @@ public class IcyOutputStream extends FilterOutputStream {
 
     private void writeMetadata() throws IOException {
         if (update) {
-            System.out.println("Writing new metadata bytes");
             this.out.write(this.meta, 0, this.meta.length);
             update = false;
         } else {
@@ -98,7 +97,7 @@ public class IcyOutputStream extends FilterOutputStream {
     }
 
     @Override
-    public void flush() throws IOException {
+    public void flush() throws IOException { // todo: may be harmful
         if (count > 0) {
             this.out.write(buffer, 0, count);
             count = 0;

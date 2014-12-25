@@ -23,6 +23,7 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
     }
 
     public ThroughOutputStream(OutputStream out, OutputStream errOut, String[] cmd) throws IOException {
+
         super(out);
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
@@ -33,8 +34,8 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
 
         this.err = proc.getErrorStream();
         this.os = proc.getOutputStream();
-
         this.errOut = errOut;
+
     }
 
     private void checkInput() throws IOException {

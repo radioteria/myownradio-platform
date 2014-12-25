@@ -18,7 +18,7 @@ public class ThrottledOutputStream extends FilterOutputStream {
 
     private byte[] oneByte = new byte[1];
 
-    private static final long SLEEP_DURATION_MS = 50;
+    private static final long SLEEP_DURATION_MS = 50L;
 
 
     public ThrottledOutputStream(OutputStream output, int speed, int preloading) {
@@ -48,7 +48,7 @@ public class ThrottledOutputStream extends FilterOutputStream {
 
         this.bytes += len;
 
-        long bps = bytes / Math.max((System.currentTimeMillis() - start) / 1000, 1);
+        long bps = bytes / Math.max((System.currentTimeMillis() - start) / 1000L, 1L);
 
         if (bps > packetSpeed) {
             ThreadTools.Sleep(SLEEP_DURATION_MS);

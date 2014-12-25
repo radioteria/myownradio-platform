@@ -122,7 +122,7 @@ class MicroORM extends FilterORM implements Injectable {
         $id = $param->getValue($object);
 
         if (!is_null($id)) {
-            $this->_deleteObject($reflection, $beanConfig, $id);
+            $this->_deleteObject($beanConfig, $id);
         }
 
         $param->setValue($object, null);
@@ -262,11 +262,11 @@ class MicroORM extends FilterORM implements Injectable {
     }
 
     /**
-     * @param \ReflectionClass $reflection
      * @param $config
      * @param $id
+     * @internal param \ReflectionClass $reflection
      */
-    private function _deleteObject($reflection, $config, $id) {
+    private function _deleteObject($config, $id) {
 
         $dbq = DBQuery::getInstance();
 

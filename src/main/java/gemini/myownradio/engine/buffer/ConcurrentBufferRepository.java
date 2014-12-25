@@ -11,7 +11,7 @@ import java.util.stream.Stream;
  */
 public class ConcurrentBufferRepository {
 
-    private static Object locker = new Object();
+    final private static Object locker = new Object();
     private static Map<ConcurrentBufferKey, ConcurrentBuffer> repository =
             new HashMap<>();
 

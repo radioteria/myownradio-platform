@@ -1,6 +1,5 @@
 package gemini.myownradio.LHttp.ContextHandlers;
 
-import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
 import gemini.myownradio.LHttp.LHttpHandler;
 import gemini.myownradio.LHttp.LHttpProtocol;
 
@@ -32,11 +31,9 @@ public class GetRunStateHandler implements LHttpHandler {
         out.println("");
         out.println("Active threads : " + Thread.activeCount() + "\n");
 
-        for (Thread t : Thread.getAllStackTraces().keySet()) {
-            if (t.getThreadGroup().getName().equals("main")) {
-                out.println(" * " + t.getName());
-            }
-        }
+        Thread.getAllStackTraces().keySet().stream()
+                .filter(t -> t.getThreadGroup().getName().equals("main"))
+                .forEach(t -> { out.println(" * " + t.getName()); });
 
         exchange.flush();
 

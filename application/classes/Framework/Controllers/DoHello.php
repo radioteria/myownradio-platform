@@ -10,11 +10,13 @@ namespace Framework\Controllers;
 
 
 use Framework\Controller;
+use Tools\Pipe;
 
 class DoHello implements Controller {
 
     public function doGet() {
-        echo 'OK';
+
+
     }
 
 } 

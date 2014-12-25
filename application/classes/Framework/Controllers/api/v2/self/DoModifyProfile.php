@@ -16,13 +16,14 @@ use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 
 class DoModifyProfile implements Controller {
+
     public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
 
         $name = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));
-        $info = $post->getParameter("info")->getOrElseThrow(ControllerException::noArgument("info"));
-        $email = $post->getParameter("email")->getOrElseThrow(ControllerException::noArgument("email"));
+        $info = $post->getParameter("info")->getOrElseEmpty();
 
-        $user->edit($name, $info, $email);
+        $user->edit($name, $info);
 
     }
+
 } 

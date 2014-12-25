@@ -142,13 +142,19 @@ class UserModel extends Model implements SingletonInterface {
         return $this->user->getPassword();
     }
 
-    public function changePassword($password) {
+    public function changePassword($newPassword, $oldPassword) {
+
+        $md5 = md5($this->user->getLogin() . $oldPassword);
+
+        if ($md5 != $this->user->getPassword()) {
+            throw UnauthorizedException::wrongPassword();
+        }
 
         $validator = InputValidator::getInstance();
 
-        $validator->validatePassword($password);
+        $validator->validatePassword($newPassword);
 
-        $newPassword = md5($this->getLogin() . $password);
+        $newPassword = md5($this->getLogin() . $newPassword);
 
         $this->user->setPassword($newPassword)->save();
 
@@ -171,7 +177,7 @@ class UserModel extends Model implements SingletonInterface {
 
     }
 
-    public function edit($name, $info, $email) {
+    public function edit($name, $info) {
 
         $validator = InputValidator::getInstance();
 
@@ -179,7 +185,6 @@ class UserModel extends Model implements SingletonInterface {
 
         $this->user->setName($name);
         $this->user->setInfo($info);
-        $this->user->setEmail($email);
 
         $this->user->save();
 

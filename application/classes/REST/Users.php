@@ -9,6 +9,7 @@
 namespace REST;
 
 
+use Framework\Exceptions\ControllerException;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Injectable;
 use Tools\Common;
@@ -30,6 +31,17 @@ class Users implements SingletonInterface, Injectable {
 
         return $prefix;
 
+    }
+
+    public function getUserByID($id) {
+
+        $query = $this->getUsersPrefix();
+
+        $user = $query->fetchOneRow()->getOrElseThrow(ControllerException::noEntity("user"));
+
+        $this->processUserRow($user);
+
+        return $user;
     }
 
     /**

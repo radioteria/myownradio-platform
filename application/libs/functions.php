@@ -26,7 +26,7 @@ function logger($message) {
     $path = "/usr/local/myownradio/logs/rest-server.log";
 
     $file = fopen($path, "a");
-    fprintf($file, "%s %s\n", date("d-m-Y, h:i:s"), $message);
+    fprintf($file, "%s %s\n", date("d-m-Y, H:i:s"), $message);
     fclose($file);
     flush();
 }

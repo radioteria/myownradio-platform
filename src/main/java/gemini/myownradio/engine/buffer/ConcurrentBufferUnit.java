@@ -1,5 +1,7 @@
 package gemini.myownradio.engine.buffer;
 
+import gemini.myownradio.exception.NoConsumersException;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -51,8 +53,7 @@ public class ConcurrentBufferUnit {
     public void write(byte[] data) throws IOException {
 
         if (this.getTouched() > 30_000L) {
-            System.out.println("DEBUG: No consumers");
-            throw new IOException("No consumers");
+            throw new NoConsumersException("No consumers");
         }
 
         if (data.length > this.buffSize) {

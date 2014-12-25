@@ -164,6 +164,15 @@ abstract class BaseQuery implements \Countable {
     }
 
     /**
+     * @return mixed
+     */
+    public function executeInsert() {
+        return Database::doInConnection(function (Database $db) {
+            return $db->executeInsert($this, null);
+        });
+    }
+
+    /**
      * @return int
      */
     public function count() {

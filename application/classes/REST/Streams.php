@@ -216,6 +216,8 @@ class Streams implements \Countable, Injectable, SingletonInterface {
      */
     private function getUsersList(array $users) {
 
+        if (count($users) == 0) return [];
+
         $query = $this->getUsersPrefix();
         $query->where("uid", $users);
 

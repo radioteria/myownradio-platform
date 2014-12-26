@@ -62,6 +62,8 @@ public class CircularByteBuffer {
 
         long threshold = System.currentTimeMillis() + timeout;
 
+        ByteBuffer bb;
+
         while (threshold > System.currentTimeMillis()) {
 
             if (count <= after) {
@@ -75,13 +77,15 @@ public class CircularByteBuffer {
 
                 int newBytes = (int) (count - after);
 
+                bb = buffer.duplicate();
+
                 if (newBytes > len) {
-                    buffer.position(length - len);
-                    buffer.get(b, off, len);
+                    bb.position(length - len);
+                    bb.get(b, off, len);
                     return len;
                 } else {
-                    buffer.position(length - newBytes);
-                    buffer.get(b, off, newBytes);
+                    bb.position(length - newBytes);
+                    bb.get(b, off, newBytes);
                     return newBytes;
                 }
 

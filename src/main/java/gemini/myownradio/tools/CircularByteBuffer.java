@@ -29,14 +29,19 @@ public class CircularByteBuffer {
     }
 
     public void putBytes(byte[] b, int pos, int len) {
+
         buffer.position(len);
         buffer.compact();
         buffer.put(b, pos, len);
-        count =+ len;
+
+        count += len;
+
+        System.out.printf("Current position: %d\n", count);
 
         synchronized (this) {
             this.notifyAll();
         }
+
     }
 
     public void putBytes(byte[] b) {
@@ -61,7 +66,7 @@ public class CircularByteBuffer {
 
         while (threshold > System.currentTimeMillis()) {
 
-            if (count < after) {
+            if (count <= after) {
 
                 synchronized (this) {
                     try { this.wait(timeout); }

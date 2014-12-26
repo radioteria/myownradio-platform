@@ -2,6 +2,7 @@ package gemini.myownradio.engine.buffer;
 
 import gemini.myownradio.exception.NoConsumersException;
 import gemini.myownradio.tools.ByteTools;
+import gemini.myownradio.tools.CircularByteBuffer;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -20,10 +21,13 @@ public class ConcurrentBufferUnit {
 
     private long touched;
 
+    private CircularByteBuffer circularByteBuffer;
+
     // Buffer Unit initialization
     public ConcurrentBufferUnit(int size) {
 
         this.byteBuffer = new byte[Long.BYTES + size];
+        this.circularByteBuffer = new CircularByteBuffer(size);
 
         Arrays.fill(this.byteBuffer, (byte) 0x00);
 
@@ -46,6 +50,8 @@ public class ConcurrentBufferUnit {
         if (data.length == 0) {
             return;
         }
+
+        this.circularByteBuffer.putBytes(data);
 
         byte[] temp = this.byteBuffer;
 

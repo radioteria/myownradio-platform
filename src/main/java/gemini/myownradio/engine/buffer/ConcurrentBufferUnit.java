@@ -1,6 +1,7 @@
 package gemini.myownradio.engine.buffer;
 
 import gemini.myownradio.exception.NoConsumersException;
+import gemini.myownradio.tools.ByteTools;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -71,7 +72,7 @@ public class ConcurrentBufferUnit {
 
         System.arraycopy(temp, Long.BYTES + data.length, temp, Long.BYTES, buffSize - data.length);
         System.arraycopy(data, 0, temp, Long.BYTES + buffSize - data.length, data.length);
-        System.arraycopy(longToBytes(cursor), 0, temp, 0, Long.BYTES);
+        System.arraycopy(ByteTools.longToBytes(cursor), 0, temp, 0, Long.BYTES);
 
         //longBuffer.clear();
 
@@ -84,18 +85,6 @@ public class ConcurrentBufferUnit {
 
         }
 
-    }
-
-    private byte[] longToBytes(long value) {
-        byte[] temp = new byte[Long.BYTES];
-        for (int i = 0; i < temp.length; i ++) {
-            temp[temp.length - i - 1] = (byte) (value >> (i * 8));
-        }
-        System.out.println(Arrays.toString(temp));
-        longBuffer.clear();
-        byte[] a = longBuffer.putLong(value).array();
-        System.out.println(Arrays.toString(a));
-        return temp;
     }
 
     public long getTouched() {

@@ -77,9 +77,11 @@ public class CircularByteBuffer {
                 buffer.rewind();
 
                 if (newBytes > len) {
+                    buffer.position(length - len);
                     buffer.get(b, 0, len);
                     return count + len;
                 } else {
+                    buffer.position(length - newBytes);
                     buffer.get(b, 0, newBytes);
                     return count + newBytes;
                 }

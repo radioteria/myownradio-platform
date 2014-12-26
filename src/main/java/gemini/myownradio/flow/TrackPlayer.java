@@ -1,6 +1,7 @@
 package gemini.myownradio.flow;
 
 import gemini.myownradio.engine.buffer.ConcurrentBuffer;
+import gemini.myownradio.exception.ShutdownException;
 import gemini.myownradio.ff.FFDecoderBuilder;
 
 import java.io.*;
@@ -60,10 +61,9 @@ public class TrackPlayer implements AbstractPlayer {
                     break;
                 }
             }
+        } catch (ShutdownException e) {
+            throw new IOException(e);
         } catch (IOException e) {
-            if (e.getMessage().equals("Shutdown")) {
-                throw new IOException(e);
-            }
         }
 
         proc.destroy();

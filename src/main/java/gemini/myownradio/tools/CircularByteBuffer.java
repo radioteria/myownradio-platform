@@ -74,19 +74,15 @@ public class CircularByteBuffer {
 
             } else {
 
-                System.out.printf("Reading from %d position when current position is %d\n", after, count);
-
                 int newBytes = (int) (count - after);
 
-                ByteBuffer temp = buffer;
-
                 if (newBytes > len) {
-                    temp.position(length - len);
-                    temp.get(b, off, len);
+                    buffer.position(length - len);
+                    buffer.get(b, off, len);
                     return len;
                 } else {
-                    temp.position(length - newBytes);
-                    temp.get(b, off, newBytes);
+                    buffer.position(length - newBytes);
+                    buffer.get(b, off, newBytes);
                     return newBytes;
                 }
 
@@ -94,7 +90,7 @@ public class CircularByteBuffer {
 
         }
 
-        throw new IOException("Data wait timeout");
+        throw new IOException("Data awaiting timed out");
 
     }
 

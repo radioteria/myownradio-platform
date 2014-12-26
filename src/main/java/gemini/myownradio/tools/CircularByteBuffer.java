@@ -36,6 +36,8 @@ public class CircularByteBuffer {
 
         count += len;
 
+        System.out.println(count);
+
         synchronized (this) {
             this.notifyAll();
         }
@@ -69,9 +71,10 @@ public class CircularByteBuffer {
             if (count <= after) {
 
                 synchronized (this) {
-                    System.out.println("Wait...");
+                    System.out.println("Sleep...");
                     try { wait(timeout); }
                     catch (InterruptedException cannotHappen) { /* NOP */ }
+                    System.out.println("Awake...");
                 }
 
             } else {

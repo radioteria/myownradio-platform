@@ -13,7 +13,7 @@ public class CircularByteBuffer {
     private int length;
 
     // Default read timeout is 5 seconds.
-    private final static long DEFAULT_TIMEOUT = 5_000L;
+    private static final long DEFAULT_TIMEOUT = 5_000L;
 
     private long timeout;
 
@@ -57,8 +57,8 @@ public class CircularByteBuffer {
 
     /*
       Will read buffer contents which written after specified position.
-    In case if no data written after specified position method will
-    be blocked until new data arrive.
+      In case if no data written after specified position method will
+      be blocked until new data arrive.
     */
     public int read(long after, byte[] b, int off, int len) throws IOException {
 

@@ -2,9 +2,10 @@ package gemini.myownradio.engine.buffer;
 
 import gemini.myownradio.exception.NoConsumersException;
 import gemini.myownradio.tools.ByteTools;
+import org.apache.commons.collections.Buffer;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /**
@@ -17,12 +18,8 @@ public class ConcurrentBufferUnit {
     // Use byte buffer
     private byte[] byteBuffer;
     // Buffer size variable
-    private int buffSize;
-    // Buffer data array
-    //private byte[] buffer;
-    // Virtual data cursor position
-    //private long cursor;
-    // Buffer data accessed time
+    private int bufferSize;
+
     private long touched;
 
     // Buffer Unit initialization
@@ -32,16 +29,10 @@ public class ConcurrentBufferUnit {
 
         Arrays.fill(this.byteBuffer, (byte) 0x00);
 
-        this.buffSize = size;
+        this.bufferSize = size;
 
         this.touched = System.currentTimeMillis();
 
-        //this.saveData();
-
-    }
-
-    private void saveData() {
-        //byteBuffer = ByteBuffer.allocate(8 + this.buffSize).putLong(cursor).put(buffer).array();
     }
 
     public void write(byte[] data) throws IOException {
@@ -50,7 +41,7 @@ public class ConcurrentBufferUnit {
             throw new NoConsumersException("No consumers");
         }
 
-        if (data.length > this.buffSize) {
+        if (data.length > this.bufferSize) {
             throw new RuntimeException("Data size greater than buffer size");
         }
 
@@ -58,16 +49,14 @@ public class ConcurrentBufferUnit {
             return;
         }
 
-
         byte[] temp = this.byteBuffer;
 
-        long cursor = ByteBuffer.wrap(temp, 0, Long.BYTES).getLong();
-        cursor += data.length;
+        long cursor = ByteTools.bytesToLong(temp, 0, Long.BYTES) + data.length;
 
         // Shift left buffer contents allocating space for new data
-        System.arraycopy(temp, Long.BYTES + data.length, temp, Long.BYTES, buffSize - data.length);
+        System.arraycopy(temp, Long.BYTES + data.length, temp, Long.BYTES, bufferSize - data.length);
         // Save new data to allocated space in buffer
-        System.arraycopy(data, 0, temp, Long.BYTES + buffSize - data.length, data.length);
+        System.arraycopy(data, 0, temp, Long.BYTES + bufferSize - data.length, data.length);
         // Update cursor position in buffer
         System.arraycopy(ByteTools.longToBytes(cursor), 0, temp, 0, Long.BYTES);
 
@@ -85,7 +74,7 @@ public class ConcurrentBufferUnit {
     }
 
     public int getBufferSize() {
-        return this.buffSize;
+        return this.bufferSize;
     }
 
     public byte[] getByteBuffer() {

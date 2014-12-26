@@ -64,21 +64,16 @@ public class ConcurrentBufferUnit {
         long cursor = ByteBuffer.wrap(temp, 0, Long.BYTES).getLong();
         cursor += data.length;
 
-//            System.arraycopy(buffer, data.length, buffer, 0, buffSize - data.length);
-//            System.arraycopy(data, 0, buffer, buffSize - data.length, data.length);
-
-
+        // Shift left buffer contents allocating space for new data
         System.arraycopy(temp, Long.BYTES + data.length, temp, Long.BYTES, buffSize - data.length);
+        // Save new data to allocated space in buffer
         System.arraycopy(data, 0, temp, Long.BYTES + buffSize - data.length, data.length);
+        // Update cursor position in buffer
         System.arraycopy(ByteTools.longToBytes(cursor), 0, temp, 0, Long.BYTES);
-
-        //longBuffer.clear();
 
         synchronized (this) {
 
             this.byteBuffer = temp;
-
-            //this.saveData();
             this.notifyAll();
 
         }

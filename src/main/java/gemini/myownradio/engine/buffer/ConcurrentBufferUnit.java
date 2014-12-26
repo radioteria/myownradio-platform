@@ -86,6 +86,14 @@ public class ConcurrentBufferUnit {
 
     }
 
+    private byte[] longToBytes(long value) {
+        byte[] temp = new byte[Long.BYTES];
+        for (int i = 0; i < temp.length; i ++) {
+            temp[i] = (byte) (value >> (i * 8));
+        }
+        return temp;
+    }
+
     public long getTouched() {
         return System.currentTimeMillis() - touched;
     }

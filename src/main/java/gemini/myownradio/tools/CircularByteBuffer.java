@@ -61,7 +61,7 @@ public class CircularByteBuffer {
 
         long threshold = System.currentTimeMillis() + timeout;
 
-        while (threshold < System.currentTimeMillis()) {
+        while (threshold > System.currentTimeMillis()) {
 
             if (count < after) {
 

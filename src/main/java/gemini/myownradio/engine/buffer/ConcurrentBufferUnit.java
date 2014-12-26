@@ -71,9 +71,9 @@ public class ConcurrentBufferUnit {
 
         System.arraycopy(temp, Long.BYTES + data.length, temp, Long.BYTES, buffSize - data.length);
         System.arraycopy(data, 0, temp, Long.BYTES + buffSize - data.length, data.length);
-        System.arraycopy(longBuffer.putLong(cursor).array(), 0, temp, 0, Long.BYTES);
+        System.arraycopy(longToBytes(cursor), 0, temp, 0, Long.BYTES);
 
-        longBuffer.clear();
+        //longBuffer.clear();
 
         synchronized (this) {
 

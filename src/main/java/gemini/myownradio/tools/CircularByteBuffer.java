@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
  */
 public class CircularByteBuffer {
 
-    private volatile long count;
+    private long count;
     private ByteBuffer buffer;
     private int length;
 

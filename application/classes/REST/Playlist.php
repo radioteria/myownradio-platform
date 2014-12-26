@@ -26,12 +26,6 @@ class Playlist implements SingletonInterface, Injectable {
 
     const NOW_PLAYING_TIME_RANGE = 900000; // 15 minutes
 
-    private $user;
-
-    function __construct() {
-        $this->user = AuthUserModel::getInstance();
-    }
-
     /**
      * @return \Framework\Services\DB\Query\SelectQuery
      */
@@ -47,10 +41,12 @@ class Playlist implements SingletonInterface, Injectable {
      */
     public function getAllTracks($color = null) {
 
+        $me = AuthUserModel::getInstance();
+
         $printer = JsonPrinter::getInstance()->successPrefix();
 
         $query = $this->getTracksPrefix()
-            ->where("uid", $this->user->getID());
+            ->where("uid", $me->getID());
 
         if (is_numeric($color)) {
             $query->where("color", $color);

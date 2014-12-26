@@ -61,9 +61,11 @@ public class TrackPlayer implements AbstractPlayer {
                     break;
                 }
             }
-        } catch (ShutdownException e) {
-            throw new IOException(e);
-        } catch (IOException e) { /* NOP */ }
+        } catch (IOException e) {
+            if (e.getMessage().equals("Shutdown")) {
+                throw new IOException(e);
+            }
+        }
 
         proc.destroy();
 

@@ -92,7 +92,10 @@ public class ConcurrentBufferUnit {
             temp[i] = (byte) (value >> (i * 8));
         }
         System.out.println(Arrays.toString(temp));
-        return temp;
+        longBuffer.clear();
+        byte[] a = longBuffer.putLong(value).array();
+        System.out.println(Arrays.toString(a));
+        return a;
     }
 
     public long getTouched() {

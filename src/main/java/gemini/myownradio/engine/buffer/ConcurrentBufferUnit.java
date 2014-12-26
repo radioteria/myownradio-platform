@@ -89,7 +89,7 @@ public class ConcurrentBufferUnit {
     private byte[] longToBytes(long value) {
         byte[] temp = new byte[Long.BYTES];
         for (int i = 0; i < temp.length; i ++) {
-            temp[temp.length - i] = (byte) (value >> (i * 8) - 128);
+            temp[i] = (byte) (value >> (i * 8) - 128);
         }
         return temp;
     }

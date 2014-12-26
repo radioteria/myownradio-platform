@@ -82,9 +82,9 @@ public class ConcurrentBufferUnit {
             System.arraycopy(data, 0, buffer, buffSize - data.length, data.length);
             System.arraycopy(longBuffer.putLong(cursor).array(), 0, temp, 0, Long.BYTES);
 
-            this.byteBuffer = temp;
-
         synchronized (this) {
+
+            this.byteBuffer = temp;
 
             //this.saveData();
             this.notifyAll();

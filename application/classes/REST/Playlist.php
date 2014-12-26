@@ -120,10 +120,9 @@ class Playlist implements SingletonInterface, Injectable {
 
         $query = $this->getTracksPrefix();
 
-        $lowRange = ($stream->getTracksDuration() + $position - self::NOW_PLAYING_TIME_RANGE)
-            % $stream->getTracksDuration();
+        $lowRange = $position - self::NOW_PLAYING_TIME_RANGE;
 
-        $highRange = ($position + self::NOW_PLAYING_TIME_RANGE) % $stream->getTracksDuration();
+        $highRange = $position + self::NOW_PLAYING_TIME_RANGE;
 
         $query->select("time_offset");
 

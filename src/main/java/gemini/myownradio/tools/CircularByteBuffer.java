@@ -29,7 +29,6 @@ public class CircularByteBuffer {
     }
 
     public void putBytes(byte[] b, int pos, int len) {
-
         buffer.position(len);
         buffer.compact();
         buffer.put(b, pos, len);
@@ -38,7 +37,6 @@ public class CircularByteBuffer {
         synchronized (this) {
             this.notifyAll();
         }
-
     }
 
     public void putBytes(byte[] b) {

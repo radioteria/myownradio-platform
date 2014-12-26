@@ -75,16 +75,20 @@ public class CircularByteBuffer {
             } else {
 
                 System.out.printf("Reading from %d position when current position is %d\n", after, count);
-
+                System.out.println(1);
                 int newBytes = (int) (count - after);
+                System.out.println(2);
 
                 ByteBuffer temp = buffer.duplicate();
+                System.out.println(3);
 
                 if (newBytes > len) {
+                    System.out.println(4);
                     temp.position(length - len);
                     temp.get(b, off, len);
                     return len;
                 } else {
+                    System.out.println(5);
                     temp.position(length - newBytes);
                     temp.get(b, off, newBytes);
                     return newBytes;

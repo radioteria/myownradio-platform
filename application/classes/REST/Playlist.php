@@ -134,6 +134,7 @@ class Playlist implements SingletonInterface, Injectable {
         $tracks = $query->fetchAll();
 
         return [
+            'percent' => number_format(100 / $stream->getTracksDuration() * $position),
             'time' => System::time(),
             'position' => $position,
             'range' => self::NOW_PLAYING_TIME_RANGE * 2,

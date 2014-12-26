@@ -97,11 +97,8 @@ public class IcyOutputStream extends FilterOutputStream {
     }
 
     @Override
-    public void flush() throws IOException { // todo: may be harmful
-        if (count > 0) {
-            this.out.write(buffer, 0, count);
-            count = 0;
-        }
+    public void flush() throws IOException {
+        super.flush();
     }
 
     @Override

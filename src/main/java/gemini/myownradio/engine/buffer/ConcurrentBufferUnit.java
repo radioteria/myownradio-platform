@@ -1,5 +1,6 @@
 package gemini.myownradio.engine.buffer;
 
+import com.sun.corba.se.impl.encoding.CodeSetConversion;
 import gemini.myownradio.exception.NoConsumersException;
 
 import java.io.IOException;
@@ -26,13 +27,16 @@ public class ConcurrentBufferUnit {
     // Use byte buffer
     protected volatile byte[] byteBuffer; // todo: I believe it could work without this thing
 
+    // ByteBuffer helper
+    private static ByteBuffer longBuffer = ByteBuffer.allocate(Long.BYTES);
+
     // Buffer size variable
     protected int buffSize;
 
     // Buffer Unit initialization
     public ConcurrentBufferUnit(int size) {
 
-        this.buffer = new byte[size];
+        this.buffer = new byte[Long.BYTES + size];
 
         for (int i = 0; i < buffer.length; i++) {
             buffer[i] = 0x00;
@@ -42,7 +46,7 @@ public class ConcurrentBufferUnit {
 
         this.touched = System.currentTimeMillis();
 
-        this.saveData();
+        //this.saveData();
 
     }
 
@@ -66,12 +70,21 @@ public class ConcurrentBufferUnit {
 
         synchronized (this) {
 
-            System.arraycopy(buffer, data.length, buffer, 0, buffSize - data.length);
-            System.arraycopy(data, 0, buffer, buffSize - data.length, data.length);
+            byte[] temp = this.byteBuffer;
 
+            long cursor = ByteBuffer.wrap(temp, 0, Long.BYTES).getLong();
             cursor += data.length;
 
-            this.saveData();
+//            System.arraycopy(buffer, data.length, buffer, 0, buffSize - data.length);
+//            System.arraycopy(data, 0, buffer, buffSize - data.length, data.length);
+
+            System.arraycopy(temp, Long.BYTES + data.length, temp, Long.BYTES, buffSize - data.length);
+            System.arraycopy(data, 0, buffer, buffSize - data.length, data.length);
+            System.arraycopy(longBuffer.putLong(cursor).array(), 0, temp, 0, Long.BYTES);
+
+            this.byteBuffer = temp;
+
+            //this.saveData();
             this.notifyAll();
 
         }

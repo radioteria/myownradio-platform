@@ -38,9 +38,9 @@ public class ConcurrentBufferUnit {
 
         this.byteBuffer = new byte[Long.BYTES + size];
 
-//        for (int i = 0; i < buffer.length; i++) {
-//            this.byteBuffer[i] = 0x00;
-//        }
+        for (int i = 0; i < byteBuffer.length; i++) {
+            this.byteBuffer[i] = 0x00;
+        }
 
         this.buffSize = size;
 

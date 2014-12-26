@@ -18,10 +18,10 @@ public class IcyOutputStream extends FilterOutputStream {
     private byte[] meta;
     private boolean update = false;
 
-    final public static int DEFAULT_METAINT = 8192;
+    final public static int DEFAULT_META_INTERVAL = 8192;
 
     public IcyOutputStream(OutputStream out) {
-        this(out, DEFAULT_METAINT);
+        this(out, DEFAULT_META_INTERVAL);
     }
 
     public IcyOutputStream(OutputStream out, int interval) {

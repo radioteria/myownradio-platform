@@ -36,10 +36,10 @@ public class ConcurrentBufferUnit {
     // Buffer Unit initialization
     public ConcurrentBufferUnit(int size) {
 
-        this.buffer = new byte[Long.BYTES + size];
+        this.byteBuffer = new byte[Long.BYTES + size];
 
         for (int i = 0; i < buffer.length; i++) {
-            buffer[i] = 0x00;
+            this.byteBuffer[i] = 0x00;
         }
 
         this.buffSize = size;
@@ -72,7 +72,7 @@ public class ConcurrentBufferUnit {
 
             byte[] temp = this.byteBuffer;
 
-            long cursor = ByteBuffer.wrap(temp).getLong();
+            long cursor = ByteBuffer.wrap(temp, 0, Long.BYTES).getLong();
             cursor += data.length;
 
 //            System.arraycopy(buffer, data.length, buffer, 0, buffSize - data.length);

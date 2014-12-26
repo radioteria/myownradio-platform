@@ -4,7 +4,6 @@ import gemini.myownradio.exception.NoConsumersException;
 import gemini.myownradio.tools.CircularByteBuffer;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Created by Roman on 02.10.14.
@@ -25,10 +24,7 @@ public class ConcurrentBufferUnit {
     // Buffer Unit initialization
     public ConcurrentBufferUnit(int size) {
 
-        //this.byteBuffer = new byte[Long.BYTES + size];
         this.circularByteBuffer = new CircularByteBuffer(size);
-
-        //Arrays.fill(this.byteBuffer, (byte) 0x00);
 
         this.bufferSize = size;
 

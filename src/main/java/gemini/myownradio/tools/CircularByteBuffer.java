@@ -77,6 +77,7 @@ public class CircularByteBuffer {
 
                 int newBytes = (int) (count - after);
 
+                // Thread-safety issue
                 bb = buffer.duplicate();
 
                 if (newBytes > len) {

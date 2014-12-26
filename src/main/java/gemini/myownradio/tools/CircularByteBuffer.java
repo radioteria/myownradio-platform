@@ -60,7 +60,6 @@ public class CircularByteBuffer {
         // In case if no data written after specified position method will
         // be blocked until new data arrive.
 
-
         long threshold = System.currentTimeMillis() + timeout;
 
         while (threshold > System.currentTimeMillis()) {

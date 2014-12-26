@@ -14,10 +14,8 @@ import java.util.Arrays;
  */
 public class ConcurrentBufferUnit {
 
-    // ByteBuffer helper
-    private ByteBuffer longBuffer = ByteBuffer.allocate(Long.BYTES);
     // Use byte buffer
-    private volatile byte[] byteBuffer;
+    private byte[] byteBuffer;
     // Buffer size variable
     private int buffSize;
     // Buffer data array

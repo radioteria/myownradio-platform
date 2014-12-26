@@ -38,9 +38,9 @@ public class ConcurrentBufferUnit {
 
         this.byteBuffer = new byte[Long.BYTES + size];
 
-        for (int i = 0; i < buffer.length; i++) {
-            this.byteBuffer[i] = 0x00;
-        }
+//        for (int i = 0; i < buffer.length; i++) {
+//            this.byteBuffer[i] = 0x00;
+//        }
 
         this.buffSize = size;
 
@@ -68,12 +68,13 @@ public class ConcurrentBufferUnit {
             return;
         }
 
-        System.out.println(data.length);
 
             byte[] temp = this.byteBuffer;
 
             long cursor = ByteBuffer.wrap(temp, 0, Long.BYTES).getLong();
             cursor += data.length;
+
+        System.out.println("Cursor: " + cursor);
 
 //            System.arraycopy(buffer, data.length, buffer, 0, buffSize - data.length);
 //            System.arraycopy(data, 0, buffer, buffSize - data.length, data.length);

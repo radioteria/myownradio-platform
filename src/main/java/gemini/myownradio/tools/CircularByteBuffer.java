@@ -56,7 +56,7 @@ public class CircularByteBuffer {
         return length;
     }
 
-    public long read(long after, byte[] b, int len) throws IOException {
+    public int read(long after, byte[] b, int off, int len) throws IOException {
 
         // Will read buffer contents which written after specified position.
         // In case if no data written after specified position method will
@@ -81,19 +81,19 @@ public class CircularByteBuffer {
 
                 if (newBytes > len) {
                     temp.position(length - len);
-                    temp.get(b, 0, len);
-                    return count + len;
+                    temp.get(b, off, len);
+                    return len;
                 } else {
                     temp.position(length - newBytes);
-                    temp.get(b, 0, newBytes);
-                    return count + newBytes;
+                    temp.get(b, off, newBytes);
+                    return newBytes;
                 }
 
             }
 
         }
 
-        throw new IOException("Buffer wait timeout");
+        throw new IOException("Data wait timeout");
 
     }
 

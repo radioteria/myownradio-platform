@@ -51,7 +51,7 @@ public class ConcurrentBufferUnit {
             return;
         }
 
-        this.circularByteBuffer.putBytes(data);
+        circularByteBuffer.putBytes(data);
 
         byte[] temp = this.byteBuffer;
 
@@ -84,6 +84,10 @@ public class ConcurrentBufferUnit {
     public byte[] getByteBuffer() {
         this.touched = System.currentTimeMillis();
         return this.byteBuffer;
+    }
+
+    public CircularByteBuffer getCircularByteBuffer() {
+        return circularByteBuffer;
     }
 
 }

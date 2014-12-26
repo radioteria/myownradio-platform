@@ -34,7 +34,7 @@ public class CircularByteBuffer {
         buffer.compact();
         buffer.put(b, pos, len);
 
-        count += len;
+        count =+ len;
 
         synchronized (this) {
             this.notifyAll();
@@ -69,6 +69,7 @@ public class CircularByteBuffer {
             if (count <= after) {
 
                 synchronized (this) {
+                    System.out.println("Wait...");
                     try { this.wait(timeout); }
                     catch (InterruptedException cannotHappen) { /* NOP */ }
                 }

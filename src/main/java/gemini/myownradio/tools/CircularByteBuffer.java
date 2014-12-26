@@ -36,8 +36,6 @@ public class CircularByteBuffer {
 
         count += len;
 
-        System.out.printf("Current position: %d\n", count);
-
         synchronized (this) {
             this.notifyAll();
         }
@@ -61,6 +59,8 @@ public class CircularByteBuffer {
         // Will read buffer contents which written after specified position.
         // In case if no data written after specified position method will
         // be blocked until new data arrive.
+
+        System.out.printf("Reading from %d position when current position is %d\n", after, count);
 
         long threshold = System.currentTimeMillis() + timeout;
 

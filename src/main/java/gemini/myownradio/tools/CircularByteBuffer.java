@@ -77,15 +77,15 @@ public class CircularByteBuffer {
 
                 int newBytes = (int) (count - after);
 
-                buffer.rewind();
+                ByteBuffer temp = buffer.duplicate();
 
                 if (newBytes > len) {
-                    buffer.position(length - len);
-                    buffer.get(b, 0, len);
+                    temp.position(length - len);
+                    temp.get(b, 0, len);
                     return count + len;
                 } else {
-                    buffer.position(length - newBytes);
-                    buffer.get(b, 0, newBytes);
+                    temp.position(length - newBytes);
+                    temp.get(b, 0, newBytes);
                     return count + newBytes;
                 }
 

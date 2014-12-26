@@ -24,13 +24,6 @@ public class CircularByteBuffer {
         count =+ len;
     }
 
-    public void putByte(byte b) {
-        buffer.position(1);
-        buffer.compact();
-        buffer.put(b);
-        count ++;
-    }
-
     public void putBytes(byte[] b) {
         this.putBytes(b, 0, b.length);
     }

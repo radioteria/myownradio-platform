@@ -72,7 +72,7 @@ public class ConcurrentBufferUnit {
 
             byte[] temp = this.byteBuffer;
 
-            long cursor = ByteBuffer.wrap(temp, 0, Long.BYTES).getLong();
+            long cursor = ByteBuffer.wrap(temp).getLong();
             cursor += data.length;
 
 //            System.arraycopy(buffer, data.length, buffer, 0, buffSize - data.length);

@@ -54,11 +54,13 @@ public class CircularByteBuffer {
         return length;
     }
 
-    public int read(long after, byte[] b, int off, int len) throws IOException {
 
-        // Will read buffer contents which written after specified position.
-        // In case if no data written after specified position method will
-        // be blocked until new data arrive.
+    /*
+      Will read buffer contents which written after specified position.
+    In case if no data written after specified position method will
+    be blocked until new data arrive.
+    */
+    public int read(long after, byte[] b, int off, int len) throws IOException {
 
         long threshold = System.currentTimeMillis() + timeout;
 

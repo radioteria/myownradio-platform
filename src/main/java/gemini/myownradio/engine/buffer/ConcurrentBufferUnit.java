@@ -91,6 +91,7 @@ public class ConcurrentBufferUnit {
         for (int i = 0; i < temp.length; i ++) {
             temp[i] = (byte) (value >> (i * 8) - 128);
         }
+        System.out.println(Arrays.toString(temp));
         return temp;
     }
 

@@ -10,7 +10,7 @@ public class ByteTools {
         byte[] temp = new byte[Long.BYTES];
 
         for (int i = 0; i < temp.length; i ++) {
-            temp[temp.length - i - 1] = (byte) (value >> (i * 8));
+            temp[temp.length - i - 1] = (byte) (value >> (i * Byte.SIZE));
         }
 
         return temp;
@@ -32,7 +32,7 @@ public class ByteTools {
         long temp = 0L;
 
         for (int i = 0; i < len; i ++) {
-            temp <<= 8;
+            temp <<= Byte.SIZE;
             temp += b[pos + i] & 0xFF ;
         }
 

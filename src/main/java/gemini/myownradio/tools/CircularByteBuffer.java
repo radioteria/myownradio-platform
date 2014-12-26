@@ -60,7 +60,6 @@ public class CircularByteBuffer {
         // In case if no data written after specified position method will
         // be blocked until new data arrive.
 
-        System.out.printf("Reading from %d position when current position is %d\n", after, count);
 
         long threshold = System.currentTimeMillis() + timeout;
 
@@ -69,13 +68,13 @@ public class CircularByteBuffer {
             if (count <= after) {
 
                 synchronized (this) {
-                    System.out.println("Sleep...");
                     try { wait(timeout); }
                     catch (InterruptedException cannotHappen) { /* NOP */ }
-                    System.out.println("Awake...");
                 }
 
             } else {
+
+                System.out.printf("Reading from %d position when current position is %d\n", after, count);
 
                 int newBytes = (int) (count - after);
 

@@ -86,6 +86,10 @@ public class ConcurrentBufferUnit {
         return this.byteBuffer;
     }
 
+    public void touch() {
+        this.touched = System.currentTimeMillis();
+    }
+
     public CircularByteBuffer getCircularByteBuffer() {
         return circularByteBuffer;
     }

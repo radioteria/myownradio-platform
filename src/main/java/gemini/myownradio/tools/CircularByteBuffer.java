@@ -78,7 +78,7 @@ public class CircularByteBuffer {
 
                 int newBytes = (int) (count - after);
 
-                ByteBuffer temp = buffer.duplicate();
+                ByteBuffer temp = buffer;
 
                 if (newBytes > len) {
                     temp.position(length - len);

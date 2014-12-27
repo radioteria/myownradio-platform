@@ -19,9 +19,8 @@ public class DelayedAction {
 
         Thread thread = new Thread(() -> {
 
-            try {
-                Thread.sleep(delay);
-            } catch (InterruptedException e) { /* NOP */ }
+            try { Thread.sleep(delay); }
+            catch (InterruptedException e) { /* NOP */ }
 
             if (!cancel) {
                 action.run();

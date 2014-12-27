@@ -105,10 +105,12 @@ public class LHttpServer {
 
         String line;
 
-        DelayedAction timeBomb = new DelayedAction(() -> {
+        DelayedAction delayedAction = new DelayedAction(() -> {
             try { socket.close(); }
             catch (IOException e) { /* NOP */ }
         }, READ_REQUEST_TIMEOUT);
+
+        delayedAction.start();
 
         // Read request begin
         while ((line = bufferedReader.readLine()) != null) {
@@ -120,7 +122,7 @@ public class LHttpServer {
             count += line.length();
 
             if (line.isEmpty()) {
-                timeBomb.cancel();
+                delayedAction.cancel();
                 return new LHttpRequest(requestComponents, socket);
             }
         }

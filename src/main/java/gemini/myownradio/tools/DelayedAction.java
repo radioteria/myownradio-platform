@@ -26,7 +26,7 @@ public class DelayedAction {
             catch (InterruptedException e) { /* NOP */ }
 
             if (!cancel) {
-                logger.println("Starting delayed action");
+                logger.println("Delayed action started");
                 action.run();
             } else {
                 logger.println("Delayed action cancelled");
@@ -37,12 +37,9 @@ public class DelayedAction {
         thread.setName("Delayed action");
         thread.start();
 
-        logger.println("Delayed action started");
-
     }
 
     public void cancel() {
-        logger.println("Cancelling action");
         this.cancel = true;
     }
 }

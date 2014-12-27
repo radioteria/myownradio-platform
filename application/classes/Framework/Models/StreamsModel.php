@@ -82,4 +82,33 @@ class StreamsModel implements Injectable, SingletonInterface {
 
     }
 
+
+    public function addBookmark(Stream $stream) {
+
+        $dbo = DBQuery::getInstance();
+
+        if (count($dbo->selectFrom("r_bookmarks")->where([
+                "user_id" => $this->user->getID(),
+                "stream_id" => $stream->getID()
+            ])) != 0) return;
+
+        $dbo->into("r_bookmarks")
+            ->values([
+                "user_id" => $this->user->getID(),
+                "stream_id" => $stream->getID()
+            ])
+            ->executeUpdate();
+    }
+
+    public function deleteBookmark(Stream $stream) {
+        $dbo = DBQuery::getInstance();
+        $dbo->deleteFrom("r_bookmarks")
+            ->where([
+                "user_id" => $this->user->getID(),
+                "stream_id" => $stream->getID()
+            ])
+            ->executeUpdate();
+    }
+
+
 } 

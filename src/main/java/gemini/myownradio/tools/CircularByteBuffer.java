@@ -54,7 +54,6 @@ public class CircularByteBuffer {
         return length;
     }
 
-
     /*
       Will read buffer contents which written after specified position.
       In case if no data written after specified position method will

@@ -112,20 +112,30 @@ public class LHttpServer {
 
         delayedAction.start();
 
-        // Read request begin
-        while ((line = bufferedReader.readLine()) != null) {
-            if (count + line.length() > maximalEntitySize) {
-                throw LHttpException.newEntityTooLong();
+        try {
+
+            // Read request begin
+            while ((line = bufferedReader.readLine()) != null) {
+
+                if (count + line.length() > maximalEntitySize) {
+                    throw LHttpException.newEntityTooLong();
+                }
+
+                requestComponents.add(line);
+                count += line.length();
+
+                if (line.isEmpty()) {
+                    delayedAction.cancel();
+                    return new LHttpRequest(requestComponents, socket);
+                }
+
             }
 
-            requestComponents.add(line);
-            count += line.length();
-
-            if (line.isEmpty()) {
-                delayedAction.cancel();
-                return new LHttpRequest(requestComponents, socket);
-            }
+        } finally {
+            delayedAction.cancel();
         }
+
+
 
         throw LHttpException.badRequest();
 

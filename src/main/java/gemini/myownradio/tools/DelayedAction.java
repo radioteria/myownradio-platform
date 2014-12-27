@@ -10,6 +10,8 @@ public class DelayedAction {
     private boolean cancel = false;
     private long delay;
 
+    private Thread thread;
+
     private static final MORLogger logger = new MORLogger(MORLogger.MessageKind.SERVER);
 
     public DelayedAction(Runnable action, long delay) {
@@ -20,7 +22,7 @@ public class DelayedAction {
 
     public void start() {
 
-        Thread thread = new Thread(() -> {
+        thread = new Thread(() -> {
 
             try { Thread.sleep(delay); }
             catch (InterruptedException e) { /* NOP */ }
@@ -41,5 +43,6 @@ public class DelayedAction {
 
     public void cancel() {
         this.cancel = true;
+        this.thread.interrupt();
     }
 }

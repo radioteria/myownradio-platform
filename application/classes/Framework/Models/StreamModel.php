@@ -221,7 +221,14 @@ class StreamModel extends Model implements SingletonInterface {
     }
 
     public function addBookmark() {
+
         $dbo = DBQuery::getInstance();
+
+        if (count($dbo->selectFrom("r_bookmarks")->where([
+            "user_id" => $this->user->getID(),
+            "stream_id" => $this->key
+        ])) != 0) return;
+
         $dbo->into("r_bookmarks")
             ->values([
                 "user_id" => $this->user->getID(),

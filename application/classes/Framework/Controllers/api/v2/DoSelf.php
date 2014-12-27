@@ -18,23 +18,14 @@ use REST\Users;
 
 class DoSelf implements Controller {
 
-    public function doDelete(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
-
-        $password = $post->getParameter("password")
-            ->getOrElseThrow(ControllerException::noArgument("password"));
-
-        $user->checkPassword($password);
-
-        $user->delete($password);
-
-    }
-
     public function doGet(AuthUserModel $userModel, JsonResponse $response) {
+
         $user = Users::getInstance()->getUserByID($userModel->getID());
         $response->setData($user);
+        
     }
 
-    public function doPut(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
+    public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
 
         $name = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));
         $info = $post->getParameter("info")->getOrElseEmpty();

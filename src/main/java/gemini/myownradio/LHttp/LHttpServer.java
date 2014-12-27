@@ -125,7 +125,6 @@ public class LHttpServer {
                 count += line.length();
 
                 if (line.isEmpty()) {
-                    delayedAction.cancel();
                     return new LHttpRequest(requestComponents, socket);
                 }
 

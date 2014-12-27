@@ -30,7 +30,7 @@ public class LHttpServer {
     private int blockingQueue       = 256;
     private int maximalEntitySize   = 8192;
 
-    private final long READ_REQUEST_TIMEOUT = 1_000L;
+    private final long READ_REQUEST_TIMEOUT = 2_000L;
 
     private ServerSocket serverSocket;
 
@@ -62,7 +62,7 @@ public class LHttpServer {
 
         logger.println("Server started");
 
-        while (true) {
+        for (;;) {
 
             final Socket socket = serverSocket.accept();
 

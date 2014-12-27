@@ -6,10 +6,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\Stats;
 use Framework\Services\Database;
-use Framework\Services\DB\Query\DeleteQuery;
-use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\InputValidator;
-use Objects\Link;
 use Objects\Stream;
 use Objects\Subscription;
 use Objects\Track;
@@ -179,10 +176,6 @@ class UserModel extends Model implements SingletonInterface {
 
     public function edit($name, $info) {
 
-        $validator = InputValidator::getInstance();
-
-        $validator->validateEmail($email);
-
         $this->user->setName($name);
         $this->user->setInfo($info);
 
@@ -243,13 +236,25 @@ class UserModel extends Model implements SingletonInterface {
 
     }
 
-    public function delete($password) {
+    /**
+     * @return null|string
+     */
+    public function getAvatarUrl() {
+        return $this->user->getAvatarUrl();
+    }
 
+    /**
+     * @param $password
+     * @throws UnauthorizedException
+     */
+    public function checkPassword($password) {
         $md5 = md5($this->getLogin() . $password);
-
         if ($md5 != $this->user->getPassword()) {
             throw UnauthorizedException::wrongPassword();
         }
+    }
+
+    public function delete() {
 
         $streams = Stream::getListByFilter("uid", [$this->user->getID()]);
 

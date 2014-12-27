@@ -34,6 +34,7 @@ public class DelayedAction {
 
         });
 
+        thread.setName("Delayed action");
         thread.start();
 
         logger.println("Delayed action started");

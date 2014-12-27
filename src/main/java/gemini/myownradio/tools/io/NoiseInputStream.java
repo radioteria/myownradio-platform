@@ -6,6 +6,8 @@ import java.io.InputStream;
 /**
  * Created by Roman on 08.10.14.
  */
+
+@Deprecated
 public class NoiseInputStream extends InputStream {
 
     private Long length;

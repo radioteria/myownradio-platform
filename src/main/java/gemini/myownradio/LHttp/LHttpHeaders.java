@@ -14,7 +14,7 @@ public class LHttpHeaders {
 
     private Map<CaseString, List<String>> headers = new HashMap<>();
 
-    public void add(CaseString header, String value) {
+    public void put(CaseString header, String value) {
         List<String> tmp = headers.get(header);
         if (tmp == null) {
             List<String> tmp2 = new ArrayList<>();

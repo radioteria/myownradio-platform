@@ -18,7 +18,7 @@ public class LHttpException extends RuntimeException {
         return new LHttpException(LHttpStatus.STATUS_400);
     }
 
-    public static LHttpException newEntityToLong() {
+    public static LHttpException newEntityTooLong() {
         return new LHttpException(LHttpStatus.STATUS_413);
     }
 

@@ -90,7 +90,7 @@ public class LHttpRequest {
                 throw LHttpException.badRequest();
 
             temp = line.split(":", 2);
-            this.headers.add(new CaseString(temp[0]), temp[1].trim());
+            this.headers.put(new CaseString(temp[0]), temp[1].trim());
         }
 
         this.remoteIP = socket.getInetAddress().getHostAddress();

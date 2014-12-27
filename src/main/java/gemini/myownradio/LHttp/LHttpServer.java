@@ -1,6 +1,7 @@
 package gemini.myownradio.LHttp;
 
 import gemini.myownradio.LHttp.ContextObjects.LHttpContextAbstract;
+import gemini.myownradio.tools.DelayedAction;
 import gemini.myownradio.tools.MORLogger;
 
 import java.io.*;
@@ -28,6 +29,8 @@ public class LHttpServer {
     private int workersMax          = 1024;
     private int blockingQueue       = 256;
     private int maximalEntitySize   = 8192;
+
+    private final long READ_REQUEST_TIMEOUT = 1_000L;
 
     private ServerSocket serverSocket;
 
@@ -97,16 +100,27 @@ public class LHttpServer {
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         List<String> requestComponents = new ArrayList<>();
+
         int count = 0;
 
         String line;
+
+        DelayedAction timeBomb = new DelayedAction(() -> {
+            try { socket.close(); }
+            catch (IOException e) { /* NOP */ }
+        }, READ_REQUEST_TIMEOUT);
+
+        // Read request begin
         while ((line = bufferedReader.readLine()) != null) {
             if (count + line.length() > maximalEntitySize) {
-                throw LHttpException.newEntityToLong();
+                throw LHttpException.newEntityTooLong();
             }
+
             requestComponents.add(line);
             count += line.length();
+
             if (line.isEmpty()) {
+                timeBomb.cancel();
                 return new LHttpRequest(requestComponents, socket);
             }
         }
@@ -127,7 +141,7 @@ public class LHttpServer {
                 .filter(action -> action != null)
                 .findFirst()
                 .orElseThrow(LHttpException::documentNotFound)
-                .handler(new LHttpProtocol(req, os));
+                .handle(new LHttpProtocol(req, os));
 
     }
 

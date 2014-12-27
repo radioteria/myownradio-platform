@@ -19,12 +19,7 @@ public class LHttpContextRegexp extends LHttpContextAbstract {
     @Override
     public boolean is(String path) {
         Matcher m = pat.matcher(path);
-
-        if (m.find()) {
-            return true;
-        } else {
-            return false;
-        }
+        return m.find();
     }
 
     @Override

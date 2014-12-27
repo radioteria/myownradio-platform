@@ -13,7 +13,7 @@ import java.io.IOException;
  */
 public class SetStreamStateNotifyHandler implements LHttpHandler {
 
-    public void handler(LHttpProtocol exchange) throws IOException {
+    public void handle(LHttpProtocol exchange) throws IOException {
 
         if (!exchange.getClientIP().equals("127.0.0.1")) {
             throw LHttpException.forbidden();

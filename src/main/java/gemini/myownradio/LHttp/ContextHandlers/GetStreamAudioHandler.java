@@ -1,12 +1,12 @@
 package gemini.myownradio.LHttp.ContextHandlers;
 
+import gemini.myownradio.LHttp.LHttpException;
+import gemini.myownradio.LHttp.LHttpHandler;
+import gemini.myownradio.LHttp.LHttpProtocol;
 import gemini.myownradio.engine.AudioFlowBootstrap;
 import gemini.myownradio.exception.RadioException;
 import gemini.myownradio.ff.FFEncoderBuilder;
 import gemini.myownradio.flow.AudioFormatsRegister;
-import gemini.myownradio.LHttp.LHttpException;
-import gemini.myownradio.LHttp.LHttpHandler;
-import gemini.myownradio.LHttp.LHttpProtocol;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -16,7 +16,7 @@ import java.sql.SQLException;
  */
 public class GetStreamAudioHandler implements LHttpHandler {
 
-    public void handler(LHttpProtocol exchange) throws IOException {
+    public void handle(LHttpProtocol exchange) throws IOException {
 
         String stream = exchange.getParameter("s").orElseThrow(LHttpException::badRequest);
         boolean metadata = exchange.headerEquals("icy-metadata", "1");

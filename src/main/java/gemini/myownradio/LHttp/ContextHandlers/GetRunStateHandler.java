@@ -13,7 +13,7 @@ import java.text.DecimalFormatSymbols;
  */
 public class GetRunStateHandler implements LHttpHandler {
 
-    public void handler(LHttpProtocol exchange) throws IOException {
+    public void handle(LHttpProtocol exchange) throws IOException {
 
         Runtime rt = Runtime.getRuntime();
 

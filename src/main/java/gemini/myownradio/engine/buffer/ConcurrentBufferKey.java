@@ -1,5 +1,7 @@
 package gemini.myownradio.engine.buffer;
 
+import java.util.Objects;
+
 /**
  * Created by Roman on 05.10.14.
  *
@@ -36,7 +38,7 @@ public class ConcurrentBufferKey {
 
         if (stream != concurrentBufferKey.stream) return false;
         if (bitrate != concurrentBufferKey.bitrate) return false;
-        if (format != concurrentBufferKey.format) return false;
+        if (!Objects.equals(format, concurrentBufferKey.format)) return false;
 
         return true;
     }

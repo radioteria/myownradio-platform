@@ -76,10 +76,12 @@ public class CircularByteBuffer {
 
             } else {
 
-                int newBytes = (int) (count - after);
+                int newBytes;
 
-                // Thread-safe issue
-                bb = buffer.duplicate();
+                synchronized (this) {
+                    newBytes = (int) (count - after);
+                    bb = buffer.duplicate();
+                }
 
                 if (newBytes > len) {
                     bb.position(length - len);

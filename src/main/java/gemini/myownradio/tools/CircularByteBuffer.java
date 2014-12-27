@@ -37,7 +37,7 @@ public class CircularByteBuffer {
         count += len;
 
         synchronized (this) {
-            this.notifyAll();
+            notifyAll();
         }
 
     }
@@ -71,7 +71,7 @@ public class CircularByteBuffer {
             if (count <= after) {
 
                 synchronized (this) {
-                    try { wait(timeout); }
+                    try { wait(timeout); ThreadTools.Sleep(250); }
                     catch (InterruptedException cannotHappen) { /* NOP */ }
                 }
 

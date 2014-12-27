@@ -188,7 +188,7 @@ class MicroORM extends FilterORM implements Injectable {
 
         if (is_null($key)) {
 
-            $query = $dbq->insertInto($beanConfig["@table"]);
+            $query = $dbq->into($beanConfig["@table"]);
 
             foreach ($reflection->getProperties() as $prop) {
                 if ($prop->getName() == $beanConfig["@key"])

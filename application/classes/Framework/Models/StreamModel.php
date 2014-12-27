@@ -13,7 +13,6 @@ use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\DeleteQuery;
-use Framework\Services\DB\Query\UpdateQuery;
 use Framework\Services\InputValidator;
 use Objects\Stream;
 use Tools\Common;
@@ -223,15 +222,21 @@ class StreamModel extends Model implements SingletonInterface {
 
     public function addBookmark() {
         $dbo = DBQuery::getInstance();
-        $dbo->insertInto("r_bookmarks")
-            ->values(["user_id" => $this->user->getID(), "stream_id" => $this->key])
+        $dbo->into("r_bookmarks")
+            ->values([
+                "user_id" => $this->user->getID(),
+                "stream_id" => $this->key
+            ])
             ->executeUpdate();
     }
 
     public function deleteBookmark() {
         $dbo = DBQuery::getInstance();
         $dbo->deleteFrom("r_bookmarks")
-            ->where(["user_id" => $this->user->getID(), "stream_id" => $this->key])
+            ->where([
+                "user_id" => $this->user->getID(),
+                "stream_id" => $this->key
+            ])
             ->executeUpdate();
     }
 

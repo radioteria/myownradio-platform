@@ -11,7 +11,6 @@ namespace Framework\Models;
 
 use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\DatabaseException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\Config;
 use Framework\Services\Database;
@@ -67,7 +66,7 @@ class UsersModel implements SingletonInterface, Injectable {
                 $token = md5($userId . $clientAddress . rand(1, 1000000) . "tokenizer" . time());
             } while ($db->fetchOneColumn("SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->get() > 0);
 
-            $query = $db->getDBQuery()->insertInto("r_sessions");
+            $query = $db->getDBQuery()->into("r_sessions");
             $query->values("uid", $userId);
             $query->values("ip", $clientAddress);
             $query->values("token", $token);

@@ -24,7 +24,7 @@ class DBQuery implements SingletonInterface {
      * @param $tableName
      * @return InsertQuery
      */
-    public function insertInto($tableName) {
+    public function into($tableName) {
         return new InsertQuery($tableName);
     }
 

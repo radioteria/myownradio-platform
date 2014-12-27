@@ -70,7 +70,7 @@ public class CircularByteBuffer {
             if (count <= after) {
 
                 synchronized (this) {
-                    try { wait(timeout); ThreadTools.Sleep(250); }
+                    try { wait(timeout); }
                     catch (InterruptedException cannotHappen) { /* NOP */ }
                 }
 

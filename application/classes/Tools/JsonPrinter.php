@@ -35,8 +35,7 @@ class JsonPrinter implements SingletonInterface, Injectable {
                 }
                 echo '"';
                 echo $key;
-                echo '"';
-                echo ':';
+                echo '":';
                 $this->printJSON($item);
             }
             echo '}';
@@ -108,8 +107,7 @@ class JsonPrinter implements SingletonInterface, Injectable {
     public function brPrintKey($key) {
         echo '"';
         echo $key;
-        echo '"';
-        echo ':';
+        echo '":';
         return $this;
     }
 

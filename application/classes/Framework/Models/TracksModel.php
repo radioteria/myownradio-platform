@@ -87,6 +87,7 @@ class TracksModel implements Injectable, SingletonInterface {
         $track->setFileSize(filesize($file["tmp_name"]));
         $track->setUploaded(time());
         $track->setColor(0);
+        $track->setCopyOf(null);
 
         $track->save();
 
@@ -110,6 +111,46 @@ class TracksModel implements Injectable, SingletonInterface {
 
         }
 
+    }
+
+    public function grabTrack($trackID, Optional $addToStream) {
+        /** @var Track $source */
+        $source = Track::getByID($trackID)
+            ->getOrElseThrow(ControllerException::noTrack($trackID));
+
+        $uploadTimeLeft = $this->user->getActivePlan()->getUploadLimit() -
+            $this->user->getTracksDuration();
+
+        if ($uploadTimeLeft < $source->getDuration()) {
+            throw new ControllerException("You are exceeded available upload time. Please upgrade your account.");
+        }
+
+        $destination = $source->cloneObject();
+
+        $destination->setUserID($this->user->getID());
+        $destination->setUploaded(time());
+        $destination->setColor(0);
+        $destination->setCopyOf($trackID);
+
+        $destination->save();
+
+        if (file_exists($source->getOriginalFile()) && copy($source->getOriginalFile(), $destination->getOriginalFile())) {
+
+            $addToStream->then(function ($streamID) use ($destination) {
+
+                $streamObject = new PlaylistModel($streamID);
+                $streamObject->addTracks($destination->getID());
+
+            });
+
+
+        } else {
+
+            $destination->delete();
+
+            throw ApplicationException::of("FILE COULD NOT BE MOVED TO USER FOLDER");
+
+        }
     }
 
     /**

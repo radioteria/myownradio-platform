@@ -22,7 +22,7 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         $artist, $title, $album,
         $track_number, $genre, $date,
         $duration, $filesize, $color,
-        $uploaded;
+        $uploaded, $copy_of;
 
     /*
      * Bean Getters
@@ -83,6 +83,11 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         return $this->uploaded;
     }
 
+    public function getCopyOf() {
+        return $this->copy_of;
+    }
+
+
     /*
      * Bean Setters
      */
@@ -142,5 +147,10 @@ class Track extends ActiveRecordObject implements ActiveRecord {
     public function getOriginalFile() {
         return Folders::getInstance()->getRealTrackPath($this);
     }
+
+    public function setCopyOf($copy_of) {
+        $this->copy_of = $copy_of;
+    }
+
 
 }

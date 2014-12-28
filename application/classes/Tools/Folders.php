@@ -53,11 +53,16 @@ class Folders implements Injectable, SingletonInterface {
      * @return string
      */
     function getRealTrackPath(Track $track) {
-        return sprintf("%s/a_%03d_original.%s",
+        $original = sprintf("%s/a_%03d_original.%s",
             $this->getUserContentFolder($track->getUserID()),
             $track->getID(),
             $track->getExtension()
         );
+        $low = sprintf("%s/lores_%03d.mp3",
+            $this->getUserContentFolder($track->getUserID()),
+            $track->getID()
+        );
+        return file_exists($low) ? $low : $original;
     }
 
     /**

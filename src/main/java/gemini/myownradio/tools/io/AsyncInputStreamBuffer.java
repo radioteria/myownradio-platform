@@ -38,8 +38,10 @@ public class AsyncInputStreamBuffer extends InputStream {
                 while ((length = tmp.read(data)) != 0) {
                     synchronized (this) {
                         while (buffer.remaining() < length) {
+                            System.err.println("Buffer overflow. Sleeping...");
                             wait();
                         }
+                        System.err.println("Putting to buffer " + length + " bytes");
                         buffer.put(data);
                     }
                 }

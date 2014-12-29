@@ -20,8 +20,9 @@ class DoUpload implements Controller {
     public function doPost(HttpFiles $file, HttpPost $post, TracksModel $model, JsonResponse $response) {
 
         $streamID = $post->getParameter("stream_id");
+        $upNext = boolval($post->getParameter("up_next")->getOrElseFalse());
 
-        $file->each(function ($file) use ($streamID, $model) {
+        $file->each(function ($file) use ($streamID, $model, $upNext) {
             if (is_array($file["name"])) {
                 for ($i = 0; $i < count($file["name"]); $i++) {
                     $tmp = [
@@ -31,10 +32,10 @@ class DoUpload implements Controller {
                         "error" => $file["error"][$i],
                         "size" => $file["size"][$i]
                     ];
-                    $model->upload($tmp, $streamID);
+                    $model->upload($tmp, $streamID, $upNext);
                 }
             } else {
-                $model->upload($file, $streamID);
+                $model->upload($file, $streamID, $upNext);
             }
         });
 

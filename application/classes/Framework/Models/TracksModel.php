@@ -15,6 +15,7 @@ use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\Config;
 use Framework\Services\Database;
 use Framework\Services\Injectable;
+use Objects\PlaylistTrack;
 use Objects\Track;
 use Tools\Common;
 use Tools\Optional;
@@ -41,10 +42,11 @@ class TracksModel implements Injectable, SingletonInterface {
     /**
      * @param array $file
      * @param Optional $addToStream
+     * @param bool $upNext
      * @throws \Framework\Exceptions\ApplicationException
      * @throws \Framework\Exceptions\ControllerException
      */
-    public function upload(array $file, Optional $addToStream) {
+    public function upload(array $file, Optional $addToStream, $upNext = false) {
 
         $config = Config::getInstance();
 
@@ -95,13 +97,7 @@ class TracksModel implements Injectable, SingletonInterface {
 
         if ($result !== false) {
 
-            $addToStream->then(function ($streamID) use ($track) {
-
-                $streamObject = new PlaylistModel($streamID);
-                $streamObject->addTracks($track->getID());
-
-            });
-
+            $this->addToStream($track, $addToStream, $upNext);
 
         } else {
 
@@ -113,44 +109,77 @@ class TracksModel implements Injectable, SingletonInterface {
 
     }
 
-    public function grabTrack($trackID, Optional $addToStream) {
+    public function grabCurrentTrack($fromID, Optional $streamID, $upNext = false) {
+
+        $current = PlaylistTrack::getCurrent($fromID);
+
+        $current->then(function($track) use ($streamID, $upNext) {
+            self::grabTrack1($track, $streamID, $upNext);
+        });
+
+    }
+
+
+    public function grabTrack($trackID, Optional $addToStream, $upNext = false) {
+
         /** @var Track $source */
         $source = Track::getByID($trackID)
             ->getOrElseThrow(ControllerException::noTrack($trackID));
 
+        $this->grabTrack1($source, $addToStream, $upNext);
+
+    }
+
+    private function addToStream(Track $track, Optional $stream, $upNext = false) {
+
+        $stream->then(function ($streamID) use ($track, $upNext) {
+
+            $streamObject = new PlaylistModel($streamID);
+            $streamObject->addTracks($track->getID(), $upNext);
+
+        });
+
+    }
+
+
+    private function grabTrack1(Track $track, Optional $addToStream, $upNext = false) {
+
+        if ($track->getUserID() == $this->user->getID()) {
+
+            $this->addToStream($track, $addToStream, $upNext);
+
+        }
+
         $uploadTimeLeft = $this->user->getActivePlan()->getUploadLimit() -
             $this->user->getTracksDuration();
 
-        if ($uploadTimeLeft < $source->getDuration()) {
+        if ($uploadTimeLeft < $track->getDuration()) {
             throw new ControllerException("You are exceeded available upload time. Please upgrade your account.");
         }
 
-        $destination = $source->cloneObject();
+        $destination = $track->cloneObject();
 
         $destination->setUserID($this->user->getID());
         $destination->setUploaded(time());
         $destination->setColor(0);
-        $destination->setCopyOf($trackID);
+        $destination->setCopyOf($track->getID());
 
         $destination->save();
 
-        if (file_exists($source->getOriginalFile()) && copy($source->getOriginalFile(), $destination->getOriginalFile())) {
+        $tempFile = $destination->getOriginalFile() . ".temp";
 
-            $addToStream->then(function ($streamID) use ($destination) {
+        if (file_exists($track->getOriginalFile()) && copy($track->getOriginalFile(), $tempFile)) {
 
-                $streamObject = new PlaylistModel($streamID);
-                $streamObject->addTracks($destination->getID());
+            rename($tempFile, $destination->getOriginalFile());
 
-            });
-
+            $this->addToStream($destination, $addToStream, $upNext);
 
         } else {
 
             $destination->delete();
 
-            throw ApplicationException::of("FILE COULD NOT BE MOVED TO USER FOLDER");
-
         }
+
     }
 
     /**
@@ -194,6 +223,7 @@ class TracksModel implements Injectable, SingletonInterface {
         }
 
     }
+
 
 
 } 

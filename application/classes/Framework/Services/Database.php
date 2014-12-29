@@ -200,6 +200,8 @@ class Database implements SingletonInterface, Injectable {
             throw new DatabaseException($resource->errorInfo()[2], $queryString);
         }
 
+        //logger("SQL: " . $queryString);
+
         return $resource;
 
     }

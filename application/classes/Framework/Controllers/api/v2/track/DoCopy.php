@@ -22,9 +22,11 @@ class DoCopy implements Controller {
         $trackID = $post->getParameter("track_id")
             ->getOrElseThrow(ControllerException::noArgument("track_id"));
 
+        $upNext = boolval($post->getParameter("up_next")->getOrElseFalse());
+
         $streamID = $post->getParameter("stream_id");
 
-        $model->grabTrack($trackID, $streamID);
+        $model->grabTrack($trackID, $streamID, $upNext);
 
     }
 

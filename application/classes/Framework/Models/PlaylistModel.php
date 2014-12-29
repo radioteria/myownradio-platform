@@ -91,20 +91,30 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     /**
      * @param $tracks
+     * @param bool $upNext
      * @return $this
      */
-    public function addTracks($tracks) {
+    public function addTracks($tracks, $upNext = false) {
 
-        $this->doAtomic(function () use (&$tracks) {
+        logger(sprintf("Up Next enabled: %s", $upNext ? "yes" : "no"));
+
+        $this->doAtomic(function () use (&$tracks, &$upNext) {
 
             $tracksToAdd = explode(",", $tracks);
             $initialPosition = $this->tracks_count;
             $initialTimeOffset = $this->tracks_duration;
 
+            if ($upNext) {
+                $nowPlaying = $this->getPlayingTrack();
+            } else {
+                $nowPlaying = Optional::noValue();
+            }
+
             foreach ($tracksToAdd as $track) {
 
                 Track::getByID($track)
-                    ->then(function ($trackObject) use (&$initialPosition, &$initialTimeOffset) {
+
+                    ->then(function ($trackObject) use (&$initialPosition, &$initialTimeOffset, &$nowPlaying) {
 
                         /** @var Track $trackObject */
 
@@ -122,6 +132,17 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                         $linker->setTimeOffset($initialTimeOffset);
 
                         $linker->save();
+
+                        $nowPlaying->then(function(PlaylistTrack $track) use (&$uniqueID) {
+
+                            logger(sprintf("Now playing track with index = %d", $track->getTrackOrder()));
+
+                            Database::doInConnection(function (Database $db) use (&$uniqueID, &$track) {
+                                $db->executeUpdate("SELECT NEW_STREAM_SORT(?, ?, ?)", [
+                                    $this->key, $uniqueID, $track->getTrackOrder() + 1]);
+                            });
+
+                        });
 
                         $initialTimeOffset += $trackObject->getDuration();
 

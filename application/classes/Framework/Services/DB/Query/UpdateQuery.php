@@ -69,7 +69,7 @@ class UpdateQuery extends BaseQuery implements QueryBuilder {
         $build = [];
 
         foreach ($this->sets as $set) {
-            $build[] = $set . " = ?";
+            $build[] = $set . "=?";
         }
 
         return "SET " . implode(",", $build);

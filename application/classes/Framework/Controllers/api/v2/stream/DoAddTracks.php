@@ -21,10 +21,11 @@ class DoAddTracks implements Controller {
 
         $id = $post->getParameter("stream_id")->getOrElseThrow(ControllerException::noArgument("stream_id"));
         $tracks = $post->getParameter("tracks")->getOrElseThrow(ControllerException::noArgument("tracks"));
+        $upNext = boolval($post->getParameter("up_next")->getOrElseFalse());
 
         $validator->validateTracksList($tracks);
 
-        PlaylistModel::getInstance($id)->addTracks($tracks);
+        PlaylistModel::getInstance($id)->addTracks($tracks, $upNext);
 
     }
 } 

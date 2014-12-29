@@ -26,6 +26,8 @@ class MicroORM extends FilterORM implements Injectable {
 
     use Singleton;
 
+    private $ORMCache = [];
+
     /**
      * @param ActiveRecord $object
      * @return ActiveRecord
@@ -390,5 +392,10 @@ class MicroORM extends FilterORM implements Injectable {
 
         return $beanConfig;
 
+    }
+
+    private function saveCache(ActiveRecord $object, $key, array $data = []) {
+        $className = (new \ReflectionClass($object))->getName();
+        $this->ORMCache[$className][$key] = $data;
     }
 } 

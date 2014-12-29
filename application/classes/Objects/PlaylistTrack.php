@@ -8,7 +8,10 @@
 
 namespace Objects;
 
+use Framework\Exceptions\ControllerException;
 use Framework\Services\DB\DBQuery;
+use Tools\Optional;
+use Tools\System;
 
 /**
  * Class PlaylistTrack
@@ -22,6 +25,27 @@ class PlaylistTrack extends Track {
     protected $id, $stream_id, $t_order, $unique_id, $time_offset;
 
     function __construct() {
+    }
+
+    public static function getCurrent($streamID) {
+
+        /** @var StreamStats $stream */
+        $stream = StreamStats::getByID($streamID)
+            ->getOrElseThrow(ControllerException::noStream($streamID));
+
+        if ($stream->getStatus() == 0) {
+            return Optional::noValue();
+        }
+
+        $streamPosition = (System::time() - $stream->getStarted() + $stream->getStartedFrom())
+            % $stream->getTracksDuration();
+
+        $track = self::getByFilter("time_offset <= :time AND time_offset + duration >= :time AND stream_id = :id", [
+            ":time" => $streamPosition, ":id" => $streamID
+        ]);
+
+        return $track;
+
     }
 
     public function getTrackOrder() {

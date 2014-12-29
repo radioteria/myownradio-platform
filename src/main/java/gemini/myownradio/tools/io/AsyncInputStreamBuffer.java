@@ -11,22 +11,21 @@ import java.nio.ByteBuffer;
  */
 public class AsyncInputStreamBuffer extends InputStream {
 
-    private final static int READ_BLOCK_SIZE = 4096;
+    final private static int READ_BLOCK_SIZE = 4096;
 
     private InputStream source;
-
     private Thread thread;
-
     private ByteBuffer buffer;
+    private int count;
 
     public AsyncInputStreamBuffer(InputStream source, int maximalSize) throws IOException {
         this.source = source;
         this.buffer = ByteBuffer.allocateDirect(maximalSize);
-
-        this.justRead();
+        this.count = 0;
+        this.justReadInputStream();
     }
 
-    private void justRead() throws IOException {
+    private void justReadInputStream() throws IOException {
 
         thread = new Thread(() -> {
 
@@ -35,16 +34,24 @@ public class AsyncInputStreamBuffer extends InputStream {
 
             try (InputStream tmp = source) {
 
-                while ((length = tmp.read(data)) != 0) {
+                while ((length = tmp.read(data)) != -1) {
+
                     synchronized (this) {
-                        while (buffer.remaining() < length) {
-                            System.err.println("Buffer overflow. Sleeping...");
+
+                        while (buffer.capacity() < length + count) {
                             wait();
                         }
-                        System.err.println("Putting to buffer " + length + " bytes");
-                        buffer.put(data);
+
+                        count += length;
+                        buffer.put(data, 0, length);
+
+                        notify();
+
                     }
+
                 }
+
+                System.out.println("File buffering completed!");
 
             } catch (IOException | InterruptedException e) { /* NOP */ }
 
@@ -55,12 +62,50 @@ public class AsyncInputStreamBuffer extends InputStream {
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
-        return super.read(b, off, len);
+    public int read(byte[] b) throws IOException {
+        return this.read(b, 0, b.length);
     }
 
-    public int read() {
-        return 0;
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+
+        try {
+            synchronized (this) {
+
+                while (count == 0) { wait(); }
+
+                int length = (count > len) ? len : count;
+
+                count -= length;
+
+                buffer.position(0);
+                buffer.get(b, 0, length);
+                buffer.compact();
+                buffer.position(count);
+
+                notify();
+
+                return length;
+
+            }
+        } catch (InterruptedException e) { /* NOP */ }
+
+        return -1;
+
+    }
+
+    public int read() throws IOException {
+        byte[] oneByte = new byte[1];
+        int length = this.read(oneByte);
+        if (length == 0) {
+            throw new IOException();
+        }
+        return oneByte[0] & 0xFF;
+    }
+
+    @Override
+    public void close() throws IOException {
+        thread.interrupt();
     }
 
 }

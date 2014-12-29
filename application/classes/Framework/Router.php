@@ -14,6 +14,8 @@ use Framework\Exceptions\NotImplementedException;
 use Framework\Services\HttpGet;
 use Framework\Services\HttpRequest;
 use Framework\Services\JsonResponse;
+use Framework\Services\Module\ModuleNotFoundException;
+use Framework\Services\Module\ModuleObject;
 use ReflectionClass;
 use Tools\Singleton;
 
@@ -47,7 +49,7 @@ class Router {
 //                    echo $module->executePost();
 //                }
 //            } catch (ModuleNotFoundException $e) {
-            $this->findRoute();
+                $this->findRoute();
 //            }
         } catch (ControllerException $e) {
 

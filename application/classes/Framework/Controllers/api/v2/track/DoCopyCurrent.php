@@ -25,9 +25,7 @@ class DoCopyCurrent implements Controller {
 
         $streamID = $post->getParameter("stream_id");
 
-        $result = $model->grabCurrentTrack($fromStreamID, $streamID, $upNext);
-
-        $response->setData($result);
+        $model->grabCurrentTrack($fromStreamID, $streamID, $upNext);
 
     }
 

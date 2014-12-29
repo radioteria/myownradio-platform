@@ -15,7 +15,7 @@ $router = new \Framework\Router();
 $router->route();
 
 
-$used = memory_get_usage() - $memory;
+$used = memory_get_usage() - $memory - 79568;
 $spent = microtime(true) - $time;
 
 logger("Memory used: " . $used / 1000 . "KB, Time: " . number_format($spent, 2, ".", " ") . "s");

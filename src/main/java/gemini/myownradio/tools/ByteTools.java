@@ -19,7 +19,7 @@ public class ByteTools {
 
     public static long bytesToLong(byte[] bytes) {
 
-        return bytesToLong(bytes, 0, bytes.length);
+        return bytesToLong(bytes, 0, Long.BYTES);
 
     }
 

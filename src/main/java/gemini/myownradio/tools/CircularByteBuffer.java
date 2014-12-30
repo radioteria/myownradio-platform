@@ -1,8 +1,8 @@
 package gemini.myownradio.tools;
 
 import java.io.IOException;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * Created by Roman on 26.12.2014.
@@ -12,6 +12,7 @@ public class CircularByteBuffer {
     private long count;
     private ByteBuffer buffer;
     private int length;
+    private byte[] raw;
 
     // Default read timeout is 5 seconds.
     private static final long DEFAULT_TIMEOUT = 5_000L;
@@ -20,9 +21,12 @@ public class CircularByteBuffer {
 
     public CircularByteBuffer(int size, long timeout) {
         this.count = 0L;
-        this.buffer = ByteBuffer.allocateDirect(size);
+        //this.buffer = ByteBuffer.allocateDirect(size);
+        this.raw = new byte[size + Long.BYTES];
         this.length = size;
         this.timeout = timeout;
+
+        Arrays.fill(raw, (byte) 0x00);
     }
 
     public CircularByteBuffer(int size) {
@@ -31,9 +35,11 @@ public class CircularByteBuffer {
 
     public void putBytes(byte[] b, int pos, int len) {
 
-        buffer.position(len);
-        buffer.compact();
-        buffer.put(b, pos, len);
+        long cursor = ByteTools.bytesToLong(raw);
+
+        System.arraycopy(raw, Long.BYTES + len, raw, Long.BYTES, length - len);
+        System.arraycopy(b, pos, raw, raw.length - len, len);
+        System.arraycopy(ByteTools.longToBytes(cursor + len), 0, raw, 0, Long.BYTES);
 
         count += len;
 
@@ -77,22 +83,26 @@ public class CircularByteBuffer {
 
             } else {
 
+                long tmpCursor;
                 int newBytes;
+                int length;
+                byte[] data = new byte[len];
 
                 synchronized (this) {
-                    newBytes = (int) (count - after);
-                    bb = buffer.duplicate();
+                    tmpCursor = ByteTools.bytesToLong(raw);
+                    newBytes = (int) (tmpCursor - after);
+
+                    if (newBytes > len) {
+                        System.arraycopy(raw, raw.length - newBytes, data, 0, len);
+                        length = len;
+                    } else {
+                        System.arraycopy(raw, raw.length - newBytes, data, 0, newBytes);
+                        length = newBytes;
+                    }
+
                 }
 
-                if (newBytes > len) {
-                    bb.position(length - len);
-                    bb.get(b, off, len);
-                    return len;
-                } else {
-                    bb.position(length - newBytes);
-                    bb.get(b, off, newBytes);
-                    return newBytes;
-                }
+                return length;
 
             }
 

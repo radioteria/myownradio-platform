@@ -1,11 +1,12 @@
 package gemini.myownradio.flow;
 
 import gemini.myownradio.engine.buffer.ConcurrentBuffer;
-import gemini.myownradio.exception.ShutdownException;
 import gemini.myownradio.ff.FFDecoderBuilder;
-import gemini.myownradio.tools.io.PipeIO;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Created by Roman on 07.10.14.
@@ -46,13 +47,9 @@ public class TrackPlayer implements AbstractPlayer {
         proc = pb.start();
 
         try (
-                //OutputStream out = proc.getOutputStream();
                 InputStream in = proc.getInputStream();
                 InputStream err = proc.getErrorStream()
         ) {
-            // Read file directly from input stream into process output stream.
-            //PipeIO pipe = new PipeIO(file, out, true);
-
             byte[] buffer = new byte[4096];
             int length;
             while ((length = in.read(buffer)) != -1) {

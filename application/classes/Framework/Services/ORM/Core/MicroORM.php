@@ -9,12 +9,12 @@
 namespace Framework\Services\ORM\Core;
 
 
-use Framework\Exceptions\ORMException;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Injectable;
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordCollection;
+use Framework\Services\ORM\Exceptions\ORMException;
 use Tools\Optional;
 use Tools\Singleton;
 
@@ -30,6 +30,7 @@ class MicroORM extends FilterORM implements Injectable {
 
     /**
      * @param ActiveRecord $object
+     * @internal param null $reflection
      * @return ActiveRecord
      */
     public function cloneObject(ActiveRecord $object) {

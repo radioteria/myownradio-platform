@@ -114,7 +114,8 @@ class TracksModel implements Injectable, SingletonInterface {
         $current = PlaylistTrack::getCurrent($fromID);
 
         $current->then(function($track) use ($streamID, $upNext) {
-            self::grabTrack1($track, $streamID, $upNext);
+            /** @var PlaylistTrack $track */
+            self::grabTrack1(Track::getByID($track->getID())->get(), $streamID, $upNext);
         });
 
     }

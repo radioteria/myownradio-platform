@@ -76,6 +76,7 @@ abstract class ActiveRecordObject implements JsonSerializable {
     }
 
     /**
+     * @internal param $reflection
      * @return $this
      */
     public function cloneObject() {
@@ -99,5 +100,8 @@ abstract class ActiveRecordObject implements JsonSerializable {
         return $data;
     }
 
+    public static function getClass() {
+        return self;
+    }
 
 } 

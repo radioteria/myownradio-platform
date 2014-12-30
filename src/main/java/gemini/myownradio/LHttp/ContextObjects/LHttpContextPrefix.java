@@ -16,8 +16,4 @@ public class LHttpContextPrefix extends LHttpContextAbstract {
         return path.startsWith(context);
     }
 
-    @Override
-    public int compare() {
-        return PRIORITY_INDEX + context.length();
-    }
 }

@@ -1,10 +1,14 @@
 package gemini.myownradio.LHttp.ContextObjects;
 
+import com.sun.istack.internal.NotNull;
+
 /**
  * Created by Roman on 15.10.14.
  */
-public abstract class LHttpContextAbstract implements LHttpContextInterface {
+public abstract class LHttpContextAbstract
+        implements LHttpContextInterface, Comparable<LHttpContextAbstract> {
 
+    @NotNull
     final protected String context;
 
     public LHttpContextAbstract(String context) {
@@ -33,7 +37,11 @@ public abstract class LHttpContextAbstract implements LHttpContextInterface {
 
     @Override
     public int hashCode() {
-        return context != null ? context.hashCode() : 0;
+        return context.hashCode();
+    }
+
+    public int compareTo(LHttpContextAbstract o) {
+        return context.compareTo(o.context);
     }
 
 }

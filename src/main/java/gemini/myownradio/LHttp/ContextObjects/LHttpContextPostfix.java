@@ -16,8 +16,4 @@ public class LHttpContextPostfix extends LHttpContextAbstract {
         return path.endsWith(context);
     }
 
-    @Override
-    public int compare() {
-        return PRIORITY_INDEX + context.length();
-    }
 }

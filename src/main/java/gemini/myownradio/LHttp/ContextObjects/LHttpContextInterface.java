@@ -7,8 +7,6 @@ public interface LHttpContextInterface {
 
     public boolean is(String path);
 
-    public int compare();
-
     public String getContext();
 
 }

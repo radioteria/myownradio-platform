@@ -22,9 +22,4 @@ public class LHttpContextRegexp extends LHttpContextAbstract {
         return m.find();
     }
 
-    @Override
-    public int compare() {
-        return PRIORITY_INDEX + context.length();
-    }
-
 }

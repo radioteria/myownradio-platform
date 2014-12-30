@@ -35,7 +35,7 @@ public class LHttpServer {
     private ServerSocket serverSocket;
 
     private Map<LHttpContextAbstract, LHttpContext>
-            handlerMap = new TreeMap<>((o1, o2) -> o2.compare() - o1.compare());
+            handlerMap = new TreeMap<>();
 
     private static MORLogger logger = new MORLogger(MORLogger.MessageKind.SERVER);
 

@@ -4,6 +4,7 @@ package gemini.myownradio;
  * Created by Roman on 30.09.14.
  */
 
+import gemini.myownradio.LHttp.ContextObjects.LHttpContextPostfix;
 import gemini.myownradio.engine.FlowListener;
 import gemini.myownradio.LHttp.ContextHandlers.GetRunStateHandler;
 import gemini.myownradio.LHttp.ContextHandlers.GetStreamAudioHandler;
@@ -50,6 +51,24 @@ public class WebRadio {
         httpServer
                 .when(new LHttpContextString("/audio"))
                 .exec(new GetStreamAudioHandler());
+
+        httpServer
+                .when(new LHttpContextPostfix("test1.txt"))
+                .exec((exchange) -> {
+                    exchange.getPrinter().println("test1.txt");
+                });
+
+        httpServer
+                .when(new LHttpContextPostfix("test2.txt"))
+                .exec((exchange) -> {
+                    exchange.getPrinter().println("test2.txt");
+                });
+
+        httpServer
+                .when(new LHttpContextPostfix("test3.txt"))
+                .exec((exchange) -> {
+                    exchange.getPrinter().println("test3.txt");
+                });
 
     }
 

@@ -51,7 +51,7 @@ public class TrackPlayer implements AbstractPlayer {
                 InputStream err = proc.getErrorStream()
         ) {
             // Read file directly from input stream into process output stream.
-            PipeIO pipe = new PipeIO(file, out);
+            PipeIO pipe = new PipeIO(file, out, true);
 
             byte[] buffer = new byte[4096];
             int length;

@@ -12,33 +12,24 @@ public class PipeIO {
     private InputStream is;
     private OutputStream os;
 
-    private Thread t;
+    private Thread thread;
 
     private volatile boolean throwed = false;
     private IOException cause;
 
+    private boolean autoClose;
+
     public PipeIO(InputStream is, OutputStream os) {
+        this(is, os, false);
+    }
+
+    public PipeIO(InputStream is, OutputStream os, boolean autoClose) {
+
         this.is = is;
         this.os = os;
-        t = new Thread(new PipeAsync());
-        t.start();
-    }
+        this.autoClose = autoClose;
 
-    public Thread thread() {
-        return t;
-    }
-
-    public boolean isThrowed() {
-        return throwed;
-    }
-
-    public IOException getException() {
-        return cause;
-    }
-
-    class PipeAsync implements Runnable {
-        public void run() {
-            Thread.currentThread().setName("PipeIO");
+        this.thread = new Thread(() -> {
             try (InputStream tmp = is) {
                 byte[] buffer = new byte[4096];
                 int len;
@@ -49,10 +40,29 @@ public class PipeIO {
                     os.write(buffer, 0, len);
                     os.flush();
                 }
+                if(this.autoClose) {
+                    os.close();
+                }
             } catch (IOException e) {
                 cause = new IOException("Shutdown");
                 throwed = true;
             }
-        }
+        });
+        this.thread.setName("PipeIO");
+        this.thread.start();
+
     }
+
+    public Thread thread() {
+        return thread;
+    }
+
+    public boolean isThrowed() {
+        return throwed;
+    }
+
+    public IOException getException() {
+        return cause;
+    }
+
 }

@@ -13,19 +13,25 @@ public class AsyncInputStreamBuffer extends InputStream {
 
     final private static int READ_BLOCK_SIZE = 4096;
 
+    final public static int DEFAULT_BUFFER_SIZE = 16_777_216;
+
     private InputStream source;
     private Thread thread;
     private ByteBuffer buffer;
     private int count;
 
-    public AsyncInputStreamBuffer(InputStream source, int maximalSize) throws IOException {
+    public AsyncInputStreamBuffer(InputStream source, int maximalSize) {
         this.source = source;
         this.buffer = ByteBuffer.allocateDirect(maximalSize);
         this.count = 0;
         this.justReadInputStream();
     }
 
-    private void justReadInputStream() throws IOException {
+    public AsyncInputStreamBuffer(InputStream source) {
+        this(source, DEFAULT_BUFFER_SIZE);
+    }
+
+    private void justReadInputStream() {
 
         thread = new Thread(() -> {
 

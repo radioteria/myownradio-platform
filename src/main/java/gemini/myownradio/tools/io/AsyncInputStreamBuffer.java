@@ -91,12 +91,13 @@ public class AsyncInputStreamBuffer extends InputStream {
     }
 
     public int read() throws IOException {
-        byte[] oneByte = new byte[1];
-        int length = this.read(oneByte);
-        if (length == 0) {
-            throw new IOException();
-        }
-        return oneByte[0] & 0xFF;
+        return 0;
+    }
+
+    @Override
+    public long skip(long n) throws IOException {
+        System.out.println("SKIP!!!!!!!!!!!!!");
+        return super.skip(n);
     }
 
     @Override

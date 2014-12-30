@@ -1,7 +1,5 @@
 package gemini.myownradio.LHttp.ContextObjects;
 
-import com.sun.istack.internal.NotNull;
-
 /**
  * Created by Roman on 15.10.14.
  */

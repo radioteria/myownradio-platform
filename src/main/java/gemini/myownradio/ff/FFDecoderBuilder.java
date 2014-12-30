@@ -6,19 +6,19 @@ import java.text.DecimalFormat;
  * Created by Roman on 07.10.14.
  */
 public class FFDecoderBuilder {
-    private String filename;
+    //private String filename;
     private int offset;
     private String[] cmd;
 
-    public FFDecoderBuilder(String filename, int offset, boolean jingled) {
-        this.filename = filename;
+    public FFDecoderBuilder(int offset, boolean jingled) {
+        //this.filename = filename;
         this.offset = offset;
 
         cmd = jingled ?
                 new String[]{
                         "ffmpeg",
                         "-ss", new DecimalFormat("0.###").format((float) this.offset / 1_000F),
-                        "-i", this.filename,
+                        "-i", "-",
                         "-i", "/media/www/myownradio.biz/jingle.wav",
                         "-filter_complex", "[0:a]afade=t=in:ss=0:st=1:d=3[a1],[a1]amix=inputs=2:duration=first:dropout_transition=3",
                         "-vn",
@@ -30,7 +30,7 @@ public class FFDecoderBuilder {
                 new String[]{
                         "ffmpeg",
                         "-ss", new DecimalFormat("0.###").format((float) this.offset / 1_000F),
-                        "-i", this.filename,
+                        "-i", "-",
                         "-filter", "afade=t=in:ss=0:st=0:d=1",
                         "-vn",
                         "-acodec", "pcm_s16le",
@@ -46,9 +46,9 @@ public class FFDecoderBuilder {
         return cmd;
     }
 
-    public String getFilename() {
-        return filename;
-    }
+//    public String getFilename() {
+//        return filename;
+//    }
 
     public int getOffset() {
         return offset;

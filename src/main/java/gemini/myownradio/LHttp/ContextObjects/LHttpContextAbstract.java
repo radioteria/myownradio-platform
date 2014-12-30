@@ -8,7 +8,6 @@ import com.sun.istack.internal.NotNull;
 public abstract class LHttpContextAbstract
         implements LHttpContextInterface, Comparable<LHttpContextAbstract> {
 
-    @NotNull
     final protected String context;
 
     public LHttpContextAbstract(String context) {

@@ -3,6 +3,7 @@ package gemini.myownradio.flow;
 import gemini.myownradio.engine.buffer.ConcurrentBuffer;
 import gemini.myownradio.exception.ShutdownException;
 import gemini.myownradio.ff.FFDecoderBuilder;
+import gemini.myownradio.tools.io.PipeIO;
 
 import java.io.*;
 
@@ -12,22 +13,23 @@ import java.io.*;
 public class TrackPlayer implements AbstractPlayer {
     private final boolean jingled;
     private final OutputStream output;
-    private final String filename;
+    private final InputStream file;
     private final ConcurrentBuffer broadcast;
 
-    public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, String filename, boolean jingled) throws FileNotFoundException {
-        if (!new File(filename).exists()) {
-            throw new FileNotFoundException("File '" + filename + "' not found!");
-        }
+    public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, InputStream file, boolean jingled)
+            throws FileNotFoundException {
 
         this.output = output;
-        this.filename = filename;
+        this.file = file;
         this.jingled = jingled;
         this.broadcast = broadcast;
+
     }
 
-    public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, String filename) throws FileNotFoundException {
-        this(broadcast, output, filename, false);
+    public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, InputStream file)
+            throws FileNotFoundException {
+
+        this(broadcast, output, file, false);
     }
 
     public void play() throws IOException {
@@ -39,14 +41,18 @@ public class TrackPlayer implements AbstractPlayer {
         ProcessBuilder pb;
         Process proc;
 
-        pb = new ProcessBuilder(new FFDecoderBuilder(this.filename, offset, jingled).generate());
+        pb = new ProcessBuilder(new FFDecoderBuilder(offset, jingled).generate());
 
         proc = pb.start();
 
         try (
+                OutputStream out = proc.getOutputStream();
                 InputStream in = proc.getInputStream();
                 InputStream err = proc.getErrorStream()
         ) {
+            // Read file directly from input stream into process output stream.
+            PipeIO pipe = new PipeIO(file, out);
+
             byte[] buffer = new byte[4096];
             int length;
             while ((length = in.read(buffer)) != -1) {

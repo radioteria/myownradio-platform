@@ -4,7 +4,9 @@ import gemini.myownradio.tools.MORSettings;
 
 import javax.xml.transform.Result;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -112,6 +114,10 @@ public class Track {
 
         throw new FileNotFoundException(ff.getPath());
 
+    }
+
+    public InputStream openStream() throws FileNotFoundException {
+        return new FileInputStream(this.getPath());
     }
 
     public int getTrackOffset() {

@@ -72,8 +72,6 @@ public class CircularByteBuffer {
 
         long threshold = System.currentTimeMillis() + timeout;
 
-        ByteBuffer bb;
-
         while (threshold > System.currentTimeMillis()) {
 
             if (count <= after) {
@@ -88,17 +86,16 @@ public class CircularByteBuffer {
                 long tmpCursor;
                 int newBytes;
                 int length;
-                byte[] data = new byte[len];
 
                 synchronized (this) {
                     tmpCursor = ByteTools.bytesToLong(raw);
                     newBytes = (int) (tmpCursor - after);
 
                     if (newBytes > len) {
-                        System.arraycopy(raw, raw.length - newBytes, data, 0, len);
+                        System.arraycopy(raw, raw.length - newBytes, b, 0, len);
                         length = len;
                     } else {
-                        System.arraycopy(raw, raw.length - newBytes, data, 0, newBytes);
+                        System.arraycopy(raw, raw.length - newBytes, b, 0, newBytes);
                         length = newBytes;
                     }
 

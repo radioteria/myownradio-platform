@@ -118,7 +118,7 @@ public class Track {
     }
 
     public InputStream openStream() throws FileNotFoundException {
-        return new FileInputStream(this.getPath());
+        return new AsyncInputStreamBuffer(new FileInputStream(this.getPath()));
     }
 
     public int getTrackOffset() {

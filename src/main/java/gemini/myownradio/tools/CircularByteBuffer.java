@@ -43,7 +43,7 @@ public class CircularByteBuffer {
 
         count += len;
 
-        System.out.println("Writing to buffer " + len + " bytes");
+        System.out.printf("Writing to buffer %d (count %d)\n", len, count);
 
         synchronized (this) {
             notifyAll();

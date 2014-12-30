@@ -33,26 +33,17 @@ public class AsyncInputStreamBuffer extends InputStream {
             int length;
 
             try (InputStream tmp = source) {
-
                 while ((length = tmp.read(data)) != -1) {
-
                     synchronized (this) {
-
                         while (buffer.capacity() < length + count) {
                             wait();
                         }
-
                         count += length;
                         buffer.put(data, 0, length);
-
                         notify();
-
                     }
-
                 }
-
                 System.out.println("File buffering completed!");
-
             } catch (IOException | InterruptedException e) { /* NOP */ }
 
         });
@@ -71,22 +62,15 @@ public class AsyncInputStreamBuffer extends InputStream {
 
         try {
             synchronized (this) {
-
                 while (count == 0) { wait(); }
-
                 int length = (count > len) ? len : count;
-
                 count -= length;
-
                 buffer.position(0);
                 buffer.get(b, 0, length);
                 buffer.compact();
                 buffer.position(count);
-
                 notify();
-
                 return length;
-
             }
         } catch (InterruptedException e) { /* NOP */ }
 

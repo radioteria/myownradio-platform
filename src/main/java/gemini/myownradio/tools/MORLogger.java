@@ -62,7 +62,7 @@ public class MORLogger {
     }
 
     public enum MessageKind {
-        PLAYER, SERVER, CONCURRENT_BUFFER
+        PLAYER, SERVER, CONCURRENT_BUFFER, BUFFER
     }
 
 }

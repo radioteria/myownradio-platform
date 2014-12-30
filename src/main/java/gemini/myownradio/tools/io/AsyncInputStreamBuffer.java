@@ -1,5 +1,7 @@
 package gemini.myownradio.tools.io;
 
+import gemini.myownradio.tools.MORLogger;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -20,11 +22,14 @@ public class AsyncInputStreamBuffer extends InputStream {
     private ByteBuffer buffer;
     private int count;
 
+    private final MORLogger logger = new MORLogger(MORLogger.MessageKind.BUFFER);
+
     public AsyncInputStreamBuffer(InputStream source, int maximalSize) {
         this.source = source;
         this.buffer = ByteBuffer.allocateDirect(maximalSize);
         this.count = 0;
         this.justReadInputStream();
+        logger.println("Initialized");
     }
 
     public AsyncInputStreamBuffer(InputStream source) {
@@ -39,6 +44,7 @@ public class AsyncInputStreamBuffer extends InputStream {
             int length;
 
             try (InputStream tmp = source) {
+                logger.println("Starting to read input stream");
                 while ((length = tmp.read(data)) != -1) {
                     synchronized (this) {
                         while (buffer.capacity() < length + count) {
@@ -49,7 +55,7 @@ public class AsyncInputStreamBuffer extends InputStream {
                         notify();
                     }
                 }
-                System.out.println("File buffering completed!");
+                logger.sprintf("Input stream read completed! Remaining: %d bytes\n", count);
             } catch (IOException | InterruptedException e) { /* NOP */ }
 
         });

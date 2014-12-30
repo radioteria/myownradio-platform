@@ -10,7 +10,6 @@ import java.util.Arrays;
 public class CircularByteBuffer {
 
     private long count;
-    private ByteBuffer buffer;
     private int length;
     private byte[] raw;
 
@@ -21,7 +20,6 @@ public class CircularByteBuffer {
 
     public CircularByteBuffer(int size, long timeout) {
         this.count = 0L;
-        //this.buffer = ByteBuffer.allocateDirect(size);
         this.raw = new byte[size + Long.BYTES];
         this.length = size;
         this.timeout = timeout;
@@ -42,8 +40,6 @@ public class CircularByteBuffer {
         System.arraycopy(ByteTools.longToBytes(cursor + len), 0, raw, 0, Long.BYTES);
 
         count += len;
-
-        System.out.printf("Writing to buffer %d (count %d)\n", len, count);
 
         synchronized (this) {
             notifyAll();

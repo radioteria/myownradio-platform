@@ -57,6 +57,8 @@ public class TrackPlayer implements AbstractPlayer {
             int length;
             while ((length = in.read(buffer)) != -1) {
                 output.write(buffer, 0, length);
+                output.flush();
+
                 // Clear error stream
                 while (err.available() > 0) {
                     length = err.read(buffer);

@@ -13,10 +13,10 @@ import java.io.*;
 public class TrackPlayer implements AbstractPlayer {
     private final boolean jingled;
     private final OutputStream output;
-    private final InputStream file;
+    private final String file;
     private final ConcurrentBuffer broadcast;
 
-    public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, InputStream file, boolean jingled)
+    public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, String file, boolean jingled)
             throws FileNotFoundException {
 
         this.output = output;
@@ -26,7 +26,7 @@ public class TrackPlayer implements AbstractPlayer {
 
     }
 
-    public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, InputStream file)
+    public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, String file)
             throws FileNotFoundException {
 
         this(broadcast, output, file, false);
@@ -41,17 +41,17 @@ public class TrackPlayer implements AbstractPlayer {
         ProcessBuilder pb;
         Process proc;
 
-        pb = new ProcessBuilder(new FFDecoderBuilder(offset, jingled).generate());
+        pb = new ProcessBuilder(new FFDecoderBuilder(file, offset, jingled).generate());
 
         proc = pb.start();
 
         try (
-                OutputStream out = proc.getOutputStream();
+                //OutputStream out = proc.getOutputStream();
                 InputStream in = proc.getInputStream();
                 InputStream err = proc.getErrorStream()
         ) {
             // Read file directly from input stream into process output stream.
-            PipeIO pipe = new PipeIO(file, out, true);
+            //PipeIO pipe = new PipeIO(file, out, true);
 
             byte[] buffer = new byte[4096];
             int length;

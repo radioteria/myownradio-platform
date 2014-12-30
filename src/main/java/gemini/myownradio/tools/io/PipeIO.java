@@ -29,28 +29,16 @@ public class PipeIO {
 
     public PipeIO(InputStream is, OutputStream os, boolean autoClose) {
 
-        logger.println("Initializing PipeIO...");
-
         this.is = is;
         this.os = os;
         this.autoClose = autoClose;
 
-        logger.sprintf("AutoClose: %b\n", autoClose);
-
         this.thread = new Thread(() -> {
             try (InputStream tmp = is) {
-                byte[] buffer = new byte[4096];
-                int len;
-                while ((len = tmp.read(buffer)) != -1) {
-                    if (Thread.interrupted()) {
-                        return;
-                    }
-                    os.write(buffer, 0, len);
-                    os.flush();
-                }
+                logger.println("PipeIO is started");
+                IOTools.copy(tmp, os, true);
                 logger.println("PipeIO completed reading input stream");
                 if(this.autoClose) {
-                    logger.println("PipeIO closes output stream");
                     os.close();
                 }
             } catch (IOException e) {

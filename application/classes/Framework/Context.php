@@ -27,7 +27,7 @@ class Context implements SingletonInterface, Injectable {
 
     function __construct() {
         $this->offset = $this->getParameters()->getParameter("offset");
-        $this->limit = $this->getParameters()->getParameter("limit");
+        $this->limit  = $this->getParameters()->getParameter("limit");
         $this->filter = $this->getParameters()->getParameter("filter");
     }
 

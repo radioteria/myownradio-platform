@@ -1,5 +1,7 @@
 package gemini.myownradio.tools.io;
 
+import gemini.myownradio.tools.MORLogger;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,6 +19,8 @@ public class PipeIO {
     private volatile boolean throwed = false;
     private IOException cause;
 
+    private static final MORLogger logger = new MORLogger(MORLogger.MessageKind.PLAYER);
+
     private boolean autoClose;
 
     public PipeIO(InputStream is, OutputStream os) {
@@ -25,9 +29,13 @@ public class PipeIO {
 
     public PipeIO(InputStream is, OutputStream os, boolean autoClose) {
 
+        logger.println("Initializing PipeIO...");
+
         this.is = is;
         this.os = os;
         this.autoClose = autoClose;
+
+        logger.sprintf("AutoClose: %b\n", autoClose);
 
         this.thread = new Thread(() -> {
             try (InputStream tmp = is) {
@@ -40,7 +48,9 @@ public class PipeIO {
                     os.write(buffer, 0, len);
                     os.flush();
                 }
+                logger.println("PipeIO completed reading input stream");
                 if(this.autoClose) {
+                    logger.println("PipeIO closes output stream");
                     os.close();
                 }
             } catch (IOException e) {
@@ -48,6 +58,7 @@ public class PipeIO {
                 throwed = true;
             }
         });
+
         this.thread.setName("PipeIO");
         this.thread.start();
 

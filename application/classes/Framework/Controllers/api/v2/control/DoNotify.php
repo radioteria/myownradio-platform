@@ -9,6 +9,7 @@
 namespace Framework\Controllers\api\v2\control;
 
 
+use Framework\Context;
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\PlaylistModel;
@@ -17,12 +18,9 @@ use Framework\Services\JsonResponse;
 
 class DoNotify implements Controller {
 
-    public function doPost(HttpPost $post, JsonResponse $response) {
+    public function doPost(Context $context, JsonResponse $response) {
 
-        $id = $post->getParameter("stream_id")
-            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
-
-        PlaylistModel::getInstance($id)->notifyStreamers();
+        PlaylistModel::getInstance($context->getStreamID())->notifyStreamers();
 
     }
 

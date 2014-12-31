@@ -118,7 +118,9 @@ class HttpRequest implements Injectable {
      * @return mixed
      */
     public function getRemoteAddress() {
-        return $this->filterInputServer("REMOTE_ADDR");
+        return $this->filterInputServer("HTTP_X_REAL_IP")
+            ? $this->filterInputServer("HTTP_X_REAL_IP")
+            : $this->filterInputServer("REMOTE_ADDR");
     }
 
     /**

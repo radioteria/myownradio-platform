@@ -12,6 +12,7 @@ namespace Framework\Controllers\api\v2;
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
+use Framework\Models\UsersModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 use REST\Users;
@@ -32,6 +33,12 @@ class DoSelf implements Controller {
         $permalink = $post->getParameter("permalink")->getOrElseNull();
 
         $user->edit($name, $info, $permalink);
+
+    }
+
+    public function doDelete(UsersModel $users, JsonResponse $response) {
+
+        $users->logout();
 
     }
 

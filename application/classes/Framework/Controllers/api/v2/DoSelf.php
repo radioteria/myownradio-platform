@@ -29,8 +29,9 @@ class DoSelf implements Controller {
 
         $name = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));
         $info = $post->getParameter("info")->getOrElseEmpty();
+        $permalink = $post->getParameter("permalink")->getOrElseNull();
 
-        $user->edit($name, $info);
+        $user->edit($name, $info, $permalink);
 
     }
 

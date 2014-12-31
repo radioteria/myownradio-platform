@@ -1,8 +1,9 @@
 <?php
 
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
-header("Access-Control-Allow-Headers: content-type");
+header("Access-Control-Allow-Methods: *");
+header("Access-Control-Allow-Headers: *");
+header("Access-Control-Allow-Credentials: true");
 
 define("NEW_DIR_RIGHTS", 0770);
 define("REG_MAIL", 'no-reply@myownradio.biz');

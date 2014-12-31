@@ -36,7 +36,7 @@ class Users implements SingletonInterface, Injectable {
     public function getUserByID($id) {
 
         $query = $this->getUsersPrefix();
-
+        $query->where("uid", $id);
         $user = $query->fetchOneRow()->getOrElseThrow(ControllerException::noEntity("user"));
 
         $this->processUserRow($user);

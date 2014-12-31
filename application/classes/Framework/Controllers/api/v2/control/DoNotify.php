@@ -18,9 +18,11 @@ use Framework\Services\JsonResponse;
 
 class DoNotify implements Controller {
 
-    public function doPost(Context $context, JsonResponse $response) {
+    public function doPost(HttpPost $post, JsonResponse $response) {
 
-        PlaylistModel::getInstance($context->getStreamID())->notifyStreamers();
+        $id = $post->getRequired("stream_id");
+
+        PlaylistModel::getInstance($id)->notifyStreamers();
 
     }
 

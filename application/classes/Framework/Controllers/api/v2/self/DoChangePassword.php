@@ -18,10 +18,8 @@ use Framework\Services\JsonResponse;
 class DoChangePassword implements Controller {
     public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
 
-        $oldPassword = $post->getParameter("old_password")
-            ->getOrElseThrow(ControllerException::noArgument("old_password"));
-        $newPassword = $post->getParameter("new_password")
-            ->getOrElseThrow(ControllerException::noArgument("new_password"));
+        $oldPassword = $post->getRequired("old_password");
+        $newPassword = $post->getRequired("new_password");
 
         $user->changePassword($newPassword, $oldPassword);
 

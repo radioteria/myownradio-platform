@@ -8,6 +8,7 @@
 
 namespace Framework\Services;
 
+use Framework\Exceptions\ControllerException;
 use Tools\Optional;
 use Tools\Singleton;
 
@@ -17,6 +18,11 @@ class HttpPost implements \ArrayAccess, Injectable {
 
     public function getParameter($key) {
         return Optional::ofEmpty(FILTER_INPUT(INPUT_POST, $key));
+    }
+
+    public function getRequired($key) {
+        return $this->getParameter($key)
+            ->getOrElseThrow(ControllerException::noArgument($key));
     }
 
     /**

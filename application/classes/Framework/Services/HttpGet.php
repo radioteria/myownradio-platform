@@ -8,6 +8,7 @@
 
 namespace Framework\Services;
 
+use Framework\Exceptions\ControllerException;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -22,6 +23,11 @@ class HttpGet implements \ArrayAccess, SingletonInterface, Injectable {
 
     public function getParameter($key) {
         return Optional::ofEmpty(FILTER_INPUT(INPUT_GET, $key));
+    }
+
+    public function getRequired($key) {
+        return $this->getParameter($key)
+            ->getOrElseThrow(ControllerException::noArgument($key));
     }
 
     /**

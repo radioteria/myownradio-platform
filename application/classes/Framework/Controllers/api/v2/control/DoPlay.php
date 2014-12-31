@@ -19,8 +19,7 @@ class DoPlay implements Controller {
 
     public function doPost(HttpPost $post, JsonResponse $response) {
 
-        $id = $post->getParameter("stream_id")
-            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
+        $id = $post->getRequired("stream_id");
 
         PlaylistModel::getInstance($id)->scPlay();
 

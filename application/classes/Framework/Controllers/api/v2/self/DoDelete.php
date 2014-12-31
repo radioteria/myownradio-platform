@@ -18,8 +18,7 @@ class DoDelete {
 
     public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
 
-        $password = $post->getParameter("password")
-            ->getOrElseThrow(ControllerException::noArgument("password"));
+        $password = $post->getRequired("password");
 
         $user->checkPassword($password);
 

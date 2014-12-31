@@ -99,8 +99,6 @@ class UsersModel implements SingletonInterface, Injectable {
             });
         });
 
-        $session->destroy();
-
     }
 
     /**

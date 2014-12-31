@@ -22,6 +22,7 @@ class DoLogin implements Controller {
         $login = $post->getParameter("login")->getOrElseThrow(ControllerException::noArgument("login"));
         $password = $post->getParameter("password")->getOrElseThrow(ControllerException::noArgument("password"));
 
+        $users->logout();
         $users->authorizeByLoginPassword($login, $password);
 
     }

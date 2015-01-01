@@ -31,6 +31,7 @@ class DoSelf implements Controller {
 
         $login = $put->getRequired("login");
         $password = $put->getRequired("password");
+        $remember = boolval($put->getParameter("remember")->getOrElseFalse());
 
         $users->logout();
         $users->authorizeByLoginPassword($login, $password);

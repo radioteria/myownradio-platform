@@ -14,6 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
 use Framework\Models\UsersModel;
 use Framework\Services\HttpPost;
+use Framework\Services\HttpPut;
 use Framework\Services\JsonResponse;
 use REST\Users;
 
@@ -24,6 +25,16 @@ class DoSelf implements Controller {
         $user = Users::getInstance()->getUserByID($userModel->getID());
         $response->setData($user);
         
+    }
+
+    public function doPut(HttpPut $put, JsonResponse $response, UsersModel $users) {
+
+        $login = $put->getRequired("login");
+        $password = $put->getRequired("password");
+
+        $users->logout();
+        $users->authorizeByLoginPassword($login, $password);
+
     }
 
     public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {

@@ -1,24 +1,31 @@
 <?php
 /**
  * Created by PhpStorm.
- * UserModel: roman
- * Date: 13.12.14
- * Time: 18:26
+ * User: roman
+ * Date: 01.01.15
+ * Time: 14:44
  */
 
 namespace Framework\Services;
+
 
 use Framework\Exceptions\ControllerException;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-class HttpPost extends HttpRequestAdapter implements Injectable, SingletonInterface {
+class HttpPut extends HttpRequestAdapter implements SingletonInterface, Injectable {
 
     use Singleton;
 
+    private $data;
+
+    function __construct() {
+        parse_str(file_get_contents("php://input"), $this->data);
+    }
+
     public function getParameter($key) {
-        return Optional::ofEmpty(FILTER_INPUT(INPUT_POST, $key));
+        return Optional::ofEmpty(@$this->data[$key]);
     }
 
     public function getRequired($key) {
@@ -26,5 +33,4 @@ class HttpPost extends HttpRequestAdapter implements Injectable, SingletonInterf
             ->getOrElseThrow(ControllerException::noArgument($key));
     }
 
-
-}
+} 

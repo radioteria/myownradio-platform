@@ -10,7 +10,6 @@ namespace Framework\Controllers\api\v2\user;
 
 
 use Framework\Controller;
-use Framework\Exceptions\ControllerException;
 use Framework\Models\UsersModel;
 use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
@@ -20,11 +19,8 @@ class DoPasswordResetComplete implements Controller {
 
     public function doPost(HttpPost $post, InputValidator $validator, UsersModel $users, JsonResponse $response) {
 
-        $code = $post->getParameter("code")
-            ->getOrElseThrow(ControllerException::noArgument("code"));
-
-        $password = $post->getParameter("password")
-            ->getOrElseThrow(ControllerException::noArgument("password"));
+        $code = $post->getRequired("code");
+        $password = $post->getRequired("password");
 
         $validator->validatePassword($password);
 

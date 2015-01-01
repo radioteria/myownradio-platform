@@ -10,7 +10,6 @@ namespace Framework\Controllers\api\v2\user;
 
 
 use Framework\Controller;
-use Framework\Exceptions\ControllerException;
 use Framework\Models\LettersModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
@@ -19,7 +18,7 @@ class DoPasswordResetBegin implements Controller {
 
     public function doPost(HttpPost $post, JsonResponse $response) {
 
-        $id = $post->getParameter("login")->getOrElseThrow(ControllerException::noArgument("login"));
+        $id = $post->getRequired("login");
 
         LettersModel::sendResetPasswordLetter($id);
 

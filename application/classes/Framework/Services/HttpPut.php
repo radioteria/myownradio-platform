@@ -22,6 +22,7 @@ class HttpPut extends HttpRequestAdapter implements SingletonInterface, Injectab
 
     function __construct() {
         parse_str(file_get_contents("php://input"), $this->data);
+        print_r($this->data);
     }
 
     public function getParameter($key) {

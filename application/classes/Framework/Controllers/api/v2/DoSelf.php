@@ -27,7 +27,7 @@ class DoSelf implements Controller {
         
     }
 
-    public function doPut(HttpPut $put, JsonResponse $response, UsersModel $users) {
+    public function doPut(HttpPut $put, UsersModel $users, JsonResponse $response) {
 
         $login = $put->getRequired("login");
         $password = $put->getRequired("password");

@@ -48,7 +48,7 @@ class UserModel extends Model implements SingletonInterface {
 
             $key = func_get_arg(0);
 
-            $this->user = User::getByFilter("FIND_BY_KEY_PARAMS", [":id" => $key])
+            $this->user = User::getByFilter("FIND_BY_KEY_PARAMS", [":key" => $key])
                 ->getOrElseThrow(
                     new ControllerException(sprintf("User with login or email '%s' not exists", $key))
                 );
@@ -147,14 +147,18 @@ class UserModel extends Model implements SingletonInterface {
             throw UnauthorizedException::wrongPassword();
         }
 
+        $this->changePasswordNow($newPassword);
+
+    }
+
+    public function changePasswordNow($password) {
         $validator = InputValidator::getInstance();
 
-        $validator->validatePassword($newPassword);
+        $validator->validatePassword($password);
 
-        $newPassword = md5($this->getLogin() . $newPassword);
+        $hash = md5($this->getLogin() . $password);
 
-        $this->user->setPassword($newPassword)->save();
-
+        $this->user->setPassword($hash)->save();
     }
 
     public function changeActivePlan(PlanModel $plan, BasisModel $basis) {

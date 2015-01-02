@@ -13,10 +13,11 @@ use Framework\Services\DB\Query\DeleteQuery;
 use Framework\Services\DB\Query\InsertQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\DB\Query\UpdateQuery;
+use Framework\Services\Injectable;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-class DBQuery implements SingletonInterface {
+class DBQuery implements SingletonInterface, Injectable {
 
     use Singleton;
 

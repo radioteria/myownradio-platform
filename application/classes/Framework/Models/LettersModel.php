@@ -41,6 +41,7 @@ class LettersModel {
 
     public static function sendResetPasswordLetter($id) {
 
+
         $user = new UserModel($id);
 
         $code = base64_encode(json_encode(["login" => $user->getLogin(), "password" => $user->getPassword()]));

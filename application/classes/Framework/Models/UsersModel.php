@@ -172,7 +172,7 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $user = new UserModel($credentials["login"], $credentials["password"]);
 
-        $user->changePassword($password);
+        $user->changePasswordNow($password);
 
     }
 

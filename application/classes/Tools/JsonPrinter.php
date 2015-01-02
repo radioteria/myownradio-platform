@@ -42,7 +42,7 @@ class JsonPrinter implements SingletonInterface, Injectable {
         } elseif (is_object($data) && $data instanceof \JsonSerializable) {
             $this->printJSON($data->jsonSerialize());
         } else {
-            $this->escapeJsonString(strval($data));
+            $this->escapeJsonString($data);
         }
     }
 
@@ -52,6 +52,8 @@ class JsonPrinter implements SingletonInterface, Injectable {
     function escapeJsonString($value) {
         if (is_numeric($value)) {
             echo intval($value);
+        } elseif (is_bool($value)) {
+            echo $value ? "true" : "false";
         } elseif (is_null($value)) {
             echo 'null';
         } else {

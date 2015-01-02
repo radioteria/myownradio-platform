@@ -18,7 +18,7 @@ class InputValidator implements Injectable {
 
     use Singleton;
 
-    const PASSWORD_MIN_LENGTH = 3;
+    const PASSWORD_MIN_LENGTH = 6;
     const PASSWORD_MAX_LENGTH = 32;
 
     const EMAIL_REGEXP_PATTERN = "~^[\\w\\S]+@[\\w\\S]+\\.[\\w]{2,4}$~m";
@@ -27,7 +27,8 @@ class InputValidator implements Injectable {
     const TRACKS_LIST_PATTERN = "~^[0-9]+(,[0-9]+)*$~m";
 
     const LOGIN_MIN_LENGTH = 3;
-    const LOGIN_PATTERN = "~^[0-9a-z_]+$~m";
+    const LOGIN_MAX_LENGTH = 32;
+    const LOGIN_PATTERN = "~^[0-9a-z\\_]+$~m";
 
     const STREAM_NAME_MIN_LENGTH = 3;
 
@@ -117,7 +118,7 @@ class InputValidator implements Injectable {
 
         $optional = new Optional($login, function ($login) {
 
-            if (strlen($login) < self::LOGIN_MIN_LENGTH) {
+            if (strlen($login) < self::LOGIN_MIN_LENGTH || strlen($login) > self::LOGIN_MAX_LENGTH) {
                 return false;
             }
 
@@ -126,7 +127,7 @@ class InputValidator implements Injectable {
         });
 
         return $optional->getOrElseThrow(
-            new ControllerException("Login must contain only 'a-z, 0-9, _' and be at least 3 chars long")
+            new ControllerException("Login must contain only a-z, 0-9, and '_' chars and be at least 3 chars long")
         );
 
     }

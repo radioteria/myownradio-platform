@@ -19,7 +19,7 @@ use Tools\Folders;
  * @key uid
  *
  * @do_FIND_BY_KEY_PARAMS login = :key OR mail = :key
- * @do_FIND_BY_CREDENTIALS login = ? AND password = ?
+ * @do_FIND_BY_CREDENTIALS (login = :login) AND (password = :password)
  */
 class User extends ActiveRecordObject implements ActiveRecord {
 

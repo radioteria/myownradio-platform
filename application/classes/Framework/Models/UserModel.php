@@ -58,7 +58,7 @@ class UserModel extends Model implements SingletonInterface {
             $login = func_get_arg(0);
             $password = func_get_arg(1);
 
-            $this->user = User::getByFilter("FIND_BY_CREDENTIALS", [$login, $password])
+            $this->user = User::getByFilter("FIND_BY_CREDENTIALS", [":login" => $login, ":password" => $password])
                 ->getOrElseThrow(ControllerException::wrongLogin());
 
         } else {

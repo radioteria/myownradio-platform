@@ -50,6 +50,7 @@ class LettersModel {
         $mailer = new Mailer(REG_MAIL, REG_NAME);
 
         $template->addVariable("name", $user->getDisplayName(), false);
+        $template->addVariable("login", $user->getLogin(), false);
         $template->addVariable("code", $code, false);
 
         $mailer->addAddress($user->getEmail());

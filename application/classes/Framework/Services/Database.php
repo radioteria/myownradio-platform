@@ -220,10 +220,10 @@ class Database implements SingletonInterface, Injectable {
 
         $result = [];
 
-        while ($row = $resource->fetch(PDO::FETCH_ASSOC)) {
+        for ($i = 0; $row = $resource->fetch(PDO::FETCH_ASSOC); $i++) {
 
             if (is_callable($callback)) {
-                $row = call_user_func($callback, $row);
+                $row = call_user_func_array($callback, [$row, $i]);
             }
 
             if (!is_null($key)) {

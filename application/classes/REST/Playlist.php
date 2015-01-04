@@ -110,7 +110,8 @@ class Playlist implements SingletonInterface, Injectable {
 
         /** @var StreamStats $stream */
 
-        $stream = StreamStats::getByID($id)->getOrElseThrow(ControllerException::noStream($id));
+        $stream = StreamStats::getByFilter("sid = :id OR permalink = :id", [":id" => $id])
+            ->getOrElseThrow(ControllerException::noStream($id));
 
         $position = (
                 System::time() -
@@ -127,16 +128,25 @@ class Playlist implements SingletonInterface, Injectable {
         $query->select("time_offset");
 
         $query->where("time_offset + duration > ?", [$lowRange]);
-        $query->where("time_offset < ?", [$highRange]);
-        $query->where("stream_id", $id);
+        $query->where("time_offset <= ?", [$highRange]);
+        $query->where("stream_id", $stream->getID());
 
-        $tracks = $query->fetchAll();
+        $currentID = 0;
+
+        $tracks = $query->fetchAll(null, function ($row, $index) use (&$currentID, &$position) {
+            if ($row["time_offset"] <= $position && $row["time_offset"] + $row["duration"] >= $position) {
+                $currentID = $index;
+            }
+            $row["caption"] = $row["artist"] . " - " . $row["title"];
+            return $row;
+        });
 
         return [
             'percent' => number_format(100 / $stream->getTracksDuration() * $position),
             'time' => System::time(),
             'position' => $position,
             'range' => self::NOW_PLAYING_TIME_RANGE * 2,
+            'current' => $currentID,
             'tracks' => $tracks
         ];
 

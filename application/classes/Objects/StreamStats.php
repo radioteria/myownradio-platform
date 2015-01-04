@@ -63,5 +63,12 @@ class StreamStats extends ActiveRecordObject implements ActiveRecord {
         return $this->uid;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getID() {
+        return $this->sid;
+    }
+
 
 } 

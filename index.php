@@ -14,7 +14,6 @@ $router = new \Framework\Router();
 
 $router->route();
 
-
 $used = memory_get_usage() - $memory - 79568;
 $spent = microtime(true) - $time;
 

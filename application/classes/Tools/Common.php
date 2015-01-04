@@ -25,7 +25,7 @@ class Common {
 
         foreach ($words as $word) {
             if (strlen($word) > 0) {
-                $query .= "+{$word} ";
+                $query .= "+{$word}";
             }
         }
 

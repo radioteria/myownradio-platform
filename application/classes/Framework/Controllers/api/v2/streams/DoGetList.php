@@ -20,7 +20,7 @@ class DoGetList implements Controller {
      */
     public function doGet(HttpGet $get, JsonResponse $response, Streams $streams) {
 
-        $filter = $get->getParameter("filter")->getOrElseEmpty();
+        $filter = $get->getParameter("filter")->getOrElseNull();
         $category = $get->getParameter("category")->getOrElseNull();
 
         $offset = $get->getParameter("offset")->getOrElse(0);

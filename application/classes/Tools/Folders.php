@@ -73,4 +73,8 @@ class Folders implements Injectable, SingletonInterface {
         return sprintf("%s/ui_%d", self::MOR_CONTENT_FOLDER, $uid);
     }
 
+    function genStreamUrl($id) {
+        return sprintf("http://myownradio.biz:7778/audio?s=%d", $id);
+    }
+
 }

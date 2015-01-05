@@ -44,7 +44,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
     private function getUsersPrefix() {
 
         $prefix = (new SelectQuery("r_users"))
-            ->select(["uid", "name", "permalink", "avatar"]);
+            ->select(["uid", "login", "name", "permalink", "avatar"]);
 
         return $prefix;
 

@@ -266,8 +266,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
         return Folders::getInstance()->genStreamCoverUrl($this->cover);
     }
 
-    public function getBlahBlah() {
-        return "Hello, World!";
+    public function getStreamUrl() {
+        return Folders::getInstance()->genStreamUrl($this->sid);
     }
 
 } 

@@ -1,12 +1,12 @@
 package gemini.myownradio.engine;
 
+import gemini.myownradio.LHttp.LHttpProtocol;
 import gemini.myownradio.engine.buffer.ConcurrentBuffer;
 import gemini.myownradio.engine.buffer.ConcurrentBufferKey;
 import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
 import gemini.myownradio.engine.entity.Stream;
 import gemini.myownradio.exception.RadioException;
 import gemini.myownradio.ff.FFEncoderBuilder;
-import gemini.myownradio.LHttp.LHttpProtocol;
 import gemini.myownradio.tools.MORLogger;
 import gemini.myownradio.tools.MORSettings;
 
@@ -61,7 +61,7 @@ public class AudioFlowBootstrap {
         if ((broadcast = ConcurrentBufferRepository.getBC(streamKey)) == null) {
             broadcast = ConcurrentBufferRepository.createBC(streamKey, bufferSize);
             Thread streamer = new Thread(new StreamRadio(broadcast, encoder, streamObject));
-            streamer.setName("Streamer " + streamKey.toString());
+            streamer.setName(streamKey.toString());
             streamer.setDaemon(true);
             streamer.start();
         }

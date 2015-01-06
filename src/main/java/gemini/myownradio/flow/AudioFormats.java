@@ -8,7 +8,7 @@ public enum AudioFormats {
     aacplus_32k(32000, "libfdk_aac", "adts", "audio/aac"),
     aacplus_64k(64000, "libfdk_aac", "adts", "audio/aac"),
     aacplus_96k(96000, "libfdk_aac", "adts", "audio/aac"),
-    aacplus_128k(128000, "libfdk_aac", "adts", "video/x-flv"),
+    aacplus_128k(128000, "libfdk_aac", "adts", "audio/aac"),
     mp3_128k(128000, "libmp3lame", "mp3", "audio/mpeg"),
     mp3_256k(256000, "libmp3lame", "mp3", "audio/mpeg");
 

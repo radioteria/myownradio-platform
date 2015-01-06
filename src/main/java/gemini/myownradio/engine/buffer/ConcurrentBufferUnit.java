@@ -54,15 +54,6 @@ public class ConcurrentBufferUnit {
         return System.currentTimeMillis() - touched;
     }
 
-    public int getBufferSize() {
-        return this.bufferSize;
-    }
-
-    public byte[] getByteBuffer() {
-        this.touched = System.currentTimeMillis();
-        return this.byteBuffer;
-    }
-
     public void touch() {
         this.touched = System.currentTimeMillis();
     }

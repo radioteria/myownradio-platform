@@ -1,7 +1,6 @@
 package gemini.myownradio.tools;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /**
@@ -53,6 +52,10 @@ public class CircularByteBuffer {
 
     public long getPosition() {
         return count;
+    }
+
+    public long getBeginning() {
+        return count > length ? count - length : 0;
     }
 
     public int getLength() {

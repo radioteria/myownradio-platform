@@ -8,7 +8,7 @@ import java.util.Arrays;
  */
 public class CircularByteBuffer {
 
-    private long count;
+    private volatile long count;
     private int length;
     private byte[] raw;
 

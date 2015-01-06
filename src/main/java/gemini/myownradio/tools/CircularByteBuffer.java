@@ -12,6 +12,8 @@ public class CircularByteBuffer {
     private int length;
     private byte[] raw;
 
+    final private static MORLogger logger = new MORLogger(MORLogger.MessageKind.CONCURRENT_BUFFER);
+
     // Default read timeout is 5 seconds.
     private static final long DEFAULT_TIMEOUT = 5_000L;
 
@@ -87,7 +89,17 @@ public class CircularByteBuffer {
                 int newBytes;
                 int length;
 
-                byte[] copy = raw;
+                byte[] copy = new byte[raw.length];
+
+                System.arraycopy(raw, 0, copy, 0, raw.length);
+
+                for (int i = 0; i < raw.length; i ++) {
+                    if (raw[i] != copy[i]) {
+                        logger.sprintf("Byte # %d of copy not equals raw (%d != %d)",
+                                i, copy[i], raw[i]);
+                    }
+                }
+
                 tmpCursor = ByteTools.bytesToLong(copy);
                 newBytes = (int) (tmpCursor - after);
 

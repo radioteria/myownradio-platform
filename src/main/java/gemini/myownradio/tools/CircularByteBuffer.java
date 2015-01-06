@@ -91,7 +91,9 @@ public class CircularByteBuffer {
 
                 byte[] copy = new byte[raw.length];
 
-                System.arraycopy(raw, 0, copy, 0, raw.length);
+                synchronized (this) {
+                    System.arraycopy(raw, 0, copy, 0, raw.length);
+                }
 
                 for (int i = 0; i < raw.length; i ++) {
                     if (raw[i] != copy[i]) {

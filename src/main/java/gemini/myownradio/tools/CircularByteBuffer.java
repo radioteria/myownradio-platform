@@ -91,12 +91,6 @@ public class CircularByteBuffer {
 
                 synchronized (this) {
                     System.arraycopy(raw, 0, copy, 0, raw.length);
-                    for (int i = 0; i < raw.length; i++) {
-                        if (raw[i] != copy[i]) {
-                            logger.sprintf("Byte # %d of copy not equals raw (%d != %d)",
-                                    i, copy[i], raw[i]);
-                        }
-                    }
                 }
 
                 tmpCursor = ByteTools.bytesToLong(copy);

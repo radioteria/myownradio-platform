@@ -32,7 +32,7 @@ public class CircularByteBuffer {
         this(size, DEFAULT_TIMEOUT);
     }
 
-    public void putBytes(byte[] b, int pos, int len) {
+    public synchronized void putBytes(byte[] b, int pos, int len) {
 
         long cursor = ByteTools.bytesToLong(raw);
 
@@ -42,9 +42,7 @@ public class CircularByteBuffer {
 
         count += len;
 
-        synchronized (this) {
-            notifyAll();
-        }
+        notifyAll();
 
     }
 
@@ -95,7 +93,7 @@ public class CircularByteBuffer {
                     System.arraycopy(raw, 0, copy, 0, raw.length);
                 }
 
-                for (int i = 0; i < raw.length; i ++) {
+                for (int i = 0; i < raw.length; i++) {
                     if (raw[i] != copy[i]) {
                         logger.sprintf("Byte # %d of copy not equals raw (%d != %d)",
                                 i, copy[i], raw[i]);

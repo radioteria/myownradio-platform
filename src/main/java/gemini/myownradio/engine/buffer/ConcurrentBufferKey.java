@@ -26,7 +26,7 @@ public class ConcurrentBufferKey {
 
     @Override
     public String toString() {
-        return String.format("s%df%sb%s]", stream, format, bitrate);
+        return String.format("s%df%sb%s", stream, format, bitrate);
     }
 
     @Override

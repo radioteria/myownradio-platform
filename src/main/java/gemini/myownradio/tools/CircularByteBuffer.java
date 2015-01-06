@@ -76,8 +76,9 @@ public class CircularByteBuffer {
             if (count <= after) {
 
                 synchronized (this) {
-                    try { wait(timeout); }
-                    catch (InterruptedException cannotHappen) { /* NOP */ }
+                    try {
+                        wait(timeout);
+                    } catch (InterruptedException cannotHappen) { /* NOP */ }
                 }
 
             } else {
@@ -86,18 +87,16 @@ public class CircularByteBuffer {
                 int newBytes;
                 int length;
 
-                synchronized (this) {
-                    tmpCursor = ByteTools.bytesToLong(raw);
-                    newBytes = (int) (tmpCursor - after);
+                byte[] copy = raw;
+                tmpCursor = ByteTools.bytesToLong(copy);
+                newBytes = (int) (tmpCursor - after);
 
-                    if (newBytes > len) {
-                        System.arraycopy(raw, raw.length - newBytes, b, 0, len);
-                        length = len;
-                    } else {
-                        System.arraycopy(raw, raw.length - newBytes, b, 0, newBytes);
-                        length = newBytes;
-                    }
-
+                if (newBytes > len) {
+                    System.arraycopy(copy, copy.length - newBytes, b, off, len);
+                    length = len;
+                } else {
+                    System.arraycopy(copy, copy.length - newBytes, b, off, newBytes);
+                    length = newBytes;
                 }
 
                 return length;

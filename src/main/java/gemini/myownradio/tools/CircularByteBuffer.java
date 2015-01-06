@@ -110,7 +110,7 @@ public class CircularByteBuffer {
 
         }
 
-        throw new IOException("Data awaiting timed out");
+        throw new IOException("Data wait timed out");
 
     }
 

@@ -25,9 +25,9 @@ public class LHttpServer {
     public final int MAX_PORT       = 65535;
 
     private int port                = 1024;
-    private int workersCore         = 16;
-    private int workersMax          = 1024;
-    private int blockingQueue       = 256;
+    private int workersCore         = 1024;
+    private int workersMax          = 2096;
+    private int blockingQueue       = 1024;
     private int maximalEntitySize   = 8192;
 
     private final long READ_REQUEST_TIMEOUT = 2_000L;

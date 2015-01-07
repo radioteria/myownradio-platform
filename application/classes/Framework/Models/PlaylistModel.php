@@ -230,6 +230,10 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      */
     public function getTrackByTime($time) {
 
+        if ($this->getStreamDuration() == 0) {
+            return Optional::noValue();
+        }
+
         $mod = $time % $this->getStreamDuration();
 
         return $this->_getPlaylistTrack(

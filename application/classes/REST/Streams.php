@@ -109,7 +109,11 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         }
 
         $queryStream->where("a.status = 1");
+        $queryStream->where("a.access", "PUBLIC");
+
         $queryStream->limit($limit)->offset($offset);
+
+        $queryStream->orderBy("created DESC");
 
         $streams = $queryStream->fetchAll(null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {

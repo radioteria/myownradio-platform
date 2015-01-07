@@ -35,6 +35,7 @@ public class FFEncoderBuilder {
                         "-acodec", format.getCodec(),
                         "-profile:a", "aac_he_v2",
                         "-strict", "-2",
+                        "-bufsize", "1024k",
                         "-f", format.getFormat(),
                         "-"
                 };
@@ -55,6 +56,7 @@ public class FFEncoderBuilder {
                         "-ab", Integer.toString(format.getBitrate()),
                         "-acodec", format.getCodec(),
                         "-strict", "-2",
+                        "-bufsize", "1024k",
                         "-f", format.getFormat(),
                         "-"
                 };

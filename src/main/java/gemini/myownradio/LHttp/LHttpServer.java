@@ -11,10 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
 
 /**
  * Created by Roman on 15.10.14.
@@ -54,8 +52,10 @@ public class LHttpServer {
 
         logger.println("Initializing thread pool");
 
-        ExecutorService threadPool = new ThreadPoolExecutor(workersCore, workersMax, 60L, TimeUnit.SECONDS,
-                new ArrayBlockingQueue<>(blockingQueue));
+//        ExecutorService threadPool = new ThreadPoolExecutor(workersCore, workersMax, 10L, TimeUnit.SECONDS,
+//                new ArrayBlockingQueue<>(blockingQueue));
+
+        ExecutorService threadPool = Executors.newCachedThreadPool();
 
         logger.println("Initializing server socket");
         serverSocket = new ServerSocket(port, blockingQueue);

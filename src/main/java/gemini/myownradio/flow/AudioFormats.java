@@ -11,7 +11,7 @@ public enum AudioFormats {
     aacplus_128k(128000, "libfdk_aac", "adts", "audio/aac"),
     mp3_128k    (128000, "libmp3lame", "mp3", "audio/mpeg"),
     mp3_256k    (256000, "libmp3lame", "mp3", "audio/mpeg"),
-    flv_96k     (96000,  "libfdk_aac", "adts", "video/x-flv");
+    flv_64k     (64000,  "libfdk_aac", "flv", "video/x-flv");
 
     final int bitrate;
     final String codec;

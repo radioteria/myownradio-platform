@@ -13,7 +13,7 @@ use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\Config;
-use Framework\Services\Database;
+use Framework\Services\DB\DBQuery;
 use Framework\Services\Injectable;
 use Objects\PlaylistTrack;
 use Objects\Track;
@@ -203,23 +203,19 @@ class TracksModel implements Injectable, SingletonInterface {
      */
     public function deleteFromStreams($tracks) {
 
-        $streams = Database::doInConnection(function (Database $db) use ($tracks) {
+        $db = DBQuery::getInstance();
 
-            $query = $db->getDBQuery()
-                ->selectFrom("r_link")
-                ->select("stream_id")
-                ->selectAlias("GROUP_CONCAT(unique_id)", "unique_ids")
-                ->where("FIND_IN_SET(track_id, ?)", $tracks)
-                ->addGroupBy("stream_id");
+        $streams = $db->selectFrom("r_link")
+            ->select("stream_id")
+            ->selectAlias("GROUP_CONCAT(unique_id)", "unique_ids")
+            ->where("track_id", explode(",", $tracks))
+            ->addGroupBy("stream_id")->fetchAll();
 
-            return $db->fetchAll($query);
+        foreach ($streams as $stream) {
 
-        });
-
-        foreach ($streams as $streamID => $uniqueIDs) {
-
-            (new PlaylistModel($streamID))
-                ->removeTracks($uniqueIDs);
+            $model = new PlaylistModel($stream['stream_id']);
+            $model->removeTracks($stream['unique_ids']);
+            unset($model);
 
         }
 

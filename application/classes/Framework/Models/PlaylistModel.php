@@ -307,10 +307,11 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
         $this->doAtomic(function () use (&$tracks) {
 
             Database::doInConnection(function (Database $db) use ($tracks) {
-                $db->executeUpdate("DELETE FROM r_link WHERE FIND_IN_SET(unique_id, ?)", [$tracks]);
-                $db->executeUpdate("CALL POptimizeStream(?)", [$this->key]);
-                $db->commit();
+                $db->executeUpdate("DELETE FROM r_link WHERE FIND_IN_SET(unique_id, ?) AND (stream_id = ?)", [
+                    $tracks, $this->key]);
             });
+
+            $this->optimize();
 
         });
 

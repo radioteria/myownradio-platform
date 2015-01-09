@@ -10,6 +10,8 @@ namespace REST;
 
 
 use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
+use Framework\Models\AuthUserModel;
 use Framework\Models\UserModel;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Injectable;
@@ -93,6 +95,13 @@ class Streams implements \Countable, Injectable, SingletonInterface {
             $queryStream->where("a.category", $category);
         }
 
+        /** @var UserModel $owner */
+        $owner = null;
+        try {
+            $owner = AuthUserModel::getInstance();
+        } catch (UnauthorizedException $ex) {
+        }
+
         if (empty($filter)) {
 
             /* No Operation */
@@ -109,7 +118,12 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         }
 
         $queryStream->where("a.status = 1");
-        $queryStream->where("a.access", "PUBLIC");
+
+        if ($owner !== null) {
+            $queryStream->where("(a.access = ? OR a.uid = ?)", ["PUBLIC", $owner->getID()]);
+        } else {
+            $queryStream->where("a.access", "PUBLIC");
+        }
 
         $queryStream->limit($limit)->offset($offset);
 

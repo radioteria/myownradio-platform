@@ -43,7 +43,7 @@ class StreamsModel implements Injectable, SingletonInterface {
 
         // Validate parameters
         $validator->validateStreamName($name);
-        $validator->validateStreamPermalink($permalink->get());
+        $validator->validateStreamPermalink($permalink->getOrElseNull());
 
         $stream = new Stream();
         $stream->setUserID($this->user->getID());

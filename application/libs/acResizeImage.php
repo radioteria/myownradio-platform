@@ -161,6 +161,7 @@ class acResizeImage {
                 $savePath = $path . trim($fileName) . "." . $this->type;
                 switch ($this->type) {
                     case 'jpg':
+                    case 'jpeg':
                         if (!$rewrite && @file_exists($savePath)) return false;
                         if (!is_numeric($quality) || $quality < 0 || $quality > 100) $quality = 100;
                         imagejpeg($this->image, $savePath, $quality);
@@ -178,6 +179,7 @@ class acResizeImage {
                 }
                 break;
             case 'jpg':
+            case 'jpeg':
                 $savePath = $path . trim($fileName) . "." . $type;
                 if (!$rewrite && @file_exists($savePath)) return false;
                 if (!is_numeric($quality) || $quality < 0 || $quality > 100) $quality = 100;
@@ -202,6 +204,7 @@ class acResizeImage {
         $type = strtolower($type);
         switch ($type) {
             case 'jpg':
+            case 'jpeg':
                 if (!is_numeric($quality) || $quality < 0 || $quality > 100) $quality = 100;
                 imagejpeg($this->image, NULL, $quality);
                 return $this;
@@ -243,6 +246,7 @@ class acResizeImage {
     private function openImage($file) {
         switch ($this->type) {
             case 'jpg':
+            case 'jpeg':
                 $this->image = @imagecreatefromjpeg($file);
                 break;
             case 'png':

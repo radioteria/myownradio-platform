@@ -1,9 +1,9 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: Roman
- * Date: 22.12.14
- * Time: 17:57
+ * User: roman
+ * Date: 08.01.15
+ * Time: 14:49
  */
 
 namespace Framework\Controllers\api\v2\streams;
@@ -14,9 +14,9 @@ use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
 use REST\Playlist;
 
-class DoGetSchedule implements Controller {
+class DoGetNowPlaying implements Controller {
     public function doGet(HttpGet $get, Playlist $playlist, JsonResponse $response) {
         $id = $get->getRequired("stream_id");
-        $response->setData($playlist->getSchedule($id));
+        $response->setData($playlist->getNowPlaying($id));
     }
 } 

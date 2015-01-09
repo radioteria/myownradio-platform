@@ -25,15 +25,7 @@ class Playlist implements SingletonInterface, Injectable {
     use Singleton;
 
     const NOW_PLAYING_TIME_RANGE = 900000; // 15 minutes
-
-    /**
-     * @return \Framework\Services\DB\Query\SelectQuery
-     */
-    private function getTracksPrefix() {
-        $query = DBQuery::getInstance()->selectFrom("mor_stream_tracklist_view");
-        $query->select("tid", "filename", "artist", "title", "duration", "color");
-        return $query;
-    }
+    const REAL_TIME_DELAY_MS = 10000;
 
     /**
      * @param null $color
@@ -68,6 +60,15 @@ class Playlist implements SingletonInterface, Injectable {
 
         $printer->brCloseObject();
 
+    }
+
+    /**
+     * @return \Framework\Services\DB\Query\SelectQuery
+     */
+    private function getTracksPrefix() {
+        $query = DBQuery::getInstance()->selectFrom("mor_stream_tracklist_view");
+        $query->select("tid", "filename", "artist", "title", "duration", "color");
+        return $query;
     }
 
     /**
@@ -113,11 +114,45 @@ class Playlist implements SingletonInterface, Injectable {
         $stream = StreamStats::getByFilter("sid = :id OR permalink = :id", [":id" => $id])
             ->getOrElseThrow(ControllerException::noStream($id));
 
-        $position = (
-                System::time() -
+        if ($stream->getStatus() == 0) {
+            throw ControllerException::noStream($id);
+        }
+
+        $position = max(((System::time() - self::REAL_TIME_DELAY_MS) -
                 $stream->getStarted() +
-                $stream->getStartedFrom()) %
-            $stream->getTracksDuration();
+                $stream->getStartedFrom()) % $stream->getTracksDuration(), 0);
+
+
+        $query = $this->getTracksPrefix();
+
+        $query->select("time_offset");
+
+        $query->where("time_offset + duration >= ?", [$position]);
+        $query->where("time_offset <= ?", [$position]);
+        $query->where("stream_id", $stream->getID());
+
+        $track = $query->fetchOneRow()->getOrElseThrow(new ControllerException(sprintf("Nothing playing on stream '%s'", $id)));
+
+        $track["caption"] = $track["artist"] . " - " . $track["title"];
+
+        return [
+            'time' => System::time(),
+            'position' => $position,
+            'current' => $track,
+        ];
+
+    }
+
+    public function getSchedule($id) {
+
+        /** @var StreamStats $stream */
+
+        $stream = StreamStats::getByFilter("sid = :id OR permalink = :id", [":id" => $id])
+            ->getOrElseThrow(ControllerException::noStream($id));
+
+        $position = max(((System::time() - self::REAL_TIME_DELAY_MS) -
+                $stream->getStarted() +
+                $stream->getStartedFrom()) % $stream->getTracksDuration(), 0);
 
         $query = $this->getTracksPrefix();
 
@@ -142,7 +177,6 @@ class Playlist implements SingletonInterface, Injectable {
         });
 
         return [
-            'percent' => number_format(100 / $stream->getTracksDuration() * $position),
             'time' => System::time(),
             'position' => $position,
             'range' => self::NOW_PLAYING_TIME_RANGE * 2,

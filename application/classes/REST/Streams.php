@@ -10,7 +10,6 @@ namespace REST;
 
 
 use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\AuthUserModel;
 use Framework\Models\UserModel;
 use Framework\Services\DB\Query\SelectQuery;
@@ -96,11 +95,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         }
 
         /** @var UserModel $owner */
-        $owner = null;
-        try {
-            $owner = AuthUserModel::getInstance();
-        } catch (UnauthorizedException $ex) {
-        }
+        $owner = AuthUserModel::getAuthorizedUserID();
 
         if (empty($filter)) {
 
@@ -120,7 +115,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         $queryStream->where("a.status = 1");
 
         if ($owner !== null) {
-            $queryStream->where("(a.access = ? OR a.uid = ?)", ["PUBLIC", $owner->getID()]);
+            $queryStream->where("(a.access = ? OR a.uid = ?)", ["PUBLIC", $owner]);
         } else {
             $queryStream->where("a.access", "PUBLIC");
         }
@@ -149,12 +144,22 @@ class Streams implements \Countable, Injectable, SingletonInterface {
      */
     public function getSimilarTo($id) {
 
+        /** @var UserModel $owner */
+        $owner = AuthUserModel::getAuthorizedUserID();
+
         $involved_users = [];
 
         $queryStream = $this->getStreamsPrefix();
         $queryStream->where("a.sid != :id");
         $queryStream->where("a.permalink != :id");
         $queryStream->where("a.status", 1);
+
+        if ($owner !== null) {
+            $queryStream->where("(a.access = ? OR a.uid = ?)", ["PUBLIC", $owner]);
+        } else {
+            $queryStream->where("a.access", "PUBLIC");
+        }
+
         $queryStream->where("MATCH(a.hashtags) AGAINST((SELECT hashtags FROM r_streams WHERE (sid = :id) OR (permalink = :id)))",
             [':id' => $id]);
         $queryStream->limit(self::MAXIMUM_SIMILAR_COUNT);

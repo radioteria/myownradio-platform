@@ -54,4 +54,12 @@ class AuthUserModel extends UserModel implements Injectable {
         return $this->userToken;
     }
 
+    public static function getAuthorizedUserID() {
+        try {
+            return self::getInstance()->getID();
+        } catch (UnauthorizedException $e) {
+            return null;
+        }
+    }
+
 }

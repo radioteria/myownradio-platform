@@ -15,6 +15,6 @@ use Framework\Services\HttpGet;
 class DoTest implements Controller {
     public function doGet(HttpGet $get) {
         $id = $get->getRequired("id");
-        echo $id;
+        echo "<h1>id = " . $id . "</h1>";
     }
 } 

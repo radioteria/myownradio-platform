@@ -39,10 +39,15 @@ class Router implements SingletonInterface{
         $routeParts[$count - 1] = "Do" . ucfirst($routeParts[$count - 1]);
         $this->route = implode("/", $routeParts);
 
-        // Custom sub routes registration
+        $this->registerSubRoutes();
+
+    }
+
+    private function registerSubRoutes() {
         $sub = SubRouter::getInstance();
         $sub->addRoute("test/:id", "DoTest");
-
+        $sub->addRoute("content/streamcovers/:fn", "content\\DoGetStreamCover");
+        $sub->addRoute("content/avatars/:fn", "content\\DoGetUserAvatar");
     }
 
     public function route() {

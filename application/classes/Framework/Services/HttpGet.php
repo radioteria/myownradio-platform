@@ -22,7 +22,11 @@ class HttpGet extends HttpRequestAdapter implements SingletonInterface, Injectab
     use Singleton;
 
     public function getParameter($key) {
-        return Optional::ofEmpty(FILTER_INPUT(INPUT_GET, $key));
+        if (FILTER_INPUT(INPUT_GET, $key)) {
+            return Optional::ofEmpty(FILTER_INPUT(INPUT_GET, $key));
+        } else {
+            return RouteParams::getInstance()->getParameter($key);
+        }
     }
 
     public function getRequired($key) {

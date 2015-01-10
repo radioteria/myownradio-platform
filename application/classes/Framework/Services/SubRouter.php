@@ -44,11 +44,11 @@ class SubRouter implements SingletonInterface {
 
     public function goMatching($route) {
         foreach ($this->routes as $regexp=>$data) {
-
             if (preg_match($regexp, $route, $matches)) {
                 array_shift($matches);
                 $params = array_combine($data["keys"], $matches);
                 if (is_string($data["action"])) {
+                    RouteParams::setData($params);
                     Router::getInstance()->callRoute($data["action"]);
                 } elseif (is_callable($data["action"])) {
                     $reflection = new \ReflectionFunction($data["action"]);

@@ -30,7 +30,8 @@ class Router implements SingletonInterface{
 
         $httpGet = HttpGet::getInstance();
 
-        $this->legacyRoute = preg_replace('/(\.(html|php)$)|(\/$)/', '', $httpGet->getParameter("route")->getOrElse("index"));
+        $this->legacyRoute = preg_replace('/(\.(html|php)$)|(\/$)/', '', $httpGet->getParameter("route")
+            ->getOrElse("index"));
 
         $routeParts = explode("/", $this->legacyRoute);
 
@@ -40,14 +41,7 @@ class Router implements SingletonInterface{
 
         // Custom sub routes registration
         $sub = SubRouter::getInstance();
-        $sub->addRoute("test/:category/:id", function ($args) {
-            header("Content-Type: text/plain");
-            echo "Route OK\n\n";
-            echo "Arguments:\n\n";
-            foreach ($args as $key=>$value) {
-                echo "  " . $key . " = " . $value . "\n";
-            }
-        });
+        $sub->addRoute("test/:id", "DoTest");
 
     }
 

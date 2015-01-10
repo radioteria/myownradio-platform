@@ -14,16 +14,20 @@ use Framework\Exceptions\NotImplementedException;
 use Framework\Services\HttpGet;
 use Framework\Services\HttpRequest;
 use Framework\Services\JsonResponse;
-use Framework\Services\Module\ModuleNotFoundException;
-use Framework\Services\Module\ModuleObject;
+use Framework\Services\SubRouter;
 use ReflectionClass;
 use Tools\Singleton;
+use Tools\SingletonInterface;
 
-class Router {
+class Router implements SingletonInterface{
+
+    use Singleton;
+
     private $route;
     private $legacyRoute;
 
     function __construct() {
+
         $httpGet = HttpGet::getInstance();
 
         $this->legacyRoute = preg_replace('/(\.(html|php)$)|(\/$)/', '', $httpGet->getParameter("route")->getOrElse("index"));
@@ -33,24 +37,29 @@ class Router {
         $count = count($routeParts);
         $routeParts[$count - 1] = "Do" . ucfirst($routeParts[$count - 1]);
         $this->route = implode("/", $routeParts);
+
+        // Custom sub routes registration
+        $sub = SubRouter::getInstance();
+        $sub->addRoute("test/:category/:id", function ($args) {
+            header("Content-Type: text/plain");
+            echo "Route OK\n\n";
+            echo "Arguments:\n\n";
+            foreach ($args as $key=>$value) {
+                echo "  " . $key . " = " . $value . "\n";
+            }
+        });
+
     }
 
     public function route() {
 
-
         try {
 
-//            try {
-//                $request = HttpRequest::getInstance();
-//                $module = new ModuleObject($this->legacyRoute);
-//                if ($request->getMethod() == "GET") {
-//                    echo $module->executeHtml();
-//                } elseif ($request->getMethod() == "POST") {
-//                    echo $module->executePost();
-//                }
-//            } catch (ModuleNotFoundException $e) {
+            $sub = SubRouter::getInstance();
+            if (!$sub->goMatching($this->legacyRoute)) {
                 $this->findRoute();
-//            }
+            }
+
         } catch (ControllerException $e) {
 
             $this->exceptionRouter($e);
@@ -82,10 +91,15 @@ class Router {
 
     private function findRoute() {
 
-        $request = HttpRequest::getInstance();
+        $this->callRoute($this->route);
 
-        $class = str_replace("/", "\\", CONTROLLERS_ROOT . $this->route);
+    }
+
+    public function callRoute($className) {
+
+        $request = HttpRequest::getInstance();
         $method = "do" . ucfirst(strtolower($request->getMethod()));
+        $class = str_replace("/", "\\", CONTROLLERS_ROOT . $className);
 
         // Reflect controller class
         loadClassOrThrow($class, new DocNotFoundException());
@@ -112,7 +126,6 @@ class Router {
 
         // Execute controller
         $this->callDependencyInjection($classInstance, $invoker);
-
     }
 
     private function exceptionRouter(ControllerException $exception) {

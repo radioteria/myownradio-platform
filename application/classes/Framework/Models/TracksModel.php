@@ -107,6 +107,8 @@ class TracksModel implements Injectable, SingletonInterface {
 
         }
 
+        return $track;
+
     }
 
     public function grabCurrentTrack($fromID, Optional $streamID, $upNext = false) {

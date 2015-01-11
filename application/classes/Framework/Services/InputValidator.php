@@ -264,10 +264,12 @@ class InputValidator implements Injectable {
             }
 
             if ($selfCheck === false) {
-                $test = Database::getInstance()->fetchOneColumn("SELECT COUNT(*) FROM r_users WHERE permalink = ?",
+                $test = Database::getInstance()->connect()
+                    ->fetchOneColumn("SELECT COUNT(*) FROM r_users WHERE permalink = ?",
                     [$permalink])->getOrElseThrow(ControllerException::databaseError());
             } else {
-                $test = Database::getInstance()->fetchOneColumn("SELECT COUNT(*) FROM r_users WHERE permalink = ? AND uid != ?",
+                $test = Database::getInstance()->connect()
+                    ->fetchOneColumn("SELECT COUNT(*) FROM r_users WHERE permalink = ? AND uid != ?",
                     [$permalink, $selfCheck])->getOrElseThrow(ControllerException::databaseError());
             }
 
@@ -276,7 +278,7 @@ class InputValidator implements Injectable {
         });
 
         return $optional->getOrElseThrow(
-            new ControllerException(sprintf("'%s' is not valid stream permalink", $permalink))
+            new ControllerException(sprintf("'%s' is not valid user permalink", $permalink))
         );
 
     }

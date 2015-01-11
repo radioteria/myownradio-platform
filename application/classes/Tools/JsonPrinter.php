@@ -60,7 +60,11 @@ class JsonPrinter implements SingletonInterface, Injectable {
             echo '"';
             $escape = array("\\", "/", "\"", "\n", "\r", "\t", "\x08", "\x0c");
             $replacements = array("\\\\", "\\/", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b");
-            echo str_replace($escape, $replacements, strval($value));
+            $data = str_replace($escape, $replacements, strval($value));
+            $data = preg_replace_callback("/[\x01-\x1f]/", function ($match) {
+                return sprintf("\\u%04d", ord($match[0]));
+            }, $data);
+            echo $data;
             echo '"';
         }
     }
@@ -127,7 +131,7 @@ class JsonPrinter implements SingletonInterface, Injectable {
         $this->startGZ();
         $this->brContentType();
         $this->brOpenObject();
-        $this->brPrintKeyValue("status", 1);
+        $this->brPrintKeyValue("code", 1);
         $this->brComma();
         $this->brPrintKeyValue("message", "OK");
         $this->brComma();

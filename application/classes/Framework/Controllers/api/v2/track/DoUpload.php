@@ -21,7 +21,9 @@ class DoUpload implements Controller {
         $streamID = $post->getParameter("stream_id");
         $upNext = boolval($post->getParameter("up_next")->getOrElseFalse());
 
-        $file->each(function ($file) use ($streamID, $model, $upNext) {
+        $uploaded = [];
+
+        $file->each(function ($file) use ($streamID, $model, $upNext, &$uploaded) {
             if (is_array($file["name"])) {
                 for ($i = 0; $i < count($file["name"]); $i++) {
                     $tmp = [
@@ -31,12 +33,16 @@ class DoUpload implements Controller {
                         "error" => $file["error"][$i],
                         "size" => $file["size"][$i]
                     ];
-                    $model->upload($tmp, $streamID, $upNext);
+                    $uploaded[] = $model->upload($tmp, $streamID, $upNext);
                 }
             } else {
-                $model->upload($file, $streamID, $upNext);
+                $uploaded[] = $model->upload($file, $streamID, $upNext);
             }
         });
+
+        $response->setData([
+            "tracks" => $uploaded
+        ]);
 
     }
 

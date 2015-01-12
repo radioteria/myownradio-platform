@@ -9,6 +9,7 @@
 namespace REST;
 
 
+use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
 use Framework\Models\UserModel;
@@ -180,12 +181,16 @@ class Streams implements \Countable, Injectable, SingletonInterface {
 
     /**
      * @param UserModel $user
+     * @param int $offset
      * @return array
      */
-    public function getBookmarksByUser(UserModel $user) {
+    public function getBookmarksByUser(UserModel $user, $offset = 0) {
 
         $query = $this->getStreamsPrefix();
         $query->where("a.sid IN (SELECT sid FROM r_bookmarks WHERE uid = ?)", [$user->getID()]);
+
+        $query->offset($offset);
+        $query->limit(Defaults::DEFAULT_TRACKS_PER_REQUEST);
 
         $streams = $query->fetchAll(null, function ($row) {
             $this->processStreamRow($row);

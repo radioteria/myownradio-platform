@@ -19,11 +19,13 @@ class DoGetByStream implements Controller {
     public function doGet(HttpGet $get, Playlist $playlist) {
 
         $id = $get->getParameter("stream_id")->getOrElseThrow(ControllerException::noArgument("stream_id"));
-        $color = $get->getParameter("color_id")->getOrElseNull();
+        $color = $get->getParameter("color_id");
+        $offset = $get->getParameter("offset");
+        $filter = $get->getParameter("filter");
 
         $stream = StreamModel::getInstance($id);
 
-        $playlist->getTracksByStream($stream, $color);
+        $playlist->getTracksByStream($stream, $color, $filter, $offset);
 
     }
 } 

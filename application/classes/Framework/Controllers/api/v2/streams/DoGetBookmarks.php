@@ -20,12 +20,14 @@ class DoGetBookmarks implements Controller {
 
     public function doGet(JsonResponse $response, Streams $streams, HttpGet $get) {
 
+        $offset = $get->getParameter("offset")->getOrElse(0);
+
         $get->getParameter("user_id")
-            ->then(function ($id) use ($response, $streams) {
-                $response->setData($streams->getBookmarksByUser(UserModel::getInstance($id)));
+            ->then(function ($id) use ($response, $streams, $offset) {
+                $response->setData($streams->getBookmarksByUser(UserModel::getInstance($id), $offset));
             })
-            ->otherwise(function () use ($response, $streams) {
-                $response->setData($streams->getBookmarksByUser(AuthUserModel::getInstance()));
+            ->otherwise(function () use ($response, $streams, $offset) {
+                $response->setData($streams->getBookmarksByUser(AuthUserModel::getInstance(), $offset));
             });
 
     }

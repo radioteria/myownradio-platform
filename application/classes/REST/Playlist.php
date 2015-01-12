@@ -9,12 +9,14 @@
 namespace REST;
 
 
+use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
 use Framework\Models\StreamModel;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\Injectable;
 use Objects\StreamStats;
+use Tools\Common;
 use Tools\JsonPrinter;
 use Tools\Optional;
 use Tools\Singleton;
@@ -30,13 +32,13 @@ class Playlist implements SingletonInterface, Injectable {
 
     /**
      * @param Optional $color
+     * @param Optional $filter
+     * @param Optional $offset
      * @return array
      */
-    public function getAllTracks(Optional $color) {
+    public function getAllTracks(Optional $color, Optional $filter, Optional $offset) {
 
         $me = AuthUserModel::getInstance();
-
-        $printer = JsonPrinter::getInstance()->successPrefix();
 
         $query = $this->getTracksPrefix()->where("uid", $me->getID());
 
@@ -44,8 +46,20 @@ class Playlist implements SingletonInterface, Injectable {
             $query->where("color", $color->get());
         }
 
+        if ($filter->validate()) {
+            $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
+                Common::searchQueryFilter($filter->get())]);
+        }
+
+        if ($offset->validate()) {
+            $query->offset($offset->get());
+        }
+
+        $query->limit(Defaults::DEFAULT_TRACKS_PER_REQUEST);
+
         $query->orderBy("tid DESC");
 
+        $printer = JsonPrinter::getInstance()->successPrefix();
         $printer->brPrintKey("data");
         $printer->brOpenArray();
 
@@ -69,7 +83,7 @@ class Playlist implements SingletonInterface, Injectable {
      */
     private function getStreamTracksPrefix() {
         $query = DBQuery::getInstance()->selectFrom("mor_stream_tracklist_view");
-        $query->select("tid", "filename", "artist", "title", "duration", "color");
+        $query->select("tid", "filename", "artist", "title", "duration", "color", "genre");
         return $query;
     }
 
@@ -78,16 +92,18 @@ class Playlist implements SingletonInterface, Injectable {
      */
     private function getTracksPrefix() {
         $query = DBQuery::getInstance()->selectFrom("r_tracks");
-        $query->select("tid", "filename", "artist", "title", "duration", "color");
+        $query->select("tid", "filename", "artist", "title", "duration", "color", "genre");
         return $query;
     }
 
     /**
      * @param StreamModel $stream
-     * @param $color
+     * @param Optional $color
+     * @param Optional $filter
+     * @param Optional $offset
      * @return array
      */
-    public function getTracksByStream(StreamModel $stream, $color = null) {
+    public function getTracksByStream(StreamModel $stream, Optional $color, Optional $filter, Optional $offset) {
 
         $printer = JsonPrinter::getInstance()->successPrefix();
 
@@ -96,9 +112,20 @@ class Playlist implements SingletonInterface, Injectable {
 
         $query->select("unique_id", "time_offset");
 
-        if (is_numeric($color)) {
+        if ($color->validate()) {
             $query->where("color", $color);
         }
+
+        if ($filter->validate()) {
+            $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
+                Common::searchQueryFilter($filter->get())]);
+        }
+
+        if ($offset->validate()) {
+            $query->offset($offset->get());
+        }
+
+        $query->limit(Defaults::DEFAULT_TRACKS_PER_REQUEST);
 
         $query->orderBy("time_offset ASC");
 

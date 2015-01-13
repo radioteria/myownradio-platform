@@ -17,6 +17,7 @@ use Framework\Services\DB\DBQuery;
 use Framework\Services\Injectable;
 use Objects\PlaylistTrack;
 use Objects\Track;
+use REST\Playlist;
 use Tools\Common;
 use Tools\Optional;
 use Tools\Singleton;
@@ -43,6 +44,7 @@ class TracksModel implements Injectable, SingletonInterface {
      * @param array $file
      * @param Optional $addToStream
      * @param bool $upNext
+     * @return Track
      * @throws \Framework\Exceptions\ApplicationException
      * @throws \Framework\Exceptions\ControllerException
      */
@@ -107,7 +109,7 @@ class TracksModel implements Injectable, SingletonInterface {
 
         }
 
-        return $track;
+        return Playlist::getInstance()->getOneTrack($track->getID());
 
     }
 

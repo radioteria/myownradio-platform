@@ -84,8 +84,8 @@ class Streams implements \Countable, Injectable, SingletonInterface {
      * @param int $limit
      * @return array
      */
-    public function getStreamListFiltered($filter = null, $category = null, $offset = 0, $limit = 50) {
-        //todo: make this with json printer
+    public function getStreamListFiltered($filter = null, $category = null, $offset = 0,
+                                          $limit = Defaults::DEFAULT_STREAMS_PER_REQUEST) {
 
         $involved_users = [];
 
@@ -190,7 +190,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         $query->where("a.sid IN (SELECT sid FROM r_bookmarks WHERE uid = ?)", [$user->getID()]);
 
         $query->offset($offset);
-        $query->limit(Defaults::DEFAULT_TRACKS_PER_REQUEST);
+        $query->limit(Defaults::DEFAULT_STREAMS_PER_REQUEST);
 
         $streams = $query->fetchAll(null, function ($row) {
             $this->processStreamRow($row);

@@ -27,7 +27,7 @@ class Users implements SingletonInterface, Injectable {
     private function getUsersPrefix() {
 
         $prefix = (new SelectQuery("mor_users_view"))
-            ->select("uid", "name", "permalink", "avatar", "streams_count", "info");
+            ->select("uid", "name", "permalink", "avatar", "streams_count", "tracks_count", "info");
 
         return $prefix;
 

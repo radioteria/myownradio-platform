@@ -14,6 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
 use Framework\Models\StreamModel;
 use Framework\Services\DB\DBQuery;
+use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Injectable;
 use Objects\StreamStats;
 use Tools\Common;
@@ -59,6 +60,40 @@ class Playlist implements SingletonInterface, Injectable {
 
         $query->orderBy("tid DESC");
 
+        $this->printResults($query);
+
+    }
+
+    public function getUnusedTracks(Optional $color, Optional $filter, Optional $offset) {
+
+        $me = AuthUserModel::getInstance();
+
+        $query = $this->getTracksPrefix()->where("uid", $me->getID());
+
+        if ($color->validate()) {
+            $query->where("color", $color->get());
+        }
+
+        if ($filter->validate()) {
+            $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
+                Common::searchQueryFilter($filter->get())]);
+        }
+
+        if ($offset->validate()) {
+            $query->offset($offset->get());
+        }
+
+        $query->where("used_count", 0);
+        $query->limit(Defaults::DEFAULT_TRACKS_PER_REQUEST);
+
+        $query->orderBy("tid DESC");
+
+        $this->printResults($query);
+
+    }
+
+    private function printResults(SelectQuery $query) {
+
         $printer = JsonPrinter::getInstance()->successPrefix();
         $printer->brPrintKey("data");
         $printer->brOpenArray();
@@ -77,19 +112,6 @@ class Playlist implements SingletonInterface, Injectable {
         $printer->brCloseObject();
 
     }
-
-    public function getOneTrack($trackId) {
-
-        $me = AuthUserModel::getInstance();
-
-        $query = $this->getTracksPrefix()->where("uid", $me->getID());
-
-        $query->where("tid", $trackId);
-
-        return $query->fetchOneRow()->getOrElseThrow(ControllerException::noTrack($trackId));
-
-    }
-
     /**
      * @return \Framework\Services\DB\Query\SelectQuery
      */

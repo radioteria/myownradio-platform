@@ -14,6 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\Config;
 use Framework\Services\Database;
+use Framework\Services\DB\DBQuery;
 use Framework\Services\HttpRequest;
 use Framework\Services\HttpSession;
 use Framework\Services\Injectable;
@@ -35,6 +36,11 @@ class UsersModel implements SingletonInterface, Injectable {
     public function authorizeByLoginPassword($login, $password) {
 
         $session = HttpSession::getInstance();
+
+        // Get user's login if email typed
+        $login = DBQuery::getInstance()->selectFrom("r_users", "mail", func_get_arg(0))
+            ->select("login")->fetchOneColumn()->getOrElse($login);
+
         $md5Password = md5($login . $password);
 
         $user = new UserModel($login, $md5Password);

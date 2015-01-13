@@ -22,7 +22,7 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         $artist, $title, $album,
         $track_number, $genre, $date,
         $duration, $filesize, $color,
-        $uploaded, $copy_of;
+        $uploaded, $copy_of, $used_count;
 
     /*
      * Bean Getters
@@ -86,6 +86,11 @@ class Track extends ActiveRecordObject implements ActiveRecord {
     public function getCopyOf() {
         return $this->copy_of;
     }
+
+    public function getUsedCount() {
+        return $this->used_count;
+    }
+
 
 
     /*
@@ -152,5 +157,8 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         $this->copy_of = $copy_of;
     }
 
+    public function setUsedCount($used_count) {
+        $this->used_count = $used_count;
+    }
 
 }

@@ -176,10 +176,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
             logger("Doing action...");
             call_user_func($callable);
 
-            // find where is the file
-            $after = PlaylistTrack::getByID($track->getUniqueID());
-
-            if($after->validate()) {
+            if(PlaylistTrack::getByID($track->getUniqueID())->validate()) {
                 $this->scPlayByUniqueID($track->getUniqueID(), $trackPosition, false);
             } else {
                 $this->scPlayByOrderID($track->getTrackOrder());

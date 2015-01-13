@@ -121,7 +121,9 @@ trait StreamControl {
         $this->_getPlaylistTrack("b.t_order = ? AND b.stream_id = ?", [$order, $this->key])
             ->then(function ($track) {
                 $this->_setCurrentTrack($track, 0, true);
-            })->justThrow(ControllerException::noTrack($order));
+            })->otherwise(function () {
+                $this->scPlay();
+            });
 
         return $this;
 

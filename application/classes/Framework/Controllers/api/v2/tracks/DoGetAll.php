@@ -19,8 +19,13 @@ class DoGetAll implements Controller {
         $color = $get->getParameter("color_id");
         $offset = $get->getParameter("offset");
         $filter = $get->getParameter("filter");
+        $unused = boolval($get->getParameter("unused")->getOrElseFalse());
 
-        $playlist->getAllTracks($color, $filter, $offset);
+        if ($unused) {
+            $playlist->getUnusedTracks($color, $filter, $offset);
+        } else {
+            $playlist->getAllTracks($color, $filter, $offset);
+        }
 
     }
 } 

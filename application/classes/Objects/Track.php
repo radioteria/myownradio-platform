@@ -21,8 +21,8 @@ class Track extends ActiveRecordObject implements ActiveRecord {
     protected $tid, $uid, $filename, $ext,
         $artist, $title, $album,
         $track_number, $genre, $date,
-        $duration, $filesize, $color,
-        $uploaded, $copy_of, $used_count;
+        $duration, $filesize, $color = 0,
+        $uploaded, $copy_of, $used_count = 0;
 
     /*
      * Bean Getters

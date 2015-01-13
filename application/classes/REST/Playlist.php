@@ -112,6 +112,18 @@ class Playlist implements SingletonInterface, Injectable {
         $printer->brCloseObject();
 
     }
+
+    public function getOneTrack($trackID) {
+
+        $me = AuthUserModel::getInstance();
+
+        $query = $this->getTracksPrefix()->where("uid", $me->getID());
+        $query->where("tid", $trackID);
+
+        return $query->fetchOneRow()->getOrElseThrow(ControllerException::noTrack($trackID));
+
+    }
+
     /**
      * @return \Framework\Services\DB\Query\SelectQuery
      */

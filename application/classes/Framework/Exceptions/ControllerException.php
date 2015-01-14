@@ -18,6 +18,10 @@ class ControllerException extends \Exception {
         $this->myData = $data;
     }
 
+    public static function of($message = null, $data = null) {
+        return new self($message, $data);
+    }
+
     public static function noBasis($id) {
         return new self(sprintf("No payment basis with key '%s' found", $id));
     }

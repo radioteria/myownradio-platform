@@ -30,7 +30,7 @@ class DoDelete implements Controller {
         $model->deleteFromStreams($id);
 
         // Delete tracks from service
-        //$model->delete($id);
+        $model->delete($id);
 
     }
 

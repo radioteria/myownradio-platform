@@ -10,6 +10,7 @@ namespace REST;
 
 
 use Framework\Exceptions\ControllerException;
+use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Injectable;
 use Tools\Common;
@@ -27,7 +28,7 @@ class Users implements SingletonInterface, Injectable {
     private function getUsersPrefix() {
 
         $prefix = (new SelectQuery("mor_users_view"))
-            ->select("uid", "name", "permalink", "avatar", "streams_count", "tracks_count", "info");
+            ->select("uid", "name", "permalink", "avatar", "streams_count", "tracks_count", "info", "plan_id");
 
         return $prefix;
 
@@ -36,8 +37,14 @@ class Users implements SingletonInterface, Injectable {
     public function getUserByID($id) {
 
         $query = $this->getUsersPrefix();
+        $query->select("tracks_duration", "plan_expires");
         $query->where("uid", $id);
         $user = $query->fetchOneRow()->getOrElseThrow(ControllerException::noEntity("user"));
+
+        $plan_data = DBQuery::getInstance()->selectFrom("mor_plans_view", "plan_id", $user["plan_id"])
+            ->fetchOneRow()->getOrElseNull();
+
+        $user["plan_data"] = $plan_data;
 
         $this->processUserRow($user);
 

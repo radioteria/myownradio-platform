@@ -31,29 +31,34 @@ class UsersModel implements SingletonInterface, Injectable {
     /**
      * @param string $login
      * @param string $password
+     * @throws \Framework\Exceptions\UnauthorizedException
      * @return UserModel
      */
     public function authorizeByLoginPassword($login, $password) {
 
         $session = HttpSession::getInstance();
 
-        // Get user's login if email typed
-        $login = DBQuery::getInstance()->selectFrom("r_users", "mail", func_get_arg(0))
-            ->select("login")->fetchOneColumn()->getOrElse($login);
+        // Try to find user specified by login or email
+        $user = DBQuery::getInstance()
+            ->selectFrom("r_users")
+            ->where("login = :key OR mail = :key", [ ":key" => $login ])
+            ->fetchOneRow()
+            ->getOrElseThrow(UnauthorizedException::noUserExists($login));
 
-        $md5Password = md5($login . $password);
+        //$md5Password = md5($user["login"] . $password);
 
-        $user = new UserModel($login, $md5Password);
+        if (!password_verify($password, $user["password"])) {
+            throw UnauthorizedException::wrongPassword();
+        }
 
         $clientAddress = HttpRequest::getInstance()->getRemoteAddress();
         $clientUserAgent = HttpRequest::getInstance()->getHttpUserAgent()->getOrElse("None");
 
-        $token = self::createToken($user->getID(), $clientAddress, $clientUserAgent,
-            $session->getSessionId());
+        $token = self::createToken($user["uid"], $clientAddress, $clientUserAgent, $session->getSessionId());
 
         $session->set("TOKEN", $token);
 
-        return UserModel::getInstance($user->getID());
+        return UserModel::getInstance($user["uid"]);
 
     }
 
@@ -100,9 +105,7 @@ class UsersModel implements SingletonInterface, Injectable {
         $session = HttpSession::getInstance();
 
         $session->get("TOKEN")->then(function ($token) {
-            Database::doInConnection(function (Database $db) use ($token) {
-                $db->executeUpdate("DELETE FROM r_sessions WHERE token = ?", [$token]);
-            });
+            DBQuery::getInstance()->deleteFrom("r_sessions", "token", $token)->executeUpdate();
         });
 
     }
@@ -145,7 +148,7 @@ class UsersModel implements SingletonInterface, Injectable {
         $validator = InputValidator::getInstance();
 
         $email = self::parseRegistrationCode($code);
-        $md5Password = md5($login . $password);
+        $crypt = password_hash($password, PASSWORD_DEFAULT); //md5($login . $password);
 
         $validator->validateUniqueUserEmail($email);
 
@@ -153,7 +156,7 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $newUser->setEmail($email);
         $newUser->setLogin($login);
-        $newUser->setPassword($md5Password);
+        $newUser->setPassword($crypt);
         $newUser->setName($name);
         $newUser->setInfo($info);
         $newUser->setPermalink($permalink);

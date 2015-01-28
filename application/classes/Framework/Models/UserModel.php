@@ -141,9 +141,9 @@ class UserModel extends Model implements SingletonInterface {
 
     public function changePassword($newPassword, $oldPassword) {
 
-        $md5 = md5($this->user->getLogin() . $oldPassword);
+        //$md5 = md5($this->user->getLogin() . $oldPassword);
 
-        if ($md5 != $this->user->getPassword()) {
+        if (!password_verify($oldPassword, $this->user->getPassword())) {
             throw UnauthorizedException::wrongPassword();
         }
 
@@ -156,9 +156,10 @@ class UserModel extends Model implements SingletonInterface {
 
         $validator->validatePassword($password);
 
-        $hash = md5($this->getLogin() . $password);
+        //$hash = md5($this->getLogin() . $password);
+        $crypt = password_hash($password, PASSWORD_DEFAULT);
 
-        $this->user->setPassword($hash)->save();
+        $this->user->setPassword($crypt)->save();
     }
 
     public function changeActivePlan(PlanModel $plan, BasisModel $basis) {

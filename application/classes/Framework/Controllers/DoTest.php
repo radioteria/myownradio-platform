@@ -10,11 +10,9 @@ namespace Framework\Controllers;
 
 
 use Framework\Controller;
-use Framework\Services\HttpGet;
 
 class DoTest implements Controller {
-    public function doGet(HttpGet $get) {
-        $id = $get->getRequired("id");
-        echo "<h1>id = " . $id . "</h1>";
+    public function doGet() {
+
     }
 } 

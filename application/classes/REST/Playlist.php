@@ -232,7 +232,6 @@ class Playlist implements SingletonInterface, Injectable {
     public function getSchedule($id) {
 
         /** @var StreamStats $stream */
-
         $stream = StreamStats::getByFilter("sid = :id OR permalink = :id", [":id" => $id])
             ->getOrElseThrow(ControllerException::noStream($id));
 

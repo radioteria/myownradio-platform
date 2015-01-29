@@ -26,6 +26,15 @@ class Router implements SingletonInterface{
     private $route;
     private $legacyRoute;
 
+    /**
+     * @return mixed
+     */
+    public function getLegacyRoute() {
+        return $this->legacyRoute;
+    }
+
+
+
     function __construct() {
 
         $httpGet = HttpGet::getInstance();

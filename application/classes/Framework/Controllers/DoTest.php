@@ -20,8 +20,18 @@ class DoTest implements Controller {
 
         Database::doInConnection(function (Database $db) {
             // Database is connected with handle in $db
+
+            // Default style
             echo $db->fetchOneColumn("SELECT NOW()", NULL, 0)
                 ->getOrElseThrow(new \Exception("Database is bad!"));
+
+            echo '<br />';
+
+            // Functional style
+            $db->fetchOneColumn("SELECT NOW()", NULL, 0)->then(function ($data) {
+                echo $data;
+            });
+
 
         });
 

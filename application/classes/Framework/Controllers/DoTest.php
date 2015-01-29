@@ -25,7 +25,7 @@ class DoTest implements Controller {
 
         });
 
-        // Database connection os returned into connection pool
+        // Database connection is returned into connection pool
 
     }
 

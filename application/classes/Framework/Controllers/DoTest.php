@@ -10,6 +10,7 @@ namespace Framework\Controllers;
 
 
 use Framework\Controller;
+use Framework\Preferences;
 use Framework\Services\Database;
 
 class DoTest implements Controller {

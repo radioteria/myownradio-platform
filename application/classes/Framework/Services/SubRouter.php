@@ -48,7 +48,7 @@ class SubRouter implements SingletonInterface {
      * @throws \Exception
      */
     public function goMatching($route) {
-        foreach ($this->routes as $regexp=>$data) {
+        foreach ($this->routes as $regexp => $data) {
             if (preg_match($regexp, $route, $matches)) {
                 array_shift($matches);
                 RouteParams::setData(array_combine($data["keys"], $matches));
@@ -71,17 +71,24 @@ class SubRouter implements SingletonInterface {
      */
     private function makeRegexp($route) {
 
-        $quoteRoute = preg_replace_callback("~(?:[a-z]+)~", function ($match) {
+        $quoteRoute = preg_replace_callback("~(?!:([a-z]+))|(?!&([a-z]+))~", function ($match) {
             return preg_quote($match[0]);
         }, $route);
 
         $keys = [];
 
-        $quoteParams = preg_replace_callback("~:([a-z]+)~",
-            function ($match) use (&$keys) {
-                $keys[] = $match[1];
-                return "(?:([^\\/]+))";
-            }, $quoteRoute);
+
+        $quoteParams =
+
+            preg_replace_callback("~&([a-z]+)~", function ($match) use (&$keys) {
+                    $keys[] = $match[1];
+                    return "(?:(\\d+))";
+                },
+
+            preg_replace_callback("~:([a-z]+)~", function ($match) use (&$keys) {
+                    $keys[] = $match[1];
+                    return "(?:([^\\/]+))";
+                }, $quoteRoute));
 
         return [
             sprintf("~^%s$~", $quoteParams),

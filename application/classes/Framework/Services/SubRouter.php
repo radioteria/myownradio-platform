@@ -42,17 +42,22 @@ class SubRouter implements SingletonInterface {
         $routes = [];
     }
 
+    /**
+     * @param $route
+     * @return bool
+     * @throws \Exception
+     */
     public function goMatching($route) {
         foreach ($this->routes as $regexp=>$data) {
             if (preg_match($regexp, $route, $matches)) {
                 array_shift($matches);
-                $params = array_combine($data["keys"], $matches);
+                RouteParams::setData(array_combine($data["keys"], $matches));
                 if (is_string($data["action"])) {
-                    RouteParams::setData($params);
                     Router::getInstance()->callRoute($data["action"]);
                 } elseif (is_callable($data["action"])) {
-                    $reflection = new \ReflectionFunction($data["action"]);
-                    $reflection->invoke($params);
+                    Router::getInstance()->runDependencyInjection($data["action"]);
+                } else {
+                    throw new \Exception("Incorrect action format!");
                 }
                 return true;
             }

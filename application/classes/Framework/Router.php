@@ -45,10 +45,11 @@ class Router implements SingletonInterface{
 
     private function registerSubRoutes() {
         $sub = SubRouter::getInstance();
-        $sub->addRoute("test/:id", function ($params) {
-            header("Content-Type: application/json");
-            echo json_encode($params);
+
+        $sub->addRoute("test/:id", function (JsonResponse $response, HttpGet $get) {
+            $response->setData($get->getParameter("id")->getOrElse(0));
         });
+
         $sub->addRoute("content/streamcovers/:fn", "content\\DoGetStreamCover");
         $sub->addRoute("content/avatars/:fn", "content\\DoGetUserAvatar");
     }
@@ -159,6 +160,26 @@ class Router implements SingletonInterface{
 
         }
         return $method->invokeArgs($object, $args);
+    }
+
+    public function runDependencyInjection($callback) {
+        $method = new \ReflectionFunction($callback);
+        $args = [];
+        foreach ($method->getParameters() as $param) {
+
+            /** @var \ReflectionParameter $param */
+            if (!$param->getClass()->implementsInterface("Framework\\Services\\Injectable")) {
+                throw new \Exception("Object could not be injected");
+            }
+
+            if ($param->getClass()->implementsInterface("Tools\\SingletonInterface")) {
+                $args[] = $param->getClass()->getMethod("getInstance")->invoke(null);
+            } else {
+                $args[] = $param->getClass()->newInstanceArgs();
+            }
+
+        }
+        return $method->invokeArgs($args);
     }
 
 }

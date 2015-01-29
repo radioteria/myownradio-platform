@@ -28,8 +28,8 @@ class DoTest implements Controller {
             echo '<br />';
 
             // Functional style
-            $db->fetchOneColumn("SELECT NOW()", NULL, 0)->then(function ($data) {
-                echo $data;
+            $db->fetchOneColumn("SELECT NOW()", NULL, 0)->then(function ($now) {
+                echo $now;
             });
 
 

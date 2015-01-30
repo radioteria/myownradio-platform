@@ -32,8 +32,8 @@ class acResizeImage {
      * Если переданы и ширина и высота, изображение ужмётся в рамки.
      * Если передана лишь ширина - изображение сжимается по ней (аналогично и с высотой)
      *
-     * @param $width integer        Новая ширина изображения
-     * @param $height integer    Новая высота изображения
+     * @param bool|int $width integer        Новая ширина изображения
+     * @param bool|int $height integer    Новая высота изображения
      * @return object            Текущий объект класса
      */
     function resize($width = false, $height = false) {
@@ -61,8 +61,8 @@ class acResizeImage {
      *
      * @param $x0 integer    Координата x точки начала обрезки
      * @param $y0 integer    Координата y точки начала обрезки
-     * @param $w integer        Ширина вырезаемой области
-     * @param $h integer        Высота вырезаемой области
+     * @param bool|int $w integer        Ширина вырезаемой области
+     * @param bool|int $h integer        Высота вырезаемой области
      * @return object        Текущий объект класса
      */
     function crop($x0 = 0, $y0 = 0, $w = false, $h = false) {
@@ -79,9 +79,9 @@ class acResizeImage {
      * Все параметры необязательны.
      * Если не было ничего передано, будет вырезана центральная максимальная квадратная область.
      *
-     * @param $x0 integer        Координата x точки начала обрезки (по умолчанию - false)
-     * @param $y0 integer        Координата y точки начала обрезки (по умолчанию - false)
-     * @param $size integer        Сторона вырезаемой квадратной области
+     * @param bool|int $x0 integer        Координата x точки начала обрезки (по умолчанию - false)
+     * @param bool|int $y0 integer        Координата y точки начала обрезки (по умолчанию - false)
+     * @param bool|int $size integer        Сторона вырезаемой квадратной области
      * @return object        Текущий объект класса
      */
     function cropSquare($x0 = false, $y0 = false, $size = false) {
@@ -112,6 +112,10 @@ class acResizeImage {
     /**
      * Приватная функция, сохраняющая обрезанное изображение.
      *
+     * @param $x0
+     * @param $y0
+     * @param $w
+     * @param $h
      * @return object    Текущий объект класса
      */
     private function cropSave($x0, $y0, $w, $h) {
@@ -148,7 +152,7 @@ class acResizeImage {
      *
      * @param $path String        Путь, по которому следует сохранить файл
      * @param $fileName String    Имя нового файла
-     * @param $type String        Тип файла (по умолчанию (false) - тот же, что и у исходного изображения)
+     * @param bool|String $type String        Тип файла (по умолчанию (false) - тот же, что и у исходного изображения)
      * @param $rewrite boolean    Флаг, определяющий, можно ли перезаписывать файлы с одинаковыми именами
      * @param $quality integer    Качество изображения для JPG-файлов
      * @return String            Адрес нового файла

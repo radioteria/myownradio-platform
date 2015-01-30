@@ -21,16 +21,22 @@ function callPrivateMethod($class, $method, array $args = []) {
     return $method->invokeArgs($class, $args);
 }
 
-
+/**
+ * @param string $message
+ */
 function logger($message) {
     $path = "/usr/local/myownradio/logs/rest-server.log";
 
     $file = fopen($path, "a");
     fprintf($file, "%s %s\n", date("d-m-Y, H:i:s"), $message);
-    fclose($file);
     flush();
+    fclose($file);
 }
 
+/**
+ * @param string $input
+ * @return string
+ */
 function camelToUnderscore($input) {
     preg_match_all('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $input, $matches);
     $ret = $matches[0];

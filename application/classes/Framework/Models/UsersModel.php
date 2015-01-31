@@ -141,9 +141,10 @@ class UsersModel implements SingletonInterface, Injectable {
      * @param $name
      * @param $info
      * @param $permalink
+     * @param $country
      * @return UserModel
      */
-    public function completeRegistration($code, $login, $password, $name, $info, $permalink) {
+    public function completeRegistration($code, $login, $password, $name, $info, $permalink, $country) {
 
         $validator = InputValidator::getInstance();
 
@@ -162,6 +163,7 @@ class UsersModel implements SingletonInterface, Injectable {
         $newUser->setPermalink($permalink);
         $newUser->setRights(1);
         $newUser->setRegistrationDate(time());
+        $newUser->setCountryId($country);
 
         $newUser->save();
 

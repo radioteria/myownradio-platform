@@ -15,6 +15,7 @@ use Framework\Models\AuthUserModel;
 use Framework\Models\UsersModel;
 use Framework\Services\HttpPost;
 use Framework\Services\HttpPut;
+use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
 use REST\Users;
 
@@ -38,13 +39,17 @@ class DoSelf implements Controller {
 
     }
 
-    public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
+    public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response, InputValidator $validator) {
 
-        $name = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));
-        $info = $post->getParameter("info")->getOrElseEmpty();
-        $permalink = $post->getParameter("permalink")->getOrElseNull();
+        $name       = $post->getRequired("name");
+        $info       = $post->getParameter("info")->getOrElseEmpty();
+        $permalink  = $post->getParameter("permalink")->getOrElseNull();
+        $countryId  = $post->getParameter("country_id")->getOrElse(0);
 
-        $user->edit($name, $info, $permalink);
+        $validator->validateUserPermalink($permalink, $user->getID());
+        $validator->validateCountryID($countryId);
+
+        $user->edit($name, $info, $permalink, $countryId);
 
     }
 

@@ -11,6 +11,7 @@ namespace Framework\Services;
 use Framework\Exceptions\ControllerException;
 use Framework\Services\DB\Query\SelectQuery;
 use Objects\Category;
+use Objects\Country;
 use Tools\Optional;
 use Tools\Singleton;
 
@@ -31,6 +32,16 @@ class InputValidator implements Injectable {
     const LOGIN_PATTERN = "~^[0-9a-z\\_]+$~m";
 
     const STREAM_NAME_MIN_LENGTH = 3;
+
+
+    /**
+     * @param $countryID
+     * @throws ControllerException
+     */
+    public function validateCountryID($countryID) {
+        Country::getByID($countryID)
+            ->getOrElseThrow(new ControllerException(sprintf("Country with id %d does not exist", $countryID)));
+    }
 
     /**
      * @param array $metadata

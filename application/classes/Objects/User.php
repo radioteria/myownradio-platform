@@ -24,9 +24,18 @@ use Tools\Folders;
 class User extends ActiveRecordObject implements ActiveRecord {
 
     protected
-        $uid, $mail, $login, $password,
-        $name, $info, $rights, $registration_date,
-        $last_visit_date, $permalink, $avatar;
+        $uid                = null,
+        $mail               = "",
+        $login              = null,
+        $password           = null,
+        $name               = null,
+        $info               = null,
+        $rights             = null,
+        $registration_date  = null,
+        $last_visit_date    = null,
+        $permalink          = "",
+        $avatar             = null,
+        $country_id         = 0;
 
     /**
      * @return mixed
@@ -211,6 +220,22 @@ class User extends ActiveRecordObject implements ActiveRecord {
 
     public function getAvatarUrl() {
         return Folders::getInstance()->genAvatarUrl($this->avatar);
+    }
+
+    /* Added 31.01.2015 */
+
+    /**
+     * @param mixed $countryId
+     */
+    public function setCountryId($countryId) {
+        $this->country_id = $countryId;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCountryId() {
+        return $this->country_id;
     }
 
 }

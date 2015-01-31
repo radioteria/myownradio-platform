@@ -26,13 +26,15 @@ class DoSignUpComplete implements Controller {
         $name = $post->getParameter("name")->getOrElseNull();
         $info = $post->getParameter("info")->getOrElseNull();
         $permalink = $post->getParameter("permalink")->getOrElseNull();
+        $countryId = $post->getParameter("country_id")->getOrElse(0);
 
         $validator->validateRegistrationCode($code);
         $validator->validatePassword($password);
         $validator->validateLogin($login);
         $validator->validateUserPermalink($permalink);
+        $validator->validateCountryID($countryId);
 
-        $users->completeRegistration($code, $login, $password, $name, $info, $permalink);
+        $users->completeRegistration($code, $login, $password, $name, $info, $permalink, $countryId);
 
     }
 

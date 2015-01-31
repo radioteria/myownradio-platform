@@ -179,15 +179,12 @@ class UserModel extends Model implements SingletonInterface {
 
     }
 
-    public function edit($name, $info, $permalink) {
-
-        $validator = InputValidator::getInstance();
-
-        $validator->validateUserPermalink($permalink, $this->user->getID());
+    public function edit($name, $info, $permalink, $country = 0) {
 
         $this->user->setName($name);
         $this->user->setInfo($info);
         $this->user->setPermalink($permalink);
+        $this->user->setCountryId($country);
 
         $this->user->save();
 

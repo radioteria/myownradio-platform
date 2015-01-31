@@ -9,6 +9,7 @@
 namespace Framework\Services;
 
 use Framework\Exceptions\ControllerException;
+use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Objects\Category;
 use Objects\Country;
@@ -22,14 +23,14 @@ class InputValidator implements Injectable {
     const PASSWORD_MIN_LENGTH = 6;
     const PASSWORD_MAX_LENGTH = 32;
 
-    const EMAIL_REGEXP_PATTERN = "~^[\\w\\S]+@[\\w\\S]+\\.[\\w]{2,4}$~m";
+    const EMAIL_REGEXP_PATTERN = "~^[\\w\\S]+@[\\w\\S]+\\.[\\w]{2,4}$~";
 
-    const PERMALINK_REGEXP_PATTERN = "~(^[a-z0-9\\-]*$)~m";
-    const TRACKS_LIST_PATTERN = "~^[0-9]+(,[0-9]+)*$~m";
+    const PERMALINK_REGEXP_PATTERN = "~(^[a-z0-9\\-]*$)~";
+    const TRACKS_LIST_PATTERN = "~^[0-9]+(,[0-9]+)*$~";
 
     const LOGIN_MIN_LENGTH = 3;
     const LOGIN_MAX_LENGTH = 32;
-    const LOGIN_PATTERN = "~^[0-9a-z\\_]+$~m";
+    const LOGIN_PATTERN = "~^[0-9a-z\\_]+$~";
 
     const STREAM_NAME_MIN_LENGTH = 3;
 
@@ -45,286 +46,214 @@ class InputValidator implements Injectable {
 
     /**
      * @param array $metadata
-     * @return array
      * @throws ControllerException
      */
-    public function validateTrackMetadata(array $metadata) {
+    public function validateTrackMetadata($metadata) {
 
-        $optional = new Optional($metadata, function ($variable) {
+        $reqKeys = array("artist", "title", "album", "track_number", "genre", "date");
 
-            $reqKeys = array("artist", "title", "album", "track_number", "genre", "date");
-
-            foreach ($reqKeys as $key) {
-                if (array_key_exists($key, $variable) === false) {
-                    return false;
-                }
+        foreach ($metadata as $key) {
+            if (array_key_exists($key, $reqKeys) === false) {
+                throw new ControllerException("Incorrect metadata");
             }
-
-            return true;
-
-        });
-
-        return $optional->getOrElseThrow(
-            new ControllerException("Incorrect metadata"));
+        }
 
     }
 
     /**
      * @param string $password
-     * @return string
      * @throws ControllerException
      */
     public function validatePassword($password) {
 
-        $optional = new Optional($password, function ($password) {
-
-            $len = strlen($password);
-            return $len >= self::PASSWORD_MIN_LENGTH && $len <= self::PASSWORD_MAX_LENGTH;
-
-        });
-
-        return $optional->getOrElseThrow(
-            new ControllerException("Password length must be between 3 and 32 chars"));
+        $len = strlen($password);
+        if ($len >= self::PASSWORD_MIN_LENGTH && $len <= self::PASSWORD_MAX_LENGTH) {
+            throw new ControllerException("Password length must be between 3 and 32 chars");
+        }
 
     }
 
     /**
      * @param string $email
-     * @return string
      * @throws ControllerException
      */
     public function validateEmail($email) {
 
-        $optional = new Optional($email, function ($email) {
-
-            return preg_match(self::EMAIL_REGEXP_PATTERN, $email);
-
-        });
-
-        return $optional->getOrElseThrow(
-            new ControllerException("Incorrect email format"));
+        if (!preg_match(self::EMAIL_REGEXP_PATTERN, $email)) {
+            throw new ControllerException("Incorrect email format");
+        }
 
     }
 
     /**
      * @param string $name
-     * @return string
      * @throws ControllerException
      */
     public function validateStreamName($name) {
 
-        $optional = new Optional($name, function ($name) {
-
-            return strlen($name) >= self::STREAM_NAME_MIN_LENGTH;
-
-        });
-
-        return $optional->getOrElseThrow(
-            new ControllerException("Stream name must contain at least 3 chars")
-        );
+        if (strlen($name) < self::STREAM_NAME_MIN_LENGTH) {
+            throw new ControllerException("Stream name must contain at least 3 chars");
+        }
 
     }
 
     public function validateLogin($login) {
 
-        $optional = new Optional($login, function ($login) {
+        if (strlen($login) < self::LOGIN_MIN_LENGTH || strlen($login) > self::LOGIN_MAX_LENGTH) {
+            throw new ControllerException(sprintf("Login must be in range from %d to %d chars",
+                self::LOGIN_MIN_LENGTH, self::LOGIN_MAX_LENGTH));
+        }
 
-            if (strlen($login) < self::LOGIN_MIN_LENGTH || strlen($login) > self::LOGIN_MAX_LENGTH) {
-                return false;
-            }
-
-            return preg_match(self::LOGIN_PATTERN, $login);
-
-        });
-
-        return $optional->getOrElseThrow(
-            new ControllerException("Login must contain only a-z, 0-9, and '_' chars and be at least 3 chars long")
-        );
+        if (!preg_match(self::LOGIN_PATTERN, $login)) {
+            throw new ControllerException("Login must contain only [a-z, 0-9 or \"_\"] chars");
+        }
 
     }
 
     /**
      * @param $permalink
-     * @param bool|int $selfCheck
-     * @return mixed
+     * @param bool|int $selfIgnore
      * @throws ControllerException
      */
-    public function validateStreamPermalink($permalink, $selfCheck = false) {
+    public function validateStreamPermalink($permalink, $selfIgnore = null) {
 
-        $optional = new Optional($permalink, function ($permalink) use ($selfCheck) {
+        $dbq = DBQuery::getInstance();
 
-            // Permalink can be NULL. It means that stream has no permalink.
-            if ($permalink === null) {
-                return true;
-            }
+        if (!is_null($permalink) && !is_string($permalink)) {
+            throw new ControllerException("Valid permalink is [null|string]");
+        }
 
-            // Permalink must be a string
-            if (!is_string($permalink)) {
-                return false;
-            }
+        if (strlen($permalink) == 0) {
+            throw new ControllerException("Permalink couldn't be an empty string");
+        }
 
-            // Permalink could not be an empty string
-            if (strlen($permalink) == 0) {
-                return false;
-            }
+        if (!preg_match(self::PERMALINK_REGEXP_PATTERN, $permalink)) {
+            throw new ControllerException("Permalink must contain only [a-z, 0-9 or \"-\"] chars");
+        }
 
-            // Permalink must match pattern
-            if (!preg_match(self::PERMALINK_REGEXP_PATTERN, $permalink)) {
-                return false;
-            }
+        $query = $dbq->selectFrom("r_streams")->where("permalink", $permalink);
 
-            // Permalink must be unique
-            if ($selfCheck === false) {
-                $test = Database::getInstance()->fetchOneColumn("SELECT COUNT(*) FROM r_streams WHERE permalink = ?",
-                    [$permalink])->getOrElseThrow(ControllerException::databaseError());
-            } else {
-                $test = Database::getInstance()->fetchOneColumn("SELECT COUNT(*) FROM r_streams WHERE permalink = ? AND sid != ?",
-                    [$permalink, $selfCheck])->getOrElseThrow(ControllerException::databaseError());
-            }
+        if (is_numeric($selfIgnore)) {
+            $query->where("sid != ?", [$selfIgnore]);
+        }
 
-            return !boolval($test);
+        if(count($query) > 0) {
+            throw new ControllerException("Permalink is used by another stream");
+        }
 
-        });
+    }
 
-        return $optional->getOrElseThrow(
-            new ControllerException(sprintf("'%s' is not valid stream permalink", $permalink))
-        );
+
+    public function validateUserPermalink($permalink, $selfIgnore = null) {
+
+        $dbq = DBQuery::getInstance();
+
+        if (!is_null($permalink) && !is_string($permalink)) {
+            throw new ControllerException("Valid permalink is [null|string]");
+        }
+
+        if (strlen($permalink) == 0) {
+            throw new ControllerException("Permalink couldn't be an empty string");
+        }
+
+        if (!preg_match(self::PERMALINK_REGEXP_PATTERN, $permalink)) {
+            throw new ControllerException("Permalink must contain only [a-z, 0-9 or \"-\"] chars");
+        }
+
+        $query = $dbq->selectFrom("r_users")->where("permalink", $permalink);
+
+        if (is_numeric($selfIgnore)) {
+            $query->where("uid != ?", [$selfIgnore]);
+        }
+
+        if(count($query) > 0) {
+            throw new ControllerException("Permalink is used by another user");
+        }
 
     }
 
     /**
      * @param $email
-     * @return mixed
+     * @throws ControllerException
      */
     public function validateUniqueUserEmail($email) {
 
-        $optional = new Optional($email, function ($email) {
+        $dbq = DBQuery::getInstance();
 
-            return !boolval(count((new SelectQuery("r_users"))->where("mail", $email)));
+        $query = $dbq->selectFrom("r_users")->where("mail", $email);
 
-        });
-
-        return $optional->getOrElseThrow(
-            new ControllerException(sprintf("User with email '%s' already exists", $email))
-        );
+        if (count($query) > 0) {
+            throw new ControllerException(sprintf("User with email '%s' already exists", $email));
+        }
 
     }
 
     /**
      * @param $tracks
-     * @return mixed
+     * @throws ControllerException
      */
     public function validateTracksList($tracks) {
 
-        $optional = new Optional($tracks, function ($tracks) {
-
-            return preg_match(self::TRACKS_LIST_PATTERN, $tracks);
-
-        });
-
-        return $optional->getOrElseThrow(new ControllerException("Invalid tracks list", $tracks));
+        if (!preg_match(self::TRACKS_LIST_PATTERN, $tracks)) {
+            throw new ControllerException("Invalid tracklist", $tracks);
+        }
 
     }
 
     /**
      * @param $code
-     * @return mixed
+     * @throws ControllerException
      */
     public function validateRegistrationCode($code) {
 
-        $optional = new Optional($code, function ($code) {
+        $decoded    = base64_decode($code);
 
-            $json = base64_decode($code);
+        if ($decoded === false) {
+            throw new ControllerException("Code is not valid");
+        }
 
-            if ($json === false) {
-                return false;
-            }
+        $object     = json_decode($decoded, true);
 
-            $decoded = json_decode($json, true);
+        if (is_null($object) || empty($object["email"]) || empty($object["code"])) {
+            throw new ControllerException("Code is not valid");
+        }
 
-            if (is_null($decoded) || empty($decoded["email"]) || empty($decoded["code"])) {
-                return false;
-            }
-
-            return md5($decoded['email'] . "@myownradio.biz@" . $decoded['email']) === $decoded['code'];
-
-        });
-
-        return $optional->getOrElseThrow(new ControllerException("Incorrect code"));
+        if (md5($object['email'] . "@myownradio.biz@" . $object['email']) !== $object['code']) {
+            throw new ControllerException("Code does not match the email");
+        }
 
     }
 
-    public function validateUserPermalink($permalink, $selfCheck = false) {
-
-        $optional = new Optional($permalink, function ($permalink) use ($selfCheck) {
-
-            if ($permalink === null) {
-                return true;
-            }
-
-            if (!is_string($permalink)) {
-                return false;
-            }
-
-            if (strlen($permalink) == 0) {
-                return false;
-            }
-
-            if (!preg_match(self::PERMALINK_REGEXP_PATTERN, $permalink)) {
-                return false;
-            }
-
-            if ($selfCheck === false) {
-                $test = Database::getInstance()->connect()
-                    ->fetchOneColumn("SELECT COUNT(*) FROM r_users WHERE permalink = ?",
-                    [$permalink])->getOrElseThrow(ControllerException::databaseError());
-            } else {
-                $test = Database::getInstance()->connect()
-                    ->fetchOneColumn("SELECT COUNT(*) FROM r_users WHERE permalink = ? AND uid != ?",
-                    [$permalink, $selfCheck])->getOrElseThrow(ControllerException::databaseError());
-            }
-
-            return !boolval($test);
-
-        });
-
-        return $optional->getOrElseThrow(
-            new ControllerException(sprintf("'%s' is not valid user permalink", $permalink))
-        );
-
-    }
-
+    /**
+     * @param $category
+     * @throws ControllerException
+     */
     public function validateStreamCategory($category) {
 
-        $optional = new Optional($category, function ($category) {
-
-            return Category::getByID($category)->validate();
-
-        });
-
-        return $optional->getOrElseThrow(
-            new ControllerException(sprintf("'%s' is not valid stream category", $category))
-        );
+        Category::getByID($category)
+            ->justThrow(new ControllerException(sprintf("Invalid stream category specified", $category)));
 
     }
 
+    /**
+     * @param $access
+     * @throws ControllerException
+     */
     public function validateStreamAccess($access) {
 
-        $optional = new Optional($access, function ($access) {
-
-            return array_search($access, ['PUBLIC', 'UNLISTED', 'PRIVATE']) !== false;
-
-        });
-
-        return $optional->getOrElseThrow(
-            new ControllerException(sprintf("'%s' is not valid stream access mode", $access))
-        );
+        if (array_search($access, ['PUBLIC', 'UNLISTED', 'PRIVATE']) === false) {
+            throw new ControllerException(sprintf("'%s' is not valid stream access mode", $access));
+        }
 
     }
 
+    /**
+     * @param $file
+     * @throws ControllerException
+     */
     public function validateImageMIME($file) {
-        $finfo = new \finfo();
-        $mime = $finfo->file($file, FILEINFO_MIME);
+        $fileInfo = new \finfo();
+        $mime = $fileInfo->file($file, FILEINFO_MIME);
         if (strpos($mime, "image", 0) !== 0) {
             throw new ControllerException("File is not valid image file");
         }

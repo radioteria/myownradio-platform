@@ -26,7 +26,9 @@ public class FFDecoderBuilder {
                         "-ar", "44100",
                         "-ac", "2",
                         "-f", "s16le",
-                        "-"} :
+                        "-",
+                        "2>>",
+                        "/tmp/ffmpeg_out.log"} :
                 new String[]{
                         "ffmpeg",
                         "-ss", new DecimalFormat("0.###").format((float) this.offset / 1_000F),
@@ -37,7 +39,9 @@ public class FFDecoderBuilder {
                         "-ar", "44100",
                         "-ac", "2",
                         "-f", "s16le",
-                        "-"
+                        "-",
+                        "2>>",
+                        "/tmp/ffmpeg_out.log"
                 };
     }
 

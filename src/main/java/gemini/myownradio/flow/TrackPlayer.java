@@ -2,11 +2,13 @@ package gemini.myownradio.flow;
 
 import gemini.myownradio.engine.buffer.ConcurrentBuffer;
 import gemini.myownradio.ff.FFDecoderBuilder;
+import gemini.myownradio.tools.MORLogger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Logger;
 
 /**
  * Created by Roman on 07.10.14.
@@ -16,6 +18,8 @@ public class TrackPlayer implements AbstractPlayer {
     private final OutputStream output;
     private final String file;
     private final ConcurrentBuffer broadcast;
+
+    MORLogger logger = new MORLogger(MORLogger.MessageKind.PLAYER);
 
     public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, String file, boolean jingled)
             throws FileNotFoundException {
@@ -59,6 +63,7 @@ public class TrackPlayer implements AbstractPlayer {
                 // Clear error stream
                 while (err.available() > 0) {
                     length = err.read(buffer);
+                    logger.println(new String(buffer, 0, length));
                 }
 
                 if (broadcast.isNotified()) {

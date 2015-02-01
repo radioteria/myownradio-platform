@@ -20,39 +20,30 @@ public class FFDecoderBuilder {
                         "-ss", new DecimalFormat("0.###").format((float) this.offset / 1_000F),
                         "-i", filename,
                         "-i", "/media/www/myownradio.biz/jingle.wav",
-                        "-filter_complex", "[0:a]afade=t=in:ss=0:st=1:d=3[a1],[a1]amix=inputs=2:duration=first:dropout_transition=3",
+                        "-filter_complex", "[0:a]afade=t=in:st=1:d=3[a1],[a1]amix=inputs=2:duration=first:dropout_transition=3",
                         "-vn",
                         "-acodec", "pcm_s16le",
                         "-ar", "44100",
                         "-ac", "2",
                         "-f", "s16le",
-                        "-",
-                        "2>>",
-                        "/tmp/ffmpeg_out.log"} :
+                        "-"} :
                 new String[]{
                         "ffmpeg",
                         "-ss", new DecimalFormat("0.###").format((float) this.offset / 1_000F),
                         "-i", filename,
-                        "-filter", "afade=t=in:ss=0:st=0:d=1",
+                        "-filter", "afade=t=in:st=0:d=1",
                         "-vn",
                         "-acodec", "pcm_s16le",
                         "-ar", "44100",
                         "-ac", "2",
                         "-f", "s16le",
-                        "-",
-                        "2>>",
-                        "/tmp/ffmpeg_out.log"
+                        "-"
                 };
     }
 
     public String[] generate() {
-        //System.out.println(Arrays.toString(cmd));
         return cmd;
     }
-
-//    public String getFilename() {
-//        return filename;
-//    }
 
     public int getOffset() {
         return offset;

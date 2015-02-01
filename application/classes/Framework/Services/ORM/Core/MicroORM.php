@@ -224,7 +224,7 @@ class MicroORM extends FilterORM implements Injectable {
 
             }
 
-            $query->executeUpdate();
+            $query->update();
 
         }
 
@@ -276,7 +276,7 @@ class MicroORM extends FilterORM implements Injectable {
         $query = $dbq->deleteFrom($config["@table"]);
         $query->where($config["@key"], $id);
 
-        $query->executeUpdate();
+        $query->update();
 
     }
 

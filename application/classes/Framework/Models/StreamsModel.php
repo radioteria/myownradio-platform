@@ -97,7 +97,7 @@ class StreamsModel implements Injectable, SingletonInterface {
                 "user_id" => $this->user->getID(),
                 "stream_id" => $stream->getID()
             ])
-            ->executeUpdate();
+            ->update();
     }
 
     public function deleteBookmark(Stream $stream) {
@@ -107,7 +107,7 @@ class StreamsModel implements Injectable, SingletonInterface {
                 "user_id" => $this->user->getID(),
                 "stream_id" => $stream->getID()
             ])
-            ->executeUpdate();
+            ->update();
     }
 
 

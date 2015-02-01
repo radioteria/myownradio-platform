@@ -215,7 +215,7 @@ class StreamModel extends Model implements SingletonInterface {
     public function delete() {
 
         $query = new DeleteQuery("r_streams");
-        $query->where("sid", $this->getID())->executeUpdate();
+        $query->where("sid", $this->getID())->update();
 
     }
 

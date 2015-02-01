@@ -105,7 +105,7 @@ class UsersModel implements SingletonInterface, Injectable {
         $session = HttpSession::getInstance();
 
         $session->get("TOKEN")->then(function ($token) {
-            DBQuery::getInstance()->deleteFrom("r_sessions", "token", $token)->executeUpdate();
+            DBQuery::getInstance()->deleteFrom("r_sessions", "token", $token)->update();
         });
 
     }

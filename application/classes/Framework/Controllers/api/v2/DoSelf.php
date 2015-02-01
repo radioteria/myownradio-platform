@@ -44,7 +44,7 @@ class DoSelf implements Controller {
         $name       = $post->getRequired("name");
         $info       = $post->getParameter("info")->getOrElseEmpty();
         $permalink  = $post->getParameter("permalink")->getOrElseNull();
-        $countryId  = $post->getParameter("country_id")->getOrElse(0);
+        $countryId  = $post->getParameter("country_id")->getOrElseNull();
 
         $validator->validateUserPermalink($permalink, $user->getID());
         $validator->validateCountryID($countryId);

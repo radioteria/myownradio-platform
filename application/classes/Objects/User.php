@@ -35,7 +35,7 @@ class User extends ActiveRecordObject implements ActiveRecord {
         $last_visit_date    = null,
         $permalink          = "",
         $avatar             = null,
-        $country_id         = 0;
+        $country_id         = null;
 
     /**
      * @return mixed

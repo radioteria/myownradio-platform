@@ -40,6 +40,8 @@ class InputValidator implements Injectable {
      * @throws ControllerException
      */
     public function validateCountryID($countryID) {
+        if (is_null($countryID)) return;
+
         Country::getByID($countryID)
             ->getOrElseThrow(new ControllerException(sprintf("Country with id %d does not exist", $countryID)));
     }

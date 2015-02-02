@@ -10,34 +10,15 @@ namespace Framework\Controllers;
 
 
 use Framework\Controller;
-use Framework\Preferences;
-use Framework\Services\Database;
+use Framework\Services\Invoker;
+use Framework\Services\JsonResponse;
 
 class DoTest implements Controller {
 
     public function doGet() {
-
-        // Database is not connected
-
-        Database::doInConnection(function (Database $db) {
-            // Database is connected with handle in $db
-
-            // Default style
-            echo $db->fetchOneColumn("SELECT NOW()", NULL, 0)
-                ->getOrElseThrow(new \Exception("Database is bad!"));
-
-            echo '<br />';
-
-            // Functional style
-            $db->fetchOneColumn("SELECT NOW()", NULL, 0)->then(function ($now) {
-                echo $now;
-            });
-
+        Invoker::invoke(function (JsonResponse $response) {
 
         });
-
-        // Database connection is returned into connection pool
-
     }
 
-} 
+}

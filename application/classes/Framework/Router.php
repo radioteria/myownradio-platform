@@ -13,6 +13,7 @@ use Framework\Exceptions\DocNotFoundException;
 use Framework\Exceptions\NotImplementedException;
 use Framework\Services\HttpGet;
 use Framework\Services\HttpRequest;
+use Framework\Services\Invoker;
 use Framework\Services\JsonResponse;
 use Framework\Services\SubRouter;
 use ReflectionClass;
@@ -137,7 +138,7 @@ class Router implements SingletonInterface{
         $classInstance = $reflection->newInstance();
 
         // Execute controller
-        $this->callDependencyInjection($classInstance, $invoker);
+        Invoker::invokeMethod($classInstance, $invoker);
     }
 
     private function exceptionRouter(ControllerException $exception) {
@@ -150,45 +151,5 @@ class Router implements SingletonInterface{
 
     }
 
-
-    private function callDependencyInjection($object, \ReflectionMethod $method) {
-        $method->setAccessible(true);
-        $args = [];
-        foreach ($method->getParameters() as $param) {
-
-            /** @var \ReflectionParameter $param */
-            if (!$param->getClass()->implementsInterface("Framework\\Services\\Injectable")) {
-                throw new \Exception("Object could not be injected");
-            }
-
-            if ($param->getClass()->implementsInterface("Tools\\SingletonInterface")) {
-                $args[] = $param->getClass()->getMethod("getInstance")->invoke(null);
-            } else {
-                $args[] = $param->getClass()->newInstanceArgs();
-            }
-
-        }
-        return $method->invokeArgs($object, $args);
-    }
-
-    public function runDependencyInjection($callback) {
-        $method = new \ReflectionFunction($callback);
-        $args = [];
-        foreach ($method->getParameters() as $param) {
-
-            /** @var \ReflectionParameter $param */
-            if (!$param->getClass()->implementsInterface("Framework\\Services\\Injectable")) {
-                throw new \Exception("Object could not be injected");
-            }
-
-            if ($param->getClass()->implementsInterface("Tools\\SingletonInterface")) {
-                $args[] = $param->getClass()->getMethod("getInstance")->invoke(null);
-            } else {
-                $args[] = $param->getClass()->newInstanceArgs();
-            }
-
-        }
-        return $method->invokeArgs($args);
-    }
 
 }

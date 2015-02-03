@@ -34,7 +34,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         $prefix = (new SelectQuery("r_streams a"))
             ->innerJoin("r_static_stream_vars b", "a.sid = b.stream_id")
             ->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags",
-                "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count"]);
+                "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count", "b.tracks_count"]);
 
         return $prefix;
 

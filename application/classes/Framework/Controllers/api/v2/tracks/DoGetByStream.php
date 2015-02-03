@@ -10,7 +10,6 @@ namespace Framework\Controllers\api\v2\tracks;
 
 
 use Framework\Controller;
-use Framework\Exceptions\ControllerException;
 use Framework\Models\StreamModel;
 use Framework\Services\HttpGet;
 use REST\Playlist;
@@ -18,7 +17,7 @@ use REST\Playlist;
 class DoGetByStream implements Controller {
     public function doGet(HttpGet $get, Playlist $playlist) {
 
-        $id = $get->getParameter("stream_id")->getOrElseThrow(ControllerException::noArgument("stream_id"));
+        $id = $get->getRequired("stream_id");
         $color = $get->getParameter("color_id");
         $offset = $get->getParameter("offset");
         $filter = $get->getParameter("filter");

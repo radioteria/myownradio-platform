@@ -16,7 +16,7 @@ use Framework\Services\DB\DBQueryPool;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\DB\Query\UpdateQuery;
 use Objects\Link;
-use Objects\PlaylistTrack;
+use Objects\StreamTrack;
 use Objects\Stream;
 use Objects\Track;
 use Tools\Common;
@@ -133,7 +133,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
                         $linker->save();
 
-                        $nowPlaying->then(function(PlaylistTrack $track) use (&$uniqueID) {
+                        $nowPlaying->then(function(StreamTrack $track) use (&$uniqueID) {
 
                             logger(sprintf("Now playing track with index = %d", $track->getTrackOrder()));
 
@@ -166,7 +166,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
         $this->getPlayingTrack()->then(function ($track) use ($callable) {
 
-            /** @var PlaylistTrack $track */
+            /** @var StreamTrack $track */
             $position = $this->getStreamPosition()->get();
             $trackPosition = $position - $track->getTimeOffset();
 
@@ -176,7 +176,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
             logger("Doing action...");
             call_user_func($callable);
 
-            if(PlaylistTrack::getByID($track->getUniqueID())->validate()) {
+            if(StreamTrack::getByID($track->getUniqueID())->validate()) {
                 $this->scPlayByUniqueID($track->getUniqueID(), $trackPosition, false);
             } else {
                 $this->scPlayByOrderID($track->getTrackOrder());
@@ -402,11 +402,11 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     }
 
     /**
-     * @param PlaylistTrack $trackBean
+     * @param StreamTrack $trackBean
      * @param int $startFrom
      * @param bool $notify
      */
-    protected function _setCurrentTrack(PlaylistTrack $trackBean, $startFrom = 0, $notify = true) {
+    protected function _setCurrentTrack(StreamTrack $trackBean, $startFrom = 0, $notify = true) {
 
         Stream::getByID($this->key)
             ->then(function ($stream) use ($trackBean, $startFrom) {

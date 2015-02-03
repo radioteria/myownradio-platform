@@ -9,7 +9,7 @@
 namespace Framework\Models;
 
 
-use Objects\PlaylistTrack;
+use Objects\StreamTrack;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -36,7 +36,7 @@ class PlaylistTracksModel implements SingletonInterface {
      * @return Optional
      */
     public function getByUniqueID($uniqueID) {
-        return PlaylistTrack::getByID("unique_id = ? AND stream_id = ?", [$uniqueID, $this->key]);
+        return StreamTrack::getByID("unique_id = ? AND stream_id = ?", [$uniqueID, $this->key]);
     }
 
     /**
@@ -44,14 +44,14 @@ class PlaylistTracksModel implements SingletonInterface {
      * @return Optional
      */
     public function getByTrackOrder($order) {
-        return PlaylistTrack::getByFilter("t_order = ? AND stream_id = ?", [$order, $this->key]);
+        return StreamTrack::getByFilter("t_order = ? AND stream_id = ?", [$order, $this->key]);
     }
 
     /**
      * @return Optional
      */
     public function getRandom() {
-        return PlaylistTrack::getRandom($this->key);
+        return StreamTrack::getRandom($this->key);
     }
 
 } 

@@ -14,7 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Models\TracksModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
-use Objects\PlaylistTrack;
+use Objects\StreamTrack;
 
 class DoDeleteCurrent implements Controller {
 
@@ -22,8 +22,8 @@ class DoDeleteCurrent implements Controller {
 
         $streamID = $post->getRequired("stream_id");
 
-        /** @var PlaylistTrack $current */
-        $current = PlaylistTrack::getCurrent($streamID)
+        /** @var StreamTrack $current */
+        $current = StreamTrack::getCurrent($streamID)
             ->getOrElseThrow(ControllerException::of("Nothing playing on stream #" . $streamID));
 
         // Delete tracks from streams if they appears

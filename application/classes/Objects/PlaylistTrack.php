@@ -1,76 +1,165 @@
 <?php
 /**
  * Created by PhpStorm.
- * UserModel: Roman
- * Date: 18.12.14
- * Time: 10:47
+ * User: LRU
+ * Date: 03.02.2015
+ * Time: 23:37
  */
 
-namespace Objects;
+namespace application\classes\Objects;
 
-use Framework\Exceptions\ControllerException;
-use Framework\Services\DB\DBQuery;
-use Tools\Optional;
-use Tools\System;
+
+use Framework\Services\ORM\EntityUtils\ActiveRecord;
+use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 
 /**
  * Class PlaylistTrack
- * @package Objects
- * @table mor_stream_tracklist_view
- * @key unique_id
+ * @package application\classes\Objects
+ * @table mor_playlists_view
+ * @key link_id
  * @view
  */
-class PlaylistTrack extends Track {
+class PlaylistTrack extends ActiveRecordObject implements ActiveRecord {
+    protected
+        $link_id, $playlist_id, $position_id, $track_id, $user_id,
+        $filename, $file_extension, $artist, $title, $album, $track_number,
+        $genre, $date, $duration, $filesize, $color, $uploaded;
 
-    protected $id, $stream_id, $t_order, $unique_id, $time_offset;
-
-    function __construct() {
-    }
-
-    public static function getCurrent($streamID) {
-
-        /** @var StreamStats $stream */
-        $stream = StreamStats::getByID($streamID)
-            ->getOrElseThrow(ControllerException::noStream($streamID));
-
-        if ($stream->getStatus() == 0) {
-            return Optional::noValue();
-        }
-
-        $streamPosition = (System::time() - $stream->getStarted() + $stream->getStartedFrom())
-            % $stream->getTracksDuration();
-
-        $track = self::getByFilter("time_offset <= :time AND time_offset + duration >= :time AND stream_id = :id", [
-            ":time" => $streamPosition, ":id" => $streamID
-        ]);
-
-        return $track;
-
-    }
-
-    public function getTrackOrder() {
-        return $this->t_order;
-    }
-
-    public function getTimeOffset() {
-        return $this->time_offset;
-    }
-
-    public function getUniqueID() {
-        return $this->unique_id;
+    /**
+     * @return mixed
+     */
+    public function getLinkId()
+    {
+        return $this->link_id;
     }
 
     /**
-     * @param $streamID
-     * @return \Tools\Optional
+     * @return mixed
      */
-    public static function getRandom($streamID) {
-
-        return DBQuery::getInstance()
-            ->selectFrom("mor_stream_tracklist_view", "stream_id", $streamID)
-            ->limit(1)->orderBy("RAND()")
-            ->fetchObject("Objects\\PlaylistTrack");
-
+    public function getPlaylistId()
+    {
+        return $this->playlist_id;
     }
 
-} 
+    /**
+     * @return mixed
+     */
+    public function getPositionId()
+    {
+        return $this->position_id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTrackId()
+    {
+        return $this->track_id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUserId()
+    {
+        return $this->user_id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFilename()
+    {
+        return $this->filename;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFileExtension()
+    {
+        return $this->file_extension;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getArtist()
+    {
+        return $this->artist;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTitle()
+    {
+        return $this->title;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAlbum()
+    {
+        return $this->album;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTrackNumber()
+    {
+        return $this->track_number;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getGenre()
+    {
+        return $this->genre;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDate()
+    {
+        return $this->date;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDuration()
+    {
+        return $this->duration;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFilesize()
+    {
+        return $this->filesize;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getColor()
+    {
+        return $this->color;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUploaded()
+    {
+        return $this->uploaded;
+    }
+
+
+}

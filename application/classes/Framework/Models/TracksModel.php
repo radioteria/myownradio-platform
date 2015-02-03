@@ -15,7 +15,7 @@ use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\Config;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\Injectable;
-use Objects\PlaylistTrack;
+use Objects\StreamTrack;
 use Objects\Track;
 use REST\Playlist;
 use Tools\Common;
@@ -115,10 +115,10 @@ class TracksModel implements Injectable, SingletonInterface {
 
     public function grabCurrentTrack($fromID, Optional $streamID, $upNext = false) {
 
-        $current = PlaylistTrack::getCurrent($fromID);
+        $current = StreamTrack::getCurrent($fromID);
 
         $current->then(function($track) use ($streamID, $upNext) {
-            /** @var PlaylistTrack $track */
+            /** @var StreamTrack $track */
             self::grabTrack1(Track::getByID($track->getID())->get(), $streamID, $upNext);
         });
 

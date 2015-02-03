@@ -10,7 +10,10 @@ namespace Framework\Controllers;
 
 
 use Framework\Controller;
+use Objects\Track;
 
 class DoIndex implements Controller {
-    public function doGet() {}
+    public function doGet() {
+        echo count(Track::getList());
+    }
 } 

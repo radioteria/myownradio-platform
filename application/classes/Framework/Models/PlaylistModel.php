@@ -267,7 +267,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
             $query->limit(1);
             $query->where($filter, $args);
 
-            return $db->fetchOneObject($query, null, "Objects\\PlaylistTrack");
+            return $db->fetchOneObject($query, null, "Objects\\StreamTrack");
 
         });
 
@@ -456,7 +456,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
             $query->limit(1);
             $query->where("b.stream_id", $this->key);
 
-            return $db->fetchOneObject($query, null, "Objects\\PlaylistTrack");
+            return $db->fetchOneObject($query, null, "Objects\\StreamTrack");
 
         });
 

@@ -13,6 +13,7 @@ use Framework\Models\Traits\StreamControl;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\DBQueryPool;
+use Framework\Services\DB\Query\DeleteQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\DB\Query\UpdateQuery;
 use Objects\Link;
@@ -113,7 +114,6 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
             foreach ($tracksToAdd as $track) {
 
                 Track::getByID($track)
-
                     ->then(function ($trackObject) use (&$initialPosition, &$initialTimeOffset, &$nowPlaying) {
 
                         /** @var Track $trackObject */
@@ -133,7 +133,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
                         $linker->save();
 
-                        $nowPlaying->then(function(StreamTrack $track) use (&$uniqueID) {
+                        $nowPlaying->then(function (StreamTrack $track) use (&$uniqueID) {
 
                             logger(sprintf("Now playing track with index = %d", $track->getTrackOrder()));
 
@@ -176,7 +176,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
             logger("Doing action...");
             call_user_func($callable);
 
-            if(StreamTrack::getByID($track->getUniqueID())->validate()) {
+            if (StreamTrack::getByID($track->getUniqueID())->validate()) {
                 $this->scPlayByUniqueID($track->getUniqueID(), $trackPosition, false);
             } else {
                 $this->scPlayByOrderID($track->getTrackOrder());
@@ -310,10 +310,10 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
         $this->doAtomic(function () use (&$tracks) {
 
-            Database::doInConnection(function (Database $db) use ($tracks) {
-                $db->executeUpdate("DELETE FROM r_link WHERE FIND_IN_SET(unique_id, ?) AND (stream_id = ?)", [
-                    $tracks, $this->key]);
-            });
+            (new DeleteQuery("r_link"))
+                ->where("FIND_IN_SET(unique_id, ?", [$tracks])
+                ->where("stream_id", $this->key)
+                ->update();
 
             $this->optimize();
 
@@ -449,15 +449,13 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      */
     protected function _getRandomTrack() {
 
+        $query = $this->getTrackQueryPrefix();
+        $query->orderBy("RAND()");
+        $query->limit(1);
+        $query->where("b.stream_id", $this->key);
 
-            $query = $this->getTrackQueryPrefix();
-            $query->orderBy("RAND()");
-            $query->limit(1);
-            $query->where("b.stream_id", $this->key);
-
-            return $query->fetchObject($query, null, "Objects\\StreamTrack");
+        return $query->fetchObject($query, null, "Objects\\StreamTrack");
 
     }
-
 
 } 

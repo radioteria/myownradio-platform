@@ -153,8 +153,6 @@ abstract class BaseQuery implements \Countable {
     }
 
     /**
-     * @internal param $query
-     * @internal param array $args
      * @return mixed
      */
     public function update() {

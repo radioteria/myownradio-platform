@@ -10,10 +10,14 @@ namespace Framework\Controllers;
 
 
 use Framework\Controller;
+use Framework\Services\ORM\EntityUtils\ActiveRecordCollection;
+use Objects\Stream;
 use Objects\Track;
 
 class DoIndex implements Controller {
     public function doGet() {
-        echo count(Track::getList());
+        /** @var ActiveRecordCollection $streams */
+        $streams = Stream::getList();
+
     }
 } 

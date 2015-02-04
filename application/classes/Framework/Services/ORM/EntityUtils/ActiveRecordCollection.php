@@ -75,4 +75,5 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \Iterator, \Js
         }
         return $data;
     }
+
 }

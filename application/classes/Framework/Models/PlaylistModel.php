@@ -449,16 +449,13 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      */
     protected function _getRandomTrack() {
 
-        return Database::doInConnection(function (Database $db) {
 
             $query = $this->getTrackQueryPrefix();
             $query->orderBy("RAND()");
             $query->limit(1);
             $query->where("b.stream_id", $this->key);
 
-            return $db->fetchOneObject($query, null, "Objects\\StreamTrack");
-
-        });
+            return $query->fetchObject($query, null, "Objects\\StreamTrack");
 
     }
 

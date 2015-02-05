@@ -69,7 +69,7 @@ class InputValidator implements Injectable {
     public function validatePassword($password) {
 
         $len = strlen($password);
-        if ($len >= self::PASSWORD_MIN_LENGTH && $len <= self::PASSWORD_MAX_LENGTH) {
+        if ($len < self::PASSWORD_MIN_LENGTH && $len > self::PASSWORD_MAX_LENGTH) {
             throw new ControllerException("Password length must be between 3 and 32 chars");
         }
 

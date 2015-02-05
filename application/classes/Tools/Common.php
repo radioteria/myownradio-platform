@@ -21,7 +21,8 @@ class Common {
     public static function searchQueryFilter($text) {
 
         $query = "";
-        $words = preg_split("/(*UTF8)((?![\\p{L}|\\p{N}|\\#])|(\\s))+/", $text);
+        $stop = "\\+\\-\\>\\<\\(\\)\\~\\*\\\"\\@";
+        $words = preg_split("/(*UTF8)(?![\\p{L}|\\p{N}|\\#]+)|([$stop]+)/", $text);
 
         foreach ($words as $word) {
             if (strlen($word) > 0) {
@@ -29,7 +30,8 @@ class Common {
             }
         }
 
-        $query .= "*";
+        if (strlen($query))
+            $query .= "*";
 
         return $query;
 

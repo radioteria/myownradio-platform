@@ -311,7 +311,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
         $this->doAtomic(function () use (&$tracks) {
 
             (new DeleteQuery("r_link"))
-                ->where("FIND_IN_SET(unique_id, ?", [$tracks])
+                ->where("FIND_IN_SET(unique_id, ?)", [$tracks])
                 ->where("stream_id", $this->key)
                 ->update();
 

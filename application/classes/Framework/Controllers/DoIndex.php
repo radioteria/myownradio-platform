@@ -13,11 +13,12 @@ use Framework\Controller;
 use Framework\Services\ORM\EntityUtils\ActiveRecordCollection;
 use Objects\Stream;
 use Objects\Track;
+use Tools\Common;
 
 class DoIndex implements Controller {
     public function doGet() {
-        /** @var ActiveRecordCollection $streams */
-        $streams = Stream::getList();
+        $query = "chill-out@test";
 
+        print_r(Common::searchQueryFilter($query));
     }
 } 

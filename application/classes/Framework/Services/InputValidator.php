@@ -10,10 +10,8 @@ namespace Framework\Services;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Services\DB\DBQuery;
-use Framework\Services\DB\Query\SelectQuery;
 use Objects\Category;
 use Objects\Country;
-use Tools\Optional;
 use Tools\Singleton;
 
 class InputValidator implements Injectable {
@@ -123,6 +121,10 @@ class InputValidator implements Injectable {
 
         if (!is_null($permalink) && !is_string($permalink)) {
             throw new ControllerException("Valid permalink is [null|string]");
+        }
+
+        if (is_null($permalink)) {
+            return;
         }
 
         if (strlen($permalink) == 0) {

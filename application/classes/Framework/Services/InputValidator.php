@@ -156,6 +156,10 @@ class InputValidator implements Injectable {
             throw new ControllerException("Valid permalink is [null|string]");
         }
 
+        if (is_null($permalink)) {
+            return;
+        }
+
         if (strlen($permalink) == 0) {
             throw new ControllerException("Permalink couldn't be an empty string");
         }

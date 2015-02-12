@@ -21,6 +21,8 @@ public class FFEncoderBuilder {
             case "libfdk_aac":
                 cmd = new String[]{
                         "ffmpeg",
+                        "-hide_banner",
+                        "-loglevel", "quiet",
                         "-acodec", "pcm_s16le",
                         "-ar", "44100",
                         "-ac", "2",
@@ -43,6 +45,8 @@ public class FFEncoderBuilder {
             default:
                 cmd = new String[]{
                         "ffmpeg",
+                        "-hide_banner",
+                        "-loglevel", "quiet",
                         "-acodec", "pcm_s16le",
                         "-ar", "44100",
                         "-ac", "2",

@@ -15,6 +15,7 @@ import gemini.myownradio.tools.io.ThrottledOutputStream;
 import gemini.myownradio.tools.io.ThroughOutputStream;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -41,10 +42,12 @@ public class StreamRadio implements Runnable {
 
         try (
                 OutputStream flow = broadcast.getOutputStream();
-                OutputStream raw = new ThroughOutputStream(flow, new NullOutputStream(), decoder.generate());
+                OutputStream raw = new ThroughOutputStream(flow, new FileOutputStream("/tmp/flow_" + broadcast.getStreamKey().toString() + ".log", true), decoder.generate());
                 OutputStream thr = new ThrottledOutputStream(raw, 176400, 5)
         ) {
+            logger.println("---- FLOW START ----");
             this.MakeFlow(thr);
+            logger.println("---- FLOW STOP  ----");
         } catch (IOException e) {
             logger.exception(e);
         } finally {
@@ -74,13 +77,14 @@ public class StreamRadio implements Runnable {
 
                 trackItem = stream.reload().getNowPlaying(firstPlayingTrack ? preloadTime : 0);
 
-                logger.sprintf("Now playing: %s (start: %d ms, remainder: %d ms)",
-                        trackItem.getTitle(), trackItem.getTrackOffset(), trackItem.getTimeRemainder());
 
-                if ((trackItem.getTimeRemainder() >> 11) == 0L) {
+                if (trackItem.getTimeRemainder() < 1000) {
                     ThreadTools.Sleep(trackItem.getTimeRemainder());
                     continue;
                 }
+
+                logger.sprintf("Now playing: %s (start: %d ms, remainder: %d ms)",
+                        trackItem.getTitle(), trackItem.getTrackOffset(), trackItem.getTimeRemainder());
 
                 try {
                     // Normally we initialize track player
@@ -100,7 +104,9 @@ public class StreamRadio implements Runnable {
                     continue;
                 }
 
+                logger.println("---- PLAYER START ----");
                 trackPlayer.play(trackItem.getTrackOffset());
+                logger.println("---- PLAYER STOP  ----");
 
             } catch (Exception e) {
                 // Terminate streamer on any exception

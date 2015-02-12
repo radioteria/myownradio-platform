@@ -19,11 +19,9 @@ class DoModify implements Controller {
 
     public function doPost(HttpPost $post, JsonResponse $response) {
 
-        $id = $post->getParameter("stream_id")
-            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
+        $id = $post->getRequired("stream_id");
 
-        $name = $post->getParameter("name")
-            ->getOrElseThrow(ControllerException::noArgument("name"));
+        $name = $post->getRequired("name");
         $info = $post->getParameter("info")->getOrElseEmpty();
         $tags = $post->getParameter("tags")->getOrElseEmpty();
         $permalink = $post->getParameter("permalink")->getOrElseNull();

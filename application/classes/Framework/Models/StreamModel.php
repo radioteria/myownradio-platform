@@ -202,7 +202,10 @@ class StreamModel extends Model implements SingletonInterface {
 
             $this->stream->setCover($newImageFile)->save();
 
-            return $folders->genStreamCoverUrl($newImageFile);
+            return [
+                "url" => $folders->genStreamCoverUrl($newImageFile),
+                "name" => $newImageFile
+            ];
 
         } else {
 

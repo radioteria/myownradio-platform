@@ -19,7 +19,7 @@ class DoCreate implements Controller {
     public function doPost(HttpPost $post, StreamsModel $model, JsonResponse $response) {
 
         // Get user input parameters
-        $name = $post->getParameter("name")->getOrElseThrow(ControllerException::noArgument("name"));
+        $name = $post->getRequired("name");
         $info = $post->getParameter("info")->getOrElseEmpty();
         $tags = $post->getParameter("tags")->getOrElseEmpty();
         $category = $post->getParameter("category")->getOrElseNull();

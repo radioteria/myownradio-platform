@@ -14,8 +14,8 @@ use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 /**
  * Class Category
  * @package Objects
- * @table category
- * @key id
+ * @table r_categories
+ * @key category_id
  * @view
  */
 class Category extends ActiveRecordObject implements ActiveRecord {

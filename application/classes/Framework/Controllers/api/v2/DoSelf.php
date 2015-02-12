@@ -17,14 +17,17 @@ use Framework\Services\HttpPost;
 use Framework\Services\HttpPut;
 use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
+use REST\Streams;
 use REST\Users;
 
 class DoSelf implements Controller {
 
-    public function doGet(AuthUserModel $userModel, JsonResponse $response) {
+    public function doGet(AuthUserModel $userModel, JsonResponse $response, Streams $streams, Users $users) {
 
-        $user = Users::getInstance()->getUserByID($userModel->getID());
-        $response->setData($user);
+        $response->setData([
+            'user'      => $users->getUserByID($userModel->getID()),
+            'streams'   => $streams->getByUser($userModel)
+        ]);
         
     }
 

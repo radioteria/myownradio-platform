@@ -28,7 +28,7 @@ class UnauthorizedException extends ControllerException {
     }
 
     public static function wrongPassword() {
-        return new self("Wrong password");
+        return new self("You're entered incorrect current password");
     }
 
 }

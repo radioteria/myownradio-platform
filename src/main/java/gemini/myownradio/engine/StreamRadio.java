@@ -14,7 +14,6 @@ import gemini.myownradio.tools.io.ThrottledOutputStream;
 import gemini.myownradio.tools.io.ThroughOutputStream;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -41,7 +40,7 @@ public class StreamRadio implements Runnable {
 
         try (
                 OutputStream flow = broadcast.getOutputStream();
-                OutputStream raw = new ThroughOutputStream(flow, new FileOutputStream("/tmp/flow_" + broadcast.getStreamKey().toString() + ".log", true), decoder.generate());
+                OutputStream raw = new ThroughOutputStream(flow, decoder.generate());
                 OutputStream thr = new ThrottledOutputStream(raw, 176400, 5)
         ) {
             logger.println("---- FLOW START ----");

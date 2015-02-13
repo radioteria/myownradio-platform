@@ -72,7 +72,8 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
     public void write(byte[] b, int off, int len) throws IOException {
         os.write(b, off, len);
         checkInput();
-        readError();
+        if (this.errOut != null)
+            readError();
     }
 
     @Override

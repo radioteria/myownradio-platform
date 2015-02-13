@@ -8,7 +8,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.logging.Logger;
 
 /**
  * Created by Roman on 07.10.14.
@@ -77,7 +76,10 @@ public class TrackPlayer implements AbstractPlayer {
             }
         }
 
+        int exitStatus = proc.exitValue();
         proc.destroy();
+
+        logger.sprintf("Exit value: %d", exitStatus);
 
     }
 }

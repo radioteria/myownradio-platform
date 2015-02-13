@@ -10,7 +10,6 @@ import gemini.myownradio.flow.TrackPlayer;
 import gemini.myownradio.tools.MORLogger;
 import gemini.myownradio.tools.MORSettings;
 import gemini.myownradio.tools.ThreadTools;
-import gemini.myownradio.tools.io.NullOutputStream;
 import gemini.myownradio.tools.io.ThrottledOutputStream;
 import gemini.myownradio.tools.io.ThroughOutputStream;
 
@@ -76,7 +75,6 @@ public class StreamRadio implements Runnable {
             try {
 
                 trackItem = stream.reload().getNowPlaying(firstPlayingTrack ? preloadTime : 0);
-
 
                 if (trackItem.getTimeRemainder() < 1000) {
                     ThreadTools.Sleep(trackItem.getTimeRemainder());

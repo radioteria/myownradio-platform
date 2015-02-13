@@ -18,7 +18,7 @@ public class FFDecoderBuilder {
                 new String[]{
                         "ffmpeg",
                         "-hide_banner",
-                        "-loglevel", "quiet",
+//                        "-loglevel", "quiet",
                         "-ss", new DecimalFormat("0.###").format((float) this.offset / 1_000F),
                         "-i", filename,
                         "-i", "/media/www/myownradio.biz/jingle.wav",

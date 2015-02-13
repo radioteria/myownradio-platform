@@ -76,8 +76,14 @@ public class TrackPlayer implements AbstractPlayer {
             }
         }
 
-        int exitStatus = proc.exitValue();
         proc.destroy();
+        try{
+            proc.waitFor();
+        } catch (InterruptedException e) {
+            /* NOP */
+        }
+
+        int exitStatus = proc.exitValue();
 
         logger.sprintf("Exit value: %d", exitStatus);
 

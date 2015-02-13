@@ -16,7 +16,7 @@ public class FFDecoderBuilder {
 
         cmd = jingled ?
                 new String[]{
-                        "ffprobe",
+                        "ffmpeg",
                         "-hide_banner",
                         "-loglevel", "quiet",
                         "-ss", new DecimalFormat("0.###").format((float) this.offset / 1_000F),
@@ -30,7 +30,7 @@ public class FFDecoderBuilder {
                         "-f", "s16le",
                         "-"} :
                 new String[]{
-                        "ffprobe",
+                        "ffmpeg",
                         "-hide_banner",
                         "-loglevel", "quiet",
                         "-ss", new DecimalFormat("0.###").format((float) this.offset / 1_000F),

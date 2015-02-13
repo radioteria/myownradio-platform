@@ -51,19 +51,12 @@ public class TrackPlayer implements AbstractPlayer {
 
         try (
                 InputStream in = proc.getInputStream();
-                InputStream err = proc.getErrorStream()
         ) {
             byte[] buffer = new byte[4096];
             int length;
             while ((length = in.read(buffer)) != -1) {
                 output.write(buffer, 0, length);
                 output.flush();
-
-                // Clear error stream
-                while (err.available() > 0) {
-                    length = err.read(buffer);
-                    logger.println(new String(buffer, 0, length));
-                }
 
                 if (broadcast.isNotified()) {
                     broadcast.resetNotify();

@@ -90,7 +90,7 @@ trait StreamControl {
         StreamStats::getByID($this->key)
             ->then(function ($stats) {
                 /** @var StreamStats $stats */
-                if ($stats->getTracksDuration() == 0) {
+                if ($stats->getTracksCount() == 0) {
                     throw ControllerException::of("Add some music into this stream before start.");
                 }
             });

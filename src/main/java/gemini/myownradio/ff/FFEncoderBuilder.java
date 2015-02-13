@@ -46,7 +46,7 @@ public class FFEncoderBuilder {
                 cmd = new String[]{
                         "ffmpeg",
                         "-hide_banner",
-                        "-loglevel", "quiet",
+//                        "-loglevel", "quiet",
                         "-acodec", "pcm_s16le",
                         "-ar", "44100",
                         "-ac", "2",

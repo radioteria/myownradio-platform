@@ -107,6 +107,7 @@ public class StreamRadio implements Runnable {
                     trackPlayer.play(trackItem.getTrackOffset());
                 } catch (Exception e) {
                     logger.println("Some error occured");
+                    logger.exception(e);
                 }
 
                 logger.println("---- PLAYER STOP  ----");

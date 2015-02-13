@@ -78,7 +78,7 @@ public class TrackPlayer implements AbstractPlayer {
 
 
         try{
-            proc.destroyForcibly().waitFor();
+            proc.waitFor();
         } catch (InterruptedException e) {
             /* NOP */
         }

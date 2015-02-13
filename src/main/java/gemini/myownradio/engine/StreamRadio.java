@@ -106,8 +106,13 @@ public class StreamRadio implements Runnable {
                 try {
                     trackPlayer.play(trackItem.getTrackOffset());
                 } catch (Exception e) {
-                    logger.println("Some error occured");
-                    logger.exception(e);
+                    logger.sprintf("ome error occured: %s", e.getMessage());
+                    if (trackSkipTimes >= 5) {
+                        logger.sprintf("Too many skip attempts. Stopping streamer");
+                        return;
+                    }
+                    stream.skipMilliseconds(trackItem.getTimeRemainder());
+                    trackSkipTimes ++;
                 }
 
                 logger.println("---- PLAYER STOP  ----");

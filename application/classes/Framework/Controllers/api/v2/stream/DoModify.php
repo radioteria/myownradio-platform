@@ -10,6 +10,7 @@ namespace Framework\Controllers\api\v2\stream;
 
 
 use Framework\Controller;
+use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\StreamModel;
 use Framework\Services\HttpPost;
@@ -26,7 +27,7 @@ class DoModify implements Controller {
         $tags = $post->getParameter("tags")->getOrElseEmpty();
         $permalink = $post->getParameter("permalink")->getOrElseNull();
         $category = $post->getParameter("category")->getOrElseNull();
-        $access = $post->getParameter("access")->getOrElse('PUBLIC');
+        $access = $post->getParameter("access")->getOrElse("PUBLIC");
 
         $stream = StreamModel::getInstance($id);
 

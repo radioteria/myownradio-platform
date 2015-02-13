@@ -10,7 +10,10 @@ namespace Framework\Models;
 
 
 use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\Database;
+use Framework\Services\DB\Query\DeleteQuery;
+use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Injectable;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -39,18 +42,17 @@ class Factory extends Model implements Injectable, SingletonInterface {
 
     public function deleteStream($id) {
 
-        Database::doInConnection(function (Database $db) use ($id) {
+        $uid = (new SelectQuery("r_streams"))->where("sid", $id)->select("uid")->fetchOneColumn()
+            ->getOrElseThrow(ControllerException::noStream($id));
 
-            $result = $db->executeUpdate("DELETE FROM r_streams WHERE sid = ? AND uid = ?",
-                [$id, $this->user->getID()]);
+        if ($uid != $this->user->getID()) {
+            throw UnauthorizedException::noAccess();
+        }
 
-            if ($result === 0) {
-                throw new ControllerException("Stream not found or no permission");
-            } else {
-                PlaylistModel::notifyAllStreamers($id);
-            }
+        (new DeleteQuery("r_link"))->where("stream_id", $id)->update();
+        (new DeleteQuery("r_streams"))->where("sid", $id)->update();
 
-        });
+        PlaylistModel::notifyAllStreamers($id);
 
     }
 

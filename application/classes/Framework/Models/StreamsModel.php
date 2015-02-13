@@ -37,13 +37,14 @@ class StreamsModel implements Injectable, SingletonInterface {
     }
 
 
-    public function create($name, $info, $hashtags, $category, Optional $permalink) {
+    public function create($name, $info, $hashtags, $category, Optional $permalink, $access) {
 
         $validator = InputValidator::getInstance();
 
         // Validate parameters
         $validator->validateStreamName($name);
         $validator->validateStreamPermalink($permalink->getOrElseNull());
+        $validator->validateStreamAccess($access);
 
         $stream = new Stream();
         $stream->setUserID($this->user->getID());
@@ -53,11 +54,11 @@ class StreamsModel implements Injectable, SingletonInterface {
         $stream->setCategory($category);
         $stream->setPermalink($permalink->getOrElse($this->generatePermalink($name)));
         $stream->setCreated(time());
-        $stream->setAccess(self::ACCESS_PUBLIC);
+        $stream->setAccess($access);
 
         $stream->save();
 
-        return Streams::getInstance()->getOneStream($stream->getID());
+        return $stream->getID();
 
     }
 

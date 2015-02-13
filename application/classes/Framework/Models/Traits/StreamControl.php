@@ -9,6 +9,7 @@
 namespace Framework\Models\Traits;
 
 use Framework\Exceptions\ControllerException;
+use Objects\StreamStats;
 use Objects\StreamTrack;
 use Objects\Stream;
 use Tools\System;
@@ -85,6 +86,14 @@ trait StreamControl {
     }
 
     public function scPlay() {
+
+        StreamStats::getByID($this->key)
+            ->then(function ($stats) {
+                /** @var StreamStats $stats */
+                if ($stats->getTracksDuration() == 0) {
+                    throw ControllerException::of("Add some music into this stream before start.");
+                }
+            });
 
         Stream::getByID($this->key)
             ->then(function ($stream) {

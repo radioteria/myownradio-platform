@@ -13,6 +13,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\Config;
 use Objects\Track;
+use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -165,25 +166,28 @@ class TrackModel extends Model implements SingletonInterface {
     }
 
     /**
-     * @param $artist
-     * @param $title
-     * @param $album
-     * @param $trackNR
-     * @param $genre
-     * @param $date
-     * @param $color
+     * @param Optional $artist
+     * @param Optional $title
+     * @param Optional $album
+     * @param Optional $trackNR
+     * @param Optional $genre
+     * @param Optional $date
+     * @param Optional $color
+     * @return $this
      */
     public function edit($artist, $title, $album, $trackNR, $genre, $date, $color) {
 
-        $this->object->setArtist($artist);
-        $this->object->setTitle($title);
-        $this->object->setAlbum($album);
-        $this->object->setTrackNumber($trackNR);
-        $this->object->setGenre($genre);
-        $this->object->setDate($date);
-        $this->object->setColor($color);
+        $artist ->then(function ($artist)   { $this->object->setArtist($artist); });
+        $title  ->then(function ($title)    { $this->object->setTitle($title); });
+        $album  ->then(function ($album)    { $this->object->setAlbum($album); });
+        $trackNR->then(function ($trackNR)  { $this->object->setTrackNumber($trackNR); });
+        $genre  ->then(function ($genre)    { $this->object->setGenre($genre); });
+        $date   ->then(function ($date)     { $this->object->setDate($date); });
+        $color  ->then(function ($color)    { $this->object->setColor($color); });
 
         $this->object->save();
+
+        return $this;
 
     }
 

@@ -10,27 +10,40 @@ namespace Framework\Controllers\api\v2\track;
 
 
 use Framework\Controller;
-use Framework\Exceptions\ControllerException;
-use Framework\Models\TrackModel;
+use Framework\Models\AuthUserModel;
+use Framework\Services\DB\DBQuery;
+use Framework\Services\DB\Query\UpdateQuery;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 
 class DoEdit implements Controller {
+    /** @var UpdateQuery $query */
+    private $query;
+    public function doPost(HttpPost $post, JsonResponse $response, DBQuery $dbq, AuthUserModel $user) {
 
-    public function doPost(HttpPost $post, JsonResponse $response) {
+        $id         = $post->getRequired("track_id");
 
-        $id = $post->getParameter("track_id")->getOrElseThrow(ControllerException::noArgument("track_id"));
+        $artist     = $post->getParameter("artist");
+        $title      = $post->getParameter("title");
+        $album      = $post->getParameter("album");
+        $number     = $post->getParameter("track_number");
+        $genre      = $post->getParameter("genre");
+        $date       = $post->getParameter("date");
+        $color      = $post->getParameter("color_id");
 
-        $artist = $post->getParameter("artist")->getOrElseEmpty();
-        $title = $post->getParameter("title")->getOrElseEmpty();
-        $album = $post->getParameter("album")->getOrElseEmpty();
-        $number = $post->getParameter("track_number")->getOrElseEmpty();
-        $genre = $post->getParameter("genre")->getOrElseEmpty();
-        $date = $post->getParameter("date")->getOrElseEmpty();
+        $this->query = $dbq->updateTable("r_tracks")
+            ->where("uid", $user->getID())
+            ->where("tid", explode(",", $id));
 
-        $color = $post->getParameter("color_id")->getOrElse(0);
+        $artist ->then(function ($artist)   { $this->query->set("artist", $artist); });
+        $title  ->then(function ($title)    { $this->query->set("title", $title); });
+        $album  ->then(function ($album)    { $this->query->set("album", $album); });
+        $number ->then(function ($number)   { $this->query->set("track_number", $number); });
+        $genre  ->then(function ($genre)    { $this->query->set("genre", $genre); });
+        $date   ->then(function ($date)     { $this->query->set("date", $date); });
+        $color  ->then(function ($color)    { $this->query->set("color", $color); });
 
-        TrackModel::getInstance($id)->edit($artist, $title, $album, $number, $genre, $date, $color);
+        $this->query->update();
 
     }
 

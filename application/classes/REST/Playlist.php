@@ -129,7 +129,7 @@ class Playlist implements SingletonInterface, Injectable {
      */
     private function getStreamTracksPrefix() {
         $query = DBQuery::getInstance()->selectFrom("mor_stream_tracklist_view");
-        $query->select("tid", "filename", "artist", "title", "duration", "color", "genre", "unique_id");
+        $query->select("tid", "filename", "artist", "title", "duration", "color", "genre", "unique_id", "track_number", "album", "date");
         return $query;
     }
 
@@ -138,7 +138,7 @@ class Playlist implements SingletonInterface, Injectable {
      */
     private function getTracksPrefix() {
         $query = DBQuery::getInstance()->selectFrom("r_tracks");
-        $query->select("tid", "filename", "artist", "title", "duration", "color", "genre");
+        $query->select("tid", "filename", "artist", "title", "duration", "color", "genre", "track_number", "album", "date");
         return $query;
     }
 

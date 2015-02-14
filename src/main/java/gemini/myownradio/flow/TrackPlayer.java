@@ -64,7 +64,7 @@ public class TrackPlayer implements AbstractPlayer {
                 output.flush();
                 while ((available = err.available()) > 0) {
                     length = err.read(buffer, 0, Math.min(available, buffer.length));
-                    logger.sprintf("Ignoring %d bytes of error buffer", length);
+                    //logger.sprintf("Ignoring %d bytes of error buffer", length);
                 }
                 if (broadcast.isNotified()) {
                     broadcast.resetNotify();

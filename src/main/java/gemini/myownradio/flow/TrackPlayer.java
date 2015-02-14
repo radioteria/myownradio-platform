@@ -45,19 +45,26 @@ public class TrackPlayer implements AbstractPlayer {
         ProcessBuilder pb;
         Process proc;
 
+        int bytesDecoded = 0;
+
         pb = new ProcessBuilder(new FFDecoderBuilder(file, offset, jingled).generate());
 
         proc = pb.start();
 
         try (
                 InputStream in = proc.getInputStream();
+                InputStream err = proc.getErrorStream();
         ) {
             byte[] buffer = new byte[4096];
-            int length;
+            int length, available;
             while ((length = in.read(buffer)) != -1) {
+                bytesDecoded += length;
                 output.write(buffer, 0, length);
                 output.flush();
-
+                while ((available = err.available()) > 0) {
+                    length = err.read(buffer, 0, available);
+                    logger.sprintf("Ignoring %d bytes of error buffer", length);
+                }
                 if (broadcast.isNotified()) {
                     broadcast.resetNotify();
                     break;
@@ -69,8 +76,7 @@ public class TrackPlayer implements AbstractPlayer {
             }
         }
 
-
-        try{
+        try {
             proc.waitFor();
         } catch (InterruptedException e) {
             /* NOP */
@@ -79,6 +85,7 @@ public class TrackPlayer implements AbstractPlayer {
         int exitStatus = proc.exitValue();
 
         logger.sprintf("Exit value: %d", exitStatus);
+        logger.sprintf("Bytes decoded: %d", bytesDecoded);
 
     }
 }

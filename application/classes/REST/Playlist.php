@@ -235,7 +235,7 @@ class Playlist implements SingletonInterface, Injectable {
         $stream = StreamStats::getByFilter("sid = :id OR permalink = :id", [":id" => $id])
             ->getOrElseThrow(ControllerException::noStream($id));
 
-        if ($stream->getTracksDuration() == 0) {
+        if ($stream->getTracksDuration() == 0 || $stream->getStatus() == 0) {
 
             $position = 0;
             $tracks = [];

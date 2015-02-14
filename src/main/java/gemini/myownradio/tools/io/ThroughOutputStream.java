@@ -48,7 +48,7 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
         byte[] buffer = new byte[4096];
         int len;
         while (err.available() > 0) {
-            len = err.read(buffer);
+            len = err.read(buffer, 0, Math.min(err.available(), buffer.length));
             if (errOut != null) {
                 errOut.write(buffer, 0, len);
             }

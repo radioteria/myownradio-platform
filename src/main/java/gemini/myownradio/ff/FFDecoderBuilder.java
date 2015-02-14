@@ -18,7 +18,7 @@ public class FFDecoderBuilder {
                 new String[]{
                         "ffmpeg",
                         "-hide_banner",
-                        "-loglevel", "quiet",
+//                        "-loglevel", "quiet",
                         "-err_detect", "explode",
                         "-ss", new DecimalFormat("0.###").format((float) this.offset / 1_000F),
                         "-i", filename,
@@ -33,7 +33,7 @@ public class FFDecoderBuilder {
                 new String[]{
                         "ffmpeg",
                         "-hide_banner",
-                        "-loglevel", "quiet",
+//                        "-loglevel", "quiet",
                         "-err_detect", "explode",
                         "-ss", new DecimalFormat("0.###").format((float) this.offset / 1_000F),
                         "-i", filename,

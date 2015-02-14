@@ -1,5 +1,7 @@
 package gemini.myownradio.tools.io;
 
+import gemini.myownradio.tools.MORLogger;
+
 import java.io.*;
 
 /**
@@ -17,6 +19,8 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
 
     protected int sequence = 0;
     protected PipeIO pipe;
+
+    static MORLogger logger = new MORLogger(MORLogger.MessageKind.PLAYER);
 
     public ThroughOutputStream(OutputStream out, String[] cmd) throws IOException {
         this(out, null, cmd);
@@ -49,9 +53,7 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
         int len;
         while (err.available() > 0) {
             len = err.read(buffer, 0, Math.min(err.available(), buffer.length));
-            if (errOut != null) {
-                errOut.write(buffer, 0, len);
-            }
+            logger.println(new String(buffer, 0, len));
         }
     }
 
@@ -72,8 +74,7 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
     public void write(byte[] b, int off, int len) throws IOException {
         os.write(b, off, len);
         checkInput();
-        if (this.errOut != null)
-            readError();
+        readError();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package gemini.myownradio.flow;
 
 import gemini.myownradio.engine.buffer.ConcurrentBuffer;
+import gemini.myownradio.exception.DecoderException;
 import gemini.myownradio.ff.FFDecoderBuilder;
 import gemini.myownradio.tools.MORLogger;
 
@@ -36,11 +37,11 @@ public class TrackPlayer implements AbstractPlayer {
         this(broadcast, output, file, false);
     }
 
-    public void play() throws IOException {
+    public void play() throws IOException, DecoderException {
         this.play(0);
     }
 
-    public void play(int offset) throws IOException {
+    public void play(int offset) throws IOException, DecoderException {
 
         ProcessBuilder pb;
         Process proc;
@@ -86,6 +87,10 @@ public class TrackPlayer implements AbstractPlayer {
 
         logger.sprintf("Exit value: %d", exitStatus);
         logger.sprintf("Bytes decoded: %d", bytesDecoded);
+
+        if (bytesDecoded == 0) {
+            throw new DecoderException();
+        }
 
     }
 }

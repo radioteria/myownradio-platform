@@ -4,6 +4,7 @@ import gemini.myownradio.engine.buffer.ConcurrentBuffer;
 import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
 import gemini.myownradio.engine.entity.Stream;
 import gemini.myownradio.engine.entity.Track;
+import gemini.myownradio.exception.DecoderException;
 import gemini.myownradio.ff.FFEncoderBuilder;
 import gemini.myownradio.flow.AbstractPlayer;
 import gemini.myownradio.flow.TrackPlayer;
@@ -104,14 +105,9 @@ public class StreamRadio implements Runnable {
                 logger.println("---- PLAYER START ----");
                 try {
                     trackPlayer.play(trackItem.getTrackOffset());
-                } catch (Exception e) {
-                    logger.sprintf("Some error occured: %s", e.getMessage());
-                    if (trackSkipTimes >= 5) {
-                        logger.sprintf("Too many skip attempts. Stopping streamer");
-                        return;
-                    }
+                } catch (DecoderException e) {
+                    logger.println("Track couldn't be decoded. Will skip it.");
                     stream.skipMilliseconds(trackItem.getTimeRemainder());
-                    trackSkipTimes ++;
                 }
 
                 logger.println("---- PLAYER STOP  ----");

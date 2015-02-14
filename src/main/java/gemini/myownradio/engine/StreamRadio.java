@@ -89,7 +89,7 @@ public class StreamRadio implements Runnable {
                     trackPlayer = new TrackPlayer(broadcast, output, trackItem.getPath().getAbsolutePath(),
                             (trackItem.getOrderIndex() % 4 == 0) && (trackItem.getTrackOffset() < 2000L));
                     broadcast.setTitle(trackItem.getTitle());
-                    trackSkipTimes = 0;
+
                 } catch (FileNotFoundException e) {
                     logger.sprintf("File not found: %s", e.getMessage());
                     if (trackSkipTimes >= 5) {
@@ -105,9 +105,15 @@ public class StreamRadio implements Runnable {
                 logger.println("---- PLAYER START ----");
                 try {
                     trackPlayer.play(trackItem.getTrackOffset());
+                    trackSkipTimes = 0;
                 } catch (DecoderException e) {
+                    if (trackSkipTimes >= 5) {
+                        logger.sprintf("Too many skip attempts. Stopping streamer");
+                        return;
+                    }
                     logger.println("Track couldn't be decoded. Will skip it.");
                     stream.skipMilliseconds(trackItem.getTimeRemainder());
+                    trackSkipTimes ++;
                 }
 
                 logger.println("---- PLAYER STOP  ----");

@@ -14,12 +14,13 @@ use Framework\Models\AuthUserModel;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\UpdateQuery;
 use Framework\Services\HttpPost;
+use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
 
 class DoEdit implements Controller {
     /** @var UpdateQuery $query */
     private $query;
-    public function doPost(HttpPost $post, JsonResponse $response, DBQuery $dbq, AuthUserModel $user) {
+    public function doPost(HttpPost $post, JsonResponse $response, DBQuery $dbq, AuthUserModel $user, InputValidator $validator) {
 
         $id         = $post->getRequired("track_id");
 
@@ -30,6 +31,8 @@ class DoEdit implements Controller {
         $genre      = $post->getParameter("genre");
         $date       = $post->getParameter("date");
         $color      = $post->getParameter("color_id");
+
+        $validator->validateTracksList($id);
 
         $this->query = $dbq->updateTable("r_tracks")
             ->where("uid", $user->getID())

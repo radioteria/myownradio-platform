@@ -58,6 +58,7 @@ public class TrackPlayer implements AbstractPlayer {
         ) {
             byte[] buffer = new byte[4096];
             int length, available;
+            logger.println("[START]");
             while ((length = in.read(buffer)) != -1) {
                 bytesDecoded += length;
 
@@ -71,16 +72,16 @@ public class TrackPlayer implements AbstractPlayer {
                     break;
                 }
             }
+            logger.println("[DONE]");
         } catch (IOException e) {
+            logger.println("[EXCEPTION]");
             if (e.getMessage().equals("Shutdown")) {
                 throw new IOException(e);
             }
-        }
-
-        try {
-            proc.waitFor();
-        } catch (InterruptedException e) {
-            /* NOP */
+        } finally {
+            logger.println("[FINALLY]");
+            try { proc.destroyForcibly().waitFor(); }
+            catch (InterruptedException ie) { /* NOP */ }
         }
 
         int exitStatus = proc.exitValue();

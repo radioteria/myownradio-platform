@@ -2,11 +2,18 @@
 
 namespace Framework\Models;
 
+use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\Stats;
 use Framework\Services\Database;
+use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\InputValidator;
+use Objects\AccountPlan;
+use Objects\Link;
+use Objects\Payment;
+use Objects\Plan;
+use Objects\Quote;
 use Objects\Stream;
 use Objects\Subscription;
 use Objects\Track;
@@ -27,11 +34,11 @@ class UserModel extends Model implements SingletonInterface {
 
     protected $userID;
 
-    private $activePlan;
-    private $planExpire;
-
     /** @var User $user */
     private $user;
+
+    /** @var AccountPlan $planObject */
+    private $planObject, $planExpires;
 
     public function __construct() {
 
@@ -67,56 +74,39 @@ class UserModel extends Model implements SingletonInterface {
 
         }
 
-        $active = $this->readActivePlan();
-
-        $this->activePlan = intval($active["plan_id"]);
-        $this->planExpire = intval($active["expire"]);
+        $this->loadAccountQuote();
         $this->userID = $this->user->getID();
-
         $this->loadStats();
 
     }
 
-    /**
-     * @return mixed
-     */
-    private function readActivePlan() {
-
-        return Database::doInConnection(function (Database $db) {
-
-            $query = $db->getDBQuery()->selectFrom("r_subscriptions");
-            $query->select("*");
-            $query->where("user_id", $this->user->getID());
-            $query->where("expire > UNIX_TIMESTAMP(NOW())");
-            $query->orderBy("sub_id DESC");
-            $query->limit(1);
-
-            return $db->fetchOneRow($query)
-                ->getOrElse(["plan_id" => 0, "expire" => null]);
-
-        });
-
+    public function loadAccountQuote() {
+        $defaultPlan = AccountPlan::getByID(1)->get();
+        /** @var Payment $actualPayment */
+        $actualPayment = Payment::getByFilter("ACTUAL", [$this->getID()])->getOrElseNull();
+        if ($actualPayment === null) {
+            $this->planExpires = time();
+            $this->planObject = $defaultPlan;
+            return null;
+        } else {
+            $this->planExpires = $actualPayment->getExpires();
+            $this->planObject = AccountPlan::getByID($actualPayment->getPlanId())->getOrElse($defaultPlan);
+        }
     }
 
     /**
      * @return mixed
+     * @deprecated
      */
-    public function getActivePlanId() {
-        return $this->activePlan;
+    public function getCurrentPlanExpires() {
+        return $this->planExpires;
     }
 
     /**
-     * @return mixed
+     * @return AccountPlan
      */
-    public function getActivePlanExpire() {
-        return $this->planExpire;
-    }
-
-    /**
-     * @return PlanModel
-     */
-    public function getActivePlan() {
-        return PlanModel::getInstance($this->activePlan);
+    public function getCurrentPlan() {
+        return $this->planObject;
     }
 
     public function getID() {
@@ -141,8 +131,6 @@ class UserModel extends Model implements SingletonInterface {
 
     public function changePassword($newPassword, $oldPassword) {
 
-        //$md5 = md5($this->user->getLogin() . $oldPassword);
-
         if (!password_verify($oldPassword, $this->user->getPassword())) {
             throw UnauthorizedException::wrongPassword();
         }
@@ -153,24 +141,23 @@ class UserModel extends Model implements SingletonInterface {
 
     public function changePasswordNow($password) {
         $validator = InputValidator::getInstance();
-
         $validator->validatePassword($password);
-
-        //$hash = md5($this->getLogin() . $password);
         $crypt = password_hash($password, PASSWORD_DEFAULT);
-
         $this->user->setPassword($crypt)->save();
     }
 
-    public function changeActivePlan(PlanModel $plan, BasisModel $basis) {
-
-        $object = new Subscription();
-        $object->setUserID($this->getID());
-        $object->setPlan($plan->getID());
-        $object->setPaymentInfo($basis->getInfo());
-        $object->setExpire(time() + $basis->getDuration());
-        $object->save();
-
+    /**
+     * @param AccountPlan $plan
+     * @param $source
+     */
+    public function changeAccountPlan(AccountPlan $plan, $source) {
+        $payment = new Payment();
+        $payment->setUserId($this->user->getID());
+        $payment->setPlanId($plan->getPlanId());
+        $payment->setPaymentSource($source);
+        $payment->setPaymentComment("");
+        $payment->setExpires($this->planExpires + $plan->getPlanDuration());
+        $payment->save();
     }
 
     public function getDisplayName() {
@@ -212,33 +199,19 @@ class UserModel extends Model implements SingletonInterface {
     public function changeAvatar($file) {
 
         $folders = Folders::getInstance();
-
         $validator = InputValidator::getInstance();
-
         $validator->validateImageMIME($file["tmp_name"]);
-
         $random = Common::generateUniqueID();
-
         $this->removeAvatar();
-
         $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
-
-
         $newImageFile = sprintf("avatar%05d_%s.%s", $this->userID, $random, strtolower($extension));
         $newImagePath = $folders->genAvatarPath($newImageFile);
-
         $result = move_uploaded_file($file['tmp_name'], $newImagePath);
-
         if ($result !== false) {
-
             $this->user->setAvatar($newImageFile)->save();
-
             return $folders->genAvatarUrl($newImageFile);
-
         } else {
-
             return null;
-
         }
 
     }
@@ -255,21 +228,29 @@ class UserModel extends Model implements SingletonInterface {
      * @throws UnauthorizedException
      */
     public function checkPassword($password) {
-        $md5 = md5($this->getLogin() . $password);
-        if ($md5 != $this->user->getPassword()) {
+        if (!password_verify($password, $this->user->getPassword())) {
             throw UnauthorizedException::wrongPassword();
         }
     }
 
+    /**
+     * Account Delete
+     */
     public function delete() {
 
+        /* Delete user's streams */
         $streams = Stream::getListByFilter("uid", [$this->user->getID()]);
 
         foreach($streams as $stream) {
+            $links = Link::getListByFilter("stream_id", [$stream->getID()]);
+            foreach ($links as $link) {
+                $link->delete();
+            }
             $stream->delete();
         }
 
 
+        /* Delete user's tracks */
         $tracks = Track::getListByFilter("uid", [$this->user->getID()]);
 
         foreach($tracks as $track) {
@@ -277,6 +258,7 @@ class UserModel extends Model implements SingletonInterface {
             $model->delete();
         }
 
+        /* Delete accout object */
         $this->user->delete();
 
     }

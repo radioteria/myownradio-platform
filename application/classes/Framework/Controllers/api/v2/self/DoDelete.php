@@ -9,12 +9,12 @@
 namespace Framework\Controllers\api\v2\self;
 
 
-use Framework\Exceptions\ControllerException;
+use Framework\Controller;
 use Framework\Models\AuthUserModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 
-class DoDelete {
+class DoDelete implements Controller {
 
     public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
 
@@ -22,7 +22,7 @@ class DoDelete {
 
         $user->checkPassword($password);
 
-        $user->delete($password);
+        $user->delete();
 
     }
 

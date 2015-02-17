@@ -9,6 +9,7 @@
 namespace Framework\Models;
 
 
+use Framework\Exceptions\ControllerException;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\Injectable;
@@ -38,6 +39,12 @@ class StreamsModel implements Injectable, SingletonInterface {
 
 
     public function create($name, $info, $hashtags, $category, Optional $permalink, $access) {
+
+        if ($this->user->getCurrentPlan()->getStreamsMax() !== null &&
+            $this->user->getStreamsCount() < $this->user->getCurrentPlan()->getStreamsMax()) {
+            throw ControllerException::of(sprintf("You are already created %d streams of %d available. Please upgrade account.",
+                $this->user->getStreamsCount(), $this->user->getCurrentPlan()->getStreamsMax()));
+        }
 
         $validator = InputValidator::getInstance();
 

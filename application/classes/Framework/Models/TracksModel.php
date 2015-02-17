@@ -64,7 +64,7 @@ class TracksModel implements Injectable, SingletonInterface {
             ->getOrElseThrow(new ControllerException("Uploaded file has zero duration"));
 
 
-        $uploadTimeLeft = $this->user->getActivePlan()->getUploadLimit() - $this->user->getTracksDuration() - $duration;
+        $uploadTimeLeft = $this->user->getCurrentPlan()->getTimeMax() - $this->user->getTracksDuration() - $duration;
 
         if ($duration > $maximalDuration) {
             throw new ControllerException("Uploaded file is too long: " . $duration);
@@ -155,8 +155,7 @@ class TracksModel implements Injectable, SingletonInterface {
 
         }
 
-        $uploadTimeLeft = $this->user->getActivePlan()->getUploadLimit() -
-            $this->user->getTracksDuration();
+        $uploadTimeLeft = $this->user->getCurrentPlan()->getTimeMax() - $this->user->getTracksDuration();
 
         if ($uploadTimeLeft < $track->getDuration()) {
             throw new ControllerException("You are exceeded available upload time. Please upgrade your account.");

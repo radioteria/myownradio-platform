@@ -17,6 +17,7 @@ use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
  * @package Model\ActiveRecords
  * @table mor_payment_basis
  * @key id
+ * @deprecated
  */
 class Basis extends ActiveRecordObject implements ActiveRecord {
 

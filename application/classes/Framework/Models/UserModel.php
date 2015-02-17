@@ -2,20 +2,14 @@
 
 namespace Framework\Models;
 
-use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\Stats;
-use Framework\Services\Database;
-use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\InputValidator;
 use Objects\AccountPlan;
 use Objects\Link;
 use Objects\Payment;
-use Objects\Plan;
-use Objects\Quote;
 use Objects\Stream;
-use Objects\Subscription;
 use Objects\Track;
 use Objects\User;
 use Tools\Common;
@@ -241,7 +235,7 @@ class UserModel extends Model implements SingletonInterface {
         /* Delete user's streams */
         $streams = Stream::getListByFilter("uid", [$this->user->getID()]);
 
-        foreach($streams as $stream) {
+        foreach ($streams as $stream) {
             $links = Link::getListByFilter("stream_id", [$stream->getID()]);
             foreach ($links as $link) {
                 $link->delete();
@@ -253,7 +247,7 @@ class UserModel extends Model implements SingletonInterface {
         /* Delete user's tracks */
         $tracks = Track::getListByFilter("uid", [$this->user->getID()]);
 
-        foreach($tracks as $track) {
+        foreach ($tracks as $track) {
             $model = new TrackModel($track->getID());
             $model->delete();
         }

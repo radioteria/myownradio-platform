@@ -11,6 +11,7 @@ namespace Framework;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\DocNotFoundException;
 use Framework\Exceptions\NotImplementedException;
+use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\HttpGet;
 use Framework\Services\HttpRequest;
 use Framework\Services\Invoker;
@@ -73,6 +74,10 @@ class Router implements SingletonInterface{
             if (!$sub->goMatching($this->legacyRoute)) {
                 $this->findRoute();
             }
+
+        } catch (UnauthorizedException $e) {
+
+            $this->exceptionRouter($e);
 
         } catch (ControllerException $e) {
 

@@ -31,6 +31,7 @@ class DoEdit implements Controller {
         $genre      = $post->getParameter("genre");
         $date       = $post->getParameter("date");
         $color      = $post->getParameter("color_id");
+        $cue        = $post->getRequired("cue");
 
         $validator->validateTracksList($id);
 
@@ -45,6 +46,7 @@ class DoEdit implements Controller {
         $genre  ->then(function ($genre)    { $this->query->set("genre", $genre); });
         $date   ->then(function ($date)     { $this->query->set("date", $date); });
         $color  ->then(function ($color)    { $this->query->set("color", $color); });
+        $cue    ->then(function ($cue)      { $this->query->set("cue", $cue); });
 
         $this->query->update();
 

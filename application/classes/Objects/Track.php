@@ -20,7 +20,7 @@ class Track extends ActiveRecordObject implements ActiveRecord {
 
     protected $tid, $uid, $filename, $ext,
         $artist, $title, $album,
-        $track_number, $genre, $date,
+        $track_number, $genre, $date, $cue,
         $duration, $filesize, $color = 0,
         $uploaded, $copy_of, $used_count = 0;
 
@@ -91,6 +91,12 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         return $this->used_count;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getCue() {
+        return $this->cue;
+    }
 
 
     /*
@@ -160,5 +166,14 @@ class Track extends ActiveRecordObject implements ActiveRecord {
     public function setUsedCount($used_count) {
         $this->used_count = $used_count;
     }
+
+    /**
+     * @param mixed $cue
+     */
+    public function setCue($cue) {
+        $this->cue = $cue;
+    }
+
+
 
 }

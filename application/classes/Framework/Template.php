@@ -43,4 +43,10 @@ class Template {
         $this->raw = new stdClass();
         return $this;
     }
+
+    public function putObject($stream) {
+        foreach ($stream as $key=>$val) {
+            $this->addVariable($key, $val, false);
+        }
+    }
 }

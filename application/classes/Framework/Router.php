@@ -54,14 +54,15 @@ class Router implements SingletonInterface{
     }
 
     private function registerSubRoutes() {
-        $sub = SubRouter::getInstance();
 
-        $sub->addRoute("test/:id", function (JsonResponse $response, HttpGet $get) {
-            $response->setData($get->getParameter("id")->getOrElse(0));
-        });
+        $sub = SubRouter::getInstance();
 
         $sub->addRoute("content/streamcovers/:fn", "content\\DoGetStreamCover");
         $sub->addRoute("content/avatars/:fn", "content\\DoGetUserAvatar");
+        $sub->addRoute("content/audio/&id", "content\\DoGetPreviewAudio");
+
+        $sub->addRoute("streams/:id", "helpers\\DoStream");
+
     }
 
     public function route() {

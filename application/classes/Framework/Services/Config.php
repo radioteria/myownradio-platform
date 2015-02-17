@@ -6,7 +6,7 @@ use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-class Config implements SingletonInterface {
+class Config implements SingletonInterface, Injectable {
 
     use Singleton;
 

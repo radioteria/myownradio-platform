@@ -14,15 +14,14 @@ use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
 use Objects\Stream;
+use REST\Streams;
 use Tools\Folders;
 
 class DoGetLink implements Controller {
-    public function doGet(HttpGet $get, Folders $folders, JsonResponse $response) {
+    public function doGet(HttpGet $get, Folders $folders, JsonResponse $response, Streams $streams) {
         $id = $get->getRequired("stream_id");
-        $stream = Stream::getByID($id)->getOrElseThrow(ControllerException::noStream($id));
-        /** @var Stream $stream */
+        $stream = $streams->getOneStream($id);
         $response->setData([
-            "url" => $stream->getStreamUrl(),
             "stream" => $stream
         ]);
     }

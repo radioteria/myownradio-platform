@@ -20,13 +20,12 @@ class DoGetStreamsByUser implements Controller {
 
     public function doGet(JsonResponse $response, Streams $streams, HttpGet $get) {
 
-        $get->getParameter("user_id")
-            ->then(function ($id) use ($response, $streams) {
-                $response->setData($streams->getByUser(UserModel::getInstance($id)));
-            })
-            ->otherwise(function () use ($response, $streams) {
-                $response->setData($streams->getByUser(AuthUserModel::getInstance()));
-            });
+
+        $user = $get->getRequired("user");
+
+        $response->setData($streams->getByUser($user));
+
+
 
     }
 

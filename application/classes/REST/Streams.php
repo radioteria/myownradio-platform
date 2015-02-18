@@ -11,10 +11,12 @@ namespace REST;
 
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\AuthUserModel;
 use Framework\Models\UserModel;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Injectable;
+use Objects\User;
 use Tools\Common;
 use Tools\Folders;
 use Tools\Singleton;
@@ -210,12 +212,12 @@ class Streams implements \Countable, Injectable, SingletonInterface {
     /**
      * @param UserModel $user
      * @param int $offset
+     * @param int $limit
      * @return array
      */
     public function getBookmarksByUser(UserModel $user, $offset = 0) {
 
         $query = $this->getStreamsPrefix();
-        $query->where("a.sid IN (SELECT sid FROM r_bookmarks WHERE uid = ?)", [$user->getID()]);
 
         $query->offset($offset);
         $query->limit(Defaults::DEFAULT_STREAMS_PER_REQUEST);
@@ -229,6 +231,8 @@ class Streams implements \Countable, Injectable, SingletonInterface {
             $query->select("0 as bookmarked");
         }
 
+        $query->where("a.sid IN (SELECT stream_id FROM r_bookmarks WHERE user_id = ?)", [$user->getID()]);
+
         $streams = $query->fetchAll(null, function ($row) {
             $this->processStreamRow($row);
             return $row;
@@ -238,7 +242,10 @@ class Streams implements \Countable, Injectable, SingletonInterface {
 
     }
 
-    public function getByUser(UserModel $user) {
+    public function getByUser($userKey) {
+
+        $user = User::getByFilter("FIND_BY_KEY", [ ":key" => $userKey ])
+            ->getOrElseThrow(UnauthorizedException::noUserExists($userKey));
 
         $query = $this->getStreamsPrefix();
         $query->where("a.uid", [$user->getID()]);

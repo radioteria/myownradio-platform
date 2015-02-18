@@ -18,17 +18,11 @@ use REST\Streams;
 
 class DoGetBookmarks implements Controller {
 
-    public function doGet(JsonResponse $response, Streams $streams, HttpGet $get) {
+    public function doGet(JsonResponse $response, Streams $streams, HttpGet $get, AuthUserModel $model) {
 
         $offset = $get->getParameter("offset")->getOrElse(0);
 
-        $get->getParameter("user_id")
-            ->then(function ($id) use ($response, $streams, $offset) {
-                $response->setData($streams->getBookmarksByUser(UserModel::getInstance($id), $offset));
-            })
-            ->otherwise(function () use ($response, $streams, $offset) {
-                $response->setData($streams->getBookmarksByUser(AuthUserModel::getInstance(), $offset));
-            });
+        $response->setData($streams->getBookmarksByUser($model, $offset));
 
     }
 

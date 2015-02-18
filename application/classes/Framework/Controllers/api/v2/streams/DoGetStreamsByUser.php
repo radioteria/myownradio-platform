@@ -14,16 +14,21 @@ use Framework\Models\AuthUserModel;
 use Framework\Models\UserModel;
 use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
+use Objects\User;
 use REST\Streams;
+use REST\Users;
 
 class DoGetStreamsByUser implements Controller {
 
-    public function doGet(JsonResponse $response, Streams $streams, HttpGet $get) {
+    public function doGet(JsonResponse $response, Streams $streams, HttpGet $get, Users $users) {
 
 
         $user = $get->getRequired("user");
 
-        $response->setData($streams->getByUser($user));
+        $response->setData([
+            "user" => $users->getUserByID($user),
+            "streams" => $streams->getByUser($user)
+        ]);
 
 
 

@@ -20,6 +20,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
     protected $groups = [];
 
     private $innerJoin = [];
+    private $leftJoin = [];
 
     public function __construct($tableName, $key = null, $value = null) {
         $this->tableName = $tableName;
@@ -29,7 +30,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
     }
 
 
-    // Left join builder section
+    // Inner join builder section
 
     public function innerJoin($table, $on) {
 
@@ -39,6 +40,15 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
 
     }
 
+    // Left join builder section
+
+    public function leftJoin($table, $on) {
+
+        $this->leftJoin[] = [$table, $on];
+
+        return $this;
+
+    }
 
     /**
      * @param int $limit
@@ -68,6 +78,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
         $query[] = $this->buildSelect();
         $query[] = "FROM " . $this->tableName;
         $query[] = $this->buildInnerJoins();
+        $query[] = $this->buildLeftJoins();
         $query[] = $this->buildWheres($pdo);
         $query[] = $this->buildGroupBy();
         $query[] = $this->buildOrderBy();
@@ -83,6 +94,18 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
 
         foreach ($this->innerJoin as $join) {
             $build[] = "INNER JOIN " . $join[0] . " ON " . $join[1];
+        }
+
+        return implode(" ", $build);
+
+    }
+
+    private function buildLeftJoins() {
+
+        $build = [];
+
+        foreach ($this->leftJoin as $join) {
+            $build[] = "LEFT JOIN " . $join[0] . " ON " . $join[1];
         }
 
         return implode(" ", $build);

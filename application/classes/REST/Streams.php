@@ -34,7 +34,8 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         $prefix = (new SelectQuery("r_streams a"))
             ->innerJoin("r_static_stream_vars b", "a.sid = b.stream_id")
             ->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags", "a.category", "a.status",
-                "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count", "b.tracks_count", "b.tracks_duration"]);
+                "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count",
+                "b.tracks_count", "b.tracks_duration"]);
 
         return $prefix;
 
@@ -58,8 +59,17 @@ class Streams implements \Countable, Injectable, SingletonInterface {
      */
     public function getOneStream($id) {
 
+        $userId = AuthUserModel::getAuthorizedUserID();
+
         $queryStream = $this->getStreamsPrefix();
         $queryStream->where("(a.sid = :id) OR (a.permalink = :id)", [':id' => $id]);
+
+        if (is_numeric($userId)) {
+            $queryStream->leftJoin("r_bookmarks c", "c.stream_id = a.sid AND c.user_id = ${userId}");
+            $queryStream->select("IF(c.user_id IS NOT NULL, 1, 0) as bookmarked");
+        } else {
+            $queryStream->select("0 as bookmarked");
+        }
 
         $stream = $queryStream->fetchOneRow()
             ->getOrElseThrow(new ControllerException("Stream not found"));
@@ -125,6 +135,15 @@ class Streams implements \Countable, Injectable, SingletonInterface {
 
         $queryStream->orderBy("created DESC");
 
+        $userId = AuthUserModel::getAuthorizedUserID();
+
+        if (is_numeric($userId)) {
+            $queryStream->leftJoin("r_bookmarks c", "c.stream_id = a.sid AND c.user_id = ${userId}");
+            $queryStream->select("IF(c.user_id IS NOT NULL, 1, 0) as bookmarked");
+        } else {
+            $queryStream->select("0 as bookmarked");
+        }
+
         $streams = $queryStream->fetchAll(null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {
                 $involved_users[] = $row['uid'];
@@ -165,6 +184,15 @@ class Streams implements \Countable, Injectable, SingletonInterface {
             [':id' => $id]);
         $queryStream->limit(self::MAXIMUM_SIMILAR_COUNT);
 
+        $userId = AuthUserModel::getAuthorizedUserID();
+
+        if (is_numeric($userId)) {
+            $queryStream->leftJoin("r_bookmarks c", "c.stream_id = a.sid AND c.user_id = ${userId}");
+            $queryStream->select("IF(c.user_id IS NOT NULL, 1, 0) as bookmarked");
+        } else {
+            $queryStream->select("0 as bookmarked");
+        }
+
         $streams = $queryStream->fetchAll(null, function ($row) use (&$involved_users) {
             if (array_search($row['uid'], $involved_users) === false) {
                 $involved_users[] = $row['uid'];
@@ -192,6 +220,15 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         $query->offset($offset);
         $query->limit(Defaults::DEFAULT_STREAMS_PER_REQUEST);
 
+        $userId = AuthUserModel::getAuthorizedUserID();
+
+        if (is_numeric($userId)) {
+            $query->leftJoin("r_bookmarks c", "c.stream_id = a.sid AND c.user_id = ${userId}");
+            $query->select("IF(c.user_id IS NOT NULL, 1, 0) as bookmarked");
+        } else {
+            $query->select("0 as bookmarked");
+        }
+
         $streams = $query->fetchAll(null, function ($row) {
             $this->processStreamRow($row);
             return $row;
@@ -205,6 +242,15 @@ class Streams implements \Countable, Injectable, SingletonInterface {
 
         $query = $this->getStreamsPrefix();
         $query->where("a.uid", [$user->getID()]);
+
+        $userId = AuthUserModel::getAuthorizedUserID();
+
+        if (is_numeric($userId)) {
+            $query->leftJoin("r_bookmarks c", "c.stream_id = a.sid AND c.user_id = ${userId}");
+            $query->select("IF(c.user_id IS NOT NULL, 1, 0) as bookmarked");
+        } else {
+            $query->select("0 as bookmarked");
+        }
 
         $streams = $query->fetchAll(null, function ($row) {
             $this->processStreamRow($row);
@@ -225,6 +271,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         $row['key'] = empty($row['permalink']) ? $row['sid'] : $row['permalink'];
         $row['hashtags_array'] = strlen($row['hashtags']) ? preg_split("/\\s*\\,\\s*/", $row['hashtags']) : null;
         $row['url'] = Folders::getInstance()->genStreamPageUrl($row);
+        $row['bookmarked'] = boolval($row['bookmarked']);
 
     }
 

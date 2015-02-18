@@ -20,6 +20,7 @@ use Framework\Services\HttpSession;
 use Framework\Services\Injectable;
 use Framework\Services\InputValidator;
 use Framework\Services\Mailer;
+use Framework\Template;
 use Objects\User;
 use Tools\File;
 use Tools\Singleton;
@@ -170,10 +171,11 @@ class UsersModel implements SingletonInterface, Injectable {
 
         self::createUserDirectory($newUser->getID());
 
+
         $notify = new Mailer("no-reply@myownradio.biz", "myownradio.biz");
         $notify->addAddress("roman@homefs.biz");
         $notify->setSubject("You have new user");
-        $notify->setBody(sprintf("Hello! You have new user %s (%s).", $login, $email));
+        $notify->setBody(sprintf("Hello! You have a new user '%s' (%s).", $login, $email));
         $notify->send();
 
         return new UserModel($newUser->getID());

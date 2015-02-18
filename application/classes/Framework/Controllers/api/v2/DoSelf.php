@@ -26,7 +26,7 @@ class DoSelf implements Controller {
 
         $response->setData([
             'user'      => $users->getUserByID($userModel->getID()),
-            'streams'   => $streams->getByUser($userModel)
+            'streams'   => $streams->getByUser($userModel->getID())
         ]);
         
     }

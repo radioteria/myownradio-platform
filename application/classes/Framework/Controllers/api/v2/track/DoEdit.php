@@ -31,7 +31,7 @@ class DoEdit implements Controller {
         $genre      = $post->getParameter("genre");
         $date       = $post->getParameter("date");
         $color      = $post->getParameter("color_id");
-        $cue        = $post->getRequired("cue");
+        $cue        = $post->getParameter("cue");
 
         $validator->validateTracksList($id);
 

@@ -31,7 +31,6 @@ class DoGetPreviewAudio implements Controller {
 
             header("Content-Type: audio/mp3");
             if (strtolower($track->getExtension()) == "mp3") {
-
                 $file = new File($track->getOriginalFile());
                 $file->echoContents();
             } else {

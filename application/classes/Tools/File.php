@@ -154,6 +154,7 @@ class File {
     }
 
     public function echoContents() {
+        $this->testFound();
         $is = fopen($this->file, "r");
         while ($data = fread($is, 2048)) {
             echo $data;

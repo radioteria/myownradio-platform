@@ -22,7 +22,8 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         $artist, $title, $album,
         $track_number, $genre, $date, $cue,
         $duration, $filesize, $color = 0,
-        $uploaded, $copy_of, $used_count = 0;
+        $uploaded, $copy_of, $used_count = 0,
+        $is_new = 1;
 
     /*
      * Bean Getters
@@ -98,6 +99,14 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         return $this->cue;
     }
 
+    /**
+     * @return int
+     */
+    public function getIsNew() {
+        return $this->is_new;
+    }
+
+
 
     /*
      * Bean Setters
@@ -172,6 +181,13 @@ class Track extends ActiveRecordObject implements ActiveRecord {
      */
     public function setCue($cue) {
         $this->cue = $cue;
+    }
+
+    /**
+     * @param int $is_new
+     */
+    public function setIsNew($is_new) {
+        $this->is_new = $is_new;
     }
 
 

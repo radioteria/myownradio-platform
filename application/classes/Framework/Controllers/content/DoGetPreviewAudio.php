@@ -13,8 +13,8 @@ use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
 use Framework\Services\Config;
-use Framework\Services\HttpGet;
 
+use Framework\Services\HttpGet;
 use Objects\Track;
 use Tools\File;
 
@@ -22,22 +22,36 @@ class DoGetPreviewAudio implements Controller {
     public function doGet(HttpGet $get, AuthUserModel $user, Config $config) {
         try {
             $id = $get->getRequired("id");
+
+            /**
+             * @var Track $track
+             */
             $track = Track::getByID($id)->getOrElseThrow(ControllerException::noTrack($id));
-            /** @var Track $track */
 
             if ($track->getUserID() != $user->getID()) {
                 throw ControllerException::noPermission();
             }
 
+            if ($track->getIsNew() != 0) {
+                $track->setIsNew(0);
+                $track->save();
+            }
+
+            $file = new File($track->getOriginalFile());
+
+            if (!$file->exists()) {
+                throw ControllerException::of("Track file not found on server");
+            }
+
             header("Content-Type: audio/mp3");
-            if (strtolower($track->getExtension()) == "mp3") {
-                $file = new File($track->getOriginalFile());
+            set_time_limit(0);
+            if (strtolower($track->getExtension()) === null) {
                 $file->echoContents();
             } else {
                 $program = $config->getSetting("streaming", "track_preview")
                     ->getOrElseThrow(ControllerException::of("no preview configured"));
 
-                $process = sprintf($program, escapeshellarg($track->getOriginalFile()));
+                $process = sprintf($program, escapeshellarg($track->getOriginalFile()), $track->getDuration() / 3000);
 
                 $proc = popen($process, "r");
                 while ($data = fread($proc, 4096)) {

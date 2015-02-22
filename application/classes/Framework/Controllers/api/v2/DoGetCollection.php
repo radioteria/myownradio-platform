@@ -17,7 +17,8 @@ class DoGetCollection implements Controller {
     public function doGet(DBQuery $query, JsonResponse $response) {
         $response->setData([
             "countries"     => $query->selectFrom("mor_countries")->fetchAll(),
-            "categories"    => $query->selectFrom("r_categories")->fetchAll()
+            "categories"    => $query->selectFrom("r_categories")->fetchAll(),
+            "groups"        => $query->selectFrom("r_colors")->fetchAll()
         ]);
     }
 } 

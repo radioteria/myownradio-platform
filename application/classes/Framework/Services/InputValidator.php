@@ -11,6 +11,7 @@ namespace Framework\Services;
 use Framework\Exceptions\ControllerException;
 use Framework\Services\DB\DBQuery;
 use Objects\Category;
+use Objects\Color;
 use Objects\Country;
 use Tools\Singleton;
 
@@ -265,6 +266,11 @@ class InputValidator implements Injectable {
         if (strpos($mime, "image", 0) !== 0) {
             throw new ControllerException("File is not valid image file");
         }
+    }
+
+    public function validateTrackColor($color) {
+        Color::getByID($color)
+            ->justThrow(new ControllerException(sprintf("Invalid color id specified", $color)));
     }
 
 }

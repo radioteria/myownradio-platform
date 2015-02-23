@@ -10,7 +10,7 @@ class Folders implements Injectable, SingletonInterface {
     use Singleton;
 
     /* Common constants */
-    const MOR_REST_DOMAIN = "http://api.myownradio.biz";
+    const MOR_REST_DOMAIN = "//myownradio.biz";
     const MOR_HEAP_FOLDER = "/media/www/myownradio.biz/heap";
     const MOR_CONTENT_FOLDER = "/media/www/myownradio.biz/content";
 
@@ -78,7 +78,7 @@ class Folders implements Injectable, SingletonInterface {
     }
 
     function genStreamPageUrl($id) {
-        return sprintf("http://myownradio.biz/streams/%s", $id["key"]);
+        return sprintf("//myownradio.biz/streams/%s", $id["key"]);
     }
 
 

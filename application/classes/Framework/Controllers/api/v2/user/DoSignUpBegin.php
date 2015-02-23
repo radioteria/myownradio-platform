@@ -28,9 +28,9 @@ class DoSignUpBegin implements Controller {
         $validator->validateUniqueUserEmail($email);
 
         // Validate code
-        $query->selectFrom("mor_invite", "code", $code)->fetchOneColumn()
-            ->then(function ($code) use ($query) { $query->deleteFrom("mor_invite", "code", $code)->update(); })
-            ->justThrow(new ControllerException("Incorrect invite code entered"));
+//        $query->selectFrom("mor_invite", "code", $code)->fetchOneColumn()
+//            ->then(function ($code) use ($query) { $query->deleteFrom("mor_invite", "code", $code)->update(); })
+//            ->justThrow(new ControllerException("Incorrect invite code entered"));
 
         LettersModel::sendRegistrationLetter($email);
 

@@ -131,6 +131,9 @@ class Router implements SingletonInterface{
 
         try {
 
+            // Create instance of desired controller
+            //Injector::getInstance()->call([$classInstance, $method]);
+
             // Try to find required method and get parameters
             $invoker = $reflection->getMethod($method);
 
@@ -140,10 +143,11 @@ class Router implements SingletonInterface{
 
         }
 
-        // Create instance of desired controller
         $classInstance = $reflection->newInstance();
 
+
         // Execute controller
+
         Invoker::invokeMethod($classInstance, $invoker);
     }
 

@@ -12,9 +12,9 @@ use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\DocNotFoundException;
 use Framework\Exceptions\NotImplementedException;
 use Framework\Exceptions\UnauthorizedException;
+use Framework\Injector\Injector;
 use Framework\Services\HttpGet;
 use Framework\Services\HttpRequest;
-use Framework\Services\Invoker;
 use Framework\Services\JsonResponse;
 use Framework\Services\SubRouter;
 use ReflectionClass;
@@ -129,13 +129,11 @@ class Router implements SingletonInterface{
             throw new DocNotFoundException("Controller must implement Framework\\Controller interface");
         }
 
+        $classInstance = $reflection->newInstance();
+
         try {
 
-            // Create instance of desired controller
-            //Injector::getInstance()->call([$classInstance, $method]);
-
-            // Try to find required method and get parameters
-            $invoker = $reflection->getMethod($method);
+            Injector::getInstance()->call([$classInstance, $method]);
 
         } catch (\ReflectionException $e) {
 
@@ -143,12 +141,6 @@ class Router implements SingletonInterface{
 
         }
 
-        $classInstance = $reflection->newInstance();
-
-
-        // Execute controller
-
-        Invoker::invokeMethod($classInstance, $invoker);
     }
 
     private function exceptionRouter(ControllerException $exception) {

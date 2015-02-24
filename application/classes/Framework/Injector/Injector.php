@@ -23,7 +23,7 @@ class Injector implements Injectable, SingletonInterface {
      * @throws \Exception
      */
     public function injectByClass($class) {
-        if ($class->implementsInterface("Framework\\Services\\Injectable")) {
+        if (!$class->implementsInterface("Framework\\Services\\Injectable")) {
             throw new \Exception("Object could not be injected");
         }
         if ($class->implementsInterface("Tools\\SingletonInterface")) {
@@ -91,7 +91,7 @@ class Injector implements Injectable, SingletonInterface {
             $reflection = new \ReflectionMethod($callable[0], $callable[1]);
             return $reflection->invokeArgs($callable[0],
                 $this->injectByFunctionArguments($reflection->getParameters()));
-        } else if (is_string($callable)) {
+        } else if (is_callable($callable) || is_string($callable)) {
             $reflection = new \ReflectionFunction($callable);
             return $reflection->invokeArgs(
                 $this->injectByFunctionArguments($reflection->getParameters()));

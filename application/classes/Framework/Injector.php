@@ -12,16 +12,6 @@ namespace Framework;
 class Injector {
 
     /**
-     * @param string $name
-     * @return mixed|object
-     * @throws \Exception
-     */
-    public static function injectByName($name) {
-        $class = new \ReflectionClass($name);
-        return self::injectByClass($class);
-    }
-
-    /**
      * @param \ReflectionClass $class
      * @return mixed|object
      * @throws \Exception
@@ -35,6 +25,16 @@ class Injector {
         } else {
             return $class->newInstanceArgs();
         }
+    }
+
+    /**
+     * @param string $name
+     * @return mixed|object
+     * @throws \Exception
+     */
+    public static function injectByName($name) {
+        $class = new \ReflectionClass($name);
+        return self::injectByClass($class);
     }
 
     /**

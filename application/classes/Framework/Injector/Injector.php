@@ -69,11 +69,32 @@ class Injector implements Injectable, SingletonInterface {
         return $array;
     }
 
+    /**
+     * @param array $arguments
+     * @return array
+     */
+    public function injectByFunctionArguments(array $arguments) {
+        $array = [];
+        foreach ($arguments as $argument) {
+            $array[] = $this->injectByClass($argument->getClass());
+        }
+        return $array;
+    }
+
+    /**
+     * @param $callable
+     * @return mixed
+     * @throws \Exception
+     */
     public function call($callable) {
         if (is_array($callable) && count($callable) == 2) {
-            return (new \ReflectionMethod($callable[0], $callable[1]))->invoke($callable[0]);
+            $reflection = new \ReflectionMethod($callable[0], $callable[1]);
+            return $reflection->invokeArgs($callable[0],
+                $this->injectByFunctionArguments($reflection->getParameters()));
         } else if (is_string($callable)) {
-            return (new \ReflectionFunction($callable))->invoke();
+            $reflection = new \ReflectionFunction($callable);
+            return $reflection->invokeArgs(
+                $this->injectByFunctionArguments($reflection->getParameters()));
         } else {
             throw new \Exception("Wrong type of argument");
         }

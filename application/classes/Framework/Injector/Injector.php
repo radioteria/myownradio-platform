@@ -9,14 +9,20 @@
 namespace Framework\Injector;
 
 
-class Injector {
+use Framework\Services\Injectable;
+use Tools\Singleton;
+use Tools\SingletonInterface;
+
+class Injector implements Injectable, SingletonInterface {
+
+    use Singleton;
 
     /**
      * @param \ReflectionClass $class
      * @return mixed|object
      * @throws \Exception
      */
-    public static function injectByClass($class) {
+    public function injectByClass($class) {
         if ($class->implementsInterface("Framework\\Services\\Injectable")) {
             throw new \Exception("Object could not be injected");
         }
@@ -32,9 +38,9 @@ class Injector {
      * @return mixed|object
      * @throws \Exception
      */
-    public static function injectByName($name) {
+    public function injectByName($name) {
         $class = new \ReflectionClass($name);
-        return self::injectByClass($class);
+        return $this->injectByClass($class);
     }
 
     /**
@@ -42,10 +48,10 @@ class Injector {
      * @return array
      * throws \Exception
      */
-    public static function injectByNameArray(array $names) {
+    public function injectByNameArray(array $names) {
         $array = [];
         foreach ($names as $name) {
-            $array[] = self::injectByName($name);
+            $array[] = $this->injectByName($name);
         }
         return $array;
     }
@@ -55,10 +61,10 @@ class Injector {
      * @return array
      * throws \Exception
      */
-    public static function injectByClassArray(array $classes) {
+    public function injectByClassArray(array $classes) {
         $array = [];
         foreach ($classes as $class) {
-            $array[] = self::injectByClass($class);
+            $array[] = $this->injectByClass($class);
         }
         return $array;
     }

@@ -68,4 +68,14 @@ class Injector implements Injectable, SingletonInterface {
         }
         return $array;
     }
+
+    public function call($callable) {
+        if (is_array($callable) && count($callable) == 2) {
+            return (new \ReflectionMethod($callable[0], $callable[1]))->invoke($callable[0]);
+        } else if (is_string($callable)) {
+            return (new \ReflectionFunction($callable))->invoke();
+        } else {
+            throw new \Exception("Wrong type of argument");
+        }
+    }
 } 

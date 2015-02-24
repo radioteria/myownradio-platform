@@ -6,7 +6,7 @@
  * Time: 22:23
  */
 
-namespace Framework;
+namespace Framework\Injector;
 
 
 class Injector {

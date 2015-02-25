@@ -2,14 +2,13 @@
 
 namespace Framework;
 
-use stdClass;
 use Tools\File;
 
 class Template {
 
     private $template;
-    private $variables;
-    private $raw;
+    private $variables = [];
+    private $raw = [];
 
     private $prefix = "\${";
     private $suffix = "}";
@@ -50,8 +49,8 @@ class Template {
      * @return $this
      */
     public function addVariable($key, $value, $raw = false) {
-        $this->variables->{$key} = $value;
-        $this->raw->{$key} = $raw;
+        $this->variables[$key] = $value;
+        $this->raw[$key] = $raw;
         return $this;
     }
 
@@ -60,26 +59,33 @@ class Template {
      */
     public function makeDocument() {
         $result = preg_replace_callback($this->buildReplace(), function ($match) {
-            if (isset($this->variables->{$match[1]})) {
-                if ($this->raw->{$match[1]} === false) {
-                    return htmlspecialchars($this->variables->{$match[1]});
-                } else {
-                    return $this->variables->{$match[1]};
-                }
-            } else {
-                return "";
-            }
+            return $this->getObjectParameter($match[1]);
         }, $this->template);
 
         return $result;
+    }
+
+    private function getObjectParameter($key) {
+        $slices = explode(".", $key);
+        $current = $this->variables;
+        foreach ($slices as $slice) {
+            if (!isset($current[$slice])) { return ""; };
+
+            $current = $current[$slice];
+
+            if (is_array($current)) {
+                continue;
+            }
+        }
+        return is_array($current) ? "[array]" : $current;
     }
 
     /**
      * @return $this
      */
     public function reset() {
-        $this->variables = new stdClass();
-        $this->raw = new stdClass();
+        $this->variables = [];
+        $this->raw = [];
         return $this;
     }
 
@@ -87,7 +93,7 @@ class Template {
      * @param $stream
      */
     public function putObject($stream) {
-        foreach ($stream as $key=>$val) {
+        foreach ($stream as $key => $val) {
             $this->addVariable($key, $val, false);
         }
     }

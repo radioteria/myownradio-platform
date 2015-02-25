@@ -74,12 +74,18 @@ class Template {
         return $result;
     }
 
+    /**
+     * @return $this
+     */
     public function reset() {
         $this->variables = new stdClass();
         $this->raw = new stdClass();
         return $this;
     }
 
+    /**
+     * @param $stream
+     */
     public function putObject($stream) {
         foreach ($stream as $key=>$val) {
             $this->addVariable($key, $val, false);

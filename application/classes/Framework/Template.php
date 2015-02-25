@@ -18,7 +18,7 @@ class Template {
      * @return string
      */
     private function buildReplace() {
-        return "/" . preg_quote($this->prefix) . "\s*(.+?)\s*" . preg_quote($this->suffix) . "/";
+        return "/" . preg_quote($this->prefix) . "\\s*(.+?)\\s*" . preg_quote($this->suffix) . "/";
     }
 
     /**

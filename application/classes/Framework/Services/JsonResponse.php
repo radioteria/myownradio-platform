@@ -9,6 +9,7 @@
 namespace Framework\Services;
 
 
+use Framework\Injector\Injectable;
 use Tools\JsonPrinter;
 use Tools\Singleton;
 use Tools\SingletonInterface;

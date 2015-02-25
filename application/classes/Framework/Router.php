@@ -17,6 +17,7 @@ use Framework\Services\HttpGet;
 use Framework\Services\HttpRequest;
 use Framework\Services\JsonResponse;
 use Framework\Services\SubRouter;
+use Framework\View\Errors\ViewException;
 use ReflectionClass;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -95,6 +96,9 @@ class Router implements SingletonInterface{
             echo '<h1>E501: Method not implemented</h1>';
             return;
 
+        } catch (ViewException $exception) {
+            $exception->drawTemplate();
+            return;
         }
 
         if (JsonResponse::hasInstance()) {

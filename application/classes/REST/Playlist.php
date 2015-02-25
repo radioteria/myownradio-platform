@@ -11,11 +11,11 @@ namespace REST;
 
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
+use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
 use Framework\Models\StreamModel;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\SelectQuery;
-use Framework\Services\Injectable;
 use Objects\StreamStats;
 use Tools\Common;
 use Tools\JsonPrinter;

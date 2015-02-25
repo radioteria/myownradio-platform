@@ -6,7 +6,7 @@
  * Time: 20:05
  */
 
-namespace Framework\Services;
+namespace Framework\Injector;
 
 /**
  * Class Injectable

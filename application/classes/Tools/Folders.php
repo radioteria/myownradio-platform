@@ -2,7 +2,7 @@
 
 namespace Tools;
 
-use Framework\Services\Injectable;
+use Framework\Injector\Injectable;
 use Objects\Track;
 
 class Folders implements Injectable, SingletonInterface {

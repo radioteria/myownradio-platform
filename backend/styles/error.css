@@ -1,0 +1,21 @@
+body {
+    color: #828282;
+    font-family: Verdana, sans-serif;
+    position: relative;
+}
+
+.wrap {
+    left: 50%;
+    top: 45%;
+    position: fixed;
+    transform: translateX(-50%) translateY(-50%);
+}
+
+.wrap h1 {
+    font-size: 48px;
+    text-align: center;
+}
+
+.wrap #body {
+    text-align: center;
+}

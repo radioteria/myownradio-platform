@@ -2,6 +2,7 @@
 
 namespace Framework\Services;
 
+use Framework\Injector\Injectable;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;

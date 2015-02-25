@@ -9,7 +9,6 @@
 namespace Framework\Injector;
 
 
-use Framework\Services\Injectable;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -23,8 +22,8 @@ class Injector implements Injectable, SingletonInterface {
      * @throws \Exception
      */
     public function injectByClass($class) {
-        if (!$class->implementsInterface("Framework\\Services\\Injectable")) {
-            throw new \Exception("Object could not be injected");
+        if (!$class->implementsInterface("Framework\\Injector\\Injectable")) {
+            throw new InjectorException("Object could not be injected");
         }
         if ($class->implementsInterface("Tools\\SingletonInterface")) {
             return $class->getMethod("getInstance")->invoke(null);

@@ -9,6 +9,7 @@
 namespace Framework\Services;
 
 
+use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
 use Framework\Models\StreamModel;
 use Framework\Models\StreamsModel;

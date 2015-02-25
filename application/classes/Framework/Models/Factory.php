@@ -11,10 +11,9 @@ namespace Framework\Models;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
-use Framework\Services\Database;
+use Framework\Injector\Injectable;
 use Framework\Services\DB\Query\DeleteQuery;
 use Framework\Services\DB\Query\SelectQuery;
-use Framework\Services\Injectable;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 

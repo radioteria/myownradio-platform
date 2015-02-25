@@ -9,6 +9,7 @@
 namespace Framework\Services;
 
 use Framework\Exceptions\ControllerException;
+use Framework\Injector\Injectable;
 use Framework\Services\DB\DBQuery;
 use Objects\Category;
 use Objects\Color;

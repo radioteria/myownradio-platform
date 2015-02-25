@@ -10,8 +10,8 @@ namespace Framework;
 
 
 use Framework\Exceptions\ControllerException;
+use Framework\Injector\Injectable;
 use Framework\Services\HttpRequest;
-use Framework\Services\Injectable;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 

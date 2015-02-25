@@ -9,7 +9,7 @@
 namespace Tools;
 
 
-use Framework\Services\Injectable;
+use Framework\Injector\Injectable;
 
 class JsonPrinter implements SingletonInterface, Injectable {
 

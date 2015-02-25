@@ -10,9 +10,9 @@ namespace Framework\Models;
 
 
 use Framework\Exceptions\UnauthorizedException;
+use Framework\Injector\Injectable;
 use Framework\Services\Database;
 use Framework\Services\HttpSession;
-use Framework\Services\Injectable;
 use Tools\Singleton;
 
 class AuthUserModel extends UserModel implements Injectable {

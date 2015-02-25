@@ -5,6 +5,7 @@ namespace Framework\Services;
 use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\DatabaseException;
+use Framework\Injector\Injectable;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\DBQueryPool;
 use Framework\Services\DB\DBQueryWrapper;

@@ -9,9 +9,9 @@
 namespace Framework\Services\ORM\Core;
 
 
+use Framework\Injector\Injectable;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\SelectQuery;
-use Framework\Services\Injectable;
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordCollection;
 use Framework\Services\ORM\Exceptions\ORMException;

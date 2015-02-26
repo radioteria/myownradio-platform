@@ -170,12 +170,13 @@ class UsersModel implements SingletonInterface, Injectable {
 
         self::createUserDirectory($newUser->getID());
 
-
         $notify = new Mailer("no-reply@myownradio.biz", "myownradio.biz");
         $notify->addAddress("roman@homefs.biz");
         $notify->setSubject("You have new user");
         $notify->setBody(sprintf("Hello! You have a new user '%s' (%s).", $login, $email));
         $notify->send();
+
+        LettersModel::sendRegistrationCompleted($newUser->getEmail());
 
         return new UserModel($newUser->getID());
 

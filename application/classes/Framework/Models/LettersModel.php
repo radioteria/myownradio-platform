@@ -38,6 +38,23 @@ class LettersModel {
 
     }
 
+    public static function sendRegistrationCompleted($email) {
+
+        $template = new Template("application/tmpl/reg.complete.tmpl");
+        $mailer = new Mailer(REG_MAIL, REG_NAME);
+
+        $mailer->addAddress($email);
+        $mailer->setContentType("text/html");
+        $mailer->setSubject("Registration on myownradio.biz completed");
+        $mailer->setBody($template->makeDocument());
+
+        try {
+            $mailer->send();
+        } catch (\Exception $exception) {
+            throw new ControllerException($exception->getMessage());
+        }
+        
+    }
 
     public static function sendResetPasswordLetter($id) {
 

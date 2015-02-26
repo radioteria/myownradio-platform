@@ -22,7 +22,7 @@ class DoSignUpBegin implements Controller {
     public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response, DBQuery $query) {
 
         $email = $post->getRequired("email");
-        $code = $post->getRequired("code");
+        //$code = $post->getRequired("code");
 
         $validator->validateEmail($email);
         $validator->validateUniqueUserEmail($email);

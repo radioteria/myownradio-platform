@@ -11,8 +11,6 @@ namespace Framework\View\Errors;
 
 class View404Exception extends ViewException {
     function __construct() {
-        parent::__construct(404, "application/tmpl/error/404.tmpl", [
-            "code" => 404
-        ]);
+        parent::__construct(404, "application/tmpl/error/404.tmpl");
     }
 }

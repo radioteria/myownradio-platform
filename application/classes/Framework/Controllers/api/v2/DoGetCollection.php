@@ -19,7 +19,8 @@ class DoGetCollection implements Controller {
             "countries"     => $query->selectFrom("mor_countries")->fetchAll(),
             "categories"    => $query->selectFrom("r_categories")->fetchAll(),
             "groups"        => $query->selectFrom("r_colors")->fetchAll(),
-            "genres"        => $query->selectFrom("mor_genres")->fetchAll()
+            "genres"        => $query->selectFrom("mor_genres")->fetchAll(),
+            "access"        => $query->selectFrom("mor_access")->fetchAll()
         ]);
     }
 } 

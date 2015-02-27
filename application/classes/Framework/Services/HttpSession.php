@@ -21,7 +21,7 @@ class HttpSession implements Injectable {
     const SESSION_EXPIRE_MONTH = 2592000;
 
     public function __construct() {
-        session_set_cookie_params(self::SESSION_EXPIRE_MONTH);
+        session_set_cookie_params(self::SESSION_EXPIRE_MONTH, "/", ".myownradio.biz", false);
         session_start();
     }
 

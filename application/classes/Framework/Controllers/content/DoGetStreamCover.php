@@ -43,7 +43,7 @@ class DoGetStreamCover implements Controller {
             $image->cropSquare();
             $image->resize($size);
             $image->interlace();
-            $image->output($path->extension(), 50);
+            $image->output($path->extension(), 100);
         }
 
     }

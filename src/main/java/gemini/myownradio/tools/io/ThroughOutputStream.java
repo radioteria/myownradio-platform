@@ -34,10 +34,12 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
 
         proc = pb.start();
 
-        pipe = new PipeIO(proc.getInputStream(), this.out);
-
         this.err = proc.getErrorStream();
         this.os = proc.getOutputStream();
+        this.in = proc.getInputStream();
+
+        pipe = new PipeIO(this.in, this.out);
+
         this.errOut = errOut;
 
     }
@@ -72,8 +74,8 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
 
     @Override
     public void write(byte[] b, int off, int len) throws IOException {
-        os.write(b, off, len);
         checkInput();
+        os.write(b, off, len);
         readError();
     }
 
@@ -84,7 +86,13 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
 
     @Override
     public void close() throws IOException {
+
         proc.destroy();
+
+        in.close();
+        err.close();
+        os.close();
+
         pipe.thread().interrupt();
         try {
             pipe.thread().join();

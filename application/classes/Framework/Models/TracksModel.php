@@ -15,6 +15,7 @@ use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Services\Config;
 use Framework\Services\DB\DBQuery;
+use Framework\Services\HttpRequest;
 use Objects\StreamTrack;
 use Objects\Track;
 use REST\Playlist;
@@ -51,18 +52,30 @@ class TracksModel implements Injectable, SingletonInterface {
     public function upload(array $file, Optional $addToStream, $upNext = false) {
 
         $config = Config::getInstance();
+        $request = HttpRequest::getInstance();
 
-        if (array_search($file['type'], $config->getSetting('upload', 'supported_audio')->get()) === false) {
-            throw new ControllerException("Unsupported type of file: " . $file["type"]);
+        $id3 = new \getID3();
+
+        $request->getLanguage()->then(function ($language) use ($id3) {
+            if (array_search($language, array('uk', 'ru')) !== false) {
+                $id3->encoding_id3v1 = "cp1251";
+            }
+        });
+
+        $meta = $id3->analyze($file["tmp_name"]);
+
+        $maximalDuration  = $config->getSetting('upload', 'maximal_length')->get();
+        $availableFormats = $config->getSetting('upload', 'supported_audio')->get();
+
+        if (array_search($file['type'], $availableFormats) === false) {
+            throw new ControllerException("Unsupported type format");
         }
 
-        $audioTags = Common::getAudioTags($file['tmp_name']);
+        if (empty($meta["audio"]["bitrate"])) {
+            throw new ControllerException("File appears to be broken");
+        }
 
-        $maximalDuration = $config->getSetting('upload', 'maximal_length')->get();
-
-        $duration = $audioTags['DURATION']
-            ->getOrElseThrow(new ControllerException("Uploaded file has zero duration"));
-
+        $duration = $meta["filesize"] / ($meta["audio"]["bitrate"] / 8) * 1000;
 
         $uploadTimeLeft = $this->user->getCurrentPlan()->getTimeMax() - $this->user->getTracksDuration() - $duration;
 
@@ -81,12 +94,24 @@ class TracksModel implements Injectable, SingletonInterface {
         $track->setUserID($this->user->getID());
         $track->setFileName($file["name"]);
         $track->setExtension($extension);
-        $track->setTrackNumber($audioTags["TRACKNUMBER"]->getOrElseEmpty());
-        $track->setArtist($audioTags["PERFORMER"]->getOrElseEmpty());
-        $track->setTitle($audioTags["TITLE"]->getOrElse($file['name']));
-        $track->setAlbum($audioTags["ALBUM"]->getOrElseEmpty());
-        $track->setGenre($audioTags["GENRE"]->getOrElseEmpty());
-        $track->setDate($audioTags["RECORDED_DATE"]->getOrElseEmpty());
+        $track->setTrackNumber(
+            isset($meta["tags"]["id3v2"]["track_number"][0]) ? $meta["tags"]["id3v2"]["track_number"][0] : ""
+        );
+        $track->setArtist(
+            isset($meta["tags"]["id3v2"]["artist"][0]) ? $meta["tags"]["id3v2"]["artist"][0] : ""
+        );
+        $track->setTitle(
+            isset($meta["tags"]["id3v2"]["title"][0]) ? $meta["tags"]["id3v2"]["title"][0] : $file['name']
+        );
+        $track->setAlbum(
+            isset($meta["tags"]["id3v2"]["album"][0]) ? $meta["tags"]["id3v2"]["album"][0] : ""
+        );
+        $track->setGenre(
+            isset($meta["tags"]["id3v2"]["genre"][0]) ? $meta["tags"]["id3v2"]["genre"][0] : ""
+        );
+        $track->setDate(
+            isset($meta["tags"]["id3v2"]["date"][0]) ? $meta["tags"]["id3v2"]["date"][0] : ""
+        );
         $track->setDuration($duration);
         $track->setFileSize(filesize($file["tmp_name"]));
         $track->setUploaded(time());
@@ -101,6 +126,9 @@ class TracksModel implements Injectable, SingletonInterface {
 
             $this->addToStream($track, $addToStream, $upNext);
 
+            logger(sprintf("User #%d uploaded new track: %s (upload time left: %d seconds)",
+                $track->getUserID(), $track->getFileName(), $uploadTimeLeft / 1000));
+
         } else {
 
             $track->delete();
@@ -113,28 +141,6 @@ class TracksModel implements Injectable, SingletonInterface {
 
     }
 
-    public function grabCurrentTrack($fromID, Optional $streamID, $upNext = false) {
-
-        $current = StreamTrack::getCurrent($fromID);
-
-        $current->then(function($track) use ($streamID, $upNext) {
-            /** @var StreamTrack $track */
-            self::grabTrack1(Track::getByID($track->getID())->get(), $streamID, $upNext);
-        });
-
-    }
-
-
-    public function grabTrack($trackID, Optional $addToStream, $upNext = false) {
-
-        /** @var Track $source */
-        $source = Track::getByID($trackID)
-            ->getOrElseThrow(ControllerException::noTrack($trackID));
-
-        $this->grabTrack1($source, $addToStream, $upNext);
-
-    }
-
     private function addToStream(Track $track, Optional $stream, $upNext = false) {
 
         $stream->then(function ($streamID) use ($track, $upNext) {
@@ -143,46 +149,6 @@ class TracksModel implements Injectable, SingletonInterface {
             $streamObject->addTracks($track->getID(), $upNext);
 
         });
-
-    }
-
-
-    private function grabTrack1(Track $track, Optional $addToStream, $upNext = false) {
-
-        if ($track->getUserID() == $this->user->getID()) {
-
-            $this->addToStream($track, $addToStream, $upNext);
-
-        }
-
-        $uploadTimeLeft = $this->user->getCurrentPlan()->getTimeMax() - $this->user->getTracksDuration();
-
-        if ($uploadTimeLeft < $track->getDuration()) {
-            throw new ControllerException("You are exceeded available upload time. Please upgrade your account.");
-        }
-
-        $destination = $track->cloneObject();
-
-        $destination->setUserID($this->user->getID());
-        $destination->setUploaded(time());
-        $destination->setColor(0);
-        $destination->setCopyOf($track->getID());
-
-        $destination->save();
-
-        $tempFile = $destination->getOriginalFile() . ".temp";
-
-        if (file_exists($track->getOriginalFile()) && copy($track->getOriginalFile(), $tempFile)) {
-
-            rename($tempFile, $destination->getOriginalFile());
-
-            $this->addToStream($destination, $addToStream, $upNext);
-
-        } else {
-
-            $destination->delete();
-
-        }
 
     }
 

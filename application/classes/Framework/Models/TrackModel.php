@@ -203,13 +203,13 @@ class TrackModel extends Model implements SingletonInterface {
      */
     public function delete() {
 
-        logger("deleting track...");
+        logger(sprintf("User #%d is deleting track %s", $this->getUserID(), $this->getFileName()));
 
         $file = $this->getOriginalFile();
-        if(file_exists($file)) {
+        if (file_exists($file)) {
             unlink($this->getOriginalFile());
         } else {
-            logger("file not exists!!!");
+            logger("File doest not exists");
         }
 
         $this->object->delete();

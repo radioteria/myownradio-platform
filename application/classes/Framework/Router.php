@@ -62,6 +62,7 @@ class Router implements SingletonInterface{
         $sub->addRoute("content/streamcovers/:fn", "content\\DoGetStreamCover");
         $sub->addRoute("content/avatars/:fn", "content\\DoGetUserAvatar");
         $sub->addRoute("content/audio/&id", "content\\DoGetPreviewAudio");
+        $sub->addRoute("content/m3u/:stream_id.m3u", "content\\DoM3u");
 
         $sub->addRoute("streams/:id", "helpers\\DoStream");
 

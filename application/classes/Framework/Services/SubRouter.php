@@ -71,7 +71,7 @@ class SubRouter implements SingletonInterface {
      */
     private function makeRegexp($route) {
 
-        $quoteRoute = preg_replace_callback("~(?!:([a-z]+))|(?!&([a-z]+))~", function ($match) {
+        $quoteRoute = preg_replace_callback("~(?!:([a-z\\_]+))|(?!&([a-z\\_]+))~", function ($match) {
             return preg_quote($match[0]);
         }, $route);
 
@@ -80,12 +80,12 @@ class SubRouter implements SingletonInterface {
 
         $quoteParams =
 
-            preg_replace_callback("~&([a-z]+)~", function ($match) use (&$keys) {
+            preg_replace_callback("~&([a-z\\_]+)~", function ($match) use (&$keys) {
                     $keys[] = $match[1];
                     return "(?:(\\d+))";
                 },
 
-            preg_replace_callback("~:([a-z]+)~", function ($match) use (&$keys) {
+            preg_replace_callback("~:([a-z\\_]+)~", function ($match) use (&$keys) {
                     $keys[] = $match[1];
                     return "(?:([^\\/]+))";
                 }, $quoteRoute));

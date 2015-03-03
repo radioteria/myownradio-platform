@@ -4,6 +4,7 @@ import gemini.myownradio.LHttp.ContextObjects.LHttpContextAbstract;
 import gemini.myownradio.tools.DelayedAction;
 import gemini.myownradio.tools.MORLogger;
 
+import javax.net.ssl.SSLServerSocketFactory;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -62,7 +63,7 @@ public class LHttpServer {
 
         logger.println("Server started");
 
-        for (;;) {
+        while (true) {
 
             final Socket socket = serverSocket.accept();
 

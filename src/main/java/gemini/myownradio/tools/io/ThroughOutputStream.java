@@ -17,7 +17,6 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
 
     protected Process proc;
 
-    protected int sequence = 0;
     protected PipeIO pipe;
 
     static MORLogger logger = new MORLogger(MORLogger.MessageKind.PLAYER);
@@ -87,15 +86,17 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
     @Override
     public void close() throws IOException {
 
-        proc.destroy();
+        try (InputStream inputStream = this.in; OutputStream outputStream = this.os;
+             OutputStream outputStream1 = this.errOut) {
+            /* Nothing to do. Just close. */
+        } finally {
+            proc.destroy();
 
-        in.close();
-        err.close();
-        os.close();
+            pipe.thread().interrupt();
+            try {
+                pipe.thread().join();
+            } catch (InterruptedException e) {/*NOP*/}
+        }
 
-        pipe.thread().interrupt();
-        try {
-            pipe.thread().join();
-        } catch (InterruptedException e) {/*NOP*/}
     }
 }

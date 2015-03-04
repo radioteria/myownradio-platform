@@ -51,7 +51,7 @@ class MailQueue implements Injectable, SingletonInterface, \Countable {
     }
 
     /**
-     * Sends first $count of queued emails
+     * Sends first $count queued emails
      * @param $count
      */
     public function send($count) {

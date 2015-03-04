@@ -15,13 +15,8 @@ use Framework\Services\Mailer;
 
 class DoTest implements Controller {
     public function doGet(MailQueue $queue) {
-        $test = new Mailer("robot@myownradio.biz", "MYOWNRADIO ROBOT");
-        $test->addAddress("roman@homefs.biz");
-        $test->setSubject("Email queue test message");
-        $test->setBody("Hello! This is a email queue test message.");
 
-        $queue->add($test);
 
-        echo "Messages queued: " . count($queue);
+
     }
 } 

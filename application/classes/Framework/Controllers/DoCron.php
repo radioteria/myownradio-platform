@@ -24,13 +24,12 @@ class DoCron implements Controller {
             throw ControllerException::noPermission();
         }
 
-        /* Cron body is here */
+        /* Every hour */
         if (0 == $date->getMinutes()) {
-            /* Do every hour */
             error_log("Hourly cron engaged.");
         }
 
-        /* Mail queue rotate */
+        /* Every minute */
         $queue->send(self::MAIL_QUEUE);
     }
 } 

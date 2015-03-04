@@ -20,7 +20,7 @@ class Redis implements SingletonInterface, Injectable {
     use Singleton;
 
     /** @var \Redis $redis */
-    private $redis;
+    private $redis, $digest = [];
 
     function __construct() {
         $this->redis = new \Redis();
@@ -30,11 +30,14 @@ class Redis implements SingletonInterface, Injectable {
     /**
      * @param string $key
      * @param mixed $object
-     * @internal param null $expire
      */
     public function putObject($key, $object) {
         $serialized = serialize($object);
-        $this->redis->hSet(Defaults::REDIS_OBJECTS_KEY, $key, $serialized);
+        /* Update object only if it was modified */
+        if (empty($this->digest[$key]) || $this->digest[$key] != md5($serialized)) {
+            $this->digest[$key] = md5($serialized);
+            $this->redis->hSet(Defaults::REDIS_OBJECTS_KEY, $key, $serialized);
+        }
     }
 
     /**
@@ -42,12 +45,16 @@ class Redis implements SingletonInterface, Injectable {
      * @return Optional
      */
     public function getObject($key) {
+
         if (!$this->redis->hExists(Defaults::REDIS_OBJECTS_KEY, $key)) {
             return Optional::noValue();
         }
-        return Optional::hasValue(
-            unserialize($this->redis->hGet(Defaults::REDIS_OBJECTS_KEY, $key))
-        );
+
+        $raw = $this->redis->hGet(Defaults::REDIS_OBJECTS_KEY, $key);
+        $this->digest[$key] = md5($raw);
+
+        return Optional::hasValue(unserialize($raw));
+
     }
 
     /**
@@ -77,37 +84,7 @@ class Redis implements SingletonInterface, Injectable {
      */
     public function clearObject($key) {
         $this->redis->hDel(Defaults::REDIS_OBJECTS_KEY, $key);
-    }
-
-    /**
-     * @param $key
-     * @param $value
-     * @return $this
-     */
-    public function putTemp($key, $value) {
-        $this->redis->hPut(Defaults::REDIS_ELEMENTS_KEY, $key, $value);
-        return $this;
-    }
-
-    /**
-     * @param $key
-     * @return Optional
-     */
-    public function getTemp($key) {
-        if (!$this->redis->hExists(Defaults::REDIS_ELEMENTS_KEY, $key)) {
-            return Optional::noValue();
-        }
-        return Optional::hasValue(
-            $this->redis->hGet(Defaults::REDIS_ELEMENTS_KEY, $key)
-        );
-    }
-
-    /**
-     * @param $key
-     * @param int $by
-     */
-    public function increaseTemp($key, $by = 1) {
-        $this->redis->hIncrBy(Defaults::REDIS_ELEMENTS_KEY, $key, $by);
+        unset($this->digest[$key]);
     }
 
 } 

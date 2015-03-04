@@ -42,7 +42,9 @@ class MailQueue implements Injectable, SingletonInterface, \Countable {
             foreach ($array as $email) {
                 if ($sender == $email->getSenderIp() && $threshold < $email->getCreated()) {
                     if (++ $count > self::MAX_PER_INTERVAL) {
-                        throw ControllerException::of("Sorry, but too many letters has been sent from your address. Wait for one hour and try again.");
+                        throw ControllerException::of(
+                            "Sorry, but too many letters has been sent from your address. Wait for one hour and try again."
+                        );
                     }
                 }
             }

@@ -9,6 +9,7 @@
 namespace Framework\Services;
 
 use Exception;
+use Framework\Services\Mail\MailQueue;
 
 class Mailer {
 
@@ -60,9 +61,13 @@ class Mailer {
         $result = mail($targets, $this->subject, $this->body, $headers, $flag);
 
         if ($result == false) {
-            throw new Exception(sprintf("Message to '%s' could not be sent", $targets));
+            logger(sprintf("Message to '%s' could not be sent", $targets));
         }
 
+    }
+
+    public function queue() {
+        MailQueue::getInstance()->add($this);
     }
 
 } 

@@ -60,22 +60,33 @@ class Redis implements SingletonInterface, Injectable {
 
     /**
      * @param $key
-     * @param $callable
+     * @param callable $callable
+     * @param mixed $constructor
+     * @return $this
      */
-    public function doWithObject($key, $callable) {
-        $this->getObject($key)->then(function ($object) use ($callable, $key) {
-            if (false !== call_user_func_array($callable, [&$object])) {
-                $this->putObject($key, $object);
-            }
-        });
+    public function applyObject($key, $callable, $constructor = null) {
+        $object = $this->getObject($key)->getOrElse($constructor);
+        if (false !== call_user_func_array($callable, [&$object])) {
+            $this->putObject($key, $object);
+        }
+        return $this;
+    }
+
+    /**
+     * @param $key
+     */
+    public function clearObject($key) {
+        $this->redis->hDel(Defaults::REDIS_OBJECTS_KEY, $key);
     }
 
     /**
      * @param $key
      * @param $value
+     * @return $this
      */
     public function putTemp($key, $value) {
         $this->redis->hPut(Defaults::REDIS_ELEMENTS_KEY, $key, $value);
+        return $this;
     }
 
     /**

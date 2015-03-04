@@ -13,9 +13,13 @@ use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Services\Date;
 use Framework\Services\HttpRequest;
+use Framework\Services\Mail\MailQueue;
 
 class DoCron implements Controller {
-    public function doCron(HttpRequest $request, Date $date) {
+    const MAIL_QUEUE = 5;
+
+    public function doCron(HttpRequest $request, Date $date, MailQueue $queue) {
+
         if ($request->getServerAddress() != $request->getRemoteAddress()) {
             throw ControllerException::noPermission();
         }
@@ -25,5 +29,8 @@ class DoCron implements Controller {
             /* Do every hour */
             error_log("Hourly cron engaged.");
         }
+
+        /* Mail queue rotate */
+        $queue->send(self::MAIL_QUEUE);
     }
 } 

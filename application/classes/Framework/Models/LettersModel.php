@@ -10,6 +10,7 @@ namespace Framework\Models;
 
 
 use Framework\Exceptions\ControllerException;
+use Framework\Services\Mail\MailQueue;
 use Framework\Services\Mailer;
 use Framework\Template;
 
@@ -30,11 +31,13 @@ class LettersModel {
         $mailer->setSubject("Registration on myownradio.biz");
         $mailer->setBody($template->makeDocument());
 
-        try {
-            $mailer->send();
-        } catch (\Exception $exception) {
-            throw new ControllerException($exception->getMessage());
-        }
+        $mailer->queue();
+
+//        try {
+//            $mailer->send();
+//        } catch (\Exception $exception) {
+//            throw new ControllerException($exception->getMessage());
+//        }
 
     }
 
@@ -48,16 +51,17 @@ class LettersModel {
         $mailer->setSubject("Registration on myownradio.biz completed");
         $mailer->setBody($template->makeDocument());
 
-        try {
-            $mailer->send();
-        } catch (\Exception $exception) {
-            throw new ControllerException($exception->getMessage());
-        }
+        $mailer->queue();
+
+//        try {
+//            $mailer->send();
+//        } catch (\Exception $exception) {
+//            throw new ControllerException($exception->getMessage());
+//        }
         
     }
 
     public static function sendResetPasswordLetter($id) {
-
 
         $user = new UserModel($id);
 
@@ -75,11 +79,13 @@ class LettersModel {
         $mailer->setSubject("Reset password on myownradio.biz");
         $mailer->setBody($template->makeDocument());
 
-        try {
-            $mailer->send();
-        } catch (\Exception $exception) {
-            throw new ControllerException($exception->getMessage());
-        }
+        $mailer->queue();
+
+//        try {
+//            $mailer->send();
+//        } catch (\Exception $exception) {
+//            throw new ControllerException($exception->getMessage());
+//        }
 
     }
 

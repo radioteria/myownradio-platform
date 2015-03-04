@@ -16,7 +16,8 @@ use Framework\Services\HttpRequest;
 use Framework\Services\Mail\MailQueue;
 
 class DoCron implements Controller {
-    const MAIL_QUEUE = 5;
+
+    const SEND_QUEUE_SIZE = 5;
 
     public function doCron(HttpRequest $request, Date $date, MailQueue $queue) {
 
@@ -30,7 +31,7 @@ class DoCron implements Controller {
         }
 
         /* Every minute */
-        $queue->send(self::MAIL_QUEUE);
+        $queue->send(self::SEND_QUEUE_SIZE);
 
     }
 } 

@@ -31,5 +31,6 @@ class DoCron implements Controller {
 
         /* Every minute */
         $queue->send(self::MAIL_QUEUE);
+
     }
 } 

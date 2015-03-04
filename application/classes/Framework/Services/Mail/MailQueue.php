@@ -9,6 +9,7 @@
 namespace Framework\Services\Mail;
 
 
+use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
 use Framework\Services\Mailer;
 use Framework\Services\Redis;
@@ -21,6 +22,9 @@ class MailQueue implements Injectable, SingletonInterface, \Countable {
     /** @var Redis $redis */
     private $redis;
 
+    const INTERVAL = 60;
+    const MAX_PER_INTERVAL = 10;
+
     function __construct() {
         $this->redis = Redis::getInstance();
     }
@@ -31,6 +35,17 @@ class MailQueue implements Injectable, SingletonInterface, \Countable {
      */
     public function add(Mailer $message) {
         $this->redis->applyObject("mail_queue", function (&$array) use ($message) {
+            $count = 0;
+            $threshold = time() - self::INTERVAL;
+            $sender = $message->getSenderIp();
+            /** @var Mailer $email */
+            foreach ($array as $email) {
+                if ($sender == $email->getSenderIp() && $threshold < $email->getCreated()) {
+                    if (++ $count > self::MAX_PER_INTERVAL) {
+                        throw ControllerException::of("Sorry, but too many letters has been sent from your address. Wait for one hour and try again.");
+                    }
+                }
+            }
             $array[] = $message;
         }, []);
     }

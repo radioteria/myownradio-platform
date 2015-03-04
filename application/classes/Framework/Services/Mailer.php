@@ -19,6 +19,8 @@ class Mailer {
     private $body = "";
     private $contentType = "text/plain";
     private $senderName = "The MyOwnRadio Team";
+    private $senderIp = "";
+    private $created;
 
     function __construct($sender, $name) {
         if (empty($sender) || empty($name)) {
@@ -26,6 +28,8 @@ class Mailer {
         }
         $this->sender = $sender;
         $this->senderName = $name;
+        $this->senderIp = HttpRequest::getInstance()->getRemoteAddress();
+        $this->created = time();
     }
 
     public function setBody($body) {
@@ -69,5 +73,21 @@ class Mailer {
     public function queue() {
         MailQueue::getInstance()->add($this);
     }
+
+    /**
+     * @return string
+     */
+    public function getSenderIp() {
+        return $this->senderIp;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCreated() {
+        return $this->created;
+    }
+
+
 
 } 

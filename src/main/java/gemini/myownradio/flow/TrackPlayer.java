@@ -71,6 +71,7 @@ public class TrackPlayer implements AbstractPlayer {
                 while ((available = err.available()) > 0) {
                     length = err.read(buffer, 0, Math.min(available, buffer.length));
                     debug.write(buffer, 0, length);
+                    debug.flush();
                 }
                 if (broadcast.isNotified()) {
                     broadcast.resetNotify();

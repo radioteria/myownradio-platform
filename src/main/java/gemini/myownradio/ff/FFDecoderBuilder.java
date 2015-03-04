@@ -29,7 +29,8 @@ public class FFDecoderBuilder {
                         "-ar", "44100",
                         "-ac", "2",
                         "-f", "s16le",
-                        "-", "2>>/tmp/mor/decoder_" + Thread.currentThread().getName() + "_j.log" } :
+                        "-"
+                } :
                 new String[]{
                         "ffmpeg",
                         "-hide_banner",
@@ -43,7 +44,7 @@ public class FFDecoderBuilder {
                         "-ar", "44100",
                         "-ac", "2",
                         "-f", "s16le",
-                        "-", "2>>/tmp/mor/decoder_" + Thread.currentThread().getName() + ".log"
+                        "-"
                 };
     }
 

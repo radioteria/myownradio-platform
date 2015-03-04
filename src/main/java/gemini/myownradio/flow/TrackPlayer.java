@@ -5,10 +5,7 @@ import gemini.myownradio.exception.DecoderException;
 import gemini.myownradio.ff.FFDecoderBuilder;
 import gemini.myownradio.tools.MORLogger;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * Created by Roman on 07.10.14.
@@ -61,6 +58,7 @@ public class TrackPlayer implements AbstractPlayer {
         try (
                 InputStream in = proc.getInputStream();
                 InputStream err = proc.getErrorStream();
+                OutputStream debug = new FileOutputStream("/tmp/decode_" + Thread.currentThread().getName() + ".log", true);
         ) {
             byte[] buffer = new byte[4096];
             int length, available;
@@ -72,6 +70,7 @@ public class TrackPlayer implements AbstractPlayer {
                 output.flush();
                 while ((available = err.available()) > 0) {
                     length = err.read(buffer, 0, Math.min(available, buffer.length));
+                    debug.write(buffer, 0, length);
                 }
                 if (broadcast.isNotified()) {
                     broadcast.resetNotify();

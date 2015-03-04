@@ -11,7 +11,6 @@ namespace Framework\Controllers\api\v2;
 
 use Framework\Controller;
 use Framework\Services\Mail\MailQueue;
-use Framework\Services\Mailer;
 
 class DoTest implements Controller {
     public function doGet(MailQueue $queue) {

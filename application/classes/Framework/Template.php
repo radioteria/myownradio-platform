@@ -97,4 +97,5 @@ class Template {
             $this->addVariable($key, $val, false);
         }
     }
+
 }

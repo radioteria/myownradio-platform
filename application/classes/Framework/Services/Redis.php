@@ -72,10 +72,12 @@ class Redis implements SingletonInterface, Injectable {
      * @return $this
      */
     public function applyObject($key, $callable, $constructor = null) {
+        $this->redis->multi();
         $object = $this->getObject($key)->getCheckType($constructor);
         if (false !== call_user_func_array($callable, [&$object])) {
             $this->putObject($key, $object);
         }
+        $this->redis->exec();
         return $this;
     }
 

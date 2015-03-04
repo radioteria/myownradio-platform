@@ -48,9 +48,15 @@ public class TrackPlayer implements AbstractPlayer {
 
         int bytesDecoded = 0;
 
+        logger.println("Initializing process builder...");
+
         pb = new ProcessBuilder(new FFDecoderBuilder(file, offset, jingled).generate());
 
+        logger.println("Starting process builder...");
+
         proc = pb.start();
+
+        logger.println("Getting streams...");
 
         try (
                 InputStream in = proc.getInputStream();

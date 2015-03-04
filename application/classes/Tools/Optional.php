@@ -46,6 +46,13 @@ class Optional implements \JsonSerializable {
         return $this->test() ? $this->value : $value;
     }
 
+    public function getCheckType($escape) {
+        if (gettype($this->value) == gettype($escape)) {
+            return $this->value;
+        }
+        return $escape;
+    }
+
     /**
      * @return mixed|null
      */

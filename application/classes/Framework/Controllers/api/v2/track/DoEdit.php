@@ -20,7 +20,8 @@ use Framework\Services\JsonResponse;
 class DoEdit implements Controller {
     /** @var UpdateQuery $query */
     private $query;
-    public function doPost(HttpPost $post, JsonResponse $response, DBQuery $dbq, AuthUserModel $user, InputValidator $validator) {
+    public function doPost(HttpPost $post, JsonResponse $response, DBQuery $dbq, AuthUserModel $user,
+                           InputValidator $validator) {
 
         $id         = $post->getRequired("track_id");
 

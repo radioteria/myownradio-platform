@@ -49,7 +49,6 @@ public class TrackPlayer implements AbstractPlayer {
 
         pb = new ProcessBuilder(new FFDecoderBuilder(file, offset, jingled).generate());
 
-        pb.redirectErrorStream(true);
         pb.redirectError(new File("/tmp/decode_" + Thread.currentThread().getName() + ".log"));
 
         logger.println("Starting process builder...");

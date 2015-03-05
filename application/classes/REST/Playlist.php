@@ -227,6 +227,8 @@ class Playlist implements SingletonInterface, Injectable {
             'time' => System::time(),
             'position' => $position,
             'current' => $track,
+            'listeners_count' => $stream->getListenersCount(),
+            'bookmarks_count' => $stream->getBookmarksCount()
         ];
 
     }
@@ -278,7 +280,9 @@ class Playlist implements SingletonInterface, Injectable {
             'position' => $position,
             'range' => self::NOW_PLAYING_TIME_RANGE * 2,
             'current' => $currentID,
-            'tracks' => $tracks
+            'tracks' => $tracks,
+            'listeners_count' => $stream->getListenersCount(),
+            'bookmarks_count' => $stream->getBookmarksCount()
         ];
 
     }

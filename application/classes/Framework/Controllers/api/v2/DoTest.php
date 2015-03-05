@@ -11,11 +11,14 @@ namespace Framework\Controllers\api\v2;
 
 use Framework\Controller;
 use Framework\Services\Mail\MailQueue;
+use Framework\Services\Mailer;
 
 class DoTest implements Controller {
-    public function doGet(MailQueue $queue) {
-
-
-
+    public function doGet() {
+        $mailer = new Mailer("who@homefs.biz", "Doctor Who");
+        $mailer->addAddress("roman@homefs.biz");
+        $mailer->setSubject("Subject");
+        $mailer->setBody("This is another test message.");
+        $mailer->queue();
     }
 } 

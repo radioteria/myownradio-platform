@@ -19,7 +19,8 @@ use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
  * @view
  */
 class StreamStats extends ActiveRecordObject implements ActiveRecord {
-    private $sid, $uid, $started, $started_from, $status, $tracks_count, $tracks_duration;
+    private $sid, $uid, $started, $started_from, $status,
+        $tracks_count, $tracks_duration, $listeners_count, $bookmarks_count;
 
     /**
      * @return mixed
@@ -69,6 +70,21 @@ class StreamStats extends ActiveRecordObject implements ActiveRecord {
     public function getID() {
         return $this->sid;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getListenersCount() {
+        return $this->listeners_count;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBookmarksCount() {
+        return $this->bookmarks_count;
+    }
+
 
 
 } 

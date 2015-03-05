@@ -49,30 +49,23 @@ public class TrackPlayer implements AbstractPlayer {
 
         pb = new ProcessBuilder(new FFDecoderBuilder(file, offset, jingled).generate());
 
+        pb.redirectErrorStream(true);
+        pb.redirectError(new File("/tmp/decode_" + Thread.currentThread().getName() + ".log"));
+
         logger.println("Starting process builder...");
 
         proc = pb.start();
 
         logger.println("Getting streams...");
 
-        try (
-                InputStream in = proc.getInputStream();
-                InputStream err = proc.getErrorStream();
-                OutputStream debug = new FileOutputStream("/tmp/decode_" + Thread.currentThread().getName() + ".log", true);
-        ) {
+        try (InputStream in = proc.getInputStream()) {
             byte[] buffer = new byte[4096];
             int length, available;
             logger.println("[START]");
             while ((length = in.read(buffer)) != -1) {
                 bytesDecoded += length;
-
                 output.write(buffer, 0, length);
                 output.flush();
-                while ((available = err.available()) > 0) {
-                    length = err.read(buffer, 0, Math.min(available, buffer.length));
-                    debug.write(buffer, 0, length);
-                    debug.flush();
-                }
                 if (broadcast.isNotified()) {
                     broadcast.resetNotify();
                     break;

@@ -274,6 +274,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
      */
     private function processStreamRow(&$row) {
 
+        $row['name'] = (string) $row['name'];
         $row['cover_url'] = Folders::getInstance()->genStreamCoverUrl($row['cover']);
         $row['key'] = empty($row['permalink']) ? $row['sid'] : $row['permalink'];
         $row['hashtags_array'] = strlen($row['hashtags']) ? preg_split("/\\s*\\,\\s*/", $row['hashtags']) : null;

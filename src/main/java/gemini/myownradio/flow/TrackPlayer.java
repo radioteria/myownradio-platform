@@ -54,7 +54,12 @@ public class TrackPlayer implements AbstractPlayer {
 
         logger.println("Starting process builder...");
 
-        process = pb.start();
+        try {
+            process = pb.start();
+        } catch (IOException exception) {
+            logger.println("Process could not start");
+            throw exception;
+        }
 
         logger.println("Getting streams...");
 

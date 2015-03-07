@@ -41,7 +41,7 @@ public class TrackPlayer implements AbstractPlayer {
     public void play(int offset) throws IOException, DecoderException {
 
         ProcessBuilder pb;
-        Process proc;
+        final Process process;
 
         int bytesDecoded = 0;
 
@@ -54,11 +54,11 @@ public class TrackPlayer implements AbstractPlayer {
 
         logger.println("Starting process builder...");
 
-        proc = pb.start();
+        process = pb.start();
 
         logger.println("Getting streams...");
 
-        try (InputStream in = proc.getInputStream()) {
+        try (InputStream in = process.getInputStream()) {
             byte[] buffer = new byte[4096];
             int length, available;
             logger.println("[START]");
@@ -79,11 +79,11 @@ public class TrackPlayer implements AbstractPlayer {
             }
         } finally {
             logger.println("[FINALLY]");
-            try { proc.destroyForcibly().waitFor(); }
+            try { process.destroyForcibly().waitFor(); }
             catch (InterruptedException ie) { /* NOP */ }
         }
 
-        int exitStatus = proc.exitValue();
+        int exitStatus = process.exitValue();
 
         logger.sprintf("Exit value: %d", exitStatus);
         logger.sprintf("Bytes decoded: %d", bytesDecoded);

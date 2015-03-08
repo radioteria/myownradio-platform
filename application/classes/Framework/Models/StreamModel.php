@@ -173,7 +173,10 @@ class StreamModel extends Model implements SingletonInterface {
                 $file->delete();
             }
 
-            $this->stream->setCover(null)->save();
+            $this->stream->setCoverBackground(null);
+            $this->stream->setCover(null);
+            $this->stream->save();
+
 
         }
 
@@ -200,7 +203,11 @@ class StreamModel extends Model implements SingletonInterface {
 
         if ($result !== false) {
 
-            $this->stream->setCover($newImageFile)->save();
+            $gd = new \acResizeImage($newImagePath);
+
+            $this->stream->setCoverBackground($gd->getImageBackgroundColor());
+            $this->stream->setCover($newImageFile);
+            $this->stream->save();
 
             return [
                 "url" => $folders->genStreamCoverUrl($newImageFile),

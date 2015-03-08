@@ -38,6 +38,7 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
         $category,
         $hashtags,
         $cover,
+        $cover_background,
         $created;
 
     /**
@@ -270,5 +271,20 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     public function getStreamUrl() {
         return Folders::getInstance()->genStreamUrl($this->sid);
     }
+
+    /**
+     * @param mixed $cover_background
+     */
+    public function setCoverBackground($cover_background) {
+        $this->cover_background = $cover_background;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCoverBackground() {
+        return $this->cover_background;
+    }
+
 
 } 

@@ -36,7 +36,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         $prefix = (new SelectQuery("r_streams a"))
             ->innerJoin("r_static_stream_vars b", "a.sid = b.stream_id")
             ->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags", "a.category", "a.status",
-                "a.access", "a.cover", "a.created", "b.bookmarks_count", "b.listeners_count",
+                "a.access", "a.cover", "a.cover_background", "a.created", "b.bookmarks_count", "b.listeners_count",
                 "b.tracks_count", "b.tracks_duration"]);
 
         return $prefix;
@@ -212,7 +212,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
     /**
      * @param UserModel $user
      * @param int $offset
-     * @param int $limit
+     * @internal param int $limit
      * @return array
      */
     public function getBookmarksByUser(UserModel $user, $offset = 0) {

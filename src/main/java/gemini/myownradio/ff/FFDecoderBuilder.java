@@ -17,7 +17,7 @@ public class FFDecoderBuilder {
         cmd = jingled ?
                 new String[]{
                         "randomhash",
-                        Double.toString(Math.random()),
+                        Thread.currentThread().getName(),
                         "ffmpeg",
                         "-hide_banner",
                         "-loglevel", "quiet",
@@ -35,7 +35,7 @@ public class FFDecoderBuilder {
                 } :
                 new String[]{
                         "randomhash",
-                        Double.toString(Math.random()),
+                        Thread.currentThread().getName(),
                         "ffmpeg",
                         "-hide_banner",
                         "-loglevel", "quiet",

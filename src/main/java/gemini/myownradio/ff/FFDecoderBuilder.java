@@ -16,6 +16,8 @@ public class FFDecoderBuilder {
 
         cmd = jingled ?
                 new String[]{
+                        "randomhash",
+                        Double.toString(Math.random()),
                         "ffmpeg",
                         "-hide_banner",
                         "-loglevel", "quiet",
@@ -29,10 +31,11 @@ public class FFDecoderBuilder {
                         "-ar", "44100",
                         "-ac", "2",
                         "-f", "s16le",
-                        "-",
-                        "#" + Math.random()
+                        "-"
                 } :
                 new String[]{
+                        "randomhash",
+                        Double.toString(Math.random()),
                         "ffmpeg",
                         "-hide_banner",
                         "-loglevel", "quiet",
@@ -45,8 +48,7 @@ public class FFDecoderBuilder {
                         "-ar", "44100",
                         "-ac", "2",
                         "-f", "s16le",
-                        "-",
-                        "#" + Math.random()
+                        "-"
                 };
     }
 

@@ -29,7 +29,8 @@ public class FFDecoderBuilder {
                         "-ar", "44100",
                         "-ac", "2",
                         "-f", "s16le",
-                        "-", "&"
+                        "-",
+                        "#" + Math.random()
                 } :
                 new String[]{
                         "ffmpeg",
@@ -44,7 +45,8 @@ public class FFDecoderBuilder {
                         "-ar", "44100",
                         "-ac", "2",
                         "-f", "s16le",
-                        "-", "&"
+                        "-",
+                        "#" + Math.random()
                 };
     }
 

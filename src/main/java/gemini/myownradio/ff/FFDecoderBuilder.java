@@ -16,7 +16,6 @@ public class FFDecoderBuilder {
 
         cmd = jingled ?
                 new String[]{
-                        "nohup",
                         "ffmpeg",
                         "-hide_banner",
                         "-loglevel", "quiet",
@@ -30,10 +29,9 @@ public class FFDecoderBuilder {
                         "-ar", "44100",
                         "-ac", "2",
                         "-f", "s16le",
-                        "-"
+                        "-", "&"
                 } :
                 new String[]{
-                        "nohup",
                         "ffmpeg",
                         "-hide_banner",
                         "-loglevel", "quiet",
@@ -46,7 +44,7 @@ public class FFDecoderBuilder {
                         "-ar", "44100",
                         "-ac", "2",
                         "-f", "s16le",
-                        "-"
+                        "-", "&"
                 };
     }
 

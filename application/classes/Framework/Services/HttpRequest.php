@@ -17,10 +17,7 @@ class HttpRequest implements Injectable {
 
     use Singleton;
 
-    private $headers;
-
     function __construct() {
-        $this->headers = http_get_request_headers();
     }
 
     /**
@@ -28,7 +25,7 @@ class HttpRequest implements Injectable {
      * @return Optional
      */
     public function getHeader($key) {
-        return Optional::ofNullable(@$this->headers[$key]);
+        return Optional::ofNullable(http\Env::getRequestHeader($key));
     }
 
     /**

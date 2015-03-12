@@ -18,14 +18,12 @@ class HttpHeaders extends HttpRequestAdapter implements Injectable, SingletonInt
 
     use Singleton;
 
-    private $headers;
-
     function __construct() {
-        $this->headers = getallheaders();
+
     }
 
     public function getParameter($key) {
-        return Optional::ofEmpty(@$this->headers[$key]);
+        return Optional::ofNullable(http\Env::getRequestHeader($key));
     }
 
 } 

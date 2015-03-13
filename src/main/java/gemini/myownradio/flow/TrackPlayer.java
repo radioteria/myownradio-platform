@@ -4,7 +4,6 @@ import gemini.myownradio.engine.buffer.ConcurrentBuffer;
 import gemini.myownradio.exception.DecoderException;
 import gemini.myownradio.ff.FFDecoderBuilder;
 import gemini.myownradio.tools.MORLogger;
-import gemini.myownradio.tools.io.PipeIO;
 
 import java.io.*;
 
@@ -48,7 +47,7 @@ public class TrackPlayer implements AbstractPlayer {
 
         logger.println("Initializing process builder...");
 
-        pb = new ProcessBuilder(new FFDecoderBuilder(offset, jingled).generate());
+        pb = new ProcessBuilder(new FFDecoderBuilder(file, offset, jingled).generate());
 
         pb.redirectError(new File("/tmp/decode_" + Thread.currentThread().getName() + ".log"));
 
@@ -67,9 +66,9 @@ public class TrackPlayer implements AbstractPlayer {
 
         try (
                 InputStream in = process.getInputStream();
-                OutputStream out = process.getOutputStream();
+                //OutputStream out = process.getOutputStream();
         ) {
-            PipeIO pipe = new PipeIO(new FileInputStream(new File(file)), out, true);
+            //PipeIO pipe = new PipeIO(new FileInputStream(new File(file)), out, true);
             byte[] buffer = new byte[4096];
             int length, available;
             logger.println("[START]");

@@ -1,5 +1,7 @@
 package gemini.myownradio.tools.io.SharedFile;
 
+import gemini.myownradio.tools.MORLogger;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -16,8 +18,10 @@ public class SharedFile implements Closeable {
     final private SharedFileReader reader;
     final private File file;
 
+    final private static MORLogger logger = new MORLogger(MORLogger.MessageKind.PLAYER);
+
     public SharedFile(File file, SharedFileReader reader) throws IOException {
-        System.out.println("Created new file object: " + file.getName());
+        logger.println("Created new file object: " + file.getName());
         this.reader = reader;
         this.file = file;
         this.randomAccessFile = new RandomAccessFile(file, "r");
@@ -39,7 +43,7 @@ public class SharedFile implements Closeable {
     }
 
     public synchronized void increaseConsumers() {
-        System.out.println("New consumer: " + file.getName());
+        logger.println("New consumer: " + file.getName());
         consumers++;
     }
 
@@ -47,13 +51,13 @@ public class SharedFile implements Closeable {
         if (consumers == 0) {
             throw new IllegalArgumentException("Number of consumers could not be negative");
         }
-        System.out.println("Consumer gone: " + file.getName());
+        logger.println("Consumer gone: " + file.getName());
         consumers--;
     }
 
     public synchronized void checkAndClose() throws IOException {
         if (consumers == 0) {
-            System.out.println("Closing file object: " + file.getName());
+            logger.println("Closing file object: " + file.getName());
             this.randomAccessFile.close();
             this.reader.close(this.file);
         }

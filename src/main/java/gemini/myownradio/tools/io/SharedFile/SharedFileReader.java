@@ -32,8 +32,10 @@ public class SharedFileReader {
         return new SharedFileStream(sharedFile);
     }
 
-    public synchronized void close(File file) {
-        handles.remove(file);
+    public void close(File file) {
+        synchronized (lock) {
+            handles.remove(file);
+        }
     }
 
 }

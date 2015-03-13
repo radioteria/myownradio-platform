@@ -55,17 +55,17 @@ public class TrackPlayer implements AbstractPlayer {
 
         try (
                 InputStream in = process.getInputStream();
-                OutputStream out = process.getOutputStream();
+//                OutputStream out = process.getOutputStream();
         ) {
-            pipeIO = new PipeIO(new FileInputStream(file), out, true);
+            //pipeIO = new PipeIO(new FileInputStream(file), out, true);
 
             byte[] buffer = new byte[4096];
             int length, available;
             logger.println("[START]");
             while ((length = in.read(buffer)) != -1) {
-                if (pipeIO.isThrowed()) {
-                    return;
-                }
+//                if (pipeIO.isThrowed()) {
+//                    return;
+//                }
                 bytesDecoded += length;
                 output.write(buffer, 0, length);
                 output.flush();

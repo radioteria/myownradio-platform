@@ -8,7 +8,7 @@ import java.io.OutputStream;
  * Created by Roman on 30.12.2014.
  */
 public class IOTools {
-    final public static int DEFAULT_BUFFER_SIZE = 4096;
+    final public static int DEFAULT_BUFFER_SIZE = 1024;
     final public static boolean DEFAULT_AUTO_FLUSH = true;
     final public static boolean DEFAULT_AUTO_CLOSE = true;
 

@@ -64,7 +64,7 @@ public class TrackPlayer implements AbstractPlayer {
 
         logger.println("Getting streams...");
 
-        pipe = new PipeIO(new FileInputStream(new File(file)), process.getOutputStream(), false);
+        pipe = new PipeIO(new FileInputStream(new File(file)), process.getOutputStream(), true);
 
         try (InputStream in = process.getInputStream()) {
             byte[] buffer = new byte[4096];

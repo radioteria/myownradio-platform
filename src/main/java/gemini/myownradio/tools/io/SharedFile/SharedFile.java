@@ -59,7 +59,7 @@ public class SharedFile implements Closeable {
         if (consumers == 0) {
             logger.println("Closing file object: " + file.getName());
             this.randomAccessFile.close();
-            this.reader.close(this.file);
+            this.reader.close();
         }
     }
 

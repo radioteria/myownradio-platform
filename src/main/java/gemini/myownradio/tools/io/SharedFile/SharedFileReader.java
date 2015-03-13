@@ -14,6 +14,7 @@ public class SharedFileReader {
     private SharedFile sharedFile;
     final private static Map<File, SharedFile> handles = new ConcurrentHashMap<>();
     final private static Object lock = new Object();
+    final private File file;
 
     public SharedFileReader(File file) throws IOException {
 
@@ -24,6 +25,7 @@ public class SharedFileReader {
                 sharedFile = new SharedFile(file, this);
                 handles.put(file, sharedFile);
             }
+            this.file = file;
         }
 
     }
@@ -32,7 +34,7 @@ public class SharedFileReader {
         return new SharedFileStream(sharedFile);
     }
 
-    public void close(File file) {
+    public void close() {
         synchronized (lock) {
             handles.remove(file);
         }

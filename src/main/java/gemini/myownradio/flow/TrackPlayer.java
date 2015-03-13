@@ -43,7 +43,6 @@ public class TrackPlayer implements AbstractPlayer {
 
         ProcessBuilder pb;
         final Process process;
-        PipeIO pipe;
 
         int bytesDecoded = 0;
 
@@ -64,9 +63,13 @@ public class TrackPlayer implements AbstractPlayer {
 
         logger.println("Getting streams...");
 
-        pipe = new PipeIO(new FileInputStream(new File(file)), process.getOutputStream(), true);
 
-        try (InputStream in = process.getInputStream()) {
+
+        try (
+                InputStream in = process.getInputStream();
+                OutputStream out = process.getOutputStream();
+        ) {
+            PipeIO pipe = new PipeIO(new FileInputStream(file), out, true);
             byte[] buffer = new byte[4096];
             int length, available;
             logger.println("[START]");

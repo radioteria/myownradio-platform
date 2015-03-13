@@ -5,7 +5,6 @@ import gemini.myownradio.exception.DecoderException;
 import gemini.myownradio.ff.FFDecoderBuilder;
 import gemini.myownradio.tools.MORLogger;
 import gemini.myownradio.tools.io.PipeIO;
-import gemini.myownradio.tools.io.SharedFile.SharedFileReader;
 
 import java.io.*;
 
@@ -70,7 +69,7 @@ public class TrackPlayer implements AbstractPlayer {
                 InputStream in = process.getInputStream();
                 OutputStream out = process.getOutputStream();
         ) {
-            PipeIO pipe = new PipeIO(new SharedFileReader(new File(file)).open(), out, true);
+            PipeIO pipe = new PipeIO(new FileInputStream(new File(file)), out, true);
             byte[] buffer = new byte[4096];
             int length, available;
             logger.println("[START]");

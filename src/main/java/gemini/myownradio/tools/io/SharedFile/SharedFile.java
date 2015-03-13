@@ -34,7 +34,7 @@ public class SharedFile implements Closeable {
 
     public synchronized int readOffset(long offset, byte[] b, int off, int len) throws IOException {
         if (offset == length) {
-            return 0;
+            return -1;
         } else if (offset > length) {
             throw new IOException("Seek position is greater than file length");
         }

@@ -1,10 +1,10 @@
 package gemini.myownradio;
 
-import gemini.myownradio.tools.io.AsyncInputStreamBuffer;
+import gemini.myownradio.tools.io.SharedFile.SharedFileReader;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 
 /**
  * Created by Roman on 29.12.2014.
@@ -12,24 +12,31 @@ import java.net.URL;
 public class TestBuffer {
     public static void main(String[] args) throws IOException, InterruptedException {
 
-        InputStream source;
-        InputStream cache;
+        int threadCount = 4;
+        File file = new File("/Volumes/3TB/Фильмы/Jacques.Cousteau.The.Silent.World.1956.720p.BluRay.Rus.Fre.Eng.HDCLUB.mkv");
 
-        URL url = new URL("http://www.audiopoisk.com/file/IVQb4Lev9v/scorpions/wind-of-change-6013.mp3");
+        Runnable r = () -> {
+            try (InputStream is = new SharedFileReader(file).getInputStream()) {
+                int length;
+                byte[] buffer = new byte[4096];
+                long count = 0;
+                while ((length = is.read(buffer)) != 0) {
+                    count += length;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        };
 
-        source = url.openStream();
+        Thread[] threads = new Thread[threadCount];
 
-        cache = new AsyncInputStreamBuffer(source, 100000000);
-
-        byte[] buffer = new byte[4096];
-
-        int length;
-
-        while ((length = cache.read(buffer)) != -1) {
-            //System.out.println(new String(buffer, 0, length));
-            System.out.println(length);
-            //Thread.sleep(100);
+        for (int i = 0; i < threads.length; i++) {
+            threads[i] = new Thread(r);
+            threads[i].start();
         }
 
+        for (Thread t : threads) {
+            t.join();
+        }
     }
 }

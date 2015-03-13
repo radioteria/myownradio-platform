@@ -16,7 +16,7 @@ public class TestBuffer {
         File file = new File("/Volumes/3TB/Фильмы/Jacques.Cousteau.The.Silent.World.1956.720p.BluRay.Rus.Fre.Eng.HDCLUB.mkv");
 
         Runnable r = () -> {
-            try (InputStream is = new SharedFileReader(file).getInputStream()) {
+            try (InputStream is = new SharedFileReader(file).open()) {
                 int length;
                 byte[] buffer = new byte[4096];
                 long count = 0;

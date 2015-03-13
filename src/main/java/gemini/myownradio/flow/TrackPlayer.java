@@ -90,8 +90,10 @@ public class TrackPlayer implements AbstractPlayer {
             }
         } finally {
             logger.println("[FINALLY]");
-            try { process.destroyForcibly().waitFor(); }
-            catch (InterruptedException ie) { /* NOP */ }
+            try {
+                process.destroy();
+                process.waitFor();
+            } catch (InterruptedException ie) { /* NOP */ }
         }
 
         int exitStatus = process.exitValue();

@@ -2,7 +2,6 @@ package gemini.myownradio.tools;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Date;
@@ -58,11 +57,12 @@ public class MORLogger {
     public void exception(Throwable e) {
         String title = e.getClass().getName();
         String body = e.getMessage();
-        this.sprintf("Exception: %s, Message: %s", title, body);
+        String stack = Arrays.toString(e.getStackTrace());
+        this.sprintf("Exception: %s, Message: %s, Stack: %s", title, body, stack);
     }
 
     public enum MessageKind {
-        PLAYER, SERVER, CONCURRENT_BUFFER, BUFFER
+        PLAYER, SERVER, CONCURRENT_BUFFER, BUFFER, PIPE
     }
 
 }

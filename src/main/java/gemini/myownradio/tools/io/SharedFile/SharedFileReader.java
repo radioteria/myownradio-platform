@@ -1,5 +1,7 @@
 package gemini.myownradio.tools.io.SharedFile;
 
+import gemini.myownradio.tools.io.InputSupplier;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by roman on 13.03.15.
  */
-public class SharedFileReader {
+public class SharedFileReader implements InputSupplier {
 
     private SharedFile sharedFile;
     final private static Map<File, SharedFile> handles = new ConcurrentHashMap<>();
@@ -30,7 +32,7 @@ public class SharedFileReader {
 
     }
 
-    public InputStream getInputStream() throws IOException {
+    public InputStream open() throws IOException {
         return new SharedFileStream(sharedFile);
     }
 

@@ -69,9 +69,6 @@ public class TrackPlayer implements AbstractPlayer {
             int length, available;
             logger.println("[START]");
             while ((length = in.read(buffer)) != -1) {
-//                if (pipeIO.isThrowed()) {
-//                    return;
-//                }
                 bytesDecoded += length;
                 output.write(buffer, 0, length);
                 output.flush();
@@ -89,8 +86,7 @@ public class TrackPlayer implements AbstractPlayer {
         } finally {
             logger.println("[FINALLY]");
             try {
-                process.destroy();
-                process.waitFor();
+                process.destroyForcibly().waitFor();
             } catch (InterruptedException ie) { /* NOP */ }
         }
 

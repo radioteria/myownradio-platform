@@ -46,7 +46,7 @@ public class FFDecoderBuilder {
 //                        "-err_detect", "explode",
                         "-ss", new DecimalFormat("0.###").format((float) this.offset / 1_000F),
                         "-i", filename,
-//                        "-filter", "afade=t=in:st=0:d=1",
+                        "-filter", "afade=t=in:st=0:d=1",
                         "-vn",
                         "-acodec", "pcm_s16le",
                         "-ar", "44100",

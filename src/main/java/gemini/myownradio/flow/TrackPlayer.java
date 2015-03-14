@@ -66,7 +66,7 @@ public class TrackPlayer implements AbstractPlayer {
             //pipeIO = new PipeIO(new FileInputStream(file), out, true);
 
             byte[] buffer = new byte[4096];
-            int length, available;
+            int length;
             logger.println("[START]");
             while ((length = in.read(buffer)) != -1) {
                 bytesDecoded += length;

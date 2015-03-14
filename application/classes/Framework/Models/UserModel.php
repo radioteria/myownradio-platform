@@ -2,9 +2,11 @@
 
 namespace Framework\Models;
 
+use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\Stats;
+use Framework\Services\Config;
 use Framework\Services\InputValidator;
 use Objects\AccountPlan;
 use Objects\Link;
@@ -229,6 +231,7 @@ class UserModel extends Model implements SingletonInterface {
 
     /**
      * Account Delete
+     * todo: Delete user's avatars and covers
      */
     public function delete() {
 
@@ -252,8 +255,19 @@ class UserModel extends Model implements SingletonInterface {
             $model->delete();
         }
 
+        $id = $this->user->getID();
+
         /* Delete accout object */
         $this->user->delete();
+
+        /* Delete user's directory */
+        $contentFolder = Config::getInstance()->getSetting("content", "content_folder")
+            ->getOrElseThrow(ApplicationException::of("CONTENT FOLDER NOT SPECIFIED"));
+
+        $path = new File(sprintf("%s/ui_%d", $contentFolder, $id));
+        if ($path->exists()) {
+            $path->delete();
+        }
 
     }
 

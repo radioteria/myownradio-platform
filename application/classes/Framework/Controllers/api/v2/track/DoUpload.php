@@ -24,7 +24,7 @@ class DoUpload implements Controller {
 
         $uploaded = [];
 
-        $file->each(function ($file) use ($streamID, $model, $upNext, &$uploaded, $skipCopies) {
+        $file->each(function ($file) use ($streamID, $model, $upNext, &$uploaded, &$skipCopies) {
             if (is_array($file["name"])) {
                 for ($i = 0; $i < count($file["name"]); $i++) {
                     $tmp = [

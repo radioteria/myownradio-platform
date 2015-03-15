@@ -15,11 +15,10 @@ use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Services\Config;
 use Framework\Services\DB\DBQuery;
+use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\HttpRequest;
-use Objects\StreamTrack;
 use Objects\Track;
 use REST\Playlist;
-use Tools\Common;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -45,11 +44,12 @@ class TracksModel implements Injectable, SingletonInterface {
      * @param array $file
      * @param Optional $addToStream
      * @param bool $upNext
-     * @return Track
+     * @param bool $skipCopies
      * @throws \Framework\Exceptions\ApplicationException
      * @throws \Framework\Exceptions\ControllerException
+     * @return Track
      */
-    public function upload(array $file, Optional $addToStream, $upNext = false) {
+    public function upload(array $file, Optional $addToStream, $upNext = false, $skipCopies = false) {
 
         $config = Config::getInstance();
         $request = HttpRequest::getInstance();
@@ -73,6 +73,12 @@ class TracksModel implements Injectable, SingletonInterface {
 
         if (empty($meta["audio"]["bitrate"])) {
             throw new ControllerException("File appears to be broken");
+        }
+
+        if ($skipCopies && isset($meta["tags"]["id3v2"]["title"][0]) && isset($meta["tags"]["id3v2"]["artist"][0])) {
+            if ($this->isTrackExists($meta["tags"]["id3v2"]["title"][0], $meta["tags"]["id3v2"]["artist"][0])) {
+                throw new ControllerException("Track with same artist and title already exists");
+            }
         }
 
         $duration = $meta["filesize"] / ($meta["audio"]["bitrate"] / 8) * 1000;
@@ -139,6 +145,22 @@ class TracksModel implements Injectable, SingletonInterface {
 
         return Playlist::getInstance()->getOneTrack($track->getID());
 
+    }
+
+    /**
+     * @param $title
+     * @param $artist
+     * @return bool
+     */
+    public function isTrackExists($title, $artist) {
+        if (!$title || !$artist) {
+            return false;
+        }
+        return boolval(count((new SelectQuery("r_tracks"))
+            ->where("title LIKE ?", [$title])
+            ->where("artist LIKE ?", [$artist])
+            ->where("uid", $this->user->getID()))
+        );
     }
 
     private function addToStream(Track $track, Optional $stream, $upNext = false) {

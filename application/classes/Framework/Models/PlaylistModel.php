@@ -150,6 +150,10 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
             }
 
+            if ($this->tracks_count == 0) {
+                PlaylistModel::getInstance($this->key)->scPlay();
+            }
+
         });
 
         return $this;

@@ -76,8 +76,8 @@ class TracksModel implements Injectable, SingletonInterface {
         }
 
         if ($skipCopies && isset($meta["tags"]["id3v2"]["title"][0]) && isset($meta["tags"]["id3v2"]["artist"][0])) {
-            if ($this->isTrackExists($meta["tags"]["id3v2"]["title"][0], $meta["tags"]["id3v2"]["artist"][0])) {
-                throw new ControllerException("Track with same artist and title already exists");
+            if ($copy = $this->getSameTrack($meta["tags"]["id3v2"]["title"][0], $meta["tags"]["id3v2"]["artist"][0])) {
+                throw new ControllerException("Track with same artist and title already exists", $copy);
             }
         }
 
@@ -152,25 +152,33 @@ class TracksModel implements Injectable, SingletonInterface {
      * @param $artist
      * @return bool
      */
-    public function isTrackExists($title, $artist) {
+    public function getSameTrack($title, $artist) {
+
         if (!$title || !$artist) {
-            return false;
+            return null;
         }
-        return boolval(count((new SelectQuery("r_tracks"))
+
+        return (new SelectQuery("r_tracks"))
             ->where("title LIKE ?", [$title])
             ->where("artist LIKE ?", [$artist])
-            ->where("uid", $this->user->getID()))
-        );
+            ->where("uid", $this->user->getID())
+            ->limit(1)
+            ->fetchOneRow()
+            ->getOrElseNull();
+
     }
 
     private function addToStream(Track $track, Optional $stream, $upNext = false) {
 
-        $stream->then(function ($streamID) use ($track, $upNext) {
+        if (!$stream->validate()) {
+            return Optional::noValue();
+        }
 
-            $streamObject = new PlaylistModel($streamID);
-            $streamObject->addTracks($track->getID(), $upNext);
+        $streamID = $stream->get();
 
-        });
+        $streamObject = new PlaylistModel($streamID);
+
+        $streamObject->addTracks($track->getID(), $upNext);
 
     }
 

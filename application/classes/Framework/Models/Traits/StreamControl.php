@@ -90,21 +90,31 @@ trait StreamControl {
         StreamStats::getByID($this->key)
             ->then(function ($stats) {
                 /** @var StreamStats $stats */
-                if ($stats->getTracksCount() == 0) {
-                    throw ControllerException::of("Add some music into this stream before start.");
-                }
+
+                Stream::getByID($this->key)
+
+                    ->then(function ($stream) use ($stats) {
+                        /** @var Stream $stream */
+
+                        if ($stats->getTracksCount() == 0) {
+                            $stream->setStartedFrom(null);
+                            $stream->setStarted(null);
+                            $stream->setStatus(0);
+                        } else {
+                            $stream->setStartedFrom(0);
+                            $stream->setStarted(System::time());
+                            $stream->setStatus(1);
+                        }
+
+                        $stream->save();
+
+                    });
+
+                $this->notifyStreamers();
+
             });
 
-        Stream::getByID($this->key)
-            ->then(function ($stream) {
-                /** @var Stream $stream */
-                $stream->setStartedFrom(0);
-                $stream->setStarted(System::time());
-                $stream->setStatus(1);
-                $stream->save();
-            });
 
-        $this->notifyStreamers();
 
     }
 

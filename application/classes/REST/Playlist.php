@@ -206,7 +206,11 @@ class Playlist implements SingletonInterface, Injectable {
             throw ControllerException::noStream($id);
         }
 
-        $position = $stream->getTracksDuration() ? 0 : max(((System::time() - self::REAL_TIME_DELAY_MS) -
+        if ($stream->getTracksDuration() == 0) {
+            throw ControllerException::of("Nothing playing");
+        }
+
+        $position = max(((System::time() - self::REAL_TIME_DELAY_MS) -
                 $stream->getStarted() +
                 $stream->getStartedFrom()) % $stream->getTracksDuration(), 0);
 

@@ -4,19 +4,27 @@
 
     <title>${name} on ${title}</title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <meta name="description" content="Ylla Music Official Site" />
-    <meta name="keywords" content="ylla, music, label, progressive, trance, house, chillout, dubstep" />
+    <meta name="description" content="${info}" />
+    <meta name="keywords" content="${hashtags}" />
+
+    <meta property="medium" content="video" />
 
     <meta property="og:image" content="https:${cover_url}" />
     <meta property="og:url" content="https://myownradio.biz/streams/${key}" />
     <meta property="og:description" content="${info}" />
     <meta property="og:title" content="${name} on ${title}" />
 
+    <meta property="og:type" content="music.radio_station" />
 
-    <meta property="og:audio" content="http://myownradio.biz/widget/?stream_id=${sid}&auto=1">
-    <meta property="og:audio:type" content="audio/vnd.facebook.bridge">
+    <meta property="twitter:description" content="${info}" />
+    <meta property="twitter:title" content="${name} on ${title}" />
+    <meta property="twitter:player" content="https://myownradio.biz/widget/?stream_id=${sid}&auto=1">
 
     <meta property="fb:app_id" content="731742683610572"/>
+
+    <meta property="og:audio" content="https://myownradio.biz/widget/?stream_id=${sid}&auto=1" />
+    <meta property="og:audio:type" content="audio/vnd.facebook.bridge" />
+
 
 </head>
 <body></body>

@@ -26,8 +26,8 @@ class ViewException extends ApplicationException {
         $template = new Template($this->httpTemplate);
         $template->putObject($this->templateData);
 
-        $template->setPrefix("{{");
-        $template->setSuffix("}}");
+        $template->setPrefix("[[");
+        $template->setSuffix("]]");
 
         http_response_code($this->httpCode);
         echo $template->makeDocument();

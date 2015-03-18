@@ -8,7 +8,6 @@ class Template {
 
     private $template;
     private $variables = [];
-    private $raw = [];
 
     private $prefix = "\${";
     private $suffix = "}";
@@ -17,7 +16,7 @@ class Template {
      * @return string
      */
     private function buildReplace() {
-        return "/" . preg_quote($this->prefix) . "\\s*(.+?)\\s*" . preg_quote($this->suffix) . "/";
+        return "/" . preg_quote($this->prefix) . "\\s*(.+?)\\s*(?:\\|\\s*(.+?)\\s*)*" . preg_quote($this->suffix) . "/";
     }
 
     /**
@@ -45,12 +44,10 @@ class Template {
     /**
      * @param $key
      * @param $value
-     * @param bool $raw
      * @return $this
      */
-    public function addVariable($key, $value, $raw = false) {
+    public function addVariable($key, $value) {
         $this->variables[$key] = $value;
-        $this->raw[$key] = $raw;
         return $this;
     }
 
@@ -59,7 +56,14 @@ class Template {
      */
     public function makeDocument() {
         $result = preg_replace_callback($this->buildReplace(), function ($match) {
-            return $this->getObjectParameter($match[1]);
+            array_shift($match);
+            $src = $this->getObjectParameter(array_shift($match));
+            while ($filter = array_shift($match)) {
+                $split = preg_split("~(\\s*\\:\\s*)~", $filter);
+                $f = array_shift($split);
+                $src = $this->filters($f, $src, $split);
+            }
+            return $src;
         }, $this->template);
 
         return $result;
@@ -69,7 +73,9 @@ class Template {
         $slices = explode(".", $key);
         $current = $this->variables;
         foreach ($slices as $slice) {
-            if (!isset($current[$slice])) { return ""; };
+            if (!isset($current[$slice])) {
+                return "";
+            };
 
             $current = $current[$slice];
 
@@ -85,7 +91,6 @@ class Template {
      */
     public function reset() {
         $this->variables = [];
-        $this->raw = [];
         return $this;
     }
 
@@ -95,6 +100,43 @@ class Template {
     public function putObject($stream) {
         foreach ($stream as $key => $val) {
             $this->addVariable($key, $val, false);
+        }
+    }
+
+    /**
+     * @param $filter
+     * @param $data
+     * @param $args
+     * @throws \Exception
+     * @return object
+     */
+    private static function filters($filter, $data, $args) {
+        $encoding = "utf8";
+
+        switch ($filter) {
+            case "uppercase":
+                return mb_strtoupper($data, $encoding);
+
+            case "lowercase":
+                return mb_strtolower($data, $encoding);
+
+            case "upperfirst":
+                return ucfirst($data);
+
+            case "upperwords":
+                return ucwords($data);
+
+            case "html":
+                return htmlspecialchars($data, ENT_QUOTES);
+
+            case "url":
+                return urlencode($data);
+
+            case "date":
+                return date($args[0], $data);
+
+            default:
+                throw new \Exception("Unknown filter used in template");
         }
     }
 

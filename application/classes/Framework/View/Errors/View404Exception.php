@@ -11,6 +11,9 @@ namespace Framework\View\Errors;
 
 class View404Exception extends ViewException {
     function __construct() {
-        parent::__construct(404, "application/tmpl/error/404.tmpl");
+        parent::__construct(404, "application/tmpl/error/404.tmpl", [
+            "msg" => "Sorry, but requested document not found on this server.",
+            "time" => time()
+        ]);
     }
 }

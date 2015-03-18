@@ -146,7 +146,7 @@ class StreamModel extends Model implements SingletonInterface {
 
         $validator = InputValidator::getInstance();
 
-        $validator->validateUserPermalink($permalink, $this->key);
+        $validator->validateStreamPermalink($permalink, $this->key);
         $validator->validateStreamCategory($category);
         $validator->validateStreamAccess($access);
 

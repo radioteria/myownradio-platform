@@ -36,7 +36,6 @@ class DoGetOneWithSimilar implements Controller {
             $comments = [];
         }
 
-
         $response->setData([
             "stream"  => $one,
             "similar" => $similar,

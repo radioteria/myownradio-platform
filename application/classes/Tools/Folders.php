@@ -21,6 +21,20 @@ class Folders implements Injectable, SingletonInterface {
     /* Specific constants: PATH */
     const MOR_DIR_STREAM_COVERS = "%s/streamcovers/%s";
     const MOR_DIR_USER_AVATARS = "%s/avatars/%s";
+    const MOR_DIR_CACHE_LOCATION = "%s/cache/%s/%s/%s.%s";
+
+    /**
+     * @param $data
+     * @param File $file
+     * @return File
+     */
+    function generateCacheFile($data, $file) {
+        $data = serialize($data);
+        $md5 = md5($data);
+        return new File(sprintf(self::MOR_DIR_CACHE_LOCATION, self::MOR_HEAP_FOLDER,
+            substr($md5, 0, 2), substr($md5, 2, 2), $md5, $file->extension()
+        ));
+    }
 
     /* Url generators */
     function genStreamCoverUrl($filename) {

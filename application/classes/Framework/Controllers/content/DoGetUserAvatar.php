@@ -18,14 +18,20 @@ use Tools\Folders;
 
 class DoGetUserAvatar implements Controller {
 
-    public function doGet(HttpGet $get) {
+    public function doGet(HttpGet $get, Folders $folders) {
 
         $fn = $get->getParameter("fn")->getOrElseThrow(ControllerException::noArgument("fn"));
         $size = $get->getParameter("size")->getOrElseNull();
 
-        $folders = Folders::getInstance();
-
         $path = new File($folders->genAvatarPath($fn));
+
+        if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) >= $path->mtime()) {
+            header('HTTP/1.1 304 Not Modified');
+            die();
+        } else {
+            header("Last-Modified: " . gmdate("D, d M Y H:i:s", $path->mtime()) . " GMT");
+            header('Cache-Control: max-age=0');
+        }
 
         if (!$path->exists()) {
             throw new DocNotFoundException();
@@ -39,11 +45,29 @@ class DoGetUserAvatar implements Controller {
             $path->echoContents();
 
         } else {
-            $image = new \acResizeImage($path->path());
-            $image->cropSquare();
-            $image->resize($size);
-            $image->interlace();
-            $image->output($path->extension(), 100);
+
+
+            $cache = $folders->generateCacheFile($_GET, $path);
+
+            if ($cache->exists()) {
+
+                $cache->echoContents();
+
+            } else {
+
+                if (!file_exists($cache->dirname())) {
+                    mkdir($cache->dirname(), 0777, true);
+                }
+
+                $image = new \acResizeImage($path->path());
+                $image->cropSquare();
+                $image->resize($size);
+                $image->interlace();
+
+                $image->output($path->extension(), 80);
+                $image->save($cache->dirname() . "/", $cache->filename(), $path->extension(), true, 80);
+
+            }
         }
 
     }

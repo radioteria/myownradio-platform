@@ -85,7 +85,6 @@ class TracksModel implements Injectable, SingletonInterface {
 
         $duration = $meta["comments"]["length"][0];
 
-
         $uploadTimeLeft = $this->user->getCurrentPlan()->getTimeMax() - $this->user->getTracksDuration() - $duration;
 
         if ($duration > $maximalDuration) {
@@ -129,6 +128,8 @@ class TracksModel implements Injectable, SingletonInterface {
 
         $track->save();
 
+        error_log("SRC: " . $file['tmp_name']);
+        error_log("DST: " . $track->getOriginalFile());
 
         $result = move_uploaded_file($file['tmp_name'], $track->getOriginalFile());
 
@@ -136,10 +137,10 @@ class TracksModel implements Injectable, SingletonInterface {
 
             $this->addToStream($track, $addToStream, $upNext);
 
-            error_log($track->getOriginalFile());
-
             logger(sprintf("User #%d uploaded new track: %s (upload time left: %d seconds)",
                 $track->getUserID(), $track->getFileName(), $uploadTimeLeft / 1000));
+
+            return Playlist::getInstance()->getOneTrack($track->getID());
 
         } else {
 
@@ -149,7 +150,6 @@ class TracksModel implements Injectable, SingletonInterface {
 
         }
 
-        return Playlist::getInstance()->getOneTrack($track->getID());
 
     }
 

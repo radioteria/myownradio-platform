@@ -64,6 +64,8 @@ class TracksModel implements Injectable, SingletonInterface {
 
         $meta = $id3->analyze($file["tmp_name"]);
 
+        \getid3_lib::CopyTagsToComments($meta);
+
         $maximalDuration  = $config->getSetting('upload', 'maximal_length')->get();
         $availableFormats = $config->getSetting('upload', 'supported_audio')->get();
 
@@ -75,13 +77,14 @@ class TracksModel implements Injectable, SingletonInterface {
             throw new ControllerException("File appears to be broken");
         }
 
-        if ($skipCopies && isset($meta["tags"]["id3v2"]["title"][0]) && isset($meta["tags"]["id3v2"]["artist"][0])) {
-            if ($copy = $this->getSameTrack($meta["tags"]["id3v2"]["title"][0], $meta["tags"]["id3v2"]["artist"][0])) {
+        if ($skipCopies && isset($meta["comments"]["title"][0]) && isset($meta["comments"]["artist"][0])) {
+            if ($copy = $this->getSameTrack($meta["comments"]["title"][0], $meta["comments"]["artist"][0])) {
                 throw new ControllerException("Track with same artist and title already exists", $copy);
             }
         }
 
-        $duration = $meta["filesize"] / ($meta["audio"]["bitrate"] / 8) * 1000;
+        $duration = $meta["comments"]["length"][0];
+
 
         $uploadTimeLeft = $this->user->getCurrentPlan()->getTimeMax() - $this->user->getTracksDuration() - $duration;
 
@@ -101,22 +104,22 @@ class TracksModel implements Injectable, SingletonInterface {
         $track->setFileName($file["name"]);
         $track->setExtension($extension);
         $track->setTrackNumber(
-            isset($meta["tags"]["id3v2"]["track_number"][0]) ? $meta["tags"]["id3v2"]["track_number"][0] : ""
+            isset($meta["comments"]["track_number"][0]) ? $meta["comments"]["track_number"][0] : ""
         );
         $track->setArtist(
-            isset($meta["tags"]["id3v2"]["artist"][0]) ? $meta["tags"]["id3v2"]["artist"][0] : ""
+            isset($meta["comments"]["artist"][0]) ? $meta["comments"]["artist"][0] : ""
         );
         $track->setTitle(
-            isset($meta["tags"]["id3v2"]["title"][0]) ? $meta["tags"]["id3v2"]["title"][0] : $file['name']
+            isset($meta["comments"]["title"][0]) ? $meta["comments"]["title"][0] : $file['name']
         );
         $track->setAlbum(
-            isset($meta["tags"]["id3v2"]["album"][0]) ? $meta["tags"]["id3v2"]["album"][0] : ""
+            isset($meta["comments"]["album"][0]) ? $meta["comments"]["album"][0] : ""
         );
         $track->setGenre(
-            isset($meta["tags"]["id3v2"]["genre"][0]) ? $meta["tags"]["id3v2"]["genre"][0] : ""
+            isset($meta["comments"]["genre"][0]) ? $meta["comments"]["genre"][0] : ""
         );
         $track->setDate(
-            isset($meta["tags"]["id3v2"]["date"][0]) ? $meta["tags"]["id3v2"]["date"][0] : ""
+            isset($meta["comments"]["date"][0]) ? $meta["comments"]["date"][0] : ""
         );
         $track->setDuration($duration);
         $track->setFileSize(filesize($file["tmp_name"]));
@@ -126,11 +129,14 @@ class TracksModel implements Injectable, SingletonInterface {
 
         $track->save();
 
+
         $result = move_uploaded_file($file['tmp_name'], $track->getOriginalFile());
 
         if ($result !== false) {
 
             $this->addToStream($track, $addToStream, $upNext);
+
+            error_log($track->getOriginalFile());
 
             logger(sprintf("User #%d uploaded new track: %s (upload time left: %d seconds)",
                 $track->getUserID(), $track->getFileName(), $uploadTimeLeft / 1000));

@@ -10,11 +10,13 @@ namespace Framework\Services\ORM\Core;
 
 
 use Framework\Injector\Injectable;
+use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordCollection;
 use Framework\Services\ORM\Exceptions\ORMException;
+use Framework\Services\Redis;
 use Tools\Optional;
 use Tools\Singleton;
 
@@ -169,32 +171,33 @@ class MicroORM extends FilterORM implements Injectable {
 
     /**
      * @param ActiveRecord $bean
+     * @throws \Framework\Services\ORM\Exceptions\ORMException
+     * @internal param $config
      * @return mixed
-     * @throws ORMException
      */
     public function saveObject(ActiveRecord $bean) {
 
         $reflection = new \ReflectionClass($bean);
 
-        $beanConfig = $this->getBeanConfig($reflection);
+        $config = $this->getBeanConfig($reflection);
         $dbq = DBQuery::getInstance();
 
-        if (isset($beanConfig["@view"])) {
+        if (isset($config["@view"])) {
             throw new ORMException("Object has read only access");
         }
 
 
-        $keyProp = $reflection->getProperty($beanConfig["@key"]);
+        $keyProp = $reflection->getProperty($config["@key"]);
         $keyProp->setAccessible(true);
 
         $key = $keyProp->getValue($bean);
 
         if (is_null($key)) {
 
-            $query = $dbq->into($beanConfig["@table"]);
+            $query = $dbq->into($config["@table"]);
 
             foreach ($reflection->getProperties() as $prop) {
-                if ($prop->getName() == $beanConfig["@key"])
+                if ($prop->getName() == $config["@key"])
                     continue;
                 $prop->setAccessible(true);
                 $query->values($prop->getName(), $prop->getValue($bean));
@@ -206,25 +209,37 @@ class MicroORM extends FilterORM implements Injectable {
 
         } else {
 
-            $query = $dbq->updateTable($beanConfig["@table"]);
+            $query = $dbq->updateTable($config["@table"]);
+            $test = 0;
+            //$cached = $this->redis->
 
             foreach ($reflection->getProperties() as $prop) {
 
                 $prop->setAccessible(true);
 
-                if ($prop->getName() == $beanConfig["@key"]) {
+                if ($prop->getName() == $config["@key"]) {
 
                     $query->where($prop->getName(), $prop->getValue($bean));
 
                 } else {
 
-                    $query->set($prop->getName(), $prop->getValue($bean));
+                    if (!isset($this->ORMCache[$config["@table"]][$config["@key"]])
+                        || ($this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] !== $prop->getValue($bean))) {
+
+                        $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] = $prop->getValue($bean);
+                        $query->set($prop->getName(), $prop->getValue($bean));
+                        $test = 1;
+
+                    }
 
                 }
 
             }
 
-            $query->update();
+
+            if ($test) {
+                $query->update();
+            }
 
         }
 
@@ -243,7 +258,7 @@ class MicroORM extends FilterORM implements Injectable {
         $this->applyKey($query, $config, $id);
         $this->applyInnerJoin($query, $config);
 
-        return $this->_getSingleObject($query, $reflection);
+        return $this->_getSingleObject($query, $reflection, $config);
 
     }
 
@@ -260,7 +275,7 @@ class MicroORM extends FilterORM implements Injectable {
         $this->applyInnerJoin($query, $config);
         $this->applyFilter($query, $filter, $config, $args);
 
-        return $this->_getSingleObject($query, $reflection);
+        return $this->_getSingleObject($query, $reflection, $config);
 
     }
 
@@ -275,6 +290,8 @@ class MicroORM extends FilterORM implements Injectable {
 
         $query = $dbq->deleteFrom($config["@table"]);
         $query->where($config["@key"], $id);
+
+        unset($this->ORMCache[$config["@table"]][$config["@key"]]);
 
         $query->update();
 
@@ -307,9 +324,14 @@ class MicroORM extends FilterORM implements Injectable {
     /**
      * @param SelectQuery $query
      * @param \ReflectionClass $reflection
+     * @param $config
      * @return Optional
      */
-    protected function _getSingleObject(SelectQuery $query, \ReflectionClass $reflection) {
+    protected function _getSingleObject(SelectQuery $query, \ReflectionClass $reflection, $config) {
+
+        if (!isset($this->ORMCache[$config["@table"]])) {
+            $this->ORMCache[$config["@table"]] = [];
+        }
 
         $query->limit(1);
 
@@ -319,6 +341,8 @@ class MicroORM extends FilterORM implements Injectable {
         if ($row === null) {
             return Optional::noValue();
         }
+
+        $this->ORMCache[$config["@table"]][$config["@key"]] = $row;
 
         $instance = $reflection->newInstance();
 

@@ -66,12 +66,13 @@ class TracksModel implements Injectable, SingletonInterface {
 
         \getid3_lib::CopyTagsToComments($meta);
 
+
         $maximalDuration  = $config->getSetting('upload', 'maximal_length')->get();
         $availableFormats = $config->getSetting('upload', 'supported_audio')->get();
 
-        if (array_search($file['type'], $availableFormats) === false) {
-            throw new ControllerException("Unsupported type format");
-        }
+//        if (array_search($file['type'], $availableFormats) === false) {
+//            throw new ControllerException("Unsupported type format");
+//        }
 
         if (empty($meta["audio"]["bitrate"])) {
             throw new ControllerException("File appears to be broken");
@@ -83,7 +84,7 @@ class TracksModel implements Injectable, SingletonInterface {
             }
         }
 
-        $duration = $meta["comments"]["length"][0];
+        $duration = $meta["playtime_seconds"] * 1000;
 
         $uploadTimeLeft = $this->user->getCurrentPlan()->getTimeMax() - $this->user->getTracksDuration() - $duration;
 

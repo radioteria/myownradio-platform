@@ -201,7 +201,7 @@ class Database implements SingletonInterface, Injectable {
             throw new DatabaseException($resource->errorInfo()[2], $queryString);
         }
 
-        //logger("SQL: " . $queryString);
+        //error_log("SQL: " . $queryString);
 
         return $resource;
 
@@ -346,6 +346,8 @@ class Database implements SingletonInterface, Injectable {
     public function executeUpdate($query, array $params = null) {
 
         $resource = $this->createResource($query, $params);
+
+        error_log("SQL: " . $resource->queryString);
 
         return $resource->rowCount();
 

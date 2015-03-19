@@ -138,7 +138,7 @@ class TracksModel implements Injectable, SingletonInterface {
 
             $this->addToStream($track, $addToStream, $upNext);
 
-            logger(sprintf("User #%d uploaded new track: %s (upload time left: %d seconds)",
+            error_log(sprintf("User #%d uploaded new track: %s (upload time left: %d seconds)",
                 $track->getUserID(), $track->getFileName(), $uploadTimeLeft / 1000));
 
             return Playlist::getInstance()->getOneTrack($track->getID());

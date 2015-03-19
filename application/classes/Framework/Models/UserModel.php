@@ -257,7 +257,7 @@ class UserModel extends Model implements SingletonInterface {
 
         $id = $this->user->getID();
 
-        /* Delete accout object */
+        /* Delete account object */
         $this->user->delete();
 
         /* Delete user's directory */

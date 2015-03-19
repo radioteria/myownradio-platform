@@ -10,17 +10,19 @@ namespace Framework\Controllers\api\v2\stream;
 
 
 use Framework\Controller;
-use Framework\Exceptions\ControllerException;
 use Framework\Models\Factory;
+use Framework\Models\StreamModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 
 class DoDelete implements Controller {
 
     public function doPost(HttpPost $post, Factory $fabric, JsonResponse $response) {
-        $id = $post->getParameter("stream_id")
-            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
-        $fabric->deleteStream($id);
+
+        $id = $post->getRequired("stream_id");
+        $model = StreamModel::getInstance($id);
+        $model->delete();
+
     }
 
 } 

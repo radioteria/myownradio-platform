@@ -11,7 +11,6 @@ namespace Framework\Models;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
-use Framework\Services\DB\Query\DeleteQuery;
 use Framework\Services\InputValidator;
 use Objects\Stream;
 use Tools\Common;
@@ -224,8 +223,16 @@ class StreamModel extends Model implements SingletonInterface {
 
     public function delete() {
 
-        $query = new DeleteQuery("r_streams");
-        $query->where("sid", $this->getID())->update();
+        $folders = Folders::getInstance();
+
+        if (!is_null($this->stream->getCover())) {
+            $file = new File($folders->genStreamCoverPath($this->stream->getCover()));
+            if ($file->exists()) {
+                $file->delete();
+            }
+        }
+
+        $this->stream->delete();
 
     }
 

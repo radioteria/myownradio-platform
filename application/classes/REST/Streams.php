@@ -94,6 +94,8 @@ class Streams implements \Countable, Injectable, SingletonInterface {
      * @param int|null $category
      * @param int $offset
      * @param int $limit
+     * @internal param int $sortRow
+     * @internal param int $sortOrder
      * @return array
      */
     public function getStreamListFiltered($filter = null, $category = null, $offset = 0,

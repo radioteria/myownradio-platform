@@ -21,10 +21,13 @@ class DoGetAll implements Controller {
         $filter = $get->getParameter("filter");
         $unused = boolval($get->getParameter("unused")->getOrElseFalse());
 
+        $sortRow = $get->getParameter("row")->getOrElse(0);
+        $sortOrder = $get->getParameter("order")->getOrElse(0);
+
         if ($unused) {
-            $playlist->getUnusedTracks($color, $filter, $offset);
+            $playlist->getUnusedTracks($color, $filter, $offset, $sortRow, $sortOrder);
         } else {
-            $playlist->getAllTracks($color, $filter, $offset);
+            $playlist->getAllTracks($color, $filter, $offset, $sortRow, $sortOrder);
         }
 
     }

@@ -35,13 +35,21 @@ class Playlist implements SingletonInterface, Injectable {
      * @param Optional $color
      * @param Optional $filter
      * @param Optional $offset
+     * @param int $sortRow
+     * @param int $sortOrder
      * @return array
      */
-    public function getAllTracks(Optional $color, Optional $filter, Optional $offset) {
+    public function getAllTracks(Optional $color, Optional $filter, Optional $offset, $sortRow = 0, $sortOrder = 0) {
 
         $me = AuthUserModel::getInstance();
 
         $query = $this->getTracksPrefix()->where("uid", $me->getID());
+
+        $availableOrders    = [0 => "DESC", 1 => "ASC"];
+        $availableRows      = [0 => "tid", 1 => "title", 2 => "artist", 3 => "genre", 4 => "duration"];
+
+        $safeRow            = isset($availableRows[$sortRow]) ? $sortRow : 0;
+        $safeOrder          = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
 
         if ($color->validate()) {
             $query->where("color", $color->get());
@@ -58,17 +66,23 @@ class Playlist implements SingletonInterface, Injectable {
 
         $query->limit(Defaults::DEFAULT_TRACKS_PER_REQUEST);
 
-        $query->orderBy("tid DESC");
+        $query->orderBy(sprintf("%s %s", $availableRows[$safeRow], $availableOrders[$safeOrder]));
 
         $this->printResults($query);
 
     }
 
-    public function getUnusedTracks(Optional $color, Optional $filter, Optional $offset) {
+    public function getUnusedTracks(Optional $color, Optional $filter, Optional $offset, $sortRow = 0, $sortOrder = 0) {
 
         $me = AuthUserModel::getInstance();
 
         $query = $this->getTracksPrefix()->where("uid", $me->getID());
+
+        $availableOrders    = [0 => "DESC", 1 => "ASC"];
+        $availableRows      = [0 => "tid", 1 => "title", 2 => "artist", 3 => "genre", 4 => "duration"];
+
+        $safeRow            = isset($availableRows[$sortRow]) ? $sortRow : 0;
+        $safeOrder          = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
 
         if ($color->validate()) {
             $query->where("color", $color->get());
@@ -86,7 +100,7 @@ class Playlist implements SingletonInterface, Injectable {
         $query->where("used_count", 0);
         $query->limit(Defaults::DEFAULT_TRACKS_PER_REQUEST);
 
-        $query->orderBy("tid DESC");
+        $query->orderBy(sprintf("%s %s", $availableRows[$safeRow], $availableOrders[$safeOrder]));
 
         $this->printResults($query);
 

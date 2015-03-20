@@ -1,0 +1,55 @@
+<div class="track-extra-info">
+    <table class="track-info">
+        <tr>
+            <th colspan="2">Track Information</th>
+        </tr>
+        <tr>
+            <td>Track ID</td>
+            <td>{{ track.id }}</td>
+        </tr>
+        <tr>
+            <td>Uploaded</td>
+            <td>{{ track.uploaded | date("M d, Y H:i:s") }}</td>
+        </tr>
+        <tr>
+            <td>Filename</td>
+            <td>{{ track.file_name }}</td>
+        </tr>
+        <tr>
+            <td>Duration</td>
+            <td>{{ track.duration }}</td>
+        </tr>
+        <tr>
+            <th colspan="2">Track Metadata</th>
+        </tr>
+        <tr>
+            <td>Title</td>
+            <td>{{ track.title }}</td>
+        </tr>
+        <tr>
+            <td>Artist</td>
+            <td>{{ track.artist }}</td>
+        </tr>
+        <tr>
+            <td>Album</td>
+            <td>{{ track.album }}</td>
+        </tr>
+        <tr>
+            <td>Genre</td>
+            <td>{{ track.genre }}</td>
+        </tr>
+        <tr>
+            <th colspan="2">Additional Info</th>
+        </tr>
+        <tr>
+            <td>Appears on</td>
+            <td>
+                {% for a in appears %}
+                    <div class="stream">{{ a.name }} ({{ a.times }} times)</div>
+                {% else %}
+                    <i>No appearances.</i>
+                {% endfor %}
+            </td>
+        </tr>
+    </table>
+</div>

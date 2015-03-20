@@ -83,7 +83,17 @@ class Template {
                 continue;
             }
         }
-        return is_array($current) ? "[array]" : $current;
+        switch (true) {
+            case is_string($current):
+            case is_numeric($current):
+                return $current;
+            case is_array($current):
+                return json_encode($current);
+            case is_object($current):
+                return serialize($current);
+            default:
+                return "";
+        }
     }
 
     /**

@@ -12,10 +12,12 @@ class ControllerException extends \Exception {
 
     private $myMessage = null;
     private $myData = [];
+    private $myHttpCode = 200;
 
-    function __construct($message = null, $data = null) {
+    function __construct($message = null, $data = null, $code = 200) {
         $this->myMessage = $message;
         $this->myData = $data;
+        $this->myHttpCode = $code;
     }
 
     public static function of($message = null, $data = null) {
@@ -55,15 +57,15 @@ class ControllerException extends \Exception {
     }
 
     public static function noPermission() {
-        return new self("You don't have permission to access this resource");
+        return new self("You don't have permission to access this resource", null, 401);
     }
 
     public static function noEntity($name) {
-        return new self(sprintf("No entity '%s' found", $name));
+        return new self(sprintf("No entity '%s' found", $name), null, 400);
     }
 
     public static function noTrack($key) {
-        return new self(sprintf("No track with key '%s' found", $key));
+        return new self(sprintf("No track with key '%s' found", $key), null, 400);
     }
 
 

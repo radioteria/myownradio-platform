@@ -59,12 +59,13 @@ class Router implements SingletonInterface{
 
         $sub = SubRouter::getInstance();
 
-        $sub->addRoute("content/streamcovers/:fn", "content\\DoGetStreamCover");
-        $sub->addRoute("content/avatars/:fn", "content\\DoGetUserAvatar");
-        $sub->addRoute("content/audio/&id", "content\\DoGetPreviewAudio");
+        $sub->addRoute("content/streamcovers/:fn",   "content\\DoGetStreamCover");
+        $sub->addRoute("content/avatars/:fn",        "content\\DoGetUserAvatar");
+        $sub->addRoute("content/audio/&id",          "content\\DoGetPreviewAudio");
         $sub->addRoute("content/m3u/:stream_id.m3u", "content\\DoM3u");
+        $sub->addRoute("content/trackinfo/&id",      "content\\DoTrackExtraInfo");
 
-        $sub->addRoute("streams/:id", "helpers\\DoStream");
+        $sub->addRoute("streams/:id",                "helpers\\DoStream");
 
     }
 
@@ -74,6 +75,7 @@ class Router implements SingletonInterface{
 
             $sub = SubRouter::getInstance();
             if (!$sub->goMatching($this->legacyRoute)) {
+
                 $this->findRoute();
             }
 
@@ -126,7 +128,14 @@ class Router implements SingletonInterface{
         $class = str_replace("/", "\\", CONTROLLERS_ROOT . $className);
 
         // Reflect controller class
-        loadClassOrThrow($class, new DocNotFoundException());
+        if (!class_exists($class, true)) {
+            throw new DocNotFoundException();
+        }
+
+        //loadClassOrThrow($class, new DocNotFoundException());
+
+        //error_log("OK");
+
         $reflection = new \ReflectionClass($class);
 
         // Check for valid reflector

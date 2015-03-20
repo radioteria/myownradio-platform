@@ -20,7 +20,7 @@ spl_autoload_register("loadClass");
 
 function loadClass($class_name) {
     $filename = APP_ROOT . str_replace("\\", "/", $class_name) . '.php';
-    include $filename;
+    require $filename;
 }
 
 function loadClassOrThrow($class_name, Exception $exception) {

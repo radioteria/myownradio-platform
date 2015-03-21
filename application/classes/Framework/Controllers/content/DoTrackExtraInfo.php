@@ -41,9 +41,18 @@ class DoTrackExtraInfo implements Controller {
 
             $twig = new \Twig_Environment($loader, []);
 
-//            $twig->addFilter("json", new \Twig_SimpleFilter("json", function ($src) {
-//                return json_encode($src);
-//            }));
+            $twig->addFilter(new \Twig_SimpleFilter("json", function ($src) {
+                return json_encode($src);
+            }));
+
+            $twig->addFilter(new \Twig_SimpleFilter("ms2time", function ($src) {
+                $hours   = floor(($src / 1000) / 3600);
+                $minutes = floor(($src / 1000) / 60) % 60;
+                $seconds = floor($src / 1000) % 60;
+                return $hours ?
+                    sprintf("%2d:%02d:%02d", $hours, $minutes, $seconds) :
+                    sprintf("%2d:%02d", $minutes, $seconds);
+            }));
 
             $twig->loadTemplate("track.extra.info.tmpl")->display([
                     "track" => $track->jsonSerialize(),

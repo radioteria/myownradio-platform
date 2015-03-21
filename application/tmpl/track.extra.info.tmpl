@@ -4,6 +4,10 @@
             <th colspan="2">Track Information</th>
         </tr>
         <tr>
+            <td>Filename</td>
+            <td>{{ track.file_name }}</td>
+        </tr>
+        <tr>
             <td>Track ID</td>
             <td>{{ track.id }}</td>
         </tr>
@@ -12,12 +16,8 @@
             <td>{{ track.uploaded | date("M d, Y H:i:s") }}</td>
         </tr>
         <tr>
-            <td>Filename</td>
-            <td>{{ track.file_name }}</td>
-        </tr>
-        <tr>
             <td>Duration</td>
-            <td>{{ track.duration }}</td>
+            <td>{{ track.duration | ms2time }}</td>
         </tr>
         <tr>
             <th colspan="2">Track Metadata</th>
@@ -39,15 +39,19 @@
             <td>{{ track.genre }}</td>
         </tr>
         <tr>
+            <td>Track #</td>
+            <td>{{ track.track_number }}</td>
+        </tr>
+        <tr>
             <th colspan="2">Additional Info</th>
         </tr>
         <tr>
             <td>Appears on</td>
             <td>
                 {% for a in appears %}
-                    <div class="stream">{{ a.name }} ({{ a.times }} times)</div>
+                    <div class="stream">{{ a.name }} - {{ a.times }} time(s)</div>
                 {% else %}
-                    <i>No appearances.</i>
+                    <i>No appearances</i>
                 {% endfor %}
             </td>
         </tr>

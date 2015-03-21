@@ -46,8 +46,8 @@ class DoTrackExtraInfo implements Controller {
             }));
 
             $twig->addFilter(new \Twig_SimpleFilter("ms2time", function ($src) {
-                $hours   = floor(($src / 1000) / 3600);
-                $minutes = floor(($src / 1000) / 60) % 60;
+                $hours   = floor($src / 1000 / 3600);
+                $minutes = floor($src / 1000 / 60) % 60;
                 $seconds = floor($src / 1000) % 60;
                 return $hours ?
                     sprintf("%2d:%02d:%02d", $hours, $minutes, $seconds) :

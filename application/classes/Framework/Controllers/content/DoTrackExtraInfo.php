@@ -28,6 +28,7 @@ class DoTrackExtraInfo implements Controller {
 
         if ($track === null) {
             // Track not found
+            echo "Track not found";
         } else if ($track->getUserID() !== $user->getID()) {
             throw ControllerException::noPermission();
         } else {

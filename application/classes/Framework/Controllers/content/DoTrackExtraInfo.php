@@ -31,7 +31,7 @@ class DoTrackExtraInfo implements Controller {
 
         } else if ($track->getUserID() !== $user->getID()) {
 
-            throw ControllerException::noPermission();
+            echo "No permission";
 
         } else {
 

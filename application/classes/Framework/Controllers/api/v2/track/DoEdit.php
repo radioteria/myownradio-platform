@@ -33,6 +33,7 @@ class DoEdit implements Controller {
         $date       = $post->getParameter("date");
         $color      = $post->getParameter("color_id");
         $cue        = $post->getParameter("cue");
+        $buy        = $post->getParameter("buy");
 
         $validator->validateTracksList($id);
 
@@ -48,6 +49,7 @@ class DoEdit implements Controller {
         $date   ->then(function ($date)     { $this->query->set("date", $date); });
         $color  ->then(function ($color)    { $this->query->set("color", $color); });
         $cue    ->then(function ($cue)      { $this->query->set("cue", $cue); });
+        $buy    ->then(function ($buy)      { $this->query->set("buy", $buy); });
 
         $this->query->update();
 

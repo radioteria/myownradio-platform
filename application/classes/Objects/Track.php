@@ -20,7 +20,7 @@ class Track extends ActiveRecordObject implements ActiveRecord {
 
     protected $tid, $uid, $filename, $ext,
         $artist, $title, $album,
-        $track_number, $genre, $date, $cue,
+        $track_number, $genre, $date, $cue, $buy,
         $duration, $filesize, $color = 0,
         $uploaded, $copy_of, $used_count = 0,
         $is_new = 1;
@@ -190,6 +190,21 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         $this->is_new = $is_new;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getBuy() {
+        return $this->buy;
+    }
+
+    /**
+     * @param mixed $buy
+     */
+    public function setBuy($buy) {
+        $this->buy = $buy;
+    }
+
+    
 
 
 }

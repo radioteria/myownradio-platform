@@ -12,8 +12,14 @@ namespace Framework\View\Errors;
 use Framework\Exceptions\ApplicationException;
 use Framework\Template;
 
-abstract class ViewException extends ApplicationException {
+class ViewException extends ApplicationException {
 
-    abstract public function render();
+    protected $code;
+    protected $body;
+
+    public function render() {
+        http_response_code($this->code);
+        echo $this->body;
+    }
 
 } 

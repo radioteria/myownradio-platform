@@ -93,6 +93,7 @@ class Router implements SingletonInterface{
         try {
 
             if (!$this->findRoute()) {
+                error_log("No R");
                 $sub = SubRouter::getInstance();
                 $sub->goMatching($this->legacyRoute);
             }
@@ -120,6 +121,7 @@ class Router implements SingletonInterface{
 
         } catch (ViewException $exception) {
 
+            $exception->render();
             return;
 
         }

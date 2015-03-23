@@ -72,17 +72,17 @@ class SubRouter implements SingletonInterface {
                 return true;
             }
         }
-        if ($this->default !== null) {
-            if (is_string($this->default)) {
-                Router::getInstance()->callRoute($this->default);
-            } elseif (is_callable($this->default)) {
-                //Invoker::invoke($this->default);
-                Injector::getInstance()->call($this->default);
-            } else {
-                throw new \Exception("Incorrect action format!");
-            }
-            return true;
-        }
+//        if ($this->default !== null) {
+//            if (is_string($this->default)) {
+//                Router::getInstance()->callRoute($this->default);
+//            } elseif (is_callable($this->default)) {
+//                //Invoker::invoke($this->default);
+//                Injector::getInstance()->call($this->default);
+//            } else {
+//                throw new \Exception("Incorrect action format!");
+//            }
+//            return true;
+//        }
         return false;
     }
 

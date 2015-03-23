@@ -12,8 +12,8 @@ namespace Framework\View\Errors;
 use Framework\Exceptions\ApplicationException;
 use Framework\Template;
 
-class ViewException extends ApplicationException {
+abstract class ViewException extends ApplicationException {
 
-
+    abstract public function render();
 
 } 

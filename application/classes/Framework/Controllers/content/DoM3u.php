@@ -23,8 +23,7 @@ class DoM3u implements Controller {
         $template = new Template("application/tmpl/playlist.tmpl");
 
         /** @var Stream $stream */
-        $stream = Stream::getByFilter("GET_BY_KEY", [":key" => $id])
-            ->getOrElseThrow(new View404Exception());
+        $stream = Stream::getByFilter("GET_BY_KEY", [":key" => $id])->getOrElseThrow(new View404Exception());
 
         $template->addVariable("stream_name", $stream->getName());
         $template->addVariable("stream_id", $stream->getID());

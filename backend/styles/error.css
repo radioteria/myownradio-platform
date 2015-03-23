@@ -8,6 +8,7 @@ body {
     left: 50%;
     top: 45%;
     position: fixed;
+    height: 180px;
     transform: translateX(-50%) translateY(-50%);
 }
 
@@ -20,3 +21,9 @@ body {
     text-align: center;
 }
 
+.uri {
+    background-color: #a2a2a2;
+    color: #ffffff;
+    border-radius: 4px;
+    padding: 4px 4px;
+}

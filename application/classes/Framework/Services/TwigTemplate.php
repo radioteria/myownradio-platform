@@ -24,7 +24,7 @@ class TwigTemplate implements Injectable, SingletonInterface {
         $loader = new \Twig_Loader_Filesystem("application/tmpl");
 
         $this->twig = new \Twig_Environment($loader, [
-            "cache" => "application/cache"
+            //"cache" => "application/cache"
         ]);
 
         $this->loadFilters();

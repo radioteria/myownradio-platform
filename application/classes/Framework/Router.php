@@ -17,6 +17,8 @@ use Framework\Services\HttpGet;
 use Framework\Services\HttpRequest;
 use Framework\Services\JsonResponse;
 use Framework\Services\SubRouter;
+use Framework\Services\TwigTemplate;
+use Framework\View\Errors\View404Exception;
 use Framework\View\Errors\ViewException;
 use ReflectionClass;
 use Tools\Singleton;
@@ -59,13 +61,30 @@ class Router implements SingletonInterface{
 
         $sub = SubRouter::getInstance();
 
+        /* Public side routes register */
+//        $sub->addRoute("index",                             "pages\\DoIndex");          // Display home page
+//        $sub->addRoute("login",                             "pages\\DoIndex");          // Display login page
+//        $sub->addRoute("logout",                            "pages\\DoIndex");          // Display logout page
+//
+//        $sub->addRoute("streams",                           "pages\\DoIndex");          // Display list of streams
+//        $sub->addRoute("bookmarks",                         "pages\\DoIndex");          // Display list of bookmarks
+//        $sub->addRoute("my",                                "pages\\DoIndex");          // Display list of my streams
+//        $sub->addRoute("categories",                        "pages\\DoIndex");          // Display list of categories
+//
+//        $sub->addRoute("user/:key",                         "pages\\DoIndex");          // Display streams by user
+        //$sub->addRoute("streams/:key",                      "pages\\DoIndex");          // Display single stream
+        $sub->addRoute("streams/:id",                       "helpers\\DoStream");       // Helper for social networks
+
         $sub->addRoute("content/streamcovers/:fn",   "content\\DoGetStreamCover");
         $sub->addRoute("content/avatars/:fn",        "content\\DoGetUserAvatar");
         $sub->addRoute("content/audio/&id",          "content\\DoGetPreviewAudio");
         $sub->addRoute("content/m3u/:stream_id.m3u", "content\\DoM3u");
         $sub->addRoute("content/trackinfo/&id",      "content\\DoTrackExtraInfo");
 
-        $sub->addRoute("streams/:id",                "helpers\\DoStream");
+        // Default route
+        $sub->defaultRoute(function () {
+            throw new View404Exception();
+        });
 
     }
 
@@ -73,11 +92,11 @@ class Router implements SingletonInterface{
 
         try {
 
-            $sub = SubRouter::getInstance();
-            if (!$sub->goMatching($this->legacyRoute)) {
-
-                $this->findRoute();
+            if (!$this->findRoute()) {
+                $sub = SubRouter::getInstance();
+                $sub->goMatching($this->legacyRoute);
             }
+
 
         } catch (UnauthorizedException $e) {
 
@@ -100,8 +119,9 @@ class Router implements SingletonInterface{
             return;
 
         } catch (ViewException $exception) {
-            $exception->drawTemplate();
+
             return;
+
         }
 
         if (JsonResponse::hasInstance()) {
@@ -117,7 +137,7 @@ class Router implements SingletonInterface{
 
     private function findRoute() {
 
-        $this->callRoute($this->route);
+        return $this->callRoute($this->route);
 
     }
 
@@ -129,12 +149,8 @@ class Router implements SingletonInterface{
 
         // Reflect controller class
         if (!class_exists($class, true)) {
-            throw new DocNotFoundException();
+            return false;
         }
-
-        //loadClassOrThrow($class, new DocNotFoundException());
-
-        //error_log("OK");
 
         $reflection = new \ReflectionClass($class);
 
@@ -154,6 +170,8 @@ class Router implements SingletonInterface{
             throw new NotImplementedException();
 
         }
+
+        return true;
 
     }
 

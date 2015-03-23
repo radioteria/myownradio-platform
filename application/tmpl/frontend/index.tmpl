@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html ng-app="application" ng-controller="MainController">
+
+<head>
+    <title>myownradio.biz - create your own web radio station for free</title>
+    <base href="/">
+
+
+    <script type="text/javascript">
+        var url;
+        if (window.location.protocol == "http:") {
+            url = "https://" + window.location.hostname + window.location.pathname;
+            window.location = url;
+        }
+    </script>
+
+    <meta name="fragment" content="!"/>
+
+    <meta name="google-site-verification" content="l7PQWFkBsr1lzH2jzY80K_acxDtksCG8QzJE1aG58i8"/>
+
+    <meta name="viewport" content="width=1024, initial-scale=1.0"/>
+
+    <link rel="icon" href="/frontend/images/mor-small.png">
+    <meta name="viewport" content="width=1024" />
+
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:400,300,600&subset=latin,cyrillic' rel='stylesheet'
+          type='text/css'>
+    <link rel="stylesheet" type="text/css" href="/frontend/application/styles/compiled/application.css">
+
+    <link rel="stylesheet" type="text/css" href="/frontend/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/frontend/css/fonts.css">
+    <link rel="stylesheet" type="text/css" href="/frontend/css/blocks.css">
+
+    <link rel="stylesheet" type="text/css" href="/frontend/icomoon/style.css">
+    <link rel="stylesheet" type="text/css" href="/frontend/css/loadingbar.css">
+    <link rel="stylesheet" type="text/css" href="/frontend/css/ngDialog.css">
+    <link rel="stylesheet" type="text/css" href="/frontend/css/ngDialog-theme-default.css">
+
+    <!-- jQuery libraries -->
+    <script src="/frontend/js/libs/jquery-2.1.3.min.js.gz"></script>
+    <script src="/frontend/js/libs/jquery-migrate-1.2.1.min.js.gz"></script>
+
+    <script src="/frontend/js/libs/jquery-ui.min.js.gz"></script>
+    <script src="/frontend/js/libs/jquery.livequery.min.js"></script>
+    <script src="/frontend/js/libs/jquery.cookie.js"></script>
+    <script src="/frontend/jplayer/jquery.jplayer.min.js"></script>
+
+    <script src="/frontend/js/libs/angular.min.js.gz"></script>
+    <script src="/frontend/js/libs/angular-route.min.js.gz"></script>
+    <script src="/frontend/js/libs/angular-animate.min.js.gz"></script>
+    <script src="/frontend/js/libs/angular-touch.js"></script>
+
+    <script src="/frontend/js/audio5.js"></script>
+
+    <!-- MOR Plugins -->
+    <script src="/frontend/js/libs/mortip.js"></script>
+
+    <script src="/frontend/js/modules/ng-infinite-scroll.min.js"></script>
+    <script src="/frontend/js/modules/angular-post-fix.js"></script>
+    <script src="/frontend/js/modules/loading-bar.min.js"></script>
+    <script src="/frontend/js/modules/ngDialog.min.js"></script>
+    <script src="/frontend/js/modules/ng-context-menu.js"></script>
+    <script src="/frontend/js/modules/angulartics.min.js"></script>
+    <script src="/frontend/js/modules/angulartics-ga.min.js"></script>
+    <script src="/frontend/js/modules/angular-seo.js"></script>
+    <script src="/frontend/js/libs/sortable.js"></script>
+
+    <script src='/frontend/application/modules/main.ang.js'></script>
+    <script src='/frontend/application/modules/filters.js'></script>
+    <script src="/frontend/application/modules/context.js"></script>
+
+
+    <script src="/frontend/application/modules/site.js"></script>
+    <script src="/frontend/application/modules/tools/mor.tools.ang.js"></script>
+    <script src="/frontend/application/modules/tools/mor.tools.defaults.ang.js"></script>
+    <script src="/frontend/application/modules/tools/mor.tools.share.ang.js"></script>
+
+    <script src="/frontend/application/modules/account.js"></script>
+    <script src="/frontend/application/modules/player.js"></script>
+    <script src="/frontend/application/modules/catalog.js"></script>
+    <script src="/frontend/application/modules/search.js"></script>
+    <script src="/frontend/application/modules/profile.js"></script>
+    <script src="/frontend/application/modules/library.js"></script>
+    <script src="/frontend/application/modules/audioinfo.js"></script>
+    <script src="/frontend/application/modules/loader.js"></script>
+    <script src="/frontend/application/modules/track-action.js"></script>
+    <script src="/frontend/application/modules/popup.ang.js"></script>
+    <script src="/frontend/application/modules/mor.stream.scheduler.js"></script>
+
+    <script src="/frontend/application/functions.js"></script>
+
+    <script>
+
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            };
+            i[r].l = 1 * new Date();
+            a = s.createElement(o);
+            m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-58564686-1', 'auto');
+
+    </script>
+
+    <script type="text/javascript">var switchTo5x=true;</script>
+    <script type="text/javascript" src="https://ws.sharethis.com/button/buttons.js"></script>
+    <script type="text/javascript">stLight.options({
+        publisher: "de700707-90c8-4e3a-a916-5e4fea867686",
+        doNotHash: false,
+        doNotCopy: false,
+        hashAddressBar: false,
+        popup: 'true',
+        onhover: false
+    });</script>
+
+</head>
+
+<body class="{{ rootClass ? rootClass : '' }} {{ player.isLoaded ? 'player-visible' :'' }}" analytics-on="click"
+      analytics-event="Click" analytics-category="Application">
+
+<div class="busy-wrap table" ng-show="loader.busy === true">  <!-- todo: move to directive -->
+    <div class="row">
+        <div class="cell">
+            <i class="icon-spinner9 rotate"></i><br>
+
+            <div class="loading">WORKING...</div>
+        </div>
+    </div>
+</div>
+
+<now ng-if="player.isPlaying" ng-model="player.currentStream" on-track-change="player.nowPlaying"></now>
+
+<div class="special">
+    <div class="player-container" ng-if="player.isLoaded" mor-background-color="player.currentStream.cover_background">
+        <div class="bg-gradient" ng-if="player.currentStream.cover_url">
+            <div class="bg-image" style="background-image: url({{player.currentStream.cover_url}})"></div>
+        </div>
+        <div class="cool-player table">
+            <div class="row">
+                <div class="cell radio-cover">
+                    <a ng-href="/streams/{{ player.currentStream.key }}">
+                        <div class="cover">
+                            <img ng-if="player.currentStream.cover" ng-src="{{ player.currentStream.cover_url }}?size=64">
+                        </div>
+                    </a>
+                </div>
+                <div class="cell radio-title">
+                    <div class="title">
+                        <a ng-href="/streams/{{ player.currentStream.key }}"
+                           ng-bind="player.currentStream.name | uppercase"></a>
+                    </div>
+                </div>
+                <div class="cell social-buttons">
+                    <share ng-model="player.currentStream"></share>
+                    <bookmark ng-model="player.currentStream"></bookmark>
+                </div>
+                <div class="cell track-title">
+                <span ng-if="player.nowPlaying">
+                    <span class="darker">ON AIR:</span> <span
+                        ng-bind-template="{{ player.nowPlaying.artist | uppercase }} - {{ player.nowPlaying.title | uppercase }}"></span>
+                </span>
+                </div>
+                <div class="cell right-tools">
+                <span class="play-stop" ng-click="player.controls.switch()">
+                    <i ng-class="player.isPlaying ? 'icon-stop2' : 'icon-play'" mor-tooltip="Play / Stop"></i>
+                </span>
+                    <span class="vertical-padding"></span>
+                <span class="stop" ng-click="player.controls.unload()" mor-tooltip="Stop and close">
+                    <i class="icon-switch"></i>
+                </span>
+                    <!--
+                                    <span class="volume">
+                                        <i class="icon-volume-up"></i>
+                                    </span>
+                    -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <header></header>
+    <div id="contents">
+        <div id="body">
+            <div ng-view="" autoscroll=""></div>
+        </div>
+    </div>
+    <footer></footer>
+</div>
+</body>
+</html>

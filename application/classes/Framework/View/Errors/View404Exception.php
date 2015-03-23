@@ -9,11 +9,14 @@
 namespace Framework\View\Errors;
 
 
+use Framework\Services\HttpRequest;
+use Framework\Services\TwigTemplate;
+
 class View404Exception extends ViewException {
     function __construct() {
-        parent::__construct(404, "application/tmpl/error/404.tmpl", [
-            "msg" => "Sorry, but requested document not found on this server.",
-            "time" => time()
+        http_response_code(404);
+        TwigTemplate::getInstance()->displayTemplate("error_404.tmpl", [
+            "uri" => HttpRequest::getInstance()->getRequestUri()
         ]);
     }
 }

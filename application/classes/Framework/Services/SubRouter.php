@@ -9,6 +9,7 @@
 namespace Framework\Services;
 
 
+use Framework\Injector\Injector;
 use Framework\Router;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -18,6 +19,7 @@ class SubRouter implements SingletonInterface {
     use Singleton;
 
     private $routes = [];
+    private $default = null;
 
     /**
      * Registers new route into the storage
@@ -33,6 +35,13 @@ class SubRouter implements SingletonInterface {
             "action" => $callable
         ];
 
+    }
+
+    /**
+     * @param $callable
+     */
+    public function defaultRoute($callable) {
+        $this->default = $callable;
     }
 
     /**
@@ -55,12 +64,24 @@ class SubRouter implements SingletonInterface {
                 if (is_string($data["action"])) {
                     Router::getInstance()->callRoute($data["action"]);
                 } elseif (is_callable($data["action"])) {
-                    Invoker::invoke($data["action"]);
+                    Injector::getInstance()->call($this->default);
+//                    Invoker::invoke($data["action"]);
                 } else {
                     throw new \Exception("Incorrect action format!");
                 }
                 return true;
             }
+        }
+        if ($this->default !== null) {
+            if (is_string($this->default)) {
+                Router::getInstance()->callRoute($this->default);
+            } elseif (is_callable($this->default)) {
+                //Invoker::invoke($this->default);
+                Injector::getInstance()->call($this->default);
+            } else {
+                throw new \Exception("Incorrect action format!");
+            }
+            return true;
         }
         return false;
     }

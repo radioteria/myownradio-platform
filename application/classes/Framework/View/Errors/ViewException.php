@@ -14,23 +14,6 @@ use Framework\Template;
 
 class ViewException extends ApplicationException {
 
-    private $httpCode, $httpTemplate, $templateData;
 
-    function __construct($httpCode, $httpTemplate, $templateData = []) {
-        $this->httpCode     = $httpCode;
-        $this->httpTemplate = $httpTemplate;
-        $this->templateData = $templateData;
-    }
-
-    function drawTemplate() {
-        $template = new Template($this->httpTemplate);
-        $template->putObject($this->templateData);
-
-        $template->setPrefix("[[");
-        $template->setSuffix("]]");
-
-        http_response_code($this->httpCode);
-        echo $template->makeDocument();
-    }
 
 } 

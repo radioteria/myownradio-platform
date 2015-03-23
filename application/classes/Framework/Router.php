@@ -82,9 +82,9 @@ class Router implements SingletonInterface{
         $sub->addRoute("content/trackinfo/&id",      "content\\DoTrackExtraInfo");
 
         // Default route
-        $sub->defaultRoute(function () {
-            throw new View404Exception();
-        });
+//        $sub->defaultRoute(function () {
+//            throw new View404Exception();
+//        });
 
     }
 

@@ -64,7 +64,7 @@ class SubRouter implements SingletonInterface {
                 if (is_string($data["action"])) {
                     Router::getInstance()->callRoute($data["action"]);
                 } elseif (is_callable($data["action"])) {
-                    Injector::getInstance()->call($this->default);
+                    Injector::getInstance()->call($data["action"]);
 //                    Invoker::invoke($data["action"]);
                 } else {
                     throw new \Exception("Incorrect action format!");

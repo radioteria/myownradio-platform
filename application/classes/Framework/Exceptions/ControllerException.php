@@ -18,7 +18,7 @@ class ControllerException extends \Exception {
         $this->myMessage = $message;
         $this->myData = $data;
         $this->myHttpCode = $code;
-        error_log($_SERVER["HTTP_X_REAL_IP"] . " " . $message);
+        //error_log($_SERVER["HTTP_X_REAL_IP"] . " " . $message);
     }
 
     public static function of($message = null, $data = null) {

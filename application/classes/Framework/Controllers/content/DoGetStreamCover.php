@@ -22,6 +22,7 @@ class DoGetStreamCover implements Controller {
     public function doGet(HttpGet $get, Folders $folders) {
 
         $fn = $get->getParameter("fn")->getOrElseThrow(new View404Exception());
+
         $size = $get->getParameter("size")->getOrElseNull();
 
         $path = new File($folders->genStreamCoverPath($fn));
@@ -30,16 +31,13 @@ class DoGetStreamCover implements Controller {
             throw new View404Exception();
         }
 
+
         if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) >= $path->mtime()) {
             header('HTTP/1.1 304 Not Modified');
             die();
         } else {
             header("Last-Modified: " . gmdate("D, d M Y H:i:s", $path->mtime()) . " GMT");
             header('Cache-Control: max-age=0');
-        }
-
-        if (!$path->exists()) {
-            throw new DocNotFoundException();
         }
 
         header("Content-Type: " . $path->getContentType());

@@ -13,6 +13,7 @@ use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\DocNotFoundException;
 use Framework\Services\HttpGet;
+use Framework\View\Errors\View404Exception;
 use Tools\File;
 use Tools\Folders;
 
@@ -20,10 +21,14 @@ class DoGetStreamCover implements Controller {
 
     public function doGet(HttpGet $get, Folders $folders) {
 
-        $fn = $get->getParameter("fn")->getOrElseThrow(ControllerException::noArgument("fn"));
+        $fn = $get->getParameter("fn")->getOrElseThrow(new View404Exception());
         $size = $get->getParameter("size")->getOrElseNull();
 
         $path = new File($folders->genStreamCoverPath($fn));
+
+        if (!$path->exists()) {
+            throw new View404Exception();
+        }
 
         if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) >= $path->mtime()) {
             header('HTTP/1.1 304 Not Modified');

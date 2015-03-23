@@ -15,6 +15,7 @@ use Framework\Models\AuthUserModel;
 
 use Framework\Services\Config;
 use Framework\Services\HttpGet;
+use Framework\View\Errors\View404Exception;
 use Objects\Track;
 use Tools\File;
 
@@ -26,7 +27,7 @@ class DoGetPreviewAudio implements Controller {
             /**
              * @var Track $track
              */
-            $track = Track::getByID($id)->getOrElseThrow(ControllerException::noTrack($id));
+            $track = Track::getByID($id)->getOrElseThrow(new View404Exception());
 
             if ($track->getUserID() != $user->getID()) {
                 throw ControllerException::noPermission();
@@ -39,8 +40,8 @@ class DoGetPreviewAudio implements Controller {
 
             $file = new File($track->getOriginalFile());
 
-            if (!$file->exists()) {
-                throw ControllerException::of("Track file not found on server");
+            if (! $file->exists()) {
+                throw new View404Exception();
             }
 
             header("Content-Type: audio/mp3");

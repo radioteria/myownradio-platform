@@ -13,6 +13,7 @@ use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Services\HttpGet;
 use Framework\Template;
+use Framework\View\Errors\View404Exception;
 use Objects\Stream;
 
 class DoM3u implements Controller {
@@ -23,7 +24,7 @@ class DoM3u implements Controller {
 
         /** @var Stream $stream */
         $stream = Stream::getByFilter("GET_BY_KEY", [":key" => $id])
-            ->getOrElseThrow(ControllerException::noStream($id));
+            ->getOrElseThrow(new View404Exception());
 
         $template->addVariable("stream_name", $stream->getName());
         $template->addVariable("stream_id", $stream->getID());

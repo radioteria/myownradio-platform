@@ -13,6 +13,7 @@ use Exception;
 
 class ApplicationException extends Exception {
     public function __construct($message = "", $code = 0, Exception $previous = null) {
+        error_log($message);
         parent::__construct($message, $code, $previous);
     }
 

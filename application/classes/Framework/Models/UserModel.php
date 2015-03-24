@@ -212,6 +212,33 @@ class UserModel extends Model implements SingletonInterface {
 
     }
 
+    public function downloadAvatar($url) {
+
+        $avatar = file_get_contents($url);
+
+        $folders = Folders::getInstance();
+
+//        $validator = InputValidator::getInstance();
+//        $validator->validateImageMIME($file["tmp_name"]);
+
+//        $random = Common::generateUniqueID();
+//
+//        $this->removeAvatar();
+//
+//        $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
+//        $newImageFile = sprintf("avatar%05d_%s.%s", $this->userID, $random, strtolower($extension));
+//        $newImagePath = $folders->genAvatarPath($newImageFile);
+//
+//        $result = move_uploaded_file($file['tmp_name'], $newImagePath);
+//        if ($result !== false) {
+//            $this->user->setAvatar($newImageFile)->save();
+//            return $folders->genAvatarUrl($newImageFile);
+//        } else {
+//            return null;
+//        }
+
+    }
+
     /**
      * @return null|string
      */

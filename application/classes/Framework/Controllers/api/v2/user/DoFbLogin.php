@@ -15,7 +15,6 @@ use Facebook\GraphUser;
 use Framework\Controller;
 use Framework\Models\LettersModel;
 use Framework\Models\UsersModel;
-use Framework\Services\DB\DBQuery;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 use Framework\Services\Mailer;
@@ -38,7 +37,7 @@ class DoFbLogin implements Controller {
                 $session, 'GET', '/me?fields=email,name'
             ))->execute()->getGraphObject(GraphUser::className());
 
-            $picture = (new FacebookRequest($session, 'GET', '/me/picture?redirect=0&width=720'))->execute()->getResponse();
+//            $picture = (new FacebookRequest($session, 'GET', '/me/picture?redirect=0&width=720'))->execute()->getResponse();
 
             User::getByFilter("login = ? OR mail = ?", [self::FB_USER_PREFIX.$user_profile->getId(), $user_profile->getEmail()])
 
@@ -50,7 +49,7 @@ class DoFbLogin implements Controller {
 
                 })
 
-                ->otherwise(function () use ($user_profile, $picture) {
+                ->otherwise(function () use ($user_profile) {
 
                     error_log("Create new user from FB");
 
@@ -64,6 +63,7 @@ class DoFbLogin implements Controller {
                     $user->setInfo("");
                     $user->setRegistrationDate(time());
                     $user->setRights(1);
+                    $user->setPermalink(NULL);
                     $user->save();
 
                     $notify = new Mailer("no-reply@myownradio.biz", "myownradio.biz");

@@ -38,7 +38,7 @@ class DoFbLogin implements Controller {
 
             $picture = (new FacebookRequest($session, 'GET', '/me/picture?redirect=0&width=720'))->execute()->getResponse();
 
-            User::getByFilter("login = ?", ["user".$user_profile->getId()])
+            User::getByFilter("login = ? OR mail = ?", ["user".$user_profile->getId(), $user_profile->getEmail()])
 
                 ->then(function (User $user) {
 

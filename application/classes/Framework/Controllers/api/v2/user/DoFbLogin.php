@@ -23,6 +23,8 @@ use Objects\User;
 
 class DoFbLogin implements Controller {
 
+    const FB_USER_PREFIX = "fbuser_";
+
     public function doPost(HttpPost $post, JsonResponse $response) {
 
         $token = $post->getRequired("token");
@@ -38,7 +40,7 @@ class DoFbLogin implements Controller {
 
             $picture = (new FacebookRequest($session, 'GET', '/me/picture?redirect=0&width=720'))->execute()->getResponse();
 
-            User::getByFilter("login = ? OR mail = ?", ["user".$user_profile->getId(), $user_profile->getEmail()])
+            User::getByFilter("login = ? OR mail = ?", [self::FB_USER_PREFIX.$user_profile->getId(), $user_profile->getEmail()])
 
                 ->then(function (User $user) {
 
@@ -53,7 +55,7 @@ class DoFbLogin implements Controller {
                     error_log("Create new user from FB");
 
                     $user = new User();
-                    $user->setLogin("user".$user_profile->getId());
+                    $user->setLogin(self::FB_USER_PREFIX.$user_profile->getId());
                     $user->setPassword(NULL);
                     $user->setName($user_profile->getName());
                     $user->setAvatar(NULL);

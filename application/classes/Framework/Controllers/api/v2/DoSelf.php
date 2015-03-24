@@ -25,7 +25,7 @@ class DoSelf implements Controller {
     public function doGet(AuthUserModel $userModel, JsonResponse $response, Streams $streams, Users $users) {
 
         $response->setData([
-            'user'      => $users->getUserByID($userModel->getID()),
+            'user'      => $users->getUserByID($userModel->getID(), true),
             'streams'   => $streams->getByUser($userModel->getID())
         ]);
         

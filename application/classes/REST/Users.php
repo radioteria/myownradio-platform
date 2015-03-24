@@ -35,12 +35,18 @@ class Users implements SingletonInterface, Injectable {
 
     }
 
-    public function getUserByID($id) {
+    public function getUserByID($id, $showLogin = false) {
 
         $query = $this->getUsersPrefix();
+
+        if ($showLogin) {
+            $query->select("login");
+        }
+
         $query->select("tracks_duration", "plan_expires");
         $query->where("uid = :key OR (permalink = :key AND permalink is not null)", [":key" => $id]);
         $user = $query->fetchOneRow()->getOrElseThrow(ControllerException::noEntity("user"));
+
 
         $plan_data = DBQuery::getInstance()->selectFrom("mor_plans_view", "plan_id", $user["plan_id"])
             ->fetchOneRow()->getOrElseNull();

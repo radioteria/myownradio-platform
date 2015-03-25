@@ -23,7 +23,9 @@ class DoPromoCode implements Controller {
         $planId = $dbq->selectFrom("mor_promo_codes")->select("plan_id")->where("promo_code", $promoCode)
             ->where("expires > UNIX_TIMESTAMP(NOW())")->fetchOneColumn()
             ->getOrElseThrow(ControllerException::of("You are entered incorrect promo code. Please try another one."));
+        /** @var AccountPlan $newPlan */
         $newPlan = AccountPlan::getByID($planId)->getOrElseThrow(ControllerException::of("This plan is not available"));
         $user->changeAccountPlan($newPlan, "Promo Code");
+        $response->setData($newPlan->getPlanName());
     }
 } 

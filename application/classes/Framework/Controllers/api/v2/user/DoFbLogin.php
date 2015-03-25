@@ -13,18 +13,21 @@ use Facebook\FacebookRequest;
 use Facebook\FacebookSession;
 use Facebook\GraphUser;
 use Framework\Controller;
+use Framework\Exceptions\ControllerException;
 use Framework\Models\LettersModel;
+use Framework\Models\UserModel;
 use Framework\Models\UsersModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 use Framework\Services\Mailer;
 use Objects\User;
+use REST\Users;
 
 class DoFbLogin implements Controller {
 
     const FB_USER_PREFIX = "fbuser_";
 
-    public function doPost(HttpPost $post, JsonResponse $response) {
+    public function doPost(HttpPost $post, JsonResponse $response, UsersModel $model) {
 
         $token = $post->getRequired("token");
 
@@ -37,19 +40,20 @@ class DoFbLogin implements Controller {
                 $session, 'GET', '/me?fields=email,name'
             ))->execute()->getGraphObject(GraphUser::className());
 
-//            $picture = (new FacebookRequest($session, 'GET', '/me/picture?redirect=0&width=720'))->execute()->getResponse();
-
             User::getByFilter("login = ? OR mail = ?", [self::FB_USER_PREFIX.$user_profile->getId(), $user_profile->getEmail()])
 
-                ->then(function (User $user) {
+                ->then(function (User $user) use ($response, $model) {
 
                     error_log("Log in user from FB");
 
-                    UsersModel::getInstance()->authorizeById($user->getID());
+                    /** @var UserModel $userModel */
+                    $userModel = $model->authorizeById($user->getID());
+
+                    $response->setData($userModel->toRestFormat());
 
                 })
 
-                ->otherwise(function () use ($user_profile) {
+                ->otherwise(function () use ($user_profile, $response, $model) {
 
                     error_log("Create new user from FB");
 
@@ -75,10 +79,15 @@ class DoFbLogin implements Controller {
 
                     LettersModel::sendRegistrationCompleted($user_profile->getEmail());
 
-                    UsersModel::getInstance()->authorizeById($user->getID());
+                    /** @var UserModel $userModel */
+                    $userModel = $model->authorizeById($user->getID());
+
+                    $response->setData($userModel->toRestFormat());
 
                 });
 
+        } else {
+            throw ControllerException::noPermission();
         }
 
     }

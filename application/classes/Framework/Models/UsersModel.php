@@ -131,7 +131,7 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $session->set("TOKEN", $token);
 
-        return AuthUserModel::getInstance();
+        return UserModel::getInstance($id);
 
     }
 

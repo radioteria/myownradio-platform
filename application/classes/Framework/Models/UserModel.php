@@ -14,6 +14,7 @@ use Objects\Payment;
 use Objects\Stream;
 use Objects\Track;
 use Objects\User;
+use REST\Users;
 use Tools\Common;
 use Tools\File;
 use Tools\Folders;
@@ -300,6 +301,10 @@ class UserModel extends Model implements SingletonInterface {
 
     public function touchLastLoginDate() {
         $this->user->setLastVisitDate(time())->save();
+    }
+
+    public function toRestFormat() {
+        return Users::getInstance()->getUserByID($this->getID(), true);
     }
 
 }

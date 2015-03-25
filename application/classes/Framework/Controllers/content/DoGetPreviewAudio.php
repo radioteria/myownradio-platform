@@ -15,6 +15,7 @@ use Framework\Models\AuthUserModel;
 
 use Framework\Services\Config;
 use Framework\Services\HttpGet;
+use Framework\View\Errors\View401Exception;
 use Framework\View\Errors\View404Exception;
 use Objects\Track;
 use Tools\File;
@@ -30,7 +31,7 @@ class DoGetPreviewAudio implements Controller {
             $track = Track::getByID($id)->getOrElseThrow(new View404Exception());
 
             if ($track->getUserID() != $user->getID()) {
-                throw ControllerException::noPermission();
+                throw new View401Exception();
             }
 
             if ($track->getIsNew() != 0) {

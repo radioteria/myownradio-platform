@@ -11,8 +11,8 @@ namespace Framework\Controllers\content;
 
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
-use Framework\Models\AuthUserModel;
 
+use Framework\Models\AuthUserModel;
 use Framework\Services\Config;
 use Framework\Services\HttpGet;
 use Framework\View\Errors\View401Exception;
@@ -53,7 +53,7 @@ class DoGetPreviewAudio implements Controller {
                 $program = $config->getSetting("streaming", "track_preview")
                     ->getOrElseThrow(ControllerException::of("No preview configured"));
 
-                $process = sprintf($program, escapeshellarg($track->getOriginalFile()), $track->getDuration() / 3000);
+                $process = sprintf($program, $track->getDuration() / 3000, escapeshellarg($track->getOriginalFile()));
 
                 //header("mor-file: " . $track->getOriginalFile());
 

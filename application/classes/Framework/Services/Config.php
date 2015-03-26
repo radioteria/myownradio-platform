@@ -33,7 +33,10 @@ class Config implements SingletonInterface, Injectable {
     function __construct() {
         $configFile = "../config.ini";
         if (file_exists($configFile)) {
+            //error_log("Config OK");
             $this->config = parse_ini_file($configFile, true);
+        } else {
+            error_log("Config ERROR");
         }
     }
 

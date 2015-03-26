@@ -204,7 +204,10 @@ class UsersModel implements SingletonInterface, Injectable {
         $contentFolder = Config::getInstance()->getSetting("content", "content_folder")
             ->getOrElseThrow(ApplicationException::of("CONTENT FOLDER NOT SPECIFIED"));
 
+
         $path = new File(sprintf("%s/ui_%d", $contentFolder, $id));
+
+        error_log($path->path());
 
         $path->createNewDirectory(NEW_DIR_RIGHTS, true);
 

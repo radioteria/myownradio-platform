@@ -33,8 +33,14 @@
 }
 
 .cover {
-  background: url("/images/no-cover.png") no-repeat;
-  background-size: cover;
+  &:not(.dark) {
+    background-image: url("/images/no-cover.png");
+  }
+  &.dark {
+    background-image: url("/images/no-cover-dark.png");
+  }
+  background-repeat: no-repeat;
+  background-size: 100%;
   border-radius: 6px;
   box-shadow: inset 1px 1px 7px -3px #000000,
     inset -1px -1px 6px -5px #1f1f1f;

@@ -1,4 +1,6 @@
 
+@import "../base/colors";
+
 .gradient (@color1, @color2) {
   background: @color1; /* Old browsers */
   background: -moz-linear-gradient(top, @color1 0%, @color2 100%); /* FF3.6+ */
@@ -40,7 +42,8 @@
     background-image: url("/images/no-cover-dark.png");
   }
   background-repeat: no-repeat;
-  background-size: 100%;
+  background-size: cover;
+
   border-radius: 6px;
   box-shadow: inset 1px 1px 7px -3px #000000,
     inset -1px -1px 6px -5px #1f1f1f;

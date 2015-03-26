@@ -10,6 +10,7 @@ namespace Framework\Controllers\content;
 
 
 use Framework\Controller;
+use JSMin\JSMin;
 use Tools\File;
 
 class DoGetJavascriptModules implements Controller {
@@ -48,16 +49,30 @@ class DoGetJavascriptModules implements Controller {
             "application/modules/mor.stream.scheduler.js",
 
             "js/libs/mortip.js"
-
         ];
+
+        $modification_time = 0;
+        foreach($sources as $source) {
+            if (filemtime($source) > $modification_time) {
+                $modification_time = filemtime($source);
+            }
+        }
+
+        if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) >= $modification_time) {
+            header('HTTP/1.1 304 Not Modified');
+            die();
+        } else {
+            header("Last-Modified: " . gmdate("D, d M Y H:i:s", $modification_time) . " GMT");
+            header('Cache-Control: max-age=0');
+        }
 
         ob_start("ob_gzhandler");
 
         header("Content-Type: text/javascript");
 
         foreach ($sources as $source) {
-            (new File($source))->show();
-            echo "\n\n";
+            echo JSMin::minify((new File($source))->getContents());
+            //(new File($source))->show();
         }
 
     }

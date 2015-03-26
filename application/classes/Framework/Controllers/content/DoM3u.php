@@ -20,7 +20,7 @@ class DoM3u implements Controller {
     public function doGet(HttpGet $get) {
 
         $id = $get->getRequired("stream_id");
-        $template = new Template("application/tmpl/playlist.tmpl");
+        $template = new Template("playlist.tmpl");
 
         /** @var Stream $stream */
         $stream = Stream::getByFilter("GET_BY_KEY", [":key" => $id])->getOrElseThrow(new View404Exception());
@@ -31,7 +31,7 @@ class DoM3u implements Controller {
         header("Content-Type: audio/mpegurl");
         header("Content-Disposition: attachment; filename=" . $stream->getName() . " on MYOWNRADIO.BIZ.m3u");
 
-        echo $template->makeDocument();
+        echo $template->render();
 
     }
 } 

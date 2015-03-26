@@ -1,0 +1,40 @@
+<div class="nav-wrap">
+    <ul class="main-menu">
+        <li>
+            <a href="/profile/"><i class="icon-account-child"></i> My Profile</a>
+            <ul class="sub-menu">
+                <li active-tab="^\/profile\/edit">
+                    <a href="/profile/edit">Edit profile</a>
+                </li>
+                <li active-tab="^\/profile\/password">
+                    <a href="/profile/password">Change password</a>
+                </li>
+                <li active-tab="^\/profile\/plan">
+                    <a href="/profile/plan">Change plan</a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a href="/profile/tracks"><i class="icon-music"></i> My Tracks</a>
+            <ul class="sub-menu">
+                <li active-tab="^\/profile\/tracks\/$">
+                    <a href="/profile/tracks/">All tracks <span class="grey">{{account.user.tracks_count}}</span></a>
+                </li>
+                <li active-tab="^\/profile\/tracks\/unused">
+                    <a href="/profile/tracks/unused">Unused tracks <span class="grey">{{account.user.unused_count}}</span></a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a href="/profile/streams"><i class="icon-wifi-tethering"></i> My Radio Channels</a>
+            <ul class="sub-menu">
+                <li active-tab="^\/profile\/new-stream$">
+                    <a ng-href="/profile/new-stream">Create new...</a>
+                </li>
+                <li active-tab="^\/profile\/streams\/{{stream.sid}}$" ng-repeat="stream in account.streams">
+                    <a ng-href="/profile/streams/{{stream.sid}}">{{stream.name}} <span class="grey">{{stream.tracks_count}}</span></a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>

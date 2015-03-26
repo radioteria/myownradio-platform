@@ -1,0 +1,46 @@
+.mortip {
+  @background: #101010;
+  position: absolute;
+  background-color: #000000;
+  .gradient(@background, #000000);
+  font-size: 10pt;
+  box-shadow: 0 0 8px rgba(0,0,0,0.5);
+  z-index: 1000000;
+  color: #ffffff;
+  border-radius: 6px;
+  display: none;
+  text-align: center;
+  opacity: 0;
+  .content {
+    padding: 4px 8px;
+  }
+  .corner {
+    position: absolute;
+    margin-left: -8px;
+  }
+  &.visible {
+    display: block;
+  }
+  &.top {
+    margin-bottom: 8px;
+    .corner {
+      top: 100%;
+      width: 0; height: 0;
+      border-top: 8px solid #000000;
+      border-right: 8px solid transparent;
+      border-left: 8px solid transparent;
+    }
+  }
+  &.bottom {
+    margin-top: 8px;
+    .corner {
+      bottom: 100%;
+      width: 0; height: 0;
+      border-bottom: 8px solid @background;
+      border-right: 8px solid transparent;
+      border-left: 8px solid transparent;
+    }
+  }
+}
+
+

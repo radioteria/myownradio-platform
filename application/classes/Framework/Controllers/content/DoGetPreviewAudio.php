@@ -48,7 +48,7 @@ class DoGetPreviewAudio implements Controller {
             header("Content-Type: audio/mp3");
             set_time_limit(0);
             if (strtolower($track->getExtension()) === null) {
-                $file->echoContents();
+                $file->show();
             } else {
                 $program = $config->getSetting("streaming", "track_preview")
                     ->getOrElseThrow(ControllerException::of("No preview configured"));

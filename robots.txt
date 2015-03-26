@@ -1,0 +1,11 @@
+User-agent: *
+
+Disallow: /application/
+Disallow: /css/
+Disallow: /fonts/
+Disallow: /icomoon/
+Disallow: /images/
+Disallow: /js/
+Disallow: /swf/
+Disallow: /views/
+Disallow: /content/

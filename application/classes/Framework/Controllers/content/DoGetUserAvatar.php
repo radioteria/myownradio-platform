@@ -47,7 +47,7 @@ class DoGetUserAvatar implements Controller {
 
         if ($size === null) {
 
-            $path->echoContents();
+            $path->show();
 
         } else {
 
@@ -56,7 +56,7 @@ class DoGetUserAvatar implements Controller {
 
             if ($cache->exists()) {
 
-                $cache->echoContents();
+                $cache->show();
 
             } else {
 

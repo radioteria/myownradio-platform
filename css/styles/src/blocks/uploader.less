@@ -1,0 +1,75 @@
+.uploader {
+  h1 {
+    font-size: 32px;
+    font-family: "Myriad Pro Thin", sans-serif;
+    margin-bottom: 8px;
+  }
+  .padding {
+    padding-top: 4px;
+  }
+  .upload-frame {
+    width: 100%;
+    height: 100px;
+    vertical-align: middle;
+    line-height: 99px;
+    text-align: center;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .stream-selector {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    select {
+      margin-bottom: 4px;
+    }
+  }
+  .buttons {
+    text-align: right;
+  }
+  .progress {
+    margin-top: 32px;
+    margin-bottom: 40px;
+    b {
+      color: #808080;
+    }
+  }
+  .selected-files {
+    margin-top: 8px;
+    h2 {
+      margin-bottom: 4px;
+      font-size: 9pt;
+    }
+    .scroll-y {
+      background-color: #eeeeee;
+      border-radius: 4px;
+      padding: 4px;
+      position: relative;
+      max-height: 250px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      font-size: 9pt;
+      .table {
+        width: 100%;
+        table-layout: fixed;
+        .row {
+          &:nth-child(odd) {
+            background-color: #e0e0e0;
+          }
+          .cell {
+            padding: 0 2px;
+            &:first-child {
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+            &:last-child {
+              width: 60px;
+              text-align: right;
+            }
+          }
+        }
+      }
+    }
+  }
+}

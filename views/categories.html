@@ -1,0 +1,19 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <ul class="categories_container">
+            <li ng-repeat="category in lib.categories" ng-if="category.streams_count > 0">
+                <a href="/streams/?category={{ category.category_id }}">
+                    <img fadein ng-src="/images/categories/{{ category.category_id + 1 }}.png" />
+                    <div class="fixed">
+                        <div class="name">
+                            <span ng-bind="category.category_name"></span>
+                        </div>
+                        <div class="streams">
+                            <span ng-bind-template="{{ category.streams_count }} streams"></span>
+                        </div>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

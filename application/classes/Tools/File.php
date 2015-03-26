@@ -153,7 +153,7 @@ class File {
         return file_get_contents($this->file);
     }
 
-    public function echoContents() {
+    public function show() {
         $this->testFound();
         $is = fopen($this->file, "r");
         while ($data = fread($is, 2048)) {

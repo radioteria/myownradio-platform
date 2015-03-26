@@ -12,6 +12,12 @@ class Template {
     private $prefix = "\${";
     private $suffix = "}";
 
+    private static $templatePath = ".";
+
+    public static function setTemplatePath($path) {
+        self::$templatePath = $path;
+    }
+
     /**
      * @return string
      */
@@ -37,7 +43,7 @@ class Template {
      * @param $template
      */
     public function __construct($template) {
-        $file = new File($template);
+        $file = new File(self::$templatePath . "/" . $template);
         $this->reset()->template = $file->getContents();
     }
 
@@ -54,7 +60,7 @@ class Template {
     /**
      * @return mixed
      */
-    public function makeDocument() {
+    public function render() {
         $result = preg_replace_callback($this->buildReplace(), function ($match) {
             array_shift($match);
             $src = $this->getObjectParameter(array_shift($match));
@@ -67,6 +73,10 @@ class Template {
         }, $this->template);
 
         return $result;
+    }
+
+    public function display() {
+        echo $this->render();
     }
 
     private function getObjectParameter($key) {

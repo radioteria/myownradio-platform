@@ -21,7 +21,7 @@ class LettersModel {
         $code = md5($email . "@myownradio.biz@" . $email);
         $confirm = base64_encode(json_encode(['email' => $email, 'code' => $code]));
 
-        $template = new Template("application/tmpl/reg.request.mail.tmpl");
+        $template = new Template("reg.request.mail.tmpl");
         $mailer = new Mailer(REG_MAIL, REG_NAME);
 
         $template->addVariable("confirm", $confirm, false);
@@ -29,7 +29,7 @@ class LettersModel {
         $mailer->addAddress($email);
         $mailer->setContentType("text/html");
         $mailer->setSubject("Registration on myownradio.biz");
-        $mailer->setBody($template->makeDocument());
+        $mailer->setBody($template->render());
 
         $mailer->queue();
 
@@ -43,13 +43,13 @@ class LettersModel {
 
     public static function sendRegistrationCompleted($email) {
 
-        $template = new Template("application/tmpl/reg.complete.tmpl");
+        $template = new Template("reg.complete.tmpl");
         $mailer = new Mailer(REG_MAIL, REG_NAME);
 
         $mailer->addAddress($email);
         $mailer->setContentType("text/html");
         $mailer->setSubject("Registration on myownradio.biz completed");
-        $mailer->setBody($template->makeDocument());
+        $mailer->setBody($template->render());
 
         $mailer->queue();
 
@@ -67,7 +67,7 @@ class LettersModel {
 
         $code = base64_encode(json_encode(["login" => $user->getLogin(), "password" => $user->getPassword()]));
 
-        $template = new Template("application/tmpl/reg.reset.password.tmpl");
+        $template = new Template("reg.reset.password.tmpl");
         $mailer = new Mailer(REG_MAIL, REG_NAME);
 
         $template->addVariable("name", $user->getDisplayName(), false);
@@ -77,7 +77,7 @@ class LettersModel {
         $mailer->addAddress($user->getEmail());
         $mailer->setContentType("text/html");
         $mailer->setSubject("Reset password on myownradio.biz");
-        $mailer->setBody($template->makeDocument());
+        $mailer->setBody($template->render());
 
         $mailer->queue();
 

@@ -62,18 +62,36 @@ class Router implements SingletonInterface{
         $sub = SubRouter::getInstance();
 
         /* Public side routes register */
-//        $sub->addRoute("index",                             "pages\\DoIndex");          // Display home page
-//        $sub->addRoute("login",                             "pages\\DoIndex");          // Display login page
-//        $sub->addRoute("logout",                            "pages\\DoIndex");          // Display logout page
-//
-//        $sub->addRoute("streams",                           "pages\\DoIndex");          // Display list of streams
-//        $sub->addRoute("bookmarks",                         "pages\\DoIndex");          // Display list of bookmarks
-//        $sub->addRoute("my",                                "pages\\DoIndex");          // Display list of my streams
-//        $sub->addRoute("categories",                        "pages\\DoIndex");          // Display list of categories
-//
-//        $sub->addRoute("user/:key",                         "pages\\DoIndex");          // Display streams by user
-        //$sub->addRoute("streams/:key",                      "pages\\DoIndex");          // Display single stream
-        $sub->addRoute("streams/:id",                       "helpers\\DoStream");       // Helper for social networks
+        $sub->addRoute("content/application.modules.js", "content\\DoGetJavascriptModules");
+
+        /* Dashboard redirect */
+        $sub->addRouteRegExp("~^profile(\\/.+)*$~", "content\\DoDashboard");
+
+        $sub->addRoutes([
+                "streams",
+                "bookmarks",
+                "login",
+                "recover",
+                "recover/:code",
+                "signup",
+                "signup/:code",
+                "static/registrationLetterSent",
+                "static/registrationCompleted",
+                "static/resetLetterSent",
+                "static/resetPasswordCompleted",
+                "categories"
+            ], "content\\DoDefaultTemplate");
+
+
+        $sub->addRoute("user", function () {
+            header("HTTP/1.1 301 Moved Permanently");
+            header("Location: /");
+            die();
+        });
+
+        $sub->addRoute("streams/:id",   "helpers\\DoStream");       // Helper for social networks
+        $sub->addRoute("user/:id",      "helpers\\DoUser");
+        $sub->addRoute("search/:query", "helpers\\DoSearch");
 
         $sub->addRoute("content/streamcovers/:fn",   "content\\DoGetStreamCover");
         $sub->addRoute("content/avatars/:fn",        "content\\DoGetUserAvatar");
@@ -144,6 +162,8 @@ class Router implements SingletonInterface{
 
     public function callRoute($className) {
 
+
+
         $request = HttpRequest::getInstance();
         $method = "do" . ucfirst(strtolower($request->getMethod()));
         $class = str_replace("/", "\\", CONTROLLERS_ROOT . $className);
@@ -165,6 +185,7 @@ class Router implements SingletonInterface{
         try {
 
             Injector::getInstance()->call([$classInstance, $method]);
+
 
         } catch (\ReflectionException $e) {
 

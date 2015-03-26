@@ -1,0 +1,135 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <div class="form-wrap">
+            <form name="signup_form" ng-submit="submit()" novalidate="novalidate">
+                <h1><i class="icon-https"></i>SIGN UP</h1>
+
+                <div class="hint top">To complete registration please fill the following fields:</div>
+                <div class="status">{{ status }}</div>
+                <table class="form-table">
+                    <tr>
+                        <td>
+                            <label for="login">Login:</label>
+                        </td>
+                        <td>
+                            <input type="text"
+                                   id="login"
+                                   name="login"
+                                   ng-model="signup.login"
+                                   ng-required="true"
+                                   ng-minlength="3"
+                                   ng-maxlength="32"
+                                   ng-pattern="/^[\S]+$/"
+                                   ensure-unique="login"
+                                   autocomplete="off"
+                                   ng-focus="true"
+                                   autofocus="true"
+                                    />
+
+                            <div class="validation" ng-show="signup_form.login.$focused && !signup_form.login.$pristine">
+                                <div ng-if="signup_form.login.$error.required">
+                                    Login must be filled
+                                </div>
+                                <div ng-if="signup_form.login.$error.minlength">
+                                    Login required to be at least 3 chars
+                                </div>
+                                <div ng-if="signup_form.login.$error.maxlength">
+                                    Login cannot be longer than 32 chars
+                                </div>
+                                <div ng-if="signup_form.login.$error.pattern">
+                                    Login must contain no spaces
+                                </div>
+                                <div ng-if="signup_form.login.$error.unique">
+                                    This login is unavailable
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="name">Your name:</label>
+                        </td>
+                        <td>
+                            <input type="text"
+                                   id="name"
+                                   name="name"
+                                   ng-model="signup.name"
+                                   ng-maxlength="32"
+                                   ng-focus="true"
+                                   autocomplete="off"
+                                    />
+
+                            <div class="validation" ng-show="signup_form.name.$focused && !signup_form.name.$pristine">
+                                <div ng-if="signup_form.name.$error.maxlength">
+                                    Name cannot be longer than 32 chars
+                                </div>
+                            </div>
+                            <div class="padding"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="name">Country:</label>
+                        </td>
+                        <td>
+                            <select name="country_id" ng-model="signup.country_id" ng-options="country.country_id as country.country_name for country in lib.countries">
+                                <option value="" selected>Unspecified</option>
+                            </select>
+                            <div class="padding"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="password1">Password:</label>
+                        </td>
+                        <td>
+                            <input type="password"
+                                   id="password1"
+                                   name="password1"
+                                   ng-model="signup.password"
+                                   ng-required="true"
+                                   ng-minlength="6"
+                                   ng-maxlength="32"
+                                   ng-focus="true"
+                                    />
+
+                            <div class="validation" ng-show="signup_form.password1.$focused && !signup_form.password1.$pristine">
+                                <div ng-if="signup_form.password1.$error.required">
+                                    Password must be filled
+                                </div>
+                                <div ng-if="signup_form.password1.$error.minlength">
+                                    Password required to be at least 6 chars
+                                </div>
+                                <div ng-if="signup_form.password1.$error.maxlength">
+                                    Password cannot be longer than 32 chars
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="password2">Password again:</label>
+                        </td>
+                        <td>
+                            <input type="password"
+                                   id="password2"
+                                   name="password2"
+                                   ng-model="check"
+                                   compare-to="signup.password"
+                                   ng-required="true"
+                                   ng-focus="true"
+                                    />
+
+                            <div class="validation" ng-show="signup_form.password2.$focused && !signup_form.password2.$pristine">
+                                <div ng-if="signup_form.password2.$error.compareTo">
+                                    Entered password must match previous
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <input ng-disabled="signup_form.$invalid" type="submit" value="Sign Up" style="float: right">
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,113 @@
+.sections {
+  & > li {
+    display: inline-block;
+    vertical-align: middle;
+    &:not(:last-child) {
+      margin-right: 24px;
+    }
+    &.active {
+      border-bottom: 2px solid @HEAD_LOGO_BACKGROUND_COLOR;
+    }
+  }
+  font-family: "Myriad Pro Thin", sans-serif;
+  font-size: 24pt;
+  margin-bottom: 32px;
+}
+
+.catalog-title {
+  font-family: "Myriad Pro Thin", sans-serif;
+  font-size: 24pt;
+  margin-bottom: 32px;
+  .text {
+    .highlight {
+      font-weight: bold;
+    }
+  }
+}
+
+.blah-section {
+  margin-bottom: 32px;
+  width: 100%;
+  .blah-row {
+    .category-choose {
+      vertical-align: middle;
+      text-align: right;
+      .label {
+        margin-right: 8px;
+      }
+      .category-selector {
+        display: inline-block;
+        width: 250px;
+      }
+    }
+    .info-block {
+      font-size: 12pt;
+      vertical-align: middle;
+    }
+  }
+}
+
+.stream-catalog {
+  & > li {
+
+    overflow: hidden;
+    margin-bottom: 8px;
+    padding-right: 16px;
+    box-sizing: border-box;
+    position: relative;
+
+    .cover {
+      border-radius: 0;
+      box-shadow: inset -5px 0 10px -10px #000000;
+
+      play {
+        i {
+          font-size: 48pt;
+          line-height: 94px;
+        }
+      }
+    }
+
+    .mor-block();
+
+    .cover {
+      width: 200px;
+      height: 200px;
+      float: left;
+      margin-right: 16px;
+    }
+    .body {
+      overflow: hidden;
+      padding-top: 8px;
+
+      .title {
+        a {
+          font-family: "Myriad Pro Thin", sans-serif;
+          font-size: 24pt;
+        }
+        .now-playing {
+          margin-top: 8px;
+          font-size: 9pt;
+          float: right;
+        }
+      }
+      .description {
+        color: grey;
+        white-space: pre-wrap;
+      }
+    }
+
+  }
+
+}
+
+
+.no-streams {
+  font-size: 12pt;
+  a {
+    color: @APP_LINK_COLOR;
+    &:hover {
+      color: @APP_LINK_HOVER_COLOR;
+    }
+  }
+}

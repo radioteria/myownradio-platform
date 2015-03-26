@@ -46,7 +46,7 @@ class DoGetStreamCover implements Controller {
 
         if ($size === null) {
 
-            $path->echoContents();
+            $path->show();
 
         } else {
 
@@ -54,7 +54,7 @@ class DoGetStreamCover implements Controller {
 
             if ($cache->exists()) {
 
-                $cache->echoContents();
+                $cache->show();
 
             } else {
 

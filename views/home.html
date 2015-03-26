@@ -1,0 +1,19 @@
+<div class="hello-page">
+    <div class="fixed-width">
+        <div class="big-description">
+            <div class="dark-background">
+                Create your own web radio station<br>
+                or discover existing.
+            </div>
+            <div class="main-actions">
+
+                <a class="page-button" href="/streams/" mor-tooltip="Click here to browse existing streams">Listen to the Radio</a>
+                <span class="only-first-element" ng-switch="account.authorized === true">
+                    <a class="page-button ng-cloak" ng-switch-when="false" ng-href="/login">Log in to the service</a>
+                    <a class="page-button ng-cloak" ng-switch-when="true" ng-href="/profile/">Go to your profile</a>
+                </span>
+
+            </div>
+        </div>
+    </div>
+</div>

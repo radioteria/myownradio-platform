@@ -37,6 +37,19 @@ class SubRouter implements SingletonInterface {
 
     }
 
+    public function addRouteRegExp($regexp, $callable) {
+        $this->routes[$regexp] = [
+            "keys" => [],
+            "action" => $callable
+        ];
+    }
+
+    public function addRoutes(array $routes, $callable) {
+        foreach ($routes as $route) {
+            $this->addRoute($route, $callable);
+        }
+    }
+
     /**
      * @param $callable
      */

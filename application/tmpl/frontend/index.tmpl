@@ -2,17 +2,8 @@
 <html ng-app="application" ng-controller="MainController">
 
 <head>
-    <title>myownradio.biz - create your own web radio station for free</title>
+    <title>${title}</title>
     <base href="/">
-
-
-    <script type="text/javascript">
-        var url;
-        if (window.location.protocol == "http:") {
-            url = "https://" + window.location.hostname + window.location.pathname;
-            window.location = url;
-        }
-    </script>
 
     <meta name="fragment" content="!"/>
 
@@ -20,74 +11,39 @@
 
     <meta name="viewport" content="width=1024, initial-scale=1.0"/>
 
-    <link rel="icon" href="/frontend/images/mor-small.png">
-    <meta name="viewport" content="width=1024" />
+    <link rel="icon" href="/images/mor-small.png">
+    <meta name="viewport" content="width=1024"/>
+
+    ${metadata}
 
     <link href='//fonts.googleapis.com/css?family=Open+Sans:400,300,600&subset=latin,cyrillic' rel='stylesheet'
           type='text/css'>
-    <link rel="stylesheet" type="text/css" href="/frontend/application/styles/compiled/application.css">
+    <link rel="stylesheet" type="text/css" href="/css/styles/compiled/application.css">
 
-    <link rel="stylesheet" type="text/css" href="/frontend/css/common.css">
-    <link rel="stylesheet" type="text/css" href="/frontend/css/fonts.css">
-    <link rel="stylesheet" type="text/css" href="/frontend/css/blocks.css">
+    <link rel="stylesheet" type="text/css" href="/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/css/fonts.css">
+    <link rel="stylesheet" type="text/css" href="/css/blocks.css">
 
-    <link rel="stylesheet" type="text/css" href="/frontend/icomoon/style.css">
-    <link rel="stylesheet" type="text/css" href="/frontend/css/loadingbar.css">
-    <link rel="stylesheet" type="text/css" href="/frontend/css/ngDialog.css">
-    <link rel="stylesheet" type="text/css" href="/frontend/css/ngDialog-theme-default.css">
+    <link rel="stylesheet" type="text/css" href="/icomoon/style.css">
+    <link rel="stylesheet" type="text/css" href="/css/loadingbar.css">
+    <link rel="stylesheet" type="text/css" href="/css/ngDialog.css">
+    <link rel="stylesheet" type="text/css" href="/css/ngDialog-theme-default.css">
+
 
     <!-- jQuery libraries -->
-    <script src="/frontend/js/libs/jquery-2.1.3.min.js.gz"></script>
-    <script src="/frontend/js/libs/jquery-migrate-1.2.1.min.js.gz"></script>
+    <script src="/js/libs/jquery-2.1.3.min.js.gz"></script>
+    <script src="/js/libs/jquery-migrate-1.2.1.min.js.gz"></script>
 
-    <script src="/frontend/js/libs/jquery-ui.min.js.gz"></script>
-    <script src="/frontend/js/libs/jquery.livequery.min.js"></script>
-    <script src="/frontend/js/libs/jquery.cookie.js"></script>
-    <script src="/frontend/jplayer/jquery.jplayer.min.js"></script>
+    <script src="/js/libs/jquery-ui.min.js.gz"></script>
+    <script src="/js/libs/jquery.livequery.min.js"></script>
+    <script src="/js/libs/jquery.cookie.js"></script>
+    <script src="/jplayer/jquery.jplayer.min.js"></script>
 
-    <script src="/frontend/js/libs/angular.min.js.gz"></script>
-    <script src="/frontend/js/libs/angular-route.min.js.gz"></script>
-    <script src="/frontend/js/libs/angular-animate.min.js.gz"></script>
-    <script src="/frontend/js/libs/angular-touch.js"></script>
+    <script src="/js/libs/angular.min.js.gz"></script>
+    <script src="/js/libs/angular-route.min.js.gz"></script>
+    <script src="/js/libs/angular-animate.min.js.gz"></script>
 
-    <script src="/frontend/js/audio5.js"></script>
-
-    <!-- MOR Plugins -->
-    <script src="/frontend/js/libs/mortip.js"></script>
-
-    <script src="/frontend/js/modules/ng-infinite-scroll.min.js"></script>
-    <script src="/frontend/js/modules/angular-post-fix.js"></script>
-    <script src="/frontend/js/modules/loading-bar.min.js"></script>
-    <script src="/frontend/js/modules/ngDialog.min.js"></script>
-    <script src="/frontend/js/modules/ng-context-menu.js"></script>
-    <script src="/frontend/js/modules/angulartics.min.js"></script>
-    <script src="/frontend/js/modules/angulartics-ga.min.js"></script>
-    <script src="/frontend/js/modules/angular-seo.js"></script>
-    <script src="/frontend/js/libs/sortable.js"></script>
-
-    <script src='/frontend/application/modules/main.ang.js'></script>
-    <script src='/frontend/application/modules/filters.js'></script>
-    <script src="/frontend/application/modules/context.js"></script>
-
-
-    <script src="/frontend/application/modules/site.js"></script>
-    <script src="/frontend/application/modules/tools/mor.tools.ang.js"></script>
-    <script src="/frontend/application/modules/tools/mor.tools.defaults.ang.js"></script>
-    <script src="/frontend/application/modules/tools/mor.tools.share.ang.js"></script>
-
-    <script src="/frontend/application/modules/account.js"></script>
-    <script src="/frontend/application/modules/player.js"></script>
-    <script src="/frontend/application/modules/catalog.js"></script>
-    <script src="/frontend/application/modules/search.js"></script>
-    <script src="/frontend/application/modules/profile.js"></script>
-    <script src="/frontend/application/modules/library.js"></script>
-    <script src="/frontend/application/modules/audioinfo.js"></script>
-    <script src="/frontend/application/modules/loader.js"></script>
-    <script src="/frontend/application/modules/track-action.js"></script>
-    <script src="/frontend/application/modules/popup.ang.js"></script>
-    <script src="/frontend/application/modules/mor.stream.scheduler.js"></script>
-
-    <script src="/frontend/application/functions.js"></script>
+    <script src="/js/audio5.js"></script>
 
     <script>
 
@@ -108,7 +64,7 @@
 
     </script>
 
-    <script type="text/javascript">var switchTo5x=true;</script>
+    <script type="text/javascript">var switchTo5x = true;</script>
     <script type="text/javascript" src="https://ws.sharethis.com/button/buttons.js"></script>
     <script type="text/javascript">stLight.options({
         publisher: "de700707-90c8-4e3a-a916-5e4fea867686",
@@ -119,12 +75,39 @@
         onhover: false
     });</script>
 
+    <script src="/content/application.modules.js"></script>
+    <script src="/js/functions.js"></script>
+
 </head>
 
 <body class="{{ rootClass ? rootClass : '' }} {{ player.isLoaded ? 'player-visible' :'' }}" analytics-on="click"
       analytics-event="Click" analytics-category="Application">
+<div id="fb-root"></div>
+<script>
+    window.fbAsyncInit = function () {
+        FB.init({
+            appId: '731742683610572',
+            xfbml: true,
+            version: 'v2.1',
+            channel: 'https://myownradio.biz/api/v2/user/fbLogin',
+            oauth: true,
+            cookie: true
+        });
+    };
 
-<div class="busy-wrap table" ng-show="loader.busy === true">  <!-- todo: move to directive -->
+    (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {
+            return;
+        }
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="busy-wrap table ngCloak" ng-show="loader.busy === true">  <!-- todo: move to directive -->
     <div class="row">
         <div class="cell">
             <i class="icon-spinner9 rotate"></i><br>
@@ -137,16 +120,17 @@
 <now ng-if="player.isPlaying" ng-model="player.currentStream" on-track-change="player.nowPlaying"></now>
 
 <div class="special">
-    <div class="player-container" ng-if="player.isLoaded" mor-background-color="player.currentStream.cover_background">
+    <div class="player-container ngCloak" ng-if="player.isLoaded" mor-background-color="player.currentStream.cover_background">
         <div class="bg-gradient" ng-if="player.currentStream.cover_url">
-            <div class="bg-image" style="background-image: url({{player.currentStream.cover_url}})"></div>
+            <div class="bg-image" d-background-image="{{ player.currentStream.cover_url }}"></div>
         </div>
         <div class="cool-player table">
             <div class="row">
                 <div class="cell radio-cover">
                     <a ng-href="/streams/{{ player.currentStream.key }}">
                         <div class="cover">
-                            <img ng-if="player.currentStream.cover" ng-src="{{ player.currentStream.cover_url }}?size=64">
+                            <img ng-if="player.currentStream.cover"
+                                 ng-src="{{ player.currentStream.cover_url }}?size=64">
                         </div>
                     </a>
                 </div>
@@ -192,5 +176,7 @@
     </div>
     <footer></footer>
 </div>
+
+
 </body>
 </html>

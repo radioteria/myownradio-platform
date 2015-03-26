@@ -16,7 +16,7 @@ use Framework\Template;
 class DoDefaultTemplate implements Controller {
     public function doGet() {
 
-        $description = "Create your own free web radio station for few minutes";
+        $description = "Create your own free web radio station in a minutes";
         $keywords = "music, radio, create, radio station, web radio, listen, free, own";
 
         $metadata = new Template("frontend/meta.default.tmpl");

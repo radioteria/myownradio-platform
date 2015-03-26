@@ -411,7 +411,6 @@
             if (streamData.data.code == 1) {
                 $scope.content.streamData = streamData.data.data.stream;
                 $scope.content.similarStreams = streamData.data.data.similar.streams;
-                $document.get(0).title = htmlEscape(streamData.data.data.stream.name) + " on " + SITE_TITLE;
             } else {
                 $location.url("/streams/");
             }

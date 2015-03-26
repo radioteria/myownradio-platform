@@ -36,7 +36,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
         PATH_STREAMS_CATALOG: ["/streams/", {
             templateUrl: "/views/streams.html",
             controller: 'ListStreamsController',
-            title: "Radio Channels on " + SITE_TITLE,
+            title: "Browse radio channels on " + SITE_TITLE,
             resolve: {
                 channelData: ["$route", "Resolvers", "STREAMS_PER_SCROLL",
                     function ($route, Resolvers, STREAMS_PER_SCROLL) {
@@ -88,8 +88,12 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             templateUrl: "/views/stream.html",
             controller: "OneStreamController",
             resolve: {
-                streamData: ["Streams", "$route", function (Streams, $route) {
-                    return Streams.getByIdWithSimilar($route.current.params.id);
+                streamData: ["Streams", "$route", "$document", function (Streams, $route, $document) {
+                    var promise = Streams.getByIdWithSimilar($route.current.params.id);
+                    promise.then(function (data) {
+                        $route.current.title = htmlEscape(data.data.data.stream.name) + " on " + SITE_TITLE;
+                    });
+                    return promise;
                 }]
             }
         }],

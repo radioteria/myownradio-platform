@@ -72,8 +72,9 @@ class DoGetJavascriptModules implements Controller {
         header("Content-Type: text/javascript");
 
         foreach ($sources as $source) {
-            echo JSMinPlus::minify((new File($source))->getContents());
-            //(new File($source))->show();
+            //echo JSMinPlus::minify((new File($source))->getContents());
+            (new File($source))->show();
+            echo "\n\n";
         }
 
     }

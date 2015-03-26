@@ -28,7 +28,7 @@ class DoStream implements Controller {
 
             $pageTitle = $stream["name"]." on ".Defaults::SITE_TITLE;
 
-            $metadata = new Template("fb.stream.tmpl");
+            $metadata = new Template("frontend/meta.stream.tmpl");
             $metadata->putObject([
                 "title"         => $pageTitle,
                 "description"   => $stream["info"],

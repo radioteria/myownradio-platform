@@ -112,7 +112,7 @@
         <div class="cell">
             <i class="icon-spinner9 rotate"></i><br>
 
-            <div class="loading">WORKING...</div>
+            <div class="loading" ng-bind-template="WORKING..."></div>
         </div>
     </div>
 </div>
@@ -146,7 +146,7 @@
                 </div>
                 <div class="cell track-title">
                 <span ng-if="player.nowPlaying">
-                    <span class="darker">ON AIR:</span> <span
+                    <span class="darker" ng-bind-template="ON AIR:"></span> <span
                         ng-bind-template="{{ player.nowPlaying.artist | uppercase }} - {{ player.nowPlaying.title | uppercase }}"></span>
                 </span>
                 </div>

@@ -26,7 +26,7 @@ class DoUser implements Controller {
 
             $user = $users->getUserByID($id);
 
-            $pageTitle = $user["name"]."'s Channels on ".Defaults::SITE_TITLE;
+            $pageTitle = $user["name"]."'s radio channels on ".Defaults::SITE_TITLE;
 
             $metadata = new Template("frontend/meta.user.tmpl");
             $metadata->putObject([
@@ -34,7 +34,7 @@ class DoUser implements Controller {
                 "description"   => $user["info"],
                 "keywords"      => "",
                 "url"           => "https://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'],
-                "image"         => $user["avatar_url"],
+                "image"         => $user["avatar_url"] ? "https:".$user["avatar_url"] : "",
                 "name"          => $user["name"]
             ]);
 

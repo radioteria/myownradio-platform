@@ -235,6 +235,7 @@
             channelData.onSuccess(function (data) {
                 $scope.content.streams = data.streams;
                 $scope.content.empty = data.streams.length > 0;
+
             });
 
             $scope.busy = false;
@@ -328,9 +329,9 @@
 
     ]);
 
-    catalog.controller("UserStreamsController", ["$scope", "$routeParams", "Streams", "STREAMS_PER_SCROLL",
+    catalog.controller("UserStreamsController", ["$scope", "$routeParams", "Streams", "STREAMS_PER_SCROLL", "$document",
 
-        function ($scope, $routeParams, Streams, STREAMS_PER_SCROLL) {
+        function ($scope, $routeParams, Streams, STREAMS_PER_SCROLL, $document) {
             $scope.user = $routeParams.key;
             $scope.content = {
                 streams: [],
@@ -345,7 +346,9 @@
                     .onSuccess(function (response) {
                         $scope.content.streams = $scope.content.streams.concat(response.streams);
                         $scope.content.owner = response.user;
-                        $scope.htmlReady();
+
+                        $document.get(0).title = htmlEscape(response.user.name) + "'s radio channels on " + SITE_TITLE;
+
                         if (response.streams.length == STREAMS_PER_SCROLL) {
                             $scope.busy = false;
                         }

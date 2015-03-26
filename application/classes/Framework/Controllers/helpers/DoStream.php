@@ -33,8 +33,8 @@ class DoStream implements Controller {
                 "title"         => $pageTitle,
                 "description"   => $stream["info"],
                 "keywords"      => $stream["hashtags"],
-                "image"         => $stream["cover_url"],
                 "url"           => "https://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'],
+                "image"         => $stream["cover_url"] ? "https:".$stream["cover_url"] : "",
                 "stream_id"     => $stream["sid"]
             ]);
 

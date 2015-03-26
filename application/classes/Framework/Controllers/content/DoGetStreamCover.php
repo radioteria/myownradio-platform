@@ -10,8 +10,6 @@ namespace Framework\Controllers\content;
 
 
 use Framework\Controller;
-use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\DocNotFoundException;
 use Framework\Services\HttpGet;
 use Framework\View\Errors\View404Exception;
 use Tools\File;
@@ -32,14 +30,14 @@ class DoGetStreamCover implements Controller {
             throw new View404Exception();
         }
 
-
-        if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) >= $path->mtime()) {
-            header('HTTP/1.1 304 Not Modified');
-            die();
-        } else {
-            header("Last-Modified: " . gmdate("D, d M Y H:i:s", $path->mtime()) . " GMT");
-            header('Cache-Control: max-age=0');
-        }
+//
+//        if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) >= $path->mtime()) {
+//            header('HTTP/1.1 304 Not Modified');
+//            die();
+//        } else {
+//            header("Last-Modified: " . gmdate("D, d M Y H:i:s", $path->mtime()) . " GMT");
+//            header('Cache-Control: max-age=0');
+//        }
 
         header("Content-Type: " . $path->getContentType());
         header(sprintf('Content-Disposition: filename="%s"', $path->filename()));
@@ -52,7 +50,7 @@ class DoGetStreamCover implements Controller {
 
             $cache = $folders->generateCacheFile($_GET, $path);
 
-            if ($cache->exists()) {
+            if (false) {
 
                 $cache->show();
 

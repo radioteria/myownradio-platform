@@ -251,13 +251,21 @@ class acResizeImage {
         switch ($this->type) {
             case 'jpg':
             case 'jpeg':
-                $this->image = @imagecreatefromjpeg($file);
+                $this->image = imagecreatefromjpeg($file);
                 break;
             case 'png':
-                $this->image = @imagecreatefrompng($file);
+                $temp = imagecreatefrompng($file);
+
+                $src_size = array(imagesx($temp), imagesy($temp));
+                $this->image = imagecreatetruecolor($src_size[0], $src_size[1]);
+                $transparency = imagecolorallocate($this->image, 255, 255, 255);
+                imagefill($this->image, 0, 0, $transparency);
+
+                imagecopyresampled($this->image, $temp, 0, 0, 0, 0, $src_size[0], $src_size[1], $src_size[0], $src_size[1]);
+
                 break;
             case 'gif':
-                $this->image = @imagecreatefromgif($file);
+                $this->image = imagecreatefromgif($file);
                 break;
             default:
                 exit("File is not an image");

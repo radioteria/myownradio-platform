@@ -11,6 +11,7 @@ namespace Framework\Controllers\content;
 
 use Framework\Controller;
 use JSMin\JSMin;
+use JSMin\JSMinPlus;
 use Tools\File;
 
 class DoGetJavascriptModules implements Controller {
@@ -71,7 +72,7 @@ class DoGetJavascriptModules implements Controller {
         header("Content-Type: text/javascript");
 
         foreach ($sources as $source) {
-            echo JSMin::minify((new File($source))->getContents());
+            echo JSMinPlus::minify((new File($source))->getContents());
             //(new File($source))->show();
         }
 

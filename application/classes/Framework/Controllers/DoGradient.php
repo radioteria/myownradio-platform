@@ -20,7 +20,7 @@ class DoGradient implements Controller {
         $width = 250;
         $height = 250;
 
-        $angle = 45;
+        $angle = 180;
 
         $start = $get->getParameter("start")->getOrElse('252556');
         $end = $get->getParameter("end")->getOrElse('381F49');
@@ -32,8 +32,6 @@ class DoGradient implements Controller {
         $end_g = hexdec(substr($end, 2, 2));
         $end_b = hexdec(substr($end, 4, 2));
         $image = @imagecreate($width, $height);
-        $x_rate = $height / 100 * $angle;
-        $y_rate = $width / 100 * $angle;
 
         for ($y = 0; $y < $height; $y++) {
             for ($x = 0; $x < $width; $x++) {
@@ -62,7 +60,7 @@ class DoGradient implements Controller {
         $rotate = imagerotate($image, $angle, 0) ;
 
         error_log(imagesx($rotate));
-        error_log($width);
+        error_log(abs(sin(6.24 / 360 * $angle)));
 
         imagepng($rotate);
         imagedestroy($rotate);

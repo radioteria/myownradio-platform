@@ -19,6 +19,7 @@ use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\HttpRequest;
 use Objects\Track;
 use REST\Playlist;
+use Tools\File;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -131,6 +132,13 @@ class TracksModel implements Injectable, SingletonInterface {
 
         error_log("SRC: " . $file['tmp_name']);
         error_log("DST: " . $track->getOriginalFile());
+
+        $parent = (new File($track->getOriginalFile()))->getParent();
+
+        if ($parent->exists()) {
+            error_log($parent->path() . " not exists. Creating it");
+            $parent->createNewDirectory(NEW_DIR_RIGHTS, true);
+        }
 
         $result = move_uploaded_file($file['tmp_name'], $track->getOriginalFile());
 

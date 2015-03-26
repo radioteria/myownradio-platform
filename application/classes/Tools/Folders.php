@@ -4,6 +4,7 @@ namespace Tools;
 
 use Framework\Injector\Injectable;
 use Objects\Track;
+use Objects\User;
 
 class Folders implements Injectable, SingletonInterface {
 
@@ -85,6 +86,10 @@ class Folders implements Injectable, SingletonInterface {
      */
     function getUserContentFolder($uid) {
         return sprintf("%s/ui_%d", self::MOR_CONTENT_FOLDER, $uid);
+    }
+
+    function generateUserContentFolder(User $user) {
+        return sprintf("%s/ui_%d", self::MOR_CONTENT_FOLDER, $user->getID());
     }
 
     function genStreamUrl($id) {

@@ -22,6 +22,7 @@ use Framework\Services\InputValidator;
 use Framework\Services\Mailer;
 use Objects\User;
 use Tools\File;
+use Tools\Folders;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -168,7 +169,7 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $newUser->save();
 
-        $this->createUserDirectory($newUser->getID());
+        $this->createUserDirectory($newUser);
 
         $notify = new Mailer("no-reply@myownradio.biz", "myownradio.biz");
         $notify->addAddress("roman@homefs.biz");
@@ -197,15 +198,11 @@ class UsersModel implements SingletonInterface, Injectable {
     }
 
     /**
-     * @param $id
+     * @param User $id
      */
-    private function createUserDirectory($id) {
+    public function createUserDirectory(User $id) {
 
-        $contentFolder = Config::getInstance()->getSetting("content", "content_folder")
-            ->getOrElseThrow(ApplicationException::of("CONTENT FOLDER NOT SPECIFIED"));
-
-
-        $path = new File(sprintf("%s/ui_%d", $contentFolder, $id));
+        $path = new File(Folders::getInstance()->generateUserContentFolder($id));
 
         error_log($path->path());
 

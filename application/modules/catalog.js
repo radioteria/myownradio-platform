@@ -387,7 +387,7 @@
                         $rootScope.account.init();
                     });
                 } else {
-                    $dialog.question("Are you sure want to <b>shut down</b> stream<br><b>" + htmlEscape(stream.name) + "</b>?", function () {
+                    $dialog.question("Are you sure want to <b>shut down</b> radio channel<br><b>" + htmlEscape(stream.name) + "</b>?", function () {
                         StreamWorks.stopStream(stream).onSuccess(function () {
                             $rootScope.account.init();
                         });

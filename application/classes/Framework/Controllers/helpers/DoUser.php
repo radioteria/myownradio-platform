@@ -12,6 +12,7 @@ namespace Framework\Controllers\helpers;
 use Framework\Controller;
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
+use Framework\Router;
 use Framework\Services\HttpGet;
 use Framework\Template;
 use Framework\View\Errors\View404Exception;
@@ -47,7 +48,10 @@ class DoUser implements Controller {
             $template->display();
 
         } catch (ControllerException $exception) {
-            throw new View404Exception();
+
+            http_response_code(404);
+            Router::getInstance()->callRoute("content\\DoDefaultTemplate");
+
         }
 
     }

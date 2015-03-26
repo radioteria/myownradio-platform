@@ -68,6 +68,7 @@ class Router implements SingletonInterface{
         $sub->addRouteRegExp("~^profile(\\/.+)*$~", "content\\DoDashboard");
 
         $sub->addRoutes([
+                "index",
                 "streams",
                 "bookmarks",
                 "login",

@@ -34,7 +34,7 @@
                     </li>
                     <li ng-repeat="stream in streams" ng-click="goStream(stream.key)">
                         <a ng-href="/streams/{{stream.key}}">
-                            <div class="cover">
+                            <div class="cover dark">
                                 <img ng-if="stream.cover" ng-src="{{stream.cover_url}}?size=24">
                             </div>
                             {{ stream.name }}

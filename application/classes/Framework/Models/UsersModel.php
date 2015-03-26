@@ -206,7 +206,9 @@ class UsersModel implements SingletonInterface, Injectable {
 
         error_log($path->path());
 
-        $path->createNewDirectory(NEW_DIR_RIGHTS, true);
+        if (! $path->exists()) {
+            $path->createNewDirectory(NEW_DIR_RIGHTS, true);
+        }
 
     }
 

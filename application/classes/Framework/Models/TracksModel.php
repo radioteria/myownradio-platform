@@ -20,6 +20,7 @@ use Framework\Services\HttpRequest;
 use Objects\Track;
 use REST\Playlist;
 use Tools\File;
+use Tools\FileException;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -67,13 +68,14 @@ class TracksModel implements Injectable, SingletonInterface {
 
         \getid3_lib::CopyTagsToComments($meta);
 
+        $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
 
         $maximalDuration  = $config->getSetting('upload', 'maximal_length')->get();
-        $availableFormats = $config->getSetting('upload', 'supported_audio')->get();
+        $availableFormats = $config->getSetting('upload', 'supported_extensions')->get();
 
-//        if (array_search($file['type'], $availableFormats) === false) {
-//            throw new ControllerException("Unsupported type format");
-//        }
+        if (!preg_match("~^({$availableFormats})$~i", $extension)) {
+            throw new ControllerException("Unsupported type format: " . $extension);
+        }
 
         if (empty($meta["audio"]["bitrate"])) {
             throw new ControllerException("File appears to be broken");
@@ -135,9 +137,12 @@ class TracksModel implements Injectable, SingletonInterface {
 
         $parent = (new File($track->getOriginalFile()))->getParent();
 
-        if ($parent->exists()) {
-            error_log($parent->path() . " not exists. Creating it");
-            $parent->createNewDirectory(NEW_DIR_RIGHTS, true);
+        if (!$parent->exists()) {
+            try {
+                $parent->createNewDirectory(NEW_DIR_RIGHTS, true);
+            } catch (FileException $e) {
+                throw ApplicationException::of(sprintf("Couldn't create user content folder: %s", $parent->path()), 0, $e);
+            }
         }
 
         $result = move_uploaded_file($file['tmp_name'], $track->getOriginalFile());

@@ -70,7 +70,7 @@ class StreamsModel implements Injectable, SingletonInterface {
 
     public function generatePermalink($name) {
 
-        $permalink = Common::toAscii($name);
+        $permalink = Common::toAscii(Common::toTransliteration($name));
 
         Database::doInConnection(function (Database $db) use (&$permalink) {
 

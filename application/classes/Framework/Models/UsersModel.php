@@ -23,6 +23,7 @@ use Framework\Services\Mailer;
 use Objects\User;
 use Tools\File;
 use Tools\Folders;
+use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -146,12 +147,12 @@ class UsersModel implements SingletonInterface, Injectable {
      * @param $country
      * @return UserModel
      */
-    public function completeRegistration($code, $login, $password, $name, $info, $permalink, $country) {
+    public function completeRegistration($code, $login, $password, $name, $info, Optional $permalink, $country) {
 
         $validator = InputValidator::getInstance();
 
         $email = self::parseRegistrationCode($code);
-        $crypt = password_hash($password, PASSWORD_DEFAULT); //md5($login . $password);
+        $crypt = password_hash($password, PASSWORD_DEFAULT);
 
         $validator->validateUniqueUserEmail($email);
 

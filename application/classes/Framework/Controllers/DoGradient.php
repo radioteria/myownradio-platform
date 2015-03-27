@@ -20,6 +20,8 @@ use Tools\Folders;
 class DoGradient implements Controller {
     public function doGet() {
 
+        return;
+
         $streams = Stream::getListByFilter("cover IS NULL");
 
         foreach ($streams as $stream) {

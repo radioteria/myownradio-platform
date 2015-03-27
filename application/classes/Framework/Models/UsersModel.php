@@ -148,7 +148,7 @@ class UsersModel implements SingletonInterface, Injectable {
      * @param $country
      * @return UserModel
      */
-    public function completeRegistration($code, $login, $password, $name, $info, Optional $permalink, $country) {
+    public function completeRegistration($code, $login, $password, $name, $info, $permalink, $country) {
 
         $validator = InputValidator::getInstance();
 

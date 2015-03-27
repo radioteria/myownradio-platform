@@ -31,13 +31,13 @@ class LettersModel {
         $mailer->setSubject("Registration on myownradio.biz");
         $mailer->setBody($template->render());
 
-        $mailer->queue();
+//        $mailer->queue();
 
-//        try {
-//            $mailer->send();
-//        } catch (\Exception $exception) {
-//            throw new ControllerException($exception->getMessage());
-//        }
+        try {
+            $mailer->send();
+        } catch (\Exception $exception) {
+            throw new ControllerException($exception->getMessage());
+        }
 
     }
 

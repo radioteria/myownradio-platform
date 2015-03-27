@@ -52,7 +52,7 @@
 
     overflow: hidden;
     margin-bottom: 8px;
-    padding-right: 16px;
+    padding-right: 12px;
     box-sizing: border-box;
     position: relative;
 
@@ -74,16 +74,26 @@
       width: 200px;
       height: 200px;
       float: left;
-      margin-right: 16px;
+      margin-right: 12px;
     }
     .body {
       overflow: hidden;
-      padding-top: 8px;
 
       .title {
         a {
-          font-family: "Myriad Pro Thin", sans-serif;
+          font-family: "Myriad Pro Thin";
           font-size: 24pt;
+          vertical-align: bottom;
+        }
+        .stats {
+          color: @APP_TEXT_COLOR;
+          margin-bottom: 8px;
+          i {
+            padding-right: 4px;
+          }
+          & > span:not(:last-child) {
+            padding-right: 8px;
+          }
         }
         .now-playing {
           margin-top: 8px;

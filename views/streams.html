@@ -26,10 +26,23 @@
                 <div class="body">
                     <div class="title">
                         <a ng-href="{{stream.key | streamsCatalog}}">{{stream.name | uppercase}}</a>
-                            <span ng-if="player.currentID == stream.sid && player.isPlaying">
-                                <span class="now-playing"><i
-                                        class="icon-volume-up"></i> {{player.nowPlaying.caption}}</span>
+                        <div class="stats">
+                            <span mor-tooltip="Active listeners count is {{ stream.listeners_count | number }}">
+                                <i class="icon-hearing"></i><span>{{ stream.listeners_count | number }}</span>
                             </span>
+                            <span mor-tooltip="Stream favorited {{ stream.bookmarks_count | number }} time(s)">
+                                <i class="icon-heart"></i> <span>{{ stream.bookmarks_count | number }}</span>
+                            </span>
+                            <span mor-tooltip="Stream created at {{ stream.created * 1000 | date : 'mediumDate' }}">
+                                <i class="icon-wifi-tethering"></i><span>{{ stream.created * 1000 | date : 'mediumDate' }}</span>
+                            </span>
+                        </div>
+                        <span ng-if="player.currentID === stream.sid && player.isPlaying">
+                            <span class="now-playing">
+                                <i class="icon-volume-up"></i>
+                                <span ng-bind="player.nowPlaying.caption"></span>
+                            </span>
+                        </span>
                     </div>
 
                     <div ng-if="stream.hashtags_array" class="taglist-wrapper" tags-list="stream.hashtags_array"></div>

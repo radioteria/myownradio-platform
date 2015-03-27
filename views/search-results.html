@@ -1,12 +1,12 @@
 <div class="fixed-width">
     <div id="page-contents">
         <div class="catalog-title">
-            <span class="text">SEARCH RESULTS FOR <span class="highlight">{{ query | uppercase }}</span>:</span>
+            <span class="text">SEARCH RESULTS FOR <span class="highlight">{{ query | uppercase }}</span></span>
+        </div>
+        <div class="page-sub-title">
+            Here what we found based on your search request:
         </div>
         <div class="new-stream-catalog-badge">
-            <div class="no-streams" ng-if="content.empty">
-                No streams found here. May be you want to <a href="/profile/new-stream">create</a> your own?
-            </div>
             <div class="no-streams" ng-if="content.empty && content.loaded">
                 Nothing found for request '<b>{{ query }}</b>'. Check the spelling, or try a different search.
             </div>

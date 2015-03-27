@@ -11,13 +11,12 @@
   }
   font-family: "Myriad Pro Thin", sans-serif;
   font-size: 24pt;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 }
 
 .catalog-title {
   font-family: "Myriad Pro Thin", sans-serif;
   font-size: 24pt;
-  margin-bottom: 32px;
   .text {
     .highlight {
       font-weight: bold;
@@ -25,26 +24,10 @@
   }
 }
 
-.blah-section {
-  margin-bottom: 32px;
-  width: 100%;
-  .blah-row {
-    .category-choose {
-      vertical-align: middle;
-      text-align: right;
-      .label {
-        margin-right: 8px;
-      }
-      .category-selector {
-        display: inline-block;
-        width: 250px;
-      }
-    }
-    .info-block {
-      font-size: 12pt;
-      vertical-align: middle;
-    }
-  }
+.page-sub-title {
+  margin-bottom: 24px;
+  color: @APP_TEXT_COLOR;
+  font-size: 12pt;
 }
 
 .new-stream-catalog-badge {
@@ -120,70 +103,6 @@
         }
       }
     }
-  }
-
-}
-
-.stream-catalog {
-  & > li {
-
-    overflow: hidden;
-    margin-bottom: 8px;
-    padding-right: 12px;
-    box-sizing: border-box;
-    position: relative;
-
-    .cover {
-      border-radius: 0;
-      box-shadow: inset -5px 0 10px -10px #000000;
-
-      play {
-        i {
-          font-size: 48pt;
-          line-height: 94px;
-        }
-      }
-    }
-
-    .mor-block();
-
-    .cover {
-      width: 200px;
-      height: 200px;
-      float: left;
-      margin-right: 12px;
-    }
-    .body {
-      overflow: hidden;
-
-      .title {
-        a {
-          font-family: "Myriad Pro Thin";
-          font-size: 24pt;
-          vertical-align: bottom;
-        }
-        .stats {
-          color: @APP_TEXT_COLOR;
-          margin-bottom: 8px;
-          i {
-            padding-right: 4px;
-          }
-          & > span:not(:last-child) {
-            padding-right: 8px;
-          }
-        }
-        .now-playing {
-          margin-top: 8px;
-          font-size: 9pt;
-          float: right;
-        }
-      }
-      .description {
-        color: grey;
-        white-space: pre-wrap;
-      }
-    }
-
   }
 
 }

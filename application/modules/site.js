@@ -118,7 +118,7 @@
             },
             link: function ($scope, $element, $attributes) {
                 $scope.$watch("morBackgroundColor", function (newColor) {
-                    if (angular.isDefined(newColor)) {
+                    if (angular.isString(newColor)) {
                         $element.css("background-color", newColor + " !important");
                     } else {
                         $element.css("background-color", "");

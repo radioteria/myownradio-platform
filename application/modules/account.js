@@ -447,8 +447,8 @@
                             Bookmarks.add($scope.stream).onSuccess(function () {
                                 $rootScope.$broadcast("BOOKMARK", {id: $scope.stream.sid, bookmarked: true});
                                 Popup.message("<b>" + htmlEscape($scope.stream.name) + "</b> successfully added to your bookmarks");
-                            }, function (message) {
-                                Popup.message(message, "Error");
+                            }, function () {
+                                Popup.message("To use this feature please login");
                             });
                         }
                     });

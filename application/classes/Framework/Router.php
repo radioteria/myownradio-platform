@@ -19,6 +19,7 @@ use Framework\Services\JsonResponse;
 use Framework\Services\SubRouter;
 use Framework\Services\TwigTemplate;
 use Framework\View\Errors\View404Exception;
+use Framework\View\Errors\View501Exception;
 use Framework\View\Errors\ViewException;
 use ReflectionClass;
 use Tools\Singleton;
@@ -131,12 +132,6 @@ class Router implements SingletonInterface{
             echo '<h1>E404: File not found</h1>';
             return;
 
-        } catch (NotImplementedException $e) {
-
-            http_response_code(501);
-            echo '<h1>E501: Method not implemented</h1>';
-            return;
-
         } catch (ViewException $exception) {
 
             $exception->render();
@@ -190,7 +185,7 @@ class Router implements SingletonInterface{
 
         } catch (\ReflectionException $e) {
 
-            throw new NotImplementedException();
+            throw new View501Exception();
 
         }
 

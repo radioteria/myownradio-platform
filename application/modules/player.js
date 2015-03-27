@@ -191,16 +191,16 @@
                 swfPath: "jplayer",
                 supplied: "mp3",
                 play: function (event) {
-                    Popup.message("Preview of <b>" + htmlEscape(currentTrack.artist + " - " + currentTrack.title) + "</b> is started");
+                    //Popup.message("Preview of <b>" + htmlEscape(currentTrack.artist + " - " + currentTrack.title) + "</b> is started");
                     $rootScope.$broadcast("preview.start", currentTrack);
                 },
                 ended: function (event) {
-                    Popup.message("Preview of <b>" + htmlEscape(currentTrack.artist + " - " + currentTrack.title) + "</b> is finished");
+                    //Popup.message("Preview of <b>" + htmlEscape(currentTrack.artist + " - " + currentTrack.title) + "</b> is finished");
                     $rootScope.$broadcast("preview.stop");
                     currentTrack = null;
                 },
                 error: function (event) {
-                    Popup.message("Error<br>" + htmlEscape(event.jPlayer.error.message));
+                    Popup.message("Error: " + htmlEscape(event.jPlayer.error.message));
                     $rootScope.$broadcast("preview.stop");
                     currentTrack = null;
                 },

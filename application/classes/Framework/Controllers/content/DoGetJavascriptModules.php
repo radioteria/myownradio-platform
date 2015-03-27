@@ -36,6 +36,7 @@ class DoGetJavascriptModules implements Controller {
             "application/modules/tools/mor.tools.ang.js",
             "application/modules/tools/mor.tools.defaults.ang.js",
             "application/modules/tools/mor.tools.share.ang.js",
+            "application/modules/tools/mor.tools.stats.ang.js",
 
             "application/modules/account.js",
             "application/modules/player.js",

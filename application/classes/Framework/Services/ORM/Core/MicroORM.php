@@ -201,6 +201,7 @@ class MicroORM extends FilterORM implements Injectable {
                     continue;
                 $prop->setAccessible(true);
                 $query->values($prop->getName(), $prop->getValue($bean));
+                $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] = $prop->getValue($bean);
             }
 
             $result = $query->executeInsert();

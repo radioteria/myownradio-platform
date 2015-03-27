@@ -87,6 +87,87 @@ class Common {
         return str_replace($rus, $lat, $text);
     }
 
+    static function generateColor($maxLevel) {
+        $data = [];
+        $max = 0;
+        for ($times = 3; $times --;) {
+            $value = rand(0, $maxLevel);
+            $data[] = $value;
+            if ($value > $max) {
+                $max = $value;
+            }
+        }
+
+        $shade = $max / $maxLevel;
+
+        $color = "";
+        foreach ($data as $value) {
+            $color .= dechex($value * $shade);
+        }
+        return $color;
+    }
+
+    static function createTemporaryImage($path = null, $w = 500, $h = 500) {
+
+        $colors = ["28242D", "4C3746", "353952", "454853", "375044", "57564B", "433B46", "23441F", "5B1F3A"];
+
+        $width = 64;
+        $height = 64;
+
+        $a_color = $colors[rand(0, count($colors) - 1)];
+        $b_color = $colors[rand(0, count($colors) - 1)];
+        $c_color = $colors[rand(0, count($colors) - 1)];
+        $d_color = $colors[rand(0, count($colors) - 1)];
+
+        $image = imagecreatetruecolor($width, $height);
+
+        for ($y = 0; $y < $height; $y ++) {
+            for ($x = 0; $x < $width; $x ++) {
+                $a_r_level = hexdec(substr($a_color, 0, 2)) / $width * ($width - $x) / $height * ($height - $y);
+                $a_g_level = hexdec(substr($a_color, 2, 2)) / $width * ($width - $x) / $height * ($height - $y);
+                $a_b_level = hexdec(substr($a_color, 4, 2)) / $width * ($width - $x) / $height * ($height - $y);
+
+                $b_r_level = hexdec(substr($b_color, 0, 2)) / $width * $x / $height * ($height - $y);
+                $b_g_level = hexdec(substr($b_color, 2, 2)) / $width * $x / $height * ($height - $y);
+                $b_b_level = hexdec(substr($b_color, 4, 2)) / $width * $x / $height * ($height - $y);
+
+                $c_r_level = hexdec(substr($c_color, 0, 2)) / $width * ($width - $x) / $height * $y;
+                $c_g_level = hexdec(substr($c_color, 2, 2)) / $width * ($width - $x) / $height * $y;
+                $c_b_level = hexdec(substr($c_color, 4, 2)) / $width * ($width - $x) / $height * $y;
+
+                $d_r_level = hexdec(substr($d_color, 0, 2)) / $width * $x / $height * $y;
+                $d_g_level = hexdec(substr($d_color, 2, 2)) / $width * $x / $height * $y;
+                $d_b_level = hexdec(substr($d_color, 4, 2)) / $width * $x / $height * $y;
+
+
+                $color = imagecolorresolve(
+                    $image,
+                    $a_r_level + $b_r_level + $c_r_level + $d_r_level,
+                    $a_g_level + $b_g_level + $c_g_level + $d_g_level,
+                    $a_b_level + $b_b_level + $c_b_level + $d_b_level
+                );
+                imagesetpixel($image, $x, $y, $color);
+            }
+        }
+
+        $destination = imagecreatetruecolor($w, $h);
+
+        imagecopyresampled($destination, $image, 0, 0, 0, 0,
+            imagesx($destination), imagesy($destination), $width, $height);
+
+
+        $overlay = imagecreatefrompng("images/logos/cover-overlay.png");
+
+        imagecopyresampled($destination, $overlay, 0, 0, 0, 0,
+            imagesx($destination), imagesy($destination), imagesx($overlay), imagesy($overlay));
+
+        error_log("Save image: " . $path);
+
+        imagepng($destination, $path);
+        imagedestroy($destination);
+
+    }
+
     /**
      * @param $filename
      * @return Optional[]

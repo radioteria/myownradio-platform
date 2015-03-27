@@ -16,6 +16,7 @@ use Framework\Services\DB\DBQuery;
 use Framework\Services\InputValidator;
 use Objects\Stream;
 use Tools\Common;
+use Tools\Folders;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -61,8 +62,17 @@ class StreamsModel implements Injectable, SingletonInterface {
         $stream->setPermalink($permalink->getOrElse($this->generatePermalink($name)));
         $stream->setCreated(time());
         $stream->setAccess($access);
-
         $stream->save();
+
+        // Generate Stream Cover
+        $random = Common::generateUniqueID();
+        $newImageFile = sprintf("stream%05d_%s.%s", $stream->getID(), $random, "png");
+        $newImagePath = Folders::getInstance()->genStreamCoverPath($newImageFile);
+
+        $stream->setCover($newImageFile);
+        $stream->save();
+
+        Common::createTemporaryImage($newImagePath);
 
         return $stream->getID();
 

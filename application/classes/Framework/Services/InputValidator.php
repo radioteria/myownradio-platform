@@ -137,7 +137,7 @@ class InputValidator implements Injectable {
             throw new ControllerException("Permalink must contain only [a-z, 0-9 or \"-\"] chars");
         }
 
-        $query = $dbq->selectFrom("r_streams")->where("permalink", $permalink);
+        $query = $dbq->selectFrom("r_streams")->where("(permalink = :key OR sid = :key)", [":key" => $permalink]);
 
         if (is_numeric($selfIgnore)) {
             $query->where("sid != ?", [$selfIgnore]);
@@ -170,7 +170,7 @@ class InputValidator implements Injectable {
             throw new ControllerException("Permalink must contain only [a-z, 0-9 or \"-\"] chars");
         }
 
-        $query = $dbq->selectFrom("r_users")->where("permalink", $permalink);
+        $query = $dbq->selectFrom("r_users")->where("(permalink = :key OR uid = :key)", [":key" => $permalink]);
 
         if (is_numeric($selfIgnore)) {
             $query->where("uid != ?", [$selfIgnore]);

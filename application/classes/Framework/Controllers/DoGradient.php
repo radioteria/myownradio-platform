@@ -11,59 +11,46 @@ namespace Framework\Controllers;
 
 use Framework\Controller;
 use Framework\Services\HttpGet;
+use Objects\Stream;
+use Objects\User;
+use REST\Users;
+use Tools\Common;
+use Tools\Folders;
 
 class DoGradient implements Controller {
-    public function doGet(HttpGet $get) {
+    public function doGet() {
 
-        header("Content-type: image/png");
+        $streams = Stream::getListByFilter("cover IS NULL");
 
-        $width = 250;
-        $height = 250;
+        foreach ($streams as $stream) {
+            // Generate Stream Cover
+            $random = Common::generateUniqueID();
+            $newImageFile = sprintf("stream%05d_%s.%s", $stream->getID(), $random, "png");
+            $newImagePath = Folders::getInstance()->genStreamCoverPath($newImageFile);
 
-        $angle = 180;
+            Common::createTemporaryImage($newImagePath);
 
-        $start = $get->getParameter("start")->getOrElse('252556');
-        $end = $get->getParameter("end")->getOrElse('381F49');
-
-        $start_r = hexdec(substr($start, 0, 2));
-        $start_g = hexdec(substr($start, 2, 2));
-        $start_b = hexdec(substr($start, 4, 2));
-        $end_r = hexdec(substr($end, 0, 2));
-        $end_g = hexdec(substr($end, 2, 2));
-        $end_b = hexdec(substr($end, 4, 2));
-        $image = @imagecreate($width, $height);
-
-        for ($y = 0; $y < $height; $y++) {
-            for ($x = 0; $x < $width; $x++) {
-                if ($start_r == $end_r) {
-                    $new_r = $start_r;
-                }
-                $difference = $start_r - $end_r;
-                $new_r = $start_r - intval(($difference / $height) * $y);
-                if ($start_g == $end_g) {
-                    $new_g = $start_g;
-                }
-                $difference = $start_g - $end_g;
-                $new_g = $start_g - intval(($difference / $height) * $y);
-                if ($start_b == $end_b) {
-                    $new_b = $start_b;
-                }
-                $difference = $start_b - $end_b;
-                $new_b = $start_b - intval(($difference / $height) * $y);
-                $row_color = imagecolorresolve($image, $new_r, $new_g, $new_b);
-                imagesetpixel($image, $x, $y, $row_color);
-
-
-            }
+            $stream->setCover($newImageFile);
+            $stream->save();
         }
 
-        $rotate = imagerotate($image, $angle, 0) ;
+        $users = User::getListByFilter("avatar IS NULL");
 
-        error_log(imagesx($rotate));
-        error_log(abs(sin(6.24 / 360 * $angle)));
+        foreach ($users as $user) {
+            // Generate Stream Cover
+            $random = Common::generateUniqueID();
+            $newImageFile = sprintf("avatar%05d_%s.%s", $user->getID(), $random, "png");
+            $newImagePath = Folders::getInstance()->genAvatarPath($newImageFile);
 
-        imagepng($rotate);
-        imagedestroy($rotate);
+            Common::createTemporaryImage($newImagePath);
+
+            $user->setAvatar($newImageFile);
+            $user->save();
+        }
+
+//        header("Content-Type: image/png");
+
+//        Common::createTemporaryImage();
 
     }
 } 

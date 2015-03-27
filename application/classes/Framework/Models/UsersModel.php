@@ -21,6 +21,7 @@ use Framework\Services\HttpSession;
 use Framework\Services\InputValidator;
 use Framework\Services\Mailer;
 use Objects\User;
+use Tools\Common;
 use Tools\File;
 use Tools\Folders;
 use Tools\Optional;
@@ -171,6 +172,17 @@ class UsersModel implements SingletonInterface, Injectable {
         $newUser->save();
 
         $this->createUserDirectory($newUser);
+
+
+        // Generate Stream Cover
+        $random = Common::generateUniqueID();
+        $newImageFile = sprintf("avatar%05d_%s.%s", $newUser->getID(), $random, "png");
+        $newImagePath = Folders::getInstance()->genAvatarPath($newImageFile);
+
+        $newUser->setAvatar($newImageFile);
+        $newUser->save();
+
+        Common::createTemporaryImage($newImagePath);
 
         $notify = new Mailer("no-reply@myownradio.biz", "myownradio.biz");
         $notify->addAddress("roman@homefs.biz");

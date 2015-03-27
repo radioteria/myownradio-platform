@@ -5,9 +5,9 @@
 (function () {
     var player = angular.module("RadioPlayer", ['Site']);
 
-    player.run(["$rootScope", "$http", "Response", "Streams", "$timeout", "$location", "Popup",
+    player.run(["$rootScope", "$http", "Response", "Streams", "$timeout", "$location", "Popup", "$analytics",
 
-        function ($rootScope, $http, Response, Streams, $timeout, $location, Popup) {
+        function ($rootScope, $http, Response, Streams, $timeout, $location, Popup, $analytics) {
 
             var handle = false;
 
@@ -42,6 +42,9 @@
                         $rootScope.player.isLoaded = true;
                     },
                     play: function () {
+
+                        $analytics.eventTrack('Play', { category: 'Streams', label: $rootScope.player.currentID });
+
                         $rootScope.player.isBuffering = true;
                         realPlayer.play($rootScope.player.url);
                         $rootScope.player.isPlaying = true;

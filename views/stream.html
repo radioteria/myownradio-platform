@@ -74,7 +74,7 @@
                     </div>
                     <div class="now-playing-frame" ng-if="content.streamData">
                         <div class="player" ng-if="content.streamData.status != 0">
-                            <div mor-tooltip="Play / Stop" class="toggle" ng-click="toggle()" analytics-on analytics-event="Play" analytics-category="Streams" analytics-label="{{ content.streamData.sid }}">
+                            <div mor-tooltip="Play / Stop" class="toggle" ng-click="toggle()">
                                 <i ng-show="player.isPlaying && player.currentID == content.streamData.sid" class="icon-stop"></i>
                                 <i ng-hide="player.isPlaying && player.currentID == content.streamData.sid" class="icon-play-arrow"></i>
                             </div>

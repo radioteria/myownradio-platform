@@ -36,7 +36,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
         PATH_STREAMS_CATALOG: ["/streams/", {
             templateUrl: "/views/streams.html",
             controller: 'ListStreamsController',
-            title: "Browse radio channels on " + SITE_TITLE,
+            title: "Radio channels on " + SITE_TITLE,
             resolve: {
                 channelData: ["$route", "Resolvers", "STREAMS_PER_SCROLL",
                     function ($route, Resolvers, STREAMS_PER_SCROLL) {

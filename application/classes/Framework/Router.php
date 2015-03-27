@@ -10,14 +10,12 @@ namespace Framework;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\DocNotFoundException;
-use Framework\Exceptions\NotImplementedException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injector;
 use Framework\Services\HttpGet;
 use Framework\Services\HttpRequest;
 use Framework\Services\JsonResponse;
 use Framework\Services\SubRouter;
-use Framework\Services\TwigTemplate;
 use Framework\View\Errors\View404Exception;
 use Framework\View\Errors\View501Exception;
 use Framework\View\Errors\ViewException;
@@ -70,7 +68,6 @@ class Router implements SingletonInterface{
 
         $sub->addRoutes([
                 "index",
-                "streams",
                 "bookmarks",
                 "login",
                 "recover",
@@ -91,7 +88,8 @@ class Router implements SingletonInterface{
             die();
         });
 
-        $sub->addRoute("streams/:id",   "helpers\\DoStream");       // Helper for social networks
+        $sub->addRoute("streams",       "helpers\\DoStreams");
+        $sub->addRoute("streams/:id",   "helpers\\DoStream");
         $sub->addRoute("user/:id",      "helpers\\DoUser");
         $sub->addRoute("search/:query", "helpers\\DoSearch");
 

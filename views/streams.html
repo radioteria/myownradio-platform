@@ -18,7 +18,8 @@
             <div class="no-streams" ng-if="content.empty">
                 No streams found here. May be you want to <a href="/profile/new-stream">create</a> your own?
             </div>
-            <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy" infinite-scroll-distance="1">
+            <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy"
+                infinite-scroll-distance="1">
                 <li ng-repeat="stream in content.streams">
                     <div class="cover-section">
                         <div class="cover">
@@ -27,6 +28,9 @@
                         </div>
                     </div>
                     <div class="info-section">
+                        <div class="stream-name">
+                            <a ng-href="{{ stream.key | streamsCatalog }}" ng-bind="stream.name"></a>
+                        </div>
                         <div class="stats">
                                 <span mor-tooltip="Active listeners count is {{ stream.listeners_count | number }}">
                                     <i class="icon-hearing"></i><span>{{ stream.listeners_count | number }}</span>
@@ -34,9 +38,6 @@
                                 <span mor-tooltip="Stream favorited {{ stream.bookmarks_count | number }} time(s)">
                                     <i class="icon-heart"></i> <span>{{ stream.bookmarks_count | number }}</span>
                                 </span>
-                        </div>
-                        <div class="stream-name">
-                            <a ng-href="{{ stream.key | streamsCatalog }}" ng-bind="stream.name"></a>
                         </div>
                     </div>
                 </li>

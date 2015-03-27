@@ -48,6 +48,7 @@
                         $rootScope.player.isBuffering = true;
                         realPlayer.play($rootScope.player.url);
                         $rootScope.player.isPlaying = true;
+
                     },
                     stop: function () {
                         realPlayer.stop();

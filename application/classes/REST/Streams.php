@@ -105,7 +105,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
 
         $queryStream = $this->getStreamsPrefix();
 
-        if (is_numeric($category)) {
+        if (!is_null($category)) {
             $queryStream->where("a.category", $category);
         }
 

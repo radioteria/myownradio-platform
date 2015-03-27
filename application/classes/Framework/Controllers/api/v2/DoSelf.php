@@ -10,7 +10,6 @@ namespace Framework\Controllers\api\v2;
 
 
 use Framework\Controller;
-use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
 use Framework\Models\UsersModel;
 use Framework\Services\HttpPost;
@@ -39,6 +38,9 @@ class DoSelf implements Controller {
 
         $users->logout();
         $users->authorizeByLoginPassword($login, $password);
+
+        $token = AuthUserModel::getInstance()->getToken();
+        $response->setData($token);
 
     }
 

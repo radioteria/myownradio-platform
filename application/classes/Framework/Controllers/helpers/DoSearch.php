@@ -17,7 +17,7 @@ use Framework\Template;
 class DoSearch implements Controller {
     public function doGet(HttpGet $get) {
 
-        $pageTitle = "Search Results on ".Defaults::SITE_TITLE;
+        $pageTitle = "Search results on ".Defaults::SITE_TITLE;
 
         $template = new Template("frontend/index.tmpl");
         $template->putObject([

@@ -12,6 +12,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\DocNotFoundException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injector;
+use Framework\Services\CurrentRoute;
 use Framework\Services\HttpGet;
 use Framework\Services\HttpRequest;
 use Framework\Services\JsonResponse;
@@ -43,8 +44,7 @@ class Router implements SingletonInterface{
 
         $httpGet = HttpGet::getInstance();
 
-        $this->legacyRoute = preg_replace('/(\.(html|php)$)|(\/$)/', '', $httpGet->getParameter("route")
-            ->getOrElse("index"));
+        $this->legacyRoute = CurrentRoute::getInstance();
 
         $routeParts = explode("/", $this->legacyRoute);
 
@@ -68,6 +68,7 @@ class Router implements SingletonInterface{
 
         $sub->addRoutes([
                 "index",
+                "streams",
                 "bookmarks",
                 "login",
                 "recover",
@@ -88,7 +89,6 @@ class Router implements SingletonInterface{
             die();
         });
 
-        $sub->addRoute("streams",       "helpers\\DoStreams");
         $sub->addRoute("streams/:id",   "helpers\\DoStream");
         $sub->addRoute("user/:id",      "helpers\\DoUser");
         $sub->addRoute("search/:query", "helpers\\DoSearch");

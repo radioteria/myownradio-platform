@@ -50,7 +50,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
         PATH_STREAMS_SEARCH: ["/search/:query", {
             templateUrl: "/views/search-results.html",
             controller: "ListSearchController",
-            title: "Search Results on " + SITE_TITLE,
+            title: "Search results on " + SITE_TITLE,
             resolve: {
                 channelData: ["$route", "Resolvers", "STREAMS_PER_SCROLL",
                     function ($route, Resolvers, STREAMS_PER_SCROLL) {
@@ -66,7 +66,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
         PATH_STREAMS_BOOKMARKS: ["/bookmarks/", {
             templateUrl: "/views/streams.html",
             controller: 'BookmarksController',
-            title: "Your Bookmarks on " + SITE_TITLE,
+            title: "Your bookmarks on " + SITE_TITLE,
             needsAuth: true,
             resolve: {
                 channelData: ["Resolvers", "STREAMS_PER_SCROLL",

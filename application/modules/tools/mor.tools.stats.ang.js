@@ -4,9 +4,9 @@
 
     tools.constant("STATS_INTERVAL", 10000);
 
-    tools.run(["$interval", "$rootScope", "StatsFactory", "STATS_INTERVAL",
+    tools.run(["$timeout", "$rootScope", "StatsFactory", "STATS_INTERVAL",
 
-        function ($interval, $rootScope, StatsFactory, STATS_INTERVAL) {
+        function ($timeout, $rootScope, StatsFactory, STATS_INTERVAL) {
 
             $rootScope.stats = {};
 
@@ -14,7 +14,7 @@
                 StatsFactory.getActiveListeners().onSuccess(function (data) {
                     $rootScope.stats.listeners_count = data;
                 });
-                $interval(rotate, STATS_INTERVAL);
+                $timeout(rotate, STATS_INTERVAL);
             };
 
             rotate();

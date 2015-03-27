@@ -234,8 +234,7 @@
 
             channelData.onSuccess(function (data) {
                 $scope.content.streams = data.streams;
-                $scope.content.empty = data.streams.length > 0;
-
+                $scope.content.empty = data.streams.length == 0;
             });
 
             $scope.busy = false;
@@ -273,7 +272,7 @@
 
             channelData.onSuccess(function (data) {
                 $scope.content.streams = data.streams;
-                $scope.content.empty = data.streams.length > 0;
+                $scope.content.empty = data.streams.length == 0;
             });
 
             $scope.busy = false;
@@ -306,7 +305,7 @@
 
             channelData.onSuccess(function (data) {
                 $scope.content.streams = data;
-                $scope.content.empty = data.length > 0;
+                $scope.content.empty = data.length == 0;
             });
 
             $scope.busy = false;

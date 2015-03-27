@@ -47,6 +47,75 @@
   }
 }
 
+.new-stream-catalog-badge {
+  margin-right: -12px;
+  .new-stream-catalog {
+    overflow: hidden;
+    position: relative;
+    & > li {
+      box-sizing: border-box;
+      padding-right: 12px;
+      width: 20%;
+      float: left;
+
+      .cover-section {
+        width: 100%;
+        height: 178px;
+        .cover {
+          height: 100%;
+          width: 100%;
+          play {
+            i {
+              font-size: 48pt;
+              line-height: 84px;
+            }
+          }
+          .overlay-section {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background-color: rgba(0,0,0,0.5);
+            color: #ffffff;
+            border-radius: 4px;
+            padding: 6px;
+            font-size: 10pt;
+            .stats {
+              i {
+                padding-right: 4px;
+              }
+              & > span:not(:last-child) {
+                padding-right: 8px;
+              }
+            }
+          }
+        }
+
+      }
+
+      .info-section {
+        box-sizing: border-box;
+        height: 60px;
+        padding: 4px 0;
+        .stream-name {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .stats {
+          color: @APP_TEXT_COLOR;
+          i {
+            padding-right: 4px;
+          }
+          & > span:not(:last-child) {
+            padding-right: 8px;
+          }
+        }
+      }
+    }
+  }
+
+}
+
 .stream-catalog {
   & > li {
 

@@ -14,45 +14,34 @@
                 <a href="/user/{{ content.owner.key }}">BY {{ content.owner | userDisplayName | uppercase }}</a>
             </li>
         </ul>
-        <ul class="stream-catalog"
-            infinite-scroll="load()"
-            infinite-scroll-disabled="busy"
-            infinite-scroll-distance="1">
-            <li ng-repeat="stream in content.streams">
-                <div class="cover">
-                    <img fadein ng-if="stream.cover_url" ng-src="{{stream.cover_url}}?size=200">
-                    <play obj="stream" ng-if="stream.status != 0"></play>
-                </div>
-                <div class="body">
-                    <div class="title">
-                        <a ng-href="{{stream.key | streamsCatalog}}">{{stream.name | uppercase}}</a>
-                        <div class="stats">
-                            <span mor-tooltip="Active listeners count is {{ stream.listeners_count | number }}">
-                                <i class="icon-hearing"></i><span>{{ stream.listeners_count | number }}</span>
-                            </span>
-                            <span mor-tooltip="Stream favorited {{ stream.bookmarks_count | number }} time(s)">
-                                <i class="icon-heart"></i> <span>{{ stream.bookmarks_count | number }}</span>
-                            </span>
-                            <span mor-tooltip="Stream created at {{ stream.created * 1000 | date : 'mediumDate' }}">
-                                <i class="icon-wifi-tethering"></i><span>{{ stream.created * 1000 | date : 'mediumDate' }}</span>
-                            </span>
+        <div class="new-stream-catalog-badge">
+            <div class="no-streams" ng-if="content.empty">
+                No streams found here. May be you want to <a href="/profile/new-stream">create</a> your own?
+            </div>
+            <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy" infinite-scroll-distance="1">
+                <li ng-repeat="stream in content.streams">
+                    <div class="cover-section">
+                        <div class="cover">
+                            <img fadein ng-if="stream.cover_url" ng-src="{{stream.cover_url}}?size=200">
+                            <play obj="stream" ng-if="stream.status != 0"></play>
                         </div>
-                        <span ng-if="player.currentID === stream.sid && player.isPlaying">
-                            <span class="now-playing">
-                                <i class="icon-volume-up"></i>
-                                <span ng-bind="player.nowPlaying.caption"></span>
-                            </span>
-                        </span>
                     </div>
-
-                    <div ng-if="stream.hashtags_array" class="taglist-wrapper" tags-list="stream.hashtags_array"></div>
-                    <div class="description">{{stream.info | limitTo : 300}}<span
-                            ng-if="stream.info.length > 300">&hellip;</span></div>
-                </div>
-            </li>
-        </ul>
-        <div class="no-streams" ng-if="content.empty && content.loaded">
-            No streams found here. May be you want to <a href="/profile/new-stream">create</a> your own?
+                    <div class="info-section">
+                        <div class="stats">
+                                <span mor-tooltip="Active listeners count is {{ stream.listeners_count | number }}">
+                                    <i class="icon-hearing"></i><span>{{ stream.listeners_count | number }}</span>
+                                </span>
+                                <span mor-tooltip="Stream favorited {{ stream.bookmarks_count | number }} time(s)">
+                                    <i class="icon-heart"></i> <span>{{ stream.bookmarks_count | number }}</span>
+                                </span>
+                        </div>
+                        <div class="stream-name">
+                            <a ng-href="{{ stream.key | streamsCatalog }}" ng-bind="stream.name"></a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
         </div>
+
     </div>
 </div>

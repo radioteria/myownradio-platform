@@ -255,9 +255,11 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         $userId = AuthUserModel::getAuthorizedUserID();
 
         if (is_numeric($userId)) {
+            $query->where("(a.access = ? OR a.uid = ?)", ["PUBLIC", $userId]);
             $query->leftJoin("r_bookmarks c", "c.stream_id = a.sid AND c.user_id = ${userId}");
             $query->select("IF(c.user_id IS NOT NULL, 1, 0) as bookmarked");
         } else {
+            $query->where("a.access", "PUBLIC");
             $query->select("0 as bookmarked");
         }
 

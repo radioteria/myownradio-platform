@@ -8,9 +8,12 @@
                         <div class="name">
                             <span ng-bind="category.category_name"></span>
                         </div>
-                        <div class="streams">
-                            <span ng-bind-template="{{ category.streams_count }} streams"></span>
-                        </div>
+                    </div>
+                    <div class="streams">
+                        <span>
+                            <span class="bigger" ng-bind="category.streams_count"></span><br>
+                            stream<span ng-if="category.streams_count > 1">s</span>
+                        </span>
                     </div>
                 </a>
             </li>

@@ -73,7 +73,14 @@ class SubRouter implements SingletonInterface {
         foreach ($this->routes as $regexp => $data) {
             if (preg_match($regexp, $route, $matches)) {
                 array_shift($matches);
-                RouteParams::setData(array_combine($data["keys"], $matches));
+                $result = array_combine($data["keys"], $matches);
+                if ($result === false) {
+                    error_log(json_encode($data["keys"]));
+                    error_log(json_encode($matches));
+                    error_log("");
+                } else {
+                    RouteParams::setData($result);
+                }
                 if (is_string($data["action"])) {
                     Router::getInstance()->callRoute($data["action"]);
                 } elseif (is_callable($data["action"])) {

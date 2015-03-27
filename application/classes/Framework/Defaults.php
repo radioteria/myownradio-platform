@@ -17,4 +17,13 @@ class Defaults {
     const REDIS_OBJECTS_KEY = "MOR2:Objects";
 
     const SITE_TITLE = "MyOwnRadio - Your own web radio station";
+
+
+    /**
+     * @return array
+     */
+    public static function getStopWords() {
+        return ["shit", "fuck", "ass", "хуй", "хуя", "пизда", "влагалище", "говно", "жопа", "писька"];
+    }
+
 }

@@ -8,6 +8,7 @@
 
 namespace Framework\Services;
 
+use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
 use Framework\Services\DB\DBQuery;
@@ -95,6 +96,13 @@ class InputValidator implements Injectable {
 
         if (strlen($name) < self::STREAM_NAME_MIN_LENGTH) {
             throw new ControllerException("Stream name must contain at least 3 chars");
+        }
+
+        $name_lower = mb_strtolower($name, "utf8");
+        foreach (Defaults::getStopWords() as $word) {
+            if (mb_strpos($name_lower, $word, 0, "utf8") !== FALSE) {
+                throw new ControllerException("Stream name contains words that can not be used");
+            }
         }
 
     }

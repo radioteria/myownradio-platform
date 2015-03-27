@@ -11,9 +11,12 @@ namespace Framework\Models;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
+use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\DeleteQuery;
 use Framework\Services\InputValidator;
 use Objects\Stream;
+use Objects\StreamTrack;
+use Objects\Track;
 use Tools\Common;
 use Tools\File;
 use Tools\Folders;
@@ -235,6 +238,28 @@ class StreamModel extends Model implements SingletonInterface {
         }
 
         $this->stream->delete();
+
+    }
+
+    public function moveStreamToOtherUser($streamId, UserModel $targetUser) {
+
+        $dbq = DBQuery::getInstance();
+
+        /** @var Stream $stream */
+        $stream = Stream::getByID($streamId)->getOrElseThrow(ControllerException::noStream($streamId));
+        $stream->setUserID($targetUser->getID());
+        $stream->save();
+
+        $tracks = $dbq->selectFrom("r_tracks")
+            ->innerJoin("r_link", "r_link.track_id = r_tracks.tid")
+            ->where("r_link.stream_id", $streamId)
+            ->fetchAll();
+
+        foreach ($tracks as $track) {
+            $track_object = Track::getByData($track);
+            $track_object->setUserID($targetUser->getID());
+            $track_object->save();
+        }
 
     }
 

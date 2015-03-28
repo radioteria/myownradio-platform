@@ -9,11 +9,9 @@
 namespace Framework\Models;
 
 
-use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
-use Framework\Services\Config;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\HttpRequest;
@@ -24,13 +22,14 @@ use Objects\User;
 use Tools\Common;
 use Tools\File;
 use Tools\Folders;
-use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
 class UsersModel implements SingletonInterface, Injectable {
 
     use Singleton;
+
+    const CLIENT_ID_LENGTH = 8;
 
     /**
      * @param string $login
@@ -49,16 +48,11 @@ class UsersModel implements SingletonInterface, Injectable {
             ->fetchOneRow()
             ->getOrElseThrow(UnauthorizedException::noUserExists($login));
 
-        //$md5Password = md5($user["login"] . $password);
-
         if (!password_verify($password, $user["password"])) {
             throw UnauthorizedException::wrongPassword();
         }
 
-        $clientAddress = HttpRequest::getInstance()->getRemoteAddress();
-        $clientUserAgent = HttpRequest::getInstance()->getHttpUserAgent()->getOrElse("None");
-
-        $token = self::createToken($user["uid"], $clientAddress, $clientUserAgent, $session->getSessionId());
+        $token = self::createToken($user["uid"], $session->getSessionId());
 
         $session->set("TOKEN", $token);
 
@@ -68,24 +62,25 @@ class UsersModel implements SingletonInterface, Injectable {
 
     /**
      * @param $userId
-     * @param $clientAddress
-     * @param $clientUserAgent
      * @param $sessionId
      * @return string
      */
-    private function createToken($userId, $clientAddress, $clientUserAgent, $sessionId) {
+    private function createToken($userId, $sessionId) {
 
-        $token = Database::doInConnection(function (Database $db) use ($userId, $clientAddress, $clientUserAgent, $sessionId) {
+        $token = Database::doInConnection(function (Database $db) use ($userId, $sessionId) {
 
-            do {
-                $token = md5($userId . $clientAddress . rand(1, 1000000) . "tokenizer" . time());
-            } while ($db->fetchOneColumn("SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->get() > 0);
+            $clientAddress = HttpRequest::getInstance()->getRemoteAddress();
+            $clientUserAgent = HttpRequest::getInstance()->getHttpUserAgent()->getOrElse("None");
+
+            do $token = md5($userId . $clientAddress . rand(1, 1000000) . "tokenizer" . time());
+            while ($db->fetchOneColumn("SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->get() > 0);
 
             $query = $db->getDBQuery()->into("r_sessions");
             $query->values("uid", $userId);
             $query->values("ip", $clientAddress);
             $query->values("token", $token);
             $query->values("permanent", 1);
+            $query->values("client_id", Common::generateUniqueID(self::CLIENT_ID_LENGTH));
             $query->values("authorized = NOW()");
             $query->values("http_user_agent", $clientUserAgent);
             $query->values("session_id", $sessionId);
@@ -127,10 +122,7 @@ class UsersModel implements SingletonInterface, Injectable {
                 ->getOrElseThrow(UnauthorizedException::noUserExists($id));
         });
 
-        $clientAddress = HttpRequest::getInstance()->getRemoteAddress();
-        $clientUserAgent = HttpRequest::getInstance()->getHttpUserAgent()->getOrElse("None");
-
-        $token = self::createToken($user["uid"], $clientAddress, $clientUserAgent, $session->getSessionId());
+        $token = self::createToken($user["uid"], $session->getSessionId());
 
         $session->set("TOKEN", $token);
 
@@ -188,7 +180,7 @@ class UsersModel implements SingletonInterface, Injectable {
         $notify->addAddress("roman@homefs.biz");
         $notify->setSubject("You have new user");
         $notify->setBody(sprintf("Hello! You have a new user '%s' (%s).", $login, $email));
-        $notify->send();
+        $notify->queue();
 
         LettersModel::sendRegistrationCompleted($newUser->getEmail());
 

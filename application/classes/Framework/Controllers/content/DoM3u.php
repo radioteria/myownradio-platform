@@ -10,7 +10,8 @@ namespace Framework\Controllers\content;
 
 
 use Framework\Controller;
-use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
+use Framework\Models\AuthUserModel;
 use Framework\Services\HttpGet;
 use Framework\Template;
 use Framework\View\Errors\View404Exception;
@@ -25,8 +26,16 @@ class DoM3u implements Controller {
         /** @var Stream $stream */
         $stream = Stream::getByFilter("GET_BY_KEY", [":key" => $id])->getOrElseThrow(new View404Exception());
 
+
+        try {
+            $clientId = AuthUserModel::getInstance()->getClientId();
+        } catch (UnauthorizedException $exception) {
+            $clientId = "";
+        }
+
         $template->addVariable("stream_name", $stream->getName());
         $template->addVariable("stream_id", $stream->getID());
+        $template->addVariable("client_id", $clientId);
 
         header("Content-Type: audio/mpegurl");
         header("Content-Disposition: attachment; filename=" . $stream->getName() . " on MYOWNRADIO.BIZ.m3u");

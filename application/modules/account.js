@@ -9,7 +9,7 @@
         function ($rootScope, User, $location, $route, $cacheFactory, $http) {
 
             // Initial account state
-            $rootScope.account = {authorized: false, user: null, pending: true, streams: null};
+            $rootScope.account = {authorized: false, user: null, pending: true, streams: null, client_id: null};
 
             $rootScope.$watch("account.pending", function (value) {
 
@@ -43,9 +43,7 @@
                     $rootScope.account.user = data.user;
                     $rootScope.account.streams = data.streams;
                     $rootScope.account.pending = false;
-                    if (cookie.PHPSESSID) {
-                        $http.defaults.headers.common.Security = cookie.PHPSESSID;
-                    }
+                    $rootScope.account.client_id = data.client_id;
 
                     if (typeof go == "string") {
                         $location.url(go);
@@ -55,7 +53,7 @@
                     $rootScope.account.user = null;
                     $rootScope.account.streams = null;
                     $rootScope.account.pending = false;
-                    $http.defaults.headers.common.Security = undefined;
+                    $rootScope.account.client_id = null;
                 });
             };
 

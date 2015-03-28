@@ -37,7 +37,7 @@ class Common {
 
     }
 
-    static function generateUniqueID() {
+    static function generateUniqueID($length = self::GENERATED_ID_LENGTH) {
 
         $idCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         $id = "";

@@ -17,11 +17,12 @@ use Tools\Singleton;
 
 class AuthUserModel extends UserModel implements Injectable {
 
-    protected $userToken;
+    protected $userToken, $clientId;
 
     function __construct() {
-        $uid = $this->getIdBySessionToken();
-        parent::__construct($uid);
+        $session = $this->getIdBySessionToken();
+        $this->clientId = $session["client_id"];
+        parent::__construct($session["uid"]);
         parent::touchLastLoginDate();
     }
 
@@ -31,28 +32,39 @@ class AuthUserModel extends UserModel implements Injectable {
 
         $token = HttpSession::getInstance()->get("TOKEN")->getOrElseThrow($exception);
 
-        $uid = Database::doInConnection(function (Database $db) use ($token, $exception) {
+        $session = Database::doInConnection(function (Database $db) use ($token, $exception) {
 
             $query = $db->getDBQuery()
                 ->selectFrom("r_sessions a")->innerJoin("r_users b", "a.uid = b.uid")
                 ->select("*")
                 ->where("a.token", $token);
 
-            $id = $db->fetchOneColumn($query)->getOrElseThrow($exception);
+            $session = $db->fetchOneRow($query)->getOrElseThrow($exception);
 
             $this->userToken = $token;
 
-            return $id;
+            return $session;
 
         });
 
-        return $uid;
+        return $session;
 
     }
 
+    /**
+     * @return string
+     */
     public function getToken() {
         return $this->userToken;
     }
+
+    /**
+     * @return string
+     */
+    public function getClientId() {
+        return $this->clientId;
+    }
+
 
     public static function getAuthorizedUserID() {
         try {

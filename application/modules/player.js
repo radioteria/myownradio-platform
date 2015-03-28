@@ -28,13 +28,12 @@
                     reload: function () {
                         var $stream = $rootScope.player.currentStream;
                         if ($rootScope.player.isPlaying === true) {
-                            console.log("Reload", $stream.sid, $rootScope.defaults.format);
-                            $rootScope.player.url = "http://myownradio.biz:7778/audio?s=" + $stream.sid + "&f=" + $rootScope.defaults.format;
+                            $rootScope.player.url = "/flow?s=" + $stream.sid + "&f=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);
                             $rootScope.player.controls.play();
                         }
                     },
                     loadStream: function ($stream) {
-                        $rootScope.player.url = "/flow?s=" + $stream.sid + "&f=" + $rootScope.defaults.format;
+                        $rootScope.player.url = "/flow?s=" + $stream.sid + "&f=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);
                         $rootScope.player.currentID = $stream.sid;
                         $rootScope.player.controls.play();
                         $rootScope.player.currentStream = $stream;

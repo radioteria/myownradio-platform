@@ -39,8 +39,9 @@ public class GetRunStateHandler implements LHttpHandler {
         out.println("");
         out.println("Active clients:");
 
-        ClientCounter.getClients().values().stream()
-                .forEach(t -> { out.println(" * " + t.get()); });
+        for (Integer key : ClientCounter.getClients().keySet()) {
+            out.println(key + ": " + ClientCounter.getClients().get(key));
+        }
 
         exchange.flush();
 

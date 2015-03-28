@@ -42,7 +42,7 @@ public class GetStreamAudioHandler implements LHttpHandler {
             int limitId = 1;
 
             try (Connection db = JDBCPool.getConnection()) {
-                ps = db.prepareStatement("SELECT mor_plans.limit_id FROM mor_plans INNER JOIN mor_users_view ON mor_plans.plan_id = mor_users_view.plan_id INNER JOIN r_sessions ON r_sessions.uid = mor_users_view.uid WHERE r_sessions.client_id = ? AND r_sessions.ip = ?");
+                ps = db.prepareStatement("SELECT mor_plans.limit_id FROM mor_plans INNER JOIN mor_users_view ON mor_plans.plan_id = mor_users_view.plan_id INNER JOIN r_sessions ON r_sessions.uid = mor_users_view.uid WHERE r_sessions.client_id = ? AND r_sessions.ip = ? AND r_sessions.client_id != ''");
                 ps.setString(1, clientId);
                 ps.setString(2, clientIp);
                 ps.execute();

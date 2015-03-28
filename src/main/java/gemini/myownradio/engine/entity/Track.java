@@ -1,13 +1,10 @@
 package gemini.myownradio.engine.entity;
 
-import gemini.myownradio.tools.MORSettings;
-import gemini.myownradio.tools.io.AsyncInputStreamBuffer;
-
-import javax.xml.transform.Result;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -88,32 +85,43 @@ public class Track {
         return filename;
     }
 
-    public File getPath() throws FileNotFoundException {
+    public String getPath() throws FileNotFoundException {
 
-        File ff;
+        String link;
+        URL ff;
 
-        ff = new File(String.format("%s/ui_%d/a_%03d_original.%s",
-                MORSettings.getFirstString("content", "content_folder").orElse("content"),
-                this.getUserId(),
-                this.getTrackId(),
-                this.getExtension()
-        ));
+        String template = "ftp://morstorage:3bWdNNa0v@myownradio.biz/content";
 
-        if (ff.exists()) {
-            return ff;
+        try {
+
+            link = String.format("%s/ui_%d/a_%03d_original.%s",
+                    template,
+                    this.getUserId(),
+                    this.getTrackId(),
+                    this.getExtension()
+            );
+            ff = new URL(link);
+
+            try (InputStream is = ff.openConnection().getInputStream()) {
+                    return link;
+            } catch (IOException e) {
+                /* NOP */
+            }
+
+            link = String.format("%s/ui_%d/lores_%03d.mp3",
+                    template,
+                    this.getUserId(),
+                    this.getTrackId()
+            );
+            ff = new URL(link);
+
+            try (InputStream is = ff.openConnection().getInputStream()) {
+                return link;
+            }
+
+        } catch (IOException e) {
+            throw new FileNotFoundException();
         }
-
-        ff = new File(String.format("%s/ui_%d/lores_%03d.mp3",
-                MORSettings.getFirstString("content", "content_folder").orElse("content"),
-                this.getUserId(),
-                this.getTrackId()
-        ));
-
-        if (ff.exists()) {
-            return ff;
-        }
-
-        throw new FileNotFoundException(ff.getPath());
 
     }
 

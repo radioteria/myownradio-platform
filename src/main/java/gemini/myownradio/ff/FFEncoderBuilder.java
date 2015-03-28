@@ -20,7 +20,6 @@ public class FFEncoderBuilder {
         switch (format.getCodec()) {
             case "libfdk_aac":
                 cmd = new String[]{
-                        "nohup",
                         "ffmpeg",
                         "-hide_banner",
                         "-loglevel", "quiet",
@@ -44,7 +43,6 @@ public class FFEncoderBuilder {
                 break;
             default:
                 cmd = new String[]{
-                        "nohup",
                         "ffmpeg",
                         "-hide_banner",
                         "-loglevel", "quiet",

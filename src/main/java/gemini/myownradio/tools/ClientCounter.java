@@ -18,8 +18,9 @@ public class ClientCounter {
     public static void registerNewClient(int streamId) {
         if (!clients.containsKey(streamId)) {
             clients.put(streamId, new AtomicInteger(1));
+        } else {
+            clients.get(streamId).incrementAndGet();
         }
-        clients.get(streamId).incrementAndGet();
     }
 
     public static void unregisterClient(int streamId) {

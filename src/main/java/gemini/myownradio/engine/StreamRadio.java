@@ -86,7 +86,7 @@ public class StreamRadio implements Runnable {
 
                 try {
                     // Normally we initialize track player
-                    trackPlayer = new TrackPlayer(broadcast, output, trackItem.getPath().getAbsolutePath(),
+                    trackPlayer = new TrackPlayer(broadcast, output, trackItem.getPath(),
                             (trackItem.getOrderIndex() % stream.getJingleInterval() == 0) && (trackItem.getTrackOffset() < 2000L));
 
                     broadcast.setTitle(trackItem.getTitle());

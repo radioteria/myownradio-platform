@@ -56,6 +56,7 @@ public class GetStreamAudioHandler implements LHttpHandler {
 
             AudioFlowBootstrap radio = new AudioFlowBootstrap(exchange, stream, decoder, metadata);
             radio.startStreamer();
+
         } catch (SQLException | RadioException e) {
             e.printStackTrace();
         }

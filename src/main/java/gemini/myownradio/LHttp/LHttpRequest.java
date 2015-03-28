@@ -115,7 +115,7 @@ public class LHttpRequest {
 
     public String getClientIP() {
         if (getHeader("X-REAL-IP") != null) {
-            return getHeader("X-REAL-UP");
+            return getHeader("X-REAL-IP");
         }
         return remoteIP;
     }

@@ -20,7 +20,7 @@ public class FlowListener {
     private static MORLogger logger = new MORLogger(MORLogger.MessageKind.SERVER);
 
     static {
-        //init();
+        init();
     }
 
     public FlowListener(String client_ip, String client_ua, String quality, int stream_id) throws SQLException {

@@ -53,7 +53,6 @@ public class AudioFlowBootstrap {
             throw LHttpException.forbidden();
         }
 
-        try {
 
             ConcurrentBufferKey streamKey = new ConcurrentBufferKey(
                     encoder.getAudioFormat().getFormat(),
@@ -78,6 +77,8 @@ public class AudioFlowBootstrap {
             }
 
             ListenRadio listener = new ListenRadio(exchange, useIcyMetadata, broadcast, encoder, streamObject);
+
+        try {
 
             listener.listen();
 

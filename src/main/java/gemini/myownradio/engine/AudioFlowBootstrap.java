@@ -1,5 +1,6 @@
 package gemini.myownradio.engine;
 
+import gemini.myownradio.LHttp.LHttpException;
 import gemini.myownradio.LHttp.LHttpProtocol;
 import gemini.myownradio.engine.buffer.ConcurrentBuffer;
 import gemini.myownradio.engine.buffer.ConcurrentBufferKey;
@@ -7,6 +8,7 @@ import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
 import gemini.myownradio.engine.entity.Stream;
 import gemini.myownradio.exception.RadioException;
 import gemini.myownradio.ff.FFEncoderBuilder;
+import gemini.myownradio.tools.ClientCounter;
 import gemini.myownradio.tools.MORLogger;
 import gemini.myownradio.tools.MORSettings;
 
@@ -27,7 +29,7 @@ public class AudioFlowBootstrap {
 
     private static MORLogger logger = new MORLogger(MORLogger.MessageKind.PLAYER);
 
-    public AudioFlowBootstrap(LHttpProtocol exchange, String stream_id, FFEncoderBuilder encoder, boolean useIcyMetadata)
+    public AudioFlowBootstrap(LHttpProtocol exchange, int stream_id, FFEncoderBuilder encoder, boolean useIcyMetadata)
             throws SQLException, RadioException, IOException {
 
         this.streamObject = new Stream(stream_id);
@@ -43,6 +45,12 @@ public class AudioFlowBootstrap {
     }
 
     public void startStreamer() throws IOException, SQLException {
+
+        if (this.streamObject.getMaxClients() >= ClientCounter.getClientsByStreamId(streamObject.getId())) {
+            ClientCounter.registerNewClient(streamObject.getId());
+        } else {
+            throw LHttpException.forbidden();
+        }
 
         ConcurrentBufferKey streamKey = new ConcurrentBufferKey(
                 encoder.getAudioFormat().getFormat(),
@@ -67,7 +75,12 @@ public class AudioFlowBootstrap {
         }
 
         ListenRadio listener = new ListenRadio(exchange, useIcyMetadata, broadcast, encoder, streamObject);
-        listener.listen();
+
+        try {
+            listener.listen();
+        } finally {
+            ClientCounter.unregisterClient(streamObject.getId());
+        }
 
     }
 

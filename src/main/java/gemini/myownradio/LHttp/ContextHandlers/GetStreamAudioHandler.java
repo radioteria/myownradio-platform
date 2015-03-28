@@ -22,7 +22,12 @@ public class GetStreamAudioHandler implements LHttpHandler {
 
     public void handle(LHttpProtocol exchange) throws IOException {
 
-        String stream = exchange.getParameter("s").orElseThrow(LHttpException::badRequest);
+        int stream;
+        try {
+            stream = Integer.parseInt(exchange.getParameter("s").orElseThrow(LHttpException::badRequest));
+        } catch (NumberFormatException e) {
+            throw LHttpException.badRequest();
+        }
         boolean metadata = exchange.headerEquals("icy-metadata", "1");
 
         String format = exchange.getParameter("f", "mp3_128k");
@@ -46,7 +51,6 @@ public class GetStreamAudioHandler implements LHttpHandler {
                     limitId = rs.getInt(1);
                 }
             }
-
 
             FFEncoderBuilder decoder = AudioFormatsRegister.analyzeFormat(format, limitId);
 

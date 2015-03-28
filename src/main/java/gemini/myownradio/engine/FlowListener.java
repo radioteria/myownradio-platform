@@ -19,6 +19,10 @@ public class FlowListener {
 
     private static MORLogger logger = new MORLogger(MORLogger.MessageKind.SERVER);
 
+    static {
+        //init();
+    }
+
     public FlowListener(String client_ip, String client_ua, String quality, int stream_id) throws SQLException {
         this.client_ip = client_ip;
         this.client_ua = client_ua;

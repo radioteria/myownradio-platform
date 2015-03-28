@@ -5,6 +5,7 @@ import gemini.myownradio.LHttp.LHttpProtocol;
 import gemini.myownradio.engine.buffer.ConcurrentBuffer;
 import gemini.myownradio.engine.buffer.ConcurrentBufferKey;
 import gemini.myownradio.engine.buffer.ConcurrentBufferRepository;
+import gemini.myownradio.engine.entity.Client;
 import gemini.myownradio.engine.entity.Stream;
 import gemini.myownradio.exception.RadioException;
 import gemini.myownradio.ff.FFEncoderBuilder;
@@ -33,6 +34,13 @@ public class AudioFlowBootstrap {
             throws SQLException, RadioException, IOException {
 
         this.streamObject = new Stream(stream_id);
+
+        Client client = new Client(exchange);
+
+        if (streamObject.getAccess().equals("PRIVATE") && (client.getUserId() == null || streamObject.getOwner() != client.getUserId())) {
+            System.err.println("Forbidden");
+            throw LHttpException.forbidden();
+        }
 
         this.exchange = exchange;
         this.useIcyMetadata = useIcyMetadata;

@@ -23,6 +23,23 @@ angular.module("Dialogs", [])
                         });
                     });
                 },
+                moveTracksToOtherStream: function (streamObject, tracksArray, streamDestination, successCallback) {
+                    $dialog.question("Move " + getFileName(tracksArray) + " to <b>" + streamDestination.name + "</b>?", function () {
+                        var trackIds  = tracksArray.map(function (track) { return track.tid; }).join(",");
+                        var uniqueIds = tracksArray.map(function (track) { return track.unique_id }).join(",");
+                        StreamWorks.addTracks(streamDestination.sid, trackIds).onSuccess(function () {
+                            StreamWorks.deleteTracks(streamObject.sid, uniqueIds).onSuccess(function () {
+                                if (typeof successCallback == "function") {
+                                    successCallback.call();
+                                }
+                            }, function (message) {
+                                Popup.message(message);
+                            });
+                        }, function (message) {
+                            Popup.message(message);
+                        });
+                    });
+                },
                 removeTracksFromStream: function (streamObject, tracksArray, successCallback) {
                     $dialog.question("Delete " + getFileName(tracksArray) + " from stream?", function () {
                         var trackIds = tracksArray.map(function (track) { return track.unique_id }).join(",");

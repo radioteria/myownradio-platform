@@ -5,9 +5,9 @@
 (function () {
     var player = angular.module("RadioPlayer", ['Site']);
 
-    player.run(["$rootScope", "$http", "Response", "Streams", "$timeout", "$location", "Popup", "$analytics",
+    player.run(["$rootScope", "$http", "Response", "Streams", "$timeout", "$location", "Popup", "$analytics", "TrackPreviewService",
 
-        function ($rootScope, $http, Response, Streams, $timeout, $location, Popup, $analytics) {
+        function ($rootScope, $http, Response, Streams, $timeout, $location, Popup, $analytics, TrackPreviewService) {
 
             var handle = false;
 
@@ -48,6 +48,8 @@
                         $rootScope.player.isBuffering = true;
                         realPlayer.play($rootScope.player.url);
                         $rootScope.player.isPlaying = true;
+
+                        TrackPreviewService.stop();
 
                     },
                     stop: function () {
@@ -196,6 +198,7 @@
                 supplied: "mp3",
                 play: function (event) {
                     //Popup.message("Preview of <b>" + htmlEscape(currentTrack.artist + " - " + currentTrack.title) + "</b> is started");
+                    $rootScope.player.controls.stop();
                     $rootScope.$broadcast("preview.start", currentTrack);
                 },
                 ended: function (event) {

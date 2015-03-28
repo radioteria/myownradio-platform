@@ -156,15 +156,13 @@
             };
 
             $scope.moveToStream = function (stream) {
-                TrackAction.addTracksToStream(stream, $scope.target, function () {
-                    TrackAction.removeTracksFromStream($scope.stream, $scope.target, function () {
-                        deleteMatching($scope.tracks, function (track) {
-                            return $scope.target.indexOf(track) != -1;
-                        });
-                        truncateArray($scope.target);
-                        $rootScope.account.init();
-                        $scope.readStream();
+                TrackAction.moveTracksToOtherStream($scope.stream, $scope.target, stream, function () {
+                    deleteMatching($scope.tracks, function (track) {
+                        return $scope.target.indexOf(track) != -1;
                     });
+                    truncateArray($scope.target);
+                    $rootScope.account.init();
+                    $scope.readStream();
                 });
             };
 

@@ -27,6 +27,9 @@ public class ClientCounter {
         if (clients.containsKey(streamId)) {
             clients.get(streamId).decrementAndGet();
         }
+        if (clients.get(streamId).get() <= 0) {
+            clients.remove(streamId);
+        }
     }
 
     public static Map<Integer, AtomicInteger> getClients() {

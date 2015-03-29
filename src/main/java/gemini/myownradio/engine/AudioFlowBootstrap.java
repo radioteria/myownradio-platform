@@ -54,9 +54,9 @@ public class AudioFlowBootstrap {
 
     public void startStreamer() throws IOException, SQLException {
 
-        if (this.streamObject.getMaxClients() >= ClientCounter.getClientsByStreamId(streamObject.getId())) {
+        if (this.streamObject.getMaxClients() >= ClientCounter.getClientsByStreamId(streamObject.getOwner())) {
             System.out.println("New LISTENER");
-            ClientCounter.registerNewClient(streamObject.getId());
+            ClientCounter.registerNewClient(streamObject.getOwner());
         } else {
             throw LHttpException.forbidden();
         }
@@ -92,7 +92,7 @@ public class AudioFlowBootstrap {
 
         } finally {
             System.out.println("No LISTENER");
-            ClientCounter.unregisterClient(streamObject.getId());
+            ClientCounter.unregisterClient(streamObject.getOwner());
         }
     }
 

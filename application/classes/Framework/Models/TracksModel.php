@@ -67,7 +67,7 @@ class TracksModel implements Injectable, SingletonInterface {
         });
 
         $meta = $id3->analyze($file["tmp_name"]);
-        $sha1 = sha1_file($file["tmp_name"]);
+        $hash = hash_file("sha512", $file["tmp_name"]);
         $duration = Common::getAudioDuration($file["tmp_name"])->getOrElseThrow(
             new ControllerException(sprintf("File <b>%s</b> appears to be broken", $file["name"]))
         );
@@ -83,7 +83,7 @@ class TracksModel implements Injectable, SingletonInterface {
             throw new ControllerException("Unsupported type format: " . $extension);
         }
 
-        if ($skipCopies && $this->getSameTrack($sha1)) {
+        if ($skipCopies && $this->getSameTrack($hash)) {
             throw new ControllerException(sprintf("File <b>%s</b> already is in your library", $file["name"]));
         }
 
@@ -108,7 +108,7 @@ class TracksModel implements Injectable, SingletonInterface {
 
         $track->setUserID($this->user->getID());
         $track->setFileName($file["name"]);
-        $track->setHash($sha1);
+        $track->setHash($hash);
         $track->setExtension($extension);
         $track->setTrackNumber(
             isset($meta["comments"]["track_number"][0]) ? $meta["comments"]["track_number"][0] : ""

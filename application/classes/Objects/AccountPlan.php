@@ -27,7 +27,9 @@ class AccountPlan extends ActiveRecordObject implements ActiveRecord {
         $plan_value,
         $limit_id,
         $streams_max,
-        $time_max;
+        $time_max,
+        $min_track_length,
+        $max_listeners;
 
     /**
      * @return mixed
@@ -77,5 +79,21 @@ class AccountPlan extends ActiveRecordObject implements ActiveRecord {
     public function getTimeMax() {
         return $this->time_max;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getMaxListeners() {
+        return $this->max_listeners;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMinTrackLength() {
+        return $this->min_track_length;
+    }
+
+
 
 } 

@@ -18,7 +18,7 @@ use Tools\Folders;
  */
 class Track extends ActiveRecordObject implements ActiveRecord {
 
-    protected $tid, $uid, $filename, $ext,
+    protected $tid, $uid, $filename, $hash, $ext,
         $artist, $title, $album,
         $track_number, $genre, $date, $cue, $buy,
         $duration, $filesize, $color = 0,
@@ -202,6 +202,20 @@ class Track extends ActiveRecordObject implements ActiveRecord {
      */
     public function setBuy($buy) {
         $this->buy = $buy;
+    }
+
+    /**
+     * @param mixed $hash
+     */
+    public function setHash($hash) {
+        $this->hash = $hash;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getHash() {
+        return $this->hash;
     }
 
     

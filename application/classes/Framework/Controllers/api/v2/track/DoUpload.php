@@ -20,7 +20,7 @@ class DoUpload implements Controller {
 
         $streamID = $post->getParameter("stream_id");
         $upNext = boolval($post->getParameter("up_next")->getOrElseFalse());
-        $skipCopies = boolval($post->getParameter("skip_copies")->getOrElseFalse());
+        $skipCopies = true;
 
         $uploaded = [];
 

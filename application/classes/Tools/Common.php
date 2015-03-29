@@ -9,11 +9,6 @@
 namespace Tools;
 
 
-use Framework\Exceptions\ApplicationException;
-use Framework\Exceptions\ControllerException;
-use Framework\Services\Config;
-use Framework\Services\HttpRequest;
-
 class Common {
 
     const GENERATED_ID_LENGTH = 8;
@@ -170,48 +165,20 @@ class Common {
 
     /**
      * @param $filename
-     * @return Optional[]
+     * @return Optional
      * @throws \Framework\Exceptions\ControllerException
      */
-    static function getAudioTags($filename) {
+    static function getAudioDuration($filename) {
 
-        $fetcher = Config::getInstance()->getSetting("getters", "mediainfo")
-            ->getOrElseThrow(ApplicationException::of("NO MEDIA INFO GETTER"));
-
-        $request = HttpRequest::getInstance();
-
-        setlocale(LC_ALL, "en_US.UTF-8");
+        $fetcher = "/usr/local/bin/mediainfo";
 
         $fnQuote = escapeshellarg($filename);
 
-        $fetchCommand = $fetcher . "  --Inform=\"General;%Duration%\\n%Title%\\n%Track/Position%\\n%Album%\\n%Performer%\\n%Genre%\\n%Album/Performer%\\n%Recorded_Date%\" " . $fnQuote;
+        $fetchCommand = $fetcher . "  --Inform=\"General;%Duration%\" " . $fnQuote;
 
         exec($fetchCommand, $tagsData, $exit);
 
-        $tagsList = array('DURATION', 'TITLE', 'TRACKNUMBER', 'ALBUM', 'PERFORMER', 'GENRE', 'ALBUM_PERFORMER', 'RECORDED_DATE');
-
-        if (count($tagsData) != count($tagsList)) {
-            throw new ControllerException("Uploaded file has incorrect tags");
-        }
-
-        $request->getLanguage()->then(function ($language) use ($tagsData) {
-            if (array_search($language, array('uk', 'ru')) !== false) {
-            }
-        });
-
-        foreach ($tagsData as &$tag) {
-            $tag = self::cp1252dec($tag);
-        }
-
-        $tagsData[0] = Optional::ofZeroable($tagsData[0]);
-
-        for ($i = 1; $i < count($tagsData); $i++) {
-            $tagsData[$i] = Optional::ofEmpty($tagsData[$i]);
-        }
-
-        $tagsArray = array_combine($tagsList, $tagsData);
-
-        return $tagsArray;
+        return Optional::ofNullable(isset($tagsData[0]) ? $tagsData[0] : null);
 
     }
 

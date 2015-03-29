@@ -19,6 +19,7 @@ use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\HttpRequest;
 use Objects\Track;
 use REST\Playlist;
+use Tools\Common;
 use Tools\File;
 use Tools\FileException;
 use Tools\Optional;
@@ -57,6 +58,7 @@ class TracksModel implements Injectable, SingletonInterface {
         $request = HttpRequest::getInstance();
 
         $id3 = new \getID3();
+        $currentPlan = $this->user->getCurrentPlan();
 
         $request->getLanguage()->then(function ($language) use ($id3) {
             if (array_search($language, array('uk', 'ru')) !== false) {
@@ -65,6 +67,10 @@ class TracksModel implements Injectable, SingletonInterface {
         });
 
         $meta = $id3->analyze($file["tmp_name"]);
+        $sha1 = sha1_file($file["tmp_name"]);
+        $duration = Common::getAudioDuration($file["tmp_name"])->getOrElseThrow(
+            new ControllerException(sprintf("File <b>%s</b> appears to be broken", $file["name"]))
+        );
 
         \getid3_lib::CopyTagsToComments($meta);
 
@@ -77,22 +83,19 @@ class TracksModel implements Injectable, SingletonInterface {
             throw new ControllerException("Unsupported type format: " . $extension);
         }
 
-        if (empty($meta["playtime_seconds"])) {
-            throw new ControllerException(sprintf("File <b>%s</b> appears to be broken", $file["name"]));
+        if ($skipCopies && $this->getSameTrack($sha1)) {
+            throw new ControllerException(sprintf("File <b>%s</b> already is in your library", $file["name"]));
         }
 
-        if ($skipCopies && isset($meta["comments"]["title"][0]) && isset($meta["comments"]["artist"][0])) {
-            if ($copy = $this->getSameTrack($meta["comments"]["title"][0], $meta["comments"]["artist"][0])) {
-                throw new ControllerException("Track with same artist and title already exists", $copy);
-            }
-        }
-
-        $duration = $meta["playtime_seconds"] * 1000;
-
-        $uploadTimeLeft = $this->user->getCurrentPlan()->getTimeMax() - $this->user->getTracksDuration() - $duration;
+        $uploadTimeLeft = $currentPlan->getTimeMax() - $this->user->getTracksDuration() - $duration;
 
         if ($duration > $maximalDuration) {
             throw new ControllerException("Uploaded file is too long: " . $duration);
+        }
+
+        if ($duration < $currentPlan->getMinTrackLength()) {
+            throw new ControllerException(sprintf("Uploaded file is too short. You can upload only files longer than %d seconds, sorry.",
+                $currentPlan->getMinTrackLength() / 1000));
         }
 
         if ($uploadTimeLeft < $duration) {
@@ -105,6 +108,7 @@ class TracksModel implements Injectable, SingletonInterface {
 
         $track->setUserID($this->user->getID());
         $track->setFileName($file["name"]);
+        $track->setHash($sha1);
         $track->setExtension($extension);
         $track->setTrackNumber(
             isset($meta["comments"]["track_number"][0]) ? $meta["comments"]["track_number"][0] : ""
@@ -168,23 +172,14 @@ class TracksModel implements Injectable, SingletonInterface {
     }
 
     /**
-     * @param $title
-     * @param $artist
+     * @param $hash
      * @return bool
      */
-    public function getSameTrack($title, $artist) {
-
-        if (!$title || !$artist) {
-            return null;
-        }
+    public function getSameTrack($hash) {
 
         return (new SelectQuery("r_tracks"))
-            ->where("title LIKE ?", [$title])
-            ->where("artist LIKE ?", [$artist])
-            ->where("uid", $this->user->getID())
-            ->limit(1)
-            ->fetchOneRow()
-            ->getOrElseNull();
+            ->where("hash", $hash)->where("uid", $this->user->getID())
+            ->limit(1)->fetchOneRow()->getOrElseNull();
 
     }
 

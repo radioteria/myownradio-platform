@@ -10,15 +10,23 @@ namespace Framework\Controllers;
 
 
 use Framework\Controller;
+use Objects\Track;
 
 class DoGradient implements Controller {
     public function doGet() {
 
-        $string = "Hello";
+        header("Content-Type: text/plain");
+        set_time_limit(0);
 
-        $hash = hash("sha512", $string);
+        $tracks = Track::getListByFilter("LENGTH(hash) < 128");
 
-        echo strlen($hash);
+        foreach ($tracks as $track) {
+            echo $track->getFileName()."\n";
+            $hash = hash("sha512", $track->getOriginalFile());
+            $track->setHash($hash);
+            $track->save();
+            flush();
+        }
 
     }
 } 

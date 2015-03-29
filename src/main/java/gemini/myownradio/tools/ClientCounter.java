@@ -25,10 +25,11 @@ public class ClientCounter {
 
     public static void unregisterClient(int streamId) {
         if (clients.containsKey(streamId)) {
-            clients.get(streamId).decrementAndGet();
-        }
-        if (clients.get(streamId).get() <= 0) {
-            clients.remove(streamId);
+            if (clients.get(streamId).get() == 1) {
+                clients.remove(streamId);
+            } else {
+                clients.get(streamId).decrementAndGet();
+            }
         }
     }
 

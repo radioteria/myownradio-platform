@@ -77,8 +77,8 @@ class TracksModel implements Injectable, SingletonInterface {
             throw new ControllerException("Unsupported type format: " . $extension);
         }
 
-        if (empty($meta["audio"]["bitrate"])) {
-            throw new ControllerException("File appears to be broken");
+        if (empty($meta["playtime_seconds"])) {
+            throw new ControllerException(sprintf("File <b>%s</b> appears to be broken", $file["name"]));
         }
 
         if ($skipCopies && isset($meta["comments"]["title"][0]) && isset($meta["comments"]["artist"][0])) {

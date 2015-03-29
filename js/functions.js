@@ -24,7 +24,7 @@ var merge = function (source, destination) {
  * @returns {string}
  */
 var htmlEscape = function (source) {
-    if (typeof source == "undefined" || typeof source == "null") return "";
+    if (typeof source == "undefined" || source === null) return "";
     var tagsToReplace = {
         '&': '&amp;',
         '<': '&lt;',

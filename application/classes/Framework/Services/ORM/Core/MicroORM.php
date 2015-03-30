@@ -138,15 +138,16 @@ class MicroORM extends FilterORM implements Injectable {
      * @param string $bean
      * @param int|null $limit
      * @param int|null $offset
+     * @param null $order
      * @return Object[]
      */
-    public function getListOfObjects($bean, $limit = null, $offset = null) {
+    public function getListOfObjects($bean, $limit = null, $offset = null, $order = null) {
 
         $reflection = new \ReflectionClass($bean);
 
         $config = $this->getBeanConfig($reflection);
 
-        return $this->_loadObjects($reflection, $config, null, null, $limit, $offset);
+        return $this->_loadObjects($reflection, $config, null, null, $limit, $offset, $order);
 
     }
 
@@ -156,16 +157,17 @@ class MicroORM extends FilterORM implements Injectable {
      * @param array|null $filterArgs
      * @param int|null $limit
      * @param int|null $offset
+     * @param null $order
+     * @internal param null $oder
      * @return object
-     * @throws ORMException
      */
-    public function getFilteredListOfObjects($bean, $filter, array $filterArgs = null, $limit = null, $offset = null) {
+    public function getFilteredListOfObjects($bean, $filter, array $filterArgs = null, $limit = null, $offset = null, $order = null) {
 
         $reflection = new \ReflectionClass($bean);
 
         $beanConfig = $this->getBeanConfig($reflection);
 
-        return $this->_loadObjects($reflection, $beanConfig, $filter, $filterArgs, $limit, $offset);
+        return $this->_loadObjects($reflection, $beanConfig, $filter, $filterArgs, $limit, $offset, $order);
 
     }
 
@@ -309,10 +311,11 @@ class MicroORM extends FilterORM implements Injectable {
      * @param array|null $filterArgs
      * @param int|null $limit
      * @param int|null $offset
+     * @param null $order
      * @return mixed
      */
     private function _loadObjects($reflection, $config, $filter = null, $filterArgs = null, $limit = null,
-                                  $offset = null) {
+                                  $offset = null, $order = null) {
 
         $query = $this->createBaseSelectRequest($config);
 
@@ -322,7 +325,7 @@ class MicroORM extends FilterORM implements Injectable {
             $this->applyFilter($query, $filter, $config, $filterArgs);
         }
 
-        return $this->_getListOfObjects($query, $reflection, $config, $limit, $offset);
+        return $this->_getListOfObjects($query, $reflection, $config, $limit, $offset, $order);
 
     }
 
@@ -366,9 +369,11 @@ class MicroORM extends FilterORM implements Injectable {
      * @param array $config
      * @param null|int $limit
      * @param null|int $offset
+     * @param null $order
      * @return ActiveRecord[]
      */
-    protected function _getListOfObjects(SelectQuery $query, \ReflectionClass $reflection, array $config, $limit = null, $offset = null) {
+    protected function _getListOfObjects(SelectQuery $query, \ReflectionClass $reflection, array $config, $limit = null,
+                                         $offset = null, $order = null) {
 
         $array = new ActiveRecordCollection($reflection->getName());
 
@@ -378,6 +383,10 @@ class MicroORM extends FilterORM implements Injectable {
 
         if (is_numeric($offset)) {
             $query->offset($offset);
+        }
+
+        if ($order) {
+            $query->orderBy($order);
         }
 
         $query->eachRow(function ($row) use (&$array, &$config) {

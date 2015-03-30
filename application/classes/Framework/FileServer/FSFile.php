@@ -38,7 +38,6 @@ class FSFile {
         $object = FileServerFile::getByFilter("HASH", [$hash])->getOrElseNull();
 
         if ($object === null) {
-            error_log("New File!");
             $size = filesize($file_path);
             $fs = FileServerFacade::allocate($size);
 
@@ -48,12 +47,13 @@ class FSFile {
             $object->setServerId($fs->getServerId());
             $object->setUseCount(1);
 
+            error_log($fs->isFileExists($hash) ? "true" : "false");
+
             if (!$fs->isFileExists($hash) && $fs->uploadFile($file_path, $hash) === null) {
                 throw new FileServerException(sprintf("File \"%s\" could not be uploaded", $file_path));
             }
 
         } else {
-            error_log("File Exists!");
             $object->setUseCount($object->getUseCount() + 1);
         }
 

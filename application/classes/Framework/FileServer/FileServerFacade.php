@@ -31,7 +31,7 @@ class FileServerFacade {
 
     public static function getUpServersIds() {
         $servers = [];
-        foreach (FileServer::getListByFilter("UP") as $server) {
+        foreach (FileServer::getListByFilter("UP", null, null, null, "RAND()") as $server) {
             $servers[] = $server->getFsId();
         }
         return $servers;
@@ -110,18 +110,7 @@ class FileServerFacade {
 
     public function isFileExists($hash) {
 
-        $ch = $this->curlInit();
-
-        curl_setopt($ch, CURLOPT_URL, $this->getServerName().$hash);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "SIZE");
-
-        curl_exec($ch);
-
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        curl_close($ch);
-
-        return $http_code === 200;
+        return $this->getFileSize($hash) !== null;
 
     }
 

@@ -58,10 +58,11 @@ abstract class ActiveRecordObject implements JsonSerializable {
     /**
      * @param null $limit
      * @param null $offset
+     * @param null $order
      * @return static[]
      */
-    public static function getList($limit = null, $offset = null) {
-        return MicroORM::getInstance()->getListOfObjects(get_called_class(), $limit, $offset);
+    public static function getList($limit = null, $offset = null, $order = null) {
+        return MicroORM::getInstance()->getListOfObjects(get_called_class(), $limit, $offset, $order);
     }
 
     /**
@@ -69,10 +70,11 @@ abstract class ActiveRecordObject implements JsonSerializable {
      * @param null|array $args
      * @param null $limit
      * @param null $offset
+     * @param null $order
      * @return static[]
      */
-    public static function getListByFilter($filter, array $args = null, $limit = null, $offset = null) {
-        return MicroORM::getInstance()->getFilteredListOfObjects(get_called_class(), $filter, $args, $limit, $offset);
+    public static function getListByFilter($filter, array $args = null, $limit = null, $offset = null, $order = null) {
+        return MicroORM::getInstance()->getFilteredListOfObjects(get_called_class(), $filter, $args, $limit, $offset, $order);
     }
 
     /**

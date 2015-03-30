@@ -8,8 +8,11 @@
 
 namespace Objects;
 
+use Framework\Exceptions\ControllerException;
+use Framework\FileServer\FileServerFacade;
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
+use Objects\FileServer\FileServerFile;
 use Tools\Folders;
 
 /**
@@ -232,7 +235,15 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         return $this->file_id;
     }
 
-    
+    public function getFileUrl() {
+        /** @var FileServerFile $file */
+        $file = FileServerFile::getByID($this->getFileId())
+            ->getOrElseThrow(new ControllerException(
+                sprintf("Track \"%d\" is not uploaded to any file server", $this->getID())
+            ));
+
+        return FileServerFacade::getServerNameById($file->getServerId()).$file->getFileHash();
+    }
 
 
 }

@@ -53,9 +53,7 @@ class DoGetPreviewAudio implements Controller {
                 $program = $config->getSetting("streaming", "track_preview")
                     ->getOrElseThrow(ControllerException::of("No preview configured"));
 
-                $process = sprintf($program, $track->getDuration() / 3000, escapeshellarg($track->getOriginalFile()));
-
-                //header("mor-file: " . $track->getOriginalFile());
+                $process = sprintf($program, $track->getDuration() / 3000, escapeshellarg($track->getFileUrl()));
 
                 $proc = popen($process, "r");
                 while ($data = fread($proc, 4096)) {

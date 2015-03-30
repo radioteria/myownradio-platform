@@ -47,8 +47,6 @@ class FSFile {
             $object->setServerId($fs->getServerId());
             $object->setUseCount(1);
 
-            error_log($fs->isFileExists($hash) ? "true" : "false");
-
             if (!$fs->isFileExists($hash) && $fs->uploadFile($file_path, $hash) === null) {
                 throw new FileServerException(sprintf("File \"%s\" could not be uploaded", $file_path));
             }

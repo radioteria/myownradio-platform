@@ -49,10 +49,10 @@ class FileServerFacade {
             $free = $fs->getFreeSpace();
             if ($free === null) continue;
             if ($free > $need_bytes) {
-                return new self($server);
+                return $fs;
             }
         }
-        throw new NoSpaceForUploadException("All available servers has no free space");
+        throw new NoSpaceForUploadException("There is no available servers for upload");
     }
 
     public function uploadFile($file_path, $hash = null) {

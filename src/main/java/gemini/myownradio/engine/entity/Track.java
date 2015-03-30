@@ -12,6 +12,9 @@ import java.sql.SQLException;
  * Created by Roman on 01.10.14.
  */
 public class Track {
+
+    private static final String FILE_SERVER_PATTERN = "http://fs%d.myownradio.biz/%s";
+
     private int track_id;
     private int user_id;
     private String filename;
@@ -23,21 +26,25 @@ public class Track {
     private String uniqueId;
     private long timeOffset;
     private long orderIndex;
+    private Integer fileServerId;
+    private String fileHash;
 
     private int playlistTime;
 
     public Track(ResultSet rs, int playlistTime) throws SQLException {
-        this.track_id =  rs.getInt("track_id");
-        this.user_id =  rs.getInt("uid");
-        this.filename = rs.getString("filename");
-        this.extension = rs.getString("ext");
-        this.artist = rs.getString("artist");
-        this.title = rs.getString("title");
-        this.duration = rs.getLong("duration");
-        this.fileSize = rs.getLong("filesize");
-        this.uniqueId = rs.getString("unique_id");
-        this.timeOffset = rs.getLong("time_offset");
-        this.orderIndex = rs.getLong("t_order");
+        this.track_id =  rs.getInt("a.track_id");
+        this.user_id =  rs.getInt("a.uid");
+        this.filename = rs.getString("a.filename");
+        this.extension = rs.getString("a.ext");
+        this.artist = rs.getString("a.artist");
+        this.title = rs.getString("a.title");
+        this.duration = rs.getLong("a.duration");
+        this.fileSize = rs.getLong("a.filesize");
+        this.uniqueId = rs.getString("a.unique_id");
+        this.timeOffset = rs.getLong("a.time_offset");
+        this.orderIndex = rs.getLong("a.t_order");
+        this.fileServerId = rs.getInt("b.server_id");
+        this.fileHash = rs.getString("b.file_hash");
         this.playlistTime = playlistTime;
     }
 
@@ -83,6 +90,10 @@ public class Track {
 
     public String getFilename() {
         return filename;
+    }
+
+    public String getFileUrl() {
+        return String.format(FILE_SERVER_PATTERN, fileServerId, fileHash);
     }
 
     public String getPath() throws FileNotFoundException {

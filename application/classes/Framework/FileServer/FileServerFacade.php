@@ -47,7 +47,10 @@ class FileServerFacade {
         foreach ($servers as $server) {
             $fs = new self($server);
             $free = $fs->getFreeSpace();
-            if ($free === null) continue;
+            if ($free === null) {
+                error_log("Warning! File server responded an error!");
+                continue;
+            }
             if ($free > $need_bytes) {
                 return $fs;
             }
@@ -144,7 +147,7 @@ class FileServerFacade {
 
         curl_close($ch);
 
-        return $http_code === 200 ? $result : null;
+        return $http_code === 200 ? (int) $result : null;
 
     }
 
@@ -159,7 +162,7 @@ class FileServerFacade {
     private function curlInit() {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 10);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 60);
         return $curl;
 
     }

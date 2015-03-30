@@ -44,8 +44,6 @@ class DoFbLogin implements Controller {
 
                 ->then(function (User $user) use ($response, $model) {
 
-                    error_log("Log in user from FB");
-
                     /** @var UserModel $userModel */
                     $userModel = $model->authorizeById($user->getID());
 
@@ -54,8 +52,6 @@ class DoFbLogin implements Controller {
                 })
 
                 ->otherwise(function () use ($user_profile, $response, $model) {
-
-                    error_log("Create new user from FB");
 
                     $user = new User();
                     $user->setLogin(self::FB_USER_PREFIX.$user_profile->getId());

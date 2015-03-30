@@ -12,6 +12,7 @@ namespace Framework\Models;
 use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
+use Framework\FileServer\FSFile;
 use Framework\Injector\Injectable;
 use Framework\Services\Config;
 use Framework\Services\DB\DBQuery;
@@ -133,10 +134,10 @@ class TracksModel implements Injectable, SingletonInterface {
         $track->setUploaded(time());
         $track->setColor(0);
         $track->setCopyOf(null);
+        $track->setFileId(FSFile::registerLink($file["tmp_name"]));
 
         $track->save();
 
-        error_log("SRC: " . $file['tmp_name']);
         error_log("DST: " . $track->getOriginalFile());
 
         $parent = (new File($track->getOriginalFile()))->getParent();

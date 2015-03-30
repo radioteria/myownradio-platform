@@ -224,8 +224,12 @@ class MicroORM extends FilterORM implements Injectable {
 
                 } else {
 
-                    if (!isset($this->ORMCache[$config["@table"]][$config["@key"]])
-                        || ($this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] !== $prop->getValue($bean))) {
+                    if (!isset($this->ORMCache[$config["@table"]][$config["@key"]])) {
+                        $this->ORMCache[$config["@table"]][$config["@key"]] = [];
+                    }
+
+                    if (!isset($this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()]) ||
+                        $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] !== $prop->getValue($bean)) {
 
                         $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] = $prop->getValue($bean);
                         $query->set($prop->getName(), $prop->getValue($bean));

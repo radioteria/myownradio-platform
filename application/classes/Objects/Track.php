@@ -18,11 +18,11 @@ use Tools\Folders;
  */
 class Track extends ActiveRecordObject implements ActiveRecord {
 
-    protected $tid, $uid, $filename, $hash, $ext,
+    protected $tid, $file_id, $uid, $filename, $hash, $ext,
         $artist, $title, $album,
         $track_number, $genre, $date, $cue, $buy,
         $duration, $filesize, $color = 0,
-        $uploaded, $copy_of, $used_count = 0,
+        $uploaded, $copy_of = null, $used_count = 0,
         $is_new = 1;
 
     /*
@@ -216,6 +216,20 @@ class Track extends ActiveRecordObject implements ActiveRecord {
      */
     public function getHash() {
         return $this->hash;
+    }
+
+    /**
+     * @param mixed $file_id
+     */
+    public function setFileId($file_id) {
+        $this->file_id = $file_id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFileId() {
+        return $this->file_id;
     }
 
     

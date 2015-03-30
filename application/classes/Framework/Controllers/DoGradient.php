@@ -10,22 +10,24 @@ namespace Framework\Controllers;
 
 
 use Framework\Controller;
+use Framework\FileServer\FileServerFacade;
+use Framework\FileServer\FSFile;
 use Objects\Track;
 
 class DoGradient implements Controller {
     public function doGet() {
 
         header("Content-Type: text/plain");
-        set_time_limit(0);
+        set_time_limit(30);
 
-        $tracks = Track::getListByFilter("LENGTH(hash) < 128");
+        $tracks = Track::getListByFilter("file_id IS NULL");
 
         foreach ($tracks as $track) {
-            echo $track->getFileName()."\n";
-            $hash = hash("sha512", $track->getOriginalFile());
-            $track->setHash($hash);
+            error_log($track->getID());
+            $file_path = $track->getOriginalFile();
+            $file_id = FSFile::registerLink($file_path, $track->getHash());
+            $track->setFileId($file_id);
             $track->save();
-            flush();
         }
 
     }

@@ -11,7 +11,10 @@ namespace Framework\Models;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
+use Framework\FileServer\FileServerFacade;
+use Framework\FileServer\FSFile;
 use Framework\Services\Config;
+use Objects\FileServer\FileServerFile;
 use Objects\Track;
 use Tools\Optional;
 use Tools\Singleton;
@@ -165,6 +168,16 @@ class TrackModel extends Model implements SingletonInterface {
         return $this->object->getOriginalFile();
     }
 
+    public function getFileUrl() {
+        /** @var FileServerFile $file */
+        $file = FileServerFile::getByID($this->object->getFileId())
+            ->getOrElseThrow(new ControllerException(
+                sprintf("Track \"%d\" is not uploaded to any file server", $this->object->getID())
+            ));
+
+        return FileServerFacade::getServerNameById($file->getServerId()).$file->getFileHash();
+    }
+
     /**
      * @param Optional $artist
      * @param Optional $title
@@ -211,6 +224,8 @@ class TrackModel extends Model implements SingletonInterface {
         } else {
             logger("File doest not exists");
         }
+
+        FSFile::deleteLink($this->object->getFileId());
 
         $this->object->delete();
 

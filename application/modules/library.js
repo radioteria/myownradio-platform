@@ -307,9 +307,9 @@
     ]);
 
     lib.controller("UploadController", ["$scope", "$rootScope", "TrackWorks", "StreamWorks",
-        "Response", "$http", "$q", "Popup",
+        "Response", "$http", "$q", "Popup", "$analytics",
 
-        function ($scope, $rootScope, TrackWorks, StreamWorks, Response, $http, $q, Popup) {
+        function ($scope, $rootScope, TrackWorks, StreamWorks, Response, $http, $q, Popup, $analytics) {
 
         $scope.upNext = false;
         $scope.progress = {
@@ -395,6 +395,7 @@
                         $rootScope.account.user.tracks_count += 1;
                     }
                 }
+                $analytics.eventTrack('Upload', { category: 'Actions' });
                 $scope.upload();
             }, function (message) {
                 Popup.message(message);

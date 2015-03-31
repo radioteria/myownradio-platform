@@ -70,9 +70,9 @@
     /*
      Login Controller
      */
-    account.controller("LoginForm", ["$scope", "$rootScope", "User", "$location", "Popup", "Account",
+    account.controller("LoginForm", ["$scope", "$rootScope", "User", "$location", "Popup", "Account", "$analytics",
 
-        function ($scope, $rootScope, User, $location, Popup, Account) {
+        function ($scope, $rootScope, User, $location, Popup, Account, $analytics) {
 
             // Init variables
             $scope.credentials = {login: "", password: "", save: false};
@@ -80,6 +80,8 @@
             $scope.submit = function () {
                 User.login($scope.credentials)
                     .onSuccess(function (data) {
+                        $analytics.eventTrack('Login', { category: 'Actions' });
+
                         Popup.message("Welcome, " + data.name + "!<br>You're successfully logged in!");
                         $scope.status = "";
                         $rootScope.account.init("/profile/");

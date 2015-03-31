@@ -29,7 +29,7 @@ public class FFDecoderBuilder {
                 new String[]{
                         "ffmpeg",
                         "-hide_banner",
-                        "-loglevel", "quiet",
+//                        "-loglevel", "quiet",
                         "-ss", df.format((float) this.offset / 1_000F),
                         "-i", filename,
                         "-i", "ftp://morstorage:3bWdNNa0v@myownradio.biz/jingle.wav",
@@ -44,7 +44,7 @@ public class FFDecoderBuilder {
                 new String[]{
                         "ffmpeg",
                         "-hide_banner",
-                        "-loglevel", "quiet",
+//                        "-loglevel", "quiet",
                         "-ss", df.format((float) this.offset / 1_000F),
                         "-i", filename,
                         "-filter", "afade=t=in:st=0:d=1",

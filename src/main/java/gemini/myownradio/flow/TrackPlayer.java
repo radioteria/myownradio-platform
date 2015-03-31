@@ -50,7 +50,7 @@ public class TrackPlayer implements AbstractPlayer {
 
         logger.println("Initializing process builder...");
         pb = new ProcessBuilder(new FFDecoderBuilder(file, offset, jingled).generate());
-        pb.redirectError(new File("/tmp/decode_" + Thread.currentThread().getName() + ".log"));
+        pb.redirectError(new File("/tmp/decode_" + Thread.currentThread().getName() + "_" + System.currentTimeMillis() +".log"));
 
         synchronized (lock) {
             process = pb.start();

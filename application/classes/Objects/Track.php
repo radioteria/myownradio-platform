@@ -26,7 +26,7 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         $track_number, $genre, $date, $cue, $buy,
         $duration, $filesize, $color = 0,
         $uploaded, $copy_of = null, $used_count = 0,
-        $is_new = 1;
+        $is_new = 1, $can_be_shared;
 
     /*
      * Bean Getters
@@ -245,5 +245,18 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         return FileServerFacade::getServerNameById($file->getServerId()).$file->getFileHash();
     }
 
+    /**
+     * @param mixed $can_be_shared
+     */
+    public function setCanBeShared($can_be_shared) {
+        $this->can_be_shared = $can_be_shared;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function isCanBeShared() {
+        return $this->can_be_shared;
+    }
 
 }

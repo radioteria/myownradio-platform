@@ -83,7 +83,7 @@ class TracksModel implements Injectable, SingletonInterface {
             throw new ControllerException("Unsupported type format: " . $extension);
         }
 
-        if ($skipCopies && $this->getSameTrack($hash)) {
+        if ($skipCopies && $copy = $this->getSameTrack($hash)) {
             throw new ControllerException(sprintf("File <b>%s</b> already is in your library", $file["name"]));
         }
 
@@ -153,14 +153,64 @@ class TracksModel implements Injectable, SingletonInterface {
     }
 
     /**
+     * @param $trackId
+     * @param null|\Tools\Optional $destinationStream
+     * @param bool $upNext
+     * @return mixed
+     * @throws \Framework\Exceptions\ControllerException
+     */
+    public function copy($trackId, Optional $destinationStream = null, $upNext = false) {
+        /** @var Track $trackObject */
+        $trackObject = Track::getByID($trackId)->getOrElseThrow(ControllerException::noTrack($trackId));
+        if (!$trackObject->isCanBeShared()) {
+            throw new ControllerException(sprintf("File \"\" could not be shared due to permission",
+                $trackObject->getFileName()));
+        }
+
+        $currentPlan = $this->user->getCurrentPlan();
+
+        $uploadTimeLeft = $currentPlan->getTimeMax() - $this->user->getTracksDuration() - $trackObject->getDuration();
+
+        if ($trackObject->getDuration() < $currentPlan->getMinTrackLength()) {
+            throw new ControllerException(
+                sprintf("Uploaded file is too short. You can upload only files longer than %d seconds, sorry.",
+                $currentPlan->getMinTrackLength() / 1000)
+            );
+        }
+
+        if ($uploadTimeLeft < $trackObject->getDuration()) {
+            throw new ControllerException("You are exceeded available upload time. Please upgrade your account.");
+        }
+
+        $copy = $trackObject->cloneObject();
+
+        $copy->setUserID($this->user->getID());
+        $copy->setCopyOf($trackObject->getID());
+        $copy->save();
+
+        $this->addToStream($copy, $destinationStream, $upNext);
+
+        error_log(sprintf("User #%d cloned track: %s (upload time left: %d seconds)",
+            $copy->getUserID(), $copy->getFileName(), $uploadTimeLeft / 1000));
+
+        return Playlist::getInstance()->getOneTrack($copy->getID());
+
+    }
+
+    /**
      * @param $hash
      * @return bool
      */
     public function getSameTrack($hash) {
 
-        return (new SelectQuery("r_tracks"))
-            ->where("hash", $hash)->where("uid", $this->user->getID())
-            ->limit(1)->fetchOneRow()->getOrElseNull();
+        /** @var Track $copy */
+        $copy = Track::getByFilter("hash = ? AND uid = ?", [$hash, $this->user->getID()])->getOrElseNull();
+
+        if (is_null($copy)) {
+            return $copy;
+        } else {
+            return Playlist::getInstance()->getOneTrack($copy->getID());
+        }
 
     }
 

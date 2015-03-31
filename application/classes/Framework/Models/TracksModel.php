@@ -83,8 +83,8 @@ class TracksModel implements Injectable, SingletonInterface {
             throw new ControllerException("Unsupported type format: " . $extension);
         }
 
-        if ($skipCopies && $copy = $this->getSameTrack($hash)) {
-            throw new ControllerException(sprintf("File <b>%s</b> already is in your library", $file["name"]));
+        if ($copy = $this->getSameTrack($hash)) {
+            throw new ControllerException(sprintf("File <b>%s</b> already in your library", $file["name"]));
         }
 
         $uploadTimeLeft = $currentPlan->getTimeMax() - $this->user->getTracksDuration() - $duration;
@@ -162,8 +162,17 @@ class TracksModel implements Injectable, SingletonInterface {
     public function copy($trackId, Optional $destinationStream = null, $upNext = false) {
         /** @var Track $trackObject */
         $trackObject = Track::getByID($trackId)->getOrElseThrow(ControllerException::noTrack($trackId));
+
+        if ($trackObject->getUserID() == $this->user->getID()) {
+            throw new ControllerException(sprintf("Track <b>%s</b> is already yours", $trackObject->getFileName()));
+        }
+
+        if ($copy = $this->getSameTrack($trackObject->getHash())) {
+            throw new ControllerException(sprintf("File <b>%s</b> already in your library", $trackObject->getFileName()));
+        }
+
         if (!$trackObject->isCanBeShared()) {
-            throw new ControllerException(sprintf("File \"\" could not be shared due to permission",
+            throw new ControllerException(sprintf("File <b>%s</b> could not be shared due to no permission",
                 $trackObject->getFileName()));
         }
 
@@ -186,6 +195,9 @@ class TracksModel implements Injectable, SingletonInterface {
 
         $copy->setUserID($this->user->getID());
         $copy->setCopyOf($trackObject->getID());
+        $copy->setUsedCount(0);
+        $copy->setUploaded(time());
+        $copy->setColor(0);
         $copy->save();
 
         $this->addToStream($copy, $destinationStream, $upNext);

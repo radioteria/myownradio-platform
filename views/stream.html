@@ -79,7 +79,14 @@
                                 <i ng-hide="player.isPlaying && player.currentID == content.streamData.sid" class="icon-play-arrow"></i>
                             </div>
                             <div ng-if="player.isPlaying && player.currentID == content.streamData.sid">
-                                <div class="key">{{ player.isBuffering ? "Buffering..." : "Now playing" }}</div>
+                                <div class="key">
+                                    {{ player.isBuffering ? "Buffering..." : "Now playing" }}
+                                    <span style="margin-left: 4px" ng-if="account.authorized">
+                                        <span ng-if="player.nowPlaying.can_be_shared && content.streamData.uid !== account.user.uid">
+                                            <i class="hoverable icon-cloud-download" mor-tooltip="Copy this track to my account" ng-click="copyTrack(player.nowPlaying)"></i>
+                                        </span>
+                                    </span>
+                                </div>
 
                                 <div class="value">
                                     <b>{{player.nowPlaying.artist | uppercase}}</b>

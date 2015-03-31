@@ -582,6 +582,17 @@
                     }
                 });
                 return Response(result);
+            },
+            copyTrack: function (track_id, destination_stream, up_next) {
+                return Response($http({
+                    method: "POST",
+                    url: "/api/v2/track/copy",
+                    data: {
+                        track_id: track_id,
+                        stream_id: destination_stream,
+                        up_next: up_next
+                    }
+                }));
             }
         };
     }]);

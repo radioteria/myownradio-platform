@@ -446,6 +446,12 @@
                 TrackAction.removeTracksFromStream($scope.content.streamData, [track]);
             };
 
+            $scope.copyTrack = function ($track) {
+                TrackAction.copyTrackToSelf($track, function () {
+
+                });
+            };
+
             $scope.$watch("scheduleTracks", function (data) {
                 if (data !== null && $scope.content.streamData !== null) {
                     $scope.content.streamData.listeners_count = data.listeners_count;

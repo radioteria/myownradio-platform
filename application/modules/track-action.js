@@ -83,6 +83,16 @@ angular.module("Dialogs", [])
                     }, function (message) {
                         Popup.message(message);
                     });
+                },
+                copyTrackToSelf: function ($track, successCallback) {
+                    TrackWorks.copyTrack($track.tid).onSuccess(function () {
+                        Popup.message("Track <b>" + htmlEscape($track.filename) + "</b> successfully added to your library");
+                        if (typeof successCallback == "function") {
+                            successCallback.call();
+                        }
+                    }, function (message) {
+                        Popup.message(message);
+                    });
                 }
             };
         }

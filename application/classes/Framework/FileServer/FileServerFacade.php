@@ -29,7 +29,7 @@ class FileServerFacade {
     function __construct($fs_id) {
         $this->fs_object = FileServer::getByID($fs_id)
             ->getOrElseThrow(new ServerNotRegisteredException(
-                sprintf("File server with id=%d is not registered!", $fs_id)
+                sprintf("File server with id %d is not registered", $fs_id)
             ));
         $this->fs_id = $fs_id;
     }

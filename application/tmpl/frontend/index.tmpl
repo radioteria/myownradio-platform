@@ -147,6 +147,11 @@
                 <div class="cell social-buttons">
                     <share ng-model="player.currentStream"></share>
                     <bookmark ng-model="player.currentStream"></bookmark>
+                    <span ng-if="account.authorized && content.streamData.uid !== account.user.uid">
+                        <span ng-if="player.nowPlaying.can_be_shared">
+                            <i class="icon-cloud-download" mor-tooltip="Copy this track to my account" ng-click="copyTrack(player.nowPlaying)"></i>
+                        </span>
+                    </span>
                 </div>
                 <div class="cell track-title">
                 <span ng-if="player.nowPlaying">

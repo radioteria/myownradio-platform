@@ -1,7 +1,15 @@
 <div class="uploader">
     <h1>UPLOAD AUDIO FILES</h1>
-
     <div ng-if="!progress.status">
+        <div class="info-block">
+            Before upload make sure that your audio file(s):
+            <ul class="enumerate">
+                <li>Has not violate any copyright laws.</li>
+                <li>Has not exceed <b>250 MB</b>.</li>
+                <li>Is in one of this formats: <b>mp3</b>, <b>flac</b>, <b>ogg</b>, <b>m4a</b>, <b>ape</b>, <b>aac</b>.</li>
+                <li>Is not shorter than <b>30 seconds</b> and not longer than <b>240 minutes</b>.</li>
+            </ul>
+        </div>
         <div class="controls">
             <div class="upload-frame" ng-click="browse()"
                  mor-tooltip="Click here to select audio files from your computer">

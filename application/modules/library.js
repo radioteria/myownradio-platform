@@ -2,6 +2,12 @@
 
     var lib = angular.module("Library", ["Site"]);
 
+    lib.run(["$rootScope", "TrackAction", function ($scope, TrackAction) {
+        $scope.copyTrack = function ($track) {
+            TrackAction.copyTrackToSelf($track);
+        };
+    }]);
+
     lib.controller("StreamLibraryController", ["$scope", "$rootScope", "TrackWorks", "StreamWorks",
         "Streams", "$routeParams", "AudioInfoEditor", "TrackAction", "Popup", "TrackPreviewService",
         "ngDialog", "$location", "TracksScopeActions",

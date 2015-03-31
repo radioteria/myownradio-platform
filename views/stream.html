@@ -73,7 +73,7 @@
                     </span>
                     </div>
                     <div class="now-playing-frame" ng-if="content.streamData">
-                        <div class="player" ng-if="content.streamData.status != 0">
+                        <div class="player" ng-if="(content.streamData.status != 0) && (content.streamData.access != 'PRIVATE' || content.streamData.uid == account.user.uid)">
                             <div mor-tooltip="Play / Stop" class="toggle" ng-click="toggle()">
                                 <i ng-show="player.isPlaying && player.currentID == content.streamData.sid" class="icon-stop"></i>
                                 <i ng-hide="player.isPlaying && player.currentID == content.streamData.sid" class="icon-play-arrow"></i>
@@ -92,13 +92,13 @@
                                     <b>{{player.nowPlaying.artist | uppercase}}</b>
                                     <span ng-if="player.nowPlaying.artist"> - </span>
                                     <span>{{player.nowPlaying.title | uppercase}}</span>
-                                    <a target="_blank" style="padding-left: 8px" ng-if="player.nowPlaying.buy" href="{{ player.nowPlaying.buy }}"
+                                    <a target="_blank" style="padding-left: 8px" ng-if="player.nowPlaying.buy" ng-href="{{ player.nowPlaying.buy }}"
                                        mor-tooltop="Buy this track"><i class="icon-shopping-cart"></i></a>
                                 </div>
                             </div>
                         </div>
-                        <div class="player" ng-if="content.streamData.status == 0">
-                            This stream isn't running.
+                        <div class="player" ng-if="(content.streamData.status == 0) || (content.streamData.access == 'PRIVATE' && content.streamData.uid != account.user.uid)">
+                            Sorry, but this channel is down or you have no access to listen it.
                         </div>
                     </div>
                 </div>
@@ -142,7 +142,7 @@
                 <div class="info">{{content.streamData.info}}</div>
             </div>
             <div class="similar-streams-wrapper" ng-if="content.similarStreams.length > 0">
-                <div class="title">SIMILAR STREAMS</div>
+                <div class="title">SIMILAR CHANNELS</div>
                 <ul class="similar-streams">
                     <li ng-repeat="stream in content.similarStreams">
                         <div class="cover">

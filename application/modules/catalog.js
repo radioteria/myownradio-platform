@@ -447,9 +447,7 @@
             };
 
             $scope.copyTrack = function ($track) {
-                TrackAction.copyTrackToSelf($track, function () {
-
-                });
+                TrackAction.copyTrackToSelf($track);
             };
 
             $scope.$watch("scheduleTracks", function (data) {

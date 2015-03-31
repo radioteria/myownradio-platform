@@ -8,44 +8,47 @@
     <table class="editor">
         <tr>
             <td>Title:</td>
-            <td><input type="checkbox" ng-model="metadata.saveTitle"></td>
-            <td><input ng-disabled="!metadata.saveTitle" type="text" ng-model="metadata.title"/></td>
+            <td><input type="checkbox" ng-model="metadata.save_title"></td>
+            <td><input ng-disabled="!metadata.save_title" type="text" ng-model="metadata.title"/></td>
         </tr>
         <tr>
             <td>Artist:</td>
-            <td><input type="checkbox" ng-model="metadata.saveArtist"></td>
-            <td><input ng-disabled="!metadata.saveArtist" type="text" ng-model="metadata.artist"/></td>
+            <td><input type="checkbox" ng-model="metadata.save_artist"></td>
+            <td><input ng-disabled="!metadata.save_artist" type="text" ng-model="metadata.artist"/></td>
         </tr>
         <tr>
             <td>Album:</td>
-            <td><input type="checkbox" ng-model="metadata.saveAlbum"></td>
-            <td><input ng-disabled="!metadata.saveAlbum" type="text" ng-model="metadata.album"/></td>
+            <td><input type="checkbox" ng-model="metadata.save_album"></td>
+            <td><input ng-disabled="!metadata.save_album" type="text" ng-model="metadata.album"/></td>
         </tr>
         <tr>
             <td>Track Number:</td>
-            <td><input type="checkbox" ng-model="metadata.saveTrackNumber"></td>
-            <td><input ng-disabled="!metadata.saveTrackNumber" type="text" ng-model="metadata.trackNumber"/></td>
+            <td><input type="checkbox" ng-model="metadata.save_track_number"></td>
+            <td><input ng-disabled="!metadata.save_track_number" type="text" ng-model="metadata.track_number"/></td>
         </tr>
         <tr>
             <td>Genre:</td>
-            <td><input type="checkbox" ng-model="metadata.saveGenre"></td>
-            <td><input ng-disabled="!metadata.saveGenre" type="text" mor-suggest="lib.genres" ng-model="metadata.genre"/></td>
+            <td><input type="checkbox" ng-model="metadata.save_genre"></td>
+            <td><input ng-disabled="!metadata.save_genre" type="text" mor-suggest="lib.genres" ng-model="metadata.genre"/></td>
         </tr>
         <tr>
             <td>Date:</td>
-            <td><input type="checkbox" ng-model="metadata.saveDate"></td>
-            <td><input ng-disabled="!metadata.saveDate" type="text" ng-model="metadata.date"/></td>
+            <td><input type="checkbox" ng-model="metadata.save_date"></td>
+            <td><input ng-disabled="!metadata.save_date" type="text" ng-model="metadata.date"/></td>
         </tr>
         <tr>
             <td>Buy link:</td>
-            <td><input type="checkbox" ng-model="metadata.saveBuy"></td>
-            <td><input ng-disabled="!metadata.saveBuy" type="text" ng-model="metadata.buy"/></td>
+            <td><input type="checkbox" ng-model="metadata.save_buy"></td>
+            <td><input ng-disabled="!metadata.save_buy" type="text" ng-model="metadata.buy"/></td>
         </tr>
-        <tr ng-if="account.user.uid === 1">
-            <td>Cue data:</td>
-            <td><input type="checkbox" ng-model="metadata.saveCue"></td>
+        <tr>
+            <td>Access:</td>
+            <td><input type="checkbox" ng-model="metadata.save_can_be_shared"></td>
             <td>
-                <textarea ng-disabled="!metadata.saveCue" ng-model="metadata.cue"></textarea>
+                <select ng-disabled="!metadata.save_can_be_shared" ng-model="metadata.can_be_shared">
+                    <option value="0">Private - people can't copy this track to their library</option>
+                    <option value="1">Public - people can copy this track(s) to their library</option>
+                </select>
             </td>
         </tr>
     </table>

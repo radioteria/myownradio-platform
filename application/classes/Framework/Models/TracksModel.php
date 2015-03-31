@@ -16,9 +16,11 @@ use Framework\FileServer\Exceptions\NoSpaceForUploadException;
 use Framework\FileServer\FSFile;
 use Framework\Injector\Injectable;
 use Framework\Services\Config;
+use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\HttpRequest;
+use Objects\FileServer\FileServerFile;
 use Objects\Track;
 use REST\Playlist;
 use Tools\Common;
@@ -199,6 +201,15 @@ class TracksModel implements Injectable, SingletonInterface {
         $copy->setUploaded(time());
         $copy->setColor(0);
         $copy->save();
+
+        $db = Database::getInstance();
+        $db->connect()->beginTransaction();
+        FileServerFile::getByID($copy->getFileId())->then(function (FileServerFile $file) use ($db) {
+            $file->setUseCount($file->getUseCount() + 1);
+            $file->save();
+            $db->commit();
+        });
+        Database::killInstance();
 
         $this->addToStream($copy, $destinationStream, $upNext);
 

@@ -38,6 +38,10 @@ class DoGetPreviewAudio implements Controller {
                 $track->save();
             }
 
+            if ($track->getFileId() === null) {
+                throw new View404Exception();
+            }
+
             header("Content-Type: audio/mp3");
             set_time_limit(0);
 

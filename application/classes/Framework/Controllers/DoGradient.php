@@ -10,10 +10,7 @@ namespace Framework\Controllers;
 
 
 use Framework\Controller;
-use Framework\FileServer\FileServerFacade;
 use Framework\FileServer\FSFile;
-use Framework\Models\TrackModel;
-use Objects\StreamTrack;
 use Objects\Track;
 
 class DoGradient implements Controller {
@@ -22,9 +19,14 @@ class DoGradient implements Controller {
         header("Content-Type: text/plain");
         set_time_limit(30);
 
-        $track = TrackModel::getInstance(927);
+        $tracks = Track::getListByFilter("file_id IS NULL");
 
-        echo $track->getFileUrl();
+        foreach ($tracks as $track) {
+            $filename = $track->getOriginalFile();
+            $file_id = FSFile::registerLink($filename, $track->getHash());
+            $track->setFileId($file_id);
+            $track->save();
+        }
 
     }
 } 

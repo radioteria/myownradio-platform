@@ -1,0 +1,25 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <div class="page-sub-title">
+            Filter radio stations based on category
+        </div>
+        <ul class="categories_container">
+            <li ng-repeat="category in lib.categories" ng-if="category.streams_count > 0">
+                <a href="/streams/?category={{ category.category_id }}">
+                    <img fadein ng-src="/images/categories/{{ category.category_id + 1 }}.png" />
+                    <div class="fixed">
+                        <div class="name">
+                            <span ng-bind="category.category_name"></span>
+                        </div>
+                    </div>
+                    <div class="streams">
+                        <span>
+                            <span class="bigger" ng-bind="category.streams_count"></span><br>
+                            stream<span ng-if="category.streams_count > 1">s</span>
+                        </span>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,32 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <nav class="main" main-navigation=""></nav>
+        <div class="form-wrap full-width" ng-controller="ProfileController">
+            <h1><i class="icon-account-child"></i>PROFILE OVERVIEW</h1>
+            <div class="profile-info">
+                <h2>USER INFORMATION</h2>
+                <table class="basic-info">
+                    <tr><td>Name</td><td>{{account.user.name}}</td></tr>
+                    <tr><td>Login</td><td>{{account.user.login}}</td></tr>
+                    <tr><td>Country</td><td>{{ account.user.country_id !== null ? lib.countries[account.user.country_id - 1].country_name : "Unspecified" }}</td></tr>
+                    <tr><td>Information</td><td>{{account.user.info}}</td></tr>
+                </table>
+                <h2>MEDIA INFORMATION</h2>
+                <table class="basic-info">
+                    <tr><td>Total tracks</td><td>{{ account.user.tracks_count }}</td></tr>
+                    <tr><td>Total channels</td><td>{{ account.user.streams_count }}<span ng-if="account.user.plan_data.streams_max"> of {{ account.user.plan_data.streams_max }}</span></td></tr>
+                    <tr><td>Tracks duration in library</td><td>{{ account.user.tracks_duration | humanTime }}</td></tr>
+                </table>
+                <h2>ACCOUNT INFORMATION</h2>
+                <table class="basic-info">
+                    <tr><td>Current plan</td><td>{{ account.user.plan_data.plan_name }} <small style="padding-left: 4px"><a href="/profile/plan">Change</a></small></td></tr>
+                    <tr><td>Expires</td><td>
+                        <span ng-if="account.user.plan_expires">{{ account.user.plan_expires * 1000 | date : 'mediumDate' }}</span>
+                        <span ng-if="!account.user.plan_expires">Never</span>
+                    </td></tr>
+                    <tr><td>Time left</td><td>{{ (account.user.plan_data.time_max - account.user.tracks_duration) | humanTime }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

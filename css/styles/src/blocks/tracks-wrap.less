@@ -1,0 +1,168 @@
+/* Tracks Library */
+
+.link {
+  margin-bottom: 14px;
+  .small {
+    font-weight: 400;
+  }
+}
+
+.tracks-wrap {
+  .dws-wrap {
+    margin-bottom: 8px;
+    overflow: visible;
+    background-color: #f2f2f2;
+    border-radius: 4px;
+    box-sizing: border-box;
+    padding: 4px;
+    position: relative;
+    .filter {
+      float: left;
+      width: 250px;
+    }
+    .clear {
+      float: left;
+      .button {
+        margin-top: 2px;
+        margin-left: 2px;
+      }
+    }
+    .controls {
+      float:right;
+      .button {
+        margin-top: 2px;
+        margin-right: 2px;
+      }
+    }
+  }
+  .upload-button {
+    display: block;
+    text-align: center;
+    padding: 2px 4px;
+    border: 1px dashed #f2f2f2;
+    margin-bottom: 4px;
+    cursor: pointer;
+    &:hover {
+      color: #0382d9;
+    }
+  }
+  .empty-playlist {
+    padding: 32px 0;
+    .inner {
+      margin: 0 32px;
+      text-align: center;
+      line-height: 2.0em;
+    }
+  }
+  table.tracks {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    tr {
+      cursor: default;
+
+      &:nth-child(odd) {
+        background-color: #f2f2f2;
+      }
+      &:nth-child(even) {
+        background-color: #ffffff;
+      }
+      &.selected {
+        color: #eeeeee;
+        &:nth-child(odd) {
+          background-color: #273352;
+        }
+        &:nth-child(even) {
+          background-color: #283858;
+        }
+      }
+      &.now {
+        background: #4b545f;
+        background: linear-gradient(top, #4f5964 0%, #5f6975 40%);
+        background: -moz-linear-gradient(top, #4f5964 0%, #5f6975 40%);
+        background: -webkit-linear-gradient(top, #4f5964 0%,#5f6975 40%);
+        color: #ffffff;
+      }
+      td {
+        position: relative;
+        padding: 2px 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        &:first-child {
+          width: 36px;
+          text-align: right;
+          &:after {
+            left: 0;
+            top: 0;
+            width: 8px;
+            position: absolute;
+            height: 100%;
+            content: '';
+            background-color: transparent;
+            opacity: 0.5;
+          }
+          &.col1:after {
+            background-color: #008800;
+          }
+          &.col2:after {
+            background-color: #d9d900;
+          }
+          &.col3:after {
+            background-color: #d97200;
+          }
+          &.col4:after {
+            background-color: #d90000;
+          }
+          &.col5:after {
+            background-color: #d953ab;
+          }
+          &.col6:after {
+            background-color: #6855d9;
+          }
+          &.col7:after {
+            background-color: #0001d9;
+          }
+          &.col8:after {
+            background-color: #0382d9;
+          }
+          &.col9:after {
+            background-color: #00ced9;
+          }
+          &.col10:after {
+            background-color: #36d979;
+          }
+          &.col11:after {
+            background-color: #8dd987;
+          }
+          &.col12:after {
+            background-color: #b9968f;
+          }
+        }
+        &:nth-child(2) {
+          width: 16px;
+          text-align: center;
+        }
+        &:nth-last-child(2) {
+          width: 100px;
+        }
+        &:last-child {
+          width: 54px;
+          text-align: right;
+        }
+      }
+    }
+  }
+}
+
+preview {
+  opacity: 0.7;
+  cursor: pointer;
+  &:hover {
+    opacity: 1;
+  }
+  .icon-pause-circle-fill {
+    color: #000000;
+  }
+}
+

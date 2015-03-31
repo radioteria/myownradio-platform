@@ -1,0 +1,51 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <ul class="sections">
+            <li active-tab="^\/streams\/">
+                <a href="/streams/">ALL STREAMS</a>
+            </li>
+            <li active-tab="^\/bookmarks\/" ng-if="account.authorized">
+                <a href="/bookmarks/">MY BOOKMARKS</a>
+            </li>
+            <li active-tab="^\/user\/{{ account.user.key | regExpEscape }}$" ng-if="account.authorized">
+                <a href="/user/{{ account.user.key }}">MY STREAMS</a>
+            </li>
+            <li active-tab="^\/user\/.+$" ng-if="content.owner && account.user.uid !== content.owner.uid">
+                <a href="/user/{{ content.owner.key }}">BY {{ content.owner | userDisplayName | uppercase }}</a>
+            </li>
+        </ul>
+        <div class="page-sub-title">
+            Browse radio stations which are up and streaming on MyOwnRadio
+        </div>
+        <div class="new-stream-catalog-badge">
+            <div class="no-streams" ng-if="content.empty">
+                No streams found here. May be you want to <a href="/profile/new-stream">create</a> your own?
+            </div>
+            <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy"
+                infinite-scroll-distance="1">
+                <li ng-repeat="stream in content.streams">
+                    <div class="cover-section">
+                        <div class="cover">
+                            <img fadein ng-if="stream.cover_url" ng-src="{{stream.cover_url}}?size=200">
+                            <play obj="stream" ng-if="stream.status != 0"></play>
+                        </div>
+                    </div>
+                    <div class="info-section">
+                        <div class="stream-name">
+                            <a ng-href="{{ stream.key | streamsCatalog }}" ng-bind="stream.name"></a>
+                        </div>
+                        <div class="stats">
+                                <span mor-tooltip="Active listeners count is {{ stream.listeners_count | number }}">
+                                    <i class="icon-hearing"></i><span>{{ stream.listeners_count | number }}</span>
+                                </span>
+                                <span mor-tooltip="Stream favorited {{ stream.bookmarks_count | number }} time(s)">
+                                    <i class="icon-heart"></i> <span>{{ stream.bookmarks_count | number }}</span>
+                                </span>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</div>

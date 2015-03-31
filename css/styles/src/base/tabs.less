@@ -1,0 +1,38 @@
+.mor-tabs {
+  display: block;
+  overflow: hidden;
+  z-index: 1;
+  position: relative;
+  margin-top: 8px;
+  .tab {
+    float: left;
+    padding: 6px 14px;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+    &:hover, &.active {
+      border-top: 1px solid #d1d1cf;
+      border-left: 1px solid #d1d1cf;
+      border-right: 1px solid #d1d1cf;
+      border-bottom: 1px solid #ffffff;
+    }
+    &:hover:not(.active) {
+      border-bottom: 1px solid #d1d1cf;
+    }
+  }
+}
+
+.mor-tabs-contents {
+  margin-top: -1px;
+  display: block;
+  border: 1px solid #d1d1cf;
+  border-radius: 0 4px 4px 4px;
+  z-index: 0;
+  position: relative;
+  margin-bottom: 8px;
+  .tab-content {
+    display: block;
+    padding: 14px;
+  }
+}

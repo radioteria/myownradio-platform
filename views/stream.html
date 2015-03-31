@@ -1,0 +1,158 @@
+<div ng-init="scheduleShown=false;scheduleTracks=null;scheduleSync=null">
+
+    <schedule ng-model="content.streamData" on-interval="scheduleTracks"></schedule>
+    <sync source="scheduleTracks" destination="scheduleSync"></sync>
+
+    <div class="stream-info" mor-background-color="content.streamData.cover_background">
+        <div class="bg-gradient" ng-if="content.streamData.cover_url">
+            <div class="bg-image" d-background-image="{{ content.streamData.cover_url }}"></div>
+        </div>
+        <div class="fixed-width">
+            <div id="controls">
+                <div class="cover dark">
+                    <img fadein="" ng-if="content.streamData.cover_url" ng-src="{{content.streamData.cover_url}}?size=192">
+                </div>
+                <div class="about">
+                    <div class="tools">
+                        <ul class="icons">
+                            <li ng-if="content.streamData.uid === account.user.uid">
+                                <a href="/profile/edit-stream/{{content.streamData.sid}}">
+                                    <i class="icon-mode-edit" mor-tooltip="Edit channel information"></i>
+                                </a>
+                            </li>
+                            <li ng-if="content.streamData.uid === account.user.uid">
+                                <a href="/profile/streams/{{content.streamData.sid}}">
+                                    <i class="icon-toc" mor-tooltip="Edit channel tracklist"></i>
+                                </a>
+                            </li>
+                            <li ng-if="content.streamData.uid === account.user.uid" class="vertical-separator"></li>
+                            <li>
+                                <share ng-model="content.streamData"></share>
+                            </li>
+                            <li ng-init="badgeShown=false" ng-click-outside="badgeShown=false">
+                                <i class="icon-settings" ng-class="{shown: badgeShown}" ng-click="badgeShown=!badgeShown" mor-tooltip="Settings"></i>
+                                <div ng-show="badgeShown" class="settings-badge">
+                                    <h3>Audio Format</h3>
+                                    <h4 class="format">AAC+</h4>
+                                    <ul class="formats">
+                                        <li ng-repeat="f in defaults.formats.aac"
+                                            ng-class="{current: defaults.format == f.key}"
+                                            ng-click="setDefaultFormat(f.key)"
+                                            ng-bind="f.bitrate"></li>
+                                    </ul>
+                                    <div style="height: 4px"></div>
+                                    <h4 class="format">MP3</h4>
+                                    <ul class="formats">
+                                        <li ng-repeat="f in defaults.formats.mp3"
+                                            ng-class="{current: defaults.format == f.key}"
+                                            ng-click="setDefaultFormat(f.key)"
+                                            ng-bind="f.bitrate"></li>
+                                    </ul>
+                                    <div style="height: 4px"></div>
+                                    <h4 class="format">M3U</h4>
+                                    <ul class="formats">
+                                        <li><a target="_self" href="/content/m3u/{{ content.streamData.key }}.m3u">Open in external player</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="name">{{content.streamData.name | uppercase}}</div>
+                    <div class="owner">
+                        By <a href="{{content.streamData.owner.key | usersCatalog}}">{{ content.streamData.owner | userDisplayName }}</a>
+                    </div>
+                    <div class="stats">
+                    <span mor-tooltip="Active listeners count is {{ content.streamData.listeners_count | number }}">
+                        <i class="icon-hearing"></i><span>{{ content.streamData.listeners_count | number }}</span>
+                    </span>
+                    <span mor-tooltip="Stream favorited {{ content.streamData.bookmarks_count | number }} time(s)">
+                        <i class="icon-heart"></i> <span>{{ content.streamData.bookmarks_count | number }}</span>
+                    </span>
+                    <span mor-tooltip="Stream created at {{ content.streamData.created * 1000 | date : 'mediumDate' }}">
+                        <i class="icon-wifi-tethering"></i><span>{{ content.streamData.created * 1000 | date : 'mediumDate' }}</span>
+                    </span>
+                    </div>
+                    <div class="now-playing-frame" ng-if="content.streamData">
+                        <div class="player" ng-if="(content.streamData.status != 0) && (content.streamData.access != 'PRIVATE' || content.streamData.uid == account.user.uid)">
+                            <div mor-tooltip="Play / Stop" class="toggle" ng-click="toggle()">
+                                <i ng-show="player.isPlaying && player.currentID == content.streamData.sid" class="icon-stop"></i>
+                                <i ng-hide="player.isPlaying && player.currentID == content.streamData.sid" class="icon-play-arrow"></i>
+                            </div>
+                            <div ng-if="player.isPlaying && player.currentID == content.streamData.sid">
+                                <div class="key">
+                                    {{ player.isBuffering ? "Buffering..." : "Now playing" }}
+                                </div>
+
+                                <div class="value">
+                                    <b>{{player.nowPlaying.artist | uppercase}}</b>
+                                    <span ng-if="player.nowPlaying.artist"> - </span>
+                                    <span>{{player.nowPlaying.title | uppercase}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="player" ng-if="(content.streamData.status == 0) || (content.streamData.access == 'PRIVATE' && content.streamData.uid != account.user.uid)">
+                            Sorry, but this channel is down or you have no access to listen it.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="schedule-container">
+            <div class="tracks-toggle" ng-click="scheduleShown = !scheduleShown">
+                    <span ng-show="!scheduleShown" class="tracks-toggle-text-content"><i class="icon-chevron-down"></i> Show</span>
+                    <span ng-show="scheduleShown" class="tracks-toggle-text-content"><i class="icon-chevron-up"></i> Hide</span>
+                <span class="tracks-toggle-text-content">Recent and Upcoming</span>
+            </div>
+            <div ng-class="{open: scheduleShown}" class="tracks-list" ng-model="scheduleTracks.tracks">
+                <div class="track-row" ng-class="{current: $index == scheduleTracks.current}" ng-repeat="track in scheduleSync.tracks">
+                    <div class="fixed-width">
+                        <div class="track-duration" ng-bind="track.duration | msToTime"></div>
+                        <div class="track-artist" ng-show="track.artist.length" ng-bind="track.artist"></div>
+                        <div class="track-offset"
+                             ng-bind="($index == scheduleTracks.current) ? 'now' : ((track.time_offset - scheduleTracks.position) | msToSmallTime)"></div>
+                        <div class="track-now">
+                            <i class="icon-volume-up"></i>
+                        </div>
+                        <div class="track-title">
+                            <span ng-bind="track.title"></span>
+                            <span class="track-edit-tools" ng-if="content.streamData.uid == account.user.uid">
+                                <i class="icon-mode-edit" mor-tooltip="Edit track information" ng-click="editTrack(track)"></i>
+                                <i class="icon-trash" mor-tooltip="Remove track from stream" ng-click="removeTrack(track)"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed-width">
+        <div class="container-padding">
+            <div ng-if="!scheduleShown" class="timeline" time-line="scheduleTracks"></div>
+            <div class="stream-stats-wrapper">
+                <div ng-if="content.streamData.hashtags_array" class="taglist-wrapper"
+                     tags-list="content.streamData.hashtags_array"></div>
+                <div class="info">{{content.streamData.info}}</div>
+            </div>
+            <div class="similar-streams-wrapper" ng-if="content.similarStreams.length > 0">
+                <div class="title">SIMILAR CHANNELS</div>
+                <ul class="similar-streams">
+                    <li ng-repeat="stream in content.similarStreams">
+                        <div class="cover">
+                            <img fadein ng-if="stream.cover_url" ng-src="{{stream.cover_url}}?size=64">
+                            <play obj="stream" ng-if="stream.status != 0"></play>
+                        </div>
+
+                        <div class="info">
+                            <div class="title"><a href="{{stream.key | streamsCatalog}}">{{stream.name | uppercase}}</a>
+                            </div>
+                            <div ng-if="stream.hashtags_array" class="taglist-wrapper"
+                                 tags-list="stream.hashtags_array"></div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+

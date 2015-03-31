@@ -1,0 +1,49 @@
+<div class="uploader">
+    <h1>UPLOAD AUDIO FILES</h1>
+    <div ng-if="!progress.status">
+        <div class="info-block">
+            Before upload make sure that your audio file(s):
+            <ul class="enumerate">
+                <li>Has not violate any copyright laws.</li>
+                <li>Has not exceed <b>250 MB</b>.</li>
+                <li>Is in one of this formats: <b>mp3</b>, <b>flac</b>, <b>ogg</b>, <b>m4a</b>, <b>ape</b>, <b>aac</b>.</li>
+                <li>Is not shorter than <b>30 seconds</b> and not longer than <b>240 minutes</b>.</li>
+            </ul>
+        </div>
+        <div class="controls">
+            <div class="upload-frame" ng-click="browse()"
+                 mor-tooltip="Click here to select audio files from your computer">
+                <i class="icon-cloud-upload"></i> Select files from PC...
+            </div>
+            <div class="selected-files" ng-if="uploadQueue.length">
+                <h2>Selected {{uploadQueue.length}} files:</h2>
+                <div class="scroll-y">
+                    <ul class="list table">
+                        <li class="row" ng-repeat="file in uploadQueue">
+                            <div class="cell">{{file.name}}</div>
+                            <div class="cell">{{file.size | bytes}}</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="stream-selector">
+            Automatically add uploaded tracks to this stream:
+            <div class="padding"></div>
+            <select name="stream_id" ng-model="options.target" ng-options="stream.sid as stream.name for stream in account.streams">
+                <option value="" selected>None</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="progress" ng-if="progress.status">
+        Uploading <b>{{ progress.file }}</b>... <span ng-if="uploadQueue.length">(left: {{ uploadQueue.length }})</span>
+    </div>
+
+    <div class="buttons">
+        <span class="button" ng-click="cancel()" mor-tooltip="Cancel upload">Cancel</span>
+        <span ng-if="uploadQueue.length && !progress.status" class="button" ng-click="upload()"
+              mor-tooltip="Begin upload">Upload</span>
+    </div>
+
+</div>

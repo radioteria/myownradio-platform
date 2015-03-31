@@ -1,0 +1,56 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <div class="form-wrap">
+            <form name="signup_form" ng-submit="submit()" novalidate="novalidate">
+                <h1><i class="icon-https"></i>SIGN UP</h1>
+
+                <div class="hint top">
+                    To begin registration on <b>myownradio.biz</b> please enter your email in to the
+                    field below:
+                </div>
+                <div class="status">{{ status }}</div>
+                <table class="form-table">
+                    <tr>
+                        <td>
+                            <label for="email">Email:</label>
+                        </td>
+                        <td>
+                            <input type="email"
+                                   name="email"
+                                   id="email"
+                                   ng-model="signup.email"
+                                   ng-required="true"
+                                   pattern="^[\w\S]+@[\w\S]+\.[\w]{2,4}$"
+                                   ensure-unique="email"
+                                   autocomplete="off"
+                                   autofocus="true"
+                                   ng-focus="true"
+                                    />
+
+                            <div class="validation" ng-show="signup_form.email.$focused && !signup_form.email.$pristine">
+                                <div ng-if="signup_form.email.$error.required">
+                                    Email must be filled
+                                </div>
+                                <div ng-if="signup_form.email.$error.pattern">
+                                    Incorrect email format
+                                </div>
+                                <div ng-if="signup_form.email.$error.unique">
+                                    This email address is unavailable
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <div class="social-login">
+                    <span class="button fl_r" ng-click="signUpFacebook()"><i class="icon-facebook2"></i> Facebook</span>
+                    <span style="padding-right: 4px">or use social network to sign up:</span>
+                </div>
+
+                <div class="hint bottom">
+                    Already registered? <a href="/login/">Login</a>
+                </div>
+                <input ng-disabled="signup_form.$invalid" type="submit" value="Send letter" style="float:right">
+            </form>
+        </div>
+    </div>
+</div>

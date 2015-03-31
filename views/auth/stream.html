@@ -1,0 +1,91 @@
+<div class="fixed-width">
+    <div id="page-contents" ng-init="now={}">
+        <nav class="main" main-navigation=""></nav>
+        <div class="form-wrap full-width" ng-controller="StreamLibraryController">
+            <div class="stats">
+                <a class="button" href="/profile/edit-stream/{{ stream.sid }}" mor-tooltip="Edit channel information"><i class="icon-mode-edit"></i> Edit</a>
+                <a class="button red" mor-tooltip="Delete radio channel" ng-click="remove()"><i class="icon-delete"></i> Delete</a>
+            </div>
+            <h1>
+                <i class="icon-music"></i> {{ stream.name | uppercase}}
+            </h1>
+            <div class="link" ng-visible="stream.url">
+                <span>Your channel link is <b><a class="small" href="{{stream.url}}">http:{{stream.url}}</a></b></span>
+            </div>
+
+            <now ng-model="stream" on-track-change="now"></now>
+
+            <div class="tracks-wrap">
+                <div class="dws-wrap">
+                    <div class="filter">
+                        <input type="text"
+                               cleanable="cleanable"
+                               id="filter"
+                               name="filter"
+                               ng-model="filter"
+                               autocomplete="off"
+                               placeholder="Type artist or title"
+                               ng-change-action="load(true)"
+                               ng-change-delay="350"
+                                />
+                    </div>
+                    <div class="controls select-persistent">
+                        <div ng-if="stream.status" class="button" ng-click="player.controls.playSwitchStream(stream)" mor-tooltip="Listen to this stream"><i class="icon-play-arrow"></i> Listen</div>
+                        <div class="button" ng-click="shuffle()" mor-tooltip="Shuffle tracks">
+                            <i class="icon-shuffle"></i> Shuffle playlist
+                        </div>
+                        <div class="button" ng-click="upload()" mor-tooltip="Click here to open uploader window">
+                            <i class="icon-cloud-upload"></i> Upload
+                        </div>
+                    </div>
+                    <div class="spacer"></div>
+                </div>
+                <table class="tracks">
+                    <tbody>
+                        <tr style="background-color: #ffffff">
+                            <td>#</td>
+                            <td></td>
+                            <td>Title</td>
+                            <td>Artist</td>
+                            <td>Genre</td>
+                            <td>Time</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="height: 4px;"></div>
+                <div class="loading-placeholder" ng-if="tracksPending">Loading...</div>
+                <div ng-include="'/views/blocks/streams-track-menu.html'"></div>
+                <div ng-if="empty && !tracksPending" class="empty-playlist">
+                    <div class="inner">
+                        <h1>EMPTY</h1>
+                        Add some tracks from your profile or <a ng-click="upload()">upload</a> more.
+                    </div>
+                </div>
+                <table class="tracks" context-menu="" data-target="track-menu" onselectstart='return false;' unselectable='on'>
+                    <tbody infinite-scroll="load(false)"
+                           infinite-scroll-disabled="busy"
+                           infinite-scroll-distance="1"
+                           multiple-select=""
+                           ms-tick="test()"
+                           ms-source="tracks"
+                           ms-destination="target"
+                           ui-sortable="sortableOptions"
+                           ng-model="tracks">
+                    <tr class="item" ng-repeat="track in tracks" ng-class="{now: track.unique_id === now.unique_id, new: track.is_new}">
+                        <td ng-class="'col' + track.color" ng-switch on="track.unique_id == now.unique_id"
+                            class="only-first-element">
+                            <i ng-switch-when="true" class="icon-volume-up blink-opacity" mor-tooltip="Now on air"></i>
+                            <span ng-switch-default="">{{ $index + 1 }}</span>
+                        </td>
+                        <td><preview ng-model="track"></preview></td>
+                        <td mor-tooltip-url="/content/trackinfo/{{track.tid}}">{{track.title}}</td>
+                        <td>{{track.artist}}</td>
+                        <td>{{track.genre}}</td>
+                        <td>{{track.duration | msToTime}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

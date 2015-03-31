@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>myownradio.biz - create your own web radio station for free</title>
+
+    <link rel="stylesheet" type="text/css" href="/css/legacy/reset.css">
+    <link rel="stylesheet/less" type="text/css" href="/css/mor-common.less">
+
+    <script src="/js/jquery-1.11.0.min.js.gz" type="text/javascript"></script>
+    <script src="/js/jquery-migrate-1.2.1.min.js.gz" type="text/javascript"></script>
+    <script src="/js/jquery-ui.min.js.gz" type="text/javascript"></script>
+    <script src="/js/jquery.change.js" type="text/javascript"></script>
+    <script src="/js/jquery.jplayer.min.js.gz" type="text/javascript"></script>
+    <script src="/js/jquery.livequery.js.gz" type="text/javascript"></script>
+    <script src="/js/jquery.tmpl.js" type="text/javascript"></script>
+    <script src="/js/less.min.js" type="text/javascript"></script>
+    <script src="/js/activewrappers.min.js" type="text/javascript"></script>
+    <script src="/js/StackBoxBlur.js" type="text/javascript"></script>
+    <script src="/js/mor-init.js" type="text/javascript"></script>
+    <script src="/js/mor-common.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="audiopanel">
+    <div class="audio">
+        <div class="left cover"></div>
+        <div class="left controls">
+            <div class="play_button"></div>
+        </div>
+        <div class="left caption">
+            <div class="title">Muse</div>
+            <div class="artist">by Mike Oldfield</div>
+        </div>
+        <div class="center timeline"></div>
+        <div class="right volume">1</div>
+    </div>
+</div>
+<div id="contents">
+    <nav id="header">
+        <div id="layer">
+            <div id="green"></div>
+        </div>
+        <div id="hd">
+            <div class="fixedWidth">
+                <div id="buttons">
+                    <a href="#">Login</a>
+                    <a href="#">Sign Up</a>
+                </div>
+                <div id="logo">
+                    <a href="/"><i class="mor-logo"></i> MYOWNRADIO</a>
+                </div>
+                <div id="search">
+                    <form action="/search">
+                        <input type="text" placeholder="Type name or tag..." name="q">
+                        <input type="submit" value="">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div id="body">
+        <div class="fixedWidth">
+            <div id="player">
+                <div id="controls">
+                    <div id="cover" class="cover">
+                        <img id="player-cover"
+                             src="http://upload.wikimedia.org/wikipedia/en/3/31/Mike_oldfield_guitars_album_cover.jpg">
+                    </div>
+                    <div id="title">
+                        <div class="sub">NOW PLAYING</div>
+                        <div class="subtitle">MIKE OLDFIELD - MUSE</div>
+                        <div class="progress">
+                            <div id="hand"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="info">
+                <h1>ABOUT STREAM</h1>
+
+                <div class="text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc at vulputate lorem. Nam
+                    vel ligula id elit porta sodales a et arcu. Donec id felis risus. Suspendisse sed nisl a mauris
+                    tincidunt lobortis. Sed iaculis posuere volutpat. Pellentesque orci augue, bibendum non nibh non,
+                    posuere finibus erat. Donec tincidunt leo maximus aliquam consequat. Cum sociis natoque penatibus et
+                    magnis dis parturient montes, nascetur ridiculus mus.
+                </div>
+                <div class="sep"></div>
+                <h1>SIMILAR STREAMS</h1>
+                <ul class="similar-streams">
+                    <li>
+                        <div class="cover">
+                            <img src="http://ourwebs.org/behighshare/thumbnail/TV%20On%20The%20Radio%20-%20Dear%20Science%20(2008)%20Cover.jpg">
+                        </div>
+                        <div class="info">
+                            <h1>STREAM 1</h1>
+
+                            <div class="description">Nunc at vulputate lorem. Nam vel ligula id elit porta sodales a
+                                et...
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="cover">
+                            <img src="http://newagestyle.net/uploads/posts/2013-10/1380709986_asian-chill-out-2013.jpg">
+                        </div>
+                        <div class="info">
+                            <h1>STREAM 2</h1>
+
+                            <div class="description">Nunc at vulputate lorem. Nam vel ligula id elit porta sodales a
+                                et...
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="cover">
+                            <img src="http://www.lectro.ws/uploads/posts/2012-11/1352543022_va-keep-calm-and-chill-out-2cd-2012.jpg">
+                        </div>
+                        <div class="info">
+                            <h1>STREAM 3</h1>
+
+                            <div class="description">Nunc at vulputate lorem. Nam vel ligula id elit porta sodales a
+                                et...
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="cover">
+                            <img src="http://img0.joyreactor.cc/pics/post/chillout-downtempo-electro-jazz-ambient-102708.jpeg">
+                        </div>
+                        <div class="info">
+                            <h1>STREAM 4</h1>
+
+                            <div class="description">Nunc at vulputate lorem. Nam vel ligula id elit porta sodales a
+                                et...
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="cover">
+                            <img src="http://www.pictureshack.ru/images/84004_aerotica_lounge_chillout.jpg">
+                        </div>
+                        <div class="info">
+                            <h1>ANOTHER STREAM</h1>
+
+                            <div class="description">Nunc at vulputate lorem. Nam vel ligula id elit porta sodales a
+                                et...
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!--<div id="footer">Hello, World!</div>-->
+</div>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <nav class="main" main-navigation=""></nav>
+        <div class="form-wrap full-width" ng-controller="ChangePlanController">
+            <form class="float" name="plan_form" ng-submit="submit()" novalidate="novalidate">
+                <h1><i class="icon-shopping-cart"></i>CHANGE PLAN</h1>
+                <div class="status">{{ data.error }}</div>
+                <table class="form-table">
+                    <tr>
+                        <td>
+                            <label for="code">Enter promo code:</label>
+                        </td>
+                        <td>
+                            <input type="text"
+                                   name="code"
+                                   id="code"
+                                   ng-model="data.code"
+                                   ng-required="true"
+                                   autocomplete="off"
+                                   ng-focus="true"
+                                    />
+                            <div class="validation" ng-show="plan_form.code.$focused && plan_form.code.$dirty">
+                                <div ng-if="plan_form.code.$error.required">
+                                    Code must be filled
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <input ng-disabled="plan_form.$invalid" type="submit" value="Change" style="float:right">
+            </form>
+        </div>
+    </div>
+</div>

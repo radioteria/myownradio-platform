@@ -1,0 +1,111 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <nav class="main" main-navigation=""></nav>
+        <div class="form-wrap full-width" ng-controller="StreamEditorController">
+            <div class="avatar-changer" ng-controller="StreamCoverController">
+                <div class="cover" ng-click="upload()">
+                    <img fadein ng-if="stream.cover" ng-src="{{stream.cover_url}}?size=96" />
+                </div>
+                <div ng-click="upload()" class="button">Change...</div>
+                <div ng-click="remove()" class="button">Remove</div>
+            </div>
+            <form class="float" name="stream_form" ng-submit="submit()" novalidate="novalidate">
+                <h1><i class="icon-mode-edit"></i>EDIT CHANNEL INFORMATION</h1>
+                <div class="status">{{ error }}</div>
+                <div class="status info">{{ status }}</div>
+                <table class="form-table">
+                    <tr>
+                        <td>
+                            <label for="name">Name:</label>
+                        </td>
+                        <td>
+                            <input type="text"
+                                   name="name"
+                                   id="name"
+                                   ng-model="stream.name"
+                                   ng-minlength="3"
+                                   autocomplete="off"
+                                    />
+
+                            <div ng-show="stream_form.name.$dirty">
+                                <div class="validation" ng-show="stream_form.name.$error.minlength">
+                                    Stream name must contain at least 3 chars
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="tags">Hashtags:</label>
+                        </td>
+                        <td>
+                            <input type="text"
+                                   name="tags"
+                                   id="tags"
+                                   ng-model="stream.hashtags"
+                                   autocomplete="off"
+                                   placeholder="Comma separated without hashes (chillout, ambient, ...)"
+                                    />
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="categories">Category:</label>
+                        </td>
+                        <td>
+                            <select id="categories" name="country_id" ng-model="stream.category"
+                                    ng-options="categories.category_id as categories.category_name for categories in lib.categories">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="access">Access:</label>
+                        </td>
+                        <td>
+                            <select id="access" name="access_id" ng-model="stream.access"
+                                    ng-options="access.access as access.access for access in lib.access">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="permalink">Permalink:</label>
+                        </td>
+                        <td>
+                            <label for="permalink" class="permalink-prefix">http://myownradio.biz/streams/</label>
+                            <input type="text"
+                                   class="stream-permalink"
+                                   name="permalink"
+                                   id="permalink"
+                                   ng-model="stream.permalink"
+                                   is-available="streamPermalink"
+                                   mor-context="{{stream.sid}}"
+                                   pattern="^[a-z0-9\\-]*$"
+                                   autocomplete="off"
+                                   placeholder="{{stream.sid}}"
+                                    />
+
+                            <div ng-show="stream_form.permalink.$dirty">
+                                <div class="validation" ng-show="stream_form.permalink.$error.pattern">
+                                    Permalink may contain only alphanumeric chars and dashes
+                                </div>
+                                <div class="validation" ng-show="stream_form.permalink.$error.available">
+                                    This permalink is not available
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <label for="info">Information:</label>
+                            <textarea class="under-label" name="info" id="info" ng-model="stream.info"></textarea>
+                        </td>
+                    </tr>
+                </table>
+                <input ng-disabled="stream_form.$invalid" type="submit" value="Update" style="float:right">
+            </form>
+        </div>
+    </div>
+</div>

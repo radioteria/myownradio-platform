@@ -458,9 +458,7 @@
             });
 
             $scope.sort = function (uniqueId, newIndex) {
-                StreamWorks.sort($scope.content.streamData.sid, uniqueId, newIndex + 1).onSuccess(function () {
-
-                });
+                StreamWorks.sort($scope.content.streamData.sid, uniqueId, newIndex + 1);
             };
 
             $scope.sortableOptions = {

@@ -145,26 +145,29 @@
                     </div>
                 </div>
                 <div class="cell social-buttons">
-                    <share ng-model="player.currentStream"></share>
-                    <bookmark ng-model="player.currentStream"></bookmark>
-                    <span ng-if="account.authorized && content.streamData.uid !== account.user.uid">
+                    <share class="hoverable" ng-model="player.currentStream"></share>
+                    <bookmark class="hoverable" ng-model="player.currentStream"></bookmark>
+                    <span ng-if="account.authorized && player.currentStream.uid !== account.user.uid">
                         <span ng-if="player.nowPlaying.can_be_shared">
                             <i class="icon-cloud-download" mor-tooltip="Copy this track to my account" ng-click="copyTrack(player.nowPlaying)"></i>
                         </span>
                     </span>
+                    <a target="_blank" ng-if="player.nowPlaying.buy" ng-href="{{ player.nowPlaying.buy }}" mor-tooltop="Buy this track">
+                        <i class="icon-shopping-cart"></i>
+                    </a>
                 </div>
                 <div class="cell track-title">
-                <span ng-if="player.nowPlaying">
-                    <span class="darker" ng-bind-template="ON AIR:"></span> <span
-                        ng-bind-template="{{ player.nowPlaying.artist | uppercase }} - {{ player.nowPlaying.title | uppercase }}"></span>
-                </span>
+                    <span ng-if="player.nowPlaying">
+                        <span class="darker" ng-bind-template="ON AIR:"></span> <span
+                            ng-bind-template="{{ player.nowPlaying.artist | uppercase }} - {{ player.nowPlaying.title | uppercase }}"></span>
+                    </span>
                 </div>
                 <div class="cell right-tools">
-                <span class="play-stop" ng-click="player.controls.switch()">
+                <span class="play-stop hoverable" ng-click="player.controls.switch()">
                     <i ng-class="player.isPlaying ? 'icon-stop2' : 'icon-play'" mor-tooltip="Play / Stop"></i>
                 </span>
                     <span class="vertical-padding"></span>
-                <span class="stop" ng-click="player.controls.unload()" mor-tooltip="Stop and close">
+                <span class="stop hoverable" ng-click="player.controls.unload()" mor-tooltip="Stop and close">
                     <i class="icon-switch"></i>
                 </span>
                     <!--

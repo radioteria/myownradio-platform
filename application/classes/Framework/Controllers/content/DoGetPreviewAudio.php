@@ -11,14 +11,12 @@ namespace Framework\Controllers\content;
 
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
-
 use Framework\Models\AuthUserModel;
 use Framework\Services\Config;
 use Framework\Services\HttpGet;
 use Framework\View\Errors\View401Exception;
 use Framework\View\Errors\View404Exception;
 use Objects\Track;
-use Tools\File;
 
 class DoGetPreviewAudio implements Controller {
     public function doGet(HttpGet $get, AuthUserModel $user, Config $config) {
@@ -30,6 +28,7 @@ class DoGetPreviewAudio implements Controller {
              */
             $track = Track::getByID($id)->getOrElseThrow(new View404Exception());
 
+
             if ($track->getUserID() != $user->getID()) {
                 throw new View401Exception();
             }
@@ -39,29 +38,20 @@ class DoGetPreviewAudio implements Controller {
                 $track->save();
             }
 
-            $file = new File($track->getOriginalFile());
-
-            if (! $file->exists()) {
-                throw new View404Exception();
-            }
-
             header("Content-Type: audio/mp3");
             set_time_limit(0);
-            if (strtolower($track->getExtension()) === null) {
-                $file->show();
-            } else {
-                $program = $config->getSetting("streaming", "track_preview")
-                    ->getOrElseThrow(ControllerException::of("No preview configured"));
 
-                $process = sprintf($program, $track->getDuration() / 3000, escapeshellarg($track->getFileUrl()));
+            $program = $config->getSetting("streaming", "track_preview")
+                ->getOrElseThrow(ControllerException::of("No preview configured"));
 
-                $proc = popen($process, "r");
-                while ($data = fread($proc, 4096)) {
-                    echo $data;
-                    flush();
-                }
-                pclose($proc);
+            $process = sprintf($program, $track->getDuration() / 3000, escapeshellarg($track->getFileUrl()));
+
+            $proc = popen($process, "r");
+            while ($data = fread($proc, 4096)) {
+                echo $data;
+                flush();
             }
+            pclose($proc);
 
         } catch (ControllerException $exception) {
             echo $exception->getMyMessage();

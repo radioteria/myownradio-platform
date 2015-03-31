@@ -9,9 +9,10 @@
 namespace Framework\Models;
 
 
-use Framework\Exceptions\ApplicationException;
+use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
+use Framework\FileServer\Exceptions\NoSpaceForUploadException;
 use Framework\FileServer\FSFile;
 use Framework\Injector\Injectable;
 use Framework\Services\Config;
@@ -21,8 +22,6 @@ use Framework\Services\HttpRequest;
 use Objects\Track;
 use REST\Playlist;
 use Tools\Common;
-use Tools\File;
-use Tools\FileException;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -68,7 +67,7 @@ class TracksModel implements Injectable, SingletonInterface {
         });
 
         $meta = $id3->analyze($file["tmp_name"]);
-        $hash = hash_file("sha512", $file["tmp_name"]);
+        $hash = hash_file(Defaults::HASHING_ALGORITHM, $file["tmp_name"]);
         $duration = Common::getAudioDuration($file["tmp_name"])->getOrElseThrow(
             new ControllerException(sprintf("File <b>%s</b> appears to be broken", $file["name"]))
         );
@@ -77,7 +76,7 @@ class TracksModel implements Injectable, SingletonInterface {
 
         $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
 
-        $maximalDuration  = $config->getSetting('upload', 'maximal_length')->get();
+        $maximalDuration = $config->getSetting('upload', 'maximal_length')->get();
         $availableFormats = $config->getSetting('upload', 'supported_extensions')->get();
 
         if (!preg_match("~^({$availableFormats})$~i", $extension)) {
@@ -130,44 +129,25 @@ class TracksModel implements Injectable, SingletonInterface {
             isset($meta["comments"]["date"][0]) ? $meta["comments"]["date"][0] : ""
         );
         $track->setDuration($duration);
-        $track->setFileSize(filesize($file["tmp_name"]));
+        $track->setFileSize($file["size"]);
         $track->setUploaded(time());
         $track->setColor(0);
         $track->setCopyOf(null);
-        $track->setFileId(FSFile::registerLink($file["tmp_name"]));
 
-        $track->save();
-
-        error_log("DST: " . $track->getOriginalFile());
-
-        $parent = (new File($track->getOriginalFile()))->getParent();
-
-        if (!$parent->exists()) {
-            try {
-                $parent->createNewDirectory(NEW_DIR_RIGHTS, true);
-            } catch (FileException $e) {
-                throw ApplicationException::of(sprintf("Couldn't create user content folder: %s", $parent->path()), 0, $e);
-            }
+        try {
+            $file_id = FSFile::registerLink($file["tmp_name"], $hash);
+            $track->setFileId($file_id);
+            $track->save();
+        } catch (NoSpaceForUploadException $exception) {
+            throw new ControllerException(sprintf("No available servers for uploading file \"%s\"", $file["name"]));
         }
 
-        $result = move_uploaded_file($file['tmp_name'], $track->getOriginalFile());
+        $this->addToStream($track, $addToStream, $upNext);
 
-        if ($result !== false) {
+        error_log(sprintf("User #%d uploaded new track: %s (upload time left: %d seconds)",
+            $track->getUserID(), $track->getFileName(), $uploadTimeLeft / 1000));
 
-            $this->addToStream($track, $addToStream, $upNext);
-
-            error_log(sprintf("User #%d uploaded new track: %s (upload time left: %d seconds)",
-                $track->getUserID(), $track->getFileName(), $uploadTimeLeft / 1000));
-
-            return Playlist::getInstance()->getOneTrack($track->getID());
-
-        } else {
-
-            $track->delete();
-
-            throw ApplicationException::of("FILE COULD NOT BE MOVED TO USER FOLDER");
-
-        }
+        return Playlist::getInstance()->getOneTrack($track->getID());
 
 
     }
@@ -237,5 +217,4 @@ class TracksModel implements Injectable, SingletonInterface {
     }
 
 
-
-} 
+}

@@ -217,16 +217,7 @@ class TrackModel extends Model implements SingletonInterface {
     public function delete() {
 
         logger(sprintf("User #%d is deleting track %s", $this->getUserID(), $this->getFileName()));
-
-        $file = $this->getOriginalFile();
-        if (file_exists($file)) {
-            unlink($this->getOriginalFile());
-        } else {
-            logger("File doest not exists");
-        }
-
         FSFile::deleteLink($this->object->getFileId());
-
         $this->object->delete();
 
     }

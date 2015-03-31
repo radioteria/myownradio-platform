@@ -85,6 +85,13 @@
                         Popup.message("Welcome, " + data.name + "!<br>You're successfully logged in!");
                         $scope.status = "";
                         $rootScope.account.init("/profile/");
+
+                        if (typeof $location.search().go != "undefined") {
+                            $rootScope.account.init($location.search().go);
+                        } else {
+                            $rootScope.account.init("/profile/");
+                        }
+
                     }, function (err) {
                         $scope.status = err;
                     }

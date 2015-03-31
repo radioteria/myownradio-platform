@@ -9,14 +9,19 @@
 namespace Framework\FileServer;
 
 
+use Framework\FileServer\Exceptions\FileServerErrorException;
+use Framework\FileServer\Exceptions\FileServerException;
+use Framework\FileServer\Exceptions\FileServerUnreachableException;
 use Framework\FileServer\Exceptions\LocalFileNotFoundException;
 use Framework\FileServer\Exceptions\NoSpaceForUploadException;
+use Framework\FileServer\Exceptions\RemoteFileNotFoundException;
 use Framework\FileServer\Exceptions\ServerNotRegisteredException;
 use Objects\FileServer\FileServer;
 
 class FileServerFacade {
 
     const FS_PATTERN = "http://fs%d.myownradio.biz/";
+    const FS_RETRY_TIMES = 2;
 
     private $fs_id;
     private $fs_object;
@@ -38,6 +43,8 @@ class FileServerFacade {
     }
 
     /**
+     * Returns instance of available server with has needed amount
+     * of free space.
      * @param $need_bytes
      * @throws NoSpaceForUploadException
      * @return FileServerFacade
@@ -46,7 +53,9 @@ class FileServerFacade {
         $servers = self::getUpServersIds();
         foreach ($servers as $server) {
             $fs = new self($server);
-            $free = $fs->getFreeSpace();
+            $free = self::doTwice(function () use ($fs) {
+                return $fs->getFreeSpace();
+            });
             if ($free === null) {
                 error_log("Warning! File server responded an error!");
                 continue;
@@ -55,9 +64,42 @@ class FileServerFacade {
                 return $fs;
             }
         }
-        throw new NoSpaceForUploadException("There is no available servers for upload");
+        throw new NoSpaceForUploadException(
+            sprintf("There is no servers available for uploading %d bytes of data", $need_bytes)
+        );
     }
 
+    /**
+     * @param $callable
+     * @return mixed
+     * @throws FileServerException
+     */
+    public static function doTwice($callable) {
+
+        $count = self::FS_RETRY_TIMES;
+
+        while ($count --) {
+            try {
+                error_log("Trying command...");
+                $result = call_user_func($callable);
+                return $result;
+            } catch (FileServerException $exception) {
+                error_log("FileServerException: " . $exception->getMessage());
+            }
+        }
+
+        throw $exception;
+
+    }
+
+    /**
+     * @param $file_path
+     * @param null $hash
+     * @throws Exceptions\FileServerUnreachableException
+     * @throws Exceptions\FileServerErrorException
+     * @throws Exceptions\LocalFileNotFoundException
+     * @return mixed|null
+     */
     public function uploadFile($file_path, $hash = null) {
 
         if (!file_exists($file_path)) {
@@ -82,18 +124,28 @@ class FileServerFacade {
 
         $result = curl_exec($ch);
 
+        if ($result === false) {
+            throw new FileServerUnreachableException();
+        }
+
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         curl_close($ch);
 
-        if ($http_code !== 201) {
-            return null;
-        } else {
-            return $result;
+        if ($http_code != 201) {
+            throw new FileServerErrorException("Server response code: " . $http_code);
         }
+
+        return $result;
 
     }
 
+    /**
+     * @param $hash
+     * @throws Exceptions\FileServerUnreachableException
+     * @throws Exceptions\FileServerErrorException
+     * @return bool
+     */
     public function delete($hash) {
 
         $ch = $this->curlInit();
@@ -101,22 +153,47 @@ class FileServerFacade {
         curl_setopt($ch, CURLOPT_URL, $this->getServerName().$hash);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
 
-        curl_exec($ch);
+        $result = curl_exec($ch);
+
+        if ($result === false) {
+            throw new FileServerUnreachableException();
+        }
 
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         curl_close($ch);
 
-        return $http_code === 200;
+        if ($http_code != 200) {
+            throw new FileServerErrorException("Server response code: " . $http_code);
+        }
 
     }
 
+    /**
+     * @param $hash
+     * @throws Exceptions\FileServerUnreachableException
+     * @throws Exceptions\FileServerErrorException
+     * @return bool
+     */
     public function isFileExists($hash) {
 
-        return $this->getFileSize($hash) !== null;
+        try {
+            $this->getFileSize($hash);
+        } catch (RemoteFileNotFoundException $exception) {
+            return false;
+        }
+
+        return true;
 
     }
 
+    /**
+     * @param $hash
+     * @throws Exceptions\FileServerUnreachableException
+     * @throws Exceptions\FileServerErrorException
+     * @throws Exceptions\RemoteFileNotFoundException
+     * @return bool
+     */
     public function getFileSize($hash) {
 
         $ch = $this->curlInit();
@@ -126,14 +203,29 @@ class FileServerFacade {
 
         $result = curl_exec($ch);
 
+        if ($result === false) {
+            throw new FileServerUnreachableException();
+        }
+
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         curl_close($ch);
 
-        return $http_code === 200 ? $result : null;
+        if ($http_code == 404) {
+            throw new RemoteFileNotFoundException("File not found: " . $hash);
+        } else if ($http_code != 200) {
+            throw new FileServerErrorException("Server response code: " . $http_code);
+        }
+
+        return $result;
 
     }
 
+    /**
+     * @return mixed
+     * @throws Exceptions\FileServerUnreachableException
+     * @throws Exceptions\FileServerErrorException
+     */
     public function getFreeSpace() {
 
         $ch = $this->curlInit();
@@ -143,22 +235,40 @@ class FileServerFacade {
 
         $result = curl_exec($ch);
 
+        if ($result === false) {
+            throw new FileServerUnreachableException();
+        }
+
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         curl_close($ch);
 
-        return $http_code === 200 ? (int) $result : null;
+        if ($http_code !== 200) {
+            throw new FileServerErrorException("Server response code: " . $http_code);
+        }
+
+        return $result;
 
     }
 
+    /**
+     * @return string
+     */
     private function getServerName() {
         return sprintf(self::FS_PATTERN, $this->fs_id);
     }
 
+    /**
+     * @param $server_id
+     * @return string
+     */
     public static function getServerNameById($server_id) {
         return sprintf(self::FS_PATTERN, $server_id);
     }
 
+    /**
+     * @return resource
+     */
     private function curlInit() {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);

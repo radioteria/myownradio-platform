@@ -9,28 +9,30 @@
 namespace Framework\FileServer;
 
 
+use Framework\Defaults;
 use Framework\FileServer\Exceptions\FileServerException;
 use Framework\FileServer\Exceptions\LocalFileNotFoundException;
 use Objects\FileServer\FileServerFile;
 
 class FSFile {
+
     /**
-     * @param $file_path
+     * @param $filename
      * @param string|null $hash
      * @throws Exceptions\FileServerException
      * @throws Exceptions\LocalFileNotFoundException
      * @return int Created file ID
      */
-    public static function registerLink($file_path, $hash = null) {
+    public static function registerLink($filename, $hash = null) {
 
-        if (!file_exists($file_path)) {
+        if (!file_exists($filename)) {
             throw new LocalFileNotFoundException(
-                sprintf("File \"%s\" not exists", $file_path)
+                sprintf("File \"%s\" could not be found", $filename)
             );
         }
 
         if ($hash === null) {
-            $hash = hash_file("sha512", $file_path);
+            $hash = hash_file(Defaults::HASHING_ALGORITHM, $filename);
         }
 
 
@@ -38,17 +40,17 @@ class FSFile {
         $object = FileServerFile::getByFilter("HASH", [$hash])->getOrElseNull();
 
         if ($object === null) {
-            $size = filesize($file_path);
-            $fs = FileServerFacade::allocate($size);
+            $filesize = filesize($filename);
+            $fs = FileServerFacade::allocate($filesize);
 
             $object = new FileServerFile();
             $object->setFileHash($hash);
-            $object->setFileSize($size);
+            $object->setFileSize($filesize);
             $object->setServerId($fs->getServerId());
             $object->setUseCount(1);
 
-            if (!$fs->isFileExists($hash) && $fs->uploadFile($file_path, $hash) === null) {
-                throw new FileServerException(sprintf("File \"%s\" could not be uploaded", $file_path));
+            if (!$fs->isFileExists($hash) && $fs->uploadFile($filename, $hash) === null) {
+                throw new FileServerException(sprintf("File \"%s\" could not be uploaded", $filename));
             }
 
         } else {

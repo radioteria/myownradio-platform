@@ -18,6 +18,7 @@ class Defaults {
 
     const SITE_TITLE = "MyOwnRadio - Your own web radio station";
 
+    const HASHING_ALGORITHM = "sha512";
 
     /**
      * @return array

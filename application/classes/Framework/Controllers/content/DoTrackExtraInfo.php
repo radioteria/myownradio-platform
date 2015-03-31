@@ -14,6 +14,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\HttpGet;
+use Framework\Services\SomeClass;
 use Framework\Services\TwigTemplate;
 use Objects\Track;
 

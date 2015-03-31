@@ -12,6 +12,7 @@ namespace Framework\FileServer;
 use Framework\Defaults;
 use Framework\FileServer\Exceptions\FileServerException;
 use Framework\FileServer\Exceptions\LocalFileNotFoundException;
+use Framework\Services\Database;
 use Objects\FileServer\FileServerFile;
 
 class FSFile {
@@ -19,8 +20,8 @@ class FSFile {
     /**
      * @param $filename
      * @param string|null $hash
-     * @throws Exceptions\FileServerException
      * @throws Exceptions\LocalFileNotFoundException
+     * @throws Exceptions\NoSpaceForUploadException
      * @return int Created file ID
      */
     public static function registerLink($filename, $hash = null) {
@@ -49,8 +50,8 @@ class FSFile {
             $object->setServerId($fs->getServerId());
             $object->setUseCount(1);
 
-            if (!$fs->isFileExists($hash) && $fs->uploadFile($filename, $hash) === null) {
-                throw new FileServerException(sprintf("File \"%s\" could not be uploaded", $filename));
+            if (!$fs->isFileExists($hash)) {
+                $fs->uploadFile($filename, $hash);
             }
 
         } else {
@@ -65,22 +66,33 @@ class FSFile {
 
     /**
      * @param $file_id
-     * @throws Exceptions\FileServerException
+     * @internal FileServerFile $object
      */
     public static function deleteLink($file_id) {
 
-        /** @var FileServerFile $object */
-        if ($object = FileServerFile::getByID($file_id)->getOrElseNull()) {
-            if ($object->getUseCount() > 1) {
-                $object->setUseCount($object->getUseCount() - 1);;
-                $object->save();
-            } else {
-                $fs = new FileServerFacade($object->getServerId());
-                if ($fs->delete($object->getFileHash())) {
-                    $object->delete();
+        Database::doInConnection(function (Database $db) use ($file_id) {
+
+            $db->beginTransaction();
+
+            if ($object = FileServerFile::getByID($file_id)->getOrElseNull()) {
+                if ($object->getUseCount() > 1) {
+                    $object->setUseCount($object->getUseCount() - 1);
+                    $object->save();
+                } else {
+                    $fs = new FileServerFacade($object->getServerId());
+                    try {
+                        $fs->delete($object->getFileHash());
+                        $object->delete();
+                    } catch (FileServerException $exception) {
+                        $object->setUseCount(0);
+                        $object->save();
+                    }
                 }
             }
-        }
+
+            $db->commit();
+
+        });
 
     }
 } 

@@ -479,7 +479,7 @@
             link: function ($scope, $element, $attributes) {
                 var old;
                 $element.on("keyup", function (event) {
-                    if (event.which < 32) return;
+                    if (event.which < 32 || event.which == 46) return;
                     if (old != event.target.value) {
                         var position = event.target.selectionStart;
                         var temp = $rootScope.lib.genres;

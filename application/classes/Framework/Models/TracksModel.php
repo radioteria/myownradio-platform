@@ -73,7 +73,7 @@ class TracksModel implements Injectable, SingletonInterface {
         $meta = $id3->analyze($file["tmp_name"]);
         $hash = hash_file(Defaults::HASHING_ALGORITHM, $file["tmp_name"]);
         $duration = Common::getAudioDuration($file["tmp_name"])->getOrElseThrow(
-            L10n::tr("UPLOAD_FILE_BROKEN", [$file["name"]])
+            new ControllerException(L10n::tr("UPLOAD_FILE_BROKEN", [$file["name"]]))
         );
 
         \getid3_lib::CopyTagsToComments($meta);

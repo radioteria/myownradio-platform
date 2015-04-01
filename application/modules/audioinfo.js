@@ -160,7 +160,7 @@
 
                             if ($scope.metadata[keys[j].name] != $scope.source[i][keys[j].name]) {
                                 $scope.metadata["save_" + keys[j].name] = false;
-                                $scope.metadata[keys[j]] = keys[j].default;
+                                $scope.metadata[keys[j].name] = keys[j].default;
                             }
 
                         }

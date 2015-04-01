@@ -26,7 +26,7 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         $track_number, $genre, $date, $cue, $buy,
         $duration, $filesize, $color = 0,
         $uploaded, $copy_of = null, $used_count = 0,
-        $is_new = 1, $can_be_shared;
+        $is_new = 1, $can_be_shared = 0;
 
     /*
      * Bean Getters

@@ -10,5 +10,7 @@ namespace Framework\Exceptions;
 
 
 class DatabaseException extends ControllerException {
-
-} 
+    function __construct($message = null, $data = null, $code = 200) {
+        parent::__construct($message, $data, $code);
+    }
+}

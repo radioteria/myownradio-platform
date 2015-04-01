@@ -247,7 +247,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
     public function getByUser($userKey) {
 
         $user = User::getByFilter("FIND_BY_KEY", [ ":key" => $userKey ])
-            ->getOrElseThrow(UnauthorizedException::noUserExists($userKey));
+            ->getOrElseThrow(UnauthorizedException::noUserByLogin($userKey));
 
         $query = $this->getStreamsPrefix();
         $query->where("a.uid", [$user->getID()]);

@@ -9,7 +9,6 @@
 namespace Framework;
 
 use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\DocNotFoundException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injector;
 use Framework\Services\CurrentRoute;
@@ -18,6 +17,7 @@ use Framework\Services\HttpRequest;
 use Framework\Services\JsonResponse;
 use Framework\Services\SubRouter;
 use Framework\View\Errors\View404Exception;
+use Framework\View\Errors\View500Exception;
 use Framework\View\Errors\View501Exception;
 use Framework\View\Errors\ViewException;
 use ReflectionClass;
@@ -124,12 +124,6 @@ class Router implements SingletonInterface{
 
             $this->exceptionRouter($e);
 
-        } catch (DocNotFoundException $e) {
-
-            http_response_code(404);
-            echo '<h1>E404: File not found</h1>';
-            return;
-
         } catch (ViewException $exception) {
 
             $exception->render();
@@ -171,7 +165,7 @@ class Router implements SingletonInterface{
 
         // Check for valid reflector
         if (!$reflection->implementsInterface("Framework\\Controller")) {
-            throw new DocNotFoundException("Controller must implement Framework\\Controller interface");
+            throw new View500Exception("Controller must implement Framework\\Controller interface");
         }
 
         $classInstance = $reflection->newInstance();

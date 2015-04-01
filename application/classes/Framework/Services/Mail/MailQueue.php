@@ -11,6 +11,7 @@ namespace Framework\Services\Mail;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
+use Framework\Services\Locale\I18n;
 use Framework\Services\Mailer;
 use Framework\Services\Redis;
 use Tools\Singleton;
@@ -42,9 +43,7 @@ class MailQueue implements Injectable, SingletonInterface, \Countable {
             foreach ($array as $email) {
                 if ($sender == $email->getSenderIp() && $threshold < $email->getCreated()) {
                     if (++ $count > self::MAX_PER_INTERVAL) {
-                        throw ControllerException::of(
-                            "Sorry, but too many letters has been sent from your address. Wait for one hour and try again."
-                        );
+                        throw ControllerException::of(I18n::tr("EMAIL_QUEUE_FULL"));
                     }
                 }
             }

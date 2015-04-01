@@ -65,7 +65,7 @@ class Mailer {
         $result = mail($targets, $this->subject, $this->body, $headers, $flag);
 
         if ($result == false) {
-            logger(sprintf("Message to '%s' could not be sent", $targets));
+            error_log(sprintf("Message to '%s' could not be sent", $targets));
         }
 
     }

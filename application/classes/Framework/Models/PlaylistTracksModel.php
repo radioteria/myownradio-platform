@@ -27,7 +27,6 @@ class PlaylistTracksModel implements SingletonInterface {
 
     public function __construct($id) {
         $this->user = AuthUserModel::getInstance();
-        //$this->stream = new StreamModel($id);
         $this->key = $id;
     }
 

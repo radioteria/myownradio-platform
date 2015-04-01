@@ -8,6 +8,8 @@
 
 namespace Framework\Exceptions;
 
+use Framework\Services\Locale\I18n;
+
 class ControllerException extends \Exception {
 
     private $myMessage = null;
@@ -18,19 +20,14 @@ class ControllerException extends \Exception {
         $this->myMessage = $message;
         $this->myData = $data;
         $this->myHttpCode = $code;
-        //error_log($_SERVER["HTTP_X_REAL_IP"] . " " . $message);
     }
 
     public static function of($message = null, $data = null) {
         return new self($message, $data);
     }
 
-    public static function noBasis($id) {
-        return new self(sprintf("No payment basis with key '%s' found", $id));
-    }
-
     public static function noImageAttached() {
-        return new self("No image file attached");
+        return new self(I18n::tr("CONTROLLER_EX_NO_IMAGE_ATTACHED"));
     }
 
     public function getMyData() {
@@ -41,33 +38,20 @@ class ControllerException extends \Exception {
         return $this->myMessage;
     }
 
-    public static function wrongLogin() {
-        return new self("Incorrect login or password");
-    }
-
     public static function noArgument($name) {
-        return new self(sprintf("No value for argument '%s' specified", $name));
-    }
-
-    public static function databaseError($message = "Something wrong with database") {
-        return new self($message);
+        return new self(I18n::tr("CEX_NO_ARGUMENT_SPECIFIED", ["arg" => $name]));
     }
 
     public static function noStream($key) {
-        return new self(sprintf("No stream with key '%s' found", $key));
+        return new self(I18n::tr("CEX_NO_STREAM_FOUND", ["arg" => $key]));
     }
 
-    public static function noPermission() {
-        return new self("You don't have permission to access this resource", null, 401);
+    public static function noUser($id) {
+        return new self(I18n::tr("CEX_NO_USER_FOUND", ["id" => $id]));
     }
 
-    public static function noEntity($name) {
-        return new self(sprintf("No entity '%s' found", $name), null, 400);
+    public static function noTrack($id) {
+        return new self(I18n::tr("CEX_NO_TRACK_FOUND", ["id" => $id]));
     }
-
-    public static function noTrack($key) {
-        return new self(sprintf("No track with key '%s' found", $key), null, 400);
-    }
-
 
 }

@@ -4,9 +4,9 @@
 
     tools.constant("STATS_INTERVAL", 10000);
 
-    tools.run(["$timeout", "$rootScope", "StatsFactory", "STATS_INTERVAL",
+    tools.run(["$timeout", "$rootScope", "StatsFactory", "STATS_INTERVAL", "$tr",
 
-        function ($timeout, $rootScope, StatsFactory, STATS_INTERVAL) {
+        function ($timeout, $rootScope, StatsFactory, STATS_INTERVAL, $tr) {
 
             $rootScope.stats = {};
 
@@ -18,6 +18,10 @@
             };
 
             rotate();
+
+            $rootScope.tr = function (key, args) {
+                return $tr(key, args);
+            }
 
         }
 
@@ -31,6 +35,24 @@
                     ignoreLoadingBar: true
                 }))
             }
+        }
+    }]);
+
+    tools.factory("$tr", [function () {
+        return function ($key, args) {
+
+            if (typeof locale[$key] == "undefined") {
+                return "";
+            }
+
+            return locale[$key].replace(/(%[a-z0-9\\_]+%)/g, function (match) {
+                var key = match.substr(1, match.length - 2);
+                if (typeof args != "undefined" && typeof args[key] != "undefined") {
+                    return args[key];
+                } else {
+                    return "";
+                }
+            })
         }
     }]);
 

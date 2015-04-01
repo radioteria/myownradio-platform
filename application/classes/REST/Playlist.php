@@ -293,30 +293,6 @@ class Playlist implements SingletonInterface, Injectable {
 
         }
 
-//        if ($stream->getTracksDuration() < self::NOW_PLAYING_TIME_RANGE * 2) {
-//            $repeats = self::NOW_PLAYING_TIME_RANGE / $stream->getTracksDuration();
-//            $pre = [];
-//            $x = $repeats;
-//            for ($i = 0; $i < $repeats; $i ++) {
-//                foreach ($tracks as $track) {
-//                    $track["time_offset"] = $track["time_offset"] - ($stream->getTracksDuration() * $x);
-//                    $pre[] = $track;
-//                }
-//                $x--;
-//            }
-//            $post = [];
-//            $x = 1;
-//            for ($i = 0; $i < $repeats; $i ++) {
-//                foreach ($tracks as $track) {
-//                    $track["time_offset"] = $track["time_offset"] + ($stream->getTracksDuration() * $x);
-//                    $post[] = $track;
-//                }
-//                $x++;
-//            }
-//            $currentID = count($pre);
-//            $tracks = array_merge($pre, $tracks, $post);
-//        }
-
         return [
             'time' => System::time(),
             'position' => $position,

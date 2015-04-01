@@ -13,27 +13,26 @@ use Framework\Defaults;
 use Framework\FileServer\Exceptions\FileServerException;
 use Framework\FileServer\Exceptions\LocalFileNotFoundException;
 use Framework\Services\Database;
+use Framework\Services\Locale\I18n;
 use Objects\FileServer\FileServerFile;
 
 class FSFile {
 
     /**
-     * @param $filename
+     * @param $file_path
      * @param string|null $hash
      * @throws Exceptions\LocalFileNotFoundException
      * @throws Exceptions\NoSpaceForUploadException
      * @return int Created file ID
      */
-    public static function registerLink($filename, $hash = null) {
+    public static function registerLink($file_path, $hash = null) {
 
-        if (!file_exists($filename)) {
-            throw new LocalFileNotFoundException(
-                sprintf("File \"%s\" could not be found", $filename)
-            );
+        if (!file_exists($file_path)) {
+            throw new LocalFileNotFoundException(I18n::tr("CMN_FILE_NOT_FOUND", ["name" => $file_path]));
         }
 
         if ($hash === null) {
-            $hash = hash_file(Defaults::HASHING_ALGORITHM, $filename);
+            $hash = hash_file(Defaults::HASHING_ALGORITHM, $file_path);
         }
 
 
@@ -41,7 +40,7 @@ class FSFile {
         $object = FileServerFile::getByFilter("HASH", [$hash])->getOrElseNull();
 
         if ($object === null) {
-            $filesize = filesize($filename);
+            $filesize = filesize($file_path);
             $fs = FileServerFacade::allocate($filesize);
 
             $object = new FileServerFile();
@@ -51,7 +50,7 @@ class FSFile {
             $object->setUseCount(1);
 
             if (!$fs->isFileExists($hash)) {
-                $fs->uploadFile($filename, $hash);
+                $fs->uploadFile($file_path, $hash);
             }
 
         } else {

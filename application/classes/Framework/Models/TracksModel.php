@@ -20,6 +20,8 @@ use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\HttpRequest;
+use Framework\Services\Locale\I18n;
+use Framework\Services\Locale\L10n;
 use Objects\FileServer\FileServerFile;
 use Objects\Track;
 use REST\Playlist;
@@ -71,7 +73,7 @@ class TracksModel implements Injectable, SingletonInterface {
         $meta = $id3->analyze($file["tmp_name"]);
         $hash = hash_file(Defaults::HASHING_ALGORITHM, $file["tmp_name"]);
         $duration = Common::getAudioDuration($file["tmp_name"])->getOrElseThrow(
-            new ControllerException(sprintf("File <b>%s</b> appears to be broken", $file["name"]))
+            L10n::tr("UPLOAD_FILE_BROKEN", [$file["name"]])
         );
 
         \getid3_lib::CopyTagsToComments($meta);
@@ -82,26 +84,25 @@ class TracksModel implements Injectable, SingletonInterface {
         $availableFormats = $config->getSetting('upload', 'supported_extensions')->get();
 
         if (!preg_match("~^({$availableFormats})$~i", $extension)) {
-            throw new ControllerException("Unsupported type format: " . $extension);
+            throw new ControllerException(I18n::tr("UPLOAD_FILE_UNSUPPORTED", [$extension]));
         }
 
         if ($copy = $this->getSameTrack($hash)) {
-            throw new ControllerException(sprintf("File <b>%s</b> already in your library", $file["name"]));
+            throw new ControllerException(I18n::tr("UPLOAD_FILE_EXISTS", [$file["name"]]));
         }
 
         $uploadTimeLeft = $currentPlan->getTimeMax() - $this->user->getTracksDuration() - $duration;
 
         if ($duration > $maximalDuration) {
-            throw new ControllerException("Uploaded file is too long: " . $duration);
+            throw new ControllerException(I18n::tr("UPLOAD_FILE_LONG", [$file["name"]]));
         }
 
         if ($duration < $currentPlan->getMinTrackLength()) {
-            throw new ControllerException(sprintf("Uploaded file is too short. You can upload only files longer than %d seconds, sorry.",
-                $currentPlan->getMinTrackLength() / 1000));
+            throw new ControllerException(I18n::tr("UPLOAD_FILE_SHORT", [$file["name"]]));
         }
 
         if ($uploadTimeLeft < $duration) {
-            throw new ControllerException("You are exceeded available upload time. Please upgrade your account.");
+            throw new ControllerException(I18n::tr("UPLOAD_NO_SPACE"));
         }
 
         $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
@@ -141,7 +142,7 @@ class TracksModel implements Injectable, SingletonInterface {
             $track->setFileId($file_id);
             $track->save();
         } catch (NoSpaceForUploadException $exception) {
-            throw new ControllerException(sprintf("No available servers for uploading file \"%s\"", $file["name"]));
+            throw new ControllerException(I18n::tr("UPLOAD_NO_SERVERS", [$file["name"]]));
         }
 
         $this->addToStream($track, $addToStream, $upNext);
@@ -166,31 +167,23 @@ class TracksModel implements Injectable, SingletonInterface {
         $trackObject = Track::getByID($trackId)->getOrElseThrow(ControllerException::noTrack($trackId));
 
         if ($trackObject->getUserID() == $this->user->getID()) {
-            throw new ControllerException(sprintf("Track <b>%s</b> is already yours", $trackObject->getFileName()));
+            throw new ControllerException(I18n::tr("COPY_FILE_YOURS", [$trackObject->getFileName()]));
         }
 
         if ($copy = $this->getSameTrack($trackObject->getHash())) {
-            throw new ControllerException(sprintf("File <b>%s</b> already in your library", $trackObject->getFileName()));
+            throw new ControllerException(I18n::tr("UPLOAD_FILE_EXISTS", [$trackObject->getFileName()]));
         }
 
         if (!$trackObject->isCanBeShared()) {
-            throw new ControllerException(sprintf("File <b>%s</b> could not be shared due to no permission",
-                $trackObject->getFileName()));
+            throw new ControllerException(I18n::tr("COPY_FILE_PROTECTED", [$trackObject->getFileName()]));
         }
 
         $currentPlan = $this->user->getCurrentPlan();
 
         $uploadTimeLeft = $currentPlan->getTimeMax() - $this->user->getTracksDuration() - $trackObject->getDuration();
 
-        if ($trackObject->getDuration() < $currentPlan->getMinTrackLength()) {
-            throw new ControllerException(
-                sprintf("Uploaded file is too short. You can upload only files longer than %d seconds, sorry.",
-                $currentPlan->getMinTrackLength() / 1000)
-            );
-        }
-
         if ($uploadTimeLeft < $trackObject->getDuration()) {
-            throw new ControllerException("You are exceeded available upload time. Please upgrade your account.");
+            throw new ControllerException(I18n::tr("UPLOAD_NO_SPACE"));
         }
 
         $copy = $trackObject->cloneObject();

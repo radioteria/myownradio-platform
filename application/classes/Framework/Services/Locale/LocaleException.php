@@ -2,18 +2,18 @@
 /**
  * Created by PhpStorm.
  * User: Roman
- * Date: 23.12.14
- * Time: 16:49
+ * Date: 01.04.15
+ * Time: 11:28
  */
 
-namespace Framework\Services\Module;
+namespace Framework\Services\Locale;
 
 
 use Exception;
+use Framework\Exceptions\ApplicationException;
 
-class ModuleNotFoundException extends \Exception {
+class LocaleException extends ApplicationException {
     public function __construct($message = "", $code = 0, Exception $previous = null) {
         parent::__construct($message, $code, $previous);
     }
-
-} 
+}

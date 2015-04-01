@@ -45,7 +45,7 @@ class Factory extends Model implements Injectable, SingletonInterface {
             ->getOrElseThrow(ControllerException::noStream($id));
 
         if ($uid != $this->user->getID()) {
-            throw UnauthorizedException::noAccess();
+            throw UnauthorizedException::noPermission();
         }
 
         (new DeleteQuery("r_link"))->where("stream_id", $id)->update();

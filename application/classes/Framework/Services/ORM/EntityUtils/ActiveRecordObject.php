@@ -102,8 +102,14 @@ abstract class ActiveRecordObject implements JsonSerializable {
         return $data;
     }
 
-    public static function getClass() {
-        return self;
+    /**
+     * Returns the string class name of the GraphObject or subclass.
+     *
+     * @return string
+     */
+    public static function className()
+    {
+        return get_called_class();
     }
 
 } 

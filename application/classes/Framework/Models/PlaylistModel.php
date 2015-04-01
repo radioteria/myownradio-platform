@@ -9,6 +9,7 @@
 namespace Framework\Models;
 
 use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\StreamControl;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
@@ -67,7 +68,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                 ->getOrElseThrow(ControllerException::noStream($this->key));
 
             if (intval($stats["uid"]) !== $this->user->getID()) {
-                throw ControllerException::noPermission();
+                throw UnauthorizedException::noPermission();
             }
 
             $this->tracks_count = intval($stats["tracks_count"]);
@@ -96,8 +97,6 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      * @return $this
      */
     public function addTracks($tracks, $upNext = false) {
-
-        logger(sprintf("Up Next enabled: %s", $upNext ? "yes" : "no"));
 
         $this->doAtomic(function () use (&$tracks, &$upNext) {
 
@@ -166,8 +165,6 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      */
     private function doAtomic(callable $callable) {
 
-        logger("Doing atomic action...");
-
         $this->getPlayingTrack()->then(function ($track) use ($callable) {
 
             /** @var StreamTrack $track */
@@ -177,7 +174,6 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
             logger("Now playing: " . $track->getFileName());
             logger("Offset: " . number_format($trackPosition / 1000));
 
-            logger("Doing action...");
             call_user_func($callable);
 
             if (StreamTrack::getByID($track->getUniqueID())->validate()) {

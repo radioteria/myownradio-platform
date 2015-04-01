@@ -45,7 +45,7 @@ class Users implements SingletonInterface, Injectable {
 
         $query->select("tracks_duration", "plan_expires");
         $query->where("uid = :key OR (permalink = :key AND permalink is not null)", [":key" => $id]);
-        $user = $query->fetchOneRow()->getOrElseThrow(ControllerException::noEntity("user"));
+        $user = $query->fetchOneRow()->getOrElseThrow(ControllerException::noUser("user"));
 
 
         $plan_data = DBQuery::getInstance()->selectFrom("mor_plans_view", "plan_id", $user["plan_id"])

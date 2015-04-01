@@ -12,6 +12,8 @@ namespace Framework\Models;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Services\Database;
+use Framework\Services\HttpGet;
+use Framework\Services\HttpPost;
 use Framework\Services\HttpSession;
 use Tools\Singleton;
 
@@ -28,9 +30,13 @@ class AuthUserModel extends UserModel implements Injectable {
 
     private function getIdBySessionToken() {
 
-        $exception = UnauthorizedException::noAccess();
+        $exception = UnauthorizedException::noPermission();
 
-        $token = HttpSession::getInstance()->get("TOKEN")->getOrElseThrow($exception);
+        $token = HttpSession::getInstance()->get("TOKEN")->getOrElse(
+            HttpPost::getInstance()->getParameter("token")->getOrElse(
+                HttpGet::getInstance()->getParameter("token")->getOrElseThrow($exception)
+            )
+        );
 
         $session = Database::doInConnection(function (Database $db) use ($token, $exception) {
 

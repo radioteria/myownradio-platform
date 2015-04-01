@@ -11,6 +11,7 @@ namespace Framework\Controllers;
 
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\Date;
 use Framework\Services\HttpRequest;
 use Framework\Services\Mail\MailQueue;
@@ -22,7 +23,7 @@ class DoCron implements Controller {
     public function doCron(HttpRequest $request, Date $date, MailQueue $queue) {
 
         if ($request->getServerAddress() != $request->getRemoteAddress()) {
-            throw ControllerException::noPermission();
+            throw UnauthorizedException::noPermission();
         }
 
         /* Every hour */

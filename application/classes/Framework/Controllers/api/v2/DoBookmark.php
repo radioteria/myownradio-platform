@@ -19,8 +19,7 @@ use Objects\Stream;
 class DoBookmark implements Controller {
 
     public function doPut(HttpGet $get, JsonResponse $response, StreamsModel $streams) {
-        $streamID = $get->getParameter("stream_id")
-            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
+        $streamID = $get->getRequired("stream_id");
 
         $stream = Stream::getByID($streamID)
             ->getOrElseThrow(ControllerException::noStream($streamID));
@@ -28,8 +27,7 @@ class DoBookmark implements Controller {
     }
 
     public function doDelete(HttpGet $get, JsonResponse $response, StreamsModel $streams) {
-        $streamID = $get->getParameter("stream_id")
-            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
+        $streamID = $get->getRequired("stream_id");
 
         $stream = Stream::getByID($streamID)
             ->getOrElseThrow(ControllerException::noStream($streamID));

@@ -2,6 +2,7 @@
 
 namespace Framework;
 
+use Framework\Services\Locale\I18n;
 use Tools\File;
 
 class Template {
@@ -154,6 +155,9 @@ class Template {
 
             case "date":
                 return date($args[0], $data);
+
+            case "tr":
+                return I18n::tr($data);
 
             default:
                 throw new \Exception("Unknown filter used in template");

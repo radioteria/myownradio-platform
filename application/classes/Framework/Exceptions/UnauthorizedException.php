@@ -9,26 +9,28 @@
 namespace Framework\Exceptions;
 
 
+use Framework\Services\Locale\I18n;
+
 class UnauthorizedException extends ControllerException {
 
     function __construct($message = null, $data = null) {
         parent::__construct($message, $data);
     }
 
-    static function noAccess() {
-        return new self("You aren't authorized to access this resource");
+    static function noUserByLogin($id) {
+        return new self(I18n::tr("CEX_NO_USER_BY_LOGIN", ["login" => $id]));
     }
 
-    static function wrongLogin() {
-        return new self("Incorrect login or password");
-    }
-
-    static function noUserExists($id) {
-        return new self(sprintf("User with login '%s' not exists", $id));
+    public static function wrongLogin() {
+        return new self(I18n::tr("CEX_INCORRECT_LOGIN_OR_PASSWORD"));
     }
 
     public static function wrongPassword() {
-        return new self("You're entered incorrect current password");
+        return new self(I18n::tr("CEX_ENTERED_INCORRECT_PASSWORD"));
+    }
+
+    public static function noPermission() {
+        return new self(I18n::tr("CEX_NO_PERMISSION"));
     }
 
 }

@@ -63,7 +63,7 @@ class UserModel extends Model implements SingletonInterface {
             $password = func_get_arg(1);
 
             $this->user = User::getByFilter("FIND_BY_CREDENTIALS", [":login" => $login, ":password" => $password])
-                ->getOrElseThrow(ControllerException::wrongLogin());
+                ->getOrElseThrow(UnauthorizedException::wrongLogin());
 
         } else {
 
@@ -213,33 +213,6 @@ class UserModel extends Model implements SingletonInterface {
 
     }
 
-    public function downloadAvatar($url) {
-
-        $avatar = file_get_contents($url);
-
-        $folders = Folders::getInstance();
-
-//        $validator = InputValidator::getInstance();
-//        $validator->validateImageMIME($file["tmp_name"]);
-
-//        $random = Common::generateUniqueID();
-//
-//        $this->removeAvatar();
-//
-//        $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
-//        $newImageFile = sprintf("avatar%05d_%s.%s", $this->userID, $random, strtolower($extension));
-//        $newImagePath = $folders->genAvatarPath($newImageFile);
-//
-//        $result = move_uploaded_file($file['tmp_name'], $newImagePath);
-//        if ($result !== false) {
-//            $this->user->setAvatar($newImageFile)->save();
-//            return $folders->genAvatarUrl($newImageFile);
-//        } else {
-//            return null;
-//        }
-
-    }
-
     /**
      * @return null|string
      */
@@ -274,7 +247,6 @@ class UserModel extends Model implements SingletonInterface {
             $stream->delete();
         }
 
-
         /* Delete user's tracks */
         $tracks = Track::getListByFilter("uid", [$this->user->getID()]);
 
@@ -283,19 +255,8 @@ class UserModel extends Model implements SingletonInterface {
             $model->delete();
         }
 
-        $id = $this->user->getID();
-
         /* Delete account object */
         $this->user->delete();
-
-        /* Delete user's directory */
-        $contentFolder = Config::getInstance()->getSetting("content", "content_folder")
-            ->getOrElseThrow(ApplicationException::of("CONTENT FOLDER NOT SPECIFIED"));
-
-        $path = new File(sprintf("%s/ui_%d", $contentFolder, $id));
-        if ($path->exists()) {
-            $path->delete();
-        }
 
     }
 

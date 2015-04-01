@@ -10,23 +10,26 @@ namespace Framework\Controllers;
 
 
 use Framework\Controller;
-use Framework\FileServer\FSFile;
-use Objects\Track;
+use Framework\Services\Locale\L10n;
 
 class DoGradient implements Controller {
-    public function doGet() {
+    public function doGet(L10n $l10n) {
 
         header("Content-Type: text/plain");
         set_time_limit(30);
 
-        $tracks = Track::getListByFilter("file_id IS NULL");
 
-        foreach ($tracks as $track) {
-            $filename = $track->getOriginalFile();
-            $file_id = FSFile::registerLink($filename, $track->getHash());
-            $track->setFileId($file_id);
-            $track->save();
-        }
+
+//        $tracks = Track::getListByFilter("file_id IS NULL");
+//
+//        foreach ($tracks as $track) {
+//            $filename = $track->getOriginalFile();
+//            $file_id = FSFile::registerLink($filename, $track->getHash());
+//            $track->setFileId($file_id);
+//            $track->save();
+//        }
+
+
 
     }
 } 

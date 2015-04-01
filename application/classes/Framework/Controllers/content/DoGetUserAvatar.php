@@ -10,8 +10,6 @@ namespace Framework\Controllers\content;
 
 
 use Framework\Controller;
-use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\DocNotFoundException;
 use Framework\Services\HttpGet;
 use Framework\View\Errors\View404Exception;
 use Tools\File;
@@ -39,7 +37,7 @@ class DoGetUserAvatar implements Controller {
         }
 
         if (!$path->exists()) {
-            throw new DocNotFoundException();
+            throw new View404Exception();
         }
 
         header("Content-Type: " . $path->getContentType());

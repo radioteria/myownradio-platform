@@ -2,11 +2,11 @@
     <div class="footer-content fixed-width">
         <ul class="footer-content-list">
             <li>
-                <a href="/">Home</a> |
-                <a href="/streams/">Radio Channels</a> |
-                <a href="mailto:support@myownradio.biz">Report problem or ask question</a> |
+                <a href="/" ng-bind="tr('FR_HOME')"></a> |
+                <a href="/streams/" ng-bind="tr('FR_BROWSE_CHANNELS')"></a> |
+                <a href="mailto:support@myownradio.biz" ng-bind="tr('FR_REPORT_QUESTION')" ></a> |
                 <a>myownradio.biz &copy; 2014-2015</a> |
-                <a>Listeners: <span ng-bind="stats.listeners_count">0</span></a>
+                <a>{{ tr('FR_LISTENERS') }}: <span ng-bind="stats.listeners_count">0</span></a>
             </li>
         </ul>
     </div>

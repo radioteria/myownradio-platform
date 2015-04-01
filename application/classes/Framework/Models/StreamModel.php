@@ -49,7 +49,7 @@ class StreamModel extends Model implements SingletonInterface {
             ->getOrElseThrow(ControllerException::noStream($this->key));
 
         if ($this->stream->getUserID() !== $this->user->getID()) {
-            throw UnauthorizedException::noAccess();
+            throw UnauthorizedException::noPermission();
         }
 
     }

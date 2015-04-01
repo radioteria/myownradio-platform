@@ -12,6 +12,7 @@ use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
 use Framework\Services\DB\DBQuery;
+use Framework\Services\Locale\I18n;
 use Objects\Category;
 use Objects\Color;
 use Objects\Country;
@@ -44,23 +45,7 @@ class InputValidator implements Injectable {
         if (is_null($countryID)) return;
 
         Country::getByID($countryID)
-            ->getOrElseThrow(new ControllerException(sprintf("Country with id %d does not exist", $countryID)));
-    }
-
-    /**
-     * @param array $metadata
-     * @throws ControllerException
-     */
-    public function validateTrackMetadata($metadata) {
-
-        $reqKeys = array("artist", "title", "album", "track_number", "genre", "date");
-
-        foreach ($metadata as $key) {
-            if (array_key_exists($key, $reqKeys) === false) {
-                throw new ControllerException("Incorrect metadata");
-            }
-        }
-
+            ->getOrElseThrow(new ControllerException(I18n::tr("VALIDATOR_NO_COUNTRY", [$countryID])));
     }
 
     /**
@@ -71,7 +56,9 @@ class InputValidator implements Injectable {
 
         $len = strlen($password);
         if ($len < self::PASSWORD_MIN_LENGTH && $len > self::PASSWORD_MAX_LENGTH) {
-            throw new ControllerException("Password length must be between 3 and 32 chars");
+            throw new ControllerException(I18n::tr("VALIDATOR_PASSWORD_LENGTH", [
+                self::PASSWORD_MIN_LENGTH, self::PASSWORD_MAX_LENGTH
+            ]));
         }
 
     }
@@ -83,7 +70,7 @@ class InputValidator implements Injectable {
     public function validateEmail($email) {
 
         if (!preg_match(self::EMAIL_REGEXP_PATTERN, $email)) {
-            throw new ControllerException("Incorrect email format");
+            throw new ControllerException(I18n::tr("VALIDATOR_EMAIL_FORMAT"));
         }
 
     }
@@ -95,13 +82,13 @@ class InputValidator implements Injectable {
     public function validateStreamName($name) {
 
         if (strlen($name) < self::STREAM_NAME_MIN_LENGTH) {
-            throw new ControllerException("Stream name must contain at least 3 chars");
+            throw new ControllerException(I18n::tr("VALIDATOR_STREAM_NAME_SHORT"));
         }
 
         $name_lower = mb_strtolower($name, "utf8");
         foreach (Defaults::getStopWords() as $word) {
             if (mb_strpos($name_lower, $word, 0, "utf8") !== FALSE) {
-                throw new ControllerException("Stream name contains words that can not be used");
+                throw new ControllerException(I18n::tr("VALIDATOR_STREAM_WORDS"));
             }
         }
 
@@ -110,12 +97,13 @@ class InputValidator implements Injectable {
     public function validateLogin($login) {
 
         if (strlen($login) < self::LOGIN_MIN_LENGTH || strlen($login) > self::LOGIN_MAX_LENGTH) {
-            throw new ControllerException(sprintf("Login must be in range from %d to %d chars",
-                self::LOGIN_MIN_LENGTH, self::LOGIN_MAX_LENGTH));
+            throw new ControllerException(I18n::tr("VALIDATOR_LOGIN_LENGTH", [
+                self::LOGIN_MIN_LENGTH, self::LOGIN_MAX_LENGTH
+            ]));
         }
 
         if (!preg_match(self::LOGIN_PATTERN, $login)) {
-            throw new ControllerException("Login must contain only [a-z, 0-9 or \"_\"] chars");
+            throw new ControllerException(I18n::tr("VALIDATOR_LOGIN_CHARS"));
         }
 
     }
@@ -130,7 +118,7 @@ class InputValidator implements Injectable {
         $dbq = DBQuery::getInstance();
 
         if (!is_null($permalink) && !is_string($permalink)) {
-            throw new ControllerException("Valid permalink is [null|string]");
+            throw new ControllerException(I18n::tr("VALIDATOR_PERMALINK_FORMAT"));
         }
 
         if (is_null($permalink)) {
@@ -138,11 +126,11 @@ class InputValidator implements Injectable {
         }
 
         if (strlen($permalink) == 0) {
-            throw new ControllerException("Permalink couldn't be an empty string");
+            throw new ControllerException(I18n::tr("VALIDATOR_PERMALINK_EMPTY"));
         }
 
         if (!preg_match(self::PERMALINK_REGEXP_PATTERN, $permalink)) {
-            throw new ControllerException("Permalink must contain only [a-z, 0-9 or \"-\"] chars");
+            throw new ControllerException(I18n::tr("VALIDATOR_PERMALINK_CHARS"));
         }
 
         $query = $dbq->selectFrom("r_streams")->where("(permalink = :key OR sid = :key)", [":key" => $permalink]);
@@ -152,7 +140,7 @@ class InputValidator implements Injectable {
         }
 
         if(count($query) > 0) {
-            throw new ControllerException("Permalink is used by another stream");
+            throw new ControllerException(I18n::tr("VALIDATOR_PERMALINK_USED"));
         }
 
     }
@@ -163,7 +151,7 @@ class InputValidator implements Injectable {
         $dbq = DBQuery::getInstance();
 
         if (!is_null($permalink) && !is_string($permalink)) {
-            throw new ControllerException("Valid permalink is [null|string]");
+            throw new ControllerException(I18n::tr("VALIDATOR_PERMALINK_FORMAT"));
         }
 
         if (is_null($permalink)) {
@@ -171,11 +159,11 @@ class InputValidator implements Injectable {
         }
 
         if (strlen($permalink) == 0) {
-            throw new ControllerException("Permalink couldn't be an empty string");
+            throw new ControllerException(I18n::tr("VALIDATOR_PERMALINK_EMPTY"));
         }
 
         if (!preg_match(self::PERMALINK_REGEXP_PATTERN, $permalink)) {
-            throw new ControllerException("Permalink must contain only [a-z, 0-9 or \"-\"] chars");
+            throw new ControllerException(I18n::tr("VALIDATOR_PERMALINK_CHARS"));
         }
 
         $query = $dbq->selectFrom("r_users")->where("(permalink = :key OR uid = :key)", [":key" => $permalink]);
@@ -185,7 +173,7 @@ class InputValidator implements Injectable {
         }
 
         if(count($query) > 0) {
-            throw new ControllerException("Permalink is used by another user");
+            throw new ControllerException(I18n::tr("VALIDATOR_PERMALINK_USED"));
         }
 
     }
@@ -201,7 +189,7 @@ class InputValidator implements Injectable {
         $query = $dbq->selectFrom("r_users")->where("mail", $email);
 
         if (count($query) > 0) {
-            throw new ControllerException(sprintf("User with email '%s' already exists", $email));
+            throw new ControllerException(I18n::tr("VALIDATOR_EMAIL_EXISTS", [$email]));
         }
 
     }
@@ -213,7 +201,7 @@ class InputValidator implements Injectable {
     public function validateTracksList($tracks) {
 
         if (!preg_match(self::TRACKS_LIST_PATTERN, $tracks)) {
-            throw new ControllerException("Invalid tracklist", $tracks);
+            throw new ControllerException(I18n::tr("VALIDATOR_TRACKLIST"));
         }
 
     }
@@ -227,17 +215,17 @@ class InputValidator implements Injectable {
         $decoded    = base64_decode($code);
 
         if ($decoded === false) {
-            throw new ControllerException("Code is not valid");
+            throw new ControllerException(I18n::tr("VALIDATOR_CODE_INVALID"));
         }
 
         $object     = json_decode($decoded, true);
 
         if (is_null($object) || empty($object["email"]) || empty($object["code"])) {
-            throw new ControllerException("Code is not valid");
+            throw new ControllerException(I18n::tr("VALIDATOR_CODE_INVALID"));
         }
 
         if (md5($object['email'] . "@myownradio.biz@" . $object['email']) !== $object['code']) {
-            throw new ControllerException("Code does not match the email");
+            throw new ControllerException(I18n::tr("VALIDATOR_CODE_MATCH"));
         }
 
     }
@@ -248,8 +236,9 @@ class InputValidator implements Injectable {
      */
     public function validateStreamCategory($category) {
 
-        Category::getByID($category)
-            ->justThrow(new ControllerException(sprintf("Invalid stream category specified", $category)));
+        Category::getByID($category)->justThrow(
+            new ControllerException(I18n::tr("VALIDATOR_INVALID_CATEGORY", [$category]))
+        );
 
     }
 
@@ -260,7 +249,7 @@ class InputValidator implements Injectable {
     public function validateStreamAccess($access) {
 
         if (array_search($access, ['PUBLIC', 'UNLISTED', 'PRIVATE']) === false) {
-            throw new ControllerException(sprintf("'%s' is not valid stream access mode", $access));
+            throw new ControllerException(I18n::tr("VALIDATOR_INVALID_ACCESS", [$access]));
         }
 
     }
@@ -273,13 +262,13 @@ class InputValidator implements Injectable {
         $fileInfo = new \finfo();
         $mime = $fileInfo->file($file, FILEINFO_MIME);
         if (strpos($mime, "image", 0) !== 0) {
-            throw new ControllerException("File is not valid image file");
+            throw new ControllerException(I18n::tr("VALIDATOR_IMAGE_MIME"));
         }
     }
 
     public function validateTrackColor($color) {
         Color::getByID($color)
-            ->justThrow(new ControllerException(sprintf("Invalid color id specified", $color)));
+            ->justThrow(new ControllerException(I18n::tr("VALIDATOR_TRACK_COLOR", [$color])));
     }
 
 }

@@ -14,6 +14,7 @@ use Framework\Exceptions\UnauthorizedException;
 use Framework\FileServer\FileServerFacade;
 use Framework\FileServer\FSFile;
 use Framework\Services\Config;
+use Framework\Services\Locale\I18n;
 use Objects\FileServer\FileServerFile;
 use Objects\Track;
 use Tools\Optional;
@@ -43,8 +44,8 @@ class TrackModel extends Model implements SingletonInterface {
     }
 
     /**
+     * @throws \Framework\Exceptions\ControllerException
      * @return $this
-     * @throws \Framework\Exceptions\UnauthorizedException
      */
     public function reload() {
 
@@ -52,7 +53,7 @@ class TrackModel extends Model implements SingletonInterface {
             ->getOrElseThrow(ControllerException::noTrack($this->key));
 
         if ($this->object->getUserID() != $this->user->getID()) {
-            throw UnauthorizedException::noAccess();
+            throw UnauthorizedException::noPermission();
         }
 
     }
@@ -168,27 +169,18 @@ class TrackModel extends Model implements SingletonInterface {
         return $this->object->getOriginalFile();
     }
 
+    /**
+     * @return string
+     */
     public function getFileUrl() {
         /** @var FileServerFile $file */
         $file = FileServerFile::getByID($this->object->getFileId())
-            ->getOrElseThrow(new ControllerException(
-                sprintf("Track \"%d\" is not uploaded to any file server", $this->object->getID())
-            ));
+            ->getOrElseThrow(I18n::tr("CEX_TRACK_FILE_NULL", ["id" => $this->object->getID()]));
 
         return FileServerFacade::getServerNameById($file->getServerId()).$file->getFileHash();
     }
 
-    /**
-     * @param Optional $artist
-     * @param Optional $title
-     * @param Optional $album
-     * @param Optional $trackNR
-     * @param Optional $genre
-     * @param Optional $date
-     * @param Optional $color
-     * @return $this
-     */
-    public function edit($artist, $title, $album, $trackNR, $genre, $date, $color) {
+/*    public function edit($artist, $title, $album, $trackNR, $genre, $date, $color) {
 
         $artist ->then(function ($artist)   { $this->object->setArtist($artist); });
         $title  ->then(function ($title)    { $this->object->setTitle($title); });
@@ -202,7 +194,7 @@ class TrackModel extends Model implements SingletonInterface {
 
         return $this;
 
-    }
+    }*/
 
     public function changeColor($color) {
 
@@ -216,31 +208,9 @@ class TrackModel extends Model implements SingletonInterface {
      */
     public function delete() {
 
-        logger(sprintf("User #%d is deleting track %s", $this->getUserID(), $this->getFileName()));
+        error_log(sprintf("User #%d is deleting track %s", $this->getUserID(), $this->getFileName()));
         FSFile::deleteLink($this->object->getFileId());
         $this->object->delete();
-
-    }
-
-    public function preview() {
-
-        $config = Config::getInstance();
-
-        $trackFile = $this->getOriginalFile();
-        $streamer = $config->getSetting("streaming", "track_preview")->get();
-
-        $command = sprintf($streamer, escapeshellarg($trackFile));
-
-        $fh = popen($command, "r");
-
-        header("Content-Type: audio/mpeg");
-
-        while ($data = fread($fh, 4096)) {
-            echo $data;
-            flush();
-        }
-
-        pclose($fh);
 
     }
 

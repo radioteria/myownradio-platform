@@ -5,10 +5,10 @@
                 <a href="/streams/" ng-bind="tr('FR_ALL_CHANNELS') | uppercase"></a>
             </li>
             <li active-tab="^\/bookmarks\/" ng-if="account.authorized">
-                <a href="/bookmarks/" ng-bind="tr('FR_MY_BOOKMARKS')"></a>
+                <a href="/bookmarks/" ng-bind="tr('FR_MY_BOOKMARKS') | uppercase"></a>
             </li>
             <li active-tab="^\/user\/{{ account.user.key | regExpEscape }}$" ng-if="account.authorized">
-                <a href="/user/{{ account.user.key }}" ng-bind="tr('FR_MY_STREAMS')"></a>
+                <a href="/user/{{ account.user.key }}" ng-bind="tr('FR_MY_STREAMS') | uppercase"></a>
             </li>
             <li active-tab="^\/user\/.+$" ng-if="content.owner && account.user.uid !== content.owner.uid">
                 <a href="/user/{{ content.owner.key }}">BY {{ content.owner | userDisplayName | uppercase }}</a>

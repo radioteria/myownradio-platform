@@ -17,12 +17,12 @@
                         <ul class="icons">
                             <li ng-if="content.streamData.uid === account.user.uid">
                                 <a href="/profile/edit-stream/{{content.streamData.sid}}">
-                                    <i class="icon-mode-edit" mor-tooltip="Edit channel information"></i>
+                                    <i class="icon-mode-edit" mor-tooltip="{{ tr('FR_EDIT_CHANNEL_INFO') }}"></i>
                                 </a>
                             </li>
                             <li ng-if="content.streamData.uid === account.user.uid">
                                 <a href="/profile/streams/{{content.streamData.sid}}">
-                                    <i class="icon-toc" mor-tooltip="Edit channel tracklist"></i>
+                                    <i class="icon-toc" mor-tooltip="{{ tr('FR_EDIT_CHANNEL_TRACKLIST') "></i>
                                 </a>
                             </li>
                             <li ng-if="content.streamData.uid === account.user.uid" class="vertical-separator"></li>
@@ -30,10 +30,10 @@
                                 <share ng-model="content.streamData"></share>
                             </li>
                             <li ng-init="badgeShown=false" ng-click-outside="badgeShown=false">
-                                <i class="icon-settings" ng-class="{shown: badgeShown}" ng-click="badgeShown=!badgeShown" mor-tooltip="Settings"></i>
+                                <i class="icon-settings" ng-class="{shown: badgeShown}" ng-click="badgeShown=!badgeShown" mor-tooltip="{{ tr('FR_SETTINGS') }}"></i>
                                 <div ng-show="badgeShown" class="settings-badge">
-                                    <h3>Audio Format</h3>
-                                    <h4 class="format">AAC+</h4>
+                                    <h3 bind-html="tr('FR_PLAYER_AUDIO_FORMAT')"></h3>
+                                    <h4 class="format">aac+</h4>
                                     <ul class="formats">
                                         <li ng-repeat="f in defaults.formats.aac"
                                             ng-class="{current: defaults.format == f.key}"
@@ -41,7 +41,7 @@
                                             ng-bind="f.bitrate"></li>
                                     </ul>
                                     <div style="height: 4px"></div>
-                                    <h4 class="format">MP3</h4>
+                                    <h4 class="format">mp3</h4>
                                     <ul class="formats">
                                         <li ng-repeat="f in defaults.formats.mp3"
                                             ng-class="{current: defaults.format == f.key}"
@@ -49,9 +49,9 @@
                                             ng-bind="f.bitrate"></li>
                                     </ul>
                                     <div style="height: 4px"></div>
-                                    <h4 class="format">M3U</h4>
+                                    <h4 class="format">m3u</h4>
                                     <ul class="formats">
-                                        <li><a target="_self" href="/content/m3u/{{ content.streamData.key }}.m3u">Open in external player</a></li>
+                                        <li><a target="_self" href="/content/m3u/{{ content.streamData.key }}.m3u" bind-html="tr('FR_PLAYER_OPEN_EXTERNAL')"></a></li>
                                     </ul>
                                 </div>
                             </li>
@@ -62,13 +62,13 @@
                         By <a href="{{content.streamData.owner.key | usersCatalog}}">{{ content.streamData.owner | userDisplayName }}</a>
                     </div>
                     <div class="stats">
-                    <span mor-tooltip="Active listeners count is {{ content.streamData.listeners_count | number }}">
+                    <span mor-tooltip="{{ tr('FR_COUNT_USERS_LISTENING', [ content.streamData.listeners_count ]) }}">
                         <i class="icon-hearing"></i><span>{{ content.streamData.listeners_count | number }}</span>
                     </span>
-                    <span mor-tooltip="Stream favorited {{ content.streamData.bookmarks_count | number }} time(s)">
+                    <span mor-tooltip="{{ tr('FR_STREAM_BOOKMARKED_TIMES', [ content.streamData.bookmarks_count ]) }}">
                         <i class="icon-heart"></i> <span>{{ content.streamData.bookmarks_count | number }}</span>
                     </span>
-                    <span mor-tooltip="Stream created at {{ content.streamData.created * 1000 | date : 'mediumDate' }}">
+                    <span mor-tooltip="{{ tr('FR_STREAM_CREATED_AT') }} {{ content.streamData.created * 1000 | date : 'mediumDate' }}">
                         <i class="icon-wifi-tethering"></i><span>{{ content.streamData.created * 1000 | date : 'mediumDate' }}</span>
                     </span>
                     </div>
@@ -80,18 +80,16 @@
                             </div>
                             <div ng-if="player.isPlaying && player.currentID == content.streamData.sid">
                                 <div class="key">
-                                    {{ player.isBuffering ? "Buffering..." : "Now playing" }}
+                                    {{ player.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}
                                 </div>
 
                                 <div class="value">
-                                    <b>{{player.nowPlaying.artist | uppercase}}</b>
-                                    <span ng-if="player.nowPlaying.artist"> - </span>
-                                    <span>{{player.nowPlaying.title | uppercase}}</span>
+                                    {{ player.nowPlaying.caption | uppercase }}
                                 </div>
                             </div>
                         </div>
                         <div class="player" ng-if="(content.streamData.status == 0) || (content.streamData.access == 'PRIVATE' && content.streamData.uid != account.user.uid)">
-                            Sorry, but this channel is down or you have no access to listen it.
+                            {{ tr('FR_STREAM_NO_ACCESS') }}
                         </div>
                     </div>
                 </div>
@@ -101,7 +99,7 @@
             <div class="tracks-toggle" ng-click="scheduleShown = !scheduleShown">
                     <span ng-show="!scheduleShown" class="tracks-toggle-text-content"><i class="icon-chevron-down"></i> Show</span>
                     <span ng-show="scheduleShown" class="tracks-toggle-text-content"><i class="icon-chevron-up"></i> Hide</span>
-                <span class="tracks-toggle-text-content">Recent and Upcoming</span>
+                <span class="tracks-toggle-text-content">{{ tr('FR_RECENT_UPCOMING') }}</span>
             </div>
             <div ng-class="{open: scheduleShown}" class="tracks-list" ng-model="scheduleTracks.tracks">
                 <div class="track-row" ng-class="{current: $index == scheduleTracks.current}" ng-repeat="track in scheduleSync.tracks">
@@ -116,8 +114,8 @@
                         <div class="track-title">
                             <span ng-bind="track.title"></span>
                             <span class="track-edit-tools" ng-if="content.streamData.uid == account.user.uid">
-                                <i class="icon-mode-edit" mor-tooltip="Edit track information" ng-click="editTrack(track)"></i>
-                                <i class="icon-trash" mor-tooltip="Remove track from stream" ng-click="removeTrack(track)"></i>
+                                <i class="icon-mode-edit" mor-tooltip="{{ tr('FR_EDIT_TRACK_INFO') }}" ng-click="editTrack(track)"></i>
+                                <i class="icon-trash" mor-tooltip="{{ tr('FR_REMOVE_TRACK_FROM_STREAM') }}" ng-click="removeTrack(track)"></i>
                             </span>
                         </div>
                     </div>
@@ -132,10 +130,10 @@
             <div class="stream-stats-wrapper">
                 <div ng-if="content.streamData.hashtags_array" class="taglist-wrapper"
                      tags-list="content.streamData.hashtags_array"></div>
-                <div class="info">{{content.streamData.info}}</div>
+                <div class="info">{{ content.streamData.info }}</div>
             </div>
             <div class="similar-streams-wrapper" ng-if="content.similarStreams.length > 0">
-                <div class="title">SIMILAR CHANNELS</div>
+                <div class="title" ng-bind="tr('FR_SIMILAR_CHANNELS') | uppercase"></div>
                 <ul class="similar-streams">
                     <li ng-repeat="stream in content.similarStreams">
                         <div class="cover">

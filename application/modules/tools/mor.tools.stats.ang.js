@@ -48,7 +48,7 @@
             return locale[$key].replace(/(%[a-z0-9\\_]+%)/g, function (match) {
                 var key = match.substr(1, match.length - 2);
                 if (typeof args != "undefined" && typeof args[key] != "undefined") {
-                    return args[key];
+                    return htmlEscape(args[key]);
                 } else {
                     return "";
                 }

@@ -115,9 +115,9 @@
 <div class="busy-wrap table ngCloak" ng-show="loader.busy === true">  <!-- todo: move to directive -->
     <div class="row">
         <div class="cell">
-            <i class="icon-spinner9 rotate"></i><br>
-
-            <div class="loading" ng-bind="tr('FR_AJAX_BUSY')"></div>
+            <i class="icon-spinner9 rotate"></i>
+            <br>
+            <div class="loading" bind-html="tr('FR_AJAX_BUSY') | uppercase"></div>
         </div>
     </div>
 </div>

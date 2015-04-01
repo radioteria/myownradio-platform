@@ -32,11 +32,13 @@ class AuthUserModel extends UserModel implements Injectable {
 
         $exception = UnauthorizedException::noPermission();
 
-        $token = HttpSession::getInstance()->get("TOKEN")->getOrElse(
-            HttpPost::getInstance()->getParameter("token")->getOrElse(
-                HttpGet::getInstance()->getParameter("token")->getOrElseThrow($exception)
-            )
-        );
+//        $token = HttpSession::getInstance()->get("TOKEN")->getOrElse(
+//            HttpPost::getInstance()->getParameter("token")->getOrElse(
+//                HttpGet::getInstance()->getParameter("token")->getOrElseThrow($exception)
+//            )
+//        );
+
+        $token = HttpSession::getInstance()->get("TOKEN")->getOrElse($exception);
 
         $session = Database::doInConnection(function (Database $db) use ($token, $exception) {
 

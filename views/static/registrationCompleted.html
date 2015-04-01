@@ -1,13 +1,10 @@
 <div class="fixed-width">
     <div id="page-contents">
         <div class="form-wrap">
-            <h1><i class="icon-done"></i>CONGRATULATIONS!</h1>
+            <h1><i class="icon-done"></i> {{ tr('FR_CONGRATULATIONS') | uppercase }}</h1>
 
-            <div class="hint top">
-                You are successfully registered on <a href="/">myownradio.biz</a>.<br>
-                Now you can proceed to login into service!
-            </div>
-            <a href="/login/" type="button" style="float: right">Login</a>
+            <div class="hint top" bind-html="tr('FR_REG_COMPLETED_TEXT')"></div>
+            <a href="/login/" type="button" style="float: right" ng-bind="tr('FR_LOGIN')"></a>
         </div>
     </div>
 </div>

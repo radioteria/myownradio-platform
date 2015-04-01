@@ -27,12 +27,13 @@
             restrict: "E",
             required: "ngModel",
             template: "<i class='icon-share-alt' mor-tooltip='Share this radio channel' ng-click='share()'></i>",
-            controller: ["$scope", "ngDialog", function ($scope, ngDialog) {
+            controller: ["$scope", "ngDialog", "$rootScope", function ($scope, ngDialog, $rootScope) {
                 $scope.share = function () {
                     if (angular.isDefined($scope.ngModel)) {
                         var scope = $scope.$new();
                         scope.streamObject = $scope.ngModel;
                         scope.streamObject.url = "https://myownradio.biz/streams/" + scope.streamObject.key;
+                        scope.tr = $rootScope.tr;
                         ngDialog.open({
                             templateUrl: "/views/blocks/share.html",
                             controller: "StreamShareController",

@@ -73,7 +73,7 @@ class SubRouter implements SingletonInterface {
         foreach ($this->routes as $regexp => $data) {
             if (preg_match($regexp, $route, $matches)) {
                 array_shift($matches);
-                if (count($data["keys"]) != count($matches)) {
+                if (count($data["keys"]) == count($matches)) {
                     $result = array_combine($data["keys"], $matches);
                     RouteParams::setData($result);
                 } else {

@@ -2,11 +2,11 @@
     <div id="page-contents">
         <div class="form-wrap">
             <form name="login" ng-submit="submit()" novalidate="novalidate">
-                <h1><i class="icon-https"></i>LOGIN</h1>
+                <h1><i class="icon-https"></i>{{ tr('FR_LOGIN') | uppercase }}</h1>
                 <div class="status">{{ status }}</div>
                 <table class="form-table">
                     <tr>
-                        <td><label for="login">Login:</label></td>
+                        <td><label for="login">{{ tr('FR_LOGIN') }}:</label></td>
                         <td>
                             <input type="text"
                                    id="login"
@@ -18,12 +18,12 @@
                                     />
 
                             <div class="validation" ng-if="login.login.$error.required && login.login.$focused">
-                                Login must be filled
+                                {{ tr('FR_LOGIN_MUST_BE_FILLED') }}
                             </div>
                         </td>
                     </tr>
                     <tr>
-                        <td>Password:</td>
+                        <td><label for="password">{{ tr('FR_PASSWORD') }}:</label></td>
                         <td>
                             <input  type="password"
                                     name="password"
@@ -34,7 +34,7 @@
                                     />
 
                             <div class="validation" ng-if="login.password.$error.required && login.password.$focused">
-                                Password must be filled
+                                {{ tr('FR_PASSWORD_MUST_BE_FILLED') }}
                             </div>
                         </td>
                     </tr>
@@ -42,17 +42,17 @@
                         <td></td>
                         <td>
                             <input type="checkbox" id="save" name="save" ng-model="credentials.save" />
-                            <label for="save">Remember me on this computer</label>
+                            <label for="save">{{ tr('FR_REMEMBER_ME') }}</label>
                         </td>
                     </tr>
                 </table>
                 <div class="social-login">
                     <span class="button fl_r" ng-click="signUpFacebook()"><i class="icon-facebook2"></i> Facebook</span>
-                    <span style="padding-right: 4px">or use social network to login:</span>
+                    <span style="padding-right: 4px">{{ tr('FR_OR_LOGIN_SOCIAL') }}:</span>
                 </div>
                 <div class="hint bottom">
-                    Don't have an account yet? <a href="/signup">Create it!</a><br>
-                    Forgot password? <a href="/recover">Recover it!</a>
+                    {{ tr('FR_DONT_HAVE_ACCOUNT') }} <a href="/signup" ng-bind="tr('FR_CREATE_IT')"></a><br>
+                    {{ tr('FR_FORGOT_PASSWORD') }} <a href="/recover" ng-bind="tr('FR_RECOVER_IT')"></a>
                 </div>
                 <input ng-disabled="login.$invalid" type="submit" value="Login" style="float:right">
             </form>

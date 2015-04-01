@@ -2,14 +2,14 @@
     <div id="page-contents">
         <div class="form-wrap">
             <form name="signup_form" ng-submit="submit()" novalidate="novalidate">
-                <h1><i class="icon-https"></i>SIGN UP</h1>
+                <h1><i class="icon-https"></i> {{ tr('FR_SIGN_UP') | uppercase }}</h1>
 
-                <div class="hint top">To complete registration please fill the following fields:</div>
-                <div class="status">{{ status }}</div>
+                <div class="hint top" bind-html="tr('FR_SIGN_UP_COMPLETE_WELCOME')"></div>
+                <div class="status" bind-html="status"></div>
                 <table class="form-table">
                     <tr>
                         <td>
-                            <label for="login">Login:</label>
+                            <label for="login">{{ tr('FR_LOGIN') }}:</label>
                         </td>
                         <td>
                             <input type="text"
@@ -19,7 +19,7 @@
                                    ng-required="true"
                                    ng-minlength="3"
                                    ng-maxlength="32"
-                                   ng-pattern="/^[\S]+$/"
+                                   ng-pattern="/^[0-9a-z\\_]+$/"
                                    ensure-unique="login"
                                    autocomplete="off"
                                    ng-focus="true"
@@ -28,26 +28,23 @@
 
                             <div class="validation" ng-show="signup_form.login.$focused && !signup_form.login.$pristine">
                                 <div ng-if="signup_form.login.$error.required">
-                                    Login must be filled
+                                    {{ tr('FR_LOGIN_MUST_BE_FILLED') }}
                                 </div>
-                                <div ng-if="signup_form.login.$error.minlength">
-                                    Login required to be at least 3 chars
-                                </div>
-                                <div ng-if="signup_form.login.$error.maxlength">
-                                    Login cannot be longer than 32 chars
+                                <div ng-if="signup_form.login.$error.minlength || signup_form.login.$error.maxlength">
+                                    {{ tr('VALIDATOR_LOGIN_LENGTH', [3, 32]) }}
                                 </div>
                                 <div ng-if="signup_form.login.$error.pattern">
-                                    Login must contain no spaces
+                                    {{ tr('VALIDATOR_LOGIN_CHARS') }}
                                 </div>
                                 <div ng-if="signup_form.login.$error.unique">
-                                    This login is unavailable
+                                    {{ tr('VALIDATOR_LOGIN_UNAVAILABLE') }}
                                 </div>
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <label for="name">Your name:</label>
+                            <label for="name">{{ tr('FR_YOUR_NAME') }}:</label>
                         </td>
                         <td>
                             <input type="text"
@@ -61,7 +58,7 @@
 
                             <div class="validation" ng-show="signup_form.name.$focused && !signup_form.name.$pristine">
                                 <div ng-if="signup_form.name.$error.maxlength">
-                                    Name cannot be longer than 32 chars
+                                    {{ tr('VALIDATOR_USER_NAME_LENGTH', [32]) }}
                                 </div>
                             </div>
                             <div class="padding"></div>
@@ -69,7 +66,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <label for="name">Country:</label>
+                            <label for="name">{{ tr('FR_COUNTRY') }}:</label>
                         </td>
                         <td>
                             <select name="country_id" ng-model="signup.country_id" ng-options="country.country_id as country.country_name for country in lib.countries">
@@ -80,7 +77,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <label for="password1">Password:</label>
+                            <label for="password1">{{ tr('FR_PASSWORD') }}:</label>
                         </td>
                         <td>
                             <input type="password"
@@ -95,20 +92,17 @@
 
                             <div class="validation" ng-show="signup_form.password1.$focused && !signup_form.password1.$pristine">
                                 <div ng-if="signup_form.password1.$error.required">
-                                    Password must be filled
+                                    {{ tr('FR_PASSWORD_MUST_BE_FILLED') }}
                                 </div>
-                                <div ng-if="signup_form.password1.$error.minlength">
-                                    Password required to be at least 6 chars
-                                </div>
-                                <div ng-if="signup_form.password1.$error.maxlength">
-                                    Password cannot be longer than 32 chars
+                                <div ng-if="signup_form.password1.$error.minlength || signup_form.password1.$error.maxlength">
+                                    {{ tr('VALIDATOR_PASSWORD_LENGTH', [6, 32]) }}
                                 </div>
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <label for="password2">Password again:</label>
+                            <label for="password2">{{ tr('FR_PASSWORD_AGAIN') }}:</label>
                         </td>
                         <td>
                             <input type="password"
@@ -122,13 +116,13 @@
 
                             <div class="validation" ng-show="signup_form.password2.$focused && !signup_form.password2.$pristine">
                                 <div ng-if="signup_form.password2.$error.compareTo">
-                                    Entered password must match previous
+                                    {{ tr('FR_PASSWORD_MISMATCH') }}
                                 </div>
                             </div>
                         </td>
                     </tr>
                 </table>
-                <input ng-disabled="signup_form.$invalid" type="submit" value="Sign Up" style="float: right">
+                <input ng-disabled="signup_form.$invalid" type="submit" value="{{ tr('FR_SIGN_UP') }}" style="float: right">
             </form>
         </div>
     </div>

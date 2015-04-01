@@ -2,17 +2,14 @@
     <div id="page-contents">
         <div class="form-wrap">
             <form name="signup_form" ng-submit="submit()" novalidate="novalidate">
-                <h1><i class="icon-https"></i>SIGN UP</h1>
+                <h1><i class="icon-https"></i> {{ tr('FR_SIGN_UP') | uppercase }}</h1>
 
-                <div class="hint top">
-                    To begin registration on <b>myownradio.biz</b> please enter your email in to the
-                    field below:
-                </div>
-                <div class="status">{{ status }}</div>
+                <div class="hint top" bind-html="tr('FR_SIGN_UP_WELCOME')"></div>
+                <div class="status" bind-html="status"></div>
                 <table class="form-table">
                     <tr>
                         <td>
-                            <label for="email">Email:</label>
+                            <label for="email">{{ tr('FR_EMAIL') }}:</label>
                         </td>
                         <td>
                             <input type="email"
@@ -29,13 +26,13 @@
 
                             <div class="validation" ng-show="signup_form.email.$focused && !signup_form.email.$pristine">
                                 <div ng-if="signup_form.email.$error.required">
-                                    Email must be filled
+                                    {{ tr('VALIDATOR_EMAIL_EMPTY') }}
                                 </div>
                                 <div ng-if="signup_form.email.$error.pattern">
-                                    Incorrect email format
+                                    {{ tr('VALIDATOR_EMAIL_FORMAT') }}
                                 </div>
                                 <div ng-if="signup_form.email.$error.unique">
-                                    This email address is unavailable
+                                    {{ tr('VALIDATOR_EMAIL_UNAVAILABLE') }}
                                 </div>
                             </div>
                         </td>
@@ -43,13 +40,13 @@
                 </table>
                 <div class="social-login">
                     <span class="button fl_r" ng-click="signUpFacebook()"><i class="icon-facebook2"></i> Facebook</span>
-                    <span style="padding-right: 4px">or use social network to sign up:</span>
+                    <span style="padding-right: 4px">{{ tr('FR_OR_SIGN_UP_SOCIAL') }}:</span>
                 </div>
 
                 <div class="hint bottom">
-                    Already registered? <a href="/login/">Login</a>
+                    {{ tr('FR_ALREADY_REGISTERED') }} <a href="/login/">{{ tr('FR_LOGIN') }}</a>
                 </div>
-                <input ng-disabled="signup_form.$invalid" type="submit" value="Send letter" style="float:right">
+                <input ng-disabled="signup_form.$invalid" type="submit" value="{{ tr('FR_SEND_LETTER') }}" style="float:right">
             </form>
         </div>
     </div>

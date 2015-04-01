@@ -12,6 +12,7 @@ use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
 use Framework\Services\DB\DBQuery;
+use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Locale\I18n;
 use Objects\Category;
 use Objects\Color;
@@ -32,9 +33,13 @@ class InputValidator implements Injectable {
 
     const LOGIN_MIN_LENGTH = 3;
     const LOGIN_MAX_LENGTH = 32;
+
+    const USER_NAME_MAX_LENGTH = 32;
+
     const LOGIN_PATTERN = "~^[0-9a-z\\_]+$~";
 
     const STREAM_NAME_MIN_LENGTH = 3;
+    const STREAM_NAME_MAX_LENGTH = 32;
 
 
     /**
@@ -73,6 +78,10 @@ class InputValidator implements Injectable {
             throw new ControllerException(I18n::tr("VALIDATOR_EMAIL_FORMAT"));
         }
 
+        if (count((new SelectQuery("r_users"))->where("mail", [$email]))) {
+            throw new ControllerException(I18n::tr("VALIDATOR_EMAIL_UNAVAILABLE"));
+        }
+
     }
 
     /**
@@ -94,6 +103,17 @@ class InputValidator implements Injectable {
 
     }
 
+
+    public function validateUserName($name) {
+
+        if (strlen($name) > self::USER_NAME_MAX_LENGTH) {
+            throw new ControllerException(I18n::tr("VALIDATOR_USER_NAME_LENGTH", [
+                self::USER_NAME_MAX_LENGTH
+            ]));
+        }
+
+    }
+
     public function validateLogin($login) {
 
         if (strlen($login) < self::LOGIN_MIN_LENGTH || strlen($login) > self::LOGIN_MAX_LENGTH) {
@@ -104,6 +124,10 @@ class InputValidator implements Injectable {
 
         if (!preg_match(self::LOGIN_PATTERN, $login)) {
             throw new ControllerException(I18n::tr("VALIDATOR_LOGIN_CHARS"));
+        }
+
+        if (count((new SelectQuery("r_users"))->where("login", $login))) {
+            throw new ControllerException(I18n::tr("VALIDATOR_LOGIN_UNAVAILABLE"));
         }
 
     }

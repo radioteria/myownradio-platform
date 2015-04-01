@@ -1,13 +1,10 @@
 <div class="fixed-width">
     <div id="page-contents">
         <div class="form-wrap">
-            <h1><i class="icon-done"></i>PASSWORD RECOVERY</h1>
+            <h1><i class="icon-done"></i> {{ tr('FR_PASSWORD_RECOVERY') }}</h1>
 
-            <div class="hint top">
-                We sent to your email address a letter with further steps for password reset.
-                Please check your mailbox for letter and follow confirmation link in it.
-            </div>
-            <a href="/" type="button" style="float: right">Back to home</a>
+            <div class="hint top" bind-html="tr('FR_PASSWORD_RESET_SENT')"></div>
+            <a href="/" type="button" style="float: right" ng-bind="tr('FR_BACK_HOME')"></a>
         </div>
     </div>
 </div>

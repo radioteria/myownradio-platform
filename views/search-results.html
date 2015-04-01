@@ -1,15 +1,11 @@
 <div class="fixed-width">
     <div id="page-contents">
         <div class="catalog-title">
-            <span class="text">SEARCH RESULTS FOR <span class="highlight">{{ query | uppercase }}</span></span>
+            <span class="text">{{ tr('FR_SEARCH_RESULTS_FOR') | uppercase }} <span class="highlight">{{ query | uppercase }}</span></span>
         </div>
-        <div class="page-sub-title">
-            Here what we found based on your search request:
-        </div>
+        <div class="page-sub-title" bind-html="tr('FR_FOUND_RESULTS')"></div>
         <div class="new-stream-catalog-badge">
-            <div class="no-streams" ng-if="content.empty && content.loaded">
-                Nothing found for request '<b>{{ query }}</b>'. Check the spelling, or try a different search.
-            </div>
+            <div class="no-streams" ng-if="content.empty" bind-html="tr('FR_NOTHING_FOUND', [query])"></div>
             <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy" infinite-scroll-distance="1">
                 <li ng-repeat="stream in content.streams">
                     <div class="cover-section">
@@ -23,10 +19,10 @@
                             <a ng-href="{{ stream.key | streamsCatalog }}" ng-bind="stream.name"></a>
                         </div>
                         <div class="stats">
-                                <span mor-tooltip="Active listeners count is {{ stream.listeners_count | number }}">
+                                <span mor-tooltip="{{ tr('FR_COUNT_USERS_LISTENING', [ stream.listeners_count ]) }}">
                                     <i class="icon-hearing"></i><span>{{ stream.listeners_count | number }}</span>
                                 </span>
-                                <span mor-tooltip="Stream favorited {{ stream.bookmarks_count | number }} time(s)">
+                                <span mor-tooltip="{{ tr('FR_STREAM_BOOKMARKED_TIMES', [ stream.bookmarks_count ]) }}">
                                     <i class="icon-heart"></i> <span>{{ stream.bookmarks_count | number }}</span>
                                 </span>
                         </div>

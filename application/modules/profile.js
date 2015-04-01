@@ -18,7 +18,7 @@
                 $scope.error = "";
                 User.changeInfo($scope.details.name, $scope.details.info, $scope.details.permalink, $scope.details.country_id)
                     .onSuccess(function () {
-                        $scope.status = "Profile updated";
+                        $scope.status = $scope.tr("FR_PROFILE_UPDATED");
                     }, function (err) {
                         $scope.error = err;
                     });
@@ -46,7 +46,7 @@
             $scope.error = "";
             User.changePassword($scope.passwords.password1, $scope.passwords.current)
                 .onSuccess(function () {
-                    $scope.status = "Password successfully changed";
+                    $scope.status = $scope.tr("FR_PASSWORD_CHANGED");;
                 }, function (err) {
                     $scope.error = err;
                 });

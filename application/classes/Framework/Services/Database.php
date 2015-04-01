@@ -347,7 +347,7 @@ class Database implements SingletonInterface, Injectable {
 
         $resource = $this->createResource($query, $params);
 
-        //error_log("SQL: " . $resource->queryString);
+        error_log("SQL: " . $resource->queryString);
 
         return $resource->rowCount();
 

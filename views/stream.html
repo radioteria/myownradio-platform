@@ -137,7 +137,7 @@
             </div>
         </div>
     </div>
-
+    <style ng-if="content.streamData.cover_background">.timeline-track { background-color: {{ content.streamData.cover_background }} !important; }</style>
     <div class="fixed-width">
         <div class="container-padding">
             <div ng-if="!scheduleShown" class="timeline" time-line="scheduleTracks"></div>

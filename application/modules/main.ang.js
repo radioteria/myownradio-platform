@@ -8,7 +8,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
     var md = angular.module("application", [
 
-        "ngRoute", "ngAnimate", "ngDialog", "ngTouch",
+        "ngRoute", "ngAnimate", "ngDialog", "ngTouch", "ng",
         "angular-loading-bar", 'angulartics', 'angulartics.google.analytics',
         "httpPostFix", "infinite-scroll", "ng-context-menu", "ui.sortable", 'seo', "mor-popup",
 

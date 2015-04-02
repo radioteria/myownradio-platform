@@ -2,49 +2,55 @@
     <div id="page-contents">
         <div class="form-wrap">
             <form name="signup_form" ng-submit="submit()" novalidate="novalidate">
-                <h1><i class="icon-https"></i> {{ tr('FR_SIGN_UP') | uppercase }}</h1>
+                <h1>
+                    <i class="icon-https"></i>
+                    <translate filter="uppercase">FR_SIGN_UP</translate>
+                </h1>
 
-                <div class="hint top" bind-html="tr('FR_SIGN_UP_WELCOME')"></div>
+                <div class="hint top">
+                    <translate>FR_SIGN_UP_WELCOME</translate>
+                </div>
                 <div class="status" bind-html="status"></div>
                 <table class="form-table">
                     <tr>
                         <td>
-                            <label for="email">{{ tr('FR_EMAIL') }}:</label>
+                            <label for="email">
+                                <translate>FR_EMAIL_DOTS</translate>
+                            </label>
                         </td>
                         <td>
-                            <input type="email"
-                                   name="email"
-                                   id="email"
-                                   ng-model="signup.email"
-                                   ng-required="true"
-                                   pattern="^[\w\S]+@[\w\S]+\.[\w]{2,4}$"
-                                   ensure-unique="email"
-                                   autocomplete="off"
-                                   autofocus="true"
-                                   ng-focus="true"
-                                    />
+                            <input type="email" name="email" id="email" ng-model="signup.email" ng-required="true" pattern="^[\w\S]+@[\w\S]+\.[\w]{2,4}$"
+                                   ensure-unique="email" autocomplete="off" autofocus="true" ng-focus="true" />
 
                             <div class="validation" ng-show="signup_form.email.$focused && !signup_form.email.$pristine">
                                 <div ng-if="signup_form.email.$error.required">
-                                    {{ tr('VALIDATOR_EMAIL_EMPTY') }}
+                                    <translate>VALIDATOR_EMAIL_EMPTY</translate>
                                 </div>
                                 <div ng-if="signup_form.email.$error.pattern">
-                                    {{ tr('VALIDATOR_EMAIL_FORMAT') }}
+                                    <translate>VALIDATOR_EMAIL_FORMAT</translate>
                                 </div>
                                 <div ng-if="signup_form.email.$error.unique">
-                                    {{ tr('VALIDATOR_EMAIL_UNAVAILABLE') }}
+                                    <translate>VALIDATOR_EMAIL_UNAVAILABLE</translate>
                                 </div>
                             </div>
                         </td>
                     </tr>
                 </table>
                 <div class="social-login">
-                    <span class="button fl_r" ng-click="signUpFacebook()"><i class="icon-facebook2"></i> Facebook</span>
-                    <span style="padding-right: 4px">{{ tr('FR_OR_SIGN_UP_SOCIAL') }}:</span>
+                    <span class="button fl_r" ng-click="signUpFacebook()">
+                        <i class="icon-facebook2"></i>
+                        Facebook
+                    </span>
+                    <span style="padding-right: 4px">
+                        <translate>FR_OR_SIGN_UP_SOCIAL_DOTS</translate>
+                    </span>
                 </div>
 
                 <div class="hint bottom">
-                    {{ tr('FR_ALREADY_REGISTERED') }} <a href="/login/">{{ tr('FR_LOGIN') }}</a>
+                    <translate>FR_ALREADY_REGISTERED</translate>
+                    <a href="/login/">
+                        <translate>FR_LOGIN</translate>
+                    </a>
                 </div>
                 <input ng-disabled="signup_form.$invalid" type="submit" value="{{ tr('FR_SEND_LETTER') }}" style="float:right">
             </form>

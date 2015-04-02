@@ -3,10 +3,14 @@
     <li class="menu-item" ng-click="edit()"><i class="icon-mode-edit"></i> Edit info</li>
     <li class="menu-item divider"></li>
     <li>
-        <i class="icon-add"></i> Add to stream <span class="expand"></span>
+        <i class="icon-add"></i>
+        <translate>FR_ADD_TO_STREAM</translate>
+        <span class="expand"></span>
         <ul class="context-menu left-side drop-down">
             <li ng-repeat="stream in account.streams" ng-click="addToStream(stream)">
-                <i class="icon-wifi-tethering"></i> {{ stream.name }} <span class="grey">{{stream.tracks_count}}</span>
+                <span class="grey right">{{stream.tracks_count}}</span>
+                <i class="icon-wifi-tethering"></i>
+                {{ stream.name }}
             </li>
         </ul>
     </li>
@@ -14,7 +18,9 @@
         <i class="icon-add"></i> Move to stream <span class="expand"></span>
         <ul class="context-menu left-side drop-down">
             <li ng-repeat="stream in account.streams" ng-click="moveToStream(stream)">
-                <i class="icon-wifi-tethering"></i> {{ stream.name }} <span class="grey">{{stream.tracks_count}}</span>
+                <span class="grey right">{{stream.tracks_count}}</span>
+                <i class="icon-wifi-tethering"></i>
+                {{ stream.name }}
             </li>
         </ul>
     </li>
@@ -27,6 +33,12 @@
         </ul>
     </li>
     <li class="menu-item divider"></li>
-    <li class="menu-item" ng-click="deleteSelected()"><i class="icon-cross"></i> Delete from stream</li>
-    <li class="menu-item" ng-click="deleteCompletelySelected()"><i class="icon-delete"></i> Delete tracks</li>
+    <li class="menu-item" ng-click="deleteSelected()">
+        <i class="icon-cross"></i>
+        <translate>FR_REMOVE_FROM_STREAM</translate>
+    </li>
+    <li class="menu-item" ng-click="deleteCompletelySelected()">
+        <i class="icon-delete"></i>
+        <translate>FR_DELETE_TRACKS</translate>
+    </li>
 </ul>

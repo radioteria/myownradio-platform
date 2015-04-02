@@ -1,16 +1,21 @@
 <div class="hello-page">
     <div class="fixed-width">
         <div class="big-description">
-            <div class="dark-background" bind-html="tr('FR_WELCOME_MESSAGE')"></div>
+            <div class="dark-background">
+                <translate>FR_WELCOME_MESSAGE</translate>
+            </div>
             <div class="main-actions">
-
-                <a class="page-button" href="/streams/" mor-tooltip="{{ tr('FR_CLICK_TO_BROWSE') }}" bind-html="tr('FR_BROWSE_STREAMS')"></a>
-
+                <a class="page-button" href="/streams/" mor-tooltip="{{ tr('FR_CLICK_TO_BROWSE') }}">
+                    <translate>FR_BROWSE_STREAMS</translate>
+                </a>
                 <span class="only-first-element" ng-switch="account.authorized === true">
-                    <a class="page-button ng-cloak" ng-switch-when="false" ng-href="/login" bind-html="tr('FR_LOGIN_TOOLTIP')"></a>
-                    <a class="page-button ng-cloak" ng-switch-when="true" ng-href="/profile/" bind-html="tr('FR_PROFILE_TOOLTIP')"></a>
+                    <a class="page-button ng-cloak" ng-switch-when="false" ng-href="/login">
+                        <translate>FR_LOGIN_TOOLTIP</translate>
+                    </a>
+                    <a class="page-button ng-cloak" ng-switch-when="true" ng-href="/profile/">
+                        <translate>FR_PROFILE_TOOLTIP</translate>
+                    </a>
                 </span>
-
             </div>
         </div>
     </div>

@@ -1,15 +1,23 @@
 <div class="stream-share">
-    <h1 bind-html="tr('FR_SHARE_TITLE', { name: streamObject.name })"></h1>
+    <h1>
+        <translate attr="{name: streamObject.name}">FR_SHARE_TITLE</translate>
+    </h1>
     <div class="contents" ng-init="activeTab=0">
         <ul class="mor-tabs">
             <li class="tab" ng-click="activeTab=0" ng-class="{active: activeTab == 0}">
-                <i class="icon-share-alt"></i> {{ tr('FR_SHARE_TAB_SHARE') }}</li>
+                <i class="icon-share-alt"></i>
+                <translate>FR_SHARE_TAB_SHARE</translate>
+            </li>
             <li class="tab" ng-click="activeTab=1" ng-class="{active: activeTab == 1}">
-                <i class="icon-embed"></i> {{ tr('FR_SHARE_TAB_EMBED') }}</li>
+                <i class="icon-embed"></i>
+                <translate>FR_SHARE_TAB_EMBED</translate>
+            </li>
         </ul>
         <div class="mor-tabs-contents">
             <div class="tab-content tab-share" ng-show="activeTab == 0">
-                <h1 class="center" bind-html="tr('FR_SHARE_CHANNEL_TEXT', { name: streamObject.name })"></h1>
+                <h1 class="center">
+                    <translate attr="{name: streamObject.name}">FR_SHARE_CHANNEL_TEXT</translate>
+                </h1>
                 <div class="social-buttons center">
                     <span class='sb st_sharethis_large' displayText='ShareThis' st_url="{{ streamObject.url }}"></span>
                     <span class='sb st_facebook_large' displayText='Facebook' st_url="{{ streamObject.url }}"></span>
@@ -20,11 +28,15 @@
             </div>
             <div class="tab-content" ng-show="activeTab == 1">
                 <div class="embed-title">
-                    <label class="block" for="embed" style="margin-bottom: 4px" bind-html="tr('FR_SHARE_EMBED_CODE')"></label>
+                    <label class="block" for="embed" style="margin-bottom: 4px">
+                        <translate>FR_SHARE_EMBED_CODE</translate>
+                    </label>
                     <input class="block" id="embed" type="text" readonly="" ng-model="code" onclick="this.select()" />
                 </div>
                 <div class="embed-preview">
-                    <div style="margin-bottom: 14px">Preview:</div>
+                    <div style="margin-bottom: 14px">
+                        <translate>FR_PREVIEW_DOTS</translate>
+                    </div>
                     <div class="embed-frame">
                         <div class="auto" ng-if="embed" style="display: inline-block">
                             <iframe ng-src="{{ embed.url }}" width="{{ embed.maxSize }}" height="{{ embed.maxSize }}"></iframe>

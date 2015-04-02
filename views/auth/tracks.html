@@ -40,8 +40,10 @@
                     <li>
                         <i class="icon-add"></i> <translate>FR_ADD_TO_STREAM</translate><span class="expand"></span>
                         <ul class="context-menu drop-down right-side">
-                            <li ng-repeat="stream in account.streams" ng-click="addToStream(stream)">
-                                <i class="icon-wifi-tethering"></i> {{ stream.name }} <span class="grey">{{stream.tracks_count}}</span>
+                            <li class="hiddenOverflow relative" ng-repeat="stream in account.streams" ng-click="addToStream(stream)">
+                                <span class="grey right" ng-bind="stream.tracks_count"></span>
+                                <i class="icon-wifi-tethering"></i>
+                                <span class="ellipsis" ng-bind="stream.name"></span>
                             </li>
                         </ul>
                     </li>

@@ -2,21 +2,34 @@
     <div id="page-contents">
         <ul class="sections">
             <li active-tab="^\/streams\/">
-                <a href="/streams/" ng-bind="tr('FR_ALL_CHANNELS') | uppercase"></a>
+                <a href="/streams/">
+                    <translate filter="uppercase">FR_ALL_CHANNELS</translate>
+                </a>
             </li>
             <li active-tab="^\/bookmarks\/" ng-if="account.authorized">
-                <a href="/bookmarks/" ng-bind="tr('FR_MY_BOOKMARKS') | uppercase"></a>
+                <a href="/bookmarks/">
+                    <translate filter="uppercase">FR_MY_BOOKMARKS</translate>
+                </a>
             </li>
             <li active-tab="^\/user\/{{ account.user.key | regExpEscape }}$" ng-if="account.authorized">
-                <a href="/user/{{ account.user.key }}" ng-bind="tr('FR_MY_STREAMS') | uppercase"></a>
+                <a href="/user/{{ account.user.key }}">
+                    <translate filter="uppercase">FR_MY_STREAMS</translate>
+                </a>
             </li>
             <li active-tab="^\/user\/.+$" ng-if="content.owner && account.user.uid !== content.owner.uid">
-                <a href="/user/{{ content.owner.key }}">BY {{ content.owner | userDisplayName | uppercase }}</a>
+                <a href="/user/{{ content.owner.key }}">
+                    <i class="icon-user"></i>
+                    {{ content.owner | userDisplayName | uppercase }}
+                </a>
             </li>
         </ul>
-        <div class="page-sub-title" ng-bind="tr('FR_BROWSE_CHANNELS_DESCRIPTION')"></div>
+        <div class="page-sub-title">
+            <translate>FR_BROWSE_CHANNELS_DESCRIPTION</translate>
+        </div>
         <div class="new-stream-catalog-badge">
-            <div class="no-streams" ng-if="content.empty" bind-html="tr('FR_NO_STREAMS_CREATE_NEW')"></div>
+            <div class="no-streams" ng-if="content.empty">
+                <translate>FR_NO_STREAMS_CREATE_NEW</translate>
+            </div>
             <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy" infinite-scroll-distance="1">
                 <li ng-repeat="stream in content.streams">
                     <div class="cover-section">

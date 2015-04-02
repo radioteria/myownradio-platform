@@ -73,6 +73,9 @@
     "FR_PLAYER_AUDIO_FORMAT"            : "Audio Format",
     "FR_PLAYER_OPEN_EXTERNAL"           : "Open in external player",
 
+    "FR_SHOW"                           : "Show",
+    "FR_HIDE"                           : "Hide",
+    "FR_UNSPECIFIED"                    : "Unspecified",
     "FR_CLOSE"                          : "Close",
     "FR_CANCEL"                         : "Cancel",
     "FR_CREATE"                         : "Create",
@@ -112,6 +115,9 @@
     "FR_NEW_PASSWORD_AGAIN"             : "New password again:",
     "FR_STATION_NAME"                   : "Station name:",
     "FR_USER_NAME"                      : "Your name:",
+    "FR_USER_LOGIN"                     : "Your login:",
+    "FR_USER_COUNTRY"                   : "You are from:",
+    "FR_USER_INFORMATION"               : "Information:",
     "FR_HASHTAGS"                       : "Hashtags:",
     "FR_PERMALINK"                      : "Permalink:",
     "FR_INFORMATION"                    : "Information:",
@@ -122,6 +128,17 @@
     "FR_SAVE"                           : "Save",
     "FR_NEVER"                          : "Never",
     "FR_NONE"                           : "None",
+    "FR_MY_PROFILE"                     : "My Profile",
+
+    "FR_LOGIN_DOTS"                     : "Login:",
+    "FR_PASSWORD_DOTS"                  : "Password:",
+    "FR_PASSWORD_AGAIN_DOTS"            : "Password again:",
+    "FR_PREVIEW_DOTS"                   : "Preview:",
+    "FR_EMAIL_DOTS"                     : "Email:",
+    "FR_YOUR_NAME_DOTS"                 : "Your name:",
+    "FR_COUNTRY_DOTS"                   : "Country:",
+    "FR_LISTENERS_DOTS"                 : "Active listeners:",
+
 
     "FR_BROWSE_STATIONS"                : "Browse stations catalog",
     "FR_BROWSE_CATEGORIES"              : "Browse categories",
@@ -129,13 +146,13 @@
     "FR_REPORT_QUESTION"                : "Report problem or ask question",
     "FR_SEARCH_RESULTS_FOR"             : "Search results for",
     "FR_SIMILAR_CHANNELS"               : "Similar radio channels",
-    "FR_ALL_CHANNELS"                   : "All radio channels",
+    "FR_ALL_CHANNELS"                   : "All radio stations",
 
     "FR_LOGIN_MUST_BE_FILLED"           : "Login must be filled",
     "FR_PASSWORD_MUST_BE_FILLED"        : "Password must be filled",
     "FR_REMEMBER_ME"                    : "Remember me on this computer",
-    "FR_OR_LOGIN_SOCIAL"                : "or use social network to login",
-    "FR_OR_SIGN_UP_SOCIAL"              : "or use social network to sign up",
+    "FR_OR_LOGIN_SOCIAL_DOTS"           : "or use social network to login:",
+    "FR_OR_SIGN_UP_SOCIAL_DOTS"         : "or use social network to sign up:",
     "FR_EDIT_CHANNEL_INFO"              : "Edit station information",
     "FR_EDIT_CHANNEL_TRACKLIST"         : "Edit station tracklist",
     "FR_EDIT_TRACK_INFO"                : "Edit track information",
@@ -149,9 +166,8 @@
     "FR_CREATE_IT"                      : "Create it!",
     "FR_RECOVER_IT"                     : "Recover it!",
 
-    "FR_LISTENERS"                      : "Active listeners",
 
-    "FR_FOUND_RESULTS"                  : "Here what we found based on your search request:",
+    "FR_FOUND_RESULTS"                  : "Here what we found based on your search request",
     "FR_NOTHING_FOUND"                  : "Nothing found for request <b>%0%</b>. Check the spelling, or try a different search.",
 
     "FR_COUNT_USERS_LISTENING"          : "%0% user(s) is listening to this radio channel",
@@ -258,7 +274,8 @@
     "FR_STATIONS_STOP"                  : "Stop streaming",
 
     "FR_CHANGE_COLOR"                   : "Change color",
-    "FR_ADD_TO_STREAM"                  : "Add to stream",
+    "FR_ADD_TO_STREAM"                  : "Add to station playlist",
+    "FR_REMOVE_FROM_STREAM"             : "Remove from station playlist",
     "FR_DELETE_TRACKS"                  : "Delete tracks",
 
     "FR_SORT_TITLE"                     : "Title",
@@ -286,6 +303,9 @@
     "FR_UPLOADING_FILE"                 : "Uploading <b>%0%</b>...",
     "FR_UPLOADING_LEFT"                 : "(left: %0%)",
     "FR_UPLOAD_CANCEL_HINT"             : "Cancel upload",
-    "FR_UPLOAD_START_HINT"              : "Start upload"
+    "FR_UPLOAD_START_HINT"              : "Start upload",
+
+    "FR_CATEGORIES_TITLE"               : "Filter radio stations by category",
+    "FR_CATEGORIES_LIST_LABEL"          : "{\"one\":\"stream\", \"other\":\"streams\"}"
 
 }

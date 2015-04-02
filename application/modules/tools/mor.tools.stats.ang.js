@@ -41,18 +41,28 @@
     tools.factory("$tr", [function () {
         return function ($key, args) {
 
+            var result;
+
             if (typeof locale[$key] == "undefined") {
                 return $key;
             }
 
-            return locale[$key].replace(/(%[a-z0-9\\_]+%)/g, function (match) {
+            result = locale[$key].replace(/(%[a-z0-9\\_]+%)/g, function (match) {
                 var key = match.substr(1, match.length - 2);
                 if (typeof args != "undefined" && typeof args[key] != "undefined") {
                     return htmlEscape(args[key]);
                 } else {
                     return "";
                 }
-            })
+            });
+
+            if (result.substr(0, 1) == "{" && result.substr(result.length - 1, 1) == "}") {
+
+                result = JSON.parse(result);
+            }
+
+            return result;
+
         }
     }]);
 
@@ -62,16 +72,29 @@
                 args: "="
             },
             restrict: "E",
-            link: function (scope, element, attr) {
-                var label = element.text(),
-                    translated = $tr(label, scope.args);
+            compile: function () {
+                return {
+                    pre: function (scope, element, attr) {
+                        var label = element.text(),
+                            translate = function () {
+                                var translated = $tr(label, scope.args);
+                                if (angular.isDefined(attr["filter"])) {
+                                    var filter = $filter(attr['filter']);
+                                    translated = filter(translated);
+                                }
+                                element.html(translated);
+                            };
 
-                if (angular.isDefined(attr["filter"])) {
-                    var filter = $filter(attr['filter']);
-                    translated = filter(translated);
+                        if (angular.isDefined(scope.args)) {
+                            scope.$watch("args", function () {
+                                translate();
+                            });
+                        } else {
+                            translate();
+                        }
+
+                    }
                 }
-
-                element.replaceWith(translated);
             }
         }
     }]);

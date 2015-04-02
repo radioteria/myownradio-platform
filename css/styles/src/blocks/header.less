@@ -19,21 +19,6 @@ header {
     color: @HEAD_TEXT_COLOR;
   }
 
-  #layer {
-    position: absolute;
-    height: @HEADER_HEIGHT;
-    width: 100%;
-    background-color: @HEAD_BACKGROUND_COLOR;
-    .shaded-bottom();
-
-    #green {
-      width: 50%;
-      background-color: @HEAD_LOGO_BACKGROUND_COLOR;
-      height: @HEADER_HEIGHT;
-      .shaded-bottom();
-    }
-  }
-
   #hd {
     height: @HEADER_HEIGHT;
 
@@ -41,24 +26,32 @@ header {
       background-color: @HEAD_BACKGROUND_COLOR;
       overflow: visible;
       height: @HEADER_HEIGHT;
-      .shaded-bottom();
 
       #logo {
         height: @HEADER_HEIGHT;
         background-color: @HEAD_LOGO_BACKGROUND_COLOR;
         float: left;
-        padding-top: (@HEADER_HEIGHT / 2) - 20px;
         padding-left: @CELLS_PADDING;
         padding-right: @CELLS_PADDING;
+        padding-top: 9px;
         box-sizing: border-box;
         font-family: "Myriad Pro Thin", sans-serif;
         font-size: 24pt;
-        .shaded-bottom();
-
+        &:before {
+          content: ' ';
+          display: block;
+          position: absolute;
+          width: 100%;
+          height: @HEADER_HEIGHT;
+          background-color: @HEAD_LOGO_BACKGROUND_COLOR;
+          top: 0;
+          left: -100%;
+        }
 
         a {
           color: white;
         }
+
       }
 
       #search {

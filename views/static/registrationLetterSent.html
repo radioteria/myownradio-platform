@@ -1,10 +1,16 @@
 <div class="fixed-width">
     <div id="page-contents">
         <div class="form-wrap">
-            <h1><i class="icon-done"></i> {{ tr('FR_SIGN_UP') | uppercase }}</h1>
-
-            <div class="hint top" bind-html="tr('FR_REG_LETTER_SENT')"></div>
-            <a href="/" type="button" style="float: right" ng-bind="tr('FR_BACK_HOME')"></a>
+            <h1>
+                <i class="icon-done"></i>
+                <translate filter="uppercase">FR_SIGN_UP</translate>
+            </h1>
+            <div class="hint top">
+                <translate>FR_REG_LETTER_SENT</translate>
+            </div>
+            <a class="right" href="/" type="button">
+                <translate>FR_BACK_HOME</translate>
+            </a>
         </div>
     </div>
 </div>

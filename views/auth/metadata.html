@@ -95,12 +95,8 @@
             </td>
             <td>
                 <select ng-disabled="!metadata.save_can_be_shared" ng-model="metadata.can_be_shared">
-                    <option value="0">
-                        <translate>FR_METADATA_ACCESS_PRIVATE</translate>
-                    </option>
-                    <option value="1">
-                        <translate>FR_METADATA_ACCESS_PUBLIC</translate>
-                    </option>
+                    <option value="0" html-bind="tr('FR_METADATA_ACCESS_PRIVATE')"></option>
+                    <option value="1" html-bind="tr('FR_METADATA_ACCESS_PUBLIC')"></option>
                 </select>
                 <div class="info-block" ng-visible="metadata.can_be_shared">
                     <translate>FR_METADATA_ACCESS_HINT</translate>

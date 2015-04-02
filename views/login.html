@@ -2,39 +2,35 @@
     <div id="page-contents">
         <div class="form-wrap">
             <form name="login" ng-submit="submit()" novalidate="novalidate">
-                <h1><i class="icon-https"></i>{{ tr('FR_LOGIN') | uppercase }}</h1>
-                <div class="status">{{ status }}</div>
+                <h1>
+                    <i class="icon-https"></i>
+                    <translate filter="uppercase">FR_LOGIN</translate>
+                </h1>
+                <div class="status" html-bind="status"></div>
                 <table class="form-table">
                     <tr>
-                        <td><label for="login">{{ tr('FR_LOGIN') }}:</label></td>
                         <td>
-                            <input type="text"
-                                   id="login"
-                                   name="login"
-                                   ng-model="credentials.login"
-                                   ng-required="true"
-                                   ng-focus=""
-                                   autocomplete="true"
-                                    />
+                            <label for="login">
+                                <translate>FR_LOGIN_DOTS</translate>
+                            </label>
+                        </td>
+                        <td>
+                            <input type="text" id="login" name="login" ng-model="credentials.login" ng-required="true"
+                                   ng-focus="" autocomplete="true" />
 
                             <div class="validation" ng-if="login.login.$error.required && login.login.$focused">
-                                {{ tr('FR_LOGIN_MUST_BE_FILLED') }}
+                                <translate>FR_LOGIN_MUST_BE_FILLED</translate>
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td><label for="password">{{ tr('FR_PASSWORD') }}:</label></td>
                         <td>
-                            <input  type="password"
-                                    name="password"
-                                    id="password"
-                                    ng-model="credentials.password"
-                                    ng-required="true"
-                                    ng-focus
-                                    />
+                            <input  type="password" name="password" id="password" ng-model="credentials.password"
+                                    ng-required="true" ng-focus />
 
                             <div class="validation" ng-if="login.password.$error.required && login.password.$focused">
-                                {{ tr('FR_PASSWORD_MUST_BE_FILLED') }}
+                                <translate>FR_PASSWORD_MUST_BE_FILLED</translate>
                             </div>
                         </td>
                     </tr>
@@ -42,19 +38,30 @@
                         <td></td>
                         <td>
                             <input type="checkbox" id="save" name="save" ng-model="credentials.save" />
-                            <label for="save">{{ tr('FR_REMEMBER_ME') }}</label>
+                            <label for="save">
+                                <translate>FR_REMEMBER_ME</translate>
+                            </label>
                         </td>
                     </tr>
                 </table>
                 <div class="social-login">
                     <span class="button fl_r" ng-click="signUpFacebook()"><i class="icon-facebook2"></i> Facebook</span>
-                    <span style="padding-right: 4px">{{ tr('FR_OR_LOGIN_SOCIAL') }}:</span>
+                    <span style="padding-right: 4px">
+                        <translate>FR_OR_LOGIN_SOCIAL_DOTS</translate>
+                    </span>
                 </div>
                 <div class="hint bottom">
-                    {{ tr('FR_DONT_HAVE_ACCOUNT') }} <a href="/signup" ng-bind="tr('FR_CREATE_IT')"></a><br>
-                    {{ tr('FR_FORGOT_PASSWORD') }} <a href="/recover" ng-bind="tr('FR_RECOVER_IT')"></a>
+                    <translate>FR_DONT_HAVE_ACCOUNT</translate>
+                    <a href="/signup">
+                        <translate>FR_CREATE_IT</translate>
+                    </a>
+                    <br>
+                    <translate>FR_FORGOT_PASSWORD</translate>
+                    <a href="/recover">
+                        <translate>FR_RECOVER_IT</translate>
+                    </a>
                 </div>
-                <input ng-disabled="login.$invalid" type="submit" value="Login" style="float:right">
+                <input class="right" ng-disabled="login.$invalid" type="submit" value="{{ tr('FR_ENTER') }}" />
             </form>
         </div>
     </div>

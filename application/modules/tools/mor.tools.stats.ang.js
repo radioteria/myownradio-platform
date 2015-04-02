@@ -71,7 +71,7 @@
                     translated = filter(translated);
                 }
 
-                element.html(translated);
+                element.replaceWith(translated);
             }
         }
     }]);

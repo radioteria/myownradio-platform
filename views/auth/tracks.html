@@ -38,7 +38,7 @@
 
                 <ul class="context-menu select-persistent fixed" id="track-menu">
                     <li>
-                        <i class="icon-add"></i> Add to stream <span class="expand"></span>
+                        <i class="icon-add"></i> <translate>FR_ADD_TO_STREAM</translate><span class="expand"></span>
                         <ul class="context-menu drop-down right-side">
                             <li ng-repeat="stream in account.streams" ng-click="addToStream(stream)">
                                 <i class="icon-wifi-tethering"></i> {{ stream.name }} <span class="grey">{{stream.tracks_count}}</span>
@@ -46,7 +46,7 @@
                         </ul>
                     </li>
                     <li>
-                        <i class="icon-create"></i> Change color <span class="expand"></span>
+                        <i class="icon-create"></i> <translate>FR_CHANGE_COLOR</translate><span class="expand"></span>
                         <ul class="context-menu drop-down right-side">
                             <li ng-repeat="group in lib.groups" ng-click="changeGroup(group)">
                                 <i style="color:{{ group.color_code || 'none' }}" class="icon-circle"></i> {{ group.color_name }}
@@ -54,10 +54,14 @@
                         </ul>
                     </li>
                     <li class="menu-item divider"></li>
-                    <li class="menu-item" ng-click="edit()"><i class="icon-mode-edit"></i> Edit info</li>
+                    <li class="menu-item" ng-click="edit()">
+                        <i class="icon-mode-edit"></i>
+                        <translate>FR_EDIT_TRACK_INFO</translate>
+                    </li>
                     <li class="menu-item divider"></li>
                     <li ng-click="deleteSelected()">
-                        <i class="icon-delete"></i> Delete tracks
+                        <i class="icon-delete"></i>
+                        <translate>FR_DELETE_TRACKS</translate>
                     </li>
                 </ul>
                 <table class="tracks">
@@ -68,7 +72,7 @@
                                 <i class="icon-chevron-down" ng-show="sorting.order == 0"></i>
                                 <i class="icon-chevron-up" ng-show="sorting.order == 1"></i>
                             </span>
-                            <span ng-click="sorting.change(0)" mor-tooltip="Sort by upload date">#</span>
+                            <span ng-click="sorting.change(0)" mor-tooltip="{{ tr('FR_SORT_BY_DATE') }}">#</span>
                         </td>
                         <td></td>
                         <td>
@@ -76,37 +80,49 @@
                                 <i class="icon-chevron-down" ng-show="sorting.order == 0"></i>
                                 <i class="icon-chevron-up" ng-show="sorting.order == 1"></i>
                             </span>
-                            <span ng-click="sorting.change(1)" mor-tooltip="Sort by track title">Title</span>
+                            <span ng-click="sorting.change(1)" mor-tooltip="{{ tr('FR_SORT_BY_TITLE') }}">
+                                <translate>FR_SORT_TITLE</translate>
+                            </span>
                         </td>
                         <td>
                             <span ng-show="sorting.row == 2">
                                 <i class="icon-chevron-down" ng-show="sorting.order == 0"></i>
                                 <i class="icon-chevron-up" ng-show="sorting.order == 1"></i>
                             </span>
-                            <span ng-click="sorting.change(2)" mor-tooltip="Sort by artist name">Artist</span>
+                            <span ng-click="sorting.change(2)" mor-tooltip="{{ tr('FR_SORT_BY_ARTIST') }}">
+                                <translate>FR_SORT_ARTIST</translate>
+                            </span>
                         </td>
                         <td>
                             <span ng-show="sorting.row == 3">
                                 <i class="icon-chevron-down" ng-show="sorting.order == 0"></i>
                                 <i class="icon-chevron-up" ng-show="sorting.order == 1"></i>
                             </span>
-                            <span ng-click="sorting.change(3)" mor-tooltip="Sort by track genre">Genre</span>
+                            <span ng-click="sorting.change(3)" mor-tooltip="{{ tr('FR_SORT_BY_GENRE') }}">
+                                <translate>FR_SORT_ARTIST</translate>
+                            </span>
                         </td>
                         <td>
                             <span ng-show="sorting.row == 4">
                                 <i class="icon-chevron-down" ng-show="sorting.order == 0"></i>
                                 <i class="icon-chevron-up" ng-show="sorting.order == 1"></i>
                             </span>
-                            <span ng-click="sorting.change(4)" mor-tooltip="Sort by track duration">Time</span>
+                            <span ng-click="sorting.change(4)" mor-tooltip="{{ tr('FR_SORT_BY_TIME') }}">
+                                <translate>FR_SORT_TIME</translate>
+                            </span>
                         </td>
                     </tr>
                     </tbody>
                 </table>
                 <div style="height: 4px;"></div>
-                <div class="loading-placeholder" ng-show="tracksPending">Loading...</div>
+                <div class="loading-placeholder" ng-show="tracksPending">
+                    <translate>FR_LOADING</translate>
+                </div>
                 <div class="empty-playlist" ng-show="!tracksPending && tracks.length == 0">
                     <div class="inner">
-                        <h1>EMPTY</h1>
+                        <h1>
+                            <translate filter="uppercase">FR_EMPTY</translate>
+                        </h1>
                     </div>
                 </div>
                 <table class="tracks" onselectstart='return false;' unselectable='on'>

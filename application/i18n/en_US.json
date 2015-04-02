@@ -74,6 +74,7 @@
     "FR_PLAYER_OPEN_EXTERNAL"           : "Open in external player",
 
     "FR_CLOSE"                          : "Close",
+    "FR_CANCEL"                         : "Cancel",
     "FR_CREATE"                         : "Create",
     "FR_HOME"                           : "Home",
     "FR_LOGIN"                          : "Login",
@@ -120,6 +121,7 @@
     "FR_FOR_TRACKS"                     : "tracks",
     "FR_SAVE"                           : "Save",
     "FR_NEVER"                          : "Never",
+    "FR_NONE"                           : "None",
 
     "FR_BROWSE_STATIONS"                : "Browse stations catalog",
     "FR_BROWSE_CATEGORIES"              : "Browse categories",
@@ -240,11 +242,6 @@
     "FR_SHUFFLE_TRACKS"                 : "Shuffle tracks",
     "FR_UPLOAD_NEW_TRACKS"              : "Upload new tracks",
 
-    "FR_SORT_TITLE"                     : "Title",
-    "FR_SORT_ARTIST"                    : "Artist",
-    "FR_SORT_GENRE"                     : "Genre",
-    "FR_SORT_TIME"                      : "Time",
-
     "FR_LOADING"                        : "Loading...",
     "FR_EMPTY"                          : "Empty",
     "FR_EMPTY_HINT"                     : "Add some tracks from your profile or <a ng-click=\"upload()\">upload</a> more.",
@@ -258,9 +255,37 @@
     "FR_STATIONS_DURATION"              : "Duration",
     "FR_STATIONS_START_STOP"            : "Start or stop streaming",
     "FR_STATIONS_START"                 : "Start streaming",
-    "FR_STATIONS_STOP"                  : "Stop streaming"
+    "FR_STATIONS_STOP"                  : "Stop streaming",
 
+    "FR_CHANGE_COLOR"                   : "Change color",
+    "FR_ADD_TO_STREAM"                  : "Add to stream",
+    "FR_DELETE_TRACKS"                  : "Delete tracks",
 
+    "FR_SORT_TITLE"                     : "Title",
+    "FR_SORT_ARTIST"                    : "Artist",
+    "FR_SORT_GENRE"                     : "Genre",
+    "FR_SORT_TIME"                      : "Time",
 
+    "FR_SORT_BY_DATE"                   : "Sort by upload date",
+    "FR_SORT_BY_TITLE"                  : "Sort by track title",
+    "FR_SORT_BY_ARTIST"                 : "Sort by artist name",
+    "FR_SORT_BY_GENRE"                  : "Sort by track genre",
+    "FR_SORT_BY_TIME"                   : "Sort by track duration",
+
+    "FR_UPLOAD_MESSAGE"                 : "Before upload make sure that your audio file(s):",
+    "FR_UPLOAD_CONDITION_1"             : "Has not violate any copyright laws.",
+    "FR_UPLOAD_CONDITION_2"             : "Has not exceed <b>250 MB</b>.",
+    "FR_UPLOAD_CONDITION_3"             : "Is in high bitrate (<b>256 kbit/s or greater</b>)",
+    "FR_UPLOAD_CONDITION_4"             : "Is in one of this formats: <b>mp3</b>, <b>flac</b>, <b>ogg</b>, <b>m4a</b>, <b>ape</b>, <b>aac</b>.",
+    "FR_UPLOAD_CONDITION_5"             : "Is not shorter than <b>15 seconds</b> and not longer than <b>240 minutes</b>.",
+
+    "FR_UPLOAD_BUTTON_HINT"             : "Click here to select audio files from your computer",
+    "FR_UPLOAD_BUTTON_TEXT"             : "Select files from PC...",
+    "FR_UPLOAD_SELECTED_COUNT"          : "Selected <b>%0%</b> files:",
+    "FR_UPLOAD_ADD_TO_STREAM"           : "Automatically add uploaded tracks to this stream:",
+    "FR_UPLOADING_FILE"                 : "Uploading <b>%0%</b>...",
+    "FR_UPLOADING_LEFT"                 : "(left: %0%)",
+    "FR_UPLOAD_CANCEL_HINT"             : "Cancel upload",
+    "FR_UPLOAD_START_HINT"              : "Start upload"
 
 }

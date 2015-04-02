@@ -562,10 +562,9 @@ header #hd .fixed-width {
 header #hd .fixed-width #logo {
   height: 64px;
   background-color: #a4d35a;
-  float: left;
   padding-left: 16px;
   padding-right: 16px;
-  padding-top: 9px;
+  padding-top: 10px;
   box-sizing: border-box;
   font-family: "Myriad Pro Thin", sans-serif;
   font-size: 24pt;
@@ -705,16 +704,21 @@ header #hd .fixed-width #buttons a:hover {
   background-color: #fc7d7d;
 }
 header #hd .fixed-width #links {
-  padding-top: 22px;
+  display: block;
 }
-header #hd .fixed-width #links a {
+header #hd .fixed-width #links > a {
   color: #ffffff;
+  padding-top: 22px;
+  width: 100px;
+  height: 64px;
+  display: block;
+  float: left;
+  box-sizing: border-box;
+  text-align: center;
 }
-header #hd .fixed-width #links a:first-child {
-  padding-left: 16px;
-}
-header #hd .fixed-width #links a:not(:last-child) {
-  padding-right: 16px;
+header #hd .fixed-width #links > a:hover,
+header #hd .fixed-width #links > a.active {
+  background-color: #141723;
 }
 header #hd .fixed-width #links i {
   font-size: 12px;

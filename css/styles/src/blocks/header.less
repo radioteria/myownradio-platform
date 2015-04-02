@@ -30,10 +30,9 @@ header {
       #logo {
         height: @HEADER_HEIGHT;
         background-color: @HEAD_LOGO_BACKGROUND_COLOR;
-        float: left;
         padding-left: @CELLS_PADDING;
         padding-right: @CELLS_PADDING;
-        padding-top: 9px;
+        padding-top: 10px;
         box-sizing: border-box;
         font-family: "Myriad Pro Thin", sans-serif;
         font-size: 24pt;
@@ -188,14 +187,18 @@ header {
       }
 
       #links {
-        padding-top: (@HEADER_HEIGHT / 2) - 10px;
-        a {
+        display: block;
+        & > a {
           color: #ffffff;
-          &:first-child {
-            padding-left: 16px;
-          }
-          &:not(:last-child) {
-            padding-right: 16px;
+          padding-top: 22px;
+          width: 100px;
+          height: @HEADER_HEIGHT;
+          display: block;
+          float: left;
+          box-sizing: border-box;
+          text-align: center;
+          &:hover, &.active {
+            background-color: darken(@HEAD_BACKGROUND_COLOR, 10%);
           }
         }
         i {

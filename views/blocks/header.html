@@ -18,7 +18,7 @@
                 </a>
             </span>
         </div>
-        <h2 id="logo">
+        <h2 id="logo" class="left">
             <a href="/">
                 <i class="mor-logo"></i>MYOWNRADIO <sup>beta</sup>
             </a>
@@ -48,12 +48,10 @@
             </div>
         </div>
         <div id="links">
-            <a href="/streams/" mor-tooltip="{{ tr('FR_BROWSE_STATIONS') }}">
-                <i class="icon-wifi-tethering"></i>
+            <a href="/streams/" mor-tooltip="{{ tr('FR_BROWSE_STATIONS') }}" active-tab="^\/streams\/">
                 <translate>FR_CHANNELS</translate>
             </a>
-            <a href="/categories/" mor-tooltip="{{ tr('FR_BROWSE_CATEGORIES') }}">
-                <i class="icon-folder"></i>
+            <a href="/categories/" mor-tooltip="{{ tr('FR_BROWSE_CATEGORIES') }}" active-tab="^\/categories\/">
                 <translate>FR_CATEGORIES</translate>
             </a>
         </div>

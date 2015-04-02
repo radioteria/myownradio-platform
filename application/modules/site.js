@@ -151,8 +151,13 @@
                 activeTab: "@"
             },
             link: function ($scope, $element, $attributes) {
+
                 var CLASS = "active";
-                $element.toggleClass(CLASS, $location.url().match($scope.activeTab) !== null);
+
+                $scope.$on("$routeChangeSuccess", function (event, currentRoute) {
+                    $element.toggleClass(CLASS, $location.url().match($scope.activeTab) !== null);
+                });
+
             }
         };
     }]);

@@ -81,6 +81,11 @@
     "FR_CHANGE"                         : "Change",
     "FR_SUBMIT"                         : "Submit",
     "FR_UPDATE"                         : "Update",
+    "FR_LISTEN"                         : "Listen",
+    "FR_SHUFFLE"                        : "Shuffle",
+    "FR_UPLOAD"                         : "Upload",
+    "FR_EDIT"                           : "Edit",
+    "FR_DELETE"                         : "Delete",
     "FR_PASSWORD"                       : "Password",
     "FR_PASSWORD_AGAIN"                 : "Password again",
     "FR_SETTINGS"                       : "Settings",
@@ -114,6 +119,7 @@
     "FR_FOR"                            : "for",
     "FR_FOR_TRACKS"                     : "tracks",
     "FR_SAVE"                           : "Save",
+    "FR_NEVER"                          : "Never",
 
     "FR_BROWSE_STATIONS"                : "Browse stations catalog",
     "FR_BROWSE_CATEGORIES"              : "Browse categories",
@@ -128,8 +134,8 @@
     "FR_REMEMBER_ME"                    : "Remember me on this computer",
     "FR_OR_LOGIN_SOCIAL"                : "or use social network to login",
     "FR_OR_SIGN_UP_SOCIAL"              : "or use social network to sign up",
-    "FR_EDIT_CHANNEL_INFO"              : "Edit channel information",
-    "FR_EDIT_CHANNEL_TRACKLIST"         : "Edit channel tracklist",
+    "FR_EDIT_CHANNEL_INFO"              : "Edit station information",
+    "FR_EDIT_CHANNEL_TRACKLIST"         : "Edit station tracklist",
     "FR_EDIT_TRACK_INFO"                : "Edit track information",
     "FR_REMOVE_TRACK_FROM_STREAM"       : "Remove track from stream",
     "FR_KILL_EM_ALL"                    : "Kill all users",
@@ -184,7 +190,7 @@
     "FR_PROFILE_MY_TRACKS"              : "My Tracks",
     "FR_PROFILE_ALL_TRACKS"             : "All tracks",
     "FR_PROFILE_UNUSED_TRACKS"          : "Unused tracks",
-    "FR_PROFILE_MY_CHANNELS"            : "My Radio Channels",
+    "FR_PROFILE_MY_CHANNELS"            : "My Radio Stations",
     "FR_PROFILE_NEW_CHANNEL"            : "Create new...",
 
     "FR_SHARE_CHANNEL_TEXT"             : "Share <b>%name%</b> on your social network:",
@@ -216,7 +222,7 @@
     "FR_METADATA_ACCESS_PUBLIC"         : "Public - people can copy this track(s) to their library",
     "FR_METADATA_ACCESS_HINT"           : "Make tracks public only if you <b>really</b> know that copying will not violate any copyright laws.",
 
-    "FR_CREATE_STATION"                 : "Create radio station",
+    "FR_CREATE_STATION"                 : "Create new radio station",
 
     "FR_PROFILE_TITLE"                  : "Profile overview",
     "FR_PROFILE_USER_INFO"              : "User information",
@@ -227,7 +233,34 @@
     "FR_PROFILE_ACCOUNT_INFO"           : "Account information",
     "FR_PROFILE_ACCOUNT_PLAN"           : "Current account plan",
     "FR_PROFILE_ACCOUNT_EXPIRE"         : "Expires",
-    "FR_PROFILE_ACCOUNT_TILE_LEFT"      : "Time left for tracks"
+    "FR_PROFILE_ACCOUNT_TILE_LEFT"      : "Time left for tracks",
+
+    "FR_TYPE_ARTIST_OR_TITLE"           : "Type artist or title",
+    "FR_LISTEN_TO_THIS"                 : "Listen to this stream",
+    "FR_SHUFFLE_TRACKS"                 : "Shuffle tracks",
+    "FR_UPLOAD_NEW_TRACKS"              : "Upload new tracks",
+
+    "FR_SORT_TITLE"                     : "Title",
+    "FR_SORT_ARTIST"                    : "Artist",
+    "FR_SORT_GENRE"                     : "Genre",
+    "FR_SORT_TIME"                      : "Time",
+
+    "FR_LOADING"                        : "Loading...",
+    "FR_EMPTY"                          : "Empty",
+    "FR_EMPTY_HINT"                     : "Add some tracks from your profile or <a ng-click=\"upload()\">upload</a> more.",
+    "FR_TRACKS"                         : "Tracks:",
+    "FR_STATIONS"                       : "Stations:",
+
+    "FR_STATIONS_NAME"                  : "Station name",
+    "FR_STATIONS_ACTION"                : "Actions",
+    "FR_STATIONS_LISTENERS"             : "Listening now",
+    "FR_STATIONS_TRACKS"                : "Tracks",
+    "FR_STATIONS_DURATION"              : "Duration",
+    "FR_STATIONS_START_STOP"            : "Start or stop streaming",
+    "FR_STATIONS_START"                 : "Start streaming",
+    "FR_STATIONS_STOP"                  : "Stop streaming"
+
+
 
 
 }

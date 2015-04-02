@@ -2,9 +2,17 @@
     <div id="page-contents">
         <nav class="main" main-navigation=""></nav>
         <div class="form-wrap full-width" ng-controller="TracksLibraryController">
-            <div class="stats">Tracks: <b>{{ account.user.tracks_count }}</b> | Channels: <b>{{ account.user.streams_count }}</b></div>
-            <h1><i class="icon-music"></i> TRACKS LIBRARY</h1>
-
+            <div class="stats">
+                <translate>FR_TRACKS</translate>
+                <b>{{ account.user.tracks_count }}</b>
+                |
+                <translate>FR_STATIONS</translate>
+                <b>{{ account.user.streams_count }}</b>
+            </div>
+            <h1 class="form-title">
+                <i class="icon-music"></i>
+                <translate filter="uppercase">FR_PROFILE_MY_TRACKS</translate>
+            </h1>
             <div class="tracks-wrap">
                 <div class="dws-wrap">
                     <div class="filter">
@@ -20,8 +28,9 @@
                                 />
                     </div>
                     <div class="controls select-persistent">
-                        <div class="button" ng-click="upload()" mor-tooltip="Click here to open uploader window">
-                            <i class="icon-cloud-upload"></i> Upload
+                        <div class="button" ng-click="upload()" mor-tooltip="{{ tr('FR_UPLOAD_NEW_TRACKS') }}">
+                            <i class="icon-cloud-upload"></i>
+                            <translate>FR_UPLOAD</translate>
                         </div>
                     </div>
                     <div class="spacer"></div>

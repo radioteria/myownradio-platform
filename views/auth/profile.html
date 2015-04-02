@@ -81,7 +81,7 @@
                         </td>
                         <td>
                             <span ng-if="account.user.plan_expires">{{ account.user.plan_expires * 1000 | date : 'mediumDate' }}</span>
-                            <span ng-if="!account.user.plan_expires">Never</span>
+                            <span ng-if="!account.user.plan_expires" bind-html="tr('FR_NEVER')"></span>
                         </td>
                     </tr>
                     <tr>

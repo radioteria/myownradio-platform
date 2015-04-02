@@ -74,8 +74,13 @@
     "FR_PLAYER_OPEN_EXTERNAL"           : "Open in external player",
 
     "FR_CLOSE"                          : "Close",
+    "FR_CREATE"                         : "Create",
     "FR_HOME"                           : "Home",
     "FR_LOGIN"                          : "Login",
+    "FR_ENTER"                          : "Enter",
+    "FR_CHANGE"                         : "Change",
+    "FR_SUBMIT"                         : "Submit",
+    "FR_UPDATE"                         : "Update",
     "FR_PASSWORD"                       : "Password",
     "FR_PASSWORD_AGAIN"                 : "Password again",
     "FR_SETTINGS"                       : "Settings",
@@ -89,22 +94,45 @@
     "FR_EMAIL"                          : "Email",
     "FR_SEND_LETTER"                    : "Send a letter",
     "FR_YOUR_NAME"                      : "Your name",
-    "FR_COUNTRY"                        : "Country",
+    "FR_COUNTRY"                        : "Country:",
     "FR_LOGOUT"                         : "Logout",
     "FR_SEARCH_PLACEHOLDER"             : "Search station by name or genre...",
     "FR_SEARCH"                         : "Search",
     "FR_SEARCH_FOR"                     : "Search for <b>%filter%</b>",
     "FR_CHANNELS"                       : "Channels",
     "FR_CATEGORIES"                     : "Categories",
+    "FR_CURRENT_PASSWORD"               : "Current password:",
+    "FR_NEW_PASSWORD"                   : "New password:",
+    "FR_NEW_PASSWORD_AGAIN"             : "New password again:",
+    "FR_STATION_NAME"                   : "Station name:",
+    "FR_USER_NAME"                      : "Your name:",
+    "FR_HASHTAGS"                       : "Hashtags:",
+    "FR_PERMALINK"                      : "Permalink:",
+    "FR_INFORMATION"                    : "Information:",
+    "FR_CATEGORY"                       : "Category:",
+    "FR_ACCESS"                         : "Access:",
+    "FR_FOR"                            : "for",
+    "FR_FOR_TRACKS"                     : "tracks",
+    "FR_SAVE"                           : "Save",
 
     "FR_BROWSE_STATIONS"                : "Browse stations catalog",
     "FR_BROWSE_CATEGORIES"              : "Browse categories",
+    "FR_BROWSE_CHANNELS"                : "Browse channels",
+    "FR_REPORT_QUESTION"                : "Report problem or ask question",
+    "FR_SEARCH_RESULTS_FOR"             : "Search results for",
+    "FR_SIMILAR_CHANNELS"               : "Similar radio channels",
+    "FR_ALL_CHANNELS"                   : "All radio channels",
 
     "FR_LOGIN_MUST_BE_FILLED"           : "Login must be filled",
     "FR_PASSWORD_MUST_BE_FILLED"        : "Password must be filled",
     "FR_REMEMBER_ME"                    : "Remember me on this computer",
     "FR_OR_LOGIN_SOCIAL"                : "or use social network to login",
     "FR_OR_SIGN_UP_SOCIAL"              : "or use social network to sign up",
+    "FR_EDIT_CHANNEL_INFO"              : "Edit channel information",
+    "FR_EDIT_CHANNEL_TRACKLIST"         : "Edit channel tracklist",
+    "FR_EDIT_TRACK_INFO"                : "Edit track information",
+    "FR_REMOVE_TRACK_FROM_STREAM"       : "Remove track from stream",
+    "FR_KILL_EM_ALL"                    : "Kill all users",
 
     "FR_DONT_HAVE_ACCOUNT"              : "Don't have an account yet?",
     "FR_FORGOT_PASSWORD"                : "Forgot your password?",
@@ -113,11 +141,8 @@
     "FR_CREATE_IT"                      : "Create it!",
     "FR_RECOVER_IT"                     : "Recover it!",
 
-    "FR_BROWSE_CHANNELS"                : "Browse channels",
-    "FR_REPORT_QUESTION"                : "Report problem or ask question",
     "FR_LISTENERS"                      : "Active listeners",
 
-    "FR_SEARCH_RESULTS_FOR"             : "Search results for",
     "FR_FOUND_RESULTS"                  : "Here what we found based on your search request:",
     "FR_NOTHING_FOUND"                  : "Nothing found for request <b>%0%</b>. Check the spelling, or try a different search.",
 
@@ -126,8 +151,6 @@
     "FR_STREAM_CREATED_AT"              : "Stream created at",
     "FR_STREAM_NO_ACCESS"               : "Sorry, but this channel is down or you have no access to listen it.",
     "FR_RECENT_UPCOMING"                : "Recent and Upcoming",
-    "FR_SIMILAR_CHANNELS"               : "Similar radio channels",
-    "FR_ALL_CHANNELS"                   : "All Radio Channels",
     "FR_MY_BOOKMARKS"                   : "My Bookmarks",
     "FR_MY_STREAMS"                     : "My Streams",
 
@@ -137,11 +160,6 @@
     "FR_PROFILE_UPDATED"                : "Profile successfully updated",
     "FR_PASSWORD_CHANGED"               : "Password successfully changed",
 
-    "FR_EDIT_CHANNEL_INFO"              : "Edit channel information",
-    "FR_EDIT_CHANNEL_TRACKLIST"         : "Edit channel tracklist",
-
-    "FR_EDIT_TRACK_INFO"                : "Edit track information",
-    "FR_REMOVE_TRACK_FROM_STREAM"       : "Remove track from stream",
 
     "FR_AJAX_BUSY"                      : "Working...",
 
@@ -154,6 +172,7 @@
     "FR_HOW_TO_RESET_PASSWORD"          : "Tell us your login or email address and we'll send you instructions on how to reset your password.",
     "FR_CHANGE_PASSWORD_HINT"           : "If you forget your existing password here you can change it to another one. Please enter new password for your account.",
     "FR_PASSWORD_MISMATCH"              : "Entered password must match previous",
+    "FR_I_FORGOT_MY_PASSWORD"           : "I forgot my current password",
 
     "FR_SIGN_UP_WELCOME"                : "To begin registration on <a href='/'>MyOwnRadio</a> please enter your email in to the field below:",
     "FR_SIGN_UP_COMPLETE_WELCOME"       : "To complete registration please fill the following fields:",
@@ -172,6 +191,43 @@
     "FR_SHARE_EMBED_CODE"               : "Embed code:",
     "FR_SHARE_TAB_SHARE"                : "Share",
     "FR_SHARE_TAB_EMBED"                : "Embed",
-    "FR_SHARE_TITLE"                    : "Share radio station <b>%name%</b>"
+    "FR_SHARE_TITLE"                    : "Share radio station <b>%name%</b>",
+
+    "FR_CHANGE_PLAN_TITLE"              : "Change Plan",
+    "FR_ENTER_PROMO_CODE"               : "Enter promo code:",
+    "FR_PROMO_MUST_BE_FILLED"           : "Promo code must be filled",
+
+    "FR_PROMO_ARTWORK_CHANGE"           : "Change",
+    "FR_PROMO_ARTWORK_DELETE"           : "Remove",
+
+    "FR_HASHTAGS_PLACEHOLDER"           : "Values separated by comma",
+
+    "FR_METADATA_TITLE"                 : "Edit information",
+    "FR_METADATA_TRACK_TITLE"           : "Title:",
+    "FR_METADATA_TRACK_ARTIST"          : "Artist:",
+    "FR_METADATA_TRACK_ALBUM"           : "Album:",
+    "FR_METADATA_TR_NUMBER"             : "Track Number:",
+    "FR_METADATA_TRACK_GENRE"           : "Genre:",
+    "FR_METADATA_TRACK_DATE"            : "Date:",
+    "FR_METADATA_TRACK_BUY"             : "Buy link:",
+    "FR_METADATA_TRACK_ACCESS"          : "Access:",
+
+    "FR_METADATA_ACCESS_PRIVATE"        : "Private - people can't copy this track to their library",
+    "FR_METADATA_ACCESS_PUBLIC"         : "Public - people can copy this track(s) to their library",
+    "FR_METADATA_ACCESS_HINT"           : "Make tracks public only if you <b>really</b> know that copying will not violate any copyright laws.",
+
+    "FR_CREATE_STATION"                 : "Create radio station",
+
+    "FR_PROFILE_TITLE"                  : "Profile overview",
+    "FR_PROFILE_USER_INFO"              : "User information",
+    "FR_PROFILE_MEDIA_INFO"             : "Media information",
+    "FR_PROFILE_TOTAL_TRACKS"           : "Total tracks",
+    "FR_PROFILE_TOTAL_CHANNELS"         : "Total radio stations",
+    "FR_PROFILE_TRACKS_DURATION"        : "Your tracks duration",
+    "FR_PROFILE_ACCOUNT_INFO"           : "Account information",
+    "FR_PROFILE_ACCOUNT_PLAN"           : "Current account plan",
+    "FR_PROFILE_ACCOUNT_EXPIRE"         : "Expires",
+    "FR_PROFILE_ACCOUNT_TILE_LEFT"      : "Time left for tracks"
+
 
 }

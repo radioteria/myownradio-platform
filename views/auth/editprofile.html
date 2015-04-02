@@ -6,37 +6,41 @@
                 <div class="cover" ng-click="upload()">
                     <img fadein ng-if="avatarUrl" ng-src="{{avatarUrl}}?size=96" />
                 </div>
-                <div ng-click="upload()" class="button">Change...</div>
-                <div ng-click="remove()" class="button">Remove</div>
+                <div ng-click="upload()" class="button">
+                    <translate>FR_PROMO_ARTWORK_CHANGE</translate>
+                </div>
+                <div ng-click="remove()" class="button">
+                    <translate>FR_PROMO_ARTWORK_DELETE</translate>
+                </div>
             </div>
             <form class="float" name="profile_form" ng-submit="submit()" novalidate="novalidate">
-                <h1><i class="icon-mode-edit"></i>EDIT PROFILE</h1>
-                <div class="status">{{ error }}</div>
-                <div class="status info">{{ status }}</div>
+                <h1 class="form-title">
+                    <i class="icon-mode-edit"></i>
+                    <translate filter="uppercase">FR_PROFILE_EDIT</translate>
+                </h1>
+                <div class="status" bind-html="error"></div>
+                <div class="status info" bind-html="status"></div>
                 <table class="form-table">
                     <tr>
                         <td>
-                            <label for="name">Name:</label>
+                            <label for="name">
+                                <translate>FR_USER_NAME</translate>
+                            </label>
                         </td>
                         <td>
-                            <input type="text"
-                                   name="name"
-                                   id="name"
-                                   ng-model="details.name"
-                                   ng-maxlength="32"
-                                   autocomplete="off"
-                                    />
-
+                            <input type="text" name="name" id="name" ng-model="details.name" ng-maxlength="32" autocomplete="off" />
                             <div ng-show="stream_form.name.$dirty">
                                 <div class="validation" ng-show="stream_form.name.$error.maxlength">
-                                    Name cannot be longer than 32 chars
+                                    <translate>VALIDATOR_USER_NAME_LENGTH</translate>
                                 </div>
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <label for="name">Country:</label>
+                            <label for="name">
+                                <translate>FR_COUNTRY</translate>
+                            </label>
                         </td>
                         <td>
                             <select name="country_id" ng-model="details.country_id"
@@ -48,26 +52,22 @@
                     </tr>
                     <tr>
                         <td>
-                            <label for="permalink">Permalink:</label>
+                            <label for="permalink">
+                                <translate>FR_PERMALINK</translate>
+                            </label>
                         </td>
                         <td>
                             <label for="permalink" class="permalink-prefix">http://myownradio.biz/users/</label>
-                            <input type="text"
-                                   class="user-permalink"
-                                   name="permalink"
-                                   id="permalink"
-                                   ng-model="details.permalink"
-                                   is-available="userPermalink"
-                                   pattern="^[a-z0-9\\-]*$"
-                                   autocomplete="off"
-                                    />
+                            <input type="text" class="user-permalink" name="permalink" id="permalink"
+                                   ng-model="details.permalink" is-available="userPermalink" pattern="^[a-z0-9\\-]*$"
+                                   autocomplete="off" />
 
                             <div ng-show="stream_form.permalink.$dirty">
                                 <div class="validation" ng-show="stream_form.permalink.$error.pattern">
-                                    Permalink may contain only alphanumeric chars and dashes
+                                    <translate>VALIDATOR_PERMALINK_CHARS</translate>
                                 </div>
                                 <div class="validation" ng-show="stream_form.permalink.$error.available">
-                                    This permalink is not available
+                                    <translate>VALIDATOR_PERMALINK_USED</translate>
                                 </div>
                             </div>
                         </td>
@@ -79,7 +79,7 @@
                         </td>
                     </tr>
                 </table>
-                <input ng-disabled="stream_form.$invalid" type="submit" value="Update" style="float:right">
+                <input ng-disabled="stream_form.$invalid" type="submit" value="{{ tr('FR_UPDATE') }}" style="float:right">
             </form>
         </div>
     </div>

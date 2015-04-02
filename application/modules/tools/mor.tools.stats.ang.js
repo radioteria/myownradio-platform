@@ -42,7 +42,7 @@
         return function ($key, args) {
 
             if (typeof locale[$key] == "undefined") {
-                return "";
+                return $key;
             }
 
             return locale[$key].replace(/(%[a-z0-9\\_]+%)/g, function (match) {
@@ -53,6 +53,26 @@
                     return "";
                 }
             })
+        }
+    }]);
+
+    tools.directive("translate", ["$tr", "$filter", function ($tr, $filter) {
+        return {
+            scope: {
+                args: "="
+            },
+            restrict: "E",
+            link: function (scope, element, attr) {
+                var label = element.text(),
+                    translated = $tr(label, scope.args);
+
+                if (angular.isDefined(attr["filter"])) {
+                    var filter = $filter(attr['filter']);
+                    translated = filter(translated);
+                }
+
+                element.html(translated);
+            }
         }
     }]);
 

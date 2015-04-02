@@ -3,31 +3,29 @@
         <nav class="main" main-navigation=""></nav>
         <div class="form-wrap full-width" ng-controller="ChangePlanController">
             <form class="float" name="plan_form" ng-submit="submit()" novalidate="novalidate">
-                <h1><i class="icon-shopping-cart"></i>CHANGE PLAN</h1>
-                <div class="status">{{ data.error }}</div>
+                <h1 class="form-title">
+                    <i class="icon-shopping-cart"></i>
+                    <translate filter="uppercase">FR_CHANGE_PLAN_TITLE</translate>
+                </h1>
+                <div class="status" bind-html="data.error"></div>
                 <table class="form-table">
                     <tr>
                         <td>
-                            <label for="code">Enter promo code:</label>
+                            <label for="code">
+                                <translate>FR_ENTER_PROMO_CODE</translate>
+                            </label>
                         </td>
                         <td>
-                            <input type="text"
-                                   name="code"
-                                   id="code"
-                                   ng-model="data.code"
-                                   ng-required="true"
-                                   autocomplete="off"
-                                   ng-focus="true"
-                                    />
+                            <input type="text" name="code" id="code" ng-model="data.code" ng-required="true" autocomplete="off" ng-focus="true" />
                             <div class="validation" ng-show="plan_form.code.$focused && plan_form.code.$dirty">
                                 <div ng-if="plan_form.code.$error.required">
-                                    Code must be filled
+                                    <translate>FR_PROMO_MUST_BE_FILLED</translate>
                                 </div>
                             </div>
                         </td>
                     </tr>
                 </table>
-                <input ng-disabled="plan_form.$invalid" type="submit" value="Change" style="float:right">
+                <input ng-disabled="plan_form.$invalid" type="submit" value="{{ tr('FR_SUBMIT') }}" style="float:right">
             </form>
         </div>
     </div>

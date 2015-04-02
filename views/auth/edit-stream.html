@@ -6,46 +6,45 @@
                 <div class="cover" ng-click="upload()">
                     <img fadein ng-if="stream.cover" ng-src="{{stream.cover_url}}?size=96" />
                 </div>
-                <div ng-click="upload()" class="button">Change...</div>
-                <div ng-click="remove()" class="button">Remove</div>
+                <div ng-click="upload()" class="button">
+                    <translate>FR_PROMO_ARTWORK_CHANGE</translate>
+                </div>
+                <div ng-click="remove()" class="button">
+                    <translate>FR_PROMO_ARTWORK_DELETE</translate>
+                </div>
             </div>
             <form class="float" name="stream_form" ng-submit="submit()" novalidate="novalidate">
-                <h1><i class="icon-mode-edit"></i>EDIT CHANNEL INFORMATION</h1>
-                <div class="status">{{ error }}</div>
-                <div class="status info">{{ status }}</div>
+                <h1 class="form-title">
+                    <i class="icon-mode-edit"></i>
+                    <translate filter="uppercase">FR_EDIT_CHANNEL_INFO</translate>
+                </h1>
+                <div class="status" bind-html="error"></div>
+                <div class="status info" bind-html="status"></div>
                 <table class="form-table">
                     <tr>
                         <td>
-                            <label for="name">Name:</label>
+                            <label for="name">
+                                <translate>FR_STATION_NAME</translate>
+                            </label>
                         </td>
                         <td>
-                            <input type="text"
-                                   name="name"
-                                   id="name"
-                                   ng-model="stream.name"
-                                   ng-minlength="3"
-                                   autocomplete="off"
-                                    />
-
+                            <input type="text" name="name" id="name" ng-model="stream.name" ng-minlength="3" autocomplete="off" />
                             <div ng-show="stream_form.name.$dirty">
                                 <div class="validation" ng-show="stream_form.name.$error.minlength">
-                                    Stream name must contain at least 3 chars
+                                    <translate>VALIDATOR_STREAM_NAME_SHORT</translate>
                                 </div>
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <label for="tags">Hashtags:</label>
+                            <label for="tags">
+                                <translate>FR_HASHTAGS</translate>
+                            </label>
                         </td>
                         <td>
-                            <input type="text"
-                                   name="tags"
-                                   id="tags"
-                                   ng-model="stream.hashtags"
-                                   autocomplete="off"
-                                   placeholder="Comma separated without hashes (chillout, ambient, ...)"
-                                    />
+                            <input type="text" name="tags" id="tags" ng-model="stream.hashtags" autocomplete="off"
+                                   placeholder="{{ tr('FR_HASHTAGS_PLACEHOLDER') }}" />
 
                         </td>
                     </tr>
@@ -71,40 +70,35 @@
                     </tr>
                     <tr>
                         <td>
-                            <label for="permalink">Permalink:</label>
+                            <label for="permalink">
+                                <translate>FR_PERMALINK</translate>
+                            </label>
                         </td>
                         <td>
                             <label for="permalink" class="permalink-prefix">http://myownradio.biz/streams/</label>
-                            <input type="text"
-                                   class="stream-permalink"
-                                   name="permalink"
-                                   id="permalink"
-                                   ng-model="stream.permalink"
-                                   is-available="streamPermalink"
-                                   mor-context="{{stream.sid}}"
-                                   pattern="^[a-z0-9\\-]*$"
-                                   autocomplete="off"
-                                   placeholder="{{stream.sid}}"
-                                    />
-
+                            <input type="text" class="stream-permalink" name="permalink" id="permalink" ng-model="stream.permalink"
+                                   is-available="streamPermalink" mor-context="{{stream.sid}}" pattern="^[a-z0-9\\-]*$" autocomplete="off"
+                                   placeholder="{{ stream.sid }}" />
                             <div ng-show="stream_form.permalink.$dirty">
                                 <div class="validation" ng-show="stream_form.permalink.$error.pattern">
-                                    Permalink may contain only alphanumeric chars and dashes
+                                    <translate>VALIDATOR_PERMALINK_CHARS</translate>
                                 </div>
                                 <div class="validation" ng-show="stream_form.permalink.$error.available">
-                                    This permalink is not available
+                                    <translate>VALIDATOR_PERMALINK_USED</translate>
                                 </div>
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <label for="info">Information:</label>
+                            <label for="info">
+                                <translate>FR_INFORMATION</translate>
+                            </label>
                             <textarea class="under-label" name="info" id="info" ng-model="stream.info"></textarea>
                         </td>
                     </tr>
                 </table>
-                <input ng-disabled="stream_form.$invalid" type="submit" value="Update" style="float:right">
+                <input ng-disabled="stream_form.$invalid" type="submit" value="{{ tr('FR_UPDATE') }}" style="float:right">
             </form>
         </div>
     </div>

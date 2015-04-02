@@ -26,8 +26,9 @@
             },
             restrict: "E",
             required: "ngModel",
-            template: "<i class='icon-share-alt' mor-tooltip='Share this radio channel' ng-click='share()'></i>",
+            template: "<i class=\"icon-share-alt\" mor-tooltip=\"{{ tr('FR_SHARE_THIS') }}\" ng-click=\"share()\"></i>",
             controller: ["$scope", "ngDialog", "$rootScope", function ($scope, ngDialog, $rootScope) {
+                $scope.tr = $rootScope.tr;
                 $scope.share = function () {
                     if (angular.isDefined($scope.ngModel)) {
                         var scope = $scope.$new();

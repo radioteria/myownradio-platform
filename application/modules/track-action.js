@@ -16,10 +16,13 @@ angular.module("Dialogs", [])
             };
 
             return {
-                deleteStream: function ($stream) {
-                    $dialog.question("Are you sure want to delete radio channel <b>" + $stream.name + "</b>?", function () {
+                deleteStream: function ($stream, callback) {
+                    $dialog.question($rootScope.tr("FR_CONFIRM_STREAM_DELETE", [ $stream.name ]), function () {
                         Streams.deleteStream($stream).onSuccess(function () {
-                            $rootScope.account.init("/profile/streams/");
+                            $rootScope.account.init();
+                            if (typeof callback == "function") {
+                                callback.call();
+                            }
                         });
                     });
                 },

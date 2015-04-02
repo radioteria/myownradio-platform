@@ -57,6 +57,8 @@
     "COPY_FILE_YOURS"                   : "Track <b>%0%</b> is already yours",
     "COPY_FILE_PROTECTED"               : "File <b>%0%</b> is protected from copying",
 
+    "FR_LOGIN_MESSAGE"                  : "Welcome, <b>%name%</b>!<br>You're successfully logged in!",
+    "FR_PLAN_CHANGED_MESSAGE"           : "You have successfully changed your current account plan to %0%",
 
     "FR_WELCOME_MESSAGE"                : "Create your own web radio station\nor discover existing.",
     "FR_CLICK_TO_BROWSE"                : "Click here to browse existing streams",
@@ -66,12 +68,19 @@
     "FR_PROFILE_TOOLTIP"                : "Go to your profile",
     "FR_LOGOUT_TOOLTIP"                 : "Logout from account",
 
-    "FR_PLAYER_COPY_TRACK"              : "Copy this track to my account",
+    "FR_BOOKMARK_ADD_TIP"               : "Add radio station to bookmarks",
+    "FR_BOOKMARK_REMOVE_TIP"            : "Remove radio station from bookmarks",
+
+    "FR_BOOKMARK_ADD_SUCCESS"           : "<b>%0%</b> successfully added to your bookmarks",
+    "FR_BOOKMARK_REMOVE_SUCCESS"        : "<b>%0%</b> successfully removed from your bookmarks",
+
+    "FR_PLAYER_COPY_TRACK"              : "Copy this track to my library",
     "FR_PLAYER_BUY_TRACK"               : "Buy this track",
     "FR_PLAYER_ON_AIR"                  : "ON AIR",
     "FR_PLAYER_PLAY_STOP"               : "Play / Stop",
     "FR_PLAYER_AUDIO_FORMAT"            : "Audio Format",
     "FR_PLAYER_OPEN_EXTERNAL"           : "Open in external player",
+    "FR_PLAYER_CLICK_TO_REVIEW"         : "Click to preview this track",
 
     "FR_SHOW"                           : "Show",
     "FR_HIDE"                           : "Hide",
@@ -138,6 +147,9 @@
     "FR_YOUR_NAME_DOTS"                 : "Your name:",
     "FR_COUNTRY_DOTS"                   : "Country:",
     "FR_LISTENERS_DOTS"                 : "Active listeners:",
+    "FR_YES"                            : "Yes",
+    "FR_NO"                             : "No",
+    "FR_OK"                             : "OK",
 
 
     "FR_BROWSE_STATIONS"                : "Browse stations catalog",
@@ -170,7 +182,7 @@
     "FR_FOUND_RESULTS"                  : "Here what we found based on your search request",
     "FR_NOTHING_FOUND"                  : "Nothing found for request <b>%0%</b>. Check the spelling, or try a different search.",
 
-    "FR_COUNT_USERS_LISTENING"          : "%0% user(s) is listening to this radio channel",
+    "FR_COUNT_USERS_LISTENING"          : "%0% user(s) listening to this radio channel",
     "FR_STREAM_BOOKMARKED_TIMES"        : "This stream is bookmarked %0% times",
     "FR_STREAM_CREATED_AT"              : "Stream created at",
     "FR_STREAM_NO_ACCESS"               : "Sorry, but this channel is down or you have no access to listen it.",
@@ -183,7 +195,6 @@
 
     "FR_PROFILE_UPDATED"                : "Profile successfully updated",
     "FR_PASSWORD_CHANGED"               : "Password successfully changed",
-
 
     "FR_AJAX_BUSY"                      : "Working...",
 
@@ -216,6 +227,7 @@
     "FR_SHARE_TAB_SHARE"                : "Share",
     "FR_SHARE_TAB_EMBED"                : "Embed",
     "FR_SHARE_TITLE"                    : "Share radio station <b>%name%</b>",
+    "FR_SHARE_THIS"                     : "Share this radio station",
 
     "FR_CHANGE_PLAN_TITLE"              : "Change Plan",
     "FR_ENTER_PROMO_CODE"               : "Enter promo code:",
@@ -306,6 +318,22 @@
     "FR_UPLOAD_START_HINT"              : "Start upload",
 
     "FR_CATEGORIES_TITLE"               : "Filter radio stations by category",
-    "FR_CATEGORIES_LIST_LABEL"          : "{\"one\":\"stream\", \"other\":\"streams\"}"
+    "FR_CATEGORIES_LIST_LABEL"          : {"one": "stream", "other": "streams"},
+
+    "FR_CONFIRM_STREAM_DELETE"          : "Are you sure want to delete your radio station<br><b>%0%</b>?",
+    "FR_CONFIRM_STREAM_STOP"            : "Are you sure want to STOP radio your radio station<br><b>%0%</b>?",
+
+    "FR_TRACKS_REMOVED_FROM_STATION"    : "<b>%count%</b> track(s) successfully removed from <b>%name%</b>",
+    "FR_TRACKS_REMOVED_FROM_LIBRARY"    : "<b>%count%</b> track(s) successfully removed from your library",
+    "FR_TRACKS_ADDED_TO_STATION"        : "<b>%count%</b> track(s) successfully added to radio station <b>%name%</b>",
+    "FR_TRACKS_MOVED_TO_STATION"        : "<b>%count%</b> track(s) successfully moved to radio station <b>%name%</b>",
+    "FR_TRACKS_UPDATED"                 : "Information of <b>%count%</b> track(s) successfully updated",
+    "FR_STREAM_DELETED_SUCCESSFULLY"    : "Radio station <b>%name%</b> successfully deleted",
+
+    "FR_HUMAN_TIME_OVERUSED"            : "Overused (%days% days %hours% hours %minutes% minutes)",
+    "FR_HUMAN_TIME_FORMAT"              : "%days% days %hours% hours %minutes% minutes",
+
+    "FR_BYTES_METRICS"                  : ["byte(s)", "kB", "MB", "GB", "TB", "PB"]
+
 
 }

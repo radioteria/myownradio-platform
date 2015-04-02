@@ -54,7 +54,10 @@
 
             var popupBackgroundElement = angular.element('<div class="popup-background"></div>').prependTo($body);
 
-            return {
+            var popup = {
+                tr: function (key, args, timeout) {
+                    popup.message($rootScope.tr(key, args), timeout);
+                },
                 message: function (message, timeout) {
                     var elem = angular.element("<mor-popup-frame>");
                     elem.attr("mor-popup-text", message);
@@ -70,6 +73,8 @@
                     elem.appendTo(popupBackgroundElement);
                 }
             }
+
+            return popup;
         }])
 
 })();

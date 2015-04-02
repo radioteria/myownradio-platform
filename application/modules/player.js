@@ -83,7 +83,7 @@
 
             $rootScope.$watch("player.nowPlaying.unique_id", function (newValue) {
                 if (newValue && $rootScope.player.isPlaying) {
-                    Popup.message("<b>" + htmlEscape($rootScope.player.nowPlaying.caption) + "</b><br>now on <b>" + htmlEscape($rootScope.player.currentStream.name) + "</b>", 5000);
+                    Popup.message("<b>" + htmlEscape($rootScope.player.nowPlaying.caption) + "</b><br>" + htmlEscape($rootScope.player.currentStream.name), 5000);
                 }
             });
 
@@ -135,7 +135,7 @@
             scope: {
                 obj: "="
             },
-            template: '<div class="play-pause"><div class="toggle" ng-click="playRadio(obj)" mor-tooltip="Play/Stop">\
+            template: '<div class="play-pause"><div class="toggle" ng-click="playRadio(obj)" mor-tooltip="{{ $root.tr(\'FR_PLAYER_PLAY_STOP\') }}">\
                             <i ng-show="player.isPlaying && player.currentID == obj.sid" class="icon-stop"></i>\
                             <i ng-hide="player.isPlaying && player.currentID == obj.sid" class="icon-play-arrow"></i>\
                             </div></div>',
@@ -150,7 +150,7 @@
 
     player.directive("preview", ["TrackPreviewService", function (TrackPreviewService) {
         return {
-            template: '<span class="only-first-element" mor-tooltip="Click to preview track">' +
+            template: '<span class="only-first-element" mor-tooltip="{{ $root.tr(\'FR_PLAYER_CLICK_TO_REVIEW\') }}">' +
                 '<i ng-if="!isPlaying" class="icon-play-circle-fill"></i>' +
                 '<i ng-if="isPlaying" class="icon-pause-circle-fill"></i>' +
                 '</span>',
@@ -196,12 +196,10 @@
                 swfPath: "jplayer",
                 supplied: "mp3",
                 play: function (event) {
-                    //Popup.message("Preview of <b>" + htmlEscape(currentTrack.artist + " - " + currentTrack.title) + "</b> is started");
                     $rootScope.player.controls.stop();
                     $rootScope.$broadcast("preview.start", currentTrack);
                 },
                 ended: function (event) {
-                    //Popup.message("Preview of <b>" + htmlEscape(currentTrack.artist + " - " + currentTrack.title) + "</b> is finished");
                     $rootScope.$broadcast("preview.stop");
                     currentTrack = null;
                 },

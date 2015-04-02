@@ -21,7 +21,7 @@
 
             $rootScope.tr = function (key, args) {
                 return $tr(key, args);
-            }
+            };
 
         }
 
@@ -41,27 +41,40 @@
     tools.factory("$tr", [function () {
         return function ($key, args) {
 
-            var result;
+            function analyze(input, args) {
+                if (angular.isArray(input)) {
+                    var i, arr = [];
+                    for (i = 0; i < input.length; i++) {
+                        arr.push(analyze(input[i], args));
+                    }
+                    return arr;
+                } else if (angular.isObject(input)) {
+                    var key, obj = {};
+                    for (key in input) if (input.hasOwnProperty(key)) {
+                        obj[key] = analyze(input[key], args);
+                    }
+                    return obj;
+                } else if (angular.isString(input)) {
+                    return result = input.replace(/(%[a-z0-9\\_]+%)/g, function (match) {
+                        var key = match.substr(1, match.length - 2);
+                        if (typeof args != "undefined" && typeof args[key] != "undefined") {
+                            return htmlEscape(args[key]);
+                        } else {
+                            return "";
+                        }
+                    });
+                } else if (angular.isNumber(input)) {
+                    return input;
+                } else {
+                    return "TR_UNKNOWN_OBJECT";
+                }
+            }
 
             if (typeof locale[$key] == "undefined") {
                 return $key;
             }
 
-            result = locale[$key].replace(/(%[a-z0-9\\_]+%)/g, function (match) {
-                var key = match.substr(1, match.length - 2);
-                if (typeof args != "undefined" && typeof args[key] != "undefined") {
-                    return htmlEscape(args[key]);
-                } else {
-                    return "";
-                }
-            });
-
-            if (result.substr(0, 1) == "{" && result.substr(result.length - 1, 1) == "}") {
-
-                result = JSON.parse(result);
-            }
-
-            return result;
+            return analyze(locale[$key], args);
 
         }
     }]);

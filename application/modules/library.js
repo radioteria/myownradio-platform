@@ -112,7 +112,7 @@
 
                 TrackPreviewService.stop();
                 TrackAction.removeTracksFromStream($scope.stream, $scope.target, function () {
-                    Popup.message($scope.target.length + " track(s) successfully removed from stream <b>" + htmlEscape($scope.stream.name) + "</b>");
+                    Popup.message($rootScope.tr("FR_TRACKS_REMOVED_FROM_STATION", { count: $scope.target.length, name: $scope.stream.name }));
                     deleteMatching($scope.tracks, function (track) {
                         return $scope.target.indexOf(track) != -1;
                     });
@@ -127,7 +127,7 @@
 
                 TrackPreviewService.stop();
                 TrackAction.removeTracksFromAccount($scope.target, function () {
-                    Popup.message($scope.target.length + " track(s) successfully removed from your account");
+                    Popup.message($rootScope.tr("TR_TRACKS_REMOVED_FROM_LIBRARY", { count: $scope.target.length }));
                     deleteMatching($scope.tracks, function (track) {
                         return $scope.target.indexOf(track) != -1;
                     });
@@ -152,7 +152,7 @@
 
             $scope.addToStream = function (stream) {
                 TrackAction.addTracksToStream(stream, $scope.target, function () {
-                    Popup.message($scope.target.length + " track(s) successfully added to stream <b>" + htmlEscape(stream.name) + "</b>");
+                    Popup.message($rootScope.tr("TR_TRACKS_ADDED_TO_STATION", { count: $scope.target.length, name: stream.name }));
                     if (stream.sid == $scope.stream.sid) {
                         $scope.load(true);
                     }
@@ -163,6 +163,7 @@
 
             $scope.moveToStream = function (stream) {
                 TrackAction.moveTracksToOtherStream($scope.stream, $scope.target, stream, function () {
+                    Popup.message($rootScope.tr("TR_TRACKS_MOVED_TO_STATION", { count: $scope.target.length, name: stream.name }));
                     deleteMatching($scope.tracks, function (track) {
                         return $scope.target.indexOf(track) != -1;
                     });
@@ -272,9 +273,9 @@
             };
 
             $scope.deleteSelected = function () {
-                TrackPreviewService.stop();
+                TrackPreviewService.stop(); //147
                 TrackAction.removeTracksFromAccount($scope.target, function () {
-                    Popup.message($scope.target.length + " track(s) successfully removed from your account");
+                    Popup.message($rootScope.tr("TR_TRACKS_REMOVED_FROM_LIBRARY", { count: $scope.target.length }));
                     deleteMatching($scope.tracks, function (track) {
                         return $scope.target.indexOf(track) != -1;
                     });
@@ -285,7 +286,7 @@
 
             $scope.addToStream = function (streamObject) {
                 TrackAction.addTracksToStream(streamObject, $scope.target, function () {
-                    Popup.message($scope.target.length + " track(s) successfully added to stream <b>" + htmlEscape(streamObject.name) + "</b>");
+                    Popup.message($rootScope.tr("TR_TRACKS_ADDED_TO_STATION", { count: $scope.target.length, name: streamObject.name }));
                     if ($route.current.unused === true) {
                         deleteMatching($scope.tracks, function (track) {
                             return $scope.target.indexOf(track) != -1
@@ -298,6 +299,7 @@
 
             $scope.changeGroup = function (groupObject) {
                 TrackAction.changeTracksColor(groupObject, $scope.target, function () {
+                    Popup.message($rootScope.tr("TR_TRACKS_UPDATED", { count: $scope.target.length }));
                     for (var n = 0; n < $scope.target.length; n += 1) {
                         $scope.target[n].color = groupObject.color_id;
                     }

@@ -365,18 +365,13 @@
 
     ]);
 
-    catalog.controller("MyStreamsController", ["$rootScope", "$scope", "$dialog", "Streams", "StreamWorks",
+    catalog.controller("MyStreamsController", ["$rootScope", "$scope", "$dialog", "Streams", "StreamWorks", "TrackAction",
 
-        function ($rootScope, $scope, $dialog, Streams, StreamWorks) {
+        function ($rootScope, $scope, $dialog, Streams, StreamWorks, TrackAction) {
 
-            $scope.deleteStream = function (stream) {
-                $dialog.question("Are you sure want to delete stream<br><b>" + htmlEscape(stream.name) + "</b>?", function () {
-                    Streams.deleteStream(stream).onSuccess(function () {
-                        deleteMatching($rootScope.account.streams, function (obj) {
-                            return stream.sid == obj.sid
-                        });
-                        $rootScope.account.user.streams_count = $rootScope.account.user.streams_count - 1;
-                    });
+            $scope.deleteStream = function ($stream) {
+                TrackAction.deleteStream($stream, function () {
+                    Popup.tr("FR_STREAM_DELETED_SUCCESSFULLY", $stream);
                 });
             };
 
@@ -386,7 +381,7 @@
                         $rootScope.account.init();
                     });
                 } else {
-                    $dialog.question("Are you sure want to <b>shut down</b> radio channel<br><b>" + htmlEscape(stream.name) + "</b>?", function () {
+                    $dialog.question($rootScope.tr("FR_CONFIRM_STREAM_STOP", [ stream.name ]), function () {
                         StreamWorks.stopStream(stream).onSuccess(function () {
                             $rootScope.account.init();
                         });
@@ -467,7 +462,6 @@
                 stop: function (event, ui) {
                     var thisElement = angular.element(ui.item).scope();
                     var thisIndex = angular.element(ui.item);
-                    console.log(thisElement, thisIndex);
                     //$scope.sort(thisElement.track.unique_id, thisIndex);
                 },
                 helper: function (e, tr) {
@@ -532,7 +526,7 @@
                 })();
 
             },
-            template: '<div class="track-title">{{track.caption}}</div>'
+            template: '<div class="track-title">{{ track.caption }}</div>'
         };
     }]);
 
@@ -553,7 +547,7 @@
 
                 $scope.$watch("schedule", function (response) {
 
-                    if (!response) return false;
+                    if (!response) return;
 
                     $scope.current = response.tracks[response.current];
                     $scope.schedule = response;
@@ -572,9 +566,7 @@
                     canvas.height = $(canvas).height();
                     canvas.width = $(canvas).width();
 
-                    var rangeUSeconds = TIMELINE_RESOLUTION;
-
-                    var resolution = canvas.width / rangeUSeconds;
+                    var resolution = canvas.width / TIMELINE_RESOLUTION;
 
                     var context = canvas.getContext("2d");
                     context.font = "10px sans-serif";
@@ -584,7 +576,7 @@
                     context.strokeStyle = "#000000";
                     context.beginPath();
                     var fix;
-                    for (var n = -cut; n < rangeUSeconds; n += 30000) {
+                    for (var n = -cut; n < TIMELINE_RESOLUTION; n += 30000) {
                         var thisDate = new Date(leftEdgeTime + n);
                         fix = parseInt(n * resolution);
                         context.moveTo(fix, 0);

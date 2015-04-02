@@ -1,17 +1,14 @@
-translate {
-  display: inline;
-}
-
-.ptop8px {
-  padding-top: 8px;
-}
-
-.mtop8px {
-  margin-top: 8px;
-}
-
+translate { display: inline }
+.ptop8px { padding-top: 8px }
+.mtop8px { margin-top: 8px }
 .left { float: left }
 .right { float: right }
+.hiddenOverflow { overflow: hidden }
+.relative { position: relative }
+.absolute { position: absolute }
+.fixed { position: fixed }
+.right-padded { padding-right: 4px }
+
 .clearFix:after {
   content: " ";
   visibility: hidden;
@@ -23,18 +20,7 @@ translate {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.hiddenOverflow {
-  overflow: hidden;
-}
-.relative {
-  position: relative;
-}
-.absolute {
-  position: absolute;
-}
-.fixed {
-  position: fixed;
-}
-.right-padded {
-  padding-right: 4px;
+.border-box {
+  box-sizing: border-box;
+  -moz-box-sizing: padding-box;
 }

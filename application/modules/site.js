@@ -35,7 +35,8 @@
         }
     }]);
 
-    site.filter("humanTime", [function () {
+    site.filter("humanTime", ["$rootScope", function ($rootScope) {
+
         return function (ms) {
 
             var totalSeconds = parseInt(Math.abs(ms / 1000));
@@ -44,13 +45,13 @@
             var minutes = parseInt(totalSeconds / 60) % 60;
 
             if (ms < 0) {
-                return "Overused (-" + days + " days " + hours + " hours " + minutes + " minutes)";
+                return $rootScope.tr("TR_HUMAN_TIME_OVERUSED", { days:days, hours:hours, minutes:minutes });
             } else {
-                return days + " days " + hours + " hours " + minutes + " minutes";
+                return $rootScope.tr("TR_HUMAN_TIME_FORMAT", { days:days, hours:hours, minutes:minutes });
             }
 
-
         }
+
     }]);
 
     site.filter("lighten", [function () {
@@ -83,7 +84,9 @@
                     ((bb < 16) ? "0" : "") + bb.toString(16);
 
             } else {
+
                 result = null;
+
             }
 
             return result;
@@ -407,11 +410,11 @@
         };
     }]);
 
-    site.filter('bytes', [function () {
+    site.filter('bytes', ["$rootScope", function ($rootScope) {
         return function (bytes, precision) {
             if (isNaN(parseFloat(bytes)) || !isFinite(bytes)) return '-';
             if (typeof precision === 'undefined') precision = 1;
-            var units = ['bytes', 'kB', 'MB', 'GB', 'TB', 'PB'],
+            var units = $rootScope.tr("TR_BYTES_METRICS"),
                 number = Math.floor(Math.log(bytes) / Math.log(1024));
             return (bytes / Math.pow(1024, Math.floor(number))).toFixed(precision) + ' ' + units[number];
         }
@@ -464,14 +467,6 @@
                 });
             }
         };
-    }]);
-
-    site.directive("alignVertical", [function () {
-        return {
-            link: function ($scope, $element, $attr) {
-
-            }
-        }
     }]);
 
     site.directive("morSuggest", ["$rootScope", function ($rootScope) {
@@ -543,9 +538,6 @@
             scope: {
                 morEdit: "=",
                 morEditSubmit: "&"
-            },
-            link: function ($scope, $element, $attributes) {
-
             }
         }
     }]);
@@ -590,8 +582,8 @@
                         <i class="big-icon icon-question"></i>\
                         <div class="dialog-body">' + question + '</div>\
                         <div class="buttons">\
-                            <span class="button" ng-click="confirm(1)">Yes</span>\
-                            <span class="button" ng-click="closeThisDialog()">No</span>\
+                            <span class="button" ng-click="confirm(1)"><translate>FR_YES</translate></span>\
+                            <span class="button" ng-click="closeThisDialog()"><translate>FR_NO</translate></span>\
                         </div>\
                     </div>',
                     plain: true,
@@ -610,7 +602,7 @@
                     <div class="dialog-wrap">\
                         <div class="dialog-body">' + info + '</div>\
                         <div class="buttons">\
-                            <span class="button" ng-click="closeThisDialog()">OK</span>\
+                            <span class="button" ng-click="closeThisDialog()"><translate>FR_OK</translate></span>\
                         </div>\
                     </div>',
                     plain: true,

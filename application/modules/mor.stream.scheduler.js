@@ -13,7 +13,7 @@
     scheduler.run(["$rootScope", function ($rootScope) {
         $rootScope.callOrSet = function (key, value, context) {
             if (angular.isUndefined(context[key])) {
-                return false;
+                return;
             }
             $rootScope.$applyAsync(function () {
                 if (typeof context[key] === "function") {
@@ -134,11 +134,6 @@
                 onInterval: "=",
                 onTrackUpdate: "="
             },
-            link: function ($scope, $element, $attributes) {
-                //$scope.onInterval = $compile($attributes.onInterval)($scope);
-                //$scope.onTrackChange = $compile($attributes.onTrackChange)($scope);
-                //console.log($scope.onInterval);
-            },
             controller: [
                 "$scope",
                 "$timeout",
@@ -148,7 +143,7 @@
                         previousUniqueId,
                         update = function () {
                             if (angular.isUndefined($scope.ngModel.sid)) {
-                                return false;
+                                return;
                             }
 
                             rest.getSchedule($scope.ngModel).onSuccess(

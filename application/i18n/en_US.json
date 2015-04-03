@@ -316,7 +316,6 @@
     "FR_UPLOAD_START_HINT"              : "Start upload",
 
     "FR_CATEGORIES_TITLE"               : "Filter radio stations by category",
-    "FR_CATEGORIES_LIST_LABEL"          : {"one": "stream", "other": "streams"},
 
     "FR_CONFIRM_STREAM_DELETE"          : "Are you sure want to delete your radio station<br><b>%0%</b>?",
     "FR_CONFIRM_STREAM_STOP"            : "Are you sure want to STOP radio your radio station<br><b>%0%</b>?",
@@ -369,5 +368,13 @@
         "11"    : "11 users listening to this radio station",
         "*1"    : "%% user listening to this radio station",
         "other" : "%% users listening to this radio station"
+    },
+
+    "FR_CATEGORIES_LIST_LABEL": {
+        "1"     : "stream",
+        "11"    : "streams",
+        "*1"    : "stream",
+        "other" : "streams"
     }
+
 }

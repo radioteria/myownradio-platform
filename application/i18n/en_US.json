@@ -182,7 +182,6 @@
     "FR_FOUND_RESULTS"                  : "Here what we found based on your search request",
     "FR_NOTHING_FOUND"                  : "Nothing found for request <b>%0%</b>. Check the spelling, or try a different search.",
 
-    "FR_COUNT_USERS_LISTENING"          : "%0% user(s) listening to this radio channel",
     "FR_STREAM_BOOKMARKED_TIMES"        : "This stream is bookmarked %0% times",
     "FR_STREAM_CREATED_AT"              : "Stream created at",
     "FR_STREAM_NO_ACCESS"               : "Sorry, but this channel is down or you have no access to listen it.",
@@ -329,11 +328,42 @@
     "FR_TRACKS_MOVED_TO_STATION"        : "<b>%count%</b> track(s) successfully moved to radio station <b>%name%</b>",
     "FR_TRACKS_UPDATED"                 : "Information of <b>%count%</b> track(s) successfully updated",
     "FR_STREAM_DELETED_SUCCESSFULLY"    : "Radio station <b>%name%</b> successfully deleted",
+    "FR_TRACK_COPIED_SUCCESSFULLY"      : "Track <b>%filename%</b> successfully added to your library",
 
     "FR_HUMAN_TIME_OVERUSED"            : "Overused (%days% days %hours% hours %minutes% minutes)",
     "FR_HUMAN_TIME_FORMAT"              : "%days% days %hours% hours %minutes% minutes",
 
-    "FR_BYTES_METRICS"                  : ["byte(s)", "kB", "MB", "GB", "TB", "PB"]
+    "FR_BYTES_METRICS"                  : ["byte(s)", "kB", "MB", "GB", "TB", "PB"],
+
+    "FR_COUNT_USERS_LISTENING": {
+        "0"     : "No users listening to this radio station",
+        "1"     : "1 user listening to this radio station",
+        "11"    : "11 users listening to this radio station",
+        "*1"    : "%0% user listening to this radio station",
+        "other" : "%0% users listening to this radio station"
+    },
+
+    "FR_MOVE_TRACKS_CONFIRM": {
+        "1"     : "Move <b>%0.filename%</b> to <b>%args.name%</b>?",
+        "11"    : "Move <b>%length%</b> tracks to <b>%args.name%</b>?",
+        "*1"    : "Move <b>%length%</b> track to <b>%args.name%</b>?",
+        "other" : "Move <b>%length%</b> tracks to <b>%args.name%</b>?"
+    },
+
+    "FR_DELETE_FROM_STREAM_CONFIRM": {
+        "1"     : "Delete <b>%0.filename%</b> from <b>%args.name%</b>?",
+        "11"    : "Delete <b>%length%</b> tracks from <b>%args.name%</b>?",
+        "*1"    : "Delete <b>%length%</b> track from <b>%args.name%</b>?",
+        "other" : "Delete <b>%length%</b> tracks from <b>%args.name%</b>?"
+    },
+
+    "FR_DELETE_FROM_ACCOUNT_CONFIRM": {
+        "1"     : "Delete <b>%0.filename%</b> from your library?",
+        "11"    : "Delete <b>%length%</b> tracks from your library?",
+        "*1"    : "Delete <b>%length%</b> track from your library?",
+        "other" : "Delete <b>%length%</b> tracks from your library?"
+    }
+
 
 
 }

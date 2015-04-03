@@ -43,10 +43,10 @@
                             <a ng-href="{{ stream.key | streamsCatalog }}" ng-bind="stream.name"></a>
                         </div>
                         <div class="stats">
-                                <span mor-tooltip="{{ tr('FR_COUNT_USERS_LISTENING', [ stream.listeners_count ]) }}">
+                                <span mor-tooltip="{{ tr('FR_COUNT_USERS_LISTENING', stream.listeners_count) }}">
                                     <i class="icon-hearing"></i><span>{{ stream.listeners_count | number }}</span>
                                 </span>
-                                <span mor-tooltip="{{ tr('FR_STREAM_BOOKMARKED_TIMES', [ stream.bookmarks_count ]) }}">
+                                <span mor-tooltip="{{ tr('FR_STREAM_BOOKMARKED_TIMES', stream.bookmarks_count) }}">
                                     <i class="icon-heart"></i> <span>{{ stream.bookmarks_count | number }}</span>
                                 </span>
                         </div>

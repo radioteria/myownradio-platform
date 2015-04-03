@@ -37,7 +37,7 @@ angular.module("Dialogs", [])
                     });
                 },
                 removeTracksFromStream: function (streamObject, tracksArray, successCallback) {
-                    $dialog.question($rootScope.pl("FR_DELETE_FROM_STREAM_CONFIRM", tracksArray.length, {tracks:tracksArray, stream:streamObject}), function () {
+                    $dialog.question($rootScope.pl("FR_DELETE_FROM_STREAM_CONFIRM", tracksArray.length, {tracks:tracksArray, stream:streamObject}, 2), function () {
                         var trackIds = tracksArray.map(function (track) { return track.unique_id }).join(",");
                         StreamWorks.deleteTracks(streamObject.sid, trackIds).onSuccess(function () {
                             if (typeof successCallback == "function") {

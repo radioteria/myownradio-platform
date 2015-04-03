@@ -23,8 +23,8 @@
                 return $localize.analyze(locale[key], context);
             };
 
-            $rootScope.pl = function (key, count, context) {
-                return $localize.pluralize(locale[key], count, context);
+            $rootScope.pl = function (key, count, context, offset) {
+                return $localize.pluralize(locale[key], count, context, offset);
             }
 
         }

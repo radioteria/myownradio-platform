@@ -343,7 +343,7 @@
     },
 
     "FR_DELETE_FROM_STREAM_CONFIRM": {
-        "1"     : "Delete <b>%tracks.0.filename%</b> from <b>%stream.name%</b>?",
+        "1"     : "Delete track <b>%tracks.0.filename%</b> from <b>%stream.name%</b>?",
         "11"    : "Delete <b>%tracks.length%</b> tracks from <b>%stream.name%</b>?",
         "*1"    : "Delete <b>%tracks.length%</b> track from <b>%stream.name%</b>?",
         "other" : "Delete <b>%tracks.length%</b> tracks from <b>%stream.name%</b>?"

@@ -93,7 +93,7 @@
                 } else if (angular.isNumber(input)) {
                     return input;
                 } else {
-                    return "TR_UNKNOWN_OBJECT";
+                    return "FR_UNKNOWN_OBJECT";
                 }
             },
             pluralize: function (when, count, context, offset) {

@@ -4,11 +4,7 @@
         <div class="info-block">
             <translate>FR_UPLOAD_MESSAGE</translate>
             <ul class="enumerate">
-                <li><translate>FR_UPLOAD_CONDITION_1</translate></li>
-                <li><translate>FR_UPLOAD_CONDITION_2</translate></li>
-                <li><translate>FR_UPLOAD_CONDITION_3</translate></li>
-                <li><translate>FR_UPLOAD_CONDITION_4</translate></li>
-                <li><translate>FR_UPLOAD_CONDITION_5</translate></li>
+                <li ng-repeat="condition in tr('FR_UPLOAD_CONDITION')" bind-html="condition"></li>
             </ul>
         </div>
         <div class="controls">
@@ -23,7 +19,7 @@
                         <li class="row" ng-repeat="file in uploadQueue">
                             <div class="cell">{{file.name}}</div>
                             <div class="cell">{{file.size | bytes}}</div>
-                            <div class="cell">del</div>
+                            <div class="cell"><i class="icon-delete" ng-click="uploadQueue.splice($index, 1)"></i></div>
                         </li>
                     </ul>
                 </div>

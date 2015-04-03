@@ -358,7 +358,7 @@
     "FR_STREAM_BOOKMARKED_TIMES": {
         "0"     : "This radio station is not bookmarked",
         "1"     : "This radio station is bookmarked by one user",
-        "11"    : "This radio station is bookmarked by %% users",
+        "11"    : "This radio station is bookmarked by 11 users",
         "*1"    : "This radio station is bookmarked by %% user",
         "other" : "This radio station is bookmarked by %% users"
     },

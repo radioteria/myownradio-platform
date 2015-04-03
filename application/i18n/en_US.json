@@ -325,7 +325,7 @@
     "FR_TRACKS_REMOVED_FROM_LIBRARY"    : "<b>%count%</b> track(s) successfully removed from your library",
     "FR_TRACKS_ADDED_TO_STATION"        : "<b>%count%</b> track(s) successfully added to radio station <b>%name%</b>",
     "FR_TRACKS_MOVED_TO_STATION"        : "<b>%count%</b> track(s) successfully moved to radio station <b>%name%</b>",
-    "FR_TRACKS_UPDATED"                 : "Information of <b>%count%</b> track(s) successfully updated",
+    "FR_TRACKS_UPDATED"                 : "Information for <b>%count%</b> track(s) successfully updated",
     "FR_STREAM_DELETED_SUCCESSFULLY"    : "Radio station <b>%name%</b> successfully deleted",
     "FR_TRACK_COPIED_SUCCESSFULLY"      : "Track <b>%filename%</b> successfully added to your library",
 

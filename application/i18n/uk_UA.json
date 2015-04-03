@@ -309,7 +309,7 @@
 
     "FR_UPLOAD_BUTTON_HINT"             : "Натисніть тут щоб вибрати аудіозапис(и) з комп’ютера",
     "FR_UPLOAD_BUTTON_TEXT"             : "Вибрати аудіозаписи...",
-    "FR_UPLOAD_SELECTED_COUNT"          : "Вибрано файлів: <b>%0%</b>:",
+    "FR_UPLOAD_SELECTED_COUNT"          : "Вибрано файлів: <b>%0%</b>",
     "FR_UPLOAD_ADD_TO_STREAM"           : "Автоматично додавати завантажені аудіозаписи в чергу радіостанції:",
     "FR_UPLOADING_FILE"                 : "Завантаження <b>%0%</b>...",
     "FR_UPLOADING_LEFT"                 : "(залишилось: %0%)",

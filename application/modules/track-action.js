@@ -11,7 +11,7 @@ angular.module("Dialogs", [])
 
             return {
                 deleteStream: function ($stream, callback) {
-                    $dialog.question($rootScope.tr("FR_CONFIRM_STREAM_DELETE", [ $stream.name ]), function () {
+                    $dialog.question($rootScope.tr("FR_CONFIRM_STREAM_DELETE", [$stream.name]), function () {
                         Streams.deleteStream($stream).onSuccess(function () {
                             $rootScope.account.init();
                             if (typeof callback == "function") {
@@ -21,7 +21,7 @@ angular.module("Dialogs", [])
                     });
                 },
                 moveTracksToOtherStream: function (streamObject, tracksArray, streamDestination, successCallback) {
-                    $dialog.question($rootScope.pl("FR_MOVE_TRACKS_CONFIRM", tracksArray, streamDestination), function () {
+                    $dialog.question($rootScope.pl("FR_MOVE_TRACKS_CONFIRM", tracksArray.length, {tracks:tracksArray, stream:streamDestination}), function () {
                         var trackIds  = tracksArray.map(function (track) { return track.tid; }).join(",");
                         var uniqueIds = tracksArray.map(function (track) { return track.unique_id }).join(",");
                         StreamWorks.addTracks(streamDestination.sid, trackIds).onSuccess(function () {
@@ -38,7 +38,7 @@ angular.module("Dialogs", [])
                     });
                 },
                 removeTracksFromStream: function (streamObject, tracksArray, successCallback) {
-                    $dialog.question($rootScope.pl("FR_DELETE_FROM_STREAM_CONFIRM", tracksArray, streamObject), function () {
+                    $dialog.question($rootScope.pl("FR_DELETE_FROM_STREAM_CONFIRM", tracksArray.length, {tracks:tracksArray, stream:streamObject}), function () {
                         var trackIds = tracksArray.map(function (track) { return track.unique_id }).join(",");
                         StreamWorks.deleteTracks(streamObject.sid, trackIds).onSuccess(function () {
                             if (typeof successCallback == "function") {
@@ -50,7 +50,7 @@ angular.module("Dialogs", [])
                     });
                 },
                 removeTracksFromAccount: function (tracksArray, successCallback) {
-                    $dialog.question($rootScope.pl("FR_DELETE_FROM_ACCOUNT_CONFIRM", tracksArray), function () {
+                    $dialog.question($rootScope.pl("FR_DELETE_FROM_ACCOUNT_CONFIRM", tracksArray.length, {tracks:tracksArray}), function () {
                         var trackIds = tracksArray.map(function (track) { return track.tid; }).join(",");
                         TrackWorks.deleteTracks(trackIds).onSuccess(function () {
                             if (typeof successCallback == "function") {

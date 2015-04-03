@@ -4,9 +4,9 @@
 
     tools.constant("STATS_INTERVAL", 10000);
 
-    tools.run(["$timeout", "$rootScope", "StatsFactory", "STATS_INTERVAL", "$tr", "$localize",
+    tools.run(["$timeout", "$rootScope", "StatsFactory", "STATS_INTERVAL", "$localize",
 
-        function ($timeout, $rootScope, StatsFactory, STATS_INTERVAL, $tr, $localize) {
+        function ($timeout, $rootScope, StatsFactory, STATS_INTERVAL, $localize) {
 
             $rootScope.stats = {};
 
@@ -19,12 +19,12 @@
 
             rotate();
 
-            $rootScope.tr = function (key, args) {
-                return $tr(key, args);
+            $rootScope.tr = function (key, context) {
+                return $localize.analyze(locale[key], context);
             };
 
-            $rootScope.pl = function (key, count, args) {
-                return $localize.get(key, count, args);
+            $rootScope.pl = function (key, count, context) {
+                return $localize.pluralize(locale[key], count, context);
             }
 
         }
@@ -43,85 +43,75 @@
     }]);
 
     tools.factory("$localize", [function () {
-        var locale = {
-            get: function (key, count, args) {
-                var input = window.locale[key];
-                if (angular.isString(input)) {
-                    return locale.analyze(input, count);
-                } else if (angular.isObject(input) && !angular.isArray(input)) {
-                    return locale.pluralize(input, count, args);
-                } else {
-                    return key;
+
+        function grabObject(obj, path, def) {
+            var i, keys, accumulator;
+            if (!angular.isString(path)) {
+                throw new Error("'path' must be a 'string'!");
+            }
+            if (path.length == 0) {
+                return def;
+            }
+            keys = path.split(".");
+            accumulator = obj;
+            for (i = 0; i < keys.length; i ++) {
+                if (!angular.isObject(accumulator)) {
+                    return "";
                 }
-            },
-            analyze: function (input, object, args) {
-                var grabObject = function (obj, path, args) {
+                accumulator = accumulator[keys[i]];
+            }
+            return accumulator;
+        }
 
-                    if (!angular.isString(path)) {
-                        throw new Error("'path' must be a 'string'!");
-                    }
-                    if (path.length == 0) return input;
+        function compareEnds(needle, subject) {
+            var subj = subject.toString();
+            if (subj.length < needle.length) {
+                return false;
+            }
+            return subj.slice(-needle.length) == needle;
+        }
 
-                    var i, keys = path.split("."), accumulator = obj;
-                    for (i = 0; i < keys.length; i ++) {
-                        if (i == 0 && keys[i] == "args") {
-                            accumulator = args;
-                            continue;
-                        }
-                        if (!angular.isObject(accumulator)) {
-                            return "";
-                        }
-                        accumulator = accumulator[keys[i]];
-                    }
-                    return accumulator;
-                };
-
+        var locale = {
+            analyze: function (input, context, count) {
                 if (angular.isArray(input)) {
                     var i, arr = [];
                     for (i = 0; i < input.length; i++) {
-                        arr.push(locale.analyze(input[i], object));
+                        arr.push(locale.analyze(input[i], context, count));
                     }
                     return arr;
                 } else if (angular.isObject(input)) {
                     var key, obj = {};
                     for (key in input) if (input.hasOwnProperty(key)) {
-                        obj[key] = locale.analyze(input[key], object);
+                        obj[key] = locale.analyze(input[key], context, count);
                     }
                     return obj;
                 } else if (angular.isString(input)) {
-                    var a = input.replace(/(%[a-z0-9\\_\\.]+%)/g, function (match) {
+                    return input.replace(/(%[a-z0-9\\_\\.]*%)/g, function (match) {
                         var key = match.substr(1, match.length - 2);
-                        return htmlEscape(grabObject(object, key, args));
+                        return htmlEscape(grabObject(context, key, count));
                     });
-                    a = a.replace(/(%%)/g, function (match) {
-                        return htmlEscape(object);
-                    });
-                    return a;
                 } else if (angular.isNumber(input)) {
                     return input;
                 } else {
                     return "TR_UNKNOWN_OBJECT";
                 }
             },
-            pluralize: function (when, count, args) {
+            pluralize: function (when, count, context, offset) {
                 var key;
+                offset = offset || 0;
                 if (!angular.isObject(when)) {
-                    throw new Error("'when' must be an 'object'!");
+                    throw new Error("'when' must be an object!");
                 }
-                if (!angular.isArray(count) && !angular.isNumber(count)) {
-                    throw new Error("'array' must be an 'array'!");
+                if (!angular.isNumber(count)) {
+                    throw new Error("'array' must be a number!");
                 }
                 for (key in when) if (when.hasOwnProperty(key)) {
-                    if (angular.isArray(count) && count.length == parseInt(key)) {
-                        return locale.analyze(when[key], count, args);
-                    } else if (angular.isNumber(count) && count == parseInt(key)) {
-                        return locale.analyze(when[key], count, args);
-                    } else if (angular.isArray(count) && key.slice(0, 1) == "*" && count.length.toString(10).slice(-1) == key.slice(-1)) {
-                        return locale.analyze(when[key], count, args);
-                    } else if (angular.isNumber(count) && key.slice(0, 1) == "*" && count.toString(10).slice(-1) == key.slice(-1)) {
-                        return locale.analyze(when[key], count, args);
+                    if (angular.isNumber(count) && count == parseInt(key)) {
+                        return locale.analyze(when[key], context, count - offset);
+                    } else if (angular.isNumber(count) && key.slice(0, 1) == "*" && compareEnds(key.slice(1), count.toString())) {
+                        return locale.analyze(when[key], context, count - offset);
                     } else if (key == "other") {
-                        return locale.analyze(when[key], count, args);
+                        return locale.analyze(when[key], context, count - offset);
                     }
                 }
                 return "";
@@ -130,13 +120,7 @@
         return locale;
     }]);
 
-    tools.factory("$tr", ["$localize", function ($localize) {
-        return function ($key, args) {
-            return $localize.get($key, args);
-        }
-    }]);
-
-    tools.directive("translate", ["$tr", "$filter", function ($tr, $filter) {
+    tools.directive("translate", ["$localize", "$filter", function ($localize, $filter) {
         return {
             scope: {
                 args: "="
@@ -147,7 +131,7 @@
                     pre: function (scope, element, attr) {
                         var label = element.text(),
                             translate = function () {
-                                var translated = $tr(label, scope.args);
+                                var translated = $localize.analyze(locale[label], scope.args);
                                 if (angular.isDefined(attr["filter"])) {
                                     var filter = $filter(attr['filter']);
                                     translated = filter(translated);

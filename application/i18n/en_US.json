@@ -334,32 +334,32 @@
     "FR_BYTES_METRICS"                  : ["byte(s)", "kB", "MB", "GB", "TB", "PB"],
 
     "FR_MOVE_TRACKS_CONFIRM": {
-        "1"     : "Move <b>%0.filename%</b> to <b>%args.name%</b>?",
-        "11"    : "Move <b>%length%</b> tracks to <b>%args.name%</b>?",
-        "*1"    : "Move <b>%length%</b> track to <b>%args.name%</b>?",
-        "other" : "Move <b>%length%</b> tracks to <b>%args.name%</b>?"
+        "1"     : "Move <b>%tracks.0.filename%</b> to <b>%stream.name%</b>?",
+        "11"    : "Move <b>%tracks.length%</b> tracks to <b>%stream.name%</b>?",
+        "*1"    : "Move <b>%tracks.length%</b> track to <b>%stream.name%</b>?",
+        "other" : "Move <b>%tracks.length%</b> tracks to <b>%stream.name%</b>?"
     },
 
     "FR_DELETE_FROM_STREAM_CONFIRM": {
-        "1"     : "Delete <b>%0.filename%</b> from <b>%args.name%</b>?",
-        "11"    : "Delete <b>%length%</b> tracks from <b>%args.name%</b>?",
-        "*1"    : "Delete <b>%length%</b> track from <b>%args.name%</b>?",
-        "other" : "Delete <b>%length%</b> tracks from <b>%args.name%</b>?"
+        "1"     : "Delete <b>%tracks.0.filename%</b> from <b>%stream.name%</b>?",
+        "11"    : "Delete <b>%tracks.length%</b> tracks from <b>%stream.name%</b>?",
+        "*1"    : "Delete <b>%tracks.length%</b> track from <b>%stream.name%</b>?",
+        "other" : "Delete <b>%tracks.length%</b> tracks from <b>%stream.name%</b>?"
     },
 
     "FR_DELETE_FROM_ACCOUNT_CONFIRM": {
-        "1"     : "Delete <b>%0.filename%</b> from your library?",
-        "11"    : "Delete <b>%length%</b> tracks from your library?",
-        "*1"    : "Delete <b>%length%</b> track from your library?",
-        "other" : "Delete <b>%length%</b> tracks from your library?"
+        "1"     : "Delete <b>%tracks.0.filename%</b> from your library?",
+        "11"    : "Delete <b>%tracks.length%</b> tracks from your library?",
+        "*1"    : "Delete <b>%tracks.length%</b> track from your library?",
+        "other" : "Delete <b>%tracks.length%</b> tracks from your library?"
     },
 
     "FR_STREAM_BOOKMARKED_TIMES": {
-        "0"     : "This radio station is not bookmarked",
-        "1"     : "This radio station is bookmarked by one user",
-        "11"    : "This radio station is bookmarked by 11 users",
-        "*1"    : "This radio station is bookmarked by %% user",
-        "other" : "This radio station is bookmarked by %% users"
+        "0"     : "This radio station has no bookmarks",
+        "1"     : "This radio station bookmarked by 1 user",
+        "11"    : "This radio station bookmarked by 11 users",
+        "*1"    : "This radio station bookmarked by %% user",
+        "other" : "This radio station bookmarked by %% users"
     },
 
     "FR_COUNT_USERS_LISTENING": {

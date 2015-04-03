@@ -69,10 +69,10 @@
                         <a href="{{content.streamData.owner.key | usersCatalog}}">{{ content.streamData.owner | userDisplayName }}</a>
                     </div>
                     <div class="stats">
-                        <span mor-tooltip="{{ tr('FR_COUNT_USERS_LISTENING', content.streamData.listeners_count) }}">
+                        <span mor-tooltip="{{ pl('FR_COUNT_USERS_LISTENING', content.streamData.listeners_count) }}">
                             <i class="icon-hearing"></i><span>{{ content.streamData.listeners_count | number }}</span>
                         </span>
-                        <span mor-tooltip="{{ tr('FR_STREAM_BOOKMARKED_TIMES', content.streamData.bookmarks_count) }}">
+                        <span mor-tooltip="{{ pl('FR_STREAM_BOOKMARKED_TIMES', content.streamData.bookmarks_count) }}">
                             <i class="icon-heart"></i> <span>{{ content.streamData.bookmarks_count | number }}</span>
                         </span>
                         <span mor-tooltip="{{ tr('FR_STREAM_CREATED_AT') }} {{ content.streamData.created * 1000 | date : 'mediumDate' }}">

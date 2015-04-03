@@ -182,7 +182,6 @@
     "FR_FOUND_RESULTS"                  : "Here what we found based on your search request",
     "FR_NOTHING_FOUND"                  : "Nothing found for request <b>%0%</b>. Check the spelling, or try a different search.",
 
-    "FR_STREAM_BOOKMARKED_TIMES"        : "This stream is bookmarked %0% times",
     "FR_STREAM_CREATED_AT"              : "Stream created at",
     "FR_STREAM_NO_ACCESS"               : "Sorry, but this channel is down or you have no access to listen it.",
     "FR_RECENT_UPCOMING"                : "Recent and Upcoming",
@@ -335,14 +334,6 @@
 
     "FR_BYTES_METRICS"                  : ["byte(s)", "kB", "MB", "GB", "TB", "PB"],
 
-    "FR_COUNT_USERS_LISTENING": {
-        "0"     : "No users listening to this radio station",
-        "1"     : "1 user listening to this radio station",
-        "11"    : "11 users listening to this radio station",
-        "*1"    : "%0% user listening to this radio station",
-        "other" : "%0% users listening to this radio station"
-    },
-
     "FR_MOVE_TRACKS_CONFIRM": {
         "1"     : "Move <b>%0.filename%</b> to <b>%args.name%</b>?",
         "11"    : "Move <b>%length%</b> tracks to <b>%args.name%</b>?",
@@ -362,8 +353,21 @@
         "11"    : "Delete <b>%length%</b> tracks from your library?",
         "*1"    : "Delete <b>%length%</b> track from your library?",
         "other" : "Delete <b>%length%</b> tracks from your library?"
+    },
+
+    "FR_STREAM_BOOKMARKED_TIMES": {
+        "0"     : "This radio station is not bookmarked",
+        "1"     : "This radio station is bookmarked by one user",
+        "11"    : "This radio station is bookmarked by %% users",
+        "*1"    : "This radio station is bookmarked by %% user",
+        "other" : "This radio station is bookmarked by %% users"
+    },
+
+    "FR_COUNT_USERS_LISTENING": {
+        "0"     : "This radio station has no listeners",
+        "1"     : "1 user listening to this radio station",
+        "11"    : "11 users listening to this radio station",
+        "*1"    : "%0% user listening to this radio station",
+        "other" : "%0% users listening to this radio station"
     }
-
-
-
 }

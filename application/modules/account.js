@@ -60,7 +60,6 @@
             $rootScope.account.logout = function () {
                 $cacheFactory.get('$http').removeAll();
                 User.logout().onSuccess(function () {
-                    //$rootScope.account.init();
                     $route.reload();
                 });
             };

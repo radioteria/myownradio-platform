@@ -45,9 +45,9 @@
             var minutes = parseInt(totalSeconds / 60) % 60;
 
             if (ms < 0) {
-                return $rootScope.tr("TR_HUMAN_TIME_OVERUSED", { days:days, hours:hours, minutes:minutes });
+                return $rootScope.tr("FR_HUMAN_TIME_OVERUSED", {days:days, hours:hours, minutes:minutes});
             } else {
-                return $rootScope.tr("TR_HUMAN_TIME_FORMAT", { days:days, hours:hours, minutes:minutes });
+                return $rootScope.tr("FR_HUMAN_TIME_FORMAT", {days:days, hours:hours, minutes:minutes});
             }
 
         }

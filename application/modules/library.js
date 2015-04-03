@@ -163,7 +163,7 @@
 
             $scope.moveToStream = function (stream) {
                 TrackAction.moveTracksToOtherStream($scope.stream, $scope.target, stream, function () {
-                    Popup.message($rootScope.tr("FR_TRACKS_MOVED_TO_STATION", { count: $scope.target.length, name: stream.name }));
+                    Popup.message($rootScope.tr("FR_TRACKS_MOVED_TO_STATION", {count:$scope.target.length, name:stream.name}));
                     deleteMatching($scope.tracks, function (track) {
                         return $scope.target.indexOf(track) != -1;
                     });

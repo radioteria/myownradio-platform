@@ -372,6 +372,7 @@
             $scope.deleteStream = function ($stream) {
                 TrackAction.deleteStream($stream, function () {
                     Popup.tr("FR_STREAM_DELETED_SUCCESSFULLY", $stream);
+                    $rootScope.account.init("/profile/streams/");
                 });
             };
 

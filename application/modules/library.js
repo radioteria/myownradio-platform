@@ -194,7 +194,10 @@
             };
 
             $scope.remove = function () {
-                TrackAction.deleteStream($scope.stream);
+                TrackAction.deleteStream($scope.stream, function () {
+                    Popup.tr("FR_STREAM_DELETED_SUCCESSFULLY", $scope.stream);
+                    $rootScope.account.init("/profile/streams/");
+                });
             };
 
             $scope.readStream();

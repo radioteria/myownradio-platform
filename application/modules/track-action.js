@@ -13,9 +13,8 @@ angular.module("Dialogs", [])
                 deleteStream: function ($stream, callback) {
                     $dialog.question($rootScope.tr("FR_CONFIRM_STREAM_DELETE", [$stream.name]), function () {
                         Streams.deleteStream($stream).onSuccess(function () {
-                            $rootScope.account.init();
                             if (typeof callback == "function") {
-                                callback.call();
+                                callback();
                             }
                         });
                     });

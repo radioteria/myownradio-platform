@@ -367,7 +367,7 @@
         "0"     : "This radio station has no listeners",
         "1"     : "1 user listening to this radio station",
         "11"    : "11 users listening to this radio station",
-        "*1"    : "%0% user listening to this radio station",
-        "other" : "%0% users listening to this radio station"
+        "*1"    : "%% user listening to this radio station",
+        "other" : "%% users listening to this radio station"
     }
 }

@@ -29,4 +29,9 @@ class DoGradient implements Controller {
         echo $options->getFormatId();
 
     }
+
+    public function doHead() {
+        usleep(rand(500000, 5000000));
+        http_response_code(404);
+    }
 } 

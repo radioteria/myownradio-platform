@@ -23,14 +23,14 @@ class HttpPost extends HttpRequestAdapter implements Injectable, SingletonInterf
     }
 
     public function getArrayParameter($key, $filter = FILTER_DEFAULT) {
-        return Optional::ofArray(FILTER_INPUT_ARRAY(INPUT_POST, [
+        $array = FILTER_INPUT_ARRAY(INPUT_POST, [
             $key => [
                 "filter" => $filter,
                 "flags"  => FILTER_REQUIRE_ARRAY
             ]
-        ]));
+        ]);
+        return Optional::ofArray($array[$key]);
     }
-
 
     public function getRequired($key, $filter = FILTER_DEFAULT, $options = null) {
         return $this->getParameter($key, $filter, $options)

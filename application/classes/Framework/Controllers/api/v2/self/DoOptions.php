@@ -26,29 +26,21 @@ class DoOptions implements Controller {
             new ControllerException("Options could not be applied for you")
         );
 
-        $args = [
-            "options" => [
-                 "filter" => FILTER_VALIDATE_INT,
-                 "flags"  => FILTER_REQUIRE_ARRAY
-            ]
-        ];
-//
-//        $post->getArrayParameter("options")->then(function ($options) use ($object) {
-//
-//            foreach ($options as $key=>$option) {
-//                try {
-//                    $object->setProperty($key, $option);
-//                } catch (ORMException $e) {
-//                    throw new ControllerException(sprintf("Option '" . $key . "' is not applicable"));
-//                }
-//            }
-//
-//            $object->save();
-//
-//        });
+        $post->getArrayParameter("options")->then(function ($options) use ($object) {
 
+            foreach ($options as $key => $option) {
+                try {
+                    $object->setProperty($key, $option);
+                } catch (ORMException $e) {
+                    throw new ControllerException(sprintf("Option '" . $key . "' is not applicable"));
+                }
+            }
 
-        $response->setData($post->getArrayRequired("options"));
+            $object->save();
+
+        });
+
+        $response->setData($object);
 
     }
 } 

@@ -10,11 +10,30 @@ namespace Framework\Services\ORM\EntityUtils;
 
 
 use Framework\Services\ORM\Core\MicroORM;
+use Framework\Services\ORM\Exceptions\ORMException;
 use JsonSerializable;
 use Tools\Optional;
 use Tools\Singleton;
 
 abstract class ActiveRecordObject implements JsonSerializable {
+
+    /**
+     * @param $prop
+     * @param $value
+     * @throws \Framework\Services\ORM\Exceptions\ORMException
+     */
+    public function setProperty($prop, $value) {
+        $caseProp = underscoreToCamelCase($prop);
+        $prefix = "set";
+        $reflection = new \ReflectionClass($this);
+        try {
+            $method = $reflection->getMethod($prefix . $caseProp);
+            $method->invoke($this, $value);
+        } catch (\ReflectionException $exception) {
+            throw new ORMException(sprintf("No property '%s' in object '%s'", $prop, get_called_class()),
+                null, $exception);
+        }
+    }
 
     /**
      * @return mixed

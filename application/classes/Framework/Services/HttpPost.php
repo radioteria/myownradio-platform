@@ -18,14 +18,28 @@ class HttpPost extends HttpRequestAdapter implements Injectable, SingletonInterf
 
     use Singleton;
 
-    public function getParameter($key) {
-        return Optional::ofEmpty(FILTER_INPUT(INPUT_POST, $key));
+    public function getParameter($key, $filter = FILTER_DEFAULT, $options = null) {
+        return Optional::ofEmpty(FILTER_INPUT(INPUT_POST, $key, $filter, $options));
     }
 
-    public function getRequired($key) {
-        return $this->getParameter($key)
+    public function getArrayParameter($key, $filter = FILTER_DEFAULT) {
+        return Optional::ofArray(FILTER_INPUT_ARRAY(INPUT_POST, [
+            $key => [
+                "filter" => $filter,
+                "flags"  => FILTER_REQUIRE_ARRAY
+            ]
+        ]));
+    }
+
+
+    public function getRequired($key, $filter = FILTER_DEFAULT, $options = null) {
+        return $this->getParameter($key, $filter, $options)
             ->getOrElseThrow(ControllerException::noArgument($key));
     }
 
+    public function getArrayRequired($key, $definition = null) {
+        return $this->getArrayParameter($key, $definition)
+            ->getOrElseThrow(ControllerException::noArgument($key));
+    }
 
 }

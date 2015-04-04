@@ -15,6 +15,7 @@ use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordCollection;
+use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 use Framework\Services\ORM\Exceptions\ORMException;
 use Framework\Services\Redis;
 use Tools\Optional;
@@ -31,11 +32,11 @@ class MicroORM extends FilterORM implements Injectable {
     private $ORMCache = [];
 
     /**
-     * @param ActiveRecord $object
+     * @param ActiveRecordObject $object
      * @internal param null $reflection
      * @return ActiveRecord
      */
-    public function cloneObject(ActiveRecord $object) {
+    public function cloneObject(ActiveRecordObject $object) {
 
         $reflection = new \ReflectionClass($object);
         $beanConfig = $this->getBeanConfig($reflection);
@@ -108,10 +109,10 @@ class MicroORM extends FilterORM implements Injectable {
     }
 
     /**
-     * @param ActiveRecord $object
+     * @param ActiveRecordObject $object
      * @throws ORMException
      */
-    public function deleteObject(ActiveRecord $object) {
+    public function deleteObject(ActiveRecordObject $object) {
 
         $reflection = new \ReflectionClass($object);
 
@@ -172,12 +173,12 @@ class MicroORM extends FilterORM implements Injectable {
     }
 
     /**
-     * @param ActiveRecord $bean
-     * @throws \Framework\Services\ORM\Exceptions\ORMException
+     * @param ActiveRecordObject $bean
+     * @throws ORMException
      * @internal param $config
      * @return mixed
      */
-    public function saveObject(ActiveRecord $bean) {
+    public function saveObject(ActiveRecordObject $bean) {
 
         $reflection = new \ReflectionClass($bean);
 
@@ -214,7 +215,6 @@ class MicroORM extends FilterORM implements Injectable {
 
             $query = $dbq->updateTable($config["@table"]);
             $test = 0;
-            //$cached = $this->redis->
 
             foreach ($reflection->getProperties() as $prop) {
 

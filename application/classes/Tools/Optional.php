@@ -196,6 +196,14 @@ class Optional implements \JsonSerializable {
     /**
      * @param $value
      * @return Optional
+     */
+    public static function ofArray($value) {
+        return new self($value, function ($value) { return is_array($value); });
+    }
+
+    /**
+     * @param $value
+     * @return Optional
      * Use this constructor if your variable must be a positive number
      */
     public static function ofPositiveNumber($value) {

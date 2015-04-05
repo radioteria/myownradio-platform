@@ -143,7 +143,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query = $this->channelPrefix();
 
-        $query->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)", ['+' . substr($tag, 1)]);
+        $query->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)", ["+".$tag]);
 
         if (is_numeric($offset) && $offset >= 0) {
             $query->offset($offset);

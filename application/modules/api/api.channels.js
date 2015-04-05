@@ -5,12 +5,6 @@
 
     var api = angular.module("application");
 
-    api.run(["$channels", function ($channels) {
-        $channels.getUserChannels("admin").then(function (data) {
-            console.log(data);
-        });
-    }]);
-
     api.service("$api", ["$q", "$http", function ($q, $http) {
 
         function answer(promise) {

@@ -97,7 +97,10 @@
                 }));
             },
             getBookmarkedChannels: function (offset, limit) {
-
+                return $api.get("/api/v2/channels/bookmarks", $api.filter({
+                    offset: offset,
+                    limit: limit
+                }));
             }
         }
     }]);

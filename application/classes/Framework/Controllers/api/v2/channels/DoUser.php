@@ -26,7 +26,7 @@ class DoUser implements Controller {
 
         $response->setData([
             "user" => $user->toRestFormat(),
-            "channels" => $collection->getChannelsListByUser($user->getID())
+            "channels" => $collection->getChannelsListByUser($user->getID(), $offset, $limit)
         ]);
     }
 } 

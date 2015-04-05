@@ -132,8 +132,8 @@
                 <div class="cell radio-cover">
                     <a ng-href="/streams/{{ player.currentStream.key }}">
                         <div class="cover dark">
-                            <img ng-if="player.currentStream.cover"
-                                 ng-src="{{ player.currentStream.cover_url }}?size=64">
+                            <img fadein ng-if="player.currentStream.cover"
+                                 ng-src="{{ player.currentStream.cover | channelArtwork }}?size=64">
                         </div>
                     </a>
                 </div>

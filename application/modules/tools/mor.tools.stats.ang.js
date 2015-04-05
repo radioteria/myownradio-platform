@@ -54,7 +54,7 @@
             }
             keys = path.split(".");
             accumulator = obj;
-            for (i = 0; i < keys.length; i ++) {
+            for (i = 0; i < keys.length; i++) {
                 if (!angular.isObject(accumulator)) {
                     return "";
                 }
@@ -146,6 +146,38 @@
                         } else {
                             translate();
                         }
+
+                    }
+                }
+            }
+        }
+    }]);
+
+
+    tools.directive("pluralize", ["$localize", "$filter", function ($localize, $filter) {
+        return {
+            scope: {
+                count: "=",
+                when: "@",
+                args: "="
+            },
+            restrict: "E",
+            compile: function () {
+                return {
+                    pre: function (scope, element, attr) {
+
+                        var translate = function () {
+                            var translated = $localize.pluralize(locale[scope.when], scope.count, scope.args);
+                            if (angular.isDefined(attr["filter"])) {
+                                var filter = $filter(attr['filter']);
+                                translated = filter(translated);
+                            }
+                            element.html(translated);
+                        };
+
+                        scope.$watchGroup(["args", "count"], function () {
+                            translate();
+                        });
 
                     }
                 }

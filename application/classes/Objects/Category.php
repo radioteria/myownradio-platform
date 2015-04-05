@@ -16,6 +16,7 @@ use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
  * @package Objects
  * @table r_categories
  * @key category_id
+ * @do_key category_id = :key or category_permalink = :key
  * @view
  */
 class Category extends ActiveRecordObject implements ActiveRecord {

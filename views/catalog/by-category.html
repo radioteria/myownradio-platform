@@ -1,0 +1,36 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <div class="no-streams" ng-if="empty">
+            <translate>FR_NO_STREAMS_CREATE_NEW</translate>
+        </div>
+        <div class="page-sub-title" ng-hide="empty">
+            <pluralize count="data.channels.items.length" when="FR_CHANNELS_BY_CATEGORY_TITLE"></pluralize>
+        </div>
+        <div class="new-stream-catalog-badge">
+            <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy" infinite-scroll-distance="1">
+                <li ng-repeat="channel in data.channels.items">
+                    <div class="cover-section">
+                        <div class="cover">
+                            <img fadein ng-if="channel.cover" ng-src="{{channel.cover | channelArtwork }}?size=200">
+                            <play obj="channel"></play>
+                        </div>
+                    </div>
+                    <div class="info-section">
+                        <div class="stream-name">
+                            <a ng-href="{{ channel.key | streamsCatalog }}" ng-bind="channel.name"></a>
+                        </div>
+                        <div class="stats">
+                                <span mor-tooltip="{{ pl('FR_COUNT_USERS_LISTENING', channel.listeners_count) }}">
+                                    <i class="icon-hearing"></i><span>{{ channel.listeners_count | number }}</span>
+                                </span>
+                                <span mor-tooltip="{{ pl('FR_STREAM_BOOKMARKED_TIMES', channel.bookmarks_count) }}">
+                                    <i class="icon-heart"></i> <span>{{ channel.bookmarks_count | number }}</span>
+                                </span>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</div>

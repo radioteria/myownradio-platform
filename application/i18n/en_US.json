@@ -360,24 +360,23 @@
     "FR_STREAM_BOOKMARKED_TIMES": {
         "0"     : "This radio station has no bookmarks",
         "1"     : "This radio station bookmarked by 1 user",
-        "11"    : "This radio station bookmarked by 11 users",
-        "*1"    : "This radio station bookmarked by %% user",
         "other" : "This radio station bookmarked by %% users"
     },
 
     "FR_COUNT_USERS_LISTENING": {
         "0"     : "This radio station has no listeners",
         "1"     : "1 user listening to this radio station",
-        "11"    : "11 users listening to this radio station",
-        "*1"    : "%% user listening to this radio station",
         "other" : "%% users listening to this radio station"
     },
 
     "FR_CATEGORIES_LIST_LABEL": {
         "1"     : "stream",
-        "11"    : "streams",
-        "*1"    : "stream",
         "other" : "streams"
+    },
+
+    "FR_CHANNELS_BY_CATEGORY_TITLE": {
+        "1"     : "<b>1</b> channel in this category",
+        "other" : "<b>%%</b> channels in this category"
     }
 
 }

@@ -89,6 +89,7 @@ class Router implements SingletonInterface{
             die();
         });
 
+        $sub->addRoute("category/:category", "helpers\\DoCategory");
         $sub->addRoute("streams/:id",   "helpers\\DoStream");
         $sub->addRoute("user/:id",      "helpers\\DoUser");
         $sub->addRoute("search/:query", "helpers\\DoSearch");

@@ -207,6 +207,20 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
         PATH_CATEGORIES_LIST: ["/categories/", {
             templateUrl: "/views/categories.html",
             title: "Categories on " + SITE_TITLE
+        }],
+
+        PATH_CH_BY_CATEGORY: ["/category/:id", {
+            templateUrl: "/views/catalog/by-category.html",
+            controller: "ChannelListCategory",
+            resolve: {
+                channelsData: ["$channels", "$route", "$document", function ($channels, $route, $document) {
+                    var promise = $channels.getCategoryChannels($route.current.params.id);
+                    promise.then(function (data) {
+                        $route.current.title = htmlEscape(data.category.category_name) + " on " + SITE_TITLE;
+                    });
+                    return promise;
+                }]
+            }
         }]
 
     };

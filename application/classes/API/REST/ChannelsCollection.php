@@ -78,7 +78,10 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->orderBy("b.playbacks DESC");
 
-        return $query->fetchAll();
+        return [
+            "count" => count($query),
+            "items" => $query->fetchAll()
+        ];
 
     }
 
@@ -101,8 +104,10 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->orderBy("a.created DESC");
 
-        return $query->fetchAll();
-
+        return [
+            "count" => count($query),
+            "items" => $query->fetchAll()
+        ];
     }
 
     /**
@@ -127,8 +132,10 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->orderBy("a.created DESC");
 
-        return $query->fetchAll();
-
+        return [
+            "count" => count($query),
+            "items" => $query->fetchAll()
+        ];
     }
 
     /**
@@ -155,8 +162,10 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->orderBy("a.created DESC");
 
-        return $query->fetchAll();
-
+        return [
+            "count" => count($query),
+            "items" => $query->fetchAll()
+        ];
     }
 
     /**
@@ -181,8 +190,10 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->orderBy("a.created DESC");
 
-        return $query->fetchAll();
-
+        return [
+            "count" => count($query),
+            "items" => $query->fetchAll()
+        ];
     }
 
     /**
@@ -207,8 +218,10 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->orderBy("a.created DESC");
 
-        return $query->fetchAll();
-
+        return [
+            "count" => count($query),
+            "items" => $query->fetchAll()
+        ];
     }
 
     /**
@@ -238,8 +251,10 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->limit(self::CHANNELS_SUGGESTION_MAX);
 
-        return $query->fetchAll();
-
+        return [
+            "count" => count($query),
+            "items" => $query->fetchAll()
+        ];
     }
 
     /**
@@ -264,8 +279,10 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->where("a.sid IN (SELECT stream_id FROM r_bookmarks WHERE user_id = ?)", [$user_id]);
 
-        return $query->fetchAll();
-
+        return [
+            "count" => count($query),
+            "items" => $query->fetchAll()
+        ];
     }
 
     /**
@@ -284,8 +301,10 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->limit(self::CHANNELS_SIMILAR_MAX);
 
-        return $query->fetchAll();
-
+        return [
+            "count" => count($query),
+            "items" => $query->fetchAll()
+        ];
     }
 
 } 

@@ -19,7 +19,7 @@ class L10n extends I18n implements Injectable, SingletonInterface {
     use Singleton;
 
     private $locales = [
-        "uk" => "uk_UA",
+        "uk" => "en_US",
         "ru" => "en_US",
         "en" => "en_US",
 

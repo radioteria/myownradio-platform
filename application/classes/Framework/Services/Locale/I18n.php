@@ -41,7 +41,7 @@ class I18n {
         if (isset($this->data[$key])) {
             return $this->quick($this->data[$key], $args);
         } else {
-            return "";
+            return $key;
         }
     }
 
@@ -77,15 +77,4 @@ class I18n {
         }, $pattern);
     }
 
-    public static function getInstance() {
-        // TODO: Implement getInstance() method.
-    }
-
-    public static function hasInstance() {
-        // TODO: Implement hasInstance() method.
-    }
-
-    public static function killInstance() {
-        // TODO: Implement killInstance() method.
-    }
 }

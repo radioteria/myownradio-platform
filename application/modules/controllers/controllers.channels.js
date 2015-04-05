@@ -6,23 +6,35 @@
 
     var module = angular.module("application");
 
-    module.controller("ChannelListCategory", ["channelsData", "$scope", "$channels", function (channelsData, $scope, $channels) {
-        $scope.data = channelsData;
-        $scope.empty = channelsData.channels.items.length == 0;
-        $scope.busy = false;
-        $scope.load = function () {
-            $scope.busy = true;
-            $channels.getCategoryChannels($scope.data.channels.length).then(function (data) {
-                for (var i = 0; i < data.channels.length; i ++) {
-                    $scope.data.channels.items[null] = data.channels.items[i];
-                }
-                $scope.busy = false;
-            });
+    module.controller("ChannelListCategory", ["channelsData", "$scope", "$channels", "ChannelListActions",
+
+        function (channelsData, $scope, $channels, ChannelListActions) {
+            $scope.data = channelsData;
+            $scope.empty = channelsData.channels.items.length == 0;
+            $scope.busy = false;
+            $scope.actions = ChannelListActions;
+            $scope.load = function () {
+                $scope.busy = true;
+                $channels.getCategoryChannels($scope.data.channels.length).then(function (data) {
+                    for (var i = 0; i < data.channels.length; i++) {
+                        $scope.data.channels.items[null] = data.channels.items[i];
+                    }
+                    $scope.busy = false;
+                });
+            }
         }
-    }]);
+
+    ]);
 
     module.factory("ChannelListActions", ["$channels", function ($channels) {
+        return {
+            bookmark: function (channel) {
 
+            },
+            share: function (channel) {
+
+            }
+        }
     }]);
 
     module.filter("channelArtwork", [function () {

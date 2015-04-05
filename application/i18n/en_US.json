@@ -60,7 +60,7 @@
     "FR_LOGIN_MESSAGE"                  : "Welcome, <b>%name%</b>!<br>You're successfully logged in!",
     "FR_PLAN_CHANGED_MESSAGE"           : "You have successfully changed your current account plan to %0%",
 
-    "FR_WELCOME_MESSAGE"                : "Create your own web radio station\nor discover existing.",
+    "FR_WELCOME_MESSAGE"                : "Create your own web radio station\nor discover dozens of existing.",
     "FR_CLICK_TO_BROWSE"                : "Click here to browse existing streams",
     "FR_BROWSE_STREAMS"                 : "Listen to the Radio",
     "FR_LOGIN_TOOLTIP"                  : "Log in to the service",

@@ -299,6 +299,7 @@
     "FR_SORT_BY_GENRE"                  : "Sort by track genre",
     "FR_SORT_BY_TIME"                   : "Sort by track duration",
 
+    "FR_UPLOAD_WINDOW_TITLE"            : "Upload audio files",
     "FR_UPLOAD_MESSAGE"                 : "Before upload make sure that your audio file(s):",
     "FR_UPLOAD_CONDITION"               : [
         "Has not violate any copyright laws.",

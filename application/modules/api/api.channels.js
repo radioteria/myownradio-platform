@@ -95,6 +95,9 @@
                     offset: offset,
                     limit: limit
                 }));
+            },
+            getBookmarkedChannels: function (offset, limit) {
+
             }
         }
     }]);

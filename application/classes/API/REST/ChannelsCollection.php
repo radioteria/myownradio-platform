@@ -12,7 +12,6 @@ namespace API\REST;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
-use Framework\Services\Database;
 use Framework\Services\DB\Query\SelectQuery;
 use Tools\Common;
 use Tools\Singleton;
@@ -28,6 +27,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
     const CHANNELS_PER_REQUEST_MAX = 100;
     const CHANNELS_SUGGESTION_MAX = 10;
+    const CHANNELS_SIMILAR_MAX = 10;
     const CHANNEL_PUBLIC = "PUBLIC";
 
     /**
@@ -237,6 +237,52 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         ]);
 
         $query->limit(self::CHANNELS_SUGGESTION_MAX);
+
+        return $query->fetchAll();
+
+    }
+
+    /**
+     * @param int $offset
+     * @param int $limit
+     * @return array
+     */
+    public function getBookmarkedChannels($offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
+
+        $query = $this->channelPrefix();
+
+        if (is_numeric($offset) && $offset >= 0) {
+            $query->offset($offset);
+        }
+
+        if (is_numeric($limit)) {
+            $query->limit(min($limit, self::CHANNELS_PER_REQUEST_MAX));
+        }
+
+        $user_id = AuthUserModel::getAuthorizedUserID();
+
+
+        $query->where("a.sid IN (SELECT stream_id FROM r_bookmarks WHERE user_id = ?)", [$user_id]);
+
+        return $query->fetchAll();
+
+    }
+
+    /**
+     * @param $channel_id
+     * @return array
+     */
+    public function getSimilarChannels($channel_id) {
+
+        $query = $this->channelPrefix();
+
+        $query->where("a.sid != :id");
+        $query->where("a.permalink != :id");
+        $query->where("MATCH(a.hashtags) AGAINST((SELECT hashtags FROM r_streams WHERE (sid = :id) OR (permalink = :id AND permalink IS NOT NULL)))", [
+            ':id' => $channel_id
+        ]);
+
+        $query->limit(self::CHANNELS_SIMILAR_MAX);
 
         return $query->fetchAll();
 

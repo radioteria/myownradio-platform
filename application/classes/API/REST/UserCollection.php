@@ -6,7 +6,7 @@
  * Time: 15:28
  */
 
-namespace API;
+namespace API\REST;
 
 
 use Framework\Injector\Injectable;

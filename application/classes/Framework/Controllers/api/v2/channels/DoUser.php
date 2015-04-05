@@ -9,7 +9,7 @@
 namespace Framework\Controllers\api\v2\channels;
 
 
-use API\ChannelsCollection;
+use API\REST\ChannelsCollection;
 use Framework\Controller;
 use Framework\Models\UserModel;
 use Framework\Services\HttpGet;

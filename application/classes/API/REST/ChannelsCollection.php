@@ -6,7 +6,7 @@
  * Time: 13:28
  */
 
-namespace API;
+namespace API\REST;
 
 
 use Framework\Exceptions\UnauthorizedException;
@@ -39,7 +39,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         $prefix = (new SelectQuery("r_streams a"))
             ->innerJoin("r_static_stream_vars b", "a.sid = b.stream_id")
             ->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags", "a.access", "a.status",
-                "a.cover", "a.cover_background", "a.created", "b.bookmarks_count", "b.listeners_count"]);
+                "a.cover", "a.cover_background", "a.created", "b.bookmarks_count", "b.listeners_count", "b.is_featured"]);
 
         $prefix->where("a.status = 1");
 
@@ -53,6 +53,31 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         }
 
         return $prefix;
+
+    }
+
+    /**
+     * @param int $offset
+     * @param int $limit
+     * @return array
+     */
+    public function getChannelsPopular($offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
+
+        $query = $this->channelPrefix();
+
+        if (is_numeric($offset) && $offset >= 0) {
+            $query->offset($offset);
+        }
+
+        if (is_numeric($limit)) {
+            $query->limit(min($limit, self::CHANNELS_PER_REQUEST_MAX));
+        }
+
+        $query->where("b.playbacks > 0");
+
+        $query->orderBy("b.playbacks DESC");
+
+        return $query->fetchAll();
 
     }
 

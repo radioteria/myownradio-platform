@@ -16,7 +16,7 @@ use Framework\Services\JsonResponse;
 
 class DoTag implements Controller {
     public function doGet(HttpGet $get, ChannelsCollection $collection, JsonResponse $response) {
-        $filter = $get->getRequired("query");
+        $filter = $get->getRequired("tag");
         $offset = $get->getParameter("offset", FILTER_VALIDATE_INT)->getOrElse(0);
         $limit = $get->getParameter("limit", FILTER_VALIDATE_INT)->getOrElseNull();
 

@@ -21,8 +21,11 @@ class DoCategory implements Controller {
         $offset = $get->getParameter("offset", FILTER_VALIDATE_INT)->getOrElse(0);
         $limit = $get->getParameter("limit", FILTER_VALIDATE_INT)->getOrElseNull();
 
-        $category_id = $validator->validateChannelCategoryByPermalink($category_name);
+        $category = $validator->validateChannelCategoryByPermalink($category_name);
 
-        $response->setData($collection->getChannelsListByCategory($category_id, $offset, $limit));
+        $response->setData([
+            "category" => $category,
+            "channels" => $collection->getChannelsListByCategory($category["category_id"], $offset, $limit)
+        ]);
     }
 } 

@@ -35,6 +35,7 @@
     "VALIDATOR_INVALID_ACCESS"          : "Invalid stream access mode - <b>%0%</b>",
     "VALIDATOR_IMAGE_MIME"              : "File <b>%0%</b> is not valid image file",
     "VALIDATOR_TRACK_COLOR"             : "Invalid color id specified - <b>%0%</b>",
+    "VALIDATOR_INVALID_CATEGORY_NAME"   : "Invalid radio station category specified - <b>%0%</b>",
 
     "FS_DOES_NOT_EXIST"                 : "File server with id %id% does not exist",
     "FS_NO_FREE_SPACE"                  : "There is no servers available to upload <b>%amount%</b> bytes of data",
@@ -375,8 +376,8 @@
     },
 
     "FR_CHANNELS_BY_CATEGORY_TITLE": {
-        "1"     : "<b>1</b> channel in this category",
-        "other" : "<b>%%</b> channels in this category"
+        "1"     : "<b>1</b> channel in category <b>%category_name%</b>",
+        "other" : "<b>%%</b> channels in category <b>%category_name%</b>"
     }
 
 }

@@ -4,7 +4,7 @@
             <translate>FR_NO_STREAMS_CREATE_NEW</translate>
         </div>
         <div class="page-sub-title" ng-hide="empty">
-            <pluralize count="data.channels.items.length" when="FR_CHANNELS_BY_CATEGORY_TITLE"></pluralize>
+            <pluralize count="data.channels.items.length" when="FR_CHANNELS_BY_CATEGORY_TITLE" args="data.category"></pluralize>
         </div>
         <div class="new-stream-catalog-badge">
             <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy" infinite-scroll-distance="1">
@@ -17,7 +17,7 @@
                     </div>
                     <div class="info-section">
                         <div class="stream-name">
-                            <a ng-href="{{ channel.key | streamsCatalog }}" ng-bind="channel.name"></a>
+                            <a ng-href="{{ channel | channelLink }}" ng-bind="channel.name"></a>
                         </div>
                         <div class="stats">
                                 <span mor-tooltip="{{ pl('FR_COUNT_USERS_LISTENING', channel.listeners_count) }}">

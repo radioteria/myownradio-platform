@@ -213,10 +213,12 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             templateUrl: "/views/catalog/by-category.html",
             controller: "ChannelListCategory",
             resolve: {
-                channelsData: ["$channels", "$route", "$document", function ($channels, $route, $document) {
+                channelsData: ["$channels", "$route", "$location", function ($channels, $route, $location) {
                     var promise = $channels.getCategoryChannels($route.current.params.id);
                     promise.then(function (data) {
                         $route.current.title = htmlEscape(data.category.category_name) + " on " + SITE_TITLE;
+                    }, function () {
+                        $location.url("/categories/");
                     });
                     return promise;
                 }]

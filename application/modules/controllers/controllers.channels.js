@@ -31,4 +31,11 @@
         }
     }]);
 
+
+    module.filter("channelLink", [function () {
+        return function (channel) {
+            return "/streams/" + (channel.permalink ? channel.permalink : channel.sid);
+        }
+    }]);
+
 })();

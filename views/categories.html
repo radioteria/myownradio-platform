@@ -5,7 +5,7 @@
         </div>
         <ul class="categories_container">
             <li ng-repeat="category in lib.categories" ng-if="category.streams_count > 0">
-                <a href="/streams/?category={{ category.category_id }}">
+                <a href="/category/{{ category.category_permalink }}">
                     <img fadein ng-src="/images/categories/{{ category.category_id + 1 }}.png" />
                     <div class="fixed">
                         <div class="name">

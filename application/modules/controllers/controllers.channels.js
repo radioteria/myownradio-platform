@@ -106,6 +106,26 @@
 
     ]);
 
+    module.controller("ChannelListBookmarks", ["channelsData", "$scope", "$channels", "ChannelListActions",
+
+        function (channelsData, $scope, $channels, ChannelListActions) {
+            $scope.data = channelsData;
+            $scope.empty = channelsData.channels.items.length == 0;
+            $scope.busy = false;
+            $scope.actionProvider = ChannelListActions;
+            $scope.load = function () {
+                $scope.busy = true;
+                $channels.getBookmarkedChannels($scope.data.channels.items.length).then(function (data) {
+                    for (var i = 0; i < data.channels.length; i++) {
+                        $scope.data.channels.items[null] = data.channels.items[i];
+                    }
+                    $scope.busy = false;
+                });
+            }
+        }
+
+    ]);
+
     module.factory("ChannelListActions", ["$channels", "$bookmarks", "Popup", "$rootScope",
 
         function ($channels, $bookmarks, Popup, $rootScope) {

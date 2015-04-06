@@ -397,7 +397,14 @@
         "other" : "<b>%name%</b> has <b>%%</b> radio stations"
     },
 
-    "FR_CHANNELS_BY_POPULAR_TITLE": "Most popular radio stations on <b>myownradio.biz</b>"
+    "FR_CHANNELS_BY_BOOKMARKS_TITLE": {
+        "1"     : "You have <b>1</b> bookmarked radio station",
+        "other" : "You have <b>%%</b> bookmarked radio stations"
+    },
+
+    "FR_CHANNELS_BY_POPULAR_TITLE"  : "Most popular radio stations on <b>myownradio.biz</b>",
+
+    "FR_NO_STREAMS_BOOKMARKS"    : "You have no bookmarked radio stations."
 
 }
 

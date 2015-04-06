@@ -32,20 +32,20 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             rootClass: "image"
         }],
 
-        /* Streams List */
-        PATH_STREAMS_BOOKMARKS: ["/bookmarks/", {
-            templateUrl: "/views/streams.html",
-            controller: 'BookmarksController',
-            title: "Your bookmarks on " + SITE_TITLE,
-            needsAuth: true,
-            resolve: {
-                channelData: ["Resolvers", "STREAMS_PER_SCROLL",
-                    function (Resolvers, STREAMS_PER_SCROLL) {
-                        return Resolvers.getBookmarks(0, STREAMS_PER_SCROLL);
-                    }
-                ]
-            }
-        }],
+//        /* Streams List */
+//        PATH_STREAMS_BOOKMARKS: ["/bookmarks/", {
+//            templateUrl: "/views/streams.html",
+//            controller: 'BookmarksController',
+//            title: "Your bookmarks on " + SITE_TITLE,
+//            needsAuth: true,
+//            resolve: {
+//                channelData: ["Resolvers", "STREAMS_PER_SCROLL",
+//                    function (Resolvers, STREAMS_PER_SCROLL) {
+//                        return Resolvers.getBookmarks(0, STREAMS_PER_SCROLL);
+//                    }
+//                ]
+//            }
+//        }],
 
         /* Single Stream View */
         PATH_STREAM: ["/streams/:id", {
@@ -245,6 +245,17 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             resolve: {
                 channelsData: ["$channels", "$route", "$location", function ($channels) {
                     return $channels.getPopularChannels();
+                }]
+            }
+        }],
+
+        PATH_STREAMS_BOOKMARKS: ["/bookmarks/", {
+            templateUrl: "/views/catalog/by-bookmarks.html",
+            controller: 'ChannelListBookmarks',
+            title: "Bookmarked radio stations on " + SITE_TITLE,
+            resolve: {
+                channelsData: ["$channels", "$route", "$location", function ($channels) {
+                    return $channels.getBookmarkedChannels();
                 }]
             }
         }]

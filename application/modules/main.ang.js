@@ -32,22 +32,6 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             rootClass: "image"
         }],
 
-
-//        PATH_STREAMS_SEARCH: ["/search/:query", {
-//            templateUrl: "/views/search-results.html",
-//            controller: "ListSearchController",
-//            title: "Search results on " + SITE_TITLE,
-//            resolve: {
-//                channelData: ["$route", "Resolvers", "STREAMS_PER_SCROLL",
-//                    function ($route, Resolvers, STREAMS_PER_SCROLL) {
-//                        var category = $route.current.params.category,
-//                            filter = $route.current.params.query;
-//                        return Resolvers.getChannelList(filter, category, 0, STREAMS_PER_SCROLL);
-//                    }
-//                ]
-//            }
-//        }],
-
         /* Streams List */
         PATH_STREAMS_BOOKMARKS: ["/bookmarks/", {
             templateUrl: "/views/streams.html",
@@ -63,12 +47,6 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             }
         }],
 
-//        /* Streams List */
-//        PATH_STREAMS_USER: ["/user/:key", {
-//            templateUrl: "/views/streams.html",
-//            controller: 'UserStreamsController'
-//        }],
-
         /* Single Stream View */
         PATH_STREAM: ["/streams/:id", {
             templateUrl: "/views/stream.html",
@@ -82,11 +60,6 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
                     return promise;
                 }]
             }
-        }],
-
-        /* Streams Search List */
-        PATH_USERS_CATALOG: ["/user", {
-            redirectTo: "/"
         }],
 
         PATH_LOGIN: ["/login/", {
@@ -241,6 +214,11 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
                     return promise;
                 }]
             }
+        }],
+
+        /* Streams Search List */
+        PATH_USERS_CATALOG: ["/user/", {
+            redirectTo: "/"
         }],
 
         PATH_STREAMS_USER: ["/user/:key", {

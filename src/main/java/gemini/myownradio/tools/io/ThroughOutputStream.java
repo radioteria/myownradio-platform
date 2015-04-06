@@ -90,12 +90,17 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
              OutputStream outputStream1 = this.errOut) {
             /* Nothing to do. Just close. */
         } finally {
-            proc.destroy();
 
+            Process pr = proc.destroyForcibly();
             pipe.thread().interrupt();
+
             try {
                 pipe.thread().join();
-            } catch (InterruptedException e) {/*NOP*/}
+                pr.waitFor();
+                logger.println("STREAMER SUCCESSFULLY INTERRUPTED");
+            } catch (InterruptedException e) {
+                logger.println("STREAMER STOP INTERRUPTED");
+            }
         }
 
     }

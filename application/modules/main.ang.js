@@ -223,6 +223,20 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
                     return promise;
                 }]
             }
+        }],
+
+        PATH_CH_BY_TAG: ["/tag/:tag", {
+            templateUrl: "/views/catalog/by-tag.html",
+            controller: "ChannelListTag",
+            resolve: {
+                channelsData: ["$channels", "$route", function ($channels, $route) {
+                    var promise = $channels.getTagChannels($route.current.params.tag);
+                    promise.then(function (data) {
+                        $route.current.title = "Results for tag \"" + htmlEscape($route.current.params.tag) + "\" on " + SITE_TITLE;
+                    });
+                    return promise;
+                }]
+            }
         }]
 
     };

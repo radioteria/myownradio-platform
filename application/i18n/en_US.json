@@ -189,7 +189,7 @@
     "FR_MY_STREAMS"                     : "My Streams",
 
     "FR_BROWSE_CHANNELS_DESCRIPTION"    : "Browse radio stations which are up and streaming now on MyOwnRadio",
-    "FR_NO_STREAMS_CREATE_NEW"          : "No streams found here. May be you want to <a href=\"/profile/new-stream\">create</a> your own?",
+    "FR_NO_STREAMS_CREATE_NEW"          : "No streams found for your request. May be you want to <a href=\"/profile/new-stream\">create</a> your own?",
 
     "FR_PROFILE_UPDATED"                : "Profile successfully updated",
     "FR_PASSWORD_CHANGED"               : "Password successfully changed",
@@ -377,6 +377,11 @@
     "FR_CHANNELS_BY_CATEGORY_TITLE": {
         "1"     : "<b>1</b> channel in category <b>%category_name%</b>",
         "other" : "<b>%%</b> channels in category <b>%category_name%</b>"
+    },
+
+    "FR_CHANNELS_BY_TAG_TITLE": {
+        "1"     : "<b>1</b> channel found for tag <b>%query%</b>",
+        "other" : "<b>%%</b> channels found for tag <b>%query%</b>"
     }
 
 }

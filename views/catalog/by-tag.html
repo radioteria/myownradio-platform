@@ -4,7 +4,7 @@
             <translate>FR_NO_STREAMS_CREATE_NEW</translate>
         </div>
         <div class="page-sub-title" ng-hide="empty">
-            <pluralize count="data.channels.items.length" when="FR_CHANNELS_BY_CATEGORY_TITLE" args="data.category"></pluralize>
+            <pluralize count="data.channels.items.length" when="FR_CHANNELS_BY_TAG_TITLE" args="data"></pluralize>
         </div>
         <div ng-include="'/views/catalog/grid.html'"></div>
     </div>

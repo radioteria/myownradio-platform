@@ -73,6 +73,7 @@ class Router implements SingletonInterface{
                 "login",
                 "recover",
                 "recover/:code",
+                "tag/:tag",
                 "signup",
                 "signup/:code",
                 "static/registrationLetterSent",

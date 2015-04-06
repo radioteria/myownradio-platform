@@ -59,12 +59,13 @@
             },
             restrict: "A",
             link: function (scope, element, attrs) {
-                if (scope.synchronize === null || scope.syncKey === null) {
-                    return;
-                }
                 scope.$on("sync:update", function (event, data) {
-                    if (data[1] != scope.synchronize && data[1][data[0]] == scope.synchronize[data[0]]) {
+                    if (angular.isObject(scope.synchronize) &&
+                        data[1] != scope.synchronize &&
+                        data[1][data[0]] == scope.synchronize[data[0]]) {
+
                         angular.copy(data[1], scope.synchronize);
+
                     }
                 });
                 scope.$watchCollection("synchronize", function () {

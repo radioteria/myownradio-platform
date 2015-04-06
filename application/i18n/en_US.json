@@ -397,6 +397,11 @@
         "other" : "<b>%name%</b> has <b>%%</b> radio stations"
     },
 
+    "FR_CHANNELS_BY_YOU_TITLE": {
+        "1"     : "You have <b>1</b> radio station",
+        "other" : "You have <b>%%</b> radio stations"
+    },
+
     "FR_CHANNELS_BY_BOOKMARKS_TITLE": {
         "1"     : "You have <b>1</b> bookmarked radio station",
         "other" : "You have <b>%%</b> bookmarked radio stations"

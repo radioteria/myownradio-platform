@@ -5,7 +5,7 @@
         </div>
         <div ng-if="account.authorized" ng-include="'/views/catalog/right-menu.html'"></div>
         <div class="page-sub-title" ng-hide="empty">
-            <pluralize count="data.channels.items.length" when="FR_CHANNELS_BY_USER_TITLE" args="data"></pluralize>
+            <pluralize count="data.channels.items.length" when="FR_CHANNELS_BY_YOU_TITLE"></pluralize>
         </div>
         <div ng-include="'/views/catalog/grid.html'"></div>
     </div>

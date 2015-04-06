@@ -59,14 +59,17 @@
             },
             restrict: "A",
             link: function (scope, element, attrs) {
+                if (scope.synchronize === null || scope.syncKey === null) {
+                    return;
+                }
                 scope.$on("sync:update", function (event, data) {
                     if (data[1] != scope.synchronize && data[1][data[0]] == scope.synchronize[data[0]]) {
                         angular.copy(data[1], scope.synchronize);
                     }
                 });
-                scope.$watch("synchronize", function () {
+                scope.$watchCollection("synchronize", function () {
                     $rootScope.$broadcast("sync:update", [scope.syncKey, scope.synchronize]);
-                }, true);
+                });
             }
         }
     }]);

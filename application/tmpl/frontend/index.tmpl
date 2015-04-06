@@ -124,10 +124,10 @@
 
 <now ng-if="player.isPlaying" ng-model="player.currentStream" on-track-change="player.nowPlaying"></now>
 
-<div class="special">
+<div class="special" synchronize="player.currentStream" sync-key="sid">
     <div class="player-container ngCloak" ng-if="player.isLoaded"
          mor-background-color="player.currentStream.cover_background">
-        <div class="cool-player table" synchronize="player.currentStream" sync-key="sid">
+        <div class="cool-player table">
             <div class="row">
                 <div class="cell radio-cover">
                     <a ng-href="{{ player.currentStream | channelLink }}">

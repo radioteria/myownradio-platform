@@ -35,10 +35,10 @@
                     loadStream: function ($stream) {
                         $rootScope.player.url = "/flow?s=" + $stream.sid + "&f=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);
                         $rootScope.player.currentID = $stream.sid;
-                        $rootScope.player.controls.play();
                         $rootScope.player.currentStream = $stream;
                         $rootScope.player.page = "/streams/" + $stream.key;
                         $rootScope.player.isLoaded = true;
+                        $rootScope.player.controls.play();
                     },
                     play: function () {
 
@@ -47,13 +47,20 @@
                         $rootScope.player.isBuffering = true;
                         realPlayer.play($rootScope.player.url);
                         $rootScope.player.isPlaying = true;
-
+                        if (angular.isObject($rootScope.player.currentStream)) {
+                            $rootScope.player.currentStream.listeners_count ++;
+                        }
                         TrackPreviewService.stop();
 
                     },
                     stop: function () {
                         realPlayer.stop();
                         $timeout.cancel(handle);
+
+                        if (angular.isObject($rootScope.player.currentStream)) {
+                            $rootScope.player.currentStream.listeners_count --;
+                        }
+
                         $rootScope.player.isBuffering = false;
                         $rootScope.player.nowPlaying = null;
                         $rootScope.player.isPlaying = false;

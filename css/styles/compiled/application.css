@@ -137,7 +137,8 @@ a[href]:hover {
 .hoverable {
   transition: color 0.2s linear;
 }
-.hoverable:hover {
+.hoverable:hover,
+.hoverable.locked {
   color: #a4d35a;
 }
 .group {

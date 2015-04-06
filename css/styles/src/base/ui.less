@@ -8,10 +8,11 @@ a {
 
 .hoverable {
   transition: color 0.2s linear;
-  &:hover {
+  &:hover, &.locked {
     color: @APP_LINK_HOVER_COLOR;
   }
 }
+
 
 .group {
   position: relative;

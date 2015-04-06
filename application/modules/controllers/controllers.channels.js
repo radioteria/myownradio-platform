@@ -27,12 +27,14 @@
     ]);
 
     module.factory("ChannelListActions", ["$channels", function ($channels) {
-        return {
-            bookmark: function (channel) {
+        return function (channel) {
+            return {
+                bookmark: function () {
 
-            },
-            share: function (channel) {
+                },
+                share: function () {
 
+                }
             }
         }
     }]);

@@ -130,7 +130,7 @@
         <div class="cool-player table">
             <div class="row">
                 <div class="cell radio-cover">
-                    <a ng-href="/streams/{{ player.currentStream.key }}">
+                    <a ng-href="{{ player.currentStream | channelLink }}">
                         <div class="cover dark">
                             <img fadein ng-if="player.currentStream.cover"
                                  ng-src="{{ player.currentStream.cover | channelArtwork }}?size=64">
@@ -139,7 +139,7 @@
                 </div>
                 <div class="cell radio-title">
                     <div class="title">
-                        <a ng-href="/streams/{{ player.currentStream.key }}"
+                        <a ng-href="{{ player.currentStream | channelLink }}"
                            ng-bind="player.currentStream.name | uppercase"></a>
                     </div>
                 </div>

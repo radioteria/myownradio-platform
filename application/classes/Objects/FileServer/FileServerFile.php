@@ -53,6 +53,13 @@ class FileServerFile extends ActiveRecordObject implements ActiveRecord {
     }
 
     /**
+     * @return FileServer|null
+     */
+    public function getServerObject() {
+        return FileServer::getByID($this->server_id)->getOrElseNull();
+    }
+
+    /**
      * @param mixed $file_hash
      */
     public function setFileHash($file_hash) {

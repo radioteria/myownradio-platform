@@ -86,6 +86,27 @@
 
     ]);
 
+    module.controller("ChannelListMe", ["channelsData", "$scope", "$channels", "ChannelListActions",
+
+        function (channelsData, $scope, $channels, ChannelListActions) {
+            $scope.data = channelsData;
+            $scope.data.name = channelsData.user.name ? channelsData.user.name : channelsData.user.login;
+            $scope.empty = channelsData.channels.items.length == 0;
+            $scope.busy = false;
+            $scope.actionProvider = ChannelListActions;
+            $scope.load = function () {
+                $scope.busy = true;
+                $channels.getMyChannels($scope.data.channels.items.length).then(function (data) {
+                    for (var i = 0; i < data.channels.length; i++) {
+                        $scope.data.channels.items[null] = data.channels.items[i];
+                    }
+                    $scope.busy = false;
+                });
+            }
+        }
+
+    ]);
+
     module.controller("ChannelListPopular", ["channelsData", "$scope", "$channels", "ChannelListActions",
 
         function (channelsData, $scope, $channels, ChannelListActions) {

@@ -243,7 +243,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             controller: 'ChannelListPopular',
             title: "Popular radio stations on " + SITE_TITLE,
             resolve: {
-                channelsData: ["$channels", "$route", "$location", function ($channels) {
+                channelsData: ["$channels", function ($channels) {
                     return $channels.getPopularChannels();
                 }]
             }
@@ -254,8 +254,23 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             controller: 'ChannelListBookmarks',
             title: "Bookmarked radio stations on " + SITE_TITLE,
             resolve: {
-                channelsData: ["$channels", "$route", "$location", function ($channels) {
+                channelsData: ["$channels", function ($channels) {
                     return $channels.getBookmarkedChannels();
+                }]
+            }
+        }],
+
+        PATH_STREAMS_MY: ["/my/", {
+            templateUrl: "/views/catalog/by-me.html",
+            controller: 'ChannelListMe',
+            resolve: {
+                channelsData: ["$channels", "$route", function ($channels, $route) {
+                    var promise = $channels.getMyChannels();
+                    promise.then(function (data) {
+                        var title = data.user.name ? data.user.name : data.user.login;
+                        $route.current.title = htmlEscape(title) + "'s radio stations on " + SITE_TITLE;
+                    });
+                    return promise;
                 }]
             }
         }]

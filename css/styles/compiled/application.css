@@ -141,6 +141,9 @@ a[href]:hover {
 .hoverable.locked {
   color: #a4d35a;
 }
+[active-tab].active {
+  color: #a4d35a;
+}
 .group {
   position: relative;
   display: inline-block;

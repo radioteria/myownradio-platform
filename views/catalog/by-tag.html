@@ -3,6 +3,7 @@
         <div class="no-streams" ng-if="empty">
             <translate>FR_NO_STREAMS_CREATE_NEW</translate>
         </div>
+        <div ng-if="account.authorized" ng-include="'/views/catalog/right-menu.html'"></div>
         <div class="page-sub-title" ng-hide="empty">
             <pluralize count="data.channels.items.length" when="FR_CHANNELS_BY_TAG_TITLE" args="data"></pluralize>
         </div>

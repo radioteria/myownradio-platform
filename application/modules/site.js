@@ -157,7 +157,9 @@
 
                 var CLASS = "active";
 
-                $scope.$on("$routeChangeSuccess", function (event, currentRoute) {
+                $element.toggleClass(CLASS, $location.url().match($scope.activeTab) !== null);
+
+                $scope.$on("$routeChangeSuccess", function () {
                     $element.toggleClass(CLASS, $location.url().match($scope.activeTab) !== null);
                 });
 

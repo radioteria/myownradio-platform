@@ -5,9 +5,9 @@
 (function () {
     var player = angular.module("RadioPlayer", ['Site']);
 
-    player.run(["$rootScope", "$http", "Response", "Streams", "$timeout", "$location", "Popup", "$analytics", "TrackPreviewService",
+    player.run(["$rootScope", "$http", "Response", "Streams", "$timeout", "$location", "Popup", "$analytics", "TrackPreviewService", "ChannelListActions",
 
-        function ($rootScope, $http, Response, Streams, $timeout, $location, Popup, $analytics, TrackPreviewService) {
+        function ($rootScope, $http, Response, Streams, $timeout, $location, Popup, $analytics, TrackPreviewService, ChannelListActions) {
 
             var handle = false;
 

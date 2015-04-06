@@ -45,6 +45,47 @@
 
     ]);
 
+    module.controller("ChannelListSearch", ["channelsData", "$scope", "$channels", "ChannelListActions", "$routeParams",
+
+        function (channelsData, $scope, $channels, ChannelListActions, $routeParams) {
+            $scope.data = channelsData;
+            $scope.empty = channelsData.channels.items.length == 0;
+            $scope.busy = false;
+            $scope.actionProvider = ChannelListActions;
+            $scope.load = function () {
+                $scope.busy = true;
+                $channels.getSearchChannels($routeParams.query, $scope.data.channels.length).then(function (data) {
+                    for (var i = 0; i < data.channels.length; i++) {
+                        $scope.data.channels.items[null] = data.channels.items[i];
+                    }
+                    $scope.busy = false;
+                });
+            }
+        }
+
+    ]);
+
+    module.controller("ChannelListUser", ["channelsData", "$scope", "$channels", "ChannelListActions", "$routeParams",
+
+        function (channelsData, $scope, $channels, ChannelListActions, $routeParams) {
+            $scope.data = channelsData;
+            $scope.data.name = channelsData.user.name ? channelsData.user.name : channelsData.user.login;
+            $scope.empty = channelsData.channels.items.length == 0;
+            $scope.busy = false;
+            $scope.actionProvider = ChannelListActions;
+            $scope.load = function () {
+                $scope.busy = true;
+                $channels.getUserChannels($routeParams.key, $scope.data.channels.length).then(function (data) {
+                    for (var i = 0; i < data.channels.length; i++) {
+                        $scope.data.channels.items[null] = data.channels.items[i];
+                    }
+                    $scope.busy = false;
+                });
+            }
+        }
+
+    ]);
+
     module.factory("ChannelListActions", ["$channels", "$bookmarks", "Popup", "$rootScope",
 
         function ($channels, $bookmarks, Popup, $rootScope) {

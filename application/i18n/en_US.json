@@ -190,6 +190,7 @@
 
     "FR_BROWSE_CHANNELS_DESCRIPTION"    : "Browse radio stations which are up and streaming now on MyOwnRadio",
     "FR_NO_STREAMS_CREATE_NEW"          : "No streams found for your request. May be you want to <a href=\"/profile/new-stream\">create</a> your own?",
+    "FR_NO_STREAMS_BY_USER"             : "This user has no public streams.",
 
     "FR_PROFILE_UPDATED"                : "Profile successfully updated",
     "FR_PASSWORD_CHANGED"               : "Password successfully changed",
@@ -375,13 +376,24 @@
     },
 
     "FR_CHANNELS_BY_CATEGORY_TITLE": {
-        "1"     : "<b>1</b> channel in category <b>%category_name%</b>",
-        "other" : "<b>%%</b> channels in category <b>%category_name%</b>"
+        "1"     : "<b>1</b> radio station in category <b>%category_name%</b>",
+        "other" : "<b>%%</b> radio stations in category <b>%category_name%</b>"
     },
 
     "FR_CHANNELS_BY_TAG_TITLE": {
-        "1"     : "<b>1</b> channel found for tag <b>%query%</b>",
-        "other" : "<b>%%</b> channels found for tag <b>%query%</b>"
+        "1"     : "<b>1</b> radio station found for tag <b>%query%</b>",
+        "other" : "<b>%%</b> radio stations found for tag <b>%query%</b>"
+    },
+
+    "FR_CHANNELS_BY_SEARCH_TITLE": {
+        "1"     : "<b>1</b> radio station found for request <b>%query%</b>",
+        "other" : "<b>%%</b> radio stations found for request <b>%query%</b>"
+    },
+
+    "FR_CHANNELS_BY_USER_TITLE": {
+        "1"     : "User <b>%name%</b> broadcasts <b>1</b> radio station",
+        "other" : "User <b>%name%</b> broadcasts <b>%%</b> radio stations"
     }
 
 }
+

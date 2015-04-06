@@ -1,0 +1,11 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <div class="no-streams" ng-if="empty">
+            <translate>FR_NO_STREAMS_BY_USER</translate>
+        </div>
+        <div class="page-sub-title" ng-hide="empty">
+            <pluralize count="data.channels.items.length" when="FR_CHANNELS_BY_USER_TITLE" args="data"></pluralize>
+        </div>
+        <div ng-include="'/views/catalog/grid.html'"></div>
+    </div>
+</div>

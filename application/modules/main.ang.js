@@ -47,20 +47,20 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             }
         }],
 
-        PATH_STREAMS_SEARCH: ["/search/:query", {
-            templateUrl: "/views/search-results.html",
-            controller: "ListSearchController",
-            title: "Search results on " + SITE_TITLE,
-            resolve: {
-                channelData: ["$route", "Resolvers", "STREAMS_PER_SCROLL",
-                    function ($route, Resolvers, STREAMS_PER_SCROLL) {
-                        var category = $route.current.params.category,
-                            filter = $route.current.params.query;
-                        return Resolvers.getChannelList(filter, category, 0, STREAMS_PER_SCROLL);
-                    }
-                ]
-            }
-        }],
+//        PATH_STREAMS_SEARCH: ["/search/:query", {
+//            templateUrl: "/views/search-results.html",
+//            controller: "ListSearchController",
+//            title: "Search results on " + SITE_TITLE,
+//            resolve: {
+//                channelData: ["$route", "Resolvers", "STREAMS_PER_SCROLL",
+//                    function ($route, Resolvers, STREAMS_PER_SCROLL) {
+//                        var category = $route.current.params.category,
+//                            filter = $route.current.params.query;
+//                        return Resolvers.getChannelList(filter, category, 0, STREAMS_PER_SCROLL);
+//                    }
+//                ]
+//            }
+//        }],
 
         /* Streams List */
         PATH_STREAMS_BOOKMARKS: ["/bookmarks/", {
@@ -77,11 +77,11 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             }
         }],
 
-        /* Streams List */
-        PATH_STREAMS_USER: ["/user/:key", {
-            templateUrl: "/views/streams.html",
-            controller: 'UserStreamsController'
-        }],
+//        /* Streams List */
+//        PATH_STREAMS_USER: ["/user/:key", {
+//            templateUrl: "/views/streams.html",
+//            controller: 'UserStreamsController'
+//        }],
 
         /* Single Stream View */
         PATH_STREAM: ["/streams/:id", {
@@ -231,8 +231,38 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             resolve: {
                 channelsData: ["$channels", "$route", function ($channels, $route) {
                     var promise = $channels.getTagChannels($route.current.params.tag);
-                    promise.then(function (data) {
+                    promise.then(function () {
                         $route.current.title = "Results for tag \"" + htmlEscape($route.current.params.tag) + "\" on " + SITE_TITLE;
+                    });
+                    return promise;
+                }]
+            }
+        }],
+
+        PATH_CH_BY_SEARCH: ["/search/:query", {
+            templateUrl: "/views/catalog/by-search.html",
+            controller: "ChannelListSearch",
+            resolve: {
+                channelsData: ["$channels", "$route", function ($channels, $route) {
+                    var promise = $channels.getSearchChannels($route.current.params.query);
+                    promise.then(function () {
+                        $route.current.title = "Search results for request \"" + htmlEscape($route.current.params.query) + "\" on " + SITE_TITLE;
+                    });
+                    return promise;
+                }]
+            }
+        }],
+
+        PATH_STREAMS_USER: ["/user/:key", {
+            templateUrl: "/views/catalog/by-user.html",
+            controller: "ChannelListUser",
+            resolve: {
+                channelsData: ["$channels", "$route", "$location", function ($channels, $route, $location) {
+                    var promise = $channels.getUserChannels($route.current.params.key);
+                    promise.then(function (data) {
+                        $route.current.title = "Radio stations by \"" + htmlEscape(data.user.name ? data.user.name : data.user.login) + "\" on " + SITE_TITLE;
+                    }, function () {
+                        $location.url("/");
                     });
                     return promise;
                 }]

@@ -21,6 +21,7 @@ class DoSearch implements Controller {
         $limit = $get->getParameter("limit", FILTER_VALIDATE_INT)->getOrElseNull();
 
         $response->setData([
+            "query" => $filter,
             "channels" => $collection->getChannelsListBySearch($filter, $offset, $limit)
         ]);
     }

@@ -264,11 +264,13 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             templateUrl: "/views/catalog/by-me.html",
             controller: 'ChannelListMe',
             resolve: {
-                channelsData: ["$channels", "$route", function ($channels, $route) {
+                channelsData: ["$channels", "$route", "$location", function ($channels, $route, $location) {
                     var promise = $channels.getMyChannels();
                     promise.then(function (data) {
                         var title = data.user.name ? data.user.name : data.user.login;
                         $route.current.title = htmlEscape(title) + "'s radio stations on " + SITE_TITLE;
+                    }, function () {
+                        $location.url("/");
                     });
                     return promise;
                 }]

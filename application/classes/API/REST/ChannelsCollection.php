@@ -40,7 +40,8 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         $prefix = (new SelectQuery("r_streams a"))
             ->innerJoin("r_static_stream_vars b", "a.sid = b.stream_id")
             ->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags", "a.access", "a.status",
-                "a.cover", "a.cover_background", "a.created", "b.bookmarks_count", "b.listeners_count", "b.is_featured"]);
+                "a.cover", "a.cover_background", "a.created", "b.bookmarks_count", "b.listeners_count", "b.is_featured",
+                "b.summary_played"]);
 
         $prefix->where("a.status = 1");
 
@@ -76,7 +77,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->where("b.playbacks > 0 OR b.listeners_count > 0");
 
-        $query->orderBy("b.listeners_count DESC, b.playbacks DESC");
+        $query->orderBy("b.summary_played, b.listeners_count DESC, b.playbacks DESC");
 
         return [
             "count" => count($query),

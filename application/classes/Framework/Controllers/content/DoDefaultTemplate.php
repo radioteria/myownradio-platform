@@ -22,7 +22,10 @@ class DoDefaultTemplate implements Controller {
 
         switch ($currentRoute) {
             case "streams":
-                $pageTitle = "Radio channels on ";
+                $pageTitle = "Popular radio stations on ";
+                break;
+            case "categories":
+                $pageTitle = "Radio stations categories on ";
                 break;
             case "bookmarks":
                 $pageTitle = "Your bookmarks on ";

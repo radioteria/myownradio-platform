@@ -32,20 +32,6 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             rootClass: "image"
         }],
 
-        /* Streams List */
-        PATH_STREAMS_CATALOG: ["/streams/", {
-            templateUrl: "/views/streams.html",
-            controller: 'ListStreamsController',
-            title: "Radio channels on " + SITE_TITLE,
-            resolve: {
-                channelData: ["$route", "Resolvers", "STREAMS_PER_SCROLL",
-                    function ($route, Resolvers, STREAMS_PER_SCROLL) {
-                        var category = $route.current.params.category;
-                        return Resolvers.getChannelList(null, category, 0, STREAMS_PER_SCROLL);
-                    }
-                ]
-            }
-        }],
 
 //        PATH_STREAMS_SEARCH: ["/search/:query", {
 //            templateUrl: "/views/search-results.html",
@@ -164,7 +150,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
         PATH_PROFILE_CHANGE_PLAN: ["/profile/plan", {
             templateUrl: "/views/auth/change-plan.html",
-            title: "Change account plan on " + SITE_TITLE,
+            title: "Upgrade account on " + SITE_TITLE,
             needsAuth: true
         }],
 
@@ -183,7 +169,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
         PATH_PROFILE_STREAMS: ["/profile/streams/", {
             templateUrl: "/views/auth/streams.html",
-            title: "Your streams on " + SITE_TITLE,
+            title: "Your radio stations on " + SITE_TITLE,
             needsAuth: true
         }],
 
@@ -194,19 +180,23 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
         PATH_EDIT_STREAM: ["/profile/edit-stream/:id", {
             templateUrl: "/views/auth/edit-stream.html",
-            title: "Edit channel details on " + SITE_TITLE,
+            title: "Edit radio station details on " + SITE_TITLE,
             needsAuth: true
         }],
 
         PATH_NEW_STREAM: ["/profile/new-stream", {
             templateUrl: "/views/auth/new-stream.html",
-            title: "Create new radio channel on " + SITE_TITLE,
+            title: "Create new radio station on " + SITE_TITLE,
             needsAuth: true
         }],
 
         PATH_CATEGORIES_LIST: ["/categories/", {
             templateUrl: "/views/categories.html",
-            title: "Categories on " + SITE_TITLE
+            title: "Radio station categories on " + SITE_TITLE
+        }],
+
+        PATH_CATEGORIES_LIST_R: ["/category/", {
+            redirectTo: "/categories/"
         }],
 
         PATH_CH_BY_CATEGORY: ["/category/:id", {
@@ -260,11 +250,23 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
                 channelsData: ["$channels", "$route", "$location", function ($channels, $route, $location) {
                     var promise = $channels.getUserChannels($route.current.params.key);
                     promise.then(function (data) {
-                        $route.current.title = "Radio stations by \"" + htmlEscape(data.user.name ? data.user.name : data.user.login) + "\" on " + SITE_TITLE;
+                        var title = data.user.name ? data.user.name : data.user.login;
+                        $route.current.title = htmlEscape(title) + "'s radio stations on " + SITE_TITLE;
                     }, function () {
                         $location.url("/");
                     });
                     return promise;
+                }]
+            }
+        }],
+
+        PATH_STREAMS_POPULAR: ["/streams/", {
+            templateUrl: "/views/catalog/by-popularity.html",
+            controller: 'ChannelListPopular',
+            title: "Popular radio stations on " + SITE_TITLE,
+            resolve: {
+                channelsData: ["$channels", "$route", "$location", function ($channels) {
+                    return $channels.getPopularChannels();
                 }]
             }
         }]
@@ -409,7 +411,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             restrict: 'A',
             template: '<ul class="taglist">' +
             '<li ng-repeat="tag in tags">' +
-            '<a href="/search/%23{{tag | escape}}">{{tag}}</a>' +
+            '<a href="/tag/{{tag | escape}}">{{tag}}</a>' +
             '</li>' +
             '</ul>',
             scope: {

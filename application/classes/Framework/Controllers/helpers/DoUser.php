@@ -30,7 +30,9 @@ class DoUser implements Controller {
                 ControllerException::noUser($id)
             );
 
-            $pageTitle = $user->getName() ."'s radio channels on ".Defaults::SITE_TITLE;
+            $title = $user->getName() ? $user->getName() : $user->getLogin();
+
+            $pageTitle = $title."'s radio channels on ".Defaults::SITE_TITLE;
 
             $metadata = new Template("frontend/meta.user.tmpl");
             $metadata->putObject([
@@ -39,7 +41,7 @@ class DoUser implements Controller {
                 "keywords"      => "",
                 "url"           => "https://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'],
                 "image"         => $user->getAvatarUrl(),
-                "name"          => $user->getName()
+                "name"          => $title
             ]);
 
             $template = new Template("frontend/index.tmpl");

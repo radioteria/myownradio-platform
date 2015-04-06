@@ -14,7 +14,7 @@
             $scope.actionProvider = ChannelListActions;
             $scope.load = function () {
                 $scope.busy = true;
-                $channels.getCategoryChannels($scope.data.channels.length).then(function (data) {
+                $channels.getCategoryChannels($scope.data.channels.items.length).then(function (data) {
                     for (var i = 0; i < data.channels.length; i++) {
                         $scope.data.channels.items[null] = data.channels.items[i];
                     }
@@ -34,7 +34,7 @@
             $scope.actionProvider = ChannelListActions;
             $scope.load = function () {
                 $scope.busy = true;
-                $channels.getTagChannels($routeParams.tag, $scope.data.channels.length).then(function (data) {
+                $channels.getTagChannels($routeParams.tag, $scope.data.channels.items.length).then(function (data) {
                     for (var i = 0; i < data.channels.length; i++) {
                         $scope.data.channels.items[null] = data.channels.items[i];
                     }
@@ -54,7 +54,7 @@
             $scope.actionProvider = ChannelListActions;
             $scope.load = function () {
                 $scope.busy = true;
-                $channels.getSearchChannels($routeParams.query, $scope.data.channels.length).then(function (data) {
+                $channels.getSearchChannels($routeParams.query, $scope.data.channels.items.length).then(function (data) {
                     for (var i = 0; i < data.channels.length; i++) {
                         $scope.data.channels.items[null] = data.channels.items[i];
                     }
@@ -75,7 +75,27 @@
             $scope.actionProvider = ChannelListActions;
             $scope.load = function () {
                 $scope.busy = true;
-                $channels.getUserChannels($routeParams.key, $scope.data.channels.length).then(function (data) {
+                $channels.getUserChannels($routeParams.key, $scope.data.channels.items.length).then(function (data) {
+                    for (var i = 0; i < data.channels.length; i++) {
+                        $scope.data.channels.items[null] = data.channels.items[i];
+                    }
+                    $scope.busy = false;
+                });
+            }
+        }
+
+    ]);
+
+    module.controller("ChannelListPopular", ["channelsData", "$scope", "$channels", "ChannelListActions",
+
+        function (channelsData, $scope, $channels, ChannelListActions) {
+            $scope.data = channelsData;
+            $scope.empty = channelsData.channels.items.length == 0;
+            $scope.busy = false;
+            $scope.actionProvider = ChannelListActions;
+            $scope.load = function () {
+                $scope.busy = true;
+                $channels.getPopularChannels($scope.data.channels.items.length).then(function (data) {
                     for (var i = 0; i < data.channels.length; i++) {
                         $scope.data.channels.items[null] = data.channels.items[i];
                     }

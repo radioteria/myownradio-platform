@@ -118,6 +118,7 @@
     "FR_SEARCH"                         : "Search",
     "FR_SEARCH_FOR"                     : "Search for <b>%filter%</b>",
     "FR_CHANNELS"                       : "Channels",
+    "FR_POPULAR"                        : "Popular",
     "FR_CATEGORIES"                     : "Categories",
     "FR_CURRENT_PASSWORD"               : "Current password:",
     "FR_NEW_PASSWORD"                   : "New password:",
@@ -138,6 +139,7 @@
     "FR_NEVER"                          : "Never",
     "FR_NONE"                           : "None",
     "FR_MY_PROFILE"                     : "My Profile",
+    "FR_STREAMS"                        : "Stations",
 
     "FR_LOGIN_DOTS"                     : "Login:",
     "FR_PASSWORD_DOTS"                  : "Password:",
@@ -152,7 +154,7 @@
     "FR_OK"                             : "OK",
 
 
-    "FR_BROWSE_STATIONS"                : "Browse stations catalog",
+    "FR_BROWSE_POPULAR"                 : "Browse popular radio stations",
     "FR_BROWSE_CATEGORIES"              : "Browse categories",
     "FR_BROWSE_CHANNELS"                : "Browse channels",
     "FR_REPORT_QUESTION"                : "Report problem or ask question",
@@ -393,7 +395,9 @@
     "FR_CHANNELS_BY_USER_TITLE": {
         "1"     : "<b>%name%</b> has <b>1</b> radio station",
         "other" : "<b>%name%</b> has <b>%%</b> radio stations"
-    }
+    },
+
+    "FR_CHANNELS_BY_POPULAR_TITLE": "Most popular radio stations on <b>myownradio.biz</b>"
 
 }
 

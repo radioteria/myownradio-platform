@@ -74,9 +74,9 @@ class ChannelsCollection implements Injectable, SingletonInterface {
             $query->limit(min($limit, self::CHANNELS_PER_REQUEST_MAX));
         }
 
-        $query->where("b.playbacks > 0");
+        $query->where("b.playbacks > 0 OR b.listeners_count > 0");
 
-        $query->orderBy("b.playbacks DESC");
+        $query->orderBy("b.listeners_count DESC, b.playbacks DESC");
 
         return [
             "count" => count($query),

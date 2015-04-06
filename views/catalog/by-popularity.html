@@ -1,0 +1,11 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <div class="no-streams" ng-if="empty">
+            <translate>FR_NO_STREAMS_CREATE_NEW</translate>
+        </div>
+        <div class="page-sub-title" ng-hide="empty">
+            <translate>FR_CHANNELS_BY_POPULAR_TITLE</translate>
+        </div>
+        <div ng-include="'/views/catalog/grid.html'"></div>
+    </div>
+</div>

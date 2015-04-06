@@ -67,6 +67,10 @@ var initHelpers = function () {
         Image/Element fade plugin
     */
 
+    var subs = {
+        animatedFadeIn: function (arg) { $(arg).animate({ opacity: 1 }, 300) }
+    };
+
     $("[fadein]").livequery(function () {
         if (this.tagName == "IMG") {
             $(this).one('load', function () {
@@ -79,9 +83,6 @@ var initHelpers = function () {
         }
     });
 
-    var subs = {
-        animatedFadeIn: function (arg) { $(arg).animate({ opacity: 1 }, 300) }
-    };
 };
 
 /**

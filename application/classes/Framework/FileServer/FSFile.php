@@ -39,7 +39,8 @@ class FSFile {
         /** @var FileServerFile $object */
         $object = FileServerFile::getByFilter("HASH", [$hash])->getOrElseNull();
 
-        if ($object === null) {
+        if (is_null($object)) {
+
             $filesize = filesize($file_path);
             $fs = FileServerFacade::allocate($filesize);
 

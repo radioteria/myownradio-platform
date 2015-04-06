@@ -13,7 +13,7 @@ import java.sql.SQLException;
  */
 public class Track {
 
-    private static final String FILE_SERVER_PATTERN = "http://fs%d.myownradio.biz/%s";
+    private static final String FILE_SERVER_PATTERN = "http://%s/%s";
 
     private int track_id;
     private int user_id;
@@ -26,7 +26,7 @@ public class Track {
     private String uniqueId;
     private long timeOffset;
     private long orderIndex;
-    private Integer fileServerId;
+    private String fileServerHost;
     private String fileHash;
 
     private int playlistTime;
@@ -43,7 +43,7 @@ public class Track {
         this.uniqueId = rs.getString("a.unique_id");
         this.timeOffset = rs.getLong("a.time_offset");
         this.orderIndex = rs.getLong("a.t_order");
-        this.fileServerId = rs.getInt("b.server_id");
+        this.fileServerHost = rs.getString("b.server_host");
         this.fileHash = rs.getString("b.file_hash");
         this.playlistTime = playlistTime;
     }
@@ -93,7 +93,7 @@ public class Track {
     }
 
     public String getFileUrl() {
-        return String.format(FILE_SERVER_PATTERN, fileServerId, fileHash);
+        return String.format(FILE_SERVER_PATTERN, fileServerHost, fileHash);
     }
 
     public String getPath() throws FileNotFoundException {

@@ -53,7 +53,11 @@ abstract class BaseQuery implements \Countable {
     }
 
     public function orderBy($column) {
-        $this->orders[] = $column;
+        if ($column === null) {
+            $this->orders = [];
+        } else {
+            $this->orders[] = $column;
+        }
         return $this;
     }
 
@@ -179,6 +183,7 @@ abstract class BaseQuery implements \Countable {
             $query->selectNone()->selCount();
             $query->limit(null);
             $query->offset(null);
+            $query->orderBy(null);
             return intval($db->fetchOneColumn($query)->get());
         });
     }

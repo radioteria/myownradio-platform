@@ -130,7 +130,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
             $query->limit(min($limit, self::CHANNELS_PER_REQUEST_MAX));
         }
 
-        $query->orderBy("a.created DESC");
+        $query->orderBy("b.summary_played DESC, b.listeners_count DESC, b.playbacks DESC");
 
         return [
             "count" => count($query),
@@ -147,10 +147,10 @@ class ChannelsCollection implements Injectable, SingletonInterface {
     public function getChannelsListBySearch($filter, $offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
 
         $query = $this->channelPrefix();
+        $escaped = Common::searchQueryFilter($filter);
 
-        $query->where("MATCH(a.name, a.permalink, a.hashtags) AGAINST (? IN BOOLEAN MODE)", [
-            Common::searchQueryFilter($filter)
-        ]);
+        $query->select("MATCH(a.name, a.permalink, a.hashtags) AGAINST (:req IN BOOLEAN MODE) as search");
+        $query->where("MATCH(a.name, a.permalink, a.hashtags) AGAINST (:req IN BOOLEAN MODE)", [":req" => $escaped]);
 
         if (is_numeric($offset) && $offset >= 0) {
             $query->offset($offset);
@@ -160,7 +160,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
             $query->limit(min($limit, self::CHANNELS_PER_REQUEST_MAX));
         }
 
-        $query->orderBy("a.created DESC");
+        $query->orderBy("search DESC, b.summary_played DESC, b.listeners_count DESC, b.playbacks DESC");
 
         return [
             "count" => count($query),
@@ -178,7 +178,8 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query = $this->channelPrefix();
 
-        $query->where("MATCH(a.hashtags) AGAINST (? IN BOOLEAN MODE)", ["+".$tag]);
+        $query->select("MATCH(a.hashtags) AGAINST (:tag IN BOOLEAN MODE) as tag");
+        $query->where("MATCH(a.hashtags) AGAINST (:tag IN BOOLEAN MODE)", [":tag" => "+".$tag]);
 
         if (is_numeric($offset) && $offset >= 0) {
             $query->offset($offset);
@@ -188,7 +189,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
             $query->limit(min($limit, self::CHANNELS_PER_REQUEST_MAX));
         }
 
-        $query->orderBy("a.created DESC");
+        $query->orderBy("tag DESC, b.summary_played DESC, b.listeners_count DESC, b.playbacks DESC");
 
         return [
             "count" => count($query),
@@ -244,12 +245,14 @@ class ChannelsCollection implements Injectable, SingletonInterface {
     public function getChannelsSuggestion($filter) {
 
         $query = $this->channelPrefix();
+        $escaped = Common::searchQueryFilter($filter);
 
-        $query->where("MATCH(a.name, a.permalink, a.hashtags) AGAINST (? IN BOOLEAN MODE)", [
-            Common::searchQueryFilter($filter)
-        ]);
+        $query->select("MATCH(a.name, a.permalink, a.hashtags) AGAINST (:search IN BOOLEAN MODE) AS search");
+        $query->where("MATCH(a.name, a.permalink, a.hashtags) AGAINST (:search IN BOOLEAN MODE)", [":search" => $escaped]);
 
         $query->limit(self::CHANNELS_SUGGESTION_MAX);
+
+        $query->orderBy("search DESC, b.summary_played DESC, b.listeners_count DESC, b.playbacks DESC");
 
         return [
             "count" => count($query),

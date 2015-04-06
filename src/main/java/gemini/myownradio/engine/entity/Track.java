@@ -43,7 +43,7 @@ public class Track {
         this.uniqueId = rs.getString("a.unique_id");
         this.timeOffset = rs.getLong("a.time_offset");
         this.orderIndex = rs.getLong("a.t_order");
-        this.fileServerHost = rs.getString("b.server_host");
+        this.fileServerHost = rs.getString("c.fs_host");
         this.fileHash = rs.getString("b.file_hash");
         this.playlistTime = playlistTime;
     }

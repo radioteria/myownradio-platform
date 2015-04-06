@@ -41,7 +41,7 @@
 
     module.filter("channelArtwork", [function () {
         return function (source) {
-            return "content/streamcovers/" + source
+            return "content/streamcovers/" + source;
         }
     }]);
 

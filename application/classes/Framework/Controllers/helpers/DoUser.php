@@ -16,6 +16,7 @@ use Framework\Router;
 use Framework\Services\HttpGet;
 use Framework\Template;
 use Framework\View\Errors\View404Exception;
+use Objects\User;
 use REST\Users;
 
 class DoUser implements Controller {
@@ -24,19 +25,21 @@ class DoUser implements Controller {
         $id = $get->getRequired("id");
 
         try {
+            /** @var User $user */
+            $user = User::getByFilter("FIND_BY_KEY", [":key" => $id])->getOrElseThrow(
+                ControllerException::noUser($id)
+            );
 
-            $user = $users->getUserByID($id);
-
-            $pageTitle = $user["name"]."'s radio channels on ".Defaults::SITE_TITLE;
+            $pageTitle = $user->getName() ."'s radio channels on ".Defaults::SITE_TITLE;
 
             $metadata = new Template("frontend/meta.user.tmpl");
             $metadata->putObject([
                 "title"         => $pageTitle,
-                "description"   => $user["info"],
+                "description"   => $user->getInfo(),
                 "keywords"      => "",
                 "url"           => "https://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'],
-                "image"         => $user["avatar_url"] ? "https:".$user["avatar_url"] : "",
-                "name"          => $user["name"]
+                "image"         => $user->getAvatarUrl(),
+                "name"          => $user->getName()
             ]);
 
             $template = new Template("frontend/index.tmpl");

@@ -391,8 +391,8 @@
     },
 
     "FR_CHANNELS_BY_USER_TITLE": {
-        "1"     : "User <b>%name%</b> broadcasts <b>1</b> radio station",
-        "other" : "User <b>%name%</b> broadcasts <b>%%</b> radio stations"
+        "1"     : "<b>%name%</b> has <b>1</b> radio station",
+        "other" : "<b>%name%</b> has <b>%%</b> radio stations"
     }
 
 }

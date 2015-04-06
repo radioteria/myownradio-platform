@@ -127,7 +127,7 @@
 <div class="special">
     <div class="player-container ngCloak" ng-if="player.isLoaded"
          mor-background-color="player.currentStream.cover_background">
-        <div class="cool-player table">
+        <div class="cool-player table" synchronize="player.currentStream" sync-key="sid">
             <div class="row">
                 <div class="cell radio-cover">
                     <a ng-href="{{ player.currentStream | channelLink }}">

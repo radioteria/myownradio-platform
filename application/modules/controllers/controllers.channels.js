@@ -152,12 +152,6 @@
         function ($channels, $bookmarks, Popup, $rootScope) {
             return function (channel) {
 
-                $rootScope.$on("channel_modify", function (event, data) {
-                    if (data != channel && data.sid == channel.sid) {
-                        copyObjectValues(data, channel, false);
-                    }
-                });
-
                 return {
                     bookmark: function () {
                         if (channel.bookmarked === 1) {
@@ -165,7 +159,7 @@
                                 Popup.message($rootScope.tr("FR_BOOKMARK_REMOVE_SUCCESS", [ channel.name ]));
                                 channel.bookmarked = 0;
                                 channel.bookmarks_count --;
-                                $rootScope.$broadcast("channel_modify", channel);
+                                $rootScope.$broadcast("channel:modify", channel);
                             }, function (message) {
                                 Popup.message(message);
                             });
@@ -174,7 +168,7 @@
                                 Popup.message($rootScope.tr("FR_BOOKMARK_ADD_SUCCESS", [ channel.name ]));
                                 channel.bookmarked = 1;
                                 channel.bookmarks_count ++;
-                                $rootScope.$broadcast("channel_modify", channel);
+                                $rootScope.$broadcast("channel:modify", channel);
                             }, function (message) {
                                 Popup.message(message);
                             });

@@ -51,4 +51,24 @@
 
     }]);
 
+    module.directive("synchronize", ["$rootScope", function ($rootScope) {
+        return {
+            scope: {
+                synchronize: "=",
+                syncKey: "@"
+            },
+            restrict: "A",
+            link: function (scope, element, attrs) {
+                scope.$on("sync:update", function (event, data) {
+                    if (data[1] != scope.synchronize && data[1][data[0]] == scope.synchronize[data[0]]) {
+                        angular.copy(data[1], scope.synchronize);
+                    }
+                });
+                scope.$watch("synchronize", function () {
+                    $rootScope.$broadcast("sync:update", [scope.syncKey, scope.synchronize]);
+                }, true);
+            }
+        }
+    }]);
+
 })();

@@ -1,7 +1,7 @@
 <div class="new-stream-catalog-badge">
     <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy"
         infinite-scroll-distance="1">
-        <li ng-repeat="channel in data.channels.items" ng-init="actions = actionProvider(channel)">
+        <li ng-repeat="channel in data.channels.items" ng-init="actions = actionProvider(channel)" synchronize="channel" sync-key="sid">
             <div class="cover-section">
                 <div class="cover">
                     <img fadein ng-if="channel.cover" ng-src="{{channel.cover | channelArtwork }}?size=200">

@@ -83,13 +83,6 @@ class Router implements SingletonInterface{
                 "categories"
             ], "content\\DoDefaultTemplate");
 
-
-        $sub->addRoute("user", function () {
-            header("HTTP/1.1 301 Moved Permanently");
-            header("Location: /");
-            die();
-        });
-
         $sub->addRoute("category/:category", "helpers\\DoCategory");
         $sub->addRoute("streams/:id",   "helpers\\DoStream");
         $sub->addRoute("user/:id",      "helpers\\DoUser");
@@ -103,7 +96,8 @@ class Router implements SingletonInterface{
 
         // Default route
         $sub->defaultRoute(function () {
-            throw new View404Exception();
+            http_response_code(404);
+            Router::getInstance()->callRoute("content\\DoDefaultTemplate");
         });
 
     }

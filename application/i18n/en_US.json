@@ -321,7 +321,7 @@
     "FR_UPLOAD_CANCEL_HINT"             : "Cancel upload",
     "FR_UPLOAD_START_HINT"              : "Start upload",
 
-    "FR_CATEGORIES_TITLE"               : "Choose category of radio stations to see what is streaming in it",
+    "FR_CATEGORIES_TITLE"               : "Choose category of radio stations",
 
     "FR_CONFIRM_STREAM_DELETE"          : "Are you sure want to delete your radio station<br><b>%0%</b>?",
     "FR_CONFIRM_STREAM_STOP"            : "Are you sure want to STOP radio your radio station<br><b>%0%</b>?",

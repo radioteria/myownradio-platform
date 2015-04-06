@@ -51,7 +51,9 @@ class DoGetJavascriptModules implements Controller {
             "application/modules/popup.ang.js",
             "application/modules/mor.stream.scheduler.js",
 
+            "application/modules/api/api.core.js",
             "application/modules/api/api.channels.js",
+            "application/modules/api/api.bookmarks.js",
 
             "application/modules/controllers/controllers.channels.js",
 

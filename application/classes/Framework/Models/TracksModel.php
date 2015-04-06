@@ -12,6 +12,7 @@ namespace Framework\Models;
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
+use Framework\FileServer\Exceptions\LocalFileNotFoundException;
 use Framework\FileServer\Exceptions\NoSpaceForUploadException;
 use Framework\FileServer\FSFile;
 use Framework\Injector\Injectable;
@@ -141,6 +142,8 @@ class TracksModel implements Injectable, SingletonInterface {
             $file_id = FSFile::registerLink($file["tmp_name"], $hash);
             $track->setFileId($file_id);
             $track->save();
+        } catch (LocalFileNotFoundException $exception) {
+            throw new ControllerException(I18n::tr("UPLOAD_FILE_BROKEN", [$file["name"]]));
         } catch (NoSpaceForUploadException $exception) {
             throw new ControllerException(I18n::tr("UPLOAD_NO_SERVERS", [$file["name"]]));
         }

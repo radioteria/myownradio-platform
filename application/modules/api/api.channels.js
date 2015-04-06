@@ -5,42 +5,6 @@
 
     var api = angular.module("application");
 
-    api.service("$api", ["$q", "$http", function ($q, $http) {
-
-        function answer(promise) {
-            return $q(function (resolve, reject) {
-                promise.then(function (response) {
-                    if (response.data.code == 1) {
-                        resolve(response.data.data);
-                    } else {
-                        reject(response.data.message);
-                    }
-                })
-            });
-        }
-
-        return {
-            get: function (url, params) {
-                return answer($http.get(url, {
-                    params: params
-                }));
-            },
-            post: function (url, post) {
-                return answer($http.post(url, post));
-            },
-            filter: function (arguments) {
-                var obj = {};
-                for (var key in arguments) if (arguments.hasOwnProperty(key)) {
-                    if (typeof arguments[key] != "undefined") {
-                        obj[key] = arguments[key];
-                    }
-                }
-                return obj;
-            }
-        }
-
-    }]);
-
     api.service("$channels", ["$api", function ($api) {
         return {
             getAllChannels: function (offset, limit) {

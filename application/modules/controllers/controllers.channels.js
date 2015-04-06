@@ -1,7 +1,6 @@
 /**
  * Created by roman on 05.04.15.
  */
-
 (function () {
 
     var module = angular.module("application");
@@ -12,7 +11,7 @@
             $scope.data = channelsData;
             $scope.empty = channelsData.channels.items.length == 0;
             $scope.busy = false;
-            $scope.actions = ChannelListActions;
+            $scope.actionProvider = ChannelListActions;
             $scope.load = function () {
                 $scope.busy = true;
                 $channels.getCategoryChannels($scope.data.channels.length).then(function (data) {
@@ -26,18 +25,38 @@
 
     ]);
 
-    module.factory("ChannelListActions", ["$channels", function ($channels) {
-        return function (channel) {
-            return {
-                bookmark: function () {
+    module.factory("ChannelListActions", ["$channels", "$bookmarks", "Popup", "$rootScope",
 
-                },
-                share: function () {
+        function ($channels, $bookmarks, Popup, $rootScope) {
+            return function (channel) {
+                return {
+                    bookmark: function () {
+                        if (channel.bookmarked === 1) {
+                            $bookmarks.removeBookmark(channel).then(function () {
+                                Popup.message($rootScope.tr("FR_BOOKMARK_REMOVE_SUCCESS", [ channel.name ]));
+                                channel.bookmarked = 0;
+                                channel.bookmarks_count --;
+                            }, function (message) {
+                                Popup.message(message);
+                            });
+                        } else {
+                            $bookmarks.addBookmark(channel).then(function () {
+                                Popup.message($rootScope.tr("FR_BOOKMARK_ADD_SUCCESS", [ channel.name ]));
+                                channel.bookmarked = 1;
+                                channel.bookmarks_count ++;
+                            }, function (message) {
+                                Popup.message(message);
+                            });
+                        }
+                    },
+                    share: function (callback) {
 
+                    }
                 }
             }
         }
-    }]);
+
+    ]);
 
     module.filter("channelArtwork", [function () {
         return function (source) {

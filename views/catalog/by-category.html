@@ -8,7 +8,7 @@
         </div>
         <div class="new-stream-catalog-badge">
             <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy" infinite-scroll-distance="1">
-                <li ng-repeat="channel in data.channels.items">
+                <li ng-repeat="channel in data.channels.items" ng-init="actions = actionProvider(channel)">
                     <div class="cover-section">
                         <div class="cover">
                             <img fadein ng-if="channel.cover" ng-src="{{channel.cover | channelArtwork }}?size=200">
@@ -24,7 +24,7 @@
                                     <i class="icon-hearing"></i><span>{{ channel.listeners_count | number }}</span>
                                 </span>
                                 <span mor-tooltip="{{ pl('FR_STREAM_BOOKMARKED_TIMES', channel.bookmarks_count) }}">
-                                    <i class="icon-heart"></i> <span>{{ channel.bookmarks_count | number }}</span>
+                                    <i class="icon-heart hoverable" ng-click="actions.bookmark()"></i> <span>{{ channel.bookmarks_count | number }}</span>
                                 </span>
                         </div>
                     </div>

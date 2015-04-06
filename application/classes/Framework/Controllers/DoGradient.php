@@ -10,10 +10,12 @@ namespace Framework\Controllers;
 
 
 use Framework\Controller;
+use Framework\FileServer\FSFile;
 use Framework\Services\DB\Query\DeleteQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\DB\Query\UpdateQuery;
 use Framework\Services\Locale\L10n;
+use Objects\FileServer\FileServerFile;
 use Objects\Options;
 
 class DoGradient implements Controller {
@@ -22,11 +24,13 @@ class DoGradient implements Controller {
         header("Content-Type: text/plain");
         set_time_limit(30);
 
-        /** @var Options $options */
-        $options = Options::getByID(1)->get();
-        $options->setProperty("format_id", 5);
-        $options->save();
-        echo $options->getFormatId();
+        $files = FileServerFile::getListByFilter("use_count = 0");
+
+        foreach ($files as $file) {
+            FSFile::deleteLink($file->getFileId());
+        }
+
+        echo count($files);
 
     }
 

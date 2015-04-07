@@ -53,12 +53,14 @@ class DoGetJavascriptModules implements Controller {
 
             "application/modules/api/api.core.js",
             "application/modules/api/api.channels.js",
+            "application/modules/api/api.tracks.js",
             "application/modules/api/api.bookmarks.js",
             "application/modules/api/api.schedule.js",
 
             "application/modules/filters/filter.object.js",
 
             "application/modules/controllers/controllers.channels.js",
+            "application/modules/controllers/controllers.tracks.js",
 
             "application/modules/directives/directives.player.js",
 

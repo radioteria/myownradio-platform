@@ -5,10 +5,11 @@
 
     var module = angular.module("application");
 
-    module.controller("ChannelView", ["channelData", "$scope", "$channels", "ChannelListActions",
-        function (channelData, $scope, $channels, ChannelListActions) {
+    module.controller("ChannelView", ["channelData", "$scope", "$channels", "ChannelListActions", "TrackListActions",
+        function (channelData, $scope, $channels, ChannelListActions, TrackListActions) {
             $scope.data = channelData;
             $scope.action = ChannelListActions(channelData.channel);
+            $scope.trackAction = TrackListActions;
         }
     ]);
 
@@ -154,9 +155,9 @@
 
     ]);
 
-    module.factory("ChannelListActions", ["$channels", "$bookmarks", "Popup", "$rootScope",
+    module.factory("ChannelListActions", ["$channels", "$bookmarks", "Popup", "$rootScope", "TrackAction",
 
-        function ($channels, $bookmarks, Popup, $rootScope) {
+        function ($channels, $bookmarks, Popup, $rootScope, TrackAction) {
             return function (channel) {
                 return {
                     bookmark: function () {
@@ -178,11 +179,11 @@
                             });
                         }
                     },
-                    share: function () {
-
-                    },
                     play: function () {
                         $rootScope.player.controls.playSwitchStream(channel);
+                    },
+                    removeTrack: function (track) {
+                        TrackAction.removeTracksFromStream(channel, [track]);
                     }
                 }
             }

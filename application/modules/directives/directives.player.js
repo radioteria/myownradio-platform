@@ -67,18 +67,12 @@
                     });
                 };
 
-            $timeout(operate, 1000);
+            $timeout(operate, 5000);
 
             return {
                 register: function (element) {
                     if (channels.indexOf(element) == -1) {
-                        var id = element.scope().channel.sid;
                         channels.push(element);
-                        if (cache[id] !== undefined) {
-                            element.scope().channel.now_playing = cache[id];
-                        } else {
-                            element.scope().channel.now_playing = "updating...";
-                        }
                     }
                 },
                 unRegister: function (element) {

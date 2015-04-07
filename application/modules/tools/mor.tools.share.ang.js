@@ -22,17 +22,17 @@
     tools.directive("share", [function () {
         return {
             scope: {
-                ngModel: "="
+                shareObject: "=share"
             },
-            restrict: "E",
-            required: "ngModel",
+            restrict: "A",
+            replace: true,
             template: "<i class=\"icon-share-alt\" mor-tooltip=\"{{ tr('FR_SHARE_THIS') }}\" ng-click=\"share()\"></i>",
             controller: ["$scope", "ngDialog", "$rootScope", function ($scope, ngDialog, $rootScope) {
                 $scope.tr = $rootScope.tr;
                 $scope.share = function () {
-                    if (angular.isDefined($scope.ngModel)) {
+                    if (angular.isDefined($scope.shareObject)) {
                         var scope = $scope.$new();
-                        scope.streamObject = $scope.ngModel;
+                        scope.streamObject = $scope.shareObject;
                         scope.streamObject.url = "https://myownradio.biz/streams/" + scope.streamObject.key;
                         scope.tr = $rootScope.tr;
                         ngDialog.open({

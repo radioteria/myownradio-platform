@@ -14,8 +14,8 @@
                             data: metadata
                         }))
                     },
-                    show: function (source, $scope) {
-                        var scope = $scope.$new();
+                    show: function (source) {
+                        var scope = $rootScope.$new();
                         scope.source = source;
                         ngDialog.open({
                             templateUrl: "/views/auth/metadata.html",

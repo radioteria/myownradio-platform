@@ -26,7 +26,7 @@ trait WhereSection {
         } elseif (func_num_args() == 2) {
             $this->whereSimple(func_get_arg(0), func_get_arg(1));
         } elseif (func_num_args() == 1) {
-            $this->whereSimple($clause);
+            $this->whereSimple("(".$clause.")");
         }
         return $this;
     }
@@ -83,7 +83,7 @@ trait WhereSection {
         $build = [];
 
         foreach ($this->wheres as $where) {
-            if (count($where) == 1 && is_string($where)) {
+            if (is_string($where)) {
                 $build[] = $where;
             } else if (count($where) == 2 && is_array($where[1])) {
                 $build[] = $where[0] . " IN (" . implode(",", $this->quote($pdo, $where[1])) . ")";

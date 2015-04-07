@@ -435,45 +435,18 @@
             $scope.editTrack = function (track) {
                 AudioInfoEditor.show([track], $scope);
             };
-            $scope.remove = function () {
-                TrackAction.removeTracksFromStream($scope.content.streamData, [$rootScope.player.nowPlaying]);
-            };
-            $scope.removeTrack = function (track) {
-                TrackAction.removeTracksFromStream($scope.content.streamData, [track]);
-            };
+//            $scope.remove = function () {
+//                TrackAction.removeTracksFromStream($scope.content.streamData, [$rootScope.player.nowPlaying]);
+//            };
+//            $scope.removeTrack = function (track) {
+//                TrackAction.removeTracksFromStream($scope.content.streamData, [track]);
+//            };
 
             $scope.copyTrack = function ($track) {
                 TrackAction.copyTrackToSelf($track);
             };
 
-            $scope.$watch("scheduleTracks", function (data) {
-                if (data !== null && $scope.content.streamData !== null) {
-                    $scope.content.streamData.listeners_count = data.listeners_count;
-                    $scope.content.streamData.bookmarks_count = data.bookmarks_count;
-                }
-            });
 
-            $scope.sort = function (uniqueId, newIndex) {
-                StreamWorks.sort($scope.content.streamData.sid, uniqueId, newIndex + 1);
-            };
-
-            $scope.sortableOptions = {
-                axis: 'y',
-                items: ".track-row",
-                stop: function (event, ui) {
-                    var thisElement = angular.element(ui.item).scope();
-                    var thisIndex = angular.element(ui.item);
-                    //$scope.sort(thisElement.track.unique_id, thisIndex);
-                },
-                helper: function (e, tr) {
-                    var $originals = tr.children();
-                    var $helper = tr.clone();
-                    $helper.children().each(function (index) {
-                        $(this).width($originals.eq(index).width())
-                    });
-                    return $helper;
-                }
-            };
 
         }
 

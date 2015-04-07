@@ -59,6 +59,24 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
     }
 
+    private function channelNowPlayingPrefix() {
+
+        $prefix = $this->channelPrefix();
+
+        $prefix->innerJoin("r_link d", "d.stream_id = a.sid");
+        $prefix->innerJoin("r_tracks e", "e.tid = d.track_id");
+
+        $prefix->where("d.time_offset < MOD((UNIX_TIMESTAMP() * 1000) - (a.started - a.started_from), b.tracks_duration)");
+        $prefix->where("d.time_offset + e.duration > MOD((UNIX_TIMESTAMP() * 1000) - (a.started - a.started_from), b.tracks_duration)");
+
+        $prefix->select("CONCAT(e.artist, IF(e.artist, ' - ', ''), e.title) as now_playing");
+
+        //$prefix->addGroupBy("a.sid");
+
+        return $prefix;
+
+    }
+
     /**
      * @param $channel_id
      * @return mixed
@@ -80,7 +98,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
      */
     public function getChannelsPopular($offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
 
-        $query = $this->channelPrefix();
+        $query = $this->channelNowPlayingPrefix();
 
         if (is_numeric($offset) && $offset >= 0) {
             $query->offset($offset);
@@ -108,7 +126,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
      */
     public function getChannelsList($offset = 0, $limit = null) {
 
-        $query = $this->channelPrefix();
+        $query = $this->channelNowPlayingPrefix();
 
         if (is_numeric($offset)) {
             $query->offset($offset);
@@ -134,7 +152,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
      */
     public function getChannelsListByCategory($category_id, $offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
 
-        $query = $this->channelPrefix();
+        $query = $this->channelNowPlayingPrefix();
 
         $query->where("a.category", $category_id);
 
@@ -162,7 +180,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
      */
     public function getChannelsListBySearch($filter, $offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
 
-        $query = $this->channelPrefix();
+        $query = $this->channelNowPlayingPrefix();
         $escaped = Common::searchQueryFilter($filter);
 
         $query->select("MATCH(a.name, a.permalink, a.hashtags) AGAINST (:req IN BOOLEAN MODE) as search");
@@ -192,7 +210,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
      */
     public function getChannelsListByTag($tag, $offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
 
-        $query = $this->channelPrefix();
+        $query = $this->channelNowPlayingPrefix();
 
         $query->select("MATCH(a.hashtags) AGAINST (:tag IN BOOLEAN MODE) as tag");
         $query->where("MATCH(a.hashtags) AGAINST (:tag IN BOOLEAN MODE)", [":tag" => "+".$tag]);
@@ -221,7 +239,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
      */
     public function getChannelsListByUser($user_id, $offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
 
-        $query = $this->channelPrefix();
+        $query = $this->channelNowPlayingPrefix();
 
         $query->where("a.uid", $user_id);
 
@@ -283,7 +301,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
      */
     public function getBookmarkedChannels($offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
 
-        $query = $this->channelPrefix();
+        $query = $this->channelNowPlayingPrefix();
 
         if (is_numeric($offset) && $offset >= 0) {
             $query->offset($offset);
@@ -310,7 +328,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
      */
     public function getSimilarChannels($channel_id) {
 
-        $query = $this->channelPrefix();
+        $query = $this->channelNowPlayingPrefix();
 
         $query->where("a.sid != :id");
         $query->where("a.permalink != :id");

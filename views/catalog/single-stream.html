@@ -1,4 +1,4 @@
-<div ng-init="scheduleShown=false;schedule={source:null,destination:null}">
+<div ng-init="scheduleShown=false;schedule={source:null,destination:null}" synchronize="data.channel" sync-key="sid">
 
     <schedule ng-model="data.channel" on-interval="schedule.source"></schedule>
     <copy source="schedule.source" destination="schedule.destination"></copy>

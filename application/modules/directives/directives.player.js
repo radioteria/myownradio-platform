@@ -76,6 +76,8 @@
                         channels.push(element);
                         if (cache[id] !== undefined) {
                             element.scope().channel.now_playing = cache[id];
+                        } else {
+                            element.scope().channel.now_playing = "updating...";
                         }
                     }
                 },

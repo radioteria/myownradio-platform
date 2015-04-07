@@ -1,7 +1,7 @@
 <div ng-init="scheduleShown=false;schedule={source:null,destination:null}" synchronize="data.channel" sync-key="sid">
 
     <schedule ng-model="data.channel" on-interval="schedule.source"></schedule>
-    <copy source="schedule.source" destination="schedule.destination"></copy>
+    <sync source="schedule.source" destination="schedule.destination"></sync>
 
     <div class="stream-info" mor-background-color="data.channel.cover_background">
 
@@ -65,29 +65,34 @@
                             </li>
                         </ul>
                     </div>
+                    <!-- CHANNEL TITLE -->
                     <div class="name">{{ data.channel.name | uppercase }}</div>
                     <div class="owner">
                         <i class="icon-user right-padded"></i>
                         <a href="{{ data.owner | userProfileLink }}">{{ data.owner | userProfileName }}</a>
                     </div>
+                    <!-- CHANNEL STATS -->
                     <div class="stats">
                         <span mor-tooltip="{{ pl('FR_COUNT_USERS_LISTENING', data.channel.listeners_count) }}">
-                            <i class="icon-hearing"></i><span>{{ data.channel.listeners_count | number }}</span>
+                            <i class="icon-hearing"></i>
+                            <span>{{ data.channel.listeners_count | number }}</span>
                         </span>
                         <span mor-tooltip="{{ pl('FR_STREAM_BOOKMARKED_TIMES', data.channel.bookmarks_count) }}">
-                            <i class="icon-heart"></i> <span>{{ data.channel.bookmarks_count | number }}</span>
+                            <i class="icon-heart"></i>
+                            <span>{{ data.channel.bookmarks_count | number }}</span>
                         </span>
                         <span mor-tooltip="{{ pl('FR_STREAM_PLAYED_TIMES', data.channel.playbacks) }}">
-                            <i class="icon-play-circle-fill"></i> <span>{{ data.channel.playbacks | number }}</span>
+                            <i class="icon-play-circle-fill"></i>
+                            <span>{{ data.channel.playbacks | number }}</span>
                         </span>
                     </div>
+                    <!-- PLAY BUTTON -->
                     <div class="now-playing-frame" ng-if="data.channel">
                         <div class="player">
                             <div mor-tooltip="Play / Stop" class="toggle" ng-click="action.play()">
-                                <i ng-show="player.isPlaying && player.currentID == data.channel.sid" class="icon-stop"></i>
-                                <i ng-hide="player.isPlaying && player.currentID == data.channel.sid" class="icon-play-arrow"></i>
+                                <i play-icon="data.channel"></i>
                             </div>
-                            <div ng-if="player.isPlaying && player.currentID == data.channel.sid">
+                            <div ng-if="player.isPlaying && player.currentStream.sid == data.channel.sid">
                                 <div class="key">
                                     {{ player.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}
                                 </div>
@@ -114,12 +119,12 @@
                     <translate>FR_RECENT_UPCOMING</translate>
                 </span>
             </div>
-            <div ng-class="{open: scheduleShown}" class="tracks-list" ng-model="schedule.source">
+            <div ng-class="{open: scheduleShown}" class="tracks-list">
                 <div class="track-row" ng-class="{current: $index == schedule.source.current}" ng-repeat="track in schedule.destination.tracks">
                     <div class="fixed-width">
                         <div class="track-duration" ng-bind="track.duration | msToTime"></div>
                         <div class="track-artist" ng-show="track.artist.length" ng-bind="track.artist"></div>
-                        <div class="track-offset" ng-bind="($index == schedule.source.current) ? 'now' : ((track.time_offset - schedule.source.position) | msToSmallTime)"></div>
+                        <div class="track-offset" ng-bind="($index == schedule.destination.current) ? 'now' : ((track.time_offset - schedule.destination.position) | msToSmallTime)"></div>
                         <div class="track-now">
                             <i class="icon-volume-up"></i>
                         </div>

@@ -59,6 +59,8 @@ class DoGetJavascriptModules implements Controller {
 
             "application/modules/controllers/controllers.channels.js",
 
+            "application/modules/directives/directives.player.js",
+
             "js/libs/mortip.js"
         ];
 

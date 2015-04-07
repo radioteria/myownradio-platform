@@ -59,7 +59,7 @@
                     $schedule.whatsOnChannels(ids).then(function (data) {
                         for (var i = 0, length = selection.length; i < length; i ++) {
                             if (data[selection[i].sid] !== undefined) {
-                                cache[selection[i].sid] = data[selection[i].sid].artist + " - " + data[selection[i].sid].title;
+                                cache[selection[i].sid] = (data[selection[i].sid].artist.length ? (data[selection[i].sid].artist + " - ") : "") + data[selection[i].sid].title;
                                 selection[i].now_playing = cache[selection[i].sid];
                             }
                         }

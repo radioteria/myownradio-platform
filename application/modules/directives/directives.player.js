@@ -23,4 +23,67 @@
             }
         }
     }]);
+
+    module.directive("watchPlaying", ["NowPlayingWatcher", function (NowPlayingWatcher) {
+        return {
+            restrict: "A",
+            scope: {
+                channel: "=watchPlaying"
+            },
+            link: function (scope, element, attrs) {
+
+                NowPlayingWatcher.register(element);
+
+                element.on("$destroy", function () {
+                    NowPlayingWatcher.unRegister(element);
+                });
+
+            }
+        }
+    }]);
+
+    module.factory("NowPlayingWatcher", ["$timeout", "$document", "$window", "$schedule",
+
+        function ($timeout, $document, $window, $schedule) {
+
+            var channels = [],
+                operate = function () {
+                    var selection = [];
+                    for (var i = 0, length = channels.length; i < length; i ++) {
+                        if (channels[i].offset().top + channels[i].outerHeight() > $document.scrollTop() && channels[i].offset().top - $document.scrollTop() < $window.innerHeight) {
+                            selection.push(channels[i].scope().channel);
+                        }
+                    }
+                    var ids = selection.map(function (elem) { return elem.sid }).join(",");
+                    $schedule.whatsOnChannels(ids).then(function (data) {
+                        for (var i = 0, length = selection.length; i < length; i ++) {
+                            if (data[selection[i].sid] !== undefined) {
+                                selection[i].now_playing = data[selection[i].sid].artist + " - " + data[selection[i].sid].title
+                            }
+                        }
+                        $timeout(operate, 5000);
+                    });
+                };
+
+            $timeout(operate, 1000);
+
+            return {
+                register: function ($channel) {
+                    if (channels.indexOf($channel) == -1) {
+                        channels.push($channel);
+                    }
+                },
+                unRegister: function ($channel) {
+                    var offset;
+                    if (offset = channels.indexOf($channel) != -1) {
+                        channels.splice(offset, 1);
+                    }
+                }
+            }
+
+        }
+
+    ]);
+
+
 })();

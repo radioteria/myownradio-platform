@@ -35,4 +35,19 @@ class HttpGet extends HttpRequestAdapter implements SingletonInterface, Injectab
             ->getOrElseThrow(ControllerException::noArgument($key));
     }
 
+    public function getArrayParameter($key, $filter = FILTER_DEFAULT) {
+        $array = FILTER_INPUT_ARRAY(INPUT_GET, [
+            $key => [
+                "filter" => $filter,
+                "flags"  => FILTER_REQUIRE_ARRAY
+            ]
+        ]);
+        return Optional::ofArray($array[$key]);
+    }
+
+    public function getArrayRequired($key, $definition = null) {
+        return $this->getArrayParameter($key, $definition)
+            ->getOrElseThrow(ControllerException::noArgument($key));
+    }
+
 }

@@ -944,7 +944,7 @@ body.player-visible footer {
   font-size: 8pt;
 }
 .new-stream-catalog-badge .new-stream-catalog > li .info-section .now-playing i {
-  padding-right: 4px;
+  padding-right: 2px;
 }
 .new-stream-catalog-badge .new-stream-catalog > li .info-section .stream-name {
   font-family: "Myriad Pro Thin";

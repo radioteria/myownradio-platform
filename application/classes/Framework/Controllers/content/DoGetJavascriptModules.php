@@ -55,6 +55,8 @@ class DoGetJavascriptModules implements Controller {
             "application/modules/api/api.channels.js",
             "application/modules/api/api.bookmarks.js",
 
+            "application/modules/filters/filter.object.js",
+
             "application/modules/controllers/controllers.channels.js",
 
             "js/libs/mortip.js"

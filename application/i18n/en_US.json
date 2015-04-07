@@ -407,6 +407,12 @@
         "other" : "You have <b>%%</b> bookmarked radio stations"
     },
 
+    "FR_STREAM_PLAYED_TIMES": {
+        "0"     : "This radio station never played",
+        "1"     : "This radio station played 1 time",
+        "other" : "This radio station played %% times"
+    },
+
     "FR_CHANNELS_BY_POPULAR_TITLE"  : "What's most popular on <b>MyOwnRadio</b>",
 
     "FR_NO_STREAMS_BOOKMARKS"    : "You have no bookmarked radio stations."

@@ -9,6 +9,7 @@
 namespace API\REST;
 
 
+use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
 use Framework\Services\DB\Query\SelectQuery;
 use Tools\Singleton;
@@ -20,10 +21,18 @@ class UserCollection implements Injectable, SingletonInterface  {
     private function getUsersPrefix() {
 
         $prefix = (new SelectQuery("mor_users_view"))
-            ->select("uid", "name", "permalink", "avatar", "streams_count",
+            ->select("uid", "login", "name", "permalink", "avatar", "streams_count",
                 "tracks_count", "info", "plan_id", "country_id");
 
         return $prefix;
+
+    }
+
+    public function getSingleUser($user_key) {
+
+        $query = $this->getUsersPrefix();
+        $query->where("(uid = :key) OR (permalink IS NOT NULL AND permalink = :key)", [ ":key" => $user_key ]);
+        return $query->fetchOneRow()->getOrElseThrow(ControllerException::noUser($user_key));
 
     }
 } 

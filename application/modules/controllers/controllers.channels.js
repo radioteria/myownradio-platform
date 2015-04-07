@@ -5,6 +5,13 @@
 
     var module = angular.module("application");
 
+    module.controller("ChannelView", ["channelData", "$scope", "$channels", "ChannelListActions",
+        function (channelData, $scope, $channels, ChannelListActions) {
+            $scope.data = channelData;
+            $scope.action = ChannelListActions(channelData.channel);
+        }
+    ]);
+
     module.controller("ChannelListCategory", ["channelsData", "$scope", "$channels", "ChannelListActions",
 
         function (channelsData, $scope, $channels, ChannelListActions) {
@@ -151,7 +158,6 @@
 
         function ($channels, $bookmarks, Popup, $rootScope) {
             return function (channel) {
-
                 return {
                     bookmark: function () {
                         if (channel.bookmarked === 1) {
@@ -159,7 +165,6 @@
                                 Popup.message($rootScope.tr("FR_BOOKMARK_REMOVE_SUCCESS", [ channel.name ]));
                                 channel.bookmarked = 0;
                                 channel.bookmarks_count --;
-                                $rootScope.$broadcast("channel:modify", channel);
                             }, function (message) {
                                 Popup.message(message);
                             });
@@ -168,14 +173,16 @@
                                 Popup.message($rootScope.tr("FR_BOOKMARK_ADD_SUCCESS", [ channel.name ]));
                                 channel.bookmarked = 1;
                                 channel.bookmarks_count ++;
-                                $rootScope.$broadcast("channel:modify", channel);
                             }, function (message) {
                                 Popup.message(message);
                             });
                         }
                     },
-                    share: function (callback) {
+                    share: function () {
 
+                    },
+                    play: function () {
+                        $rootScope.player.controls.playSwitchStream(channel);
                     }
                 }
             }

@@ -7,6 +7,11 @@
 
     api.service("$channels", ["$api", function ($api) {
         return {
+            getSingleChannel: function (channel_key) {
+                return $api.get("/api/v2/channels/one", $api.filter({
+                    stream_id: channel_key
+                }));
+            },
             getAllChannels: function (offset, limit) {
                 return $api.get("/api/v2/channels/all", $api.filter({
                     offset: offset,

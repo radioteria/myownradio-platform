@@ -47,20 +47,6 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 //            }
 //        }],
 
-        /* Single Stream View */
-        PATH_STREAM: ["/streams/:id", {
-            templateUrl: "/views/stream.html",
-            controller: "OneStreamController",
-            resolve: {
-                streamData: ["Streams", "$route", "$document", function (Streams, $route, $document) {
-                    var promise = Streams.getByIdWithSimilar($route.current.params.id);
-                    promise.then(function (data) {
-                        $route.current.title = htmlEscape(data.data.data.stream.name) + " on " + SITE_TITLE;
-                    });
-                    return promise;
-                }]
-            }
-        }],
 
         PATH_LOGIN: ["/login/", {
             templateUrl: "/views/login.html",
@@ -275,6 +261,23 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
                     return promise;
                 }]
             }
+        }],
+
+        /* Single Stream View */
+        PATH_STREAM: ["/streams/:key", {
+            templateUrl: "/views/catalog/single-stream.html",
+            controller: "ChannelView",
+            resolve: {
+                channelData: ["$channels", "$route", "$location", function ($channels, $route, $location) {
+                    var promise = $channels.getSingleChannel($route.current.params.key);
+                    promise.then(function (data) {
+                        $route.current.title = data.channel.name + " on " + SITE_TITLE;
+                    }, function () {
+                        $location.url("/streams/");
+                    });
+                    return promise;
+                }]
+            }
         }]
 
     };
@@ -337,7 +340,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
         $rootScope.reload();
 
         $("a").live("click", function () {
-            $analytics.eventTrack('followLink', {category: 'Application', label: this.href});
+            $analytics.eventTrack('followLink', { category: 'Application', label: this.href });
             if (this.href == $location.absUrl()) {
                 $route.reload();
             }

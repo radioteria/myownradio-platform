@@ -59,20 +59,36 @@
             },
             restrict: "A",
             link: function (scope, element, attrs) {
-                scope.$on("sync:update", function (event, data) {
+                scope.$on("sync:update:" + scope.syncKey, function (event, data) {
                     if (angular.isObject(scope.synchronize) &&
-                        data[1] != scope.synchronize &&
-                        data[1][data[0]] == scope.synchronize[data[0]]) {
+                        data != scope.synchronize &&
+                        data[scope.syncKey] == scope.synchronize[scope.syncKey]) {
 
-                        angular.copy(data[1], scope.synchronize);
+                        angular.copy(data, scope.synchronize);
 
                     }
                 });
                 scope.$watchCollection("synchronize", function () {
-                    $rootScope.$broadcast("sync:update", [scope.syncKey, scope.synchronize]);
+                    $rootScope.$broadcast("sync:update:" + scope.syncKey, scope.synchronize);
                 });
             }
         }
     }]);
+
+    module.directive("copy", [function () {
+        return {
+            restrict: "E",
+            scope: {
+                source: "=",
+                destination: "="
+            },
+//            require: "source|destination",
+            link: function (scope, element, attrs) {
+                scope.$watchCollection(scope.source, function (changes) {
+                    angular.copy(changes, scope.destination);
+                });
+            }
+        }
+    }])
 
 })();

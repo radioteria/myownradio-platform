@@ -546,12 +546,11 @@
 
                 $scope.rate = $element.find(".timeline-container").width() / TIMELINE_RESOLUTION;
 
-                $scope.$watch("schedule", function (response) {
+                $scope.$watch("schedule", function () {
 
-                    if (!response) return;
+                    if (!$scope.schedule) return;
 
-                    $scope.current = response.tracks[response.current];
-                    $scope.schedule = response;
+                    $scope.current = $scope.schedule.tracks[$scope.schedule.current];
                     $scope.schedule.clientTime = new Date().getTime();
                     $scope.drawGrid();
 

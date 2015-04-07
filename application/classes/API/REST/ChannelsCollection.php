@@ -9,6 +9,7 @@
 namespace API\REST;
 
 
+use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
@@ -40,7 +41,8 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         $prefix = (new SelectQuery("r_streams a"))
             ->innerJoin("r_static_stream_vars b", "a.sid = b.stream_id")
             ->select(["a.sid", "a.uid", "a.name", "a.permalink", "a.info", "a.hashtags", "a.access", "a.status",
-                "a.cover", "a.cover_background", "a.created", "b.bookmarks_count", "b.listeners_count", "b.is_featured"]);
+                "a.cover", "a.cover_background", "a.created", "b.bookmarks_count", "b.listeners_count", "b.is_featured",
+                "b.playbacks"]);
 
         $prefix->where("a.status = 1");
 
@@ -54,6 +56,20 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         }
 
         return $prefix;
+
+    }
+
+    /**
+     * @param $channel_id
+     * @return mixed
+     */
+    public function getOneChannel($channel_id) {
+
+        $query = $this->channelPrefix();
+
+        $query->where("(a.sid = :key) OR (a.permalink IS NOT NULL AND a.permalink = :key)", [":key" => $channel_id]);
+
+        return $query->fetchOneRow()->getOrElseThrow(ControllerException::noStream($channel_id));
 
     }
 

@@ -69,7 +69,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         $prefix->where("d.time_offset < MOD((UNIX_TIMESTAMP() * 1000) - (a.started - a.started_from), b.tracks_duration)");
         $prefix->where("d.time_offset + e.duration > MOD((UNIX_TIMESTAMP() * 1000) - (a.started - a.started_from), b.tracks_duration)");
 
-        $prefix->select("CONCAT(e.artist, IF(e.artist, ' - ', ''), e.title) as now_playing");
+        $prefix->select("CONCAT(e.artist, IF(e.artist != '', ' - ', ''), e.title) as now_playing");
 
         //$prefix->addGroupBy("a.sid");
 

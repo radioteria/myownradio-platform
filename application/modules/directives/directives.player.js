@@ -47,6 +47,7 @@
         function ($timeout, $document, $window, $schedule) {
 
             var channels = [],
+                cache = {},
                 operate = function () {
                     var selection = [];
                     for (var i = 0, length = channels.length; i < length; i ++) {
@@ -58,7 +59,8 @@
                     $schedule.whatsOnChannels(ids).then(function (data) {
                         for (var i = 0, length = selection.length; i < length; i ++) {
                             if (data[selection[i].sid] !== undefined) {
-                                selection[i].now_playing = data[selection[i].sid].artist + " - " + data[selection[i].sid].title
+                                cache[selection[i].sid] = data[selection[i].sid].artist + " - " + data[selection[i].sid].title;
+                                selection[i].now_playing = cache[selection[i].sid];
                             }
                         }
                         $timeout(operate, 5000);
@@ -68,14 +70,18 @@
             $timeout(operate, 1000);
 
             return {
-                register: function ($channel) {
-                    if (channels.indexOf($channel) == -1) {
-                        channels.push($channel);
+                register: function (element) {
+                    if (channels.indexOf(element) == -1) {
+                        var id = element.scope().channel.sid;
+                        channels.push(element);
+                        if (cache[id] !== undefined) {
+                            element.scope().channel.now_playing = cache[id];
+                        }
                     }
                 },
-                unRegister: function ($channel) {
+                unRegister: function (element) {
                     var offset;
-                    if (offset = channels.indexOf($channel) != -1) {
+                    if (offset = channels.indexOf(element) != -1) {
                         channels.splice(offset, 1);
                     }
                 }

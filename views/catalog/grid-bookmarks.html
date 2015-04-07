@@ -9,6 +9,10 @@
                 </div>
             </div>
             <div class="info-section">
+                <div class="now-playing" watch-playing="channel">
+                    <i class="icon-music"></i>
+                    {{ channel.now_playing }}
+                </div>
                 <div class="stream-name">
                     <a ng-href="{{ channel | channelLink }}" ng-bind="channel.name"></a>
                 </div>
@@ -20,9 +24,6 @@
                         <i bookmark-icon="channel" class="icon-heart hoverable" ng-click="actions.bookmark()"></i>
                         <span>{{ channel.bookmarks_count | number }}</span>
                     </span>
-                </div>
-                <div class="now-playing" watch-playing="channel">
-                    {{ channel.now_playing }}
                 </div>
             </div>
         </li>

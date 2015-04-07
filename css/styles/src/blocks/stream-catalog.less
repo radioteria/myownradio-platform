@@ -80,9 +80,17 @@
 
       .info-section {
         box-sizing: border-box;
-        height: 60px;
+        height: 70px;
         padding: 4px 0;
         margin-bottom: 16px;
+        .now-playing {
+          padding-bottom: 4px;
+          height: 10px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-size: 8pt;
+        }
         .stream-name {
           font-family: "Myriad Pro Thin";
           font-size: 16pt;
@@ -103,13 +111,6 @@
           & > span:not(:last-child) {
             padding-right: 8px;
           }
-        }
-        .now-playing {
-          padding-top: 4px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          font-size: 8pt;
         }
       }
 

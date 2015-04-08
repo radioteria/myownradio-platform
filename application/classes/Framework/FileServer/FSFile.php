@@ -79,14 +79,6 @@ class FSFile {
                     $object->setUseCount($object->getUseCount() - 1);
                     $object->save();
                 } else {
-//                    $fs = new FileServerFacade($object->getServerId());
-//                    try {
-//                        $fs->delete($object->getFileHash());
-//                        $object->delete();
-//                    } catch (FileServerException $exception) {
-//                        $object->setUseCount(0);
-//                        $object->save();
-//                    }
                 }
             }
 
@@ -94,6 +86,19 @@ class FSFile {
 
         });
 
+    }
+
+    public static function deleteUnused() {
+        $files = FileServerFile::getListByFilter("UNUSED");
+        foreach ($files as $file) {
+            $fs = new FileServerFacade($file->getServerId());
+            try {
+                $fs->delete($file->getFileHash());
+                $file->delete();
+            } catch (FileServerException $exception) {
+                error_log($exception->getMessage());
+            }
+        }
     }
 
 }

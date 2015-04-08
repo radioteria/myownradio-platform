@@ -16,6 +16,7 @@ use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
  * @table fs_file
  * @key file_id
  * @do_HASH file_hash = ?
+ * @do_UNUSED use_count = 0
  */
 class FileServerFile extends ActiveRecordObject implements ActiveRecord {
     private $file_id;

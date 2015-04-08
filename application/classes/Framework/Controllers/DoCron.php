@@ -33,6 +33,12 @@ class DoCron implements Controller {
             error_log("Hourly cron engaged.");
         }
 
+        /* Every day */
+        if (0 == $date->getMinutes() && 0 == $date->getHours()) {
+            error_log("Delete unused files");
+            FSFile::deleteUnused();
+        }
+
         /* Every minute */
         $queue->send(self::SEND_QUEUE_SIZE);
 

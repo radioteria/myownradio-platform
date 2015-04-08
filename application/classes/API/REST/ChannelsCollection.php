@@ -44,7 +44,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
                 "a.cover", "a.cover_background", "a.created", "b.bookmarks_count", "b.listeners_count", "b.is_featured",
                 "b.playbacks"]);
 
-        $prefix->where("a.status = 1");
+        $prefix->where("(a.status = 1 AND b.tracks_count > 0)");
 
         if (is_numeric($owner)) {
             $prefix->where("(a.access = ? OR a.uid = ?)", [self::CHANNEL_PUBLIC, $owner]);

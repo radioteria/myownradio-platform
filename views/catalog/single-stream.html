@@ -156,7 +156,7 @@
                 <translate filter="uppercase">FR_SIMILAR_CHANNELS</translate>
             </div>
             <ul class="similar-streams" np-refresh="stream">
-                <li ng-repeat="stream in data.channels.items">
+                <li ng-repeat="stream in data.channels.items" synchronize="stream" sync-key="sid">
                     <div class="cover">
                         <img fadein ng-if="stream.cover" ng-src="{{ stream.cover | channelArtwork }}?size=64">
                         <play obj="stream"></play>

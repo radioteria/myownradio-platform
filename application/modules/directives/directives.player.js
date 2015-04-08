@@ -42,50 +42,49 @@
         }
     }]);
 
-    module.factory("NowPlayingWatcher", ["$timeout", "$document", "$window", "$schedule",
+    module.directive("npRefresh", ["$schedule", "$timeout", function ($schedule, $timeout) {
+        return {
+            restrict: "A",
+            scope: {
+                channel: "@npRefresh"
+            },
+            link: function (scope, element, attrs) {
 
-        function ($timeout, $document, $window, $schedule) {
-
-            var channels = [],
-                cache = {},
-                operate = function () {
-                    var selection = [];
-                    for (var i = 0, length = channels.length; i < length; i ++) {
-                        if (channels[i].offset().top + channels[i].outerHeight() > $document.scrollTop() && channels[i].offset().top - $document.scrollTop() < $window.innerHeight) {
-                            selection.push(channels[i].scope().channel);
-                        }
-                    }
-                    var ids = selection.map(function (elem) { return elem.sid }).join(",");
-                    $schedule.whatsOnChannels(ids).then(function (data) {
-                        for (var i = 0, length = selection.length; i < length; i ++) {
-                            if (data[selection[i].sid] !== undefined) {
-                                cache[selection[i].sid] = (data[selection[i].sid].artist.length ? (data[selection[i].sid].artist + " - ") : "") + data[selection[i].sid].title;
-                                selection[i].now_playing = cache[selection[i].sid];
+                var operate = function () {
+                        $timeout.cancel(timer);
+                        var children = element.children().filter(function (elem) {
+                                var top = $(window).scrollTop(),
+                                    offset = $(this).offset(),
+                                    height = $(this).outerHeight();
+                                return offset.top + height > top && offset.top - top < $(window).height();
+                            }),
+                            channels = children.map(function () {
+                                return $(this).scope()[scope.channel]
+                            }).toArray(),
+                            ids = channels.map(function (elem) {
+                                return elem.sid
+                            }).join(",");
+                        $schedule.whatsOnChannels(ids).then(function (data) {
+                            for (var i = 0, length = channels.length; i < length; i++) {
+                                var id = channels[i].sid;
+                                if (data[id] !== undefined) {
+                                    channels[i].now_playing = (data[id].artist.length ? (data[id].artist + " - ") : "") + data[id].title;
+                                }
                             }
-                        }
-                        $timeout(operate, 5000);
-                    });
-                };
+                            timer = $timeout(operate, 5000);
+                        });
+                    },
+                    timer = null;
 
-            $timeout(operate, 5000);
+                scope.$on("$destroy", function () {
+                    $timeout.cancel(timer);
+                });
 
-            return {
-                register: function (element) {
-                    if (channels.indexOf(element) == -1) {
-                        channels.push(element);
-                    }
-                },
-                unRegister: function (element) {
-                    var offset;
-                    if (offset = channels.indexOf(element) != -1) {
-                        channels.splice(offset, 1);
-                    }
-                }
+                timer = $timeout(operate, 5000);
+
             }
-
         }
-
-    ]);
+    }]);
 
 
 })();

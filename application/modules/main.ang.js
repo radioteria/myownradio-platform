@@ -276,6 +276,9 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
                         $location.url("/streams/");
                     });
                     return promise;
+                }],
+                similarData: ["$channels", "$route", "$location", function ($channels, $route, $location) {
+                    return $channels.getSimilarChannels($route.current.params.key);
                 }]
             }
         }]
@@ -418,13 +421,14 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
     md.directive('tagsList', [function () {
         return {
             restrict: 'A',
-            template: '<ul class="taglist">' +
-            '<li ng-repeat="tag in tags">' +
-            '<a href="/tag/{{tag | escape}}">{{tag}}</a>' +
-            '</li>' +
-            '</ul>',
+            template: '<ul class="taglist"><li ng-repeat="tag in tagsArray"><a href="/tag/{{ tag | escape }}" ng-bind="tag"></a></li></ul>',
             scope: {
                 tags: "=tagsList"
+            },
+            link: function (scope) {
+                scope.$watch("tags", function (data) {
+                    scope.tagsArray = data.split(",").map(function (el) { return el.trim() });
+                });
             }
         }
     }]);

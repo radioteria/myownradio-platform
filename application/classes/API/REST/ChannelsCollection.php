@@ -339,7 +339,6 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         $query->limit(self::CHANNELS_SIMILAR_MAX);
 
         return [
-            "count" => count($query),
             "items" => $query->fetchAll()
         ];
     }

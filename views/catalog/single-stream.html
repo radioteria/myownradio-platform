@@ -144,10 +144,31 @@
     <div class="fixed-width">
         <div class="container-padding">
             <div ng-if="!scheduleShown" class="timeline" time-line="schedule.source"></div>
-            <div class="stream-stats-wrapper">
-                <!--<div ng-if="data.channel.hashtags_array" class="taglist-wrapper" tags-list="data.channel.hashtags_array"></div>-->
-                <div class="info" ng-bind="data.channel.info"></div>
+            <div class="hashtag-wrapper clearFix" ng-if="data.channel.hashtags">
+                <div class="taglist-wrapper left" tags-list="data.channel.hashtags"></div>
             </div>
+            <div class="info" ng-bind="data.channel.info"></div>
+        </div>
+    </div>
+    <div class="fixed-width">
+        <div class="similar-streams-wrapper" ng-if="data.channels.items.length > 0">
+            <div class="title">
+                <translate filter="uppercase">FR_SIMILAR_CHANNELS</translate>
+            </div>
+            <ul class="similar-streams">
+                <li ng-repeat="stream in data.channels.items">
+                    <div class="cover">
+                        <img fadein ng-if="stream.cover" ng-src="{{ stream.cover | channelArtwork }}?size=64">
+                        <play obj="stream"></play>
+                    </div>
+                    <div class="info">
+                        <div class="title">
+                            <a href="{{ stream | channelLink }}">{{ stream.name | uppercase }}</a>
+                        </div>
+                        <div ng-if="stream.hashtags" class="taglist-wrapper" tags-list="stream.hashtags"></div>
+                    </div>
+                </li>
+            </ul>
         </div>
     </div>
 </div>

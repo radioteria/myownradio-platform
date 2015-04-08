@@ -70,6 +70,11 @@
                     offset: offset,
                     limit: limit
                 }));
+            },
+            getSimilarChannels: function (channel) {
+                return $api.get("/api/v2/channels/similar", $api.filter({
+                    stream_id: channel
+                }));
             }
         }
     }]);

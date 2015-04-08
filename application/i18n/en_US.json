@@ -415,7 +415,11 @@
 
     "FR_CHANNELS_BY_POPULAR_TITLE"  : "What's popular on <b>MyOwnRadio</b>",
 
-    "FR_NO_STREAMS_BOOKMARKS"    : "You have no bookmarked radio stations."
+    "FR_NO_STREAMS_BOOKMARKS"    : "You have no bookmarked radio stations.",
+
+    "FR_CATALOG_POPULAR_STATIONS"   : "Popular Stations",
+    "FR_CATALOG_MY_STATIONS"        : "My Stations",
+    "FR_CATALOG_MY_BOOKMARKS"       : "My Bookmarks"
 
 }
 

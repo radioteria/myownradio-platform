@@ -144,7 +144,7 @@
                     </div>
                 </div>
                 <div class="cell social-buttons">
-                    <share class="hoverable" ng-model="player.currentStream"></share>
+                    <i share="player.currentStream" class="hoverable"></i>
                     <bookmark class="hoverable" ng-model="player.currentStream"></bookmark>
                     <span ng-if="account.authorized && player.currentStream.uid !== account.user.uid">
                         <span ng-if="player.nowPlaying.can_be_shared">

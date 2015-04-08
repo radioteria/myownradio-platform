@@ -155,7 +155,7 @@
             <div class="title">
                 <translate filter="uppercase">FR_SIMILAR_CHANNELS</translate>
             </div>
-            <ul class="similar-streams">
+            <ul class="similar-streams" np-refresh="stream">
                 <li ng-repeat="stream in data.channels.items">
                     <div class="cover">
                         <img fadein ng-if="stream.cover" ng-src="{{ stream.cover | channelArtwork }}?size=64">
@@ -164,6 +164,10 @@
                     <div class="info">
                         <div class="title">
                             <a href="{{ stream | channelLink }}">{{ stream.name | uppercase }}</a>
+                        </div>
+                        <div class="now-playing" mor-tooltip="{{ stream.now_playing }}">
+                            <i class="icon-music"></i>
+                            {{ stream.now_playing }}
                         </div>
                         <div ng-if="stream.hashtags" class="taglist-wrapper" tags-list="stream.hashtags"></div>
                     </div>

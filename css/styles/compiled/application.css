@@ -837,7 +837,17 @@ body.player-visible footer {
   font-family: "Open Sans";
   font-size: 14pt;
   font-weight: 200;
-  margin-bottom: 4px;
+}
+.similar-streams-wrapper .similar-streams > li .info .now-playing {
+  font-size: 8pt;
+  height: 18px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #949494;
+}
+.similar-streams-wrapper .similar-streams > li .info .now-playing i {
+  padding-right: 2px;
 }
 .similar-streams-wrapper .similar-streams > li .info .taglist {
   font-size: 8pt;

@@ -365,9 +365,9 @@
 
     ]);
 
-    catalog.controller("MyStreamsController", ["$rootScope", "$scope", "$dialog", "Streams", "StreamWorks", "TrackAction",
+    catalog.controller("MyStreamsController", ["$rootScope", "$scope", "$dialog", "Streams", "StreamWorks", "TrackAction", "Popup",
 
-        function ($rootScope, $scope, $dialog, Streams, StreamWorks, TrackAction) {
+        function ($rootScope, $scope, $dialog, Streams, StreamWorks, TrackAction, Popup) {
 
             $scope.deleteStream = function ($stream) {
                 TrackAction.deleteStream($stream, function () {

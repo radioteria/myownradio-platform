@@ -71,7 +71,7 @@
                                     channels[i].now_playing = (data[id].artist.length ? (data[id].artist + " - ") : "") + data[id].title;
                                 }
                             }
-                            timer = $timeout(operate, 5000);
+                            timer = $timeout(operate, 10000);
                         });
                     },
                     timer = null;
@@ -80,7 +80,7 @@
                     $timeout.cancel(timer);
                 });
 
-                timer = $timeout(operate, 5000);
+                timer = $timeout(operate, 10000);
 
             }
         }

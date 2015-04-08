@@ -19,6 +19,7 @@
             $scope.data = channelsData;
             $scope.empty = channelsData.channels.items.length == 0;
             $scope.busy = false;
+            $scope.end = false;
             $scope.actionProvider = ChannelListActions;
             $scope.load = function () {
                 $scope.busy = true;
@@ -26,7 +27,9 @@
                     for (var i = 0; i < data.channels.length; i++) {
                         $scope.data.channels.items[null] = data.channels.items[i];
                     }
-                    $scope.busy = false;
+                    if (data.channels.length > 0) {
+                        $scope.busy = false;
+                    }
                 });
             }
         }
@@ -39,6 +42,7 @@
             $scope.data = channelsData;
             $scope.empty = channelsData.channels.items.length == 0;
             $scope.busy = false;
+            $scope.end = false;
             $scope.actionProvider = ChannelListActions;
             $scope.load = function () {
                 $scope.busy = true;
@@ -46,7 +50,10 @@
                     for (var i = 0; i < data.channels.length; i++) {
                         $scope.data.channels.items[null] = data.channels.items[i];
                     }
-                    $scope.busy = false;
+                    if (data.channels.length > 0) {
+                        $scope.busy = false;
+                        $scope.end = true;
+                    }
                 });
             }
         }
@@ -59,6 +66,7 @@
             $scope.data = channelsData;
             $scope.empty = channelsData.channels.items.length == 0;
             $scope.busy = false;
+            $scope.end = false;
             $scope.actionProvider = ChannelListActions;
             $scope.load = function () {
                 $scope.busy = true;
@@ -66,7 +74,10 @@
                     for (var i = 0; i < data.channels.length; i++) {
                         $scope.data.channels.items[null] = data.channels.items[i];
                     }
-                    $scope.busy = false;
+                    if (data.channels.length > 0) {
+                        $scope.busy = false;
+                        $scope.end = true;
+                    }
                 });
             }
         }
@@ -80,6 +91,7 @@
             $scope.data.name = channelsData.user.name ? channelsData.user.name : channelsData.user.login;
             $scope.empty = channelsData.channels.items.length == 0;
             $scope.busy = false;
+            $scope.end = false;
             $scope.actionProvider = ChannelListActions;
             $scope.load = function () {
                 $scope.busy = true;
@@ -87,7 +99,10 @@
                     for (var i = 0; i < data.channels.length; i++) {
                         $scope.data.channels.items[null] = data.channels.items[i];
                     }
-                    $scope.busy = false;
+                    if (data.channels.length > 0) {
+                        $scope.busy = false;
+                        $scope.end = true;
+                    }
                 });
             }
         }
@@ -101,6 +116,7 @@
             $scope.data.name = channelsData.user.name ? channelsData.user.name : channelsData.user.login;
             $scope.empty = channelsData.channels.items.length == 0;
             $scope.busy = false;
+            $scope.end = false;
             $scope.actionProvider = ChannelListActions;
             $scope.load = function () {
                 $scope.busy = true;
@@ -108,7 +124,10 @@
                     for (var i = 0; i < data.channels.length; i++) {
                         $scope.data.channels.items[null] = data.channels.items[i];
                     }
-                    $scope.busy = false;
+                    if (data.channels.length > 0) {
+                        $scope.busy = false;
+                        $scope.end = true;
+                    }
                 });
             }
         }
@@ -121,14 +140,19 @@
             $scope.data = channelsData;
             $scope.empty = channelsData.channels.items.length == 0;
             $scope.busy = false;
+            $scope.end = false;
             $scope.actionProvider = ChannelListActions;
             $scope.load = function () {
+                console.log("Load...");
                 $scope.busy = true;
                 $channels.getPopularChannels($scope.data.channels.items.length).then(function (data) {
                     for (var i = 0; i < data.channels.length; i++) {
                         $scope.data.channels.items[null] = data.channels.items[i];
                     }
-                    $scope.busy = false;
+                    if (data.channels.length > 0) {
+                        $scope.busy = false;
+                        $scope.end = true;
+                    }
                 });
             }
         }
@@ -141,6 +165,7 @@
             $scope.data = channelsData;
             $scope.empty = channelsData.channels.items.length == 0;
             $scope.busy = false;
+            $scope.end = false;
             $scope.actionProvider = ChannelListActions;
             $scope.load = function () {
                 $scope.busy = true;
@@ -148,7 +173,10 @@
                     for (var i = 0; i < data.channels.length; i++) {
                         $scope.data.channels.items[null] = data.channels.items[i];
                     }
-                    $scope.busy = false;
+                    if (data.channels.length > 0) {
+                        $scope.busy = false;
+                        $scope.end = true;
+                    }
                 });
             }
         }

@@ -71,7 +71,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $prefix->select("CONCAT(e.artist, IF(e.artist != '', ' - ', ''), e.title) as now_playing");
 
-        //$prefix->addGroupBy("a.sid");
+        $prefix->addGroupBy("a.sid");
 
         return $prefix;
 

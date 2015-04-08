@@ -1,6 +1,5 @@
 <div class="new-stream-catalog-badge">
-    <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy"
-        infinite-scroll-distance="1">
+    <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy" infinite-scroll-distance="1">
         <li ng-repeat="channel in data.channels.items" ng-init="actions = actionProvider(channel)" synchronize="channel" sync-key="sid">
             <div class="cover-section">
                 <div class="cover">
@@ -9,7 +8,7 @@
                 </div>
             </div>
             <div class="info-section">
-                <div class="now-playing" watch-playing="channel">
+                <div class="now-playing" watch-playing="channel" mor-tooltop="{{ channel.now_playing }}">
                     <i class="icon-music"></i>
                     {{ channel.now_playing }}
                 </div>

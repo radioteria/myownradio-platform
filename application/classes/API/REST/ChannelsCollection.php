@@ -26,7 +26,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
     use Singleton;
 
-    const CHANNELS_PER_REQUEST_MAX = 100;
+    const CHANNELS_PER_REQUEST_MAX = 30;
     const CHANNELS_SUGGESTION_MAX = 10;
     const CHANNELS_SIMILAR_MAX = 10;
     const CHANNEL_PUBLIC = "PUBLIC";

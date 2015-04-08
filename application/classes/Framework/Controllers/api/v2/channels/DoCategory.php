@@ -19,7 +19,7 @@ class DoCategory implements Controller {
     public function doGet(HttpGet $get, ChannelsCollection $collection, CategoryValidator $validator, JsonResponse $response) {
         $category_name = $get->getRequired("category_name");
         $offset = $get->getParameter("offset", FILTER_VALIDATE_INT)->getOrElse(0);
-        $limit = $get->getParameter("limit", FILTER_VALIDATE_INT)->getOrElseNull();
+        $limit = $get->getParameter("limit", FILTER_VALIDATE_INT)->getOrElse(ChannelsCollection::CHANNELS_PER_REQUEST_MAX);
 
         $category = $validator->validateChannelCategoryByPermalink($category_name);
 

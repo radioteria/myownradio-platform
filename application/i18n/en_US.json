@@ -182,7 +182,7 @@
 
 
     "FR_FOUND_RESULTS"                  : "Here what we found based on your search request",
-    "FR_NOTHING_FOUND"                  : "Nothing found for request <b>%0%</b>. Check the spelling, or try a different search.",
+    "FR_NOTHING_FOUND"                  : "Nothing found for request <b>%0%</b>. Check spelling, or try a different search.",
 
     "FR_STREAM_CREATED_AT"              : "Stream created at",
     "FR_STREAM_NO_ACCESS"               : "Sorry, but this channel is down or you have no access to listen it.",

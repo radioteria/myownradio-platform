@@ -22,21 +22,26 @@
         return {
             get: function (url, params) {
                 return answer($http.get(url, {
+                    cache: false,
                     params: params
                 }));
             },
             put: function (url, params) {
                 return answer($http.put(url, null, {
+                    cache: false,
                     params: params
                 }));
             },
             delete: function (url, params) {
                 return answer($http.delete(url, {
+                    cache: false,
                     params: params
                 }));
             },
             post: function (url, post) {
-                return answer($http.post(url, post));
+                return answer($http.post(url, post, {
+                    cache: false
+                }));
             },
             filter: function (arguments) {
                 var obj = {};

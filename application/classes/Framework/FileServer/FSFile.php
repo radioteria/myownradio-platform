@@ -75,18 +75,18 @@ class FSFile {
             $db->beginTransaction();
 
             if ($object = FileServerFile::getByID($file_id)->getOrElseNull()) {
-                if ($object->getUseCount() > 1) {
+                if ($object->getUseCount() > 0) {
                     $object->setUseCount($object->getUseCount() - 1);
                     $object->save();
                 } else {
-                    $fs = new FileServerFacade($object->getServerId());
-                    try {
-                        $fs->delete($object->getFileHash());
-                        $object->delete();
-                    } catch (FileServerException $exception) {
-                        $object->setUseCount(0);
-                        $object->save();
-                    }
+//                    $fs = new FileServerFacade($object->getServerId());
+//                    try {
+//                        $fs->delete($object->getFileHash());
+//                        $object->delete();
+//                    } catch (FileServerException $exception) {
+//                        $object->setUseCount(0);
+//                        $object->save();
+//                    }
                 }
             }
 

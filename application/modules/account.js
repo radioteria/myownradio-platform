@@ -89,6 +89,7 @@
                             $rootScope.account.init("/profile/");
                         }
                     }, function (err) {
+                        console.log("error");
                         $scope.status = err;
                     }
                 )

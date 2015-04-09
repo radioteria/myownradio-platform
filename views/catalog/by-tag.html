@@ -1,12 +1,12 @@
 <div class="fixed-width">
     <div id="page-contents">
-        <div class="no-streams" ng-if="empty">
-            <translate>FR_NO_STREAMS_CREATE_NEW</translate>
-        </div>
         <div ng-if="account.authorized" ng-include="'/views/catalog/right-menu.html'"></div>
-        <div class="page-sub-title" ng-hide="empty">
+        <div class="page-sub-title">
             <pluralize count="data.channels.items.length" when="FR_CHANNELS_BY_TAG_TITLE" args="data"></pluralize>
         </div>
         <div ng-include="'/views/catalog/grid.html'"></div>
+        <div class="no-streams" ng-if="empty">
+            <translate>FR_NO_STREAMS_CREATE_NEW</translate>
+        </div>
     </div>
 </div>

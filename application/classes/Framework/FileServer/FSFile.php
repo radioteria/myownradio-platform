@@ -12,7 +12,6 @@ namespace Framework\FileServer;
 use Framework\Defaults;
 use Framework\FileServer\Exceptions\FileServerException;
 use Framework\FileServer\Exceptions\LocalFileNotFoundException;
-use Framework\Services\Database;
 use Framework\Services\Locale\I18n;
 use Objects\FileServer\FileServerFile;
 
@@ -70,24 +69,18 @@ class FSFile {
      */
     public static function deleteLink($file_id) {
 
-        Database::doInConnection(function (Database $db) use ($file_id) {
-
-            $db->beginTransaction();
-
-            if ($object = FileServerFile::getByID($file_id)->getOrElseNull()) {
-                if ($object->getUseCount() > 0) {
-                    $object->setUseCount($object->getUseCount() - 1);
-                    $object->save();
-                } else {
-                }
+        FileServerFile::getByID($file_id)->then(function (FileServerFile $file) {
+            if ($file->getUseCount() > 0) {
+                $file->setUseCount($file->getUseCount() - 1);
+                $file->save();
             }
-
-            $db->commit();
-
         });
 
     }
 
+    /**
+     * @throws FileServerException
+     */
     public static function deleteUnused() {
         $files = FileServerFile::getListByFilter("UNUSED");
         foreach ($files as $file) {

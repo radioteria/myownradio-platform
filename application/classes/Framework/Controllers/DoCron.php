@@ -35,7 +35,6 @@ class DoCron implements Controller {
 
         /* Every day */
         if (0 == $date->getMinutes() && 0 == $date->getHours()) {
-            error_log("Delete unused files");
             FSFile::deleteUnused();
         }
 

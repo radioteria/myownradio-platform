@@ -157,7 +157,19 @@
             template: '<div class="play-pause"><div class="toggle" ng-click="$root.player.controls.playSwitchStream(obj)" mor-tooltip="{{ $root.tr(\'FR_PLAYER_PLAY_STOP\') }}">\
                             <i ng-show="$root.player.isPlaying && $root.player.currentID == obj.sid" class="icon-stop"></i>\
                             <i ng-hide="$root.player.isPlaying && $root.player.currentID == obj.sid" class="icon-play-arrow"></i>\
-                            </div></div>'
+                            </div></div>',
+            link: function (scope, element, attrs) {
+                var watcher = $rootScope.$watch("player.currentStream", function (stream) {
+                    if (angular.isObject(stream) && angular.isObject(scope.obj) && stream.sid == scope.obj.sid) {
+                        element.addClass("active");
+                    } else {
+                        element.removeClass("active");
+                    }
+                    scope.$on("$destroy", function () {
+                        watcher();
+                    });
+                });
+            }
         }
     }]);
 

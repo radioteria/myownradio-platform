@@ -36,6 +36,8 @@
     "VALIDATOR_TRACK_COLOR"             : "Invalid color id specified - <b>%0%</b>",
     "VALIDATOR_INVALID_CATEGORY_NAME"   : "Invalid radio station category specified - <b>%0%</b>",
 
+    "PROMO_CODE_INCORRECT"              : "You are entered incorrect promo code. Please try another one.",
+
     "FS_DOES_NOT_EXIST"                 : "File server with id %id% does not exist",
     "FS_NO_FREE_SPACE"                  : "There is no servers available to upload <b>%amount%</b> bytes of data",
 

@@ -237,7 +237,11 @@
 
     module.filter("channelLink", [function () {
         return function (channel) {
-            return "/streams/" + (channel.permalink ? channel.permalink : channel.sid);
+            if (angular.isObject(channel)) {
+                return "http://" + window.location.hostname + "/streams/" + (channel.permalink ? channel.permalink : channel.sid);
+            } else {
+                return undefined;
+            }
         }
     }]);
 

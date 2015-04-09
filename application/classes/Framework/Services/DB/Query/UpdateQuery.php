@@ -17,6 +17,7 @@ class UpdateQuery extends BaseQuery implements QueryBuilder {
     use WhereSection;
 
     private $sets = [];
+    private $setsSingle = [];
 
     function __construct($tableName, $key = null, $value = null) {
         $this->tableName = $tableName;
@@ -54,12 +55,18 @@ class UpdateQuery extends BaseQuery implements QueryBuilder {
         }
     }
 
+    private function setSingle($expression) {
+        $this->setsSingle[] = $expression;
+    }
+
     public function set() {
 
         if (func_num_args() == 1 && is_array(func_get_arg(0))) {
             $this->setPairs(func_get_arg(0));
         } elseif (func_num_args() == 2 && is_string(func_get_arg(0))) {
             $this->setPair(func_get_arg(0), func_get_arg(1));
+        } else if (func_num_args() == 1 && is_string(func_get_arg(0))) {
+            $this->setSingle(func_get_arg(0));
         }
         return $this;
     }
@@ -70,6 +77,10 @@ class UpdateQuery extends BaseQuery implements QueryBuilder {
 
         foreach ($this->sets as $set) {
             $build[] = $set . "=?";
+        }
+
+        foreach ($this->setsSingle as $set) {
+            $build[] = $set;
         }
 
         return "SET " . implode(",", $build);

@@ -29,7 +29,7 @@
                             </li>
                             <li ng-if="data.channel.uid === account.user.uid" class="vertical-separator"></li>
                             <li>
-                                <icon share="data.channel"></icon>
+                                <icon share-channel="data.channel"></icon>
                             </li>
                             <li ng-init="badgeShown=false" ng-click-outside="badgeShown=false">
                                 <i class="icon-settings" ng-class="{shown: badgeShown}" ng-click="badgeShown=!badgeShown" mor-tooltip="{{ tr('FR_SETTINGS') }}"></i>

@@ -19,10 +19,10 @@
 
     }]);
 
-    tools.directive("share", [function () {
+    tools.directive("shareChannel", [function () {
         return {
             scope: {
-                shareObject: "=share"
+                shareObject: "=shareChannel"
             },
             restrict: "A",
             replace: true,

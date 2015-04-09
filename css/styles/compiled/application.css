@@ -391,6 +391,9 @@ ul.enumerate > li {
   list-style-type: circle;
   list-style-position: inside;
 }
+.like-box {
+  margin-top: 32px;
+}
 @keyframes blink {
   0% {
     opacity: 0;

@@ -124,7 +124,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->where("b.playbacks > 0 OR b.listeners_count > 0");
 
-        $query->orderBy("b.summary_played DESC, b.playbacks DESC");
+        $query->orderBy("b.bookmarks_count DESC, b.summary_played DESC, b.playbacks DESC");
 
         return [
             "count" => count($query),
@@ -178,7 +178,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
             $query->limit(min($limit, self::CHANNELS_PER_REQUEST_MAX));
         }
 
-        $query->orderBy("b.summary_played DESC, b.listeners_count DESC, b.playbacks DESC");
+        $query->orderBy("b.bookmarks_count DESC, b.summary_played DESC, b.playbacks DESC");
 
         return [
             "count" => count($query),
@@ -328,7 +328,10 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         $user_id = AuthUserModel::getAuthorizedUserID();
 
 
-        $query->where("a.sid IN (SELECT stream_id FROM r_bookmarks WHERE user_id = ?)", [$user_id]);
+        $query->innerJoin("r_bookmarks f", "f.stream_id = a.sid");
+        $query->where("f.user_id", $user_id);
+
+        $query->orderBy("f.date DESC");
 
         return [
             "count" => count($query),

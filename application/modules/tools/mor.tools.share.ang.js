@@ -32,8 +32,9 @@
                 $scope.share = function () {
                     if (angular.isDefined($scope.shareObject)) {
                         var scope = $scope.$new();
+                        var key = scope.shareObject.permalink || scope.shareObject.sid;
                         scope.streamObject = $scope.shareObject;
-                        scope.streamObject.url = "https://myownradio.biz/streams/" + scope.streamObject.key;
+                        scope.streamObject.url = "https://myownradio.biz/streams/" + key;
                         scope.tr = $rootScope.tr;
                         ngDialog.open({
                             templateUrl: "/views/blocks/share.html",

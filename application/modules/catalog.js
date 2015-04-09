@@ -180,9 +180,9 @@
 
     }]);
 
-    catalog.controller("SearchFormController", ["$element", "$scope", "$location", "Streams", "$document",
+    catalog.controller("SearchFormController", ["$element", "$scope", "$location", "Streams", "$document", "$channels",
 
-        function ($element, $scope, $location, Streams, $document) {
+        function ($element, $scope, $location, Streams, $document, $channels) {
             $scope.filter = "";
             $scope.streams = [];
             $scope.focused = false;
@@ -203,14 +203,15 @@
                 $location.url("/search/".concat(encodeURIComponent($scope.filter)));
                 $scope.filter = "";
             };
-            $scope.goStream = function (key) {
-                $location.url("/streams/".concat(key));
+            $scope.goStream = function ($channel) {
+                var key = $channel.permalink || $channel.sid;
+                $location.url("/streams/" + key);
                 $scope.filter = "";
             };
             $scope.$watch("filter", function (value) {
                 if (typeof value == "string" && value.length > 0) {
-                    Streams.getList($scope.filter, "", 0, 5).onSuccess(function (data) {
-                        $scope.streams = data.streams;
+                    $channels.getSuggestChannels($scope.filter).then(function (data) {
+                        $scope.streams = data;
                     });
                 } else {
                     $scope.streams = [];

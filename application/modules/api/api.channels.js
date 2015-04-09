@@ -44,11 +44,9 @@
                     limit: limit
                 }));
             },
-            getSuggestChannels: function (filter, offset, limit) {
+            getSuggestChannels: function (filter) {
                 return $api.get("/api/v2/channels/suggest", $api.filter({
-                    query: filter,
-                    offset: offset,
-                    limit: limit
+                    query: filter
                 }));
             },
             getTagChannels: function (tag, offset, limit) {

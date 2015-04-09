@@ -33,13 +33,13 @@
                 <ul class="items" navigable-list="selected">
                     <li class="head" ng-click="goSearch()">
                         <a ng-href="/search/{{ filter | escape }}">
-                            <translate args="{filter: filter}">FR_SEARCH_FOR</translate>
+                            <translate args="{ filter: filter }">FR_SEARCH_FOR</translate>
                         </a>
                     </li>
-                    <li ng-repeat="stream in streams" ng-click="goStream(stream.key)">
-                        <a ng-href="/streams/{{stream.key}}">
+                    <li ng-repeat="stream in streams" ng-click="goStream(stream)">
+                        <a ng-href="{{ stream | channelLink }}">
                             <div class="cover dark">
-                                <img ng-if="stream.cover" ng-src="{{stream.cover_url}}?size=24">
+                                <img ng-if="stream.cover" ng-src="{{ stream.cover | channelArtwork }}?size=24">
                             </div>
                             {{ stream.name }}
                         </a>

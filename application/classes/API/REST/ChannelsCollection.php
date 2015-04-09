@@ -27,7 +27,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
     use Singleton;
 
     const CHANNELS_PER_REQUEST_MAX = 50;
-    const CHANNELS_SUGGESTION_MAX = 10;
+    const CHANNELS_SUGGESTION_MAX = 5;
     const CHANNELS_SIMILAR_MAX = 10;
     const CHANNEL_PUBLIC = "PUBLIC";
 
@@ -302,10 +302,8 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->orderBy("search DESC, b.summary_played DESC, b.listeners_count DESC, b.playbacks DESC");
 
-        return [
-            "count" => count($query),
-            "items" => $query->fetchAll()
-        ];
+        return $query->fetchAll();
+
     }
 
     /**

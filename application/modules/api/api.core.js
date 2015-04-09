@@ -66,15 +66,17 @@
             link: function (scope, element, attrs) {
                 scope.$on("sync:update:" + scope.syncKey, function (event, data) {
                     if (angular.isObject(scope.synchronize) &&
-                        data != scope.synchronize &&
-                        data[scope.syncKey] == scope.synchronize[scope.syncKey]) {
+                        data !== scope.synchronize &&
+                        data[scope.syncKey] === scope.synchronize[scope.syncKey]) {
 
                         angular.copy(data, scope.synchronize);
 
                     }
                 });
-                scope.$watchCollection("synchronize", function () {
-                    $rootScope.$broadcast("sync:update:" + scope.syncKey, scope.synchronize);
+                scope.$watchCollection("synchronize", function (value) {
+                    if (angular.isObject(value)) {
+                        $rootScope.$broadcast("sync:update:" + scope.syncKey, value);
+                    }
                 });
             }
         }

@@ -26,19 +26,25 @@
                 },
                 controls: {
                     reload: function () {
-                        var $stream = $rootScope.player.currentStream;
                         if ($rootScope.player.isPlaying === true) {
-                            $rootScope.player.url = "/flow?s=" + $stream.sid + "&f=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);
+                            $rootScope.player.controls.stop();
+                            $rootScope.player.url = "/flow?s=" + $rootScope.player.currentStream.sid + "&f=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);
                             $rootScope.player.controls.play();
                         }
                     },
                     loadStream: function ($stream) {
+
+                        if ($rootScope.player.isPlaying) {
+                            $rootScope.player.controls.stop();
+                        }
+
                         $rootScope.player.url = "/flow?s=" + $stream.sid + "&f=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);
                         $rootScope.player.currentID = $stream.sid;
                         $rootScope.player.currentStream = $stream;
                         $rootScope.player.page = "/streams/" + $stream.key;
                         $rootScope.player.isLoaded = true;
                         $rootScope.player.controls.play();
+
                     },
                     play: function () {
 
@@ -47,23 +53,30 @@
                         $rootScope.player.isBuffering = true;
                         realPlayer.play($rootScope.player.url);
                         $rootScope.player.isPlaying = true;
+
                         if (angular.isObject($rootScope.player.currentStream)) {
-                            $rootScope.player.currentStream.listeners_count ++;
+                            $rootScope.player.currentStream.listeners_count++;
+                            $rootScope.$broadcast("sync:update:sid", $rootScope.player.currentStream);
                         }
+
                         TrackPreviewService.stop();
 
                     },
                     stop: function () {
+
                         realPlayer.stop();
+
                         $timeout.cancel(handle);
 
                         if (angular.isObject($rootScope.player.currentStream)) {
                             $rootScope.player.currentStream.listeners_count --;
+                            $rootScope.$broadcast("sync:update:sid", $rootScope.player.currentStream);
                         }
 
                         $rootScope.player.isBuffering = false;
                         $rootScope.player.nowPlaying = null;
                         $rootScope.player.isPlaying = false;
+
                     },
                     switch: function () {
                         $rootScope.player.isPlaying ?
@@ -71,10 +84,9 @@
                             $rootScope.player.controls.play();
                     },
                     playSwitchStream: function ($stream) {
-                        if ($rootScope.player.currentID == $stream.sid) {
+                        if (angular.isObject($rootScope.player.currentStream) && $rootScope.player.currentStream.sid == $stream.sid) {
                             $rootScope.player.controls.switch();
                         } else {
-                            $rootScope.player.controls.stop();
                             $rootScope.player.controls.loadStream($stream);
                         }
                     },
@@ -137,21 +149,15 @@
 
     ]);
 
-    player.directive("play", [function () {
+    player.directive("play", ["$rootScope", function ($rootScope) {
         return {
             scope: {
                 obj: "="
             },
-            template: '<div class="play-pause"><div class="toggle" ng-click="playRadio(obj)" mor-tooltip="{{ $root.tr(\'FR_PLAYER_PLAY_STOP\') }}">\
-                            <i ng-show="player.isPlaying && player.currentID == obj.sid" class="icon-stop"></i>\
-                            <i ng-hide="player.isPlaying && player.currentID == obj.sid" class="icon-play-arrow"></i>\
-                            </div></div>',
-            controller: ["$scope", "$rootScope", function ($scope, $rootScope) {
-                $scope.playRadio = function ($stream) {
-                    $rootScope.player.controls.playSwitchStream($stream);
-                };
-                $scope.player = $rootScope.player;
-            }]
+            template: '<div class="play-pause"><div class="toggle" ng-click="$root.player.controls.playSwitchStream(obj)" mor-tooltip="{{ $root.tr(\'FR_PLAYER_PLAY_STOP\') }}">\
+                            <i ng-show="$root.player.isPlaying && $root.player.currentID == obj.sid" class="icon-stop"></i>\
+                            <i ng-hide="$root.player.isPlaying && $root.player.currentID == obj.sid" class="icon-play-arrow"></i>\
+                            </div></div>'
         }
     }]);
 

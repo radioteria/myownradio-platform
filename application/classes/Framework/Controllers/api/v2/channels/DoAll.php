@@ -22,4 +22,5 @@ class DoAll implements Controller {
             "channels" => $collection->getChannelsList($offset, $limit)
         ]);
     }
-} 
+}
+

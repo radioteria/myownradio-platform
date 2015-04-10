@@ -10,7 +10,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 
 /**
  * Created by Roman on 07.10.14.
@@ -65,10 +64,10 @@ public class TrackPlayer implements AbstractPlayer {
 
         try (
                 InputStream in = process.getInputStream();
-                OutputStream out = process.getOutputStream();
-                InputStream url = new URL(this.file).openStream()
+                //OutputStream out = process.getOutputStream();
+                //InputStream url = new URL(this.file).openStream()
         ) {
-            pipeIO = new PipeIO(url, out, true);
+            //pipeIO = new PipeIO(url, out, true);
 
             byte[] buffer = new byte[4096];
             int length;

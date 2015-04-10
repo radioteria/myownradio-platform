@@ -39,6 +39,7 @@ public class FFDecoderBuilder {
                         "-ac", "2",
                         "-f", "s16le",
                         "-strict", "-2",
+                        "-fflags", "nobuffer",
                         "-"
                 } :
                 new String[]{
@@ -53,6 +54,7 @@ public class FFDecoderBuilder {
                         "-ac", "2",
                         "-f", "s16le",
                         "-strict", "-2",
+                        "-fflags", "nobuffer",
                         "-"
                 };
     }

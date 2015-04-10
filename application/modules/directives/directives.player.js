@@ -64,6 +64,12 @@
                             ids = channels.map(function (elem) {
                                 return elem.sid
                             }).join(",");
+
+                        if (ids == "") {
+                            timer = $timeout(operate, 5000);
+                            return;
+                        }
+
                         $schedule.whatsOnChannels(ids).then(function (data) {
                             for (var i = 0, length = channels.length; i < length; i++) {
                                 var id = channels[i].sid;
@@ -73,6 +79,8 @@
                                     channels[i].now_playing = "";
                                 }
                             }
+                            timer = $timeout(operate, 10000);
+                        }, function () {
                             timer = $timeout(operate, 10000);
                         });
                     },

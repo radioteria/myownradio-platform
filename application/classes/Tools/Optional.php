@@ -261,4 +261,8 @@ class Optional implements \JsonSerializable {
         return ["test" => $this->test() ? "true" : "false", "value" => $this->value];
     }
 
+    public function getOrElseZero() {
+        return $this->getOrElse(0);
+    }
+
 }

@@ -11,6 +11,7 @@ namespace API\REST;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
+use Framework\Models\AuthUserModel;
 use Framework\Services\DB\Query\SelectQuery;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -18,15 +19,18 @@ use Tools\SingletonInterface;
 class TrackCollection implements Injectable, SingletonInterface {
     use Singleton;
 
+    const TRACKS_PER_REQUEST_MAX = 50;
+
     /**
      * @return SelectQuery
      */
     private function getTracksPrefix() {
 
         $prefix = (new SelectQuery("r_tracks"))
+            ->innerJoin("mor_track_stat", "mor_track_stat.track_id = r_tracks.tid")
             ->select("r_tracks.tid", "r_tracks.filename", "r_tracks.artist", "r_tracks.title", "r_tracks.album",
                 "r_tracks.track_number", "r_tracks.genre", "r_tracks.date", "r_tracks.buy", "r_tracks.duration",
-                "r_tracks.color", "r_tracks.can_be_shared");
+                "r_tracks.color", "r_tracks.can_be_shared", "mor_track_stat.likes", "mor_track_stat.dislikes");
 
         return $prefix;
 
@@ -64,7 +68,7 @@ class TrackCollection implements Injectable, SingletonInterface {
 
     /**
      * @param int $channel_id
-     * @return mixed
+     * @return array
      */
     public function getPlayingOnChannel($channel_id) {
 
@@ -76,12 +80,62 @@ class TrackCollection implements Injectable, SingletonInterface {
 
     }
 
+    /**
+     * @param array $channel_ids
+     * @return array
+     */
     public function getPlayingOnChannels(array $channel_ids) {
 
         $query = $this->getSchedulePrefix();
         $query->where("r_streams.sid", $channel_ids);
 
         return $query->fetchAll("sid");
+
+    }
+
+    /**
+     * @param int $offset
+     * @param int $limit
+     * @internal UserModel $self
+     * @return array
+     */
+    public function getTracksFromLibrary($offset = 0, $limit = self::TRACKS_PER_REQUEST_MAX) {
+
+        $query = $this->getTracksPrefix();
+        $self = AuthUserModel::getInstance();
+
+        $query->where("r_tracks.uid", $self->getID());
+
+        $query->offset($offset);
+        $query->limit($limit);
+
+        $query->orderBy("r_tracks.uploaded DESC");
+
+        return $query->fetchAll();
+
+    }
+
+    /**
+     * @param $channel_id
+     * @param int $offset
+     * @param int $limit
+     * @internal UserModel $self
+     * @return array
+     */
+    public function getTracksFromChannel($channel_id, $offset = 0, $limit = self::TRACKS_PER_REQUEST_MAX) {
+
+        $query = $this->getChannelQueuePrefix();
+        $self = AuthUserModel::getInstance();
+
+        $query->where("r_link.stream_id", $channel_id);
+        $query->where("r_tracks.uid", $self->getID());
+
+        $query->orderBy("r_link.t_order ASC");
+
+        $query->offset($offset);
+        $query->limit($limit);
+
+        return $query->fetchAll();
 
     }
 

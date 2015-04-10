@@ -16,4 +16,26 @@
         }
     }]);
 
+    module.directive("likeTrack", [function () {
+        return {
+            scope: {
+                ngModel: "="
+            },
+            restrict: "A",
+            template: "<span class='track-like'>\
+                <span class='dislike'>\
+                    <i class='icon-thumbs-o-down'></i>\
+                    <span ng-bind='ngModel.dislikes | number'></span>\
+                </span>\
+                <span class='like'>\
+                    <i class='icon-thumbs-o-up'></i>\
+                    <span ng-bind='ngModel.likes | number'></span>\
+                </span>\
+            </span>",
+            link: function (scope, element, attrs) {
+
+            }
+        }
+    }]);
+
 })();

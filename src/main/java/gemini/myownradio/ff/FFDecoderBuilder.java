@@ -28,9 +28,10 @@ public class FFDecoderBuilder {
         cmd = jingled ?
                 new String[]{
                         "ffmpeg",
-                        "-loglevel", "debug",
+                        "-fflags", "nobuffer",
+                        "-loglevel", "quiet",
                         "-ss", df.format((float) this.offset / 1_000F),
-                        "-i", filename,
+                        "-i", "-",
                         "-i", "ftp://morstorage:3bWdNNa0v@myownradio.biz/jingle.wav",
                         "-filter_complex", "[0:a]afade=t=in:st=1:d=3[a1],[a1]amix=inputs=2:duration=first:dropout_transition=3",
                         "-vn",
@@ -39,14 +40,14 @@ public class FFDecoderBuilder {
                         "-ac", "2",
                         "-f", "s16le",
                         "-strict", "-2",
-                        "-fflags", "nobuffer",
                         "-"
                 } :
                 new String[]{
                         "ffmpeg",
-                        "-loglevel", "debug",
+                        "-fflags", "nobuffer",
+                        "-loglevel", "quiet",
                         "-ss", df.format((float) this.offset / 1_000F),
-                        "-i", filename,
+                        "-i", "-",
                         "-filter", "afade=t=in:st=0:d=1",
                         "-vn",
                         "-acodec", "pcm_s16le",
@@ -54,7 +55,6 @@ public class FFDecoderBuilder {
                         "-ac", "2",
                         "-f", "s16le",
                         "-strict", "-2",
-                        "-fflags", "nobuffer",
                         "-"
                 };
     }

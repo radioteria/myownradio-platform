@@ -238,7 +238,7 @@
     module.filter("channelLink", [function () {
         return function (channel) {
             if (angular.isObject(channel)) {
-                return "http://" + window.location.hostname + "/streams/" + (channel.permalink ? channel.permalink : channel.sid);
+                return "/streams/" + (channel.permalink ? channel.permalink : channel.sid);
             } else {
                 return undefined;
             }

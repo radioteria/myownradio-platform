@@ -27,4 +27,13 @@
         }
     }]);
 
+    module.filter("trackCaption", [function () {
+        return function ($track) {
+            if (angular.isObject($track))
+                return ($track.artist ? $track.artist + " - " : "") + $track.title;
+            else
+                return null;
+        }
+    }]);
+
 })();

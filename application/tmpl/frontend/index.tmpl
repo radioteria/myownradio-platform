@@ -122,7 +122,9 @@
     </div>
 </div>
 
-<now ng-if="player.isPlaying" ng-model="player.currentStream" on-track-change="player.nowPlaying"></now>
+<div ng-if="player.isPlaying" >
+    <now ng-model="player.currentStream" on-track-change="player.nowPlaying"></now>
+</div>
 
 <div synchronize="player.currentStream" sync-key="sid"></div>
 

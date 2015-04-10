@@ -103,7 +103,7 @@
                     throw new Error("'when' must be an object!");
                 }
                 if (!angular.isNumber(count)) {
-                    throw new Error("'array' must be a number!");
+                    throw new Error("'count' must be a number!");
                 }
                 for (key in when) if (when.hasOwnProperty(key)) {
                     if (angular.isNumber(count) && count == parseInt(key)) {

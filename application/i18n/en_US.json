@@ -60,6 +60,19 @@
     "COPY_FILE_PROTECTED"               : "File <b>%0%</b> is protected from copying",
 
     "YOU_ALREADY_VOTED"                 : "You're already voted for this track",
+    "YOU_JUST_VOTED"                    : "You're successfully voted for this track",
+    "LIKE_THIS_TRACK"                   : "Like this track",
+    "DISLIKE_THIS_TRACK"                : "Dislike this track",
+    "TRACK_LIKED_TIMES": {
+        "0": "This track has no likes",
+        "1": "This track has one like",
+        "other": "This track liked %% times"
+    },
+    "TRACK_DISLIKED_TIMES": {
+        "0": "This track has no dislikes",
+        "1": "This track has one dislike",
+        "other": "This track disliked %% times"
+    },
 
     "FR_LOGIN_MESSAGE"                  : "Welcome, <b>%name%</b>!<br>You're successfully logged in!",
     "FR_PLAN_CHANGED_MESSAGE"           : "You have successfully upgraded your current account to <b>%0%</b>",

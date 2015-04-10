@@ -5,9 +5,9 @@
 (function () {
     var player = angular.module("RadioPlayer", ['Site']);
 
-    player.run(["$rootScope", "$http", "Response", "Streams", "$timeout", "$location", "Popup", "$analytics", "TrackPreviewService", "ChannelListActions",
+    player.run(["$rootScope", "$http", "Response", "Streams", "$timeout", "$location", "Popup", "$analytics", "TrackPreviewService", "$filter",
 
-        function ($rootScope, $http, Response, Streams, $timeout, $location, Popup, $analytics, TrackPreviewService, ChannelListActions) {
+        function ($rootScope, $http, Response, Streams, $timeout, $location, Popup, $analytics, TrackPreviewService, $filter) {
 
             var handle = false;
 
@@ -102,7 +102,7 @@
 
             $rootScope.$watch("player.nowPlaying.unique_id", function (newValue) {
                 if (newValue && $rootScope.player.isPlaying) {
-                    Popup.message("<b>" + htmlEscape($rootScope.player.nowPlaying.caption) + "</b><br>" + htmlEscape($rootScope.player.currentStream.name), 5000);
+                    Popup.message("<b>" + htmlEscape($filter("trackCaption")($rootScope.player.nowPlaying)) + "</b><br>" + htmlEscape($rootScope.player.currentStream.name), 5000);
                 }
             });
 

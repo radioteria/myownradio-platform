@@ -11,6 +11,11 @@
                 return $api.get("/api/v2/schedule/onSelectedChannels", $api.filter({
                     stream_ids: channel_ids
                 }));
+            },
+            nowPlaying: function (channel) {
+                return $api.get("/api/v2/schedule/onSingleChannel", $api.filter({
+                    stream_id: channel.sid
+                }));
             }
         }
     }]);

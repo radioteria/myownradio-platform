@@ -15,6 +15,7 @@ use Framework\Models\AuthUserModel;
 use Framework\Services\DB\Query\SelectQuery;
 use Tools\Singleton;
 use Tools\SingletonInterface;
+use Tools\System;
 
 class TrackCollection implements Injectable, SingletonInterface {
     use Singleton;
@@ -55,11 +56,14 @@ class TrackCollection implements Injectable, SingletonInterface {
     private function getSchedulePrefix() {
 
         $prefix = $this->getChannelQueuePrefix();
+
         $prefix->innerJoin("r_streams", "r_link.stream_id = r_streams.sid");
         $prefix->innerJoin("r_static_stream_vars", "r_streams.sid = r_static_stream_vars.stream_id");
-        $prefix->where("r_link.time_offset <= MOD((UNIX_TIMESTAMP() * 1000) - (r_streams.started - r_streams.started_from), r_static_stream_vars.tracks_duration)");
-        $prefix->where("r_link.time_offset + r_tracks.duration > MOD((UNIX_TIMESTAMP() * 1000) - (r_streams.started - r_streams.started_from), r_static_stream_vars.tracks_duration)");
+
+        $prefix->where("r_link.time_offset <= MOD(:micro - (r_streams.started - r_streams.started_from), r_static_stream_vars.tracks_duration)", [ ":micro" => System::time() ]);
+        $prefix->where("r_link.time_offset + r_tracks.duration > MOD(:micro - (r_streams.started - r_streams.started_from), r_static_stream_vars.tracks_duration)");
         $prefix->where("r_streams.status = 1 AND r_static_stream_vars.tracks_duration > 0");
+
         $prefix->select("r_streams.sid");
 
         return $prefix;
@@ -75,6 +79,9 @@ class TrackCollection implements Injectable, SingletonInterface {
         $query = $this->getSchedulePrefix();
 
         $query->where("r_streams.sid", $channel_id);
+
+        $query->select(":micro AS time");
+        $query->select("MOD(:micro - (r_streams.started - r_streams.started_from), r_static_stream_vars.tracks_duration) AS position");
 
         return $query->fetchOneRow()->getOrElseThrow(ControllerException::of("NO_TRACK_PLAYING"));
 

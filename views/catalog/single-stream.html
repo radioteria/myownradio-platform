@@ -95,6 +95,7 @@
                             <div ng-if="player.isPlaying && player.currentStream.sid == data.channel.sid">
                                 <div class="key">
                                     {{ player.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}
+                                    <span like-track="player.nowPlaying"></span>
                                 </div>
                                 <div class="value">
                                     {{ player.nowPlaying.caption | uppercase }}

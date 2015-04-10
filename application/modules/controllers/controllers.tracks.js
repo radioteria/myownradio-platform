@@ -16,24 +16,33 @@
         }
     }]);
 
-    module.directive("likeTrack", [function () {
+    module.directive("likeTrack", ["$likes", function ($likes) {
         return {
             scope: {
                 ngModel: "="
             },
             restrict: "A",
             template: "<span class='track-like'>\
-                <span class='dislike'>\
+                <span class='dislike' ng-click='dislike()'>\
                     <i class='icon-thumbs-o-down'></i>\
                     <span ng-bind='ngModel.dislikes | number'></span>\
                 </span>\
-                <span class='like'>\
+                <span class='like' ng-click='dislike()'>\
                     <i class='icon-thumbs-o-up'></i>\
                     <span ng-bind='ngModel.likes | number'></span>\
                 </span>\
             </span>",
             link: function (scope, element, attrs) {
-
+                scope.like = function () {
+                    $likes.like(scope.ngModel).then(function () {
+                        scope.ngModel.likes_count ++;
+                    });
+                };
+                scope.dislike = function () {
+                    $likes.dislike(scope.ngModel).then(function () {
+                        scope.ngModel.dislikes_count ++;
+                    });
+                };
             }
         }
     }]);

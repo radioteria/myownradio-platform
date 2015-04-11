@@ -64,6 +64,8 @@
                     },
                     stop: function () {
 
+                        $rootScope.player.isPlaying = false;
+
                         realPlayer.stop();
 
                         $timeout.cancel(handle);
@@ -75,7 +77,6 @@
 
                         $rootScope.player.isBuffering = false;
                         $rootScope.player.nowPlaying = null;
-                        $rootScope.player.isPlaying = false;
 
                     },
                     switch: function () {
@@ -125,7 +126,7 @@
                                 }
 
                             });
-                            this.on("stop", function () {
+                            this.on("ended", function () {
                                 if ($rootScope.player.isPlaying) {
                                     $rootScope.player.isBuffering = true;
                                     $timeout(function () {

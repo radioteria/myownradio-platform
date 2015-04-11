@@ -12,7 +12,7 @@
     "CEX_CODE_INCORRECT"                : "Entered security code is not correct",
     "CEX_CODE_NOT_ACTUAL"               : "Entered security code is not actual",
 
-    "CEX_MAIN_UN_AUTH_MESSAGE"          : "To use this feature you need to be authorized",
+    "CEX_MAIN_UN_AUTH_MESSAGE"          : "To use this feature you need to be <a href='/login/'>authorized</a>",
 
     "VALIDATOR_CODE_INVALID"            : "Entered security code is not valid",
     "VALIDATOR_CODE_MATCH"              : "Entered security code does not match the email",

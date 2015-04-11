@@ -125,11 +125,21 @@
                                 }
 
                             });
+                            this.on("stop", function () {
+                                if ($rootScope.player.isPlaying) {
+                                    $rootScope.player.isBuffering = true;
+                                    $timeout(function () {
+                                        realPlayer.play(url)
+                                    }, 1000);
+                                }
+                            });
                             this.on("error", function () {
-                                $rootScope.player.isBuffering = true;
-                                $timeout(function () {
-                                    realPlayer.play(url)
-                                }, 1000);
+                                if ($rootScope.player.isPlaying) {
+                                    $rootScope.player.isBuffering = true;
+                                    $timeout(function () {
+                                        realPlayer.play(url)
+                                    }, 1000);
+                                }
                             });
 
                             this.load(url);

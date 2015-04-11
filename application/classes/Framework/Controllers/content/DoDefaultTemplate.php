@@ -9,12 +9,12 @@
 namespace Framework\Controllers\content;
 
 
-use Framework\Controller;
+use Framework\ControllerImpl;
 use Framework\Defaults;
 use Framework\Services\CurrentRoute;
 use Framework\Template;
 
-class DoDefaultTemplate implements Controller {
+class DoDefaultTemplate extends ControllerImpl {
     public function doGet(CurrentRoute $currentRoute) {
 
         $description = "Create your own free web radio station in a minutes";
@@ -36,14 +36,14 @@ class DoDefaultTemplate implements Controller {
 
         $metadata = new Template("frontend/meta.default.tmpl");
         $metadata->putObject([
-            "title"         => $pageTitle.Defaults::SITE_TITLE,
-            "description"   => $description,
-            "keywords"      => $keywords
+            "title" => $pageTitle . Defaults::SITE_TITLE,
+            "description" => $description,
+            "keywords" => $keywords
         ]);
 
         $template = new Template("frontend/index.tmpl");
         $template->putObject([
-            "title" => $pageTitle.Defaults::SITE_TITLE,
+            "title" => $pageTitle . Defaults::SITE_TITLE,
             "metadata" => $metadata->render()
         ]);
         $template->display();

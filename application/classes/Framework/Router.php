@@ -10,13 +10,12 @@ namespace Framework;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
+use Framework\Injector\Injectable;
 use Framework\Injector\Injector;
 use Framework\Services\CurrentRoute;
-use Framework\Services\HttpGet;
 use Framework\Services\HttpRequest;
 use Framework\Services\JsonResponse;
 use Framework\Services\SubRouter;
-use Framework\View\Errors\View404Exception;
 use Framework\View\Errors\View500Exception;
 use Framework\View\Errors\View501Exception;
 use Framework\View\Errors\ViewException;
@@ -24,41 +23,25 @@ use ReflectionClass;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-class Router implements SingletonInterface{
+class Router implements SingletonInterface, Injectable {
 
     use Singleton;
 
-    private $route;
-    private $legacyRoute;
-
-    /**
-     * @return mixed
-     */
-    public function getLegacyRoute() {
-        return $this->legacyRoute;
-    }
-
+    /** @var CurrentRoute $currentRoute */
+    private $currentRoute;
 
 
     function __construct() {
 
-        $httpGet = HttpGet::getInstance();
+        Injector::run(function (CurrentRoute $route) {
+            $this->currentRoute = $route;
+        });
 
-        $this->legacyRoute = CurrentRoute::getInstance();
-
-        $routeParts = explode("/", $this->legacyRoute);
-
-        $count = count($routeParts);
-        $routeParts[$count - 1] = "Do" . ucfirst($routeParts[$count - 1]);
-        $this->route = implode("/", $routeParts);
-
-        $this->registerSubRoutes();
+        Injector::run([$this, "registerSubRoutes"]);
 
     }
 
-    private function registerSubRoutes() {
-
-        $sub = SubRouter::getInstance();
+    private function registerSubRoutes(SubRouter $sub) {
 
         /* Public side routes register */
         $sub->addRoute("content/application.modules.js", "content\\DoGetJavascriptModules");
@@ -67,37 +50,37 @@ class Router implements SingletonInterface{
         $sub->addRouteRegExp("~^profile(\\/.+)*$~", "content\\DoDashboard");
 
         $sub->addRoutes([
-                "index",
-                "streams",
-                "bookmarks",
-                "login",
-                "recover",
-                "recover/:code",
-                "tag/:tag",
-                "signup",
-                "signup/:code",
-                "static/registrationLetterSent",
-                "static/registrationCompleted",
-                "static/resetLetterSent",
-                "static/resetPasswordCompleted",
-                "categories"
-            ], "content\\DoDefaultTemplate");
+            "index",
+            "streams",
+            "bookmarks",
+            "login",
+            "recover",
+            "recover/:code",
+            "tag/:tag",
+            "signup",
+            "signup/:code",
+            "static/registrationLetterSent",
+            "static/registrationCompleted",
+            "static/resetLetterSent",
+            "static/resetPasswordCompleted",
+            "categories"
+        ], "content\\DoDefaultTemplate");
 
         $sub->addRoute("category/:category", "helpers\\DoCategory");
-        $sub->addRoute("streams/:id",   "helpers\\DoStream");
-        $sub->addRoute("user/:id",      "helpers\\DoUser");
+        $sub->addRoute("streams/:id", "helpers\\DoStream");
+        $sub->addRoute("user/:id", "helpers\\DoUser");
         $sub->addRoute("search/:query", "helpers\\DoSearch");
 
-        $sub->addRoute("content/streamcovers/:fn",   "content\\DoGetStreamCover");
-        $sub->addRoute("content/avatars/:fn",        "content\\DoGetUserAvatar");
-        $sub->addRoute("content/audio/&id",          "content\\DoGetPreviewAudio");
+        $sub->addRoute("content/streamcovers/:fn", "content\\DoGetStreamCover");
+        $sub->addRoute("content/avatars/:fn", "content\\DoGetUserAvatar");
+        $sub->addRoute("content/audio/&id", "content\\DoGetPreviewAudio");
         $sub->addRoute("content/m3u/:stream_id.m3u", "content\\DoM3u");
-        $sub->addRoute("content/trackinfo/&id",      "content\\DoTrackExtraInfo");
+        $sub->addRoute("content/trackinfo/&id", "content\\DoTrackExtraInfo");
 
         // Default route
-        $sub->defaultRoute(function () {
+        $sub->defaultRoute(function (Router $router) {
             http_response_code(404);
-            Router::getInstance()->callRoute("content\\DoDefaultTemplate");
+            $router->callRoute("content\\DoDefaultTemplate");
         });
 
     }
@@ -108,7 +91,7 @@ class Router implements SingletonInterface{
 
             if (!$this->findRoute()) {
                 $sub = SubRouter::getInstance();
-                $sub->goMatching($this->legacyRoute);
+                $sub->goMatching($this->currentRoute->getLegacy());
             }
 
 
@@ -140,12 +123,11 @@ class Router implements SingletonInterface{
 
     private function findRoute() {
 
-        return $this->callRoute($this->route);
+        return $this->callRoute($this->currentRoute->getRoute());
 
     }
 
     public function callRoute($className) {
-
 
 
         $request = HttpRequest::getInstance();

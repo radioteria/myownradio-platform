@@ -75,6 +75,8 @@
                                 var id = channels[i].sid;
                                 if (data[id] !== undefined) {
                                     channels[i].now_playing = (data[id].artist.length ? (data[id].artist + " - ") : "") + data[id].title;
+                                    channels[i].listeners_count = data[id].listeners_count;
+                                    channels[i].bookmarks_count = data[id].bookmarks_count;
                                 } else {
                                     channels[i].now_playing = "";
                                 }

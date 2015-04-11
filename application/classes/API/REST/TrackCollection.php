@@ -78,6 +78,9 @@ class TrackCollection implements Injectable, SingletonInterface {
 
         $query = $this->getSchedulePrefix();
 
+        $query->select("r_static_stream_vars.listeners_count");
+        $query->select("r_static_stream_vars.bookmarks_count");
+
         $query->where("r_streams.sid", $channel_id);
 
         $query->select(":micro AS time");
@@ -94,6 +97,10 @@ class TrackCollection implements Injectable, SingletonInterface {
     public function getPlayingOnChannels(array $channel_ids) {
 
         $query = $this->getSchedulePrefix();
+
+        $query->select("r_static_stream_vars.listeners_count");
+        $query->select("r_static_stream_vars.bookmarks_count");
+
         $query->where("r_streams.sid", $channel_ids);
 
         return $query->fetchAll("sid");

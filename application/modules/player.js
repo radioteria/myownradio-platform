@@ -107,6 +107,13 @@
                 }
             });
 
+            $rootScope.$watchCollection(["player.nowPlaying"], function (newValue) {
+                if (angular.isObject(newValue)) {
+                    $rootScope.player.currentStream.bookmarks_count = newValue.bookmarks_count;
+                    $rootScope.player.currentStream.listeners_count = newValue.listeners_count;
+                }
+            });
+
             var realHandle = null;
             var realPlayer = {
                 play: function (url, onPlay) {

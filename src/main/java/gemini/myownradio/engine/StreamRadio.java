@@ -11,7 +11,6 @@ import gemini.myownradio.flow.TrackPlayer;
 import gemini.myownradio.tools.MORLogger;
 import gemini.myownradio.tools.MORSettings;
 import gemini.myownradio.tools.ThreadTools;
-import gemini.myownradio.tools.io.ThrottledOutputStream;
 import gemini.myownradio.tools.io.ThroughOutputStream;
 
 import java.io.FileNotFoundException;
@@ -41,8 +40,8 @@ public class StreamRadio implements Runnable {
 
         try (
                 OutputStream flow = broadcast.getOutputStream();
-                OutputStream raw = new ThroughOutputStream(flow, decoder.generate());
-                OutputStream thr = new ThrottledOutputStream(raw, 176400, 5)
+                OutputStream thr = new ThroughOutputStream(flow, decoder.generate());
+                //OutputStream thr = new ThrottledOutputStream(raw, 176400, 5)
         ) {
             logger.println("---- FLOW START ----");
             this.MakeFlow(thr);

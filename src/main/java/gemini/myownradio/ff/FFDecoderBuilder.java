@@ -29,7 +29,7 @@ public class FFDecoderBuilder {
                 new String[]{
                         "ffmpeg",
                         "-fflags", "nobuffer",
-                        "-re",
+                       // "-re",
                         "-loglevel", "quiet",
                         "-ss", df.format((float) this.offset / 1_000F),
                         "-i", filename,
@@ -46,7 +46,7 @@ public class FFDecoderBuilder {
                 new String[]{
                         "ffmpeg",
                         "-fflags", "nobuffer",
-                        "-re",
+                       // "-re",
                         "-loglevel", "quiet",
                         "-ss", df.format((float) this.offset / 1_000F),
                         "-i", filename,

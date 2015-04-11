@@ -16,7 +16,7 @@
         }
     }]);
 
-    module.directive("likeTrack", ["$likes", function ($likes) {
+    module.directive("likeTrack", ["$likes", "Popup", function ($likes, Popup) {
         return {
             scope: {
                 ngModel: "=likeTrack"
@@ -38,12 +38,16 @@
                     $likes.like(scope.ngModel).then(function (data) {
                         scope.ngModel.likes = data.likes;
                         scope.ngModel.dislikes = data.dislikes;
+                    }, function (message) {
+                        Popup.message(message);
                     });
                 };
                 scope.dislike = function () {
                     $likes.dislike(scope.ngModel).then(function (data) {
                         scope.ngModel.likes = data.likes;
                         scope.ngModel.dislikes = data.dislikes;
+                    }, function (message) {
+                        Popup.message(message);
                     });
                 };
             }

@@ -11,10 +11,11 @@ namespace Framework\Controllers\api\v3\tracks;
 
 use API\REST\TrackCollection;
 use Framework\Controller;
+use Framework\ControllerImpl;
 use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
 
-class DoChannel implements Controller {
+class DoChannel extends ControllerImpl {
     public function doGet(HttpGet $get, JsonResponse $response, TrackCollection $trackCollection) {
         $channel_id = $get->getRequired("stream_id", FILTER_VALIDATE_INT);
         $offset = $get->getParameter("offset", FILTER_VALIDATE_INT)->getOrElseZero();

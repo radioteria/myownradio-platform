@@ -146,4 +146,18 @@ class TrackCollection implements Injectable, SingletonInterface {
 
     }
 
+    /**
+     * @param $track_id
+     * @return mixed
+     */
+    public function getSingleTrack($track_id) {
+
+        $query = $this->getTracksPrefix();
+
+        $query->where("r_tracks.tid", $track_id);
+
+        return $query->fetchOneRow()->getOrElseThrow(ControllerException::noTrack($track_id));
+
+    }
+
 } 

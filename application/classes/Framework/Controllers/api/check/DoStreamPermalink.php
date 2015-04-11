@@ -10,13 +10,14 @@ namespace Framework\Controllers\api\check;
 
 
 use Framework\Controller;
+use Framework\ControllerImpl;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
 use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
 
-class DoStreamPermalink implements Controller {
+class DoStreamPermalink extends ControllerImpl {
     public function doPost(HttpPost $post, InputValidator $validator, AuthUserModel $user, JsonResponse $response) {
         $field = $post->getRequired("field");
         $context = $post->getParameter("context")->getOrElseNull();

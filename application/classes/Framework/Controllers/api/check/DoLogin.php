@@ -10,12 +10,13 @@ namespace Framework\Controllers\api\check;
 
 
 use Framework\Controller;
+use Framework\ControllerImpl;
 use Framework\Preferences;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 
-class DoLogin implements Controller {
+class DoLogin extends ControllerImpl {
     public function doPost(HttpPost $post, JsonResponse $response, DBQuery $query, Preferences $preferences) {
         $field = $post->getRequired("field");
 

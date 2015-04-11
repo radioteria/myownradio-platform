@@ -328,7 +328,7 @@
     "FR_UPLOAD_MESSAGE"                 : "Before upload make sure that your audio file(s):",
     "FR_UPLOAD_CONDITION"               : [
         "Has not violate any copyright laws.",
-        "Has not exceed <b>250 MB</b>.",
+        "Has not exceed <b>512 MB</b>.",
         "Is in high bitrate (<b>256 kbit/s or greater</b>)",
         "Is in one of this formats: <b>mp3</b>, <b>flac</b>, <b>ogg</b>, <b>m4a</b>, <b>ape</b>, <b>aac</b>.",
         "Is not shorter than <b>15 seconds</b> and not longer than <b>240 minutes</b>."

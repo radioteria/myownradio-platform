@@ -349,7 +349,7 @@
                 if (this.files.length == 0) return;
                 var that = this;
                 $scope.$applyAsync(function () {
-                    for (var i = 0; i < that.files.length; i++) {
+                    for (var i = 0; i < that.files.length; i++) if(that.files[i].size <= Of.megabytes(512)) {
                         $scope.uploadQueue.push(that.files[i]);
                     }
                 });

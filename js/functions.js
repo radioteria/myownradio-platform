@@ -152,6 +152,11 @@ function copyArrayValues($source, $destination) {
     }
 }
 
+window.Of = {
+    megabytes: function (mb) { return Of.kilobytes(mb) * 1024 },
+    kilobytes: function (kb) { return kb * 1024 },
+    gigabytes: function (gb) { return Of.megabytes(gb) * 1024 }
+};
 
 window.mobileCheck = function() {
     var check = false;

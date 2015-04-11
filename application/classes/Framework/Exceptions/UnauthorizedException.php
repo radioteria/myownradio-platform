@@ -33,4 +33,8 @@ class UnauthorizedException extends ControllerException {
         return new self(I18n::tr("CEX_NO_PERMISSION"));
     }
 
+    public static function unAuthorized() {
+        return new self(I18n::tr("CEX_MAIN_UN_AUTH_MESSAGE"));
+    }
+
 }

@@ -30,7 +30,7 @@ class AuthUserModel extends UserModel implements Injectable {
 
     private function getIdBySessionToken() {
 
-        $exception = UnauthorizedException::noPermission();
+        $exception = UnauthorizedException::unAuthorized();
 
 //        $token = HttpSession::getInstance()->get("TOKEN")->getOrElse(
 //            HttpPost::getInstance()->getParameter("token")->getOrElse(

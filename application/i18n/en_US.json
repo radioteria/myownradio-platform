@@ -11,8 +11,13 @@
     "CEX_TRACK_FILE_NULL"               : "Track with id \"%id%\" is not exists on any file servers",
     "CEX_CODE_INCORRECT"                : "Entered security code is not correct",
     "CEX_CODE_NOT_ACTUAL"               : "Entered security code is not actual",
+
+    "CEX_MAIN_UN_AUTH_MESSAGE"          : "To use this feature you need to be authorized",
+
     "VALIDATOR_CODE_INVALID"            : "Entered security code is not valid",
     "VALIDATOR_CODE_MATCH"              : "Entered security code does not match the email",
+
+
 
     "VALIDATOR_NO_COUNTRY"              : "Country with id %0% does not exist",
     "VALIDATOR_PASSWORD_LENGTH"         : "Password length must be between %0% and %1% chars",

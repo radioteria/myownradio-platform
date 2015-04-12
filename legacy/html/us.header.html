@@ -1,0 +1,30 @@
+<div class="page-head">
+    <div class="page-head-prefix"></div>
+    <div class="-limit-width -no-overflow page-head-fixed">
+        <div class="page-head-logo-cell page-head-cell -float-left">
+            <h1 class="page-head-logo-cell-text"><a href="/"><i class="mor-logo"></i>MYOWNRADIO</a></h1>
+        </div>
+        <div class="page-head-search-cell page-head-cell -float-left">
+            <div class="page-head-search-border">
+                <form class="page-head-form-search" action="/search" method="GET">
+                    <input type="text" name="q" value="<?= htmlspecialchars(application::get("q", "", REQ_STRING)); ?>" placeholder="Search" autocomplete="off" autofocus />
+                    <input type="submit" value="" title="Search" />
+                </form>
+            </div>
+        </div>
+        <div class="page-head-menu-cell page-head-cell -float-left">
+            <a class="page-head-menu-link" href="/browse"><i class="icon-podcast"></i>STREAMS</a>
+            <a class="page-head-menu-link" href="/categories"><i class="icon-podcast"></i>CATEGORIES</a>
+        </div>
+        <div class="page-head-login-cell page-head-cell -float-right">
+            <?php if(user::getCurrentUserId() === 0): ?>
+                <a class="page-head-signup-link" href="/signup">Sign Up</a>
+                or
+                <a class="page-head-login-link" href="/login">Sign In</a>
+            <?php else: ?>
+                <a class="page-head-signup-link" target="_blank" href="/radiomanager"><i class="icon-enter"></i>Radio Manager</a>
+                <a class="page-head-signup-link" href="/logout"><i class="icon-exit"></i>Logout</a>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>

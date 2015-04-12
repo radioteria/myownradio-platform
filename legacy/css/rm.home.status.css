@@ -1,0 +1,87 @@
+.rm_status_wrap {
+    height: 48px;
+    background: #eee;
+    white-space: nowrap;
+}
+
+.rm_status_wrap:not(.selected) .rm_status_selected,
+.rm_status_wrap.selected .rm_status_total {
+    display: none;
+}
+
+.rm_status_list {
+    list-style-type: none;
+    padding: 0px;
+}
+
+.rm_status_list > li {
+    float: left;
+    margin: 0 8px;
+    line-height: 46px;
+}
+
+.rm_status_list > li > span {
+    background-color: #666;
+    padding: 0 8px;
+    border-radius: 3px;
+    color: #ffffff;
+    box-shadow: inset 1px 1px 4px #222222;
+    text-shadow: 0px 0px 3px rgba(0, 0, 0, 1);
+    margin-left: 8px
+}
+
+
+.rm_status_processing_item.hidden {
+    display: none;
+}
+
+.sort_filter {
+    position: relative;
+}
+
+.sort_filter:before {
+    content: 'Filter:';
+    float: left;
+    padding-right: 8px;
+    overflow: hidden;
+}
+
+.sort_filter > input[type="text"] {
+    width: 250px;
+    border-radius: 3px;
+    border: 1px solid #bbb;
+    height: 23px;
+    padding: 0px 8px;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color linear 250ms;
+    line-height: 23px;
+}
+
+.sort_filter > input[type="text"]:focus {
+    border: 1px solid #39c;
+}
+
+.sort_filter > #filterReset {
+    width: 21px;
+    height: 21px;
+    background: #fff url("/images/iconClose.png") no-repeat center center;
+    cursor: pointer;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    z-index: 20;
+    margin-top: 12px;
+    margin-right: 1px;
+    box-sizing: border-box;
+    opacity: 0.6;
+    display: none
+}
+
+.sort_filter > #filterReset.visible {
+    display: block;
+}
+
+.sort_filter > #filterReset:hover {
+    opacity: 1;
+}

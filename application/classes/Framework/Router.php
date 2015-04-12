@@ -33,15 +33,16 @@ class Router implements SingletonInterface, Injectable {
 
     function __construct() {
 
-        Injector::run(function (CurrentRoute $route) {
-            $this->currentRoute = $route;
-        });
+        $route = CurrentRoute::getInstance();
+        $this->currentRoute = $route;
 
-        Injector::run([$this, "registerSubRoutes"]);
+        $this->registerSubRoutes();
 
     }
 
-    private function registerSubRoutes(SubRouter $sub) {
+    private function registerSubRoutes() {
+
+        $sub = SubRouter::getInstance();
 
         /* Public side routes register */
         $sub->addRoute("content/application.modules.js", "content\\DoGetJavascriptModules");

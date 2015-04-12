@@ -9,12 +9,13 @@
 namespace Framework\Services;
 
 
+use Framework\Injector\Injectable;
 use Framework\Injector\Injector;
 use Framework\Router;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-class SubRouter implements SingletonInterface {
+class SubRouter implements SingletonInterface, Injectable {
 
     use Singleton;
 

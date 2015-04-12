@@ -1113,6 +1113,17 @@ body.player-visible footer {
 .uploader .progress b {
   color: #808080;
 }
+.uploader .progress .progress-bar {
+  margin-top: 8px;
+  position: relative;
+  background-color: #eeeeee;
+  height: 16px;
+}
+.uploader .progress .progress-bar .progress-cursor {
+  background-color: #666666;
+  position: relative;
+  height: 16px;
+}
 .uploader .selected-files {
   margin-top: 8px;
 }

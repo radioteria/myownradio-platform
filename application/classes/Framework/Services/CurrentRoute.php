@@ -20,15 +20,15 @@ class CurrentRoute implements Injectable, SingletonInterface {
     private $route, $legacy;
 
     function __construct() {
-        Injector::run(function (HttpGet $httpGet) {
 
-            $this->legacy = preg_replace('/(\.(html|php)$)|(\/$)/', '', $httpGet->getParameter("route")->getOrElse("index"));
-            $route_array = explode("/", $this->legacy);
-            $count = count($route_array);
-            $route_array[$count - 1] = "Do" . ucfirst($route_array[$count - 1]);
-            $this->route = implode("/", $route_array);
+        $httpGet = HttpGet::getInstance();
 
-        });
+        $this->legacy = preg_replace('/(\.(html|php)$)|(\/$)/', '', $httpGet->getParameter("route")->getOrElse("index"));
+        $route_array = explode("/", $this->legacy);
+        $count = count($route_array);
+        $route_array[$count - 1] = "Do" . ucfirst($route_array[$count - 1]);
+        $this->route = implode("/", $route_array);
+
     }
 
     /**

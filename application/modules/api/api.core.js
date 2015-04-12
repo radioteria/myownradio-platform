@@ -8,15 +8,39 @@
     module.service("$api", ["$q", "$http", function ($q, $http) {
 
         function answer(promise) {
-            return $q(function (resolve, reject) {
-                promise.then(function (response) {
-                    if (response.data.code == 1) {
-                        resolve(response.data.data);
-                    } else {
-                        reject(response.data.message);
-                    }
-                })
+
+            var deferred = $q.defer();
+
+            promise.then(function (response) {
+                if (response.data.code == 1) {
+                    deferred.resolve(response.data.data);
+                } else {
+                    deferred.reject(response.data.message);
+                }
             });
+
+            deferred.promise.abort = promise.abort;
+
+            return deferred.promise;
+
+        }
+
+        function ajaxAnswer(promise) {
+
+            var deferred = $q.defer();
+
+            promise.then(function (response) {
+                if (response.code == 1) {
+                    deferred.resolve(response.data);
+                } else {
+                    deferred.reject(response.message);
+                }
+            });
+
+            deferred.promise.abort = promise.abort;
+
+            return deferred.promise;
+
         }
 
         return {
@@ -51,6 +75,12 @@
                     }
                 }
                 return obj;
+            },
+            wrapper: function (promise) {
+                return answer(promise);
+            },
+            ajaxWrapper: function (promise) {
+                return ajaxAnswer(promise);
             }
         }
 

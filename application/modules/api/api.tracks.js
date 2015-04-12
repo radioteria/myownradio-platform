@@ -33,5 +33,25 @@
                 });
             }
         }
-    }])
+    }]);
+    api.factory("$library", ["$api", function ($api) {
+        return {
+            upload: function (data, callback) {
+                return $api.ajaxWrapper($.ajax({
+                    xhr: function() {
+                        var xhr = new window.XMLHttpRequest();
+
+                        xhr.upload.addEventListener("progress", callback, false);
+
+                        return xhr;
+                    },
+                    url: "/api/v2/track/upload",
+                    type: "POST",
+                    data: data,
+                    processData: false,
+                    contentType: false
+                }));
+            }
+        }
+    }]);
 })();

@@ -318,9 +318,9 @@
     ]);
 
     lib.controller("UploadController", ["$scope", "$rootScope", "TrackWorks", "StreamWorks",
-        "Response", "$http", "$q", "Popup", "$analytics",
+        "Response", "$http", "$q", "Popup", "$analytics", "$library",
 
-        function ($scope, $rootScope, TrackWorks, StreamWorks, Response, $http, $q, Popup, $analytics) {
+        function ($scope, $rootScope, TrackWorks, StreamWorks, Response, $http, $q, Popup, $analytics, $library) {
 
         $scope.upNext = false;
         $scope.progress = {
@@ -337,7 +337,8 @@
             onFinish: function () {}
         };
 
-        var canceller = $q.defer();
+        var canceller = $q.defer(),
+            promise = null;
 
         $scope.browse = function () {
             var selector = $("<input>");
@@ -363,7 +364,9 @@
         };
 
         $scope.$on("$destroy", function () {
-            canceller.resolve("Upload aborted by user");
+            if (promise !== null) {
+                promise.abort();
+            }
         });
 
         $scope.upload = function () {
@@ -373,6 +376,19 @@
             }
             var file = $scope.uploadQueue.shift();
             var form = new FormData();
+            var progress = function(evt) {
+
+                if (evt.lengthComputable) {
+
+                    var percentComplete = evt.loaded / evt.total;
+                    percentComplete = parseInt(percentComplete * 100);
+
+                    $(".progress-cursor").css("width", percentComplete + "%");
+
+                }
+
+            };
+
             form.append('file', file);
 
             if ($scope.options.target)
@@ -384,17 +400,15 @@
             $scope.progress.status = true;
             $scope.progress.file = file.name;
 
-            var uploader = Response($http({
-                method: "POST",
-                url: "/api/v2/track/upload",
-                data: form,
-                transformRequest: angular.identity,
-                headers: {'Content-Type': undefined},
-                timeout: canceller.promise
-            }));
 
-            uploader.onSuccess(function (data) {
+            promise = $library.upload(form, progress);
+
+            promise.then(function (data) {
+
                 var i;
+
+                promise = null;
+
                 if ($scope.options.append === true) {
                     for (i = 0; i < data.tracks.length; i++) {
                         $scope.$parent.tracks.push(data.tracks[i]);
@@ -406,12 +420,17 @@
                         $rootScope.account.user.tracks_count += 1;
                     }
                 }
+
                 $analytics.eventTrack('Upload', { category: 'Actions' });
                 $scope.upload();
+
             }, function (message) {
+
                 Popup.message(message);
                 $scope.upload();
+
             });
+
         };
 
     }

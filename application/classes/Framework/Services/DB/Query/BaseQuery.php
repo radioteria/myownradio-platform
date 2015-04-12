@@ -188,4 +188,16 @@ abstract class BaseQuery implements \Countable {
         });
     }
 
+    /**
+     * @param $chunk_size
+     * @param $callback
+     */
+    public function chunk($chunk_size, $callback) {
+        $items = $this->fetchAll();
+        $chunks = array_chunk($items, $chunk_size);
+        foreach ($chunks as $chunk) {
+            call_user_func($callback, $chunk);
+        }
+    }
+
 } 

@@ -11,7 +11,7 @@ namespace Framework;
 
 class Defaults {
 
-    const DEFAULT_TRACKS_PER_REQUEST = 100;
+    const DEFAULT_TRACKS_PER_REQUEST = 50;
     const DEFAULT_STREAMS_PER_REQUEST = 20;
 
     const REDIS_ELEMENTS_KEY = "MOR2:Elements";

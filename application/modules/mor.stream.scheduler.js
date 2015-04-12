@@ -4,7 +4,7 @@
 
 (function () {
 
-    var DEFAULT_INTERVAL = 10000;
+    var DEFAULT_INTERVAL = 5000;
     var scheduler = angular.module("mor.stream.scheduler", ["Site"]);
 
     scheduler.run(["$rootScope", function ($rootScope) {

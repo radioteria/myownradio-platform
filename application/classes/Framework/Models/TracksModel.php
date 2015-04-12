@@ -80,6 +80,7 @@ class TracksModel implements Injectable, SingletonInterface {
         \getid3_lib::CopyTagsToComments($meta);
 
         $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
+        $basename = pathinfo($file["name"], PATHINFO_BASENAME);
 
         $maximalDuration = $config->getSetting('upload', 'maximal_length')->get();
         $availableFormats = $config->getSetting('upload', 'supported_extensions')->get();
@@ -121,7 +122,7 @@ class TracksModel implements Injectable, SingletonInterface {
             isset($meta["comments"]["artist"][0]) ? $meta["comments"]["artist"][0] : ""
         );
         $track->setTitle(
-            isset($meta["comments"]["title"][0]) ? $meta["comments"]["title"][0] : $file['name']
+            isset($meta["comments"]["title"][0]) ? $meta["comments"]["title"][0] : $basename
         );
         $track->setAlbum(
             isset($meta["comments"]["album"][0]) ? $meta["comments"]["album"][0] : ""

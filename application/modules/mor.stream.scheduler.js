@@ -74,6 +74,7 @@
                             }
 
                             $schedule.nowPlaying($scope.ngModel).then(function (response) {
+                                $scope.$broadcast("sync:update:tid", response);
                                 $scope.$root.callOrSet("onInterval", response, $scope);
                                 if (prevUniqueId !== response.unique_id) {
                                     prevUniqueId = response.unique_id;

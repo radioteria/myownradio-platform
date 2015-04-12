@@ -132,7 +132,6 @@
                                     $rootScope.player.isBuffering = false;
                                     $rootScope.$digest();
                                 }
-
                             });
                             this.on("ended", function () {
                                 if ($rootScope.player.isPlaying) {

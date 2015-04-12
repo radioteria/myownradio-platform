@@ -17,6 +17,8 @@
                 } else {
                     deferred.reject(response.data.message);
                 }
+            }, function (status) {
+                deferred.reject(status);
             });
 
             deferred.promise.abort = promise.abort;
@@ -35,6 +37,8 @@
                 } else {
                     deferred.reject(response.message);
                 }
+            }, function (status) {
+                deferred.reject(status);
             });
 
             deferred.promise.abort = promise.abort;

@@ -1123,7 +1123,7 @@ body.player-visible footer {
   background-color: #666666;
   position: relative;
   height: 16px;
-  transition: .2s linear width;
+  transition: .1s linear width;
 }
 .uploader .selected-files {
   margin-top: 8px;

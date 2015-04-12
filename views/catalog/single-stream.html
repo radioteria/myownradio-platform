@@ -122,7 +122,7 @@
             </div>
             <div ng-class="{open: scheduleShown}" class="tracks-list">
                 <div class="track-row" ng-class="{current: $index == schedule.source.current}" ng-repeat="track in schedule.destination.tracks">
-                    <div class="fixed-width" synchronize="track" sync-key="tid">
+                    <div class="fixed-width">
                         <div class="track-duration" ng-bind="track.duration | msToTime"></div>
                         <div class="track-artist" ng-show="track.artist.length" ng-bind="track.artist"></div>
                         <div class="track-offset" ng-bind="($index == schedule.destination.current) ? 'now' : ((track.time_offset - schedule.destination.position) | msToSmallTime)"></div>

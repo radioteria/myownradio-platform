@@ -20,6 +20,7 @@ class Defaults {
     const SITE_TITLE = "MyOwnRadio - Your own web radio station";
 
     const HASHING_ALGORITHM = "sha512";
+    const SCHEDULE_TIME_SHIFT = 5000;
 
     /**
      * @return array

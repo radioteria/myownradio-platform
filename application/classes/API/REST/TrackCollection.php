@@ -9,6 +9,7 @@
 namespace API\REST;
 
 
+use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
@@ -60,7 +61,9 @@ class TrackCollection implements Injectable, SingletonInterface {
         $prefix->innerJoin("r_streams", "r_link.stream_id = r_streams.sid");
         $prefix->innerJoin("r_static_stream_vars", "r_streams.sid = r_static_stream_vars.stream_id");
 
-        $prefix->where("r_link.time_offset <= MOD(:micro - (r_streams.started - r_streams.started_from), r_static_stream_vars.tracks_duration)", [ ":micro" => System::time() ]);
+        $prefix->where("r_link.time_offset <= MOD(:micro - (r_streams.started - r_streams.started_from), r_static_stream_vars.tracks_duration)", [
+            ":micro" => System::time() - Defaults::SCHEDULE_TIME_SHIFT
+        ]);
         $prefix->where("r_link.time_offset + r_tracks.duration > MOD(:micro - (r_streams.started - r_streams.started_from), r_static_stream_vars.tracks_duration)");
         $prefix->where("r_streams.status = 1 AND r_static_stream_vars.tracks_duration > 0");
 

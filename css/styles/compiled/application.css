@@ -1719,9 +1719,6 @@ body.player-visible .player-container {
 }
 .schedule-container .tracks-list .track-row.current .track-now > i {
   visibility: visible;
-  -webkit-animation: blink 1s linear infinite;
-  -moz-animation: blink 1s linear infinite;
-  animation: blink 1s linear infinite;
 }
 .container-padding {
   padding: 8px 32px;

@@ -9,6 +9,7 @@
 namespace API\REST;
 
 
+use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
@@ -17,6 +18,7 @@ use Framework\Services\DB\Query\SelectQuery;
 use Tools\Common;
 use Tools\Singleton;
 use Tools\SingletonInterface;
+use Tools\System;
 
 /**
  * Class ChannelsCollection
@@ -64,8 +66,10 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         $query->innerJoin("r_link d", "d.stream_id = a.sid");
         $query->innerJoin("r_tracks e", "e.tid = d.track_id");
 
-        $query->where("(d.time_offset < MOD((UNIX_TIMESTAMP() * 1000) - (a.started - a.started_from), b.tracks_duration))");
-        $query->where("(d.time_offset + e.duration > MOD((UNIX_TIMESTAMP() * 1000) - (a.started - a.started_from), b.tracks_duration))");
+        $query->where("(d.time_offset < MOD(:micro - (a.started - a.started_from), b.tracks_duration))", [
+            ":micro" => System::time() - Defaults::SCHEDULE_TIME_SHIFT
+        ]);
+        $query->where("(d.time_offset + e.duration > MOD(:micro - (a.started - a.started_from), b.tracks_duration))");
 
         $query->select("CONCAT(e.artist, IF(e.artist != '', ' - ', ''), e.title) as now_playing");
 

@@ -18,6 +18,8 @@ class DoUpload implements Controller {
 
     public function doPost(HttpFiles $file, HttpPost $post, TracksModel $model, JsonResponse $response) {
 
+        ignore_user_abort(true);
+
         $streamID = $post->getParameter("stream_id");
         $upNext = boolval($post->getParameter("up_next")->getOrElseFalse());
         $skipCopies = true;

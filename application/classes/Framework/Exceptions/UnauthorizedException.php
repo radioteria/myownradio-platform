@@ -14,7 +14,7 @@ use Framework\Services\Locale\I18n;
 class UnauthorizedException extends ControllerException {
 
     function __construct($message = null, $data = null) {
-        parent::__construct($message, $data);
+        parent::__construct($message, $data, 0);
     }
 
     static function noUserByLogin($id) {

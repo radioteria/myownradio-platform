@@ -15,15 +15,16 @@ class ControllerException extends \Exception {
     private $myMessage = null;
     private $myData = [];
     private $myHttpCode = 200;
+    private $myStatus = 0;
 
-    function __construct($message = null, $data = null, $code = 200) {
+    function __construct($message = null, $data = null, $status = 0) {
         $this->myMessage = $message;
         $this->myData = $data;
-        $this->myHttpCode = $code;
+        $this->myStatus = $status;
     }
 
-    public static function of($message = null, $data = null) {
-        return new self($message, $data);
+    public static function of($message = null, $data = null, $status = 0) {
+        return new self($message, $data, $status);
     }
 
     public static function noImageAttached() {
@@ -36,6 +37,10 @@ class ControllerException extends \Exception {
 
     public function getMyMessage() {
         return $this->myMessage;
+    }
+
+    public function getMyStatus() {
+        return $this->myStatus;
     }
 
     public static function noArgument($name) {

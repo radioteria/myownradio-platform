@@ -128,7 +128,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->where("b.playbacks > 0 OR b.listeners_count > 0");
 
-        $query->orderBy("b.bookmarks_count DESC, b.summary_played DESC, b.playbacks DESC");
+        $query->orderBy("b.summary_played DESC, b.playbacks DESC");
 
         return [
             "count" => count($query),

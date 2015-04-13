@@ -13,6 +13,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
+use Framework\Services\DB\Query\InsertQuery;
 use Framework\Services\InputValidator;
 use Objects\Stream;
 use Tools\Common;
@@ -63,6 +64,12 @@ class StreamsModel implements Injectable, SingletonInterface {
         $stream->setCreated(time());
         $stream->setAccess($access);
         $stream->save();
+
+        $hashtags_array = explode(",", $hashtags);
+        foreach ($hashtags_array as $tag) {
+            (new InsertQuery("mor_tag_list"))->values("tag_name", trim($tag))
+                ->set("usage_count = usage_count + 1")->update();
+        }
 
         // Generate Stream Cover
         $random = Common::generateUniqueID();

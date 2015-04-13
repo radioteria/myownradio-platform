@@ -18,13 +18,13 @@ var radiomanager = {
             $(".rm_infobar_progress #cents").text(Math.floor(100 / user.plan_data.plan_time_limit * user.user_stats.user_tracks_time).toString() + "%");
             $(".rm_infobar_progress").removeClass("over");
         } 
-    },
+    }
 };
 
 var stream = {
     shuffle: function(stream_id) {
         $.post("/api/v2/stream/shuffleStream", {
-            id : stream_id,
+            id : stream_id
         }, function(data) {
             if (data.status === 1) {
                 callModuleFunction("stream.reload", stream_id);
@@ -36,7 +36,7 @@ var stream = {
         $.post("/api/v2/stream/moveTrack", {
             id          : stream_id,
             unique_id   : target,
-            new_index   : index + 1,
+            new_index   : index + 1
         }, function(data) {
             console.log(data);
         });
@@ -52,7 +52,7 @@ var stream = {
     },
     state: function(stream_id) {
         $.post("/api/v2/stream/switchState", {
-            id : stream_id,
+            id : stream_id
         }, function(json){
             //var json = filterAJAXResponce(data);
             //showPopup(lang.conv(json.code, "stream.state"));

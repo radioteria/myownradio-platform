@@ -4,7 +4,7 @@ $.fn.extend({
         var initial = $(this);
         var getter = $(this).attr("data-url");
         var list = $(this).text();
-        var ro = ($(this).attr("read-only") !== undefined) ? true : false;
+        var ro = ($(this).attr("read-only") !== undefined);
         
         var timer = false;
         

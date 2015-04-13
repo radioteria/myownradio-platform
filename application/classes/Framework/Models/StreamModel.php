@@ -11,8 +11,10 @@ namespace Framework\Models;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
+use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\DeleteQuery;
+use Framework\Services\DB\Query\InsertQuery;
 use Framework\Services\InputValidator;
 use Objects\Stream;
 use Objects\StreamTrack;
@@ -161,6 +163,13 @@ class StreamModel extends Model implements SingletonInterface {
             ->setCategory($category)
             ->setAccess($access)
             ->save();
+
+        // todo: do this with db query
+        $hashtags_array = explode(",", $hashtags);
+        foreach ($hashtags_array as $tag) {
+            (new InsertQuery("mor_tag_list"))->values("tag_name", trim($tag))
+                ->set("usage_count = usage_count + 1")->update();
+        }
 
     }
 

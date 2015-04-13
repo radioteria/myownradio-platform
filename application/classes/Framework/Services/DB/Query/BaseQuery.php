@@ -22,7 +22,8 @@ abstract class BaseQuery implements \Countable {
     protected $parameters = [
         "SET" => [],
         "WHERE" => [],
-        "INSERT" => []
+        "INSERT" => [],
+        "UPDATE" => []
     ];
 
     protected $limit = null;

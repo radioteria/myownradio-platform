@@ -477,7 +477,7 @@
                         isFull = true;
                     }
 
-                    console.log(isOutside, isFirst, isInside, isLast, isFull);
+                    //console.log(isOutside, isFirst, isInside, isLast, isFull);
 
 //                    (scope.reDraw = function () {
                         if (isFull) {

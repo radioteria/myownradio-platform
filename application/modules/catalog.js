@@ -450,7 +450,7 @@
             link: function (scope, elem, attrs) {
 
                 scope.resizeItem = function () {
-                    var width, diff, isFirst = false, isLast = false, isOutside = false, isInside = false;
+                    var width, diff, isFirst = false, isLast = false, isOutside = false, isInside = false, isFull = false;
 
                     /* Define time ranges */
                     var leftRange = scope.schedule.position - (TIMELINE_RESOLUTION >> 1),
@@ -473,8 +473,16 @@
                         isLast = true;
                     }
 
+                    if (scope.track.time_offset < leftRange && scope.track.time_offset + scope.track.duration > rightRange) {
+                        isFull = true;
+                    }
+
+                    console.log(isOutside, isFirst, isInside, isLast, isFull);
+
 //                    (scope.reDraw = function () {
-                        if (isFirst && isLast) {
+                        if (isFull) {
+                            width = elem.parent().width() / scope.rate;
+                        } else if (isFirst && isLast) {
                             width = Math.min(elem.parent().width() / scope.rate, scope.track.duration);
                             elem.css("margin-left", Math.max(0, marginSize * scope.rate).toString().concat("px"));
                         } else if (isFirst) {

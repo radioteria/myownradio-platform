@@ -7,6 +7,7 @@
  */
 return [
     "application_title" => "MyOwnRadio - your own free web radio station",
+    "application_content" => "/media/www/myownradio.biz/",
     "api" => [
         "streams_per_request_max" => 50,
         "tracks_per_request_max" => 50

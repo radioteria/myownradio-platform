@@ -235,6 +235,17 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             }
         }],
 
+        PATH_STREAMS_NEW: ["/new/", {
+            templateUrl: "/views/catalog/by-new.html",
+            controller: 'ChannelListNew',
+            title: "New radio stations on " + SITE_TITLE,
+            resolve: {
+                channelsData: ["$channels", function ($channels) {
+                    return $channels.getNewChannels();
+                }]
+            }
+        }],
+
         PATH_STREAMS_BOOKMARKS: ["/bookmarks/", {
             templateUrl: "/views/catalog/by-bookmarks.html",
             controller: 'ChannelListBookmarks',

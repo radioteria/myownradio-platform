@@ -162,6 +162,29 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         ];
     }
 
+    public function getNewChannelsList($offset = 0, $limit = null) {
+
+        $query = $this->channelNowPlayingPrefix();
+
+        if (is_numeric($offset)) {
+            $query->offset($offset);
+        }
+
+        if (is_numeric($limit)) {
+            $query->limit(min($limit, self::CHANNELS_PER_REQUEST_MAX));
+        }
+
+        //$query->where("a.created")
+
+        $query->orderBy("a.created DESC");
+
+        return [
+            "count" => count($query),
+            "items" => $query->fetchAll()
+        ];
+
+    }
+
     /**
      * @param int $category_id
      * @param int $offset

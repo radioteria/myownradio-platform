@@ -18,6 +18,12 @@
                     limit: limit
                 }));
             },
+            getNewChannels: function (offset, limit) {
+                return $api.get("/api/v2/channels/new", $api.filter({
+                    offset: offset,
+                    limit: limit
+                }));
+            },
             getCategoryChannels: function (category, offset, limit) {
                 return $api.get("/api/v2/channels/category", $api.filter({
                     category_name: category,

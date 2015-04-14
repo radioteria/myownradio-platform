@@ -436,12 +436,14 @@
     },
 
     "FR_CHANNELS_BY_POPULAR_TITLE"  : "What's popular on <b>MyOwnRadio</b>",
+    "FR_CHANNELS_BY_NEW_TITLE"      : "Newest radio stations on <b>MyOwnRadio</b>",
 
     "FR_NO_STREAMS_BOOKMARKS"    : "You have no bookmarked radio stations.",
 
-    "FR_CATALOG_POPULAR_STATIONS"   : "Popular Stations",
+    "FR_CATALOG_POPULAR_STATIONS"   : "Popular",
     "FR_CATALOG_MY_STATIONS"        : "My Stations",
-    "FR_CATALOG_MY_BOOKMARKS"       : "My Bookmarks"
+    "FR_CATALOG_MY_BOOKMARKS"       : "My Bookmarks",
+    "FR_CATALOG_NEW_STATIONS"       : "New"
 
 }
 

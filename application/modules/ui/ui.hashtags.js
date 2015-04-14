@@ -10,41 +10,54 @@
                 ngModel: "="
             },
             restrict: "E",
-            template: '<span class="tags"><span class="tag" ng-repeat="tag in tags" ng-bind="tag"></span></span>#<span class="current-tag" contenteditable="true"></span>',
+            template: '<span class="tags"><span class="tag" ng-repeat="tag in tags" ng-bind="tag"></span></span><span ng-if="focused">#</span><span class="current-tag" contenteditable="true"></span>',
             require: "?ngModel",
             link: function (scope, element, attrs) {
                 var update = function () {
-                    scope.ngModel = scope.tags.join(",");
-                }, push = function (that) {
-                    if (that.innerHTML.length) {
-                        scope.$apply(function () {
+                        scope.ngModel = scope.tags.join(",");
+                    },
+                    push = function (that) {
+                        if (that.innerHTML.length) {
                             scope.tags.push(that.innerHTML);
                             update();
-                        });
-                        that.innerHTML = "";
-                    }
-                };
+                            that.innerHTML = "";
+                        }
+                    };
                 scope.tags = [];
+                scope.focused = false;
                 scope.placeholder = attrs.placeholder;
-                element.find(".current-tag").bind("keydown", function (event) {
-                    var that = this;
-                    switch (event.which) {
-                        case 8: // delete
-                            if (that.innerHTML.length == 0) {
+                element.find(".current-tag")
+                    .bind("keydown", function (event) {
+                        var that = this;
+                        switch (event.which) {
+                            case 8: // del key
+                                if (that.innerHTML.length == 0) {
+                                    scope.$apply(function () {
+                                        scope.tags.splice(-1, 1);
+                                        update();
+                                    });
+                                    return false;
+                                }
+                                break;
+                            case 188: // comma key
                                 scope.$apply(function () {
-                                    scope.tags.splice(-1, 1);
-                                    update();
+                                    push(that);
                                 });
                                 return false;
-                            }
-                            break;
-                        case 188:
+                        }
+                        return true;
+                    })
+                    .bind("blur", function (event) {
+                        var that = this;
+                        scope.$apply(function () {
+                            scope.focused = false;
                             push(that);
-                            return false;
-                    }
-                    return true;
-                }).bind("blur", function (event) {
-                        push(this);
+                        });
+                    })
+                    .bind("focus", function (event) {
+                        scope.$apply(function () {
+                            scope.focused = true;
+                        });
                     });
                 scope.$watch("ngModel", function (value) {
                     if (angular.isString(value) && value.length) {

@@ -26,7 +26,7 @@
                 };
                 scope.tags = [];
                 scope.placeholder = attrs.placeholder;
-                element.find(".current-tag").bind("keydown",function (event) {
+                element.find(".current-tag").bind("keydown", function (event) {
                     var that = this;
                     switch (event.which) {
                         case 8: // delete

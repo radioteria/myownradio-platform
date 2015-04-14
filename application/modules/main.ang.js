@@ -14,7 +14,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
         "Account", "Site", "Catalog", "RadioPlayer", "Search", "Profile", "Library", "AudioInfo", "mor-loader", "Dialogs",
 
-        "mor.stream.scheduler", "mor.tools"
+        "mor.stream.scheduler", "mor.tools", "contenteditable"
 
     ]);
 

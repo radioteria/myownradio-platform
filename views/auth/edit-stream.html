@@ -35,14 +35,10 @@
                     </tr>
                     <tr>
                         <td>
-                            <label for="tags">
-                                <translate>FR_HASHTAGS</translate>
-                            </label>
+                            <translate>FR_HASHTAGS</translate>
                         </td>
                         <td>
-                            <input type="text" name="tags" id="tags" ng-model="stream.hashtags" autocomplete="off"
-                                   placeholder="{{ tr('FR_HASHTAGS_PLACEHOLDER') }}" />
-
+                            <hashtags id="tags" ng-model="stream.hashtags" placeholder="{{ tr('FR_HASHTAGS_PLACEHOLDER') }}"></hashtags>
                         </td>
                     </tr>
                     <tr>

@@ -1,0 +1,24 @@
+hashtags {
+  display: inline-block;
+  cursor: text;
+  position: relative;
+  .current-tag {
+    cursor: text;
+    outline: none;
+  }
+  .current-hash:before {
+    content: "#";
+  }
+  .tags {
+    .tag {
+      padding: 0 2px;
+      border: 1px solid #c8c8c8;
+      border-radius: 4px;
+      margin-right: 2px;
+      display: inline-block;
+      &:before {
+        content: "#";
+      }
+    }
+  }
+}

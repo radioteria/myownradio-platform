@@ -62,6 +62,8 @@ class DoGetJavascriptModules implements Controller {
 
             "application/modules/directives/directives.player.js",
 
+            "application/modules/ui/ui.hashtags.js",
+
             "js/libs/mortip.js"
         ];
 

@@ -10,7 +10,7 @@
                 ngModel: "="
             },
             restrict: "E",
-            template: '<span class="tags"><span class="tag" ng-repeat="tag in tags" ng-bind="tag"></span></span><span ng-if="focused">#</span><span class="current-tag" contenteditable="true"></span>',
+            template: '<span class="tags"><span class="tag" ng-repeat="tag in tags" ng-bind="tag" ng-click="tags.splice($index, 1)"></span></span><span class="current-tag" contenteditable="true"></span>',
             require: "?ngModel",
             link: function (scope, element, attrs) {
                 var update = function () {
@@ -18,7 +18,11 @@
                     },
                     push = function (that) {
                         if (that.innerHTML.length) {
-                            scope.tags.push(that.innerHTML);
+                            if (that.innerHTML.substr(0, 1) == "#") {
+                                scope.tags.push(that.innerHTML.substr(1));
+                            } else {
+                                scope.tags.push(that.innerHTML);
+                            }
                             update();
                             that.innerHTML = "";
                         }
@@ -39,6 +43,7 @@
                                     return false;
                                 }
                                 break;
+                            case 13: // enter key
                             case 188: // comma key
                                 scope.$apply(function () {
                                     push(that);

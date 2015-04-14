@@ -68,6 +68,8 @@ class Mailer {
             error_log(sprintf("Message to '%s' could not be sent", $targets));
         }
 
+        return $result;
+
     }
 
     public function queue() {

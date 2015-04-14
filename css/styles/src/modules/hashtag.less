@@ -1,17 +1,11 @@
 hashtags {
   display: inline-block;
   cursor: text;
-  position: relative;
-  min-height: 32px;
-  vertical-align: middle;
+  font-size: 9pt;
   .current-tag {
-    vertical-align: middle;
-    padding: 2px 0;
     cursor: text;
     outline: none;
-  }
-  .current-hash:before {
-    content: "#";
+    padding: 0 4px;
   }
   .tags {
     .tag {
@@ -24,6 +18,9 @@ hashtags {
       color: #ffffff;
       &:before {
         content: "#";
+      }
+      &:hover {
+        text-decoration: line-through;
       }
     }
   }

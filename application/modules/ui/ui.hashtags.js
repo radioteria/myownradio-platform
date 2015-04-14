@@ -30,6 +30,9 @@
                 scope.tags = [];
                 scope.focused = false;
                 scope.placeholder = attrs.placeholder;
+                element.bind("click", function () {
+                    element.find(".current-tag").focus();
+                });
                 element.find(".current-tag")
                     .bind("keydown", function (event) {
                         var that = this;

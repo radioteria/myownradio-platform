@@ -152,6 +152,16 @@ function copyArrayValues($source, $destination) {
     }
 }
 
+/**
+ * Inserts HTML line breaks before all newlines in a string
+ * @param str
+ * @returns {*|XML|string|angular.ILocationService|void}
+ */
+function nl2br( str ) {
+    return str.replace(/([^>])\n/g, '$1<br/>');
+}
+
+
 window.Of = {
     megabytes: function (mb) { return Of.kilobytes(mb) * 1024 },
     kilobytes: function (kb) { return kb * 1024 },

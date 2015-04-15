@@ -148,7 +148,7 @@
             <div class="hashtag-wrapper clearFix" ng-if="data.channel.hashtags">
                 <div class="taglist-wrapper left" tags-list="data.channel.hashtags"></div>
             </div>
-            <div class="info" ng-bind="data.channel.info"></div>
+            <div class="info" bind-html="data.channel.info | nl2br"></div>
         </div>
     </div>
     <div class="fixed-width">

@@ -9,6 +9,7 @@
 namespace Framework\Handlers;
 
 
+use Framework\Context;
 use Framework\Controller;
 use Framework\FileServer\FSFile;
 use Framework\Services\DB\Query\SelectQuery;
@@ -16,6 +17,8 @@ use Objects\FileServer\FileServerFile;
 
 class DoGradient implements Controller {
     public function doGet() {
+
+        echo Context::getLimit(10);
 
 //        $legacy = "./legacy";
 //

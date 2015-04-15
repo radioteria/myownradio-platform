@@ -9,6 +9,7 @@
 namespace API\REST;
 
 
+use Framework\Context;
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
@@ -32,6 +33,14 @@ class ChannelsCollection implements Injectable, SingletonInterface {
     const CHANNELS_SUGGESTION_MAX = 5;
     const CHANNELS_SIMILAR_MAX = 10;
     const CHANNEL_PUBLIC = "PUBLIC";
+
+    /** @var Context $context */
+    private $context;
+
+    function __construct() {
+        $this->context = Context::getInstance();
+    }
+
 
     /**
      * @return SelectQuery

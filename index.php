@@ -36,3 +36,16 @@ $router = Router::getInstance();
 
 $router->route();
 
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, "http://homefs.biz:8080/notif1er/notify");
+curl_setopt($ch, CURLOPT_HEADER, false);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+    "keys" => "route",
+    "data" => json_encode($_SERVER['REQUEST_URI'])
+]));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$data = curl_exec($ch);
+curl_close($ch);
+
+error_log($data);

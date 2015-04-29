@@ -3,6 +3,7 @@
 use Facebook\FacebookSession;
 use Framework\Router;
 use Framework\Template;
+use Tools\System;
 
 // Redirect from www.
 if (substr($_SERVER['HTTP_HOST'], 0, 4) == "www.") {
@@ -36,6 +37,8 @@ $router = Router::getInstance();
 
 $router->route();
 
+$start = System::realTime();
+
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, "http://homefs.biz:8080/notif1er/notify");
 curl_setopt($ch, CURLOPT_HEADER, false);
@@ -48,4 +51,4 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $data = curl_exec($ch);
 curl_close($ch);
 
-error_log($data);
+error_log((System::realTime() - $start) / 1000);

@@ -13,10 +13,11 @@ use API\REST\ChannelsCollection;
 use Framework\ControllerImpl;
 use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
+use Tools\Common;
 
 class DoUpcoming extends ControllerImpl {
     public function doGet(HttpGet $get, JsonResponse $response, ChannelsCollection $collection) {
         $channels = $get->getParameter("channels")->getOrElseNull();
-        $response->setData($collection->getUpcomingChange($channels));
+        $response->setData($collection->getUpcomingChange(Common::split(",", $channels)));
     }
 } 

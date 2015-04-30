@@ -23,7 +23,8 @@ abstract class BaseQuery implements \Countable {
         "SET" => [],
         "WHERE" => [],
         "INSERT" => [],
-        "UPDATE" => []
+        "UPDATE" => [],
+        "HAVING" => []
     ];
 
     protected $limit = null;
@@ -50,7 +51,8 @@ abstract class BaseQuery implements \Countable {
     }
 
     public function getParameters() {
-        return array_merge($this->parameters["INSERT"], $this->parameters["SET"], $this->parameters["WHERE"]);
+        return array_merge($this->parameters["INSERT"], $this->parameters["SET"],
+            $this->parameters["WHERE"], $this->parameters["HAVING"]);
     }
 
     public function orderBy($column) {
@@ -61,7 +63,6 @@ abstract class BaseQuery implements \Countable {
         }
         return $this;
     }
-
 
     public function buildLimits() {
 

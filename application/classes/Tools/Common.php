@@ -14,6 +14,16 @@ class Common {
     const GENERATED_ID_LENGTH = 8;
 
     /**
+     * @param $delimiter
+     * @param $str
+     * @return array|null
+     */
+    public static function split($delimiter, $str) {
+        if ($str === null) return null;
+        return explode($delimiter, $str);
+    }
+
+    /**
      * @param string $pattern
      * @param array $args
      * @return mixed

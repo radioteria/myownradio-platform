@@ -14,7 +14,7 @@ use Tools\Lang;
 
 class SelectQuery extends BaseQuery implements QueryBuilder {
 
-    use WhereSection, SelectSection;
+    use WhereSection, SelectSection, HavingSection;
 
 
     protected $groups = [];
@@ -81,6 +81,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
         $query[] = $this->buildLeftJoins();
         $query[] = $this->buildWheres($pdo);
         $query[] = $this->buildGroupBy();
+        $query[] = $this->buildHaving($pdo);
         $query[] = $this->buildOrderBy();
         $query[] = $this->buildLimits();
 

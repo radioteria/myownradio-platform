@@ -15,17 +15,20 @@ use Framework\Models\PlaylistModel;
 use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
+use Framework\Services\Notif1er;
 
 class DoAddTracks implements Controller {
-    public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response) {
+    public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response, Notif1er $notif1er) {
 
-        $id = $post->getParameter("stream_id")->getOrElseThrow(ControllerException::noArgument("stream_id"));
-        $tracks = $post->getParameter("tracks")->getOrElseThrow(ControllerException::noArgument("tracks"));
-        $upNext = boolval($post->getParameter("up_next")->getOrElseFalse());
+        $id = $post->getRequired("stream_id");
+        $tracks = $post->getRequired("tracks");
+        $upNext = $post->getParameter("up_next", FILTER_VALIDATE_BOOLEAN)->getOrElseFalse();
 
         $validator->validateTracksList($tracks);
 
         PlaylistModel::getInstance($id)->addTracks($tracks, $upNext);
+
+        $notif1er->notify("mor:playlist:order", $id);
 
     }
 } 

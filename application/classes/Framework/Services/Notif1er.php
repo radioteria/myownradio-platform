@@ -15,6 +15,7 @@ use Tools\Singleton;
 use Tools\SingletonInterface;
 
 class Notif1er implements SingletonInterface, Injectable {
+
     use Singleton;
 
     public function notify($key, $data) {
@@ -29,4 +30,5 @@ class Notif1er implements SingletonInterface, Injectable {
         curl_exec($ch);
         curl_close($ch);
     }
+
 }

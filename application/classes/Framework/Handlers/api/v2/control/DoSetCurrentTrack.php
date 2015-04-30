@@ -13,15 +13,18 @@ use Framework\Controller;
 use Framework\Models\PlaylistModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
+use Framework\Services\Notif1er;
 
 class DoSetCurrentTrack implements Controller {
 
-    public function doPost(HttpPost $post, JsonResponse $response) {
+    public function doPost(HttpPost $post, JsonResponse $response, Notif1er $notif1er) {
 
         $id     = $post->getRequired("stream_id");
         $track  = $post->getRequired("unique_id");
 
         PlaylistModel::getInstance($id)->scPlayByUniqueID($track);
+
+        $notif1er->notify("mor:channel:play_from", ["channel_id" => $id, "unique_id" => $track]);
 
     }
 

@@ -13,10 +13,11 @@ use Framework\Controller;
 use Framework\Models\StreamModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
+use Framework\Services\Notif1er;
 
 class DoModify implements Controller {
 
-    public function doPost(HttpPost $post, JsonResponse $response) {
+    public function doPost(HttpPost $post, JsonResponse $response, Notif1er $notif1er) {
 
         $id = $post->getRequired("stream_id");
 
@@ -30,6 +31,8 @@ class DoModify implements Controller {
         $stream = StreamModel::getInstance($id);
 
         $stream->update($name, $info, $permalink, $tags, $category, $access);
+
+        $notif1er->notify("mor:channel:modify", $id);
 
     }
 } 

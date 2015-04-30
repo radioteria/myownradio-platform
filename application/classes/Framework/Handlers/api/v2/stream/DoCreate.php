@@ -9,16 +9,19 @@
 namespace Framework\Handlers\api\v2\stream;
 
 
+use API\REST\ChannelsCollection;
 use Framework\Controller;
 use Framework\Models\StreamsModel;
 use Framework\Services\HttpFiles;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
+use Framework\Services\Notif1er;
 use Framework\Services\Services;
 use REST\Streams;
 
 class DoCreate implements Controller {
-    public function doPost(HttpPost $post, StreamsModel $model, JsonResponse $response, HttpFiles $file, Services $svc) {
+    public function doPost(HttpPost $post, StreamsModel $model,
+                           JsonResponse $response, HttpFiles $file, Services $svc, Notif1er $notif1er) {
 
         // Get user input parameters
         $name = $post->getRequired("name");
@@ -36,9 +39,11 @@ class DoCreate implements Controller {
             $svc->getStream($stream)->changeCover($file);
         });
 
-
+        $data = ChannelsCollection::getInstance()->getOneChannel($stream);
         // Write out new stream object
-        $response->setData(Streams::getInstance()->getOneStream($stream));
+        $response->setData($data);
+
+        $notif1er->notify("mor:channel:new", $data);
 
     }
 } 

@@ -18,9 +18,12 @@ use Framework\Services\DB\DBQuery;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 use Framework\Services\Locale\I18n;
+use Framework\Services\Notif1er;
 
 class DoDislike extends ControllerImpl {
-    public function doPost(HttpPost $post, JsonResponse $response, DBQuery $dbq, AuthUserModel $userModel, TrackCollection $trackCollection) {
+    public function doPost(HttpPost $post, JsonResponse $response,
+                           DBQuery $dbq, AuthUserModel $userModel,
+                           TrackCollection $trackCollection, Notif1er $notif1er) {
         $track_id = $post->getRequired("track_id", FILTER_VALIDATE_INT);
         $query = $dbq->into("mor_track_like");
         $query->values("user_id", $userModel->getID());
@@ -33,5 +36,6 @@ class DoDislike extends ControllerImpl {
         }
         $track = $trackCollection->getSingleTrack($track_id);
         $response->setData($track);
+        $notif1er->notify("mor:track:dislike", $track_id);
     }
 } 

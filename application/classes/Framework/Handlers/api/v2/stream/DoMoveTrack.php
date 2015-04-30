@@ -14,10 +14,11 @@ use Framework\Exceptions\ControllerException;
 use Framework\Models\PlaylistModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
+use Framework\Services\Notif1er;
 
 class DoMoveTrack implements Controller {
 
-    public function doPost(HttpPost $post, JsonResponse $response) {
+    public function doPost(HttpPost $post, JsonResponse $response, Notif1er $notif1er) {
 
         $id = $post->getParameter("stream_id")
             ->getOrElseThrow(ControllerException::noArgument("stream_id"));
@@ -27,6 +28,8 @@ class DoMoveTrack implements Controller {
             ->getOrElseThrow(ControllerException::noArgument("new_index"));
 
         PlaylistModel::getInstance($id)->moveTrack($uniqueId, $index);
+
+        $notif1er->notify("mor:playlist:order", $id);
 
     }
 

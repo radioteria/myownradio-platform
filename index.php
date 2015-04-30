@@ -38,4 +38,4 @@ $router = Router::getInstance();
 
 $router->route();
 
-Notif1er::getInstance()->notify("mor_route", $_SERVER["REQUEST_URI"]);
+

@@ -20,7 +20,7 @@ class Notif1er implements SingletonInterface, Injectable {
 
     public function notify($key, $data) {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, Defaults::NOTIFIER_URL . "?keys=" . $key);
+        curl_setopt($ch, CURLOPT_URL, Defaults::NOTIFIER_URL . "?app=mor&keys=" . $key);
         curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));

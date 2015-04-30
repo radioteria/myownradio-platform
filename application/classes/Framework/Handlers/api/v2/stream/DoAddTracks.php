@@ -28,7 +28,7 @@ class DoAddTracks implements Controller {
 
         PlaylistModel::getInstance($id)->addTracks($tracks, $upNext);
 
-        $notif1er->notify("mor:playlist:order", $id);
+        $notif1er->event("tracklist", $id, "state_change", null);
 
     }
 } 

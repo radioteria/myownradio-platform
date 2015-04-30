@@ -18,6 +18,10 @@ class Notif1er implements SingletonInterface, Injectable {
 
     use Singleton;
 
+    /**
+     * @param $key
+     * @param $data
+     */
     public function notify($key, $data) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, Defaults::NOTIFIER_URL . "?app=mor&keys=" . $key);
@@ -29,6 +33,20 @@ class Notif1er implements SingletonInterface, Injectable {
         curl_setopt($ch, CURLOPT_TIMEOUT, Defaults::NOTIFIER_TIMEOUT);
         curl_exec($ch);
         curl_close($ch);
+    }
+
+    /**
+     * @param $key
+     * @param $subject
+     * @param $event
+     * @param $data
+     */
+    public function event($key, $subject, $event, $data) {
+        $this->notify($key, [
+            "subject" => $subject,
+            "event" => $event,
+            "data" => $data
+        ]);
     }
 
 }

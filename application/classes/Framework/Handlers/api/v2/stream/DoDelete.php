@@ -24,7 +24,7 @@ class DoDelete implements Controller {
         $model = StreamModel::getInstance($id);
         $model->delete();
 
-        $notif1er->notify("mor:channel:delete", $id);
+        $notif1er->event("channel", $id, "delete", null);
 
     }
 

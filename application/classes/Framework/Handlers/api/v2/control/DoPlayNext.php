@@ -23,7 +23,7 @@ class DoPlayNext implements Controller {
 
         PlaylistModel::getInstance($id)->scPlayNext();
 
-        $notif1er->notify("mor:channel:play_next", $id);
+        $notif1er->event("tracklist", $id, "state_change", null);
 
     }
 

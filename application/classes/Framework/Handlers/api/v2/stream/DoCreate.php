@@ -43,7 +43,5 @@ class DoCreate implements Controller {
         // Write out new stream object
         $response->setData($data);
 
-        $notif1er->notify("mor:channel:new", $data);
-
     }
 } 

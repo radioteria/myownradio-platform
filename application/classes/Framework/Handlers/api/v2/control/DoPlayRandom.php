@@ -23,7 +23,7 @@ class DoPlayRandom implements Controller {
 
         PlaylistModel::getInstance($id)->scPlayRandom();
 
-        $notif1er->notify("mor:channel:play_random", $id);
+        $notif1er->event("tracklist", $id, "state_change", null);
 
     }
 

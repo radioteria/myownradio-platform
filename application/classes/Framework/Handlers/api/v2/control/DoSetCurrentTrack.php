@@ -24,7 +24,7 @@ class DoSetCurrentTrack implements Controller {
 
         PlaylistModel::getInstance($id)->scPlayByUniqueID($track);
 
-        $notif1er->notify("mor:channel:play_from", ["channel_id" => $id, "unique_id" => $track]);
+        $notif1er->event("tracklist", $id, "state_change", null);
 
     }
 

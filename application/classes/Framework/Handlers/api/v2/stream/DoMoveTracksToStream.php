@@ -16,6 +16,5 @@ use Framework\Services\JsonResponse;
 class DoMoveTracksToStream {
     public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response) {
 
-
     }
 } 

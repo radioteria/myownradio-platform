@@ -32,7 +32,5 @@ class DoModify implements Controller {
 
         $stream->update($name, $info, $permalink, $tags, $category, $access);
 
-        $notif1er->notify("mor:channel:modify", $id);
-
     }
 } 

@@ -36,6 +36,8 @@ class DoDislike extends ControllerImpl {
         }
         $track = $trackCollection->getSingleTrack($track_id);
         $response->setData($track);
-        $notif1er->notify("mor:track:dislike", $track_id);
+
+        $notif1er->event("track", $track_id, "dislike", $track);
+
     }
 } 

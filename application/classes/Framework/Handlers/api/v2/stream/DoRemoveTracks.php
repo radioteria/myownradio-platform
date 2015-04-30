@@ -24,7 +24,7 @@ class DoRemoveTracks implements Controller {
 
         PlaylistModel::getInstance($id)->removeTracks($tracks);
 
-        $notif1er->notify("mor:playlist:order", $id);
+        $notif1er->event("tracklist", $id, "state_change", null);
 
     }
 

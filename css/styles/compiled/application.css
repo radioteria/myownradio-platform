@@ -2326,7 +2326,7 @@ hashtags .current-tag {
   padding: 1px 4px 0px;
   min-width: 1px;
 }
-hashtags .current-tag:focus:empty:before {
+hashtags .current-tag:empty:before {
   display: block;
   content: attr(placeholder);
 }

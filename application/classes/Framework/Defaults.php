@@ -22,6 +22,9 @@ class Defaults {
     const HASHING_ALGORITHM = "sha512";
     const SCHEDULE_TIME_SHIFT = 5000;
 
+    const NOTIFIER_URL = "http://localhost:8080/notif1er/notify";
+    const NOTIFIER_TIMEOUT = 5;
+
     /**
      * @return array
      */

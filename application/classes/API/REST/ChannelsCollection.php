@@ -81,6 +81,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         $query->where("(d.time_offset + e.duration > MOD(:micro - (a.started - a.started_from), b.tracks_duration))");
 
         $query->select("CONCAT(e.artist, IF(e.artist != '', ' - ', ''), e.title) as now_playing");
+        $query->select("e.duration - (MOD(:micro - (a.started - a.started_from), b.tracks_duration) - d.time_offset) as time_left");
 
         $query->addGroupBy("a.sid");
 
@@ -104,6 +105,15 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
     }
 
+    public function getUpcomingChange(array $channels = null) {
+        $query = $this->channelPrefix();
+        $query->where("a.sid", $channels);
+        $this->addNowPlaying($query);
+        $query->orderBy("time_left ASC");
+        $query->limit(1);
+        return $query->fetchOneRow()->getOrElseNull();
+    }
+
     /**
      * @param $channel_id
      * @return mixed
@@ -125,7 +135,9 @@ class ChannelsCollection implements Injectable, SingletonInterface {
      */
     public function getChannelsPopular($offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
 
-        $query = $this->channelNowPlayingPrefix();
+        $query = $this->channelPrefix();
+
+        $this->addNowPlaying($query);
 
         if (is_numeric($offset) && $offset >= 0) {
             $query->offset($offset);

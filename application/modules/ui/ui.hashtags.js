@@ -10,7 +10,7 @@
                 ngModel: "="
             },
             restrict: "E",
-            template: '<span class="tags"><span class="tag" ng-repeat="tag in tags" ng-bind="tag" ng-click="tags.splice($index, 1)"></span></span><span class="current-tag" contenteditable="true"></span>',
+            template: '<span class="tags"><span class="tag" ng-repeat="tag in tags" ng-bind="tag" ng-click="tags.splice($index, 1)"></span></span><span class="current-tag" placeholder="Type hashtag here" contenteditable="true"></span>',
             require: "?ngModel",
             link: function (scope, element, attrs) {
                 var update = function () {

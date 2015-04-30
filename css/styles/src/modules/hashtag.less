@@ -2,12 +2,20 @@ hashtags {
   display: inline-block;
   cursor: text;
   font-size: 9pt;
+  vertical-align: middle;
   .current-tag {
+    float: left;
     cursor: text;
     outline: none;
-    padding: 0 4px;
+    padding: 1px 4px 0px;
+    min-width: 1px;
+    &:focus:empty:before {
+      display: block;
+      content: attr(placeholder);
+    }
   }
   .tags {
+    float: left;
     .tag {
       padding: 1px 6px;
       border-radius: 8px;

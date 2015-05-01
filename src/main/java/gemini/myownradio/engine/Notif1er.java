@@ -59,7 +59,11 @@ public class Notif1er {
     static {
         Thread thread = new Thread(() -> {
             while (true) {
-                jobs.poll().run();
+                try {
+                    jobs.take().run();
+                } catch (InterruptedException e) {
+                    break;
+                }
             }
         });
         thread.setName("Event Pool");

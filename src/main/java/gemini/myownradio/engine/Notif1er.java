@@ -55,14 +55,13 @@ public class Notif1er {
     final private static String NOTIFY_URL = "http://myownradio.biz:8080/notif1er/notify?app=mor";
 
     final private static BlockingQueue<Runnable> jobs = new LinkedBlockingQueue<>();
-    final private static Thread thread = new Thread(() -> {
-        Runnable runnable;
-        while((runnable = jobs.poll()) != null) {
-            runnable.run();
-        }
-    });
 
     static {
+        Thread thread = new Thread(() -> {
+            while (true) {
+                jobs.poll().run();
+            }
+        });
         thread.setName("Event Pool");
         thread.start();
     }

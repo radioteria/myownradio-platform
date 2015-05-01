@@ -63,6 +63,7 @@ public class Notif1er {
     });
 
     static {
+        thread.setName("Event Pool");
         thread.start();
     }
 

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by LRU on 01.05.2015.
@@ -44,9 +46,25 @@ public class Notif1er {
             event(keys, this);
         }
 
+        public void queue(String keys) {
+            jobs.add(() -> event(keys, this));
+        }
+
     }
 
     final private static String NOTIFY_URL = "http://myownradio.biz:8080/notif1er/notify?app=mor";
+
+    final private static BlockingQueue<Runnable> jobs = new LinkedBlockingQueue<>();
+    final private static Thread thread = new Thread(() -> {
+        Runnable runnable;
+        while((runnable = jobs.poll()) != null) {
+            runnable.run();
+        }
+    });
+
+    static {
+        thread.start();
+    }
 
     public static void notify(String key, Object data) {
         ObjectMapper mapper = new ObjectMapper();

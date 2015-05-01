@@ -56,7 +56,7 @@ public class FlowListener {
 
             logger.sprintf("New listener obtained ID #%d", this.listener_id);
 
-            new Event("listener.new", this.stream_id, this.listener_id).send("str");
+            new Event("listener.new", this.stream_id, this.listener_id).queue("str");
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -75,7 +75,7 @@ public class FlowListener {
 
             logger.sprintf("Finishing listener #%d session", this.listener_id);
 
-            new Event("listener.gone", this.stream_id, this.listener_id).send("str");
+            new Event("listener.gone", this.stream_id, this.listener_id).queue("str");
 
         }
     }

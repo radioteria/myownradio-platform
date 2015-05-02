@@ -55,43 +55,41 @@ public class AudioFlowBootstrap {
     public void startStreamer() throws IOException, SQLException {
 
         if (this.streamObject.getMaxClients() >= ClientCounter.getClientsByStreamId(streamObject.getOwner())) {
-            System.out.println("New LISTENER");
             ClientCounter.registerNewClient(streamObject.getOwner());
         } else {
             throw LHttpException.forbidden();
         }
 
 
-            ConcurrentBufferKey streamKey = new ConcurrentBufferKey(
-                    encoder.getAudioFormat().getFormat(),
-                    encoder.getAudioFormat().getBitrate(),
-                    this.streamObject.getId()
-            );
+        ConcurrentBufferKey streamKey = new ConcurrentBufferKey(
+                encoder.getAudioFormat().getFormat(),
+                encoder.getAudioFormat().getBitrate(),
+                this.streamObject.getId()
+        );
 
-            int streamingBufferLength = MORSettings.getFirstInteger("server", "streaming_buffer").orElse(5);
+        int streamingBufferLength = MORSettings.getFirstInteger("server", "streaming_buffer").orElse(5);
 
-            int bufferSize = (encoder.getAudioFormat().getBitrate() >> 3) * streamingBufferLength;
+        int bufferSize = (encoder.getAudioFormat().getBitrate() >> 3) * streamingBufferLength;
 
-            ConcurrentBuffer broadcast;
+        ConcurrentBuffer broadcast;
 
-            logger.sprintf("Using buffer size=%d key=%s", bufferSize, streamKey.toString());
+        logger.sprintf("Using buffer size=%d key=%s", bufferSize, streamKey.toString());
 
-            if ((broadcast = ConcurrentBufferRepository.getBC(streamKey)) == null) {
-                broadcast = ConcurrentBufferRepository.createBC(streamKey, bufferSize);
-                Thread streamer = new Thread(new StreamRadio(broadcast, encoder, streamObject));
-                streamer.setName(streamKey.toString());
-                streamer.setDaemon(true);
-                streamer.start();
-            }
+        if ((broadcast = ConcurrentBufferRepository.getBC(streamKey)) == null) {
+            broadcast = ConcurrentBufferRepository.createBC(streamKey, bufferSize);
+            Thread streamer = new Thread(new StreamRadio(broadcast, encoder, streamObject));
+            streamer.setName(streamKey.toString());
+            streamer.setDaemon(true);
+            streamer.start();
+        }
 
-            ListenRadio listener = new ListenRadio(exchange, useIcyMetadata, broadcast, encoder, streamObject);
+        ListenRadio listener = new ListenRadio(exchange, useIcyMetadata, broadcast, encoder, streamObject);
 
         try {
 
             listener.listen();
 
         } finally {
-            System.out.println("No LISTENER");
             ClientCounter.unregisterClient(streamObject.getOwner());
         }
     }

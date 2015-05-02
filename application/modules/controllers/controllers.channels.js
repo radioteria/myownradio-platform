@@ -13,20 +13,20 @@
             $scope.trackAction = TrackListActions;
             $scope.actionProvider = ChannelListActions;
 
-            $scope.$on("event", function (e, data) {
-                var event = data.data;
-                if (event.subject == $scope.data.channel.sid) {
-                    if (event.event === "listener.new") {
-                        $scope.data.channel.listeners_count += 1;
-                    } else if (event.event === "listener.gone") {
-                        $scope.data.channel.listeners_count = Math.max($scope.data.channel.listeners_count - 1, 0);
-                    } else if (event.event === "bookmark.new") {
-                        $scope.data.channel.bookmarks_count += 1;
-                    } else if (event.event === "bookmark.remove") {
-                        $scope.data.channel.bookmarks_count = Math.max($scope.data.channel.bookmarks_count - 1, 0);
-                    }
-                }
-            });
+            //$scope.$on("event", function (e, data) {
+            //    var event = data.data;
+            //    if (event.subject == $scope.data.channel.sid) {
+            //        if (event.event === "listener.new") {
+            //            $scope.data.channel.listeners_count += 1;
+            //        } else if (event.event === "listener.gone") {
+            //            $scope.data.channel.listeners_count = Math.max($scope.data.channel.listeners_count - 1, 0);
+            //        } else if (event.event === "bookmark.new") {
+            //            $scope.data.channel.bookmarks_count += 1;
+            //        } else if (event.event === "bookmark.remove") {
+            //            $scope.data.channel.bookmarks_count = Math.max($scope.data.channel.bookmarks_count - 1, 0);
+            //        }
+            //    }
+            //});
         }
     ]);
 

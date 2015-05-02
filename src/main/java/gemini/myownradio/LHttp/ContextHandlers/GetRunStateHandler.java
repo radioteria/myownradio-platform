@@ -2,6 +2,7 @@ package gemini.myownradio.LHttp.ContextHandlers;
 
 import gemini.myownradio.LHttp.LHttpHandler;
 import gemini.myownradio.LHttp.LHttpProtocol;
+import gemini.myownradio.engine.Notif1er;
 import gemini.myownradio.tools.ClientCounter;
 
 import java.io.IOException;
@@ -34,7 +35,9 @@ public class GetRunStateHandler implements LHttpHandler {
 
         Thread.getAllStackTraces().keySet().stream()
                 .filter(t -> t.getThreadGroup().getName().equals("main"))
-                .forEach(t -> { out.println(" * " + t.getName()); });
+                .forEach(t -> {
+                    out.println(" * " + t.getName());
+                });
 
         out.println("");
         out.println("Active clients:");
@@ -42,6 +45,9 @@ public class GetRunStateHandler implements LHttpHandler {
         for (Integer key : ClientCounter.getClients().keySet()) {
             out.println(key + ": " + ClientCounter.getClients().get(key));
         }
+
+        out.println("");
+        out.println("Event queue size : " + Notif1er.queueSize());
 
         exchange.flush();
 

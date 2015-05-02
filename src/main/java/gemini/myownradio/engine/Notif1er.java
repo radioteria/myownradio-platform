@@ -94,4 +94,8 @@ public class Notif1er {
         notify(keys, event);
     }
 
+    public static int queueSize() {
+        return  jobs.size();
+    }
+
 }

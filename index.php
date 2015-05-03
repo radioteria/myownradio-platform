@@ -2,21 +2,19 @@
 
 use Facebook\FacebookSession;
 use Framework\Router;
-use Framework\Services\Notif1er;
 use Framework\Template;
-use Tools\System;
 
 // Redirect from www.
 if (substr($_SERVER['HTTP_HOST'], 0, 4) == "www.") {
-    $redirect = "https://".substr($_SERVER['HTTP_HOST'], 4).$_SERVER['REQUEST_URI'];
+    $redirect = "https://" . substr($_SERVER['HTTP_HOST'], 4) . $_SERVER['REQUEST_URI'];
     header("HTTP/1.1 301 Moved Permanently");
     header("Location: $redirect");
     die();
 }
 
 // Allow only https access
-if ((!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "") && substr($_SERVER['HTTP_HOST'], 0, 5) != "test."){
-    $redirect = "https://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+if ((!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "") && substr($_SERVER['HTTP_HOST'], 0, 5) != "test.") {
+    $redirect = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
     header("HTTP/1.1 301 Moved Permanently");
     header("Location: $redirect");
     die();

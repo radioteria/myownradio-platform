@@ -19,14 +19,6 @@
 
             rotate();
 
-            //$rootScope.$on("event", function (event, data) {
-            //    if (data.data.event === "listener.new") {
-            //        $rootScope.stats.listeners_count += 1;
-            //    } else if (data.data.event === "listener.gone") {
-            //        $rootScope.stats.listeners_count = Math.max($rootScope.stats.listeners_count - 1, 0);
-            //    }
-            //});
-
             $rootScope.tr = function (key, context) {
                 return $localize.analyze(locale[key], context);
             };

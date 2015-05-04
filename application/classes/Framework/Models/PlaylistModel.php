@@ -350,25 +350,6 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
         });
 
-//        $timeOffset = 0;
-//        $orderIndex = 0;
-//
-//        $pool = new DBQueryPool();
-//
-//        $query = new SelectQuery("mor_stream_tracklist_view");
-//        $query->where("stream_id", $this->key);
-//        $query->eachRow(function ($track) use (&$timeOffset, &$orderIndex, $pool) {
-//
-//            $q = new UpdateQuery("r_link");
-//            $q->set(["time_offset" => $timeOffset, "t_order" => ++$orderIndex]);
-//            $q->where("id", $track["id"]);
-//            $pool->put($q);
-//            $timeOffset += $track["duration"];
-//
-//        });
-//
-//        $pool->execute();
-
     }
 
     /**

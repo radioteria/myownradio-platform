@@ -334,8 +334,6 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                 $db->executeUpdate("CALL PShuffleStream(?)", [$this->key]);
             });
 
-            $this->optimize();
-
         });
 
         return $this;
@@ -344,24 +342,32 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     public function optimize() {
 
-        $timeOffset = 0;
-        $orderIndex = 0;
+        $this->doAtomic(function () {
 
-        $pool = new DBQueryPool();
-
-        $query = new SelectQuery("mor_stream_tracklist_view");
-        $query->where("stream_id", $this->key);
-        $query->eachRow(function ($track) use (&$timeOffset, &$orderIndex, $pool) {
-
-            $q = new UpdateQuery("r_link");
-            $q->set(["time_offset" => $timeOffset, "t_order" => ++$orderIndex]);
-            $q->where("id", $track["id"]);
-            $pool->put($q);
-            $timeOffset += $track["duration"];
+            Database::doInConnection(function (Database $db) {
+                $db->executeUpdate("CALL POptimizeStream(?)", [$this->key]);
+            });
 
         });
 
-        $pool->execute();
+//        $timeOffset = 0;
+//        $orderIndex = 0;
+//
+//        $pool = new DBQueryPool();
+//
+//        $query = new SelectQuery("mor_stream_tracklist_view");
+//        $query->where("stream_id", $this->key);
+//        $query->eachRow(function ($track) use (&$timeOffset, &$orderIndex, $pool) {
+//
+//            $q = new UpdateQuery("r_link");
+//            $q->set(["time_offset" => $timeOffset, "t_order" => ++$orderIndex]);
+//            $q->where("id", $track["id"]);
+//            $pool->put($q);
+//            $timeOffset += $track["duration"];
+//
+//        });
+//
+//        $pool->execute();
 
     }
 

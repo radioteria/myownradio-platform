@@ -15,6 +15,7 @@ use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
+use Framework\Services\Database;
 use Framework\Services\DB\Query\SelectQuery;
 use Tools\Common;
 use Tools\Singleton;
@@ -113,10 +114,11 @@ class ChannelsCollection implements Injectable, SingletonInterface {
     public function getRandomChannel() {
 
         $query = $this->channelPrefix();
-        $query->innerJoin("r_listener l", "l.stream = a.sid");
-
-        $query->orderBy("RAND()");
-        $query->limit(1);
+        $sum = (new SelectQuery("r_static_stream_vars"))->select("sum(summary_played)")->fetchOneColumn()->get();
+        $rand = rand(0, $sum);
+        $ch = (new SelectQuery("r_static_stream_vars, (SELECT @acc := 0) t"))->select("stream_id", "@acc:=@acc+summary_played AS acc")
+            ->having("acc >= ?", [$rand])->fetchOneColumn()->get();
+        $query->where("sid", $ch);
 
         return $query->fetchOneRow()->getOrElseThrow(ControllerException::of("No available channels found!"));
 

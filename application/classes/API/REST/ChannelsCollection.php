@@ -87,24 +87,6 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
     }
 
-//    private function channelNowPlayingPrefix() {
-//
-//        $prefix = $this->channelPrefix();
-//
-//        $prefix->innerJoin("r_link d", "d.stream_id = a.sid");
-//        $prefix->innerJoin("r_tracks e", "e.tid = d.track_id");
-//
-//        $prefix->where("(d.time_offset < MOD((UNIX_TIMESTAMP() * 1000) - (a.started - a.started_from), b.tracks_duration))");
-//        $prefix->where("(d.time_offset + e.duration > MOD((UNIX_TIMESTAMP() * 1000) - (a.started - a.started_from), b.tracks_duration))");
-//
-//        $prefix->select("CONCAT(e.artist, IF(e.artist != '', ' - ', ''), e.title) as now_playing");
-//
-//        $prefix->addGroupBy("a.sid");
-//
-//        return $prefix;
-//
-//    }
-
     public function getUpcomingChange(array $channels = null, $threshold = 5000) {
         $query = $this->channelPrefix();
         $query->where("a.sid", $channels);
@@ -125,6 +107,18 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         $query->where("(a.sid = :key) OR (a.permalink IS NOT NULL AND a.permalink = :key)", [":key" => $channel_id]);
 
         return $query->fetchOneRow()->getOrElseThrow(ControllerException::noStream($channel_id));
+
+    }
+
+    public function getRandomChannel() {
+
+        $query = $this->channelPrefix();
+        $query->innerJoin("r_listener l", "l.stream = a.sid");
+
+        $query->orderBy("RAND()");
+        $query->limit(1);
+
+        return $query->fetchOneRow()->getOrElseThrow(ControllerException::of("No available channels found!"));
 
     }
 

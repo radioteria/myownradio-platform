@@ -381,7 +381,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
         $this->doAtomic(function () use (&$uniqueID, &$index) {
 
             Database::doInConnection(function (Database $db) use (&$uniqueID, &$index) {
-                $db->executeUpdate("SELECT NEW_STREAM_SORT(?, ?, ?)", [$this->key, $uniqueID, $index]);
+                $db->executeUpdate("CALL NEW_STREAM_SORT(?, ?, ?)", [$this->key, $uniqueID, $index]);
             });
 
         });

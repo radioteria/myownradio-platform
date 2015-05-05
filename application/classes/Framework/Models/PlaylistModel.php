@@ -331,7 +331,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
         $this->doAtomic(function () {
 
             Database::doInConnection(function (Database $db) {
-                $db->executeUpdate("CALL PShuffleStream(?)", [$this->key]);
+                $db->executeUpdate("CALL shuffle_channel(?)", [$this->key]);
             });
 
         });
@@ -345,7 +345,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
         $this->doAtomic(function () {
 
             Database::doInConnection(function (Database $db) {
-                $db->executeUpdate("CALL POptimizeStream(?)", [$this->key]);
+                $db->executeUpdate("CALL optimize_channel(?)", [$this->key]);
             });
 
         });
@@ -362,7 +362,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
         $this->doAtomic(function () use (&$uniqueID, &$index) {
 
             Database::doInConnection(function (Database $db) use (&$uniqueID, &$index) {
-                $db->executeUpdate("CALL NEW_STREAM_SORT(?, ?, ?)", [$this->key, $uniqueID, $index]);
+                $db->executeUpdate("CALL move_track_channel(?, ?, ?)", [$this->key, $uniqueID, $index]);
             });
 
         });

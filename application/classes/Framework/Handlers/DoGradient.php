@@ -12,35 +12,27 @@ namespace Framework\Handlers;
 use Framework\Context;
 use Framework\Controller;
 use Framework\FileServer\FSFile;
+use Framework\Services\Annotations\Annotation;
 use Framework\Services\DB\Query\SelectQuery;
+use Framework\Services\JsonResponse;
 use Objects\FileServer\FileServerFile;
 
 class DoGradient implements Controller {
-    public function doGet() {
-
-        echo Context::getLimit(10);
-
-//        $legacy = "./legacy";
-//
-//        $modules = (new SelectQuery("r_modules"))->fetchAll();
-//        echo getcwd();
-//        $keys = ["css", "js", "html", "tmpl", "post"];
-//        foreach ($modules as $module) {
-//
-//            foreach ($keys as $key) {
-//
-//                if (strlen($module[$key]) > 0) {
-//
-//                    mkdir($legacy."/".$key, 0777, true);
-//                    file_put_contents($legacy."/".$key."/".$module["name"].".".$key, $module[$key]);
-//                }
-//            }
-//        }
-
+    public function doGet(JsonResponse $response) {
+        $response->setData($this->parseAnnotation('@MyAnnotation({"key": "Hello, World"})')->getDefault());
     }
 
-    public function doHead() {
-        usleep(rand(500000, 5000000));
-        http_response_code(404);
+    /**
+     * @param $annotation
+     * @return Annotation
+     */
+    private function parseAnnotation($annotation) {
+
+        if (preg_match('~^\@(\w+)$~', $annotation, $match)) {
+            return new Annotation($match[1], null);
+        } elseif (preg_match('~^\@(\w+)\((.+)\)$~', $annotation, $match)) {
+            return new Annotation($match[1], ["value" => json_decode($match[2], true)]);
+        }
+
     }
 } 

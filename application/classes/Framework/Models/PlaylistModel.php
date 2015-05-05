@@ -137,8 +137,9 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                             logger(sprintf("Now playing track with index = %d", $track->getTrackOrder()));
 
                             Database::doInConnection(function (Database $db) use (&$uniqueID, &$track) {
-                                $db->executeUpdate("SELECT NEW_STREAM_SORT(?, ?, ?)", [
-                                    $this->key, $uniqueID, $track->getTrackOrder() + 1]);
+                                $db->executeUpdate("SELECT move_track_channel(?, ?, ?)", [
+                                    $this->key, $uniqueID, $track->getTrackOrder() + 1
+                                ]);
                             });
 
                         });

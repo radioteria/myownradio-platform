@@ -227,12 +227,6 @@ class Database implements SingletonInterface, Injectable {
      */
     public function fetchAll($query, array $params = null, $key = null, callable $callback = null, $cached = false) {
 
-//        $query_string = $this->createQueryString($query, $params);
-
-//        if ($cached == true && isset(self::$cache[$query_string])) {
-//            return self::$cache[$query_string];
-//        }
-
         $resource = $this->createResource($query, $params);
 
         $result = [];
@@ -252,10 +246,6 @@ class Database implements SingletonInterface, Injectable {
             }
 
         }
-
-//        if ($cached == true) {
-//            self::$cache[$query_string] = $result;
-//        }
 
         return $result;
 

@@ -15,8 +15,10 @@ use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
 use Framework\Models\PlaylistModel;
 use Framework\Models\StreamModel;
+use Framework\Services\Database;
 use Framework\Services\DB\Query\SelectQuery;
 use Objects\Stream;
+use Objects\StreamStats;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 use Tools\System;
@@ -161,15 +163,43 @@ class TrackCollection implements Injectable, SingletonInterface {
 
     public function getTracksFromChannelByTimeRange($channel_id, $time_offset, $duration) {
 
+        /** @var StreamStats $channel */
+        $channel = StreamStats::getByID($channel_id)->getOrElseThrow(ControllerException::noStream($channel_id));
+
+        if ($channel->getTracksDuration() == 0) {
+            return [];
+        }
+
+        $mod = $time_offset % $channel->getTracksDuration();
+
+        $right_offset = $mod + $duration;
+
         $query = $this->getChannelQueuePrefix();
 
+        $query->select("r_link.time_offset + r_tracks.duration AS right_offset");
+
         $query->where("r_link.stream_id", $channel_id);
-        $query->where("r_link.time_offset >= ?", [$time_offset]);
-        $query->where("r_link.time_offset + r_tracks.duration <= ?", [$time_offset + $duration]);
+        $query->where("r_link.time_offset >= ?", [$mod]);
+        $query->where("r_link.time_offset < ?", [$right_offset]);
 
         $query->orderBy("r_link.t_order ASC");
 
-        return $query->fetchAll();
+        $result = $query->fetchAll();
+
+        if (count($result) == 0) {
+            return $result;
+        }
+
+        $last = $result[count($result) - 1];
+
+        if ($last["right_offset"] < $right_offset) {
+            return array_merge(
+                $result,
+                $this->getTracksFromChannelByTimeRange($channel_id, $last["right_offset"], $duration - $last["right_offset"])
+            );
+        }
+
+        return $result;
 
     }
 
@@ -189,9 +219,6 @@ class TrackCollection implements Injectable, SingletonInterface {
     }
 
     public function getTimeLineOnChannel($channel_id) {
-
-
-
 
         return $this->getTracksFromChannelByTimeRange($channel_id, 0, Defaults::TIMELINE_WIDTH);
 

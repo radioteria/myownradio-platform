@@ -518,7 +518,7 @@
             },
             template: '<div class="timeline-container">\
                <div class="timeline-wrap">\
-                  <div ng-repeat="track in schedule.tracks" class="timeline-track" ng-class="(track.tid === current.tid) ? \'current\' : \'\'\" track-item mor-tooltip="{{track.caption}}"></div>\
+                  <div ng-repeat="track in schedule.tracks" class="timeline-track" ng-class="(schedule.current == $index) ? \'current\' : \'\'\" track-item mor-tooltip="{{track.caption}}"></div>\
                </div>\
             </div>\
             <div class="canvas-wrap"><canvas id="grid"></canvas></div>',

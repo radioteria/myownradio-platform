@@ -23,6 +23,8 @@ class Database implements SingletonInterface, Injectable {
     private $pdo;
     private $settings;
 
+    private $cache = [];
+
     public function __construct() {
 
         $this->settings = Config::getInstance()->getSection('database')->getOrElse([
@@ -212,10 +214,17 @@ class Database implements SingletonInterface, Injectable {
      * @param array $params
      * @param string $key
      * @param Callable $callback
+     * @param bool $cached
      * @return array
-     * @throws ControllerException
      */
-    public function fetchAll($query, array $params = null, $key = null, callable $callback = null) {
+    public function fetchAll($query, array $params = null, $key = null, callable $callback = null, $cached = false) {
+
+        if ($cached == true) {
+            $hash = serialize($query) . serialize($params);
+            if (isset($this->cache[$hash])) {
+                return $this->cache[$hash];
+            }
+        }
 
         $resource = $this->createResource($query, $params);
 
@@ -235,6 +244,11 @@ class Database implements SingletonInterface, Injectable {
                 $result[] = $row;
             }
 
+        }
+
+        if ($cached == true) {
+            $hash = serialize($query) . serialize($params);
+            $this->cache[$hash] = $result;
         }
 
         return $result;

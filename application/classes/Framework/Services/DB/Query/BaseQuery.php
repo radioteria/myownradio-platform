@@ -115,11 +115,12 @@ abstract class BaseQuery implements \Countable {
     /**
      * @param string|null $key
      * @param callable $callback
+     * @param bool $cached
      * @return array
      */
-    public function fetchAll($key = null, callable $callback = null) {
-        return Database::doInConnection(function (Database $db) use (&$key, &$callback) {
-            return $db->fetchAll($this, null, $key, $callback);
+    public function fetchAll($key = null, callable $callback = null, $cached = false) {
+        return Database::doInConnection(function (Database $db) use (&$key, &$callback, &$cached) {
+            return $db->fetchAll($this, null, $key, $callback, $cached);
         });
     }
 

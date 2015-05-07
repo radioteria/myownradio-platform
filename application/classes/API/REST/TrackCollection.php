@@ -174,7 +174,7 @@ class TrackCollection implements Injectable, SingletonInterface {
         $result = $query->fetchAll(null, $shift != 0 ? function ($row) use ($shift) {
             $row["time_offset"] += $shift;
             return $row;
-        } : null);
+        } : null, true);
 
         return $result;
 

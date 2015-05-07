@@ -71,6 +71,22 @@ class UpdateQuery extends BaseQuery implements QueryBuilder {
         return $this;
     }
 
+    /**
+     * @param string $field
+     * @param int $amount
+     */
+    public function increment($field, $amount = 1) {
+        $this->setSingle("$field = $field + $amount");
+    }
+
+    /**
+     * @param $field
+     * @param int $amount
+     */
+    public function decrement($field, $amount = 1) {
+        $this->setSingle("$field = $field - $amount");
+    }
+
     public function buildSets() {
 
         $build = [];

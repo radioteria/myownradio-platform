@@ -13,7 +13,10 @@ use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
+use Framework\Models\PlaylistModel;
+use Framework\Models\StreamModel;
 use Framework\Services\DB\Query\SelectQuery;
+use Objects\Stream;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 use Tools\System;
@@ -156,6 +159,21 @@ class TrackCollection implements Injectable, SingletonInterface {
 
     }
 
+    public function getTracksFromChannelByTimeRange($channel_id, $time_offset, $duration) {
+
+        $query = $this->getChannelQueuePrefix();
+
+        $query->where("r_link.stream_id", $channel_id);
+        $query->where("r_link.time_offset >= ?", [$time_offset]);
+        $query->where("r_link.time_offset + r_tracks.duration <= ?", [$time_offset + $duration]);
+
+        $query->orderBy("r_link.t_order ASC");
+
+        return $query->fetchAll();
+
+    }
+
+
     /**
      * @param $track_id
      * @return mixed
@@ -167,6 +185,15 @@ class TrackCollection implements Injectable, SingletonInterface {
         $query->where("r_tracks.tid", $track_id);
 
         return $query->fetchOneRow()->getOrElseThrow(ControllerException::noTrack($track_id));
+
+    }
+
+    public function getTimeLineOnChannel($channel_id) {
+
+
+
+
+        return $this->getTracksFromChannelByTimeRange($channel_id, 0, Defaults::TIMELINE_WIDTH);
 
     }
 

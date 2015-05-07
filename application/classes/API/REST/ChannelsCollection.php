@@ -105,7 +105,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query = $this->channelPrefix();
 
-        $query->where("(a.sid = :key) OR (a.permalink IS NOT NULL AND a.permalink = :key)", [":key" => $channel_id]);
+        $query->where("((a.sid = :key) OR (a.permalink IS NOT NULL AND a.permalink = :key))", [":key" => $channel_id]);
 
         return $query->fetchOneRow()->getOrElseThrow(ControllerException::noStream($channel_id));
 

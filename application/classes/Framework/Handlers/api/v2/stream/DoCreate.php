@@ -39,9 +39,8 @@ class DoCreate implements Controller {
             $svc->getStream($stream)->changeCover($file);
         });
 
-        $data = ChannelsCollection::getInstance()->getOneChannel($stream);
         // Write out new stream object
-        $response->setData($data);
+        $response->setData($stream);
 
     }
 } 

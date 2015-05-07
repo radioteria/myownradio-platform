@@ -212,20 +212,17 @@ class TrackCollection implements Injectable, SingletonInterface {
             throw new ControllerException("There is no tracks here");
         }
 
-        $right = System::mod($right_range, $stream_object->getTracksDuration());
-
         $items = [];
 
         do {
             $left  = System::mod($left_range, $stream_object->getTracksDuration());
-            $items = array_merge($items, $this->getTracksFromChannelByTimeRange($stream_id, $left, $right, $left_range - $left));
+            $items = array_merge($items, $this->getTracksFromChannelByTimeRange($stream_id, $left, $right_range, $left_range - $left));
             if (count($items) == 0) {
                 return $items;
             }
             $last = $items[count($items) - 1];
             $left_range = $last["time_offset"] + $last["duration"];
-        }
-        while($left_range < $right_range);
+        } while($left_range < $right_range);
 
         return $items;
 

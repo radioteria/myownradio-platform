@@ -15,10 +15,10 @@ use Framework\Models\PlaylistModel;
 use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
-use Framework\Services\Notif1er;
+use Framework\Services\Notifier;
 
 class DoAddTracks implements Controller {
-    public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response, Notif1er $notif1er) {
+    public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response, Notifier $notif1er) {
 
         $id = $post->getRequired("stream_id");
         $tracks = $post->getRequired("tracks");

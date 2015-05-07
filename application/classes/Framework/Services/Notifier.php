@@ -14,7 +14,7 @@ use Framework\Injector\Injectable;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-class Notif1er implements SingletonInterface, Injectable {
+class Notifier implements SingletonInterface, Injectable {
 
     use Singleton;
 

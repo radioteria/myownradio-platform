@@ -15,13 +15,13 @@ use Framework\Models\StreamsModel;
 use Framework\Services\HttpFiles;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
-use Framework\Services\Notif1er;
+use Framework\Services\Notifier;
 use Framework\Services\Services;
 use REST\Streams;
 
 class DoCreate implements Controller {
     public function doPost(HttpPost $post, StreamsModel $model,
-                           JsonResponse $response, HttpFiles $file, Services $svc, Notif1er $notif1er) {
+                           JsonResponse $response, HttpFiles $file, Services $svc, Notifier $notif1er) {
 
         // Get user input parameters
         $name = $post->getRequired("name");

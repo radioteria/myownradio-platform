@@ -15,24 +15,14 @@ use Framework\FileServer\FSFile;
 use Framework\Services\Annotations\Annotation;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\JsonResponse;
+use Framework\Services\Test\Test;
 use Objects\FileServer\FileServerFile;
 
 class DoGradient implements Controller {
-    public function doGet(JsonResponse $response) {
-        $response->setData($this->parseAnnotation('@MyAnnotation({"key": "Hello, World"})')->getDefault());
+    public function doGet() {
+        $test = new Test();
+        $test->start();
     }
 
-    /**
-     * @param $annotation
-     * @return Annotation
-     */
-    private function parseAnnotation($annotation) {
 
-        if (preg_match('~^\@(\w+)$~', $annotation, $match)) {
-            return new Annotation($match[1], null);
-        } elseif (preg_match('~^\@(\w+)\((.+)\)$~', $annotation, $match)) {
-            return new Annotation($match[1], ["value" => json_decode($match[2], true)]);
-        }
-
-    }
 } 

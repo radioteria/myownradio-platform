@@ -14,11 +14,11 @@ use Framework\Models\Factory;
 use Framework\Models\StreamModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
-use Framework\Services\Notif1er;
+use Framework\Services\Notifier;
 
 class DoDelete implements Controller {
 
-    public function doPost(HttpPost $post, Factory $fabric, JsonResponse $response, Notif1er $notif1er) {
+    public function doPost(HttpPost $post, Factory $fabric, JsonResponse $response, Notifier $notif1er) {
 
         $id = $post->getRequired("stream_id");
         $model = StreamModel::getInstance($id);

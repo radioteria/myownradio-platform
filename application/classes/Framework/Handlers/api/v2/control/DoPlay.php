@@ -13,11 +13,11 @@ use Framework\Controller;
 use Framework\Models\PlaylistModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
-use Framework\Services\Notif1er;
+use Framework\Services\Notifier;
 
 class DoPlay implements Controller {
 
-    public function doPost(HttpPost $post, JsonResponse $response, Notif1er $notif1er) {
+    public function doPost(HttpPost $post, JsonResponse $response, Notifier $notif1er) {
 
         $id = $post->getRequired("stream_id");
 

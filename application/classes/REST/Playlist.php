@@ -9,6 +9,7 @@
 namespace REST;
 
 
+use API\REST\TrackCollection;
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
@@ -259,7 +260,7 @@ class Playlist implements SingletonInterface, Injectable {
 
         if ($stream->getTracksDuration() == 0 || $stream->getStatus() == 0) {
 
-            $position = 0;
+            $rounded = 0;
             $tracks = [];
             $currentID = null;
 
@@ -267,36 +268,49 @@ class Playlist implements SingletonInterface, Injectable {
 
             $position = max(((System::time() - self::REAL_TIME_DELAY_MS) -
                     $stream->getStarted() +
-                    $stream->getStartedFrom()) % $stream->getTracksDuration(), 0);
+                    $stream->getStartedFrom()), 0);
 
-            $query = $this->getStreamTracksPrefix();
+            $rounded = $position % $stream->getTracksDuration();
 
-            $lowRange = $position - self::NOW_PLAYING_TIME_RANGE;
-
-            $highRange = $position + self::NOW_PLAYING_TIME_RANGE;
-
-            $query->select("time_offset");
-
-            $query->where("time_offset + duration > ?", [$lowRange]);
-            $query->where("time_offset <= ?", [$highRange]);
-            $query->where("stream_id", $stream->getID());
+            $tracks = TrackCollection::getInstance()->getTimeLineOnChannel($id, $position);
 
             $currentID = 0;
-
-            $tracks = $query->fetchAll(null, function ($row, $index) use (&$currentID, &$position) {
-                if ($row["time_offset"] <= $position && $row["time_offset"] + $row["duration"] >= $position) {
+            $index = 0;
+            foreach ($tracks as &$row) {
+                if ($row["time_offset"] <= $rounded && $row["time_offset"] + $row["duration"] >= $rounded) {
                     $currentID = $index;
                 }
                 $row["caption"] = $row["artist"] . " - " . $row["title"];
-                return $row;
-            });
+                $index ++;
+            }
+
+//            $query = $this->getStreamTracksPrefix();
+//
+//            $lowRange = $position - self::NOW_PLAYING_TIME_RANGE;
+//
+//            $highRange = $position + self::NOW_PLAYING_TIME_RANGE;
+//
+//            $query->select("time_offset");
+//
+//            $query->where("time_offset + duration > ?", [$lowRange]);
+//            $query->where("time_offset <= ?", [$highRange]);
+//            $query->where("stream_id", $stream->getID());
+//
+//
+//            $tracks = $query->fetchAll(null, function ($row, $index) use (&$currentID, &$position) {
+//                if ($row["time_offset"] <= $position && $row["time_offset"] + $row["duration"] >= $position) {
+//                    $currentID = $index;
+//                }
+//                $row["caption"] = $row["artist"] . " - " . $row["title"];
+//                return $row;
+//            });
 
         }
 
         return [
             'time' => System::time(),
-            'position' => $position,
-            'range' => self::NOW_PLAYING_TIME_RANGE * 2,
+            'position' => $rounded,
+            'range' => Defaults::TIMELINE_WIDTH,
             'current' => $currentID,
             'tracks' => $tracks,
             'listeners_count' => $stream->getListenersCount(),

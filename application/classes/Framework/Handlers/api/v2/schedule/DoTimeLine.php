@@ -17,6 +17,6 @@ use Framework\Services\JsonResponse;
 class DoTimeLine extends ControllerImpl {
     public function doGet(HttpGet $get, TrackCollection $collection, JsonResponse $response) {
         $channel_id = $get->getRequired("channel_id");
-        $response->setData($collection->getTimeLineOnChannel($channel_id));
+        $response->setData($collection->getTimeLineOnChannel($channel_id, 0));
     }
 } 

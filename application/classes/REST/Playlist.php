@@ -270,40 +270,22 @@ class Playlist implements SingletonInterface, Injectable {
                     $stream->getStarted() +
                     $stream->getStartedFrom()) % $stream->getTracksDuration(), 0);
 
-            //$rounded = $position % $stream->getTracksDuration();
+            $tracks = TrackCollection::getInstance()->getTimeLineOnChannel(
+                $id,
+                $position - (Defaults::TIMELINE_WIDTH >> 2),
+                $position + (Defaults::TIMELINE_WIDTH >> 2)
+            );
 
-//            $tracks = TrackCollection::getInstance()->getTimeLineOnChannel($id, $position);
-//
-//            $currentID = 0;
-//            $index = 0;
-//            foreach ($tracks as &$row) {
-//                if ($row["time_offset"] <= $rounded && $row["time_offset"] + $row["duration"] >= $rounded) {
-//                    $currentID = $index;
-//                }
-//                $row["caption"] = $row["artist"] . " - " . $row["title"];
-//                $index ++;
-//            }
-
-            $query = $this->getStreamTracksPrefix();
-
-            $lowRange = $position - self::NOW_PLAYING_TIME_RANGE;
-
-            $highRange = $position + self::NOW_PLAYING_TIME_RANGE;
-
-            $query->select("time_offset");
-
-            $query->where("time_offset + duration > ?", [$lowRange]);
-            $query->where("time_offset <= ?", [$highRange]);
-            $query->where("stream_id", $stream->getID());
-
-
-            $tracks = $query->fetchAll(null, function ($row, $index) use (&$currentID, &$position) {
+            $currentID = 0;
+            $index = 0;
+            foreach ($tracks as &$row) {
                 if ($row["time_offset"] <= $position && $row["time_offset"] + $row["duration"] >= $position) {
                     $currentID = $index;
                 }
                 $row["caption"] = $row["artist"] . " - " . $row["title"];
-                return $row;
-            });
+                $index ++;
+            }
+
 
         }
 

@@ -23,7 +23,7 @@ class Database implements SingletonInterface, Injectable {
     private $pdo;
     private $settings;
 
-    private $cache = [];
+    private static $cache = [];
 
     public function __construct() {
 
@@ -177,19 +177,27 @@ class Database implements SingletonInterface, Injectable {
     /**
      * @param $query
      * @param $params
-     * @return \PDOStatement
-     * @throws ControllerException
+     * @return string
      */
-    private function createResource($query, $params) {
-
+    private function createQueryString($query, $params = null) {
         if ($query instanceof QueryBuilder) {
-            $queryString = $this->queryQuote(
+            return $this->queryQuote(
                 $query->getQuery($this->pdo),
                 $query->getParameters());
         } else {
-            $queryString = $this->queryQuote($query, $params);
+            return $this->queryQuote($query, $params);
         }
+    }
 
+    /**
+     * @param $query
+     * @param $params
+     * @return \PDOStatement
+     * @throws ControllerException
+     */
+    private function createResource($query, $params = null) {
+
+        $queryString = $this->createQueryString($query, $params);
 
         $resource = $this->pdo->prepare($queryString);
 
@@ -219,12 +227,11 @@ class Database implements SingletonInterface, Injectable {
      */
     public function fetchAll($query, array $params = null, $key = null, callable $callback = null, $cached = false) {
 
-        if ($cached == true) {
-            $hash = serialize($query) . serialize($params);
-            if (isset($this->cache[$hash])) {
-                return $this->cache[$hash];
-            }
-        }
+//        $query_string = $this->createQueryString($query, $params);
+
+//        if ($cached == true && isset(self::$cache[$query_string])) {
+//            return self::$cache[$query_string];
+//        }
 
         $resource = $this->createResource($query, $params);
 
@@ -246,10 +253,9 @@ class Database implements SingletonInterface, Injectable {
 
         }
 
-        if ($cached == true) {
-            $hash = serialize($query) . serialize($params);
-            $this->cache[$hash] = $result;
-        }
+//        if ($cached == true) {
+//            self::$cache[$query_string] = $result;
+//        }
 
         return $result;
 

@@ -272,8 +272,8 @@ class Playlist implements SingletonInterface, Injectable {
 
             $tracks = TrackCollection::getInstance()->getTimeLineOnChannel(
                 $id,
-                $position - (Defaults::TIMELINE_WIDTH >> 2),
-                $position + (Defaults::TIMELINE_WIDTH >> 2)
+                $position - (Defaults::TIMELINE_WIDTH >> 1),
+                $position + (Defaults::TIMELINE_WIDTH >> 1)
             );
 
             $currentID = 0;
@@ -282,7 +282,10 @@ class Playlist implements SingletonInterface, Injectable {
                 if ($row["time_offset"] <= $position && $row["time_offset"] + $row["duration"] >= $position) {
                     $currentID = $index;
                 }
-                $row["caption"] = $row["artist"] . " - " . $row["title"];
+                if (!empty($row["artist"]))
+                    $row["caption"] = $row["artist"] . " - " . $row["title"];
+                else
+                    $row["caption"] = $row["title"];
                 $index ++;
             }
 

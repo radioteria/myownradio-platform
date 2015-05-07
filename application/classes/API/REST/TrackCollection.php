@@ -161,49 +161,17 @@ class TrackCollection implements Injectable, SingletonInterface {
 
     }
 
-    public function getTracksFromChannelByTimeRange($channel_id, $time_offset, $duration, $tracks_length, $offset = 0) {
-
-        $mod = $time_offset % $tracks_length;
-
-        error_log("Ch: $channel_id, To: $time_offset, Md: $mod, Dur: $duration, Off: $offset, Len: $tracks_length");
-
-        $right_offset = $mod + $duration;
+    public function getTracksFromChannelByTimeRange($stream_id, $time_offset, $length) {
 
         $query = $this->getChannelQueuePrefix();
 
-        $query->select("r_link.time_offset + r_tracks.duration AS right_offset");
-
-        $query->where("r_link.stream_id", $channel_id);
-        $query->where("r_link.time_offset >= ?", [$mod]);
-        $query->where("r_link.time_offset < ?", [$right_offset]);
+        $query->where("r_link.stream_id", $stream_id);
+        $query->where("r_link.time_offset + r_tracks.duration >= ?", [$time_offset]);
+        $query->where("r_link.time_offset < ?", [$time_offset + $length]);
 
         $query->orderBy("r_link.t_order ASC");
 
         $result = $query->fetchAll();
-
-        if (count($result) == 0) {
-            return $result;
-        }
-
-        foreach ($result as &$track) {
-            $track["time_offset"] += $offset;
-            $track["right_offset"] += $offset;
-        }
-
-        $last = $result[count($result) - 1];
-
-        if ($last["right_offset"] < $right_offset) {
-            return array_merge(
-                $result,
-                $this->getTracksFromChannelByTimeRange(
-                    $channel_id,
-                    $last["right_offset"],
-                    $duration,
-                    $tracks_length,
-                    $offset + $tracks_length
-                )
-            );
-        }
 
         return $result;
 
@@ -226,20 +194,30 @@ class TrackCollection implements Injectable, SingletonInterface {
 
     public function getTimeLineOnChannel($channel_id, $position) {
 
-        /** @var StreamStats $channel */
-        $channel = StreamStats::getByID($channel_id)
+        /** @var StreamStats $stream_object */
+        $stream_object = StreamStats::getByID($channel_id)
             ->getOrElseThrow(ControllerException::noStream($channel_id));
 
-        if ($channel->getTracksDuration() == 0) {
-            return [];
+        if ($stream_object->getTracksDuration() == 0 || $stream_object->getStatus() == 0) {
+            throw new ControllerException("There is no tracks here");
         }
 
-        return $this->getTracksFromChannelByTimeRange(
-            $channel_id,
-            $position - (Defaults::TIMELINE_WIDTH >> 2),
-            Defaults::TIMELINE_WIDTH,
-            $channel->getTracksDuration()
-        );
+        $begin_offset = System::mod($position, $stream_object->getTracksDuration());
+
+        $items = $this->getTracksFromChannelByTimeRange($channel_id, $begin_offset, Defaults::TIMELINE_WIDTH);
+
+        if (count($items) == 0) return [];
+
+        $last = $items[count($items) - 1];
+
+        $right_offset = $last["time_offset"] + $last["duration"];
+
+
+        if ($right_offset < $position + Defaults::TIMELINE_WIDTH) {
+//            return array_merge($items, $this->getTracksFromChannelByTimeRange($channel_id, $right_offset, Defaults::TIMELINE_WIDTH));
+        }
+
+        return $items;
 
     }
 

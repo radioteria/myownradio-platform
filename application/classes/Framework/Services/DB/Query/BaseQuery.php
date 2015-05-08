@@ -13,7 +13,7 @@ use Framework\Services\Database;
 use PDO;
 use Tools\Optional;
 
-abstract class BaseQuery implements \Countable {
+abstract class BaseQuery {
 
     protected $tableName;
 
@@ -177,30 +177,5 @@ abstract class BaseQuery implements \Countable {
         });
     }
 
-    /**
-     * @return int
-     */
-    public function count() {
-        return Database::doInConnection(function (Database $db) use (&$className, &$ctor_args) {
-            $query = clone $this;
-            $query->selectNone()->selCount();
-            $query->limit(null);
-            $query->offset(null);
-            $query->orderBy(null);
-            return intval($db->fetchOneColumn($query)->get());
-        });
-    }
-
-    /**
-     * @param $chunk_size
-     * @param $callback
-     */
-    public function chunk($chunk_size, $callback) {
-        $items = $this->fetchAll();
-        $chunks = array_chunk($items, $chunk_size);
-        foreach ($chunks as $chunk) {
-            call_user_func($callback, $chunk);
-        }
-    }
 
 } 

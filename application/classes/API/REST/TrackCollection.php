@@ -163,6 +163,8 @@ class TrackCollection implements Injectable, SingletonInterface {
 
     public function getTracksFromChannelByTimeRange($stream_id, $left_range, $right_range, $shift = 0) {
 
+        error_log("$stream_id, $left_range, $right_range, $shift");
+
         $query = $this->getChannelQueuePrefix();
 
         $query->where("r_link.stream_id", $stream_id);
@@ -204,6 +206,8 @@ class TrackCollection implements Injectable, SingletonInterface {
      */
     public function getTimeLineOnChannel($stream_id, $left_range, $right_range) {
 
+        error_log("$stream_id, $left_range, $right_range");
+
         /** @var StreamStats $stream_object */
         $stream_object = StreamStats::getByID($stream_id)
             ->getOrElseThrow(ControllerException::noStream($stream_id));
@@ -216,6 +220,7 @@ class TrackCollection implements Injectable, SingletonInterface {
 
         do {
             $left  = System::mod($left_range, $stream_object->getTracksDuration());
+            //$delta = $left_range - $left;
             $items = array_merge($items, $this->getTracksFromChannelByTimeRange($stream_id, $left, $right_range, $left_range - $left));
             if (count($items) == 0) {
                 return $items;

@@ -57,7 +57,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
      * @return $this
      */
     public function limit($limit) {
-        if ($limit < 1) {
+        if ($limit < 0) {
             throw ControllerException::of("Negative limit");
         }
         $this->limit = intval($limit);
@@ -70,7 +70,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
      * @return $this
      */
     public function offset($offset) {
-        if ($offset < 1) {
+        if ($offset < 0) {
             throw ControllerException::of("Negative offset");
         }
         $this->offset = intval($offset);

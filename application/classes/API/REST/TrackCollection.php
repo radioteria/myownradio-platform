@@ -161,15 +161,13 @@ class TrackCollection implements Injectable, SingletonInterface {
 
     }
 
-    public function getTracksFromChannelByTimeRange($stream_id, $left_range, $right_range, $shift = 0) {
-
-        error_log("$stream_id, $left_range, $right_range, $shift");
+    public function getTracksFromChannelByTimeRange($stream_id, $left_range, $length, $shift = 0) {
 
         $query = $this->getChannelQueuePrefix();
 
         $query->where("r_link.stream_id", $stream_id);
         $query->where("r_link.time_offset + r_tracks.duration >= ?", [$left_range]);
-        $query->where("r_link.time_offset < ?", [$right_range]);
+        $query->where("r_link.time_offset < ?", [$left_range + $length]);
 
         $query->orderBy("r_link.t_order ASC");
 
@@ -206,7 +204,7 @@ class TrackCollection implements Injectable, SingletonInterface {
      */
     public function getTimeLineOnChannel($stream_id, $left_range, $right_range) {
 
-        error_log("$stream_id, $left_range, $right_range");
+        $length = $right_range - $left_range;
 
         /** @var StreamStats $stream_object */
         $stream_object = StreamStats::getByID($stream_id)
@@ -221,7 +219,7 @@ class TrackCollection implements Injectable, SingletonInterface {
         do {
             $left  = System::mod($left_range, $stream_object->getTracksDuration());
             //$delta = $left_range - $left;
-            $items = array_merge($items, $this->getTracksFromChannelByTimeRange($stream_id, $left, $right_range, $left_range - $left));
+            $items = array_merge($items, $this->getTracksFromChannelByTimeRange($stream_id, $left, $length, $left_range - $left));
             if (count($items) == 0) {
                 return $items;
             }

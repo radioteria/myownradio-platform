@@ -204,6 +204,10 @@ class TrackCollection implements Injectable, SingletonInterface {
      */
     public function getTimeLineOnChannel($stream_id, $left_range, $right_range) {
 
+        if ($left_range > $right_range) {
+            throw ControllerException::of("Range error");
+        }
+
         $length = $right_range - $left_range;
 
         /** @var StreamStats $stream_object */

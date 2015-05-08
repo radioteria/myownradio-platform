@@ -55,7 +55,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
      * @return $this
      */
     public function limit($limit) {
-        $this->limit = $limit;
+        $this->limit = intval($limit);
         return $this;
     }
 
@@ -64,7 +64,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
      * @return $this
      */
     public function offset($offset) {
-        $this->offset = $offset;
+        $this->offset = intval($offset);
         return $this;
     }
 

@@ -9,6 +9,7 @@
 namespace Framework\Services\DB\Query;
 
 
+use Framework\Exceptions\ControllerException;
 use PDO;
 use Tools\Lang;
 
@@ -52,18 +53,26 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
 
     /**
      * @param int $limit
+     * @throws \Framework\Exceptions\ControllerException
      * @return $this
      */
     public function limit($limit) {
+        if ($limit < 1) {
+            throw ControllerException::of("Negative limit");
+        }
         $this->limit = intval($limit);
         return $this;
     }
 
     /**
      * @param int $offset
+     * @throws \Framework\Exceptions\ControllerException
      * @return $this
      */
     public function offset($offset) {
+        if ($offset < 1) {
+            throw ControllerException::of("Negative offset");
+        }
         $this->offset = intval($offset);
         return $this;
     }

@@ -10,6 +10,7 @@ namespace Framework\Services\DB\Query;
 
 
 use Framework\Exceptions\ControllerException;
+use Framework\Services\Database;
 use PDO;
 use Tools\Lang;
 

@@ -251,7 +251,6 @@ class Database implements SingletonInterface, Injectable {
         } else {
             $resource = $this->createResourceFromString($queryString);
             $db_result = $resource->fetchAll(PDO::FETCH_ASSOC);
-            error_log("update");
         }
 
         if ($cached == true) {

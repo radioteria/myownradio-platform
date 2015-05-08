@@ -192,10 +192,11 @@ class Database implements SingletonInterface, Injectable {
     /**
      * @param $query
      * @param $params
+     * @param bool $cached
+     * @throws \Framework\Exceptions\DatabaseException
      * @return \PDOStatement
-     * @throws ControllerException
      */
-    private function createResource($query, $params = null) {
+    private function createResource($query, $params = null, $cached = false) {
 
         $queryString = $this->createQueryString($query, $params);
 
@@ -211,7 +212,23 @@ class Database implements SingletonInterface, Injectable {
             throw new DatabaseException($resource->errorInfo()[2], $queryString);
         }
 
-        //error_log("SQL: " . $queryString);
+        return $resource;
+
+    }
+
+    private function createResourceFromString($queryString) {
+
+        $resource = $this->pdo->prepare($queryString);
+
+        if ($resource === false) {
+            throw new DatabaseException($this->pdo->errorInfo()[2], $queryString);
+        }
+
+        $resource->execute();
+
+        if ($resource->errorCode() !== "00000") {
+            throw new DatabaseException($resource->errorInfo()[2], $queryString);
+        }
 
         return $resource;
 
@@ -227,11 +244,23 @@ class Database implements SingletonInterface, Injectable {
      */
     public function fetchAll($query, array $params = null, $key = null, callable $callback = null, $cached = false) {
 
-        $resource = $this->createResource($query, $params);
+        $queryString = $this->createQueryString($query, $params);
+
+        if ($cached == true && isset(self::$cache[$queryString])) {
+            $db_result = self::$cache[$queryString];
+        } else {
+            $resource = $this->createResourceFromString($queryString);
+            $db_result = $resource->fetchAll(PDO::FETCH_ASSOC);
+            error_log("update");
+        }
+
+        if ($cached == true) {
+            self::$cache[$queryString] = $db_result;
+        }
 
         $result = [];
 
-        for ($i = 0; $row = $resource->fetch(PDO::FETCH_ASSOC); $i++) {
+        foreach ($db_result as $i => $row) {
 
             if (is_callable($callback)) {
                 $row = call_user_func_array($callback, [$row, $i]);

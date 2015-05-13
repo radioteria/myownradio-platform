@@ -27,7 +27,13 @@ class Payment extends ActiveRecordObject implements ActiveRecord {
         $expires,
         $payment_comment,
         $payment_source,
-        $success;
+        $success,
+        $modified;
+
+    function beforeUpdate() {
+        $this->modified = time();
+        return true;
+    }
 
     /**
      * @return mixed

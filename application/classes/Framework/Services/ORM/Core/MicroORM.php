@@ -10,14 +10,12 @@ namespace Framework\Services\ORM\Core;
 
 
 use Framework\Injector\Injectable;
-use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordCollection;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 use Framework\Services\ORM\Exceptions\ORMException;
-use Framework\Services\Redis;
 use Tools\Optional;
 use Tools\Singleton;
 
@@ -128,10 +126,15 @@ class MicroORM extends FilterORM implements Injectable {
         $id = $param->getValue($object);
 
         if (!is_null($id)) {
-            $this->_deleteObject($beanConfig, $id);
-        }
+            $result = $object->beforeDelete();
+            if ($result === false) {
+                throw new ORMException();
+            }
 
-        $param->setValue($object, null);
+            $this->_deleteObject($beanConfig, $id);
+            $param->setValue($object, null);
+            $object->afterDelete();
+        }
 
     }
 
@@ -189,6 +192,11 @@ class MicroORM extends FilterORM implements Injectable {
             throw new ORMException("Object has read only access");
         }
 
+        $before = $bean->beforeUpdate();
+
+        if ($before === false) {
+            throw new ORMException();
+        }
 
         $keyProp = $reflection->getProperty($config["@key"]);
         $keyProp->setAccessible(true);
@@ -231,7 +239,8 @@ class MicroORM extends FilterORM implements Injectable {
                     }
 
                     if (!isset($this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()]) ||
-                        $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] !== $prop->getValue($bean)) {
+                        $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] !== $prop->getValue($bean)
+                    ) {
 
                         $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] = $prop->getValue($bean);
                         $query->set($prop->getName(), $prop->getValue($bean));
@@ -249,6 +258,8 @@ class MicroORM extends FilterORM implements Injectable {
             }
 
         }
+
+        $bean->afterUpdate();
 
     }
 

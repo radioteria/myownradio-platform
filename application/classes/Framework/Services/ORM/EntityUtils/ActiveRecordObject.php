@@ -126,9 +126,24 @@ abstract class ActiveRecordObject implements JsonSerializable {
      *
      * @return string
      */
-    public static function className()
-    {
+    public static function className() {
         return get_called_class();
+    }
+
+    function beforeUpdate() {
+        return true;
+    }
+
+    function beforeDelete() {
+        return true;
+    }
+
+    function afterUpdate() {
+        return true;
+    }
+
+    function afterDelete() {
+        return true;
     }
 
 } 

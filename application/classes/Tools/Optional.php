@@ -26,15 +26,21 @@ class Optional implements \JsonSerializable {
     }
 
     /**
-     * @param Exception $exception
+     * @param Exception|string $exception
+     * @param null $args
+     * @throws \Exception
+     * @throws string
      * @return mixed
-     * @throws Exception
      */
-    public function getOrElseThrow(Exception $exception) {
+    public function getOrElseThrow($exception, $args = null) {
         if ($this->test()) {
             return $this->value;
         } else {
-            throw $exception;
+            if (is_string($exception)) {
+                throw new $exception($args);
+            } else {
+                throw $exception;
+            }
         }
     }
 

@@ -13,12 +13,13 @@ use Framework\ControllerImpl;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\PaymentModel;
 use Framework\Services\HttpPost;
+use Framework\View\Errors\View400Exception;
 use LiqPay;
 
 class DoPayment extends ControllerImpl {
     public function doPost(HttpPost $post) {
 
-        $data = $post->getRequired("data");
+        $data = $post->getParameter("data")->getOrElseThrow(View400Exception::getClass());
         $signature = $post->getRequired("signature");
 
         // Check signature
@@ -31,7 +32,7 @@ class DoPayment extends ControllerImpl {
 
         if ($params["status"] == "success" || $params["status"] == "sandbox") {
 
-            PaymentModel::confirmOrder($params["order_id"]);
+            PaymentModel::confirmOrder($params["order_id"], $json);
 
         }
 

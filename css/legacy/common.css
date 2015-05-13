@@ -241,7 +241,8 @@ body.image {
   width: 100%;
 }
 [type="submit"],
-[type="button"] {
+[type="button"],
+.submit {
   background-color: #ffb826;
   border-radius: 4px;
   padding: 8px 16px;
@@ -251,11 +252,13 @@ body.image {
   margin-top: 16px;
 }
 [type="submit"]:hover:not(:disabled),
-[type="button"]:hover:not(:disabled) {
+[type="button"]:hover:not(:disabled),
+.submit:hover:not(:disabled) {
   background-color: #ffd98c;
 }
 [type="submit"]:disabled,
-[type="button"]:disabled {
+[type="button"]:disabled,
+.submit:disabled {
   background-color: #a4a4a4;
   cursor: default;
 }

@@ -25,6 +25,7 @@ require_once "application/libs/functions.php";
 require_once "application/libs/acResizeImage.php";
 require_once "dependencies/getid3/getid3.php";
 require_once "dependencies/Twig/Autoloader.php";
+require_once "application/libs/LiqPay.php";
 
 gc_enable();
 

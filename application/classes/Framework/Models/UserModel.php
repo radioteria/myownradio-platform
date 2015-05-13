@@ -146,13 +146,14 @@ class UserModel extends Model implements SingletonInterface {
     /**
      * @param AccountPlan $plan
      * @param $source
+     * @param string $data
      */
-    public function changeAccountPlan(AccountPlan $plan, $source) {
+    public function changeAccountPlan(AccountPlan $plan, $source, $data = "") {
         $payment = new Payment();
         $payment->setUserId($this->user->getID());
         $payment->setPlanId($plan->getPlanId());
         $payment->setPaymentSource($source);
-        $payment->setPaymentComment("");
+        $payment->setPaymentComment($data);
         $payment->setExpires($this->planExpires + $plan->getPlanDuration());
         $payment->save();
     }

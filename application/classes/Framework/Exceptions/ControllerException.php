@@ -59,4 +59,8 @@ class ControllerException extends \Exception {
         return new self(I18n::tr("CEX_NO_TRACK_FOUND", ["id" => $id]));
     }
 
+    public static function noAccountPlan($plan_id) {
+        return new self(I18n::tr("ERROR_NO_ACCOUNT_PLAN", ["id" => $plan_id]));
+    }
+
 }

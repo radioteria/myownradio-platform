@@ -32,6 +32,38 @@
 
     ]);
 
+    tools.directive("morProgress", [function () {
+        return {
+            restrict: "C",
+            template: '<div class="progress-background"><div class="progress-handle"></div></div>',
+            scope: {
+                progressValue: "=",
+                progressMax: "="
+            },
+            requires: "?progressValue, ?progressMax",
+            link: function (scope, element, attrs) {
+                var value,
+                    max,
+                    apply = function () {
+                        if (!max || !value || value > max) {
+                            el.css("width", 0);
+                        } else {
+                            el.css("width", (100 / max * value) + "%");
+                        }
+                    },
+                    el = element.find(".progress-handle");
+                scope.$watch("progressValue", function (v) {
+                    value = v;
+                    apply();
+                });
+                scope.$watch("progressMax", function (v) {
+                    max = v;
+                    apply();
+                });
+            }
+        }
+    }]);
+
     tools.factory("StatsFactory", ["$http", "Response", function ($http, Response) {
         return {
             getActiveListeners: function () {

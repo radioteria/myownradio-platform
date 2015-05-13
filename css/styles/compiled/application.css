@@ -399,6 +399,21 @@ ul.enumerate > li {
 .like-box {
   margin-top: 32px;
 }
+.mor-progress {
+  margin-bottom: 16px;
+}
+.mor-progress .progress-background {
+  margin-top: 8px;
+  position: relative;
+  background-color: #eeeeee;
+  height: 16px;
+}
+.mor-progress .progress-background .progress-handle {
+  background-color: #666666;
+  position: relative;
+  height: 16px;
+  transition: .1s linear width;
+}
 @keyframes blink {
   0% {
     opacity: 0;

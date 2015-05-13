@@ -44,6 +44,12 @@
         </div>
     </div>
 
+    <div class="part">
+        <div class="right">{{ (account.user.plan_data.time_max - account.user.tracks_duration) | humanTime }}</div>
+        Time available on your account:
+    </div>
+    <div class="mor-progress" progress-value="account.user.plan_data.time_max - account.user.tracks_duration" progress-max="account.user.plan_data.time_max"></div>
+
     <div class="buttons">
         <span class="button" ng-click="cancel()" mor-tooltip="{{ tr('FR_UPLOAD_CANCEL_HINT') }}">
             <translate>FR_CANCEL</translate>

@@ -17,7 +17,7 @@ use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
  * @package Objects
  * @table mor_payments
  * @key payment_id
- * @do_ACTUAL user_id = ? AND expires > UNIX_TIMESTAMP(NOW()) ORDER BY payment_id DESC
+ * @do_ACTUAL (user_id = ? AND expires > UNIX_TIMESTAMP(NOW()) AND success) ORDER BY payment_id DESC
  */
 class Payment extends ActiveRecordObject implements ActiveRecord {
     private

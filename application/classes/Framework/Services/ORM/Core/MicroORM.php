@@ -126,11 +126,7 @@ class MicroORM extends FilterORM implements Injectable {
         $id = $param->getValue($object);
 
         if (!is_null($id)) {
-            $result = $object->beforeDelete();
-            if ($result === false) {
-                throw new ORMException();
-            }
-
+            $object->beforeDelete();
             $this->_deleteObject($beanConfig, $id);
             $param->setValue($object, null);
             $object->afterDelete();
@@ -192,11 +188,7 @@ class MicroORM extends FilterORM implements Injectable {
             throw new ORMException("Object has read only access");
         }
 
-        $before = $bean->beforeUpdate();
-
-        if ($before === false) {
-            throw new ORMException();
-        }
+        $bean->beforeUpdate();
 
         $keyProp = $reflection->getProperty($config["@key"]);
         $keyProp->setAccessible(true);

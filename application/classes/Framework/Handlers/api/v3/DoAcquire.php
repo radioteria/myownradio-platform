@@ -12,12 +12,13 @@ namespace Framework\Handlers\api\v3;
 use Framework\ControllerImpl;
 use Framework\Models\PaymentModel;
 use Framework\Services\HttpGet;
-use Framework\View\Errors\View401Exception;
+use Framework\View\Errors\View500Exception;
 
 class DoAcquire extends ControllerImpl {
     public function doGet(HttpGet $get) {
 
-        $plan_id = $get->getParameter("plan_id")->getOrElseThrow(new View401Exception());
+        $plan_id = $get->getParameter("plan_id")
+            ->getOrElseThrow(new View500Exception("plan_id not specified"));
 
         $html = PaymentModel::createOrder($plan_id);
 

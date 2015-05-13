@@ -174,3 +174,11 @@ window.mobileCheck = function() {
     return check;
 };
 
+$.fn.extend({
+    addIfEmpty: function (selector) {
+        if (this.length == 0) {
+            return $(this).add(selector);
+        }
+        return this;
+    }
+});

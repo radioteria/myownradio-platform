@@ -207,10 +207,48 @@
 
                 };
 
+                var switchCurrent = function () {
+                    $element.children("." + CURRENT_CLASS).toggleClass(SELECTED_CLASS);
+                };
+
+                var keyBindings = function (event) {
+
+                    // Handle key pressing only if body element is active
+                    if ($(document.activeElement).is("body")) {
+
+                        if (event.which === 32) {
+                            switchCurrent();
+                            updateSelection();
+                            event.stopPropagation();
+                            return false;
+                        } else if (event.which === 40) {
+                            $element.children("." + CURRENT_CLASS)
+                                .removeClass(CURRENT_CLASS)
+                                .next().addIfEmpty($element.children(":first"))
+                                .addClass(CURRENT_CLASS);
+                            updateSelection();
+                            event.stopPropagation();
+                            return false;
+                        } else if (event.which === 38) {
+                            $element.children("." + CURRENT_CLASS)
+                                .removeClass(CURRENT_CLASS)
+                                .prev().addClass(CURRENT_CLASS);
+                            updateSelection();
+                            event.stopPropagation();
+                            return false;
+                        }
+
+                    }
+
+                    return true;
+                };
+
+                $document.on("keydown", keyBindings);
                 $document.on("click", selectNothing);
 
                 $scope.$on("$destroy", function () {
                     $document.unbind("click", selectNothing);
+                    $document.unbind("keydown", keyBindings);
                 });
 
                 $element.live("mousedown", function (event) {

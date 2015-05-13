@@ -58,7 +58,7 @@ class PaymentModel {
             'description' => $plan->getPlanName(),
             'order_id' => $payment->getPaymentId(),
             'type' => 'buy',
-            'sandbox' => 1,
+            'sandbox' => 0,
             'subscribe' => 1,
             'subscribe_date_start' => 'now',
             'subscribe_periodicity' => $plan->getPlanPeriod(),

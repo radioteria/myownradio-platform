@@ -78,6 +78,8 @@ class Router implements SingletonInterface, Injectable {
         $sub->addRoute("content/m3u/:stream_id.m3u", "content\\DoM3u");
         $sub->addRoute("content/trackinfo/&id", "content\\DoTrackExtraInfo");
 
+        $sub->addRoute("subscribe", "api\\v3\\DoAcquire");
+
         // Default route
         $sub->defaultRoute(function (Router $router) {
             http_response_code(404);

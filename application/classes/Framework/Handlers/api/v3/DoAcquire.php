@@ -21,8 +21,9 @@ class DoAcquire extends ControllerImpl {
         $plan_id = $get->getParameter("plan_id", FILTER_VALIDATE_INT)
             ->getOrElseThrow(View400Exception::getClass());
 
+        $available = [2, 4];
 
-        if ($plan_id < 2 || $plan_id > 5) {
+        if (array_search($plan_id, $available) === false) {
             throw new View400Exception();
         }
 

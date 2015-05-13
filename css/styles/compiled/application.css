@@ -1819,6 +1819,44 @@ body.player-visible .player-container {
   background-color: #ff2802;
   height: 3px;
 }
+.change-plan {
+  margin-bottom: 32px;
+}
+.change-plan h1 {
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.change-plan #plans-table {
+  width: 100%;
+  table-layout: fixed;
+}
+.change-plan #plans-table tr:not(:last-child) {
+  border-bottom: 1px solid #f3f3f3;
+}
+.change-plan #plans-table tr > *:not(:last-child) {
+  border-right: 1px solid #f3f3f3;
+}
+.change-plan #plans-table tr td,
+.change-plan #plans-table tr th {
+  text-align: center;
+  padding: 16px 8px;
+}
+.change-plan #plans-table tr th {
+  vertical-align: middle;
+}
+.change-plan #plans-table tr th h2 {
+  font-size: 1.2em;
+}
+.change-plan #plans-table tr th h3 {
+  font-size: 0.8em;
+}
+.change-plan #plans-table tr td {
+  vertical-align: middle;
+}
+.change-plan #plans-table tr td h2 {
+  display: inline;
+  font-size: 1.6em;
+}
 .categories_container {
   text-align: left;
   position: relative;

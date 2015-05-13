@@ -1,8 +1,63 @@
 <div class="fixed-width">
     <div id="page-contents">
         <nav class="main" main-navigation=""></nav>
-        <div class="form-wrap full-width" ng-controller="ChangePlanController">
-            <form class="float" name="plan_form" ng-submit="submit()" novalidate="novalidate">
+        <div class="form-wrap full-width">
+            <div class="change-plan">
+                <h1><i class="icon-shopping-cart"></i>Choose your new account plan</h1>
+                <table id="plans-table">
+                    <tr>
+                        <th></th>
+                        <th><h2>Basic</h2></th>
+                        <th><h2>Extended</h2></th>
+                        <th><h2>Premium</h2></th>
+                    </tr>
+                    <tr>
+                        <th>
+                            <h2>Maximum listeners</h2>
+                        </th>
+                        <td>20</td>
+                        <td>100</td>
+                        <td>500</td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <h2>Maximum radio stations</h2>
+                        </th>
+                        <td>1 radio station</td>
+                        <td>2 radio stations</td>
+                        <td>5 radio stations</td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <h2>Available space for audio</h2>
+                        </th>
+                        <td>8 hours</td>
+                        <td>24 hours</td>
+                        <td>120 hours</td>
+                    </tr>
+                    <tr>
+                        <th>
+                            <h2>Maximal listening quality</h2>
+                        </th>
+                        <td>up to 128 kbps</td>
+                        <td>up to 320 kbps</td>
+                        <td>up to 320 kbps</td>
+                    </tr>
+                    <tr>
+                        <th><h2>Price</h2></th>
+                        <td><h2>free</h2></td>
+                        <td><h2>$2.50</h2>/month</td>
+                        <td><h2>$5.00</h2>/month</td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td></td>
+                        <td><a target="_blank" class="buy_button" href="/subscribe?plan_id=2">Subscribe</a></td>
+                        <td><a target="_blank" class="buy_button" href="/subscribe?plan_id=4">Subscribe</a></td>
+                    </tr>
+                </table>
+            </div>
+            <form class="float" name="plan_form" ng-submit="submit()" novalidate="novalidate" ng-controller="ChangePlanController">
                 <h1 class="form-title">
                     <i class="icon-shopping-cart"></i>
                     <translate filter="uppercase">FR_CHANGE_PLAN_TITLE</translate>

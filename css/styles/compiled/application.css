@@ -1824,7 +1824,9 @@ body.player-visible .player-container {
 }
 .change-plan h1 {
   text-transform: uppercase;
-  margin-bottom: 16px;
+}
+.change-plan #actual {
+  margin-bottom: 32px;
 }
 .change-plan #plans-table {
   width: 100%;
@@ -1856,6 +1858,17 @@ body.player-visible .player-container {
 .change-plan #plans-table tr td h2 {
   display: inline;
   font-size: 1.6em;
+}
+.change-plan .buy-button {
+  border-radius: 4px;
+  background-color: #a4d35a;
+  color: #ffffff;
+  padding: 8px 16px;
+  text-decoration: none;
+}
+.change-plan .buy-button:hover {
+  background-color: #d0e8ab;
+  color: #ffffff;
 }
 .categories_container {
   text-align: left;

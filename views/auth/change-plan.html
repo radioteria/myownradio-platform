@@ -3,7 +3,8 @@
         <nav class="main" main-navigation=""></nav>
         <div class="form-wrap full-width">
             <div class="change-plan">
-                <h1><i class="icon-shopping-cart"></i>Choose your new account plan</h1>
+                <h1><i class="icon-shopping-cart"></i>Change your account plan</h1>
+                <div id="actual">Your actual account plan: <b>{{ account.user.plan_data.plan_name }}</b></div>
                 <table id="plans-table">
                     <tr>
                         <th></th>
@@ -37,7 +38,7 @@
                     </tr>
                     <tr>
                         <th>
-                            <h2>Maximal listening quality</h2>
+                            <h2>Maximum playback quality</h2>
                         </th>
                         <td>up to 128 kbps</td>
                         <td>up to 320 kbps</td>
@@ -52,8 +53,8 @@
                     <tr>
                         <th></th>
                         <td></td>
-                        <td><a target="_blank" class="buy_button" href="/subscribe?plan_id=2">Subscribe</a></td>
-                        <td><a target="_blank" class="buy_button" href="/subscribe?plan_id=4">Subscribe</a></td>
+                        <td><a target="_blank" class="buy-button" href="/subscribe?plan_id=2"><i class="icon-shopping-cart"></i> Upgrade</a></td>
+                        <td><a target="_blank" class="buy-button" href="/subscribe?plan_id=4"><i class="icon-shopping-cart"></i> Upgrade</a></td>
                     </tr>
                 </table>
             </div>

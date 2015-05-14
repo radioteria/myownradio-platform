@@ -192,35 +192,6 @@ class UsersModel implements SingletonInterface, Injectable {
 
     /**
      * @param $code
-     * @param $password
-     */
-    public function completePasswordReset($code, $password) {
-
-        $credentials = self::parseResetPasswordCode($code);
-
-        $user = new UserModel($credentials["login"], $credentials["password"]);
-
-        $user->changePasswordNow($password);
-
-    }
-
-    /**
-     * @param User $id
-     */
-    public function createUserDirectory(User $id) {
-
-        $path = new File(Folders::getInstance()->generateUserContentFolder($id));
-
-        error_log($path->path());
-
-        if (! $path->exists()) {
-            $path->createNewDirectory(NEW_DIR_RIGHTS, true);
-        }
-
-    }
-
-    /**
-     * @param $code
      * @return mixed
      * @throws \Framework\Exceptions\ControllerException
      */
@@ -241,6 +212,35 @@ class UsersModel implements SingletonInterface, Injectable {
         }
 
         return $decoded["email"];
+
+    }
+
+    /**
+     * @param User $id
+     */
+    public function createUserDirectory(User $id) {
+
+        $path = new File(Folders::getInstance()->generateUserContentFolder($id));
+
+        error_log($path->path());
+
+        if (! $path->exists()) {
+            $path->createNewDirectory(NEW_DIR_RIGHTS, true);
+        }
+
+    }
+
+    /**
+     * @param $code
+     * @param $password
+     */
+    public function completePasswordReset($code, $password) {
+
+        $credentials = self::parseResetPasswordCode($code);
+
+        $user = new UserModel($credentials["login"], $credentials["password"]);
+
+        $user->changePasswordNow($password);
 
     }
 

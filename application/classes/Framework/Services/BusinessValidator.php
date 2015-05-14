@@ -29,7 +29,6 @@ class BusinessValidator extends Validator {
     }
 
     function checkPermalinkForUser($user_id) {
-
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($user_id) {
 
@@ -45,11 +44,9 @@ class BusinessValidator extends Validator {
 
         });
         return $copy;
-
     }
 
     function checkPermalinkForStream($stream_id) {
-
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($stream_id) {
 
@@ -66,7 +63,6 @@ class BusinessValidator extends Validator {
         });
 
         return $copy;
-
     }
 
 } 

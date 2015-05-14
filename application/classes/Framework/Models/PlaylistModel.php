@@ -166,14 +166,9 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      */
     private function doAtomic(callable $callable) {
 
-        $this->getPlayingTrack()->then(function ($track) use ($callable) {
+        $this->getPlayingTrack()->then(function (StreamTrack $track) use ($callable) {
 
-            /** @var StreamTrack $track */
-            $position = $this->getStreamPosition()->get();
-            $trackPosition = $position - $track->getTimeOffset();
-
-            logger("Now playing: " . $track->getFileName());
-            logger("Offset: " . number_format($trackPosition / 1000));
+            $trackPosition = $this->getStreamPosition()->get() - $track->getTimeOffset();
 
             call_user_func($callable);
 
@@ -183,7 +178,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                 $this->scPlayByOrderID($track->getTrackOrder());
             }
 
-        })->getOrElseCallback($callable);
+        })->orElseCall($callable);
 
         return $this;
 
@@ -309,7 +304,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      */
     public function removeTracks($tracks) {
 
-        $this->doAtomic(function () use (&$tracks) {
+        $this->doAtomic(function () use ($tracks) {
 
             (new DeleteQuery("r_link"))
                 ->where("FIND_IN_SET(unique_id, ?)", [$tracks])

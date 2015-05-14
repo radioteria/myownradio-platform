@@ -77,7 +77,7 @@ class Optional implements \JsonSerializable {
      * @param callable $callable
      * @return mixed
      */
-    public function getOrElseCallback(callable $callable) {
+    public function orElseCall(callable $callable) {
         return $this->test() ? $this->value : call_user_func($callable);
     }
 

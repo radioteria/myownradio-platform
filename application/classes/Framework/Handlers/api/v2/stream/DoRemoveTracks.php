@@ -17,14 +17,12 @@ use Framework\Services\Notifier;
 
 class DoRemoveTracks implements Controller {
 
-    public function doPost(HttpPost $post, JsonResponse $response, Notifier $notif1er) {
+    public function doPost(HttpPost $post, JsonResponse $response) {
 
         $id = $post->getRequired("stream_id");
         $tracks = $post->getRequired("unique_ids");
 
         PlaylistModel::getInstance($id)->removeTracks($tracks);
-
-        $notif1er->event("tracklist", $id, "state_change", null);
 
     }
 

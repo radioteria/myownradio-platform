@@ -209,7 +209,7 @@ class MicroORM extends FilterORM implements Injectable {
     }
 
     /**
-     * Internal method for create new object
+     * Internal method to create new object
      * @param array $config
      * @param \ReflectionClass $reflection
      * @param ActiveRecordObject $bean
@@ -236,7 +236,7 @@ class MicroORM extends FilterORM implements Injectable {
     }
 
     /**
-     * Internal method for update existing object
+     * Internal method to update existing object
      * @param array $config
      * @param \ReflectionClass $reflection
      * @param ActiveRecordObject $bean

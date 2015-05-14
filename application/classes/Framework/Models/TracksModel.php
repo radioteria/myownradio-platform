@@ -236,15 +236,9 @@ class TracksModel implements Injectable, SingletonInterface {
 
     private function addToStream(Track $track, Optional $stream, $upNext = false) {
 
-        if (!$stream->validate()) {
-            return Optional::noValue();
-        }
-
-        $streamID = $stream->get();
-
-        $streamObject = new PlaylistModel($streamID);
-
-        $streamObject->addTracks($track->getID(), $upNext);
+        $stream->then(function($stream_id) use ($track, $upNext) {
+            (new PlaylistModel($stream_id))->addTracks($track->getID(), $upNext);
+        });
 
     }
 
@@ -253,11 +247,13 @@ class TracksModel implements Injectable, SingletonInterface {
      */
     public function delete($tracks) {
 
-        foreach (explode(",", $tracks) as $track) {
+        $tracksArray = explode(",", $tracks);
+        foreach ($tracksArray as $track) {
             try {
                 $track = new TrackModel($track);
                 $track->delete();
-            } catch (UnauthorizedException $e) { /* NOP */
+            } catch (ControllerException $e) {
+                error_log($e->getMyMessage());
             }
         }
 
@@ -273,14 +269,13 @@ class TracksModel implements Injectable, SingletonInterface {
         $streams = $db->selectFrom("r_link")
             ->select("stream_id")
             ->selectAlias("GROUP_CONCAT(unique_id)", "unique_ids")
-            ->where("track_id", explode(",", $tracks))
+            ->where("FIND_IN_SET(track_id, ?)", [$tracks])
             ->addGroupBy("stream_id")->fetchAll();
 
         foreach ($streams as $stream) {
 
             $model = new PlaylistModel($stream['stream_id']);
             $model->removeTracks($stream['unique_ids']);
-            unset($model);
 
         }
 

@@ -13,7 +13,6 @@ use Framework\ControllerImpl;
 use Framework\Models\PaymentModel;
 use Framework\Services\HttpGet;
 use Framework\View\Errors\View400Exception;
-use Framework\View\Errors\View500Exception;
 
 class DoAcquire extends ControllerImpl {
     public function doGet(HttpGet $get) {

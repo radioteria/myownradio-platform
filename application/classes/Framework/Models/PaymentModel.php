@@ -39,7 +39,6 @@ class PaymentModel {
         $plan = AccountPlan::getById($plan_id)
             ->getOrElseThrow(ControllerException::noAccountPlan($plan_id));
 
-
         $payment = new Payment();
         $payment->setExpires(time() + $plan->getPlanDuration());
         $payment->setPaymentSource("LIQPAY");

@@ -182,7 +182,6 @@ class MicroORM extends FilterORM implements Injectable {
         $reflection = new \ReflectionClass($bean);
 
         $config = $this->getBeanConfig($reflection);
-        $dbq = DBQuery::getInstance();
 
         if (isset($config["@view"])) {
             throw new ORMException("Object has read only access");
@@ -197,61 +196,89 @@ class MicroORM extends FilterORM implements Injectable {
 
         if (is_null($key)) {
 
-            $query = $dbq->into($config["@table"]);
-
-            foreach ($reflection->getProperties() as $prop) {
-                if ($prop->getName() == $config["@key"])
-                    continue;
-                $prop->setAccessible(true);
-                $query->values($prop->getName(), $prop->getValue($bean));
-                $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] = $prop->getValue($bean);
-            }
-
-            $result = $query->executeInsert();
-
-            $keyProp->setValue($bean, $result);
+            $this->_insertObject($config, $reflection, $bean, $keyProp);
 
         } else {
 
-            $query = $dbq->updateTable($config["@table"]);
-            $test = 0;
+            $this->_updateObject($config, $reflection, $bean);
 
-            foreach ($reflection->getProperties() as $prop) {
+        }
 
-                $prop->setAccessible(true);
+        $bean->afterUpdate();
 
-                if ($prop->getName() == $config["@key"]) {
+    }
 
-                    $query->where($prop->getName(), $prop->getValue($bean));
+    /**
+     * Internal method for create new object
+     * @param array $config
+     * @param \ReflectionClass $reflection
+     * @param ActiveRecordObject $bean
+     * @param \ReflectionProperty $keyProp
+     */
+    private function _insertObject(array $config, \ReflectionClass $reflection, ActiveRecordObject $bean, $keyProp) {
 
-                } else {
+        $dbq = DBQuery::getInstance();
 
-                    if (!isset($this->ORMCache[$config["@table"]][$config["@key"]])) {
-                        $this->ORMCache[$config["@table"]][$config["@key"]] = [];
-                    }
+        $query = $dbq->into($config["@table"]);
 
-                    if (!isset($this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()]) ||
-                        $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] !== $prop->getValue($bean)
-                    ) {
+        foreach ($reflection->getProperties() as $prop) {
+            if ($prop->getName() == $config["@key"])
+                continue;
+            $prop->setAccessible(true);
+            $query->values($prop->getName(), $prop->getValue($bean));
+            $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] = $prop->getValue($bean);
+        }
 
-                        $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] = $prop->getValue($bean);
-                        $query->set($prop->getName(), $prop->getValue($bean));
-                        $test = 1;
+        $result = $query->executeInsert();
 
-                    }
+        $keyProp->setValue($bean, $result);
+
+    }
+
+    /**
+     * Internal method for update existing object
+     * @param array $config
+     * @param \ReflectionClass $reflection
+     * @param ActiveRecordObject $bean
+     */
+    private function _updateObject(array $config, \ReflectionClass $reflection, ActiveRecordObject $bean) {
+
+        $dbq = DBQuery::getInstance();
+
+        $query = $dbq->updateTable($config["@table"]);
+        $test = 0;
+
+        foreach ($reflection->getProperties() as $prop) {
+
+            $prop->setAccessible(true);
+
+            if ($prop->getName() == $config["@key"]) {
+
+                $query->where($prop->getName(), $prop->getValue($bean));
+
+            } else {
+
+                if (!isset($this->ORMCache[$config["@table"]][$config["@key"]])) {
+                    $this->ORMCache[$config["@table"]][$config["@key"]] = [];
+                }
+
+                if (!isset($this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()]) ||
+                    $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] !== $prop->getValue($bean)
+                ) {
+
+                    $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] = $prop->getValue($bean);
+                    $query->set($prop->getName(), $prop->getValue($bean));
+                    $test = 1;
 
                 }
 
             }
 
-
-            if ($test) {
-                $query->update();
-            }
-
         }
 
-        $bean->afterUpdate();
+        if ($test) {
+            $query->update();
+        }
 
     }
 

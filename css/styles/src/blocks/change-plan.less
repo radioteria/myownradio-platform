@@ -12,34 +12,19 @@
   #plans-table {
     width: 100%;
     table-layout: fixed;
-    tr {
-      &:not(:last-child) {
-        border-bottom: 1px solid #f3f3f3;
+    td, th {
+      padding: 8px 8px;
+      text-align: left;
+      vertical-align: top;
+      &:first-child {
+        padding-left: 0;
       }
-      & > *:not(:last-child) {
-        border-right: 1px solid #f3f3f3;
+      &:last-child {
+        padding-right: 0;
       }
-
-      td,th {
-        text-align: center;
-        padding: 16px 8px;
-      }
-      th {
-        vertical-align: middle;
-        h2 {
-          font-size: 1.2em;
-        }
-        h3 {
-          font-size: 0.8em;
-        }
-      }
-      td {
-        vertical-align: middle;
-        h2 {
-          display: inline;
-          font-size: 1.6em;
-        }
-      }
+    }
+    .big {
+      font-size: 18pt;
     }
   }
 

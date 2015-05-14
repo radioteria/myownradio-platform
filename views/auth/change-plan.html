@@ -3,62 +3,38 @@
         <nav class="main" main-navigation=""></nav>
         <div class="form-wrap full-width">
             <div class="change-plan">
+                <h1>Select a plan</h1>
                 <table id="plans-table">
                     <tr>
-                        <th></th>
-                        <th><h2>Basic</h2></th>
-                        <th><h2>Extended</h2></th>
-                        <th><h2>Premium</h2></th>
+                        <th class="big">Basic</th>
+                        <th class="big">Extended</th>
+                        <th class="big">Premium</th>
                     </tr>
                     <tr>
-                        <th>
-                            <h2>Maximum listeners</h2>
-                        </th>
-                        <td>20</td>
-                        <td>100</td>
-                        <td>500</td>
+                        <td class="small">Free plan for acquaintance.</td>
+                        <td class="small">Most popular plan with 24 hours for music.</td>
+                        <td class="small">Maximal plan optimized for multiple radio stations.</td>
                     </tr>
                     <tr>
-                        <th>
-                            <h2>Maximum radio stations</h2>
-                        </th>
-                        <td>1 radio station</td>
-                        <td>2 radio stations</td>
-                        <td>5 radio stations</td>
+                        <td style="vertical-align:middle"><span class="big">Free</span></td>
+                        <td style="vertical-align:middle"><span class="big">$2<sup>50</sup></span> per month</td>
+                        <td style="vertical-align:middle"><span class="big">$5<sup>00</sup></span> per month</td>
                     </tr>
                     <tr>
-                        <th>
-                            <h2>Available space for audio</h2>
-                        </th>
-                        <td>8 hours</td>
-                        <td>24 hours</td>
-                        <td>120 hours</td>
+                        <td class="small">1 Radio Station, 20 Listeners, 8 Hours For Audio Content, Up To 128K Playback Quality.</td>
+                        <td class="small">2 Radio Stations, 100 Listeners, 24 Hours For Audio Content, Up To 320K Playback Quality.</td>
+                        <td class="small">5 Radio Stations, 500 Listeners, 120 Hours For Audio Content, Up To 320K Playback Quality.</td>
                     </tr>
                     <tr>
-                        <th>
-                            <h2>Maximum playback quality</h2>
-                        </th>
-                        <td>up to 128 kbps</td>
-                        <td>up to 320 kbps</td>
-                        <td>up to 320 kbps</td>
-                    </tr>
-                    <tr>
-                        <th><h2>Price</h2></th>
-                        <td><h2>free</h2></td>
-                        <td><h2>$2.50</h2>/month</td>
-                        <td><h2>$5.00</h2>/month</td>
-                    </tr>
-                    <tr>
-                        <th></th>
-                        <td></td>
-                        <td><a target="_blank" class="submit" href="/subscribe?plan_id=2"><i class="icon-shopping-cart"></i> Upgrade</a></td>
-                        <td><a target="_blank" class="submit" href="/subscribe?plan_id=4"><i class="icon-shopping-cart"></i> Upgrade</a></td>
+                        <td style="padding-top:16px"></td>
+                        <td style="padding-top:16px"><a target="_blank" class="submit" href="/subscribe?plan_id=2">Select</a></td>
+                        <td style="padding-top:16px"><a target="_blank" class="submit" href="/subscribe?plan_id=4">Select</a></td>
                     </tr>
                 </table>
             </div>
             <form class="float" name="plan_form" ng-submit="submit()" novalidate="novalidate" ng-controller="ChangePlanController">
-                <h1 class="form-title">
-                    <i class="icon-shopping-cart"></i> PROMO CODE
+                <h1 class="form-title" style="margin-bottom:8px">
+                    PROMO CODE
                 </h1>
                 <div class="status" bind-html="data.error"></div>
                 <table class="form-table">

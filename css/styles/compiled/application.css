@@ -485,6 +485,9 @@ translate {
 .ptop8px {
   padding-top: 8px;
 }
+.ptop16px {
+  padding-top: 16px;
+}
 .mtop8px {
   margin-top: 8px;
 }
@@ -508,6 +511,9 @@ translate {
 }
 .right-padded {
   padding-right: 4px;
+}
+.small {
+  font-size: 0.8em;
 }
 .clearFix:after {
   content: " ";
@@ -1847,32 +1853,22 @@ body.player-visible .player-container {
   width: 100%;
   table-layout: fixed;
 }
-.change-plan #plans-table tr:not(:last-child) {
-  border-bottom: 1px solid #f3f3f3;
+.change-plan #plans-table td,
+.change-plan #plans-table th {
+  padding: 8px 8px;
+  text-align: left;
+  vertical-align: top;
 }
-.change-plan #plans-table tr > *:not(:last-child) {
-  border-right: 1px solid #f3f3f3;
+.change-plan #plans-table td:first-child,
+.change-plan #plans-table th:first-child {
+  padding-left: 0;
 }
-.change-plan #plans-table tr td,
-.change-plan #plans-table tr th {
-  text-align: center;
-  padding: 16px 8px;
+.change-plan #plans-table td:last-child,
+.change-plan #plans-table th:last-child {
+  padding-right: 0;
 }
-.change-plan #plans-table tr th {
-  vertical-align: middle;
-}
-.change-plan #plans-table tr th h2 {
-  font-size: 1.2em;
-}
-.change-plan #plans-table tr th h3 {
-  font-size: 0.8em;
-}
-.change-plan #plans-table tr td {
-  vertical-align: middle;
-}
-.change-plan #plans-table tr td h2 {
-  display: inline;
-  font-size: 1.6em;
+.change-plan #plans-table .big {
+  font-size: 18pt;
 }
 .change-plan .buy-button {
   border-radius: 4px;

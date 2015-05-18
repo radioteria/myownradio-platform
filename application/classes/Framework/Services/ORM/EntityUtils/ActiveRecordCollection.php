@@ -27,6 +27,12 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \Iterator, \Js
         }
     }
 
+    public function generator() {
+        foreach ($this->collection as $item) {
+            yield MicroORM::getInstance()->getObjectByData($this->objectName, $item);
+        }
+    }
+
     public function offsetExists($offset) {
         return isset($collection[$offset]);
     }

@@ -9,19 +9,14 @@
 namespace Framework\Handlers;
 
 
-use Framework\Context;
 use Framework\Controller;
-use Framework\FileServer\FSFile;
-use Framework\Services\Annotations\Annotation;
-use Framework\Services\DB\Query\SelectQuery;
-use Framework\Services\JsonResponse;
-use Framework\Services\Test\Test;
-use Objects\FileServer\FileServerFile;
+use Framework\Services\Generator;
 
 class DoGradient implements Controller {
     public function doGet() {
-        $test = new Test();
-        $test->start();
+        foreach(Generator::generate() as $val) {
+            echo $val;
+        }
     }
 
 

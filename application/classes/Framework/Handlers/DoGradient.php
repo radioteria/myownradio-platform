@@ -10,14 +10,12 @@ namespace Framework\Handlers;
 
 
 use Framework\Controller;
-use Objects\Stream;
+use Framework\Services\ORM\Wrapper\Wrapper;
 
 class DoGradient implements Controller {
     public function doGet() {
-        foreach (Stream::getList() as $stream) {
-            echo $stream->getName();
-            echo "<br>";
-        }
+        $wrapper = new Wrapper();
+        echo $wrapper->keyToGetter("user_id");
     }
 
 

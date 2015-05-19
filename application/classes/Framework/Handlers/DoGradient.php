@@ -10,12 +10,13 @@ namespace Framework\Handlers;
 
 
 use Framework\Controller;
-use Framework\Services\Generator;
+use Objects\Stream;
 
 class DoGradient implements Controller {
     public function doGet() {
-        foreach(Generator::generate() as $val) {
-            echo $val;
+        foreach (Stream::getList() as $stream) {
+            echo $stream->getName();
+            echo "<br>";
         }
     }
 

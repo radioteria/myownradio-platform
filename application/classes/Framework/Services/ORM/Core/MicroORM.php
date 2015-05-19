@@ -419,7 +419,7 @@ class MicroORM extends FilterORM implements Injectable {
             $query->orderBy($order);
         }
 
-        $query->eachRow(function ($row) use (&$array, &$config) {
+        $query->eachRow(function ($row) use (&$array) {
 
             $array[] = $row;
 

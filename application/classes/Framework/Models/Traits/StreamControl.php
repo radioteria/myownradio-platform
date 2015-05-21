@@ -17,6 +17,7 @@ use Tools\System;
 /**
  * Class StreamControl
  * @package Model\Traits
+ * @localized 21.05.2015
  */
 trait StreamControl {
 

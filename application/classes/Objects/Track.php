@@ -26,7 +26,7 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         $track_number, $genre, $date, $cue, $buy,
         $duration, $filesize, $color = 0,
         $uploaded, $copy_of = null, $used_count = 0,
-        $is_new = 1, $can_be_shared;
+        $is_new = 1, $can_be_shared = 0;
 
     /*
      * Bean Getters
@@ -236,13 +236,20 @@ class Track extends ActiveRecordObject implements ActiveRecord {
     }
 
     public function getFileUrl() {
+
         /** @var FileServerFile $file */
         $file = FileServerFile::getByID($this->getFileId())
             ->getOrElseThrow(new ControllerException(
                 sprintf("Track \"%d\" is not uploaded to any file server", $this->getID())
             ));
+        $server = $file->getServerObject();
 
-        return FileServerFacade::getServerNameById($file->getServerId()).$file->getFileHash();
+        if (is_null($server)) {
+            return null;
+        } else {
+            return "http://".$file->getServerObject()->getFsHost()."/".$file->getFileHash();
+        }
+
     }
 
     /**

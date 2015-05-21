@@ -60,7 +60,6 @@
             $rootScope.account.logout = function () {
                 $cacheFactory.get('$http').removeAll();
                 User.logout().onSuccess(function () {
-                    //$rootScope.account.init();
                     $route.reload();
                 });
             };
@@ -81,18 +80,16 @@
                 User.login($scope.credentials)
                     .onSuccess(function (data) {
                         $analytics.eventTrack('Login', { category: 'Actions' });
-
-                        Popup.message("Welcome, " + data.name + "!<br>You're successfully logged in!");
+                        Popup.message($scope.tr("FR_LOGIN_MESSAGE", data));
                         $scope.status = "";
                         $rootScope.account.init("/profile/");
-
                         if (typeof $location.search().go != "undefined") {
                             $rootScope.account.init($location.search().go);
                         } else {
                             $rootScope.account.init("/profile/");
                         }
-
                     }, function (err) {
+                        console.log("error");
                         $scope.status = err;
                     }
                 )
@@ -101,7 +98,7 @@
                 FB.login(function (response) {
                     if (response.status === "connected") {
                         Account.loginByFacebook(response.authResponse).onSuccess(function(data) {
-                            Popup.message("Welcome, " + data.name + "!<br>You're successfully logged in!");
+                            Popup.message($scope.tr("FR_LOGIN_MESSAGE", data));
                             $scope.status = "";
                             $scope.account.init("/profile/");
                         }, function (error) {
@@ -125,7 +122,7 @@
             };
             $scope.submit = function () {
                 User.enterPromoCode($scope.data.code).onSuccess(function (data) {
-                    Popup.message("You have successfully changed your current account plan to" + htmlEscape(data));
+                    Popup.message($scope.tr("FR_PLAN_CHANGED_MESSAGE", [data]));
                     $location.url("/profile/");
                 }, function (message) {
                     $scope.data.error = message;
@@ -158,7 +155,7 @@
                 FB.login(function (response) {
                     if (response.status === "connected") {
                         Account.loginByFacebook(response.authResponse).onSuccess(function (data) {
-                            Popup.message("Welcome, " + data.name + "!<br>You're successfully logged in!");
+                            Popup.message($scope.tr("FR_LOGIN_MESSAGE", data));
                             $scope.account.init("/profile/");
                         }, function (error) {
                             console.log(error);
@@ -431,8 +428,8 @@
 
         function (Bookmarks, Popup, $rootScope) {
 
-            var buttonTemplate = '<i ng-if="!stream.bookmarked" class="icon-heart-o" mor-tooltip="Add radio station to bookmarks"></i>\
-                                  <i ng-if=" stream.bookmarked" class="icon-heart" mor-tooltip="Remove radio station from bookmarks"></i>';
+            var buttonTemplate = '<i ng-if="!stream.bookmarked" class="icon-heart-o" mor-tooltip="{{ $root.tr(\'FR_BOOKMARK_ADD_TIP\') }}"></i>\
+                                  <i ng-if=" stream.bookmarked" class="icon-heart" mor-tooltip="{{ $root.tr(\'FR_BOOKMARK_REMOVE_TIP\') }}"></i>';
 
             return {
                 restrict: "E",
@@ -446,16 +443,16 @@
                         if ($scope.stream.bookmarked) {
                             Bookmarks.remove($scope.stream).onSuccess(function () {
                                 $rootScope.$broadcast("BOOKMARK", {id: $scope.stream.sid, bookmarked: false});
-                                Popup.message("<b>" + htmlEscape($scope.stream.name) + "</b> successfully removed from your bookmarks");
+                                Popup.message($rootScope.tr("FR_BOOKMARK_REMOVE_SUCCESS", [ $scope.stream.name ]));
                             }, function (message) {
-                                Popup.message(message, "Error");
+                                Popup.message(message);
                             });
                         } else {
                             Bookmarks.add($scope.stream).onSuccess(function () {
                                 $rootScope.$broadcast("BOOKMARK", {id: $scope.stream.sid, bookmarked: true});
-                                Popup.message("<b>" + htmlEscape($scope.stream.name) + "</b> successfully added to your bookmarks");
-                            }, function () {
-                                Popup.message("To use this feature please login");
+                                Popup.message($rootScope.tr("FR_BOOKMARK_ADD_SUCCESS", [ $scope.stream.name ]));
+                            }, function (message) {
+                                Popup.message(message);
                             });
                         }
                     });

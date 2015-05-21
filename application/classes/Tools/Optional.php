@@ -26,15 +26,21 @@ class Optional implements \JsonSerializable {
     }
 
     /**
-     * @param Exception $exception
+     * @param Exception|string $exception
+     * @param null $args
+     * @throws \Exception
+     * @throws string
      * @return mixed
-     * @throws Exception
      */
-    public function getOrElseThrow(Exception $exception) {
+    public function getOrElseThrow($exception, $args = null) {
         if ($this->test()) {
             return $this->value;
         } else {
-            throw $exception;
+            if (is_string($exception)) {
+                throw new $exception($args);
+            } else {
+                throw $exception;
+            }
         }
     }
 
@@ -71,7 +77,7 @@ class Optional implements \JsonSerializable {
      * @param callable $callable
      * @return mixed
      */
-    public function getOrElseCallback(callable $callable) {
+    public function orElseCall(callable $callable) {
         return $this->test() ? $this->value : call_user_func($callable);
     }
 
@@ -196,6 +202,14 @@ class Optional implements \JsonSerializable {
     /**
      * @param $value
      * @return Optional
+     */
+    public static function ofArray($value) {
+        return new self($value, function ($value) { return is_array($value); });
+    }
+
+    /**
+     * @param $value
+     * @return Optional
      * Use this constructor if your variable must be a positive number
      */
     public static function ofPositiveNumber($value) {
@@ -251,6 +265,10 @@ class Optional implements \JsonSerializable {
 
     public function jsonSerialize() {
         return ["test" => $this->test() ? "true" : "false", "value" => $this->value];
+    }
+
+    public function getOrElseZero() {
+        return $this->getOrElse(0);
     }
 
 }

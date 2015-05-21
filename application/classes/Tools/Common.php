@@ -13,6 +13,32 @@ class Common {
 
     const GENERATED_ID_LENGTH = 8;
 
+    /**
+     * @param $delimiter
+     * @param $str
+     * @return array|null
+     */
+    public static function split($delimiter, $str) {
+        if ($str === null) return null;
+        return explode($delimiter, $str);
+    }
+
+    /**
+     * @param string $pattern
+     * @param array $args
+     * @return mixed
+     */
+    private function quick_replace($pattern, array $args = null) {
+        return preg_replace_callback('~(%[a-z0-9\_]+%)~', function ($match) use ($args) {
+            $key = trim($match[1], "%");
+            if (isset($args[$key])) {
+                return $args[$key];
+            } else {
+                return "";
+            }
+        }, $pattern);
+    }
+
     public static function searchQueryFilter($text) {
 
         $query = "";

@@ -23,6 +23,8 @@ class Database implements SingletonInterface, Injectable {
     private $pdo;
     private $settings;
 
+    private static $cache = [];
+
     public function __construct() {
 
         $this->settings = Config::getInstance()->getSection('database')->getOrElse([
@@ -175,19 +177,28 @@ class Database implements SingletonInterface, Injectable {
     /**
      * @param $query
      * @param $params
-     * @return \PDOStatement
-     * @throws ControllerException
+     * @return string
      */
-    private function createResource($query, $params) {
-
+    private function createQueryString($query, $params = null) {
         if ($query instanceof QueryBuilder) {
-            $queryString = $this->queryQuote(
+            return $this->queryQuote(
                 $query->getQuery($this->pdo),
                 $query->getParameters());
         } else {
-            $queryString = $this->queryQuote($query, $params);
+            return $this->queryQuote($query, $params);
         }
+    }
 
+    /**
+     * @param $query
+     * @param $params
+     * @param bool $cached
+     * @throws \Framework\Exceptions\DatabaseException
+     * @return \PDOStatement
+     */
+    private function createResource($query, $params = null, $cached = false) {
+
+        $queryString = $this->createQueryString($query, $params);
 
         $resource = $this->pdo->prepare($queryString);
 
@@ -201,7 +212,23 @@ class Database implements SingletonInterface, Injectable {
             throw new DatabaseException($resource->errorInfo()[2], $queryString);
         }
 
-        //error_log("SQL: " . $queryString);
+        return $resource;
+
+    }
+
+    private function createResourceFromString($queryString) {
+
+        $resource = $this->pdo->prepare($queryString);
+
+        if ($resource === false) {
+            throw new DatabaseException($this->pdo->errorInfo()[2], $queryString);
+        }
+
+        $resource->execute();
+
+        if ($resource->errorCode() !== "00000") {
+            throw new DatabaseException($resource->errorInfo()[2], $queryString);
+        }
 
         return $resource;
 
@@ -212,16 +239,27 @@ class Database implements SingletonInterface, Injectable {
      * @param array $params
      * @param string $key
      * @param Callable $callback
+     * @param bool $cached
      * @return array
-     * @throws ControllerException
      */
-    public function fetchAll($query, array $params = null, $key = null, callable $callback = null) {
+    public function fetchAll($query, array $params = null, $key = null, callable $callback = null, $cached = false) {
 
-        $resource = $this->createResource($query, $params);
+        $queryString = $this->createQueryString($query, $params);
+
+        if ($cached == true && isset(self::$cache[$queryString])) {
+            $db_result = self::$cache[$queryString];
+        } else {
+            $resource = $this->createResourceFromString($queryString);
+            $db_result = $resource->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        if ($cached == true) {
+            self::$cache[$queryString] = $db_result;
+        }
 
         $result = [];
 
-        for ($i = 0; $row = $resource->fetch(PDO::FETCH_ASSOC); $i++) {
+        foreach ($db_result as $i => $row) {
 
             if (is_callable($callback)) {
                 $row = call_user_func_array($callback, [$row, $i]);

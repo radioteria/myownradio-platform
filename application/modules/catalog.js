@@ -180,9 +180,9 @@
 
     }]);
 
-    catalog.controller("SearchFormController", ["$element", "$scope", "$location", "Streams", "$document",
+    catalog.controller("SearchFormController", ["$element", "$scope", "$location", "Streams", "$document", "$channels",
 
-        function ($element, $scope, $location, Streams, $document) {
+        function ($element, $scope, $location, Streams, $document, $channels) {
             $scope.filter = "";
             $scope.streams = [];
             $scope.focused = false;
@@ -203,14 +203,15 @@
                 $location.url("/search/".concat(encodeURIComponent($scope.filter)));
                 $scope.filter = "";
             };
-            $scope.goStream = function (key) {
-                $location.url("/streams/".concat(key));
+            $scope.goStream = function ($channel) {
+                var key = $channel.permalink || $channel.sid;
+                $location.url("/streams/" + key);
                 $scope.filter = "";
             };
             $scope.$watch("filter", function (value) {
                 if (typeof value == "string" && value.length > 0) {
-                    Streams.getList($scope.filter, "", 0, 5).onSuccess(function (data) {
-                        $scope.streams = data.streams;
+                    $channels.getSuggestChannels($scope.filter).then(function (data) {
+                        $scope.streams = data;
                     });
                 } else {
                     $scope.streams = [];
@@ -365,18 +366,14 @@
 
     ]);
 
-    catalog.controller("MyStreamsController", ["$rootScope", "$scope", "$dialog", "Streams", "StreamWorks",
+    catalog.controller("MyStreamsController", ["$rootScope", "$scope", "$dialog", "Streams", "StreamWorks", "TrackAction", "Popup",
 
-        function ($rootScope, $scope, $dialog, Streams, StreamWorks) {
+        function ($rootScope, $scope, $dialog, Streams, StreamWorks, TrackAction, Popup) {
 
-            $scope.deleteStream = function (stream) {
-                $dialog.question("Are you sure want to delete stream<br><b>" + htmlEscape(stream.name) + "</b>?", function () {
-                    Streams.deleteStream(stream).onSuccess(function () {
-                        deleteMatching($rootScope.account.streams, function (obj) {
-                            return stream.sid == obj.sid
-                        });
-                        $rootScope.account.user.streams_count = $rootScope.account.user.streams_count - 1;
-                    });
+            $scope.deleteStream = function ($stream) {
+                TrackAction.deleteStream($stream, function () {
+                    Popup.tr("FR_STREAM_DELETED_SUCCESSFULLY", $stream);
+                    $rootScope.account.init("/profile/streams/");
                 });
             };
 
@@ -386,7 +383,7 @@
                         $rootScope.account.init();
                     });
                 } else {
-                    $dialog.question("Are you sure want to <b>shut down</b> radio channel<br><b>" + htmlEscape(stream.name) + "</b>?", function () {
+                    $dialog.question($rootScope.tr("FR_CONFIRM_STREAM_STOP", [ stream.name ]), function () {
                         StreamWorks.stopStream(stream).onSuccess(function () {
                             $rootScope.account.init();
                         });
@@ -439,46 +436,10 @@
             $scope.editTrack = function (track) {
                 AudioInfoEditor.show([track], $scope);
             };
-            $scope.remove = function () {
-                TrackAction.removeTracksFromStream($scope.content.streamData, [$rootScope.player.nowPlaying]);
-            };
-            $scope.removeTrack = function (track) {
-                TrackAction.removeTracksFromStream($scope.content.streamData, [track]);
-            };
-
             $scope.copyTrack = function ($track) {
                 TrackAction.copyTrackToSelf($track);
             };
 
-            $scope.$watch("scheduleTracks", function (data) {
-                if (data !== null && $scope.content.streamData !== null) {
-                    $scope.content.streamData.listeners_count = data.listeners_count;
-                    $scope.content.streamData.bookmarks_count = data.bookmarks_count;
-                }
-            });
-
-            $scope.sort = function (uniqueId, newIndex) {
-                StreamWorks.sort($scope.content.streamData.sid, uniqueId, newIndex + 1);
-            };
-
-            $scope.sortableOptions = {
-                axis: 'y',
-                items: ".track-row",
-                stop: function (event, ui) {
-                    var thisElement = angular.element(ui.item).scope();
-                    var thisIndex = angular.element(ui.item);
-                    console.log(thisElement, thisIndex);
-                    //$scope.sort(thisElement.track.unique_id, thisIndex);
-                },
-                helper: function (e, tr) {
-                    var $originals = tr.children();
-                    var $helper = tr.clone();
-                    $helper.children().each(function (index) {
-                        $(this).width($originals.eq(index).width())
-                    });
-                    return $helper;
-                }
-            };
 
         }
 
@@ -487,129 +448,159 @@
     catalog.directive("trackItem", ["TIMELINE_RESOLUTION", function (TIMELINE_RESOLUTION) {
         return {
             link: function (scope, elem, attrs) {
-                var width, diff, isFirst = false, isLast = false, isOutside = false, isInside = false;
 
-                /* Define time ranges */
-                var leftRange = scope.schedule.position - (TIMELINE_RESOLUTION >> 1),
-                    rightRange = scope.schedule.position + (TIMELINE_RESOLUTION >> 1),
-                    marginSize = (TIMELINE_RESOLUTION >> 1) - scope.schedule.position;
+                scope.resizeItem = function () {
+                    var width, diff, isFirst = false, isLast = false, isOutside = false, isInside = false, isFull = false;
 
-                if (scope.track.time_offset + scope.track.duration < leftRange || scope.track.time_offset > rightRange) {
-                    isOutside = true;
-                }
+                    /* Define time ranges */
+                    var leftRange = scope.schedule.position - (TIMELINE_RESOLUTION >> 1),
+                        rightRange = scope.schedule.position + (TIMELINE_RESOLUTION >> 1),
+                        marginSize = (TIMELINE_RESOLUTION >> 1) - scope.schedule.position;
 
-                if (scope.track.time_offset <= leftRange && scope.track.time_offset + scope.track.duration > leftRange) {
-                    isFirst = true;
-                }
-
-                if (scope.track.time_offset >= leftRange && scope.track.time_offset + scope.track.duration <= rightRange) {
-                    isInside = true;
-                }
-
-                if (scope.track.time_offset < rightRange && scope.track.time_offset + scope.track.duration >= rightRange) {
-                    isLast = true;
-                }
-
-                (scope.reDraw = function () {
-                    if (isFirst && isLast) {
-                        width = Math.min(elem.parent().width() / scope.rate, scope.track.duration);
-                        elem.css("margin-left", Math.max(0, marginSize * scope.rate).toString().concat("px"));
-                    } else if (isFirst) {
-                        width = Math.max(0, scope.track.duration - (leftRange - scope.track.time_offset));
-                    } else if (isLast) {
-                        var end = scope.track.time_offset + scope.track.duration;
-                        width = Math.min(scope.track.duration - (end - rightRange), scope.track.duration);
-                    } else if (isInside) {
-                        width = scope.track.duration;
-                        if (scope.$first) {
-                            elem.css("margin-left", Math.max(0, marginSize * scope.rate).toString().concat("px"));
-                        }
-                    } else if (isOutside) {
-                        width = 0;
-                        elem.css("display", "none");
+                    if (scope.track.time_offset + scope.track.duration < leftRange || scope.track.time_offset > rightRange) {
+                        isOutside = true;
                     }
-                    elem.width((width * scope.rate).toString().concat("px"));
-                })();
+
+                    if (scope.track.time_offset <= leftRange && scope.track.time_offset + scope.track.duration > leftRange) {
+                        isFirst = true;
+                    }
+
+                    if (scope.track.time_offset >= leftRange && scope.track.time_offset + scope.track.duration <= rightRange) {
+                        isInside = true;
+                    }
+
+                    if (scope.track.time_offset < rightRange && scope.track.time_offset + scope.track.duration >= rightRange) {
+                        isLast = true;
+                    }
+
+                    if (scope.track.time_offset < leftRange && scope.track.time_offset + scope.track.duration > rightRange) {
+                        isFull = true;
+                    }
+
+                    //console.log(isOutside, isFirst, isInside, isLast, isFull);
+
+//                    (scope.reDraw = function () {
+                        if (isFull) {
+                            width = elem.parent().width() / scope.rate;
+                        } else if (isFirst && isLast) {
+                            width = Math.min(elem.parent().width() / scope.rate, scope.track.duration);
+                            elem.css("margin-left", Math.max(0, marginSize * scope.rate).toString().concat("px"));
+                        } else if (isFirst) {
+                            width = Math.max(0, scope.track.duration - (leftRange - scope.track.time_offset));
+                        } else if (isLast) {
+                            var end = scope.track.time_offset + scope.track.duration;
+                            width = Math.min(scope.track.duration - (end - rightRange), scope.track.duration);
+                        } else if (isInside) {
+                            width = scope.track.duration;
+                            if (scope.$first) {
+                                elem.css("margin-left", Math.max(0, marginSize * scope.rate).toString().concat("px"));
+                            }
+                        } else if (isOutside) {
+                            width = 0;
+                            elem.css("display", "none");
+                        }
+                        elem.width((width * scope.rate).toString().concat("px"));
+//                    })();
+                };
+
+                scope.resizeItem();
+                scope.$on("resize", scope.resizeItem);
 
             },
-            template: '<div class="track-title">{{track.caption}}</div>'
+            template: '<div class="track-title">{{ track.caption }}</div>'
         };
     }]);
 
-    catalog.directive("timeLine", ["TIMELINE_RESOLUTION", function (TIMELINE_RESOLUTION) {
+    catalog.directive("timeLine", [function () {
         return {
             scope: {
                 schedule: "=timeLine"
             },
             template: '<div class="timeline-container">\
                <div class="timeline-wrap">\
-                  <div ng-repeat="track in schedule.tracks" class="timeline-track" ng-class="(track.tid === current.tid) ? \'current\' : \'\'\" track-item mor-tooltip="{{track.caption}}"></div>\
+                  <div ng-repeat="track in schedule.tracks" class="timeline-track" ng-class="(schedule.current == $index) ? \'current\' : \'\'\" track-item mor-tooltip="{{track.caption}}"></div>\
                </div>\
             </div>\
             <div class="canvas-wrap"><canvas id="grid"></canvas></div>',
-            controller: function ($element, $scope, $parse, $attrs) {
 
-                $scope.rate = $element.find(".timeline-container").width() / TIMELINE_RESOLUTION;
+            controller: ["$element", "$scope", "$parse", "$attrs", "TIMELINE_RESOLUTION", "$window",
 
-                $scope.$watch("schedule", function (response) {
+                function ($element, $scope, $parse, $attrs, TIMELINE_RESOLUTION, $window) {
 
-                    if (!response) return false;
+                    $scope.$watch("schedule", function () {
 
-                    $scope.current = response.tracks[response.current];
-                    $scope.schedule = response;
-                    $scope.schedule.clientTime = new Date().getTime();
-                    $scope.drawGrid();
+                        if (!angular.isObject($scope.schedule)) return;
 
-                });
+                        $scope.current = $scope.schedule.tracks[$scope.schedule.current];
+                        $scope.schedule.clientTime = new Date().getTime();
+                        $scope.drawGrid();
 
-                $scope.drawGrid = function () {
-                    var leftEdgeTime = $scope.schedule.time - (TIMELINE_RESOLUTION >> 1);
-                    var cut = leftEdgeTime % 60000;
-                    var canvas = $element.find("#grid").get(0);
+                    });
 
-                    if (typeof canvas == "undefined") return;
-
-                    canvas.height = $(canvas).height();
-                    canvas.width = $(canvas).width();
-
-                    var rangeUSeconds = TIMELINE_RESOLUTION;
-
-                    var resolution = canvas.width / rangeUSeconds;
-
-                    var context = canvas.getContext("2d");
-                    context.font = "10px sans-serif";
-                    context.translate(0.5, 0.5);
-                    context.clearRect(0, 0, canvas.width, canvas.height);
-                    context.globalAlpha = 1;
-                    context.strokeStyle = "#000000";
-                    context.beginPath();
-                    var fix;
-                    for (var n = -cut; n < rangeUSeconds; n += 30000) {
-                        var thisDate = new Date(leftEdgeTime + n);
-                        fix = parseInt(n * resolution);
-                        context.moveTo(fix, 0);
-
-                        if (thisDate.getMinutes() % 5 == 0 && thisDate.getSeconds() == 0) {
-                            context.lineTo(fix, 6);
-                            var time = thisDate.toTimeString().replace(/.*(\d{2}:\d{2}):\d{2}.*/, "$1");
-                            context.fillText(time, fix - 12, 16);
-                        } else if (thisDate.getSeconds() == 0) {
-                            context.lineTo(fix, 4);
-                        } else {
-                            context.lineTo(fix, 2);
+                    $scope.init = function () {
+                        $scope.rate = $element.find(".timeline-container").width() / TIMELINE_RESOLUTION;
+                        if (angular.isObject($scope.schedule)) {
+                            $scope.$broadcast("resize");
+                            $scope.drawGrid();
                         }
-                    }
-                    context.stroke();
-                    context.globalAlpha = 0.5;
-                    context.fillStyle = "#FF0000";
-                    context.beginPath();
-                    context.moveTo(canvas.width / 2, 0);
-                    context.lineTo(canvas.width / 2 + 5, 10);
-                    context.lineTo(canvas.width / 2 - 5, 10);
-                    context.lineTo(canvas.width / 2, 0);
-                    context.fill();
-                };
-            }
+                    };
+
+                    $scope.drawGrid = function () {
+                        var leftEdgeTime = $scope.schedule.time - (TIMELINE_RESOLUTION >> 1);
+                        var cut = leftEdgeTime % 60000;
+                        var canvas = $element.find("#grid").get(0);
+
+                        if (typeof canvas == "undefined") return;
+
+                        canvas.height = $(canvas).height();
+                        canvas.width = $(canvas).width();
+
+                        var resolution = canvas.width / TIMELINE_RESOLUTION;
+
+                        var context = canvas.getContext("2d");
+                        context.font = "10px sans-serif";
+                        context.translate(0.5, 0.5);
+                        context.clearRect(0, 0, canvas.width, canvas.height);
+                        context.globalAlpha = 1;
+                        context.strokeStyle = "#000000";
+                        context.beginPath();
+                        var fix;
+                        for (var n = -cut; n < TIMELINE_RESOLUTION; n += 30000) {
+                            var thisDate = new Date(leftEdgeTime + n);
+                            fix = parseInt(n * resolution);
+                            context.moveTo(fix, 0);
+
+                            if (thisDate.getMinutes() % 5 == 0 && thisDate.getSeconds() == 0) {
+                                context.lineTo(fix, 6);
+                                var time = thisDate.toTimeString().replace(/.*(\d{2}:\d{2}):\d{2}.*/, "$1");
+                                context.fillText(time, fix - 12, 16);
+                            } else if (thisDate.getSeconds() == 0) {
+                                context.lineTo(fix, 4);
+                            } else {
+                                context.lineTo(fix, 2);
+                            }
+                        }
+                        context.stroke();
+                        context.globalAlpha = 0.5;
+                        context.fillStyle = "#FF0000";
+                        context.beginPath();
+                        context.moveTo(canvas.width / 2, 0);
+                        context.lineTo(canvas.width / 2 + 5, 10);
+                        context.lineTo(canvas.width / 2 - 5, 10);
+                        context.lineTo(canvas.width / 2, 0);
+                        context.fill();
+                    };
+
+                    $scope.init();
+
+                    angular.element($window).bind("resize", $scope.init);
+
+                    $scope.$on("$destroy", function () {
+                        angular.element($window).unbind("resize", $scope.init);
+                    });
+
+                }
+            ]
         }
     }]);
 
@@ -638,8 +629,8 @@
                         limit: limit
                     }
                 }).then(function (data) {
-                    return ResponseData(data);
-                });
+                        return ResponseData(data);
+                    });
             },
             getBookmarks: function (offset, limit) {
                 return $http.get("/api/v2/streams/getBookmarks", {
@@ -649,8 +640,8 @@
                         limit: limit
                     }
                 }).then(function (data) {
-                    return ResponseData(data);
-                });
+                        return ResponseData(data);
+                    });
             },
             getByIdWithSimilar: function (streamID) {
                 return $http.get("/api/v2/streams/getOneWithSimilar", {
@@ -659,8 +650,8 @@
                         stream_id: streamID
                     }
                 }).then(function (data) {
-                    return ResponseData(data);
-                });
+                        return ResponseData(data);
+                    });
             },
             getChannelsByUser: function (userID, offset, limit) {
                 return $http.get("/api/v2/streams/getStreamsByUser", {
@@ -671,8 +662,8 @@
                         limit: limit
                     }
                 }).then(function (data) {
-                    return ResponseData(data);
-                });
+                        return ResponseData(data);
+                    });
             },
             getChannelsBySelf: function (offset, limit) {
                 return $http.get("/api/v2/streams/getStreamsByUser", {
@@ -682,8 +673,8 @@
                         limit: limit
                     }
                 }).then(function (data) {
-                    return ResponseData(data);
-                });
+                        return ResponseData(data);
+                    });
             }
         }
     }]);
@@ -738,8 +729,8 @@
                             stream_id: streamID
                         }
                     }).success(function (data) {
-                        return ResponseData(data);
-                    });
+                            return ResponseData(data);
+                        });
 
                     return promise;
                 },

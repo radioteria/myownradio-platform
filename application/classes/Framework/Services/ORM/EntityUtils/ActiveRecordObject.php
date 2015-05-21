@@ -10,11 +10,37 @@ namespace Framework\Services\ORM\EntityUtils;
 
 
 use Framework\Services\ORM\Core\MicroORM;
+use Framework\Services\ORM\Exceptions\ORMException;
 use JsonSerializable;
 use Tools\Optional;
 use Tools\Singleton;
 
 abstract class ActiveRecordObject implements JsonSerializable {
+
+    /**
+     * @param $prop
+     * @param $value
+     * @throws \Framework\Services\ORM\Exceptions\ORMException
+     */
+    public function setProperty($prop, $value) {
+        $caseProp = underscoreToCamelCase($prop);
+        $prefix = "set";
+        $reflection = new \ReflectionClass($this);
+        try {
+            $method = $reflection->getMethod($prefix . $caseProp);
+            $method->invoke($this, $value);
+        } catch (\ReflectionException $exception) {
+            throw new ORMException(sprintf("No property '%s' in object '%s'", $prop, get_called_class()),
+                null, $exception);
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getKey() {
+        return MicroORM::getInstance()->getKeyOf($this);
+    }
 
     /**
      * @return mixed
@@ -59,7 +85,7 @@ abstract class ActiveRecordObject implements JsonSerializable {
      * @param null $limit
      * @param null $offset
      * @param null $order
-     * @return static[]
+     * @return ActiveRecordCollection
      */
     public static function getList($limit = null, $offset = null, $order = null) {
         return MicroORM::getInstance()->getListOfObjects(get_called_class(), $limit, $offset, $order);
@@ -71,7 +97,7 @@ abstract class ActiveRecordObject implements JsonSerializable {
      * @param null $limit
      * @param null $offset
      * @param null $order
-     * @return static[]
+     * @return ActiveRecordCollection
      */
     public static function getListByFilter($filter, array $args = null, $limit = null, $offset = null, $order = null) {
         return MicroORM::getInstance()->getFilteredListOfObjects(get_called_class(), $filter, $args, $limit, $offset, $order);
@@ -102,8 +128,29 @@ abstract class ActiveRecordObject implements JsonSerializable {
         return $data;
     }
 
-    public static function getClass() {
-        return self;
+    /**
+     * Returns the string class name of the GraphObject or subclass.
+     *
+     * @return string
+     */
+    public static function className() {
+        return get_called_class();
+    }
+
+    function beforeUpdate() {
+        return true;
+    }
+
+    function beforeDelete() {
+        return true;
+    }
+
+    function afterUpdate() {
+        return true;
+    }
+
+    function afterDelete() {
+        return true;
     }
 
 } 

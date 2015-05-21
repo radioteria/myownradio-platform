@@ -12,36 +12,40 @@ namespace Framework\FileServer;
 use Framework\Defaults;
 use Framework\FileServer\Exceptions\FileServerException;
 use Framework\FileServer\Exceptions\LocalFileNotFoundException;
-use Framework\Services\Database;
+use Framework\Services\Locale\I18n;
 use Objects\FileServer\FileServerFile;
 
+/**
+ * Class FSFile
+ * @package Framework\FileServer
+ * @localized 21.05.2015
+ */
 class FSFile {
 
     /**
-     * @param $filename
+     * @param $file_path
      * @param string|null $hash
      * @throws Exceptions\LocalFileNotFoundException
      * @throws Exceptions\NoSpaceForUploadException
      * @return int Created file ID
      */
-    public static function registerLink($filename, $hash = null) {
+    public static function registerLink($file_path, $hash = null) {
 
-        if (!file_exists($filename)) {
-            throw new LocalFileNotFoundException(
-                sprintf("File \"%s\" could not be found", $filename)
-            );
+        if (!file_exists($file_path)) {
+            throw new LocalFileNotFoundException(I18n::tr("ERROR_FILE_NOT_FOUND", ["name" => $file_path]));
         }
 
         if ($hash === null) {
-            $hash = hash_file(Defaults::HASHING_ALGORITHM, $filename);
+            $hash = hash_file(Defaults::HASHING_ALGORITHM, $file_path);
         }
 
 
         /** @var FileServerFile $object */
         $object = FileServerFile::getByFilter("HASH", [$hash])->getOrElseNull();
 
-        if ($object === null) {
-            $filesize = filesize($filename);
+        if (is_null($object)) {
+
+            $filesize = filesize($file_path);
             $fs = FileServerFacade::allocate($filesize);
 
             $object = new FileServerFile();
@@ -51,7 +55,7 @@ class FSFile {
             $object->setUseCount(1);
 
             if (!$fs->isFileExists($hash)) {
-                $fs->uploadFile($filename, $hash);
+                $fs->uploadFile($file_path, $hash);
             }
 
         } else {
@@ -70,30 +74,29 @@ class FSFile {
      */
     public static function deleteLink($file_id) {
 
-        Database::doInConnection(function (Database $db) use ($file_id) {
-
-            $db->beginTransaction();
-
-            if ($object = FileServerFile::getByID($file_id)->getOrElseNull()) {
-                if ($object->getUseCount() > 1) {
-                    $object->setUseCount($object->getUseCount() - 1);
-                    $object->save();
-                } else {
-                    $fs = new FileServerFacade($object->getServerId());
-                    try {
-                        $fs->delete($object->getFileHash());
-                        $object->delete();
-                    } catch (FileServerException $exception) {
-                        $object->setUseCount(0);
-                        $object->save();
-                    }
-                }
+        FileServerFile::getByID($file_id)->then(function (FileServerFile $file) {
+            if ($file->getUseCount() > 0) {
+                $file->setUseCount($file->getUseCount() - 1);
+                $file->save();
             }
-
-            $db->commit();
-
         });
 
+    }
+
+    /**
+     * @throws FileServerException
+     */
+    public static function deleteUnused() {
+        $files = FileServerFile::getListByFilter("UNUSED");
+        foreach ($files as $file) {
+            $fs = new FileServerFacade($file->getServerId());
+            try {
+                $fs->delete($file->getFileHash());
+                $file->delete();
+            } catch (FileServerException $exception) {
+                error_log($exception->getMessage());
+            }
+        }
     }
 
 }

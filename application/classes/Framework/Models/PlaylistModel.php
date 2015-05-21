@@ -9,13 +9,11 @@
 namespace Framework\Models;
 
 use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\StreamControl;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
-use Framework\Services\DB\DBQueryPool;
 use Framework\Services\DB\Query\DeleteQuery;
-use Framework\Services\DB\Query\SelectQuery;
-use Framework\Services\DB\Query\UpdateQuery;
 use Objects\Link;
 use Objects\Stream;
 use Objects\StreamTrack;
@@ -29,6 +27,7 @@ use Tools\System;
 /**
  * Class PlaylistModel
  * @package Model
+ * @localized 21.05.2015
  */
 class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
@@ -67,7 +66,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                 ->getOrElseThrow(ControllerException::noStream($this->key));
 
             if (intval($stats["uid"]) !== $this->user->getID()) {
-                throw ControllerException::noPermission();
+                throw UnauthorizedException::noPermission();
             }
 
             $this->tracks_count = intval($stats["tracks_count"]);
@@ -96,8 +95,6 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      * @return $this
      */
     public function addTracks($tracks, $upNext = false) {
-
-        logger(sprintf("Up Next enabled: %s", $upNext ? "yes" : "no"));
 
         $this->doAtomic(function () use (&$tracks, &$upNext) {
 
@@ -138,8 +135,9 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                             logger(sprintf("Now playing track with index = %d", $track->getTrackOrder()));
 
                             Database::doInConnection(function (Database $db) use (&$uniqueID, &$track) {
-                                $db->executeUpdate("SELECT NEW_STREAM_SORT(?, ?, ?)", [
-                                    $this->key, $uniqueID, $track->getTrackOrder() + 1]);
+                                $db->executeUpdate("SELECT move_track_channel(?, ?, ?)", [
+                                    $this->key, $uniqueID, $track->getTrackOrder() + 1
+                                ]);
                             });
 
                         });
@@ -166,18 +164,10 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      */
     private function doAtomic(callable $callable) {
 
-        logger("Doing atomic action...");
+        $this->getPlayingTrack()->then(function (StreamTrack $track) use ($callable) {
 
-        $this->getPlayingTrack()->then(function ($track) use ($callable) {
+            $trackPosition = $this->getStreamPosition()->get() - $track->getTimeOffset();
 
-            /** @var StreamTrack $track */
-            $position = $this->getStreamPosition()->get();
-            $trackPosition = $position - $track->getTimeOffset();
-
-            logger("Now playing: " . $track->getFileName());
-            logger("Offset: " . number_format($trackPosition / 1000));
-
-            logger("Doing action...");
             call_user_func($callable);
 
             if (StreamTrack::getByID($track->getUniqueID())->validate()) {
@@ -186,7 +176,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                 $this->scPlayByOrderID($track->getTrackOrder());
             }
 
-        })->getOrElseCallback($callable);
+        })->orElseCall($callable);
 
         return $this;
 
@@ -312,7 +302,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      */
     public function removeTracks($tracks) {
 
-        $this->doAtomic(function () use (&$tracks) {
+        $this->doAtomic(function () use ($tracks) {
 
             (new DeleteQuery("r_link"))
                 ->where("FIND_IN_SET(unique_id, ?)", [$tracks])
@@ -335,10 +325,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
         $this->doAtomic(function () {
 
             Database::doInConnection(function (Database $db) {
-                $db->executeUpdate("CALL PShuffleStream(?)", [$this->key]);
+                $db->executeUpdate("CALL shuffle_channel(?)", [$this->key]);
             });
-
-            $this->optimize();
 
         });
 
@@ -348,24 +336,13 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     public function optimize() {
 
-        $timeOffset = 0;
-        $orderIndex = 0;
+        $this->doAtomic(function () {
 
-        $pool = new DBQueryPool();
-
-        $query = new SelectQuery("mor_stream_tracklist_view");
-        $query->where("stream_id", $this->key);
-        $query->eachRow(function ($track) use (&$timeOffset, &$orderIndex, $pool) {
-
-            $q = new UpdateQuery("r_link");
-            $q->set(["time_offset" => $timeOffset, "t_order" => ++$orderIndex]);
-            $q->where("id", $track["id"]);
-            $pool->put($q);
-            $timeOffset += $track["duration"];
+            Database::doInConnection(function (Database $db) {
+                $db->executeUpdate("CALL optimize_channel(?)", [$this->key]);
+            });
 
         });
-
-        $pool->execute();
 
     }
 
@@ -379,7 +356,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
         $this->doAtomic(function () use (&$uniqueID, &$index) {
 
             Database::doInConnection(function (Database $db) use (&$uniqueID, &$index) {
-                $db->executeUpdate("SELECT NEW_STREAM_SORT(?, ?, ?)", [$this->key, $uniqueID, $index]);
+                $db->executeUpdate("CALL move_track_channel(?, ?, ?)", [$this->key, $uniqueID, $index]);
             });
 
         });
@@ -458,7 +435,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
         $query->limit(1);
         $query->where("b.stream_id", $this->key);
 
-        return $query->fetchObject($query, null, "Objects\\StreamTrack");
+        return $query->fetchObject($query, null, StreamTrack::className());
 
     }
 

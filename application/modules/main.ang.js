@@ -8,13 +8,13 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
     var md = angular.module("application", [
 
-        "ngRoute", "ngAnimate", "ngDialog", "ngTouch",
+        "ngRoute", "ngAnimate", "ngDialog", "ngTouch", "ng",
         "angular-loading-bar", 'angulartics', 'angulartics.google.analytics',
         "httpPostFix", "infinite-scroll", "ng-context-menu", "ui.sortable", 'seo', "mor-popup",
 
         "Account", "Site", "Catalog", "RadioPlayer", "Search", "Profile", "Library", "AudioInfo", "mor-loader", "Dialogs",
 
-        "mor.stream.scheduler", "mor.tools"
+        "mor.stream.scheduler", "mor.tools", "contenteditable"
 
     ]);
 
@@ -32,76 +32,21 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             rootClass: "image"
         }],
 
-        /* Streams List */
-        PATH_STREAMS_CATALOG: ["/streams/", {
-            templateUrl: "/views/streams.html",
-            controller: 'ListStreamsController',
-            title: "Radio channels on " + SITE_TITLE,
-            resolve: {
-                channelData: ["$route", "Resolvers", "STREAMS_PER_SCROLL",
-                    function ($route, Resolvers, STREAMS_PER_SCROLL) {
-                        var category = $route.current.params.category;
-                        return Resolvers.getChannelList(null, category, 0, STREAMS_PER_SCROLL);
-                    }
-                ]
-            }
-        }],
+//        /* Streams List */
+//        PATH_STREAMS_BOOKMARKS: ["/bookmarks/", {
+//            templateUrl: "/views/streams.html",
+//            controller: 'BookmarksController',
+//            title: "Your bookmarks on " + SITE_TITLE,
+//            needsAuth: true,
+//            resolve: {
+//                channelData: ["Resolvers", "STREAMS_PER_SCROLL",
+//                    function (Resolvers, STREAMS_PER_SCROLL) {
+//                        return Resolvers.getBookmarks(0, STREAMS_PER_SCROLL);
+//                    }
+//                ]
+//            }
+//        }],
 
-        PATH_STREAMS_SEARCH: ["/search/:query", {
-            templateUrl: "/views/search-results.html",
-            controller: "ListSearchController",
-            title: "Search results on " + SITE_TITLE,
-            resolve: {
-                channelData: ["$route", "Resolvers", "STREAMS_PER_SCROLL",
-                    function ($route, Resolvers, STREAMS_PER_SCROLL) {
-                        var category = $route.current.params.category,
-                            filter = $route.current.params.query;
-                        return Resolvers.getChannelList(filter, category, 0, STREAMS_PER_SCROLL);
-                    }
-                ]
-            }
-        }],
-
-        /* Streams List */
-        PATH_STREAMS_BOOKMARKS: ["/bookmarks/", {
-            templateUrl: "/views/streams.html",
-            controller: 'BookmarksController',
-            title: "Your bookmarks on " + SITE_TITLE,
-            needsAuth: true,
-            resolve: {
-                channelData: ["Resolvers", "STREAMS_PER_SCROLL",
-                    function (Resolvers, STREAMS_PER_SCROLL) {
-                        return Resolvers.getBookmarks(0, STREAMS_PER_SCROLL);
-                    }
-                ]
-            }
-        }],
-
-        /* Streams List */
-        PATH_STREAMS_USER: ["/user/:key", {
-            templateUrl: "/views/streams.html",
-            controller: 'UserStreamsController'
-        }],
-
-        /* Single Stream View */
-        PATH_STREAM: ["/streams/:id", {
-            templateUrl: "/views/stream.html",
-            controller: "OneStreamController",
-            resolve: {
-                streamData: ["Streams", "$route", "$document", function (Streams, $route, $document) {
-                    var promise = Streams.getByIdWithSimilar($route.current.params.id);
-                    promise.then(function (data) {
-                        $route.current.title = htmlEscape(data.data.data.stream.name) + " on " + SITE_TITLE;
-                    });
-                    return promise;
-                }]
-            }
-        }],
-
-        /* Streams Search List */
-        PATH_USERS_CATALOG: ["/user", {
-            redirectTo: "/"
-        }],
 
         PATH_LOGIN: ["/login/", {
             templateUrl: "/views/login.html",
@@ -164,7 +109,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
         PATH_PROFILE_CHANGE_PLAN: ["/profile/plan", {
             templateUrl: "/views/auth/change-plan.html",
-            title: "Change account plan on " + SITE_TITLE,
+            title: "Upgrade account on " + SITE_TITLE,
             needsAuth: true
         }],
 
@@ -183,7 +128,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
         PATH_PROFILE_STREAMS: ["/profile/streams/", {
             templateUrl: "/views/auth/streams.html",
-            title: "Your streams on " + SITE_TITLE,
+            title: "Your radio stations on " + SITE_TITLE,
             needsAuth: true
         }],
 
@@ -194,19 +139,159 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
         PATH_EDIT_STREAM: ["/profile/edit-stream/:id", {
             templateUrl: "/views/auth/edit-stream.html",
-            title: "Edit channel details on " + SITE_TITLE,
+            title: "Edit radio station details on " + SITE_TITLE,
             needsAuth: true
         }],
 
         PATH_NEW_STREAM: ["/profile/new-stream", {
             templateUrl: "/views/auth/new-stream.html",
-            title: "Create new radio channel on " + SITE_TITLE,
+            title: "Create new radio station on " + SITE_TITLE,
             needsAuth: true
         }],
 
         PATH_CATEGORIES_LIST: ["/categories/", {
             templateUrl: "/views/categories.html",
-            title: "Categories on " + SITE_TITLE
+            title: "Radio station categories on " + SITE_TITLE
+        }],
+
+        PATH_CATEGORIES_LIST_R: ["/category/", {
+            redirectTo: "/categories/"
+        }],
+
+        PATH_CH_BY_CATEGORY: ["/category/:id", {
+            templateUrl: "/views/catalog/by-category.html",
+            controller: "ChannelListCategory",
+            resolve: {
+                channelsData: ["$channels", "$route", "$location", function ($channels, $route, $location) {
+                    var promise = $channels.getCategoryChannels($route.current.params.id);
+                    promise.then(function (data) {
+                        $route.current.title = htmlEscape(data.category.category_name) + " on " + SITE_TITLE;
+                    }, function () {
+                        $location.url("/categories/");
+                    });
+                    return promise;
+                }]
+            }
+        }],
+
+        PATH_CH_BY_TAG: ["/tag/:tag", {
+            templateUrl: "/views/catalog/by-tag.html",
+            controller: "ChannelListTag",
+            resolve: {
+                channelsData: ["$channels", "$route", function ($channels, $route) {
+                    var promise = $channels.getTagChannels($route.current.params.tag);
+                    promise.then(function () {
+                        $route.current.title = "Results for tag \"" + htmlEscape($route.current.params.tag) + "\" on " + SITE_TITLE;
+                    });
+                    return promise;
+                }]
+            }
+        }],
+
+        PATH_CH_BY_SEARCH: ["/search/:query", {
+            templateUrl: "/views/catalog/by-search.html",
+            controller: "ChannelListSearch",
+            resolve: {
+                channelsData: ["$channels", "$route", function ($channels, $route) {
+                    var promise = $channels.getSearchChannels($route.current.params.query);
+                    promise.then(function () {
+                        $route.current.title = "Search results for request \"" + htmlEscape($route.current.params.query) + "\" on " + SITE_TITLE;
+                    });
+                    return promise;
+                }]
+            }
+        }],
+
+        /* Streams Search List */
+        PATH_USERS_CATALOG: ["/user/", {
+            redirectTo: "/"
+        }],
+
+        PATH_STREAMS_USER: ["/user/:key", {
+            templateUrl: "/views/catalog/by-user.html",
+            controller: "ChannelListUser",
+            resolve: {
+                channelsData: ["$channels", "$route", "$location", function ($channels, $route, $location) {
+                    var promise = $channels.getUserChannels($route.current.params.key);
+                    promise.then(function (data) {
+                        var title = data.user.name ? data.user.name : data.user.login;
+                        $route.current.title = htmlEscape(title) + "'s radio stations on " + SITE_TITLE;
+                    }, function () {
+                        $location.url("/");
+                    });
+                    return promise;
+                }]
+            }
+        }],
+
+        PATH_STREAMS_POPULAR: ["/streams/", {
+            templateUrl: "/views/catalog/by-popularity.html",
+            controller: 'ChannelListPopular',
+            title: "Popular radio stations on " + SITE_TITLE,
+            resolve: {
+                channelsData: ["$channels", function ($channels) {
+                    return $channels.getPopularChannels();
+                }]
+            }
+        }],
+
+        PATH_STREAMS_NEW: ["/new/", {
+            templateUrl: "/views/catalog/by-new.html",
+            controller: 'ChannelListNew',
+            title: "New radio stations on " + SITE_TITLE,
+            resolve: {
+                channelsData: ["$channels", function ($channels) {
+                    return $channels.getNewChannels();
+                }]
+            }
+        }],
+
+        PATH_STREAMS_BOOKMARKS: ["/bookmarks/", {
+            templateUrl: "/views/catalog/by-bookmarks.html",
+            controller: 'ChannelListBookmarks',
+            title: "Bookmarked radio stations on " + SITE_TITLE,
+            resolve: {
+                channelsData: ["$channels", function ($channels) {
+                    return $channels.getBookmarkedChannels();
+                }]
+            }
+        }],
+
+        PATH_STREAMS_MY: ["/my/", {
+            templateUrl: "/views/catalog/by-me.html",
+            controller: 'ChannelListMe',
+            resolve: {
+                channelsData: ["$channels", "$route", "$location", function ($channels, $route, $location) {
+                    var promise = $channels.getMyChannels();
+                    promise.then(function (data) {
+                        var title = data.user.name ? data.user.name : data.user.login;
+                        $route.current.title = htmlEscape(title) + "'s radio stations on " + SITE_TITLE;
+                    }, function () {
+                        $location.url("/");
+                    });
+                    return promise;
+                }]
+            }
+        }],
+
+        /* Single Stream View */
+        PATH_STREAM: ["/streams/:key", {
+            templateUrl: "/views/catalog/single-stream.html",
+            controller: "ChannelView",
+            resolve: {
+                channelData: ["$channels", "$route", "$location", function ($channels, $route, $location) {
+                    var promise = $channels.getSingleChannel($route.current.params.key);
+                    promise.then(function (data) {
+                        $route.current.title = data.channel.name + " on " + SITE_TITLE;
+                    }, function () {
+                        $location.url("/streams/");
+                    });
+                    return promise;
+                }],
+                similarData: ["$channels", "$route", "$location", function ($channels, $route, $location) {
+                    return $channels.getSimilarChannels($route.current.params.key);
+                }]
+            }
         }]
 
     };
@@ -269,7 +354,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
         $rootScope.reload();
 
         $("a").live("click", function () {
-            $analytics.eventTrack('followLink', {category: 'Application', label: this.href});
+            $analytics.eventTrack('followLink', { category: 'Application', label: this.href });
             if (this.href == $location.absUrl()) {
                 $route.reload();
             }
@@ -347,13 +432,14 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
     md.directive('tagsList', [function () {
         return {
             restrict: 'A',
-            template: '<ul class="taglist">' +
-            '<li ng-repeat="tag in tags">' +
-            '<a href="/search/%23{{tag | escape}}">{{tag}}</a>' +
-            '</li>' +
-            '</ul>',
+            template: '<ul class="taglist"><li ng-repeat="tag in tagsArray"><a href="/tag/{{ tag | escape }}" ng-bind="tag"></a></li></ul>',
             scope: {
                 tags: "=tagsList"
+            },
+            link: function (scope) {
+                scope.$watch("tags", function (data) {
+                    scope.tagsArray = data.split(",").map(function (el) { return el.trim() });
+                });
             }
         }
     }]);

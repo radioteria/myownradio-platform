@@ -1,1 +1,45 @@
-.fixed-width{position:relative;width:1000px;left:50%;margin-left:-500px}.full-width{width:auto;margin-left:0;margin-right:0;left:0}.taglist-wrapper{font-size:10pt}.taglist-wrapper .taglist{overflow:hidden;margin-bottom:8px}.taglist-wrapper .taglist>li{float:left;margin-right:8px;margin-bottom:8px;background-color:#9f9f9f;transition:background-color 250ms linear;color:white;padding:2px 4px;border-radius:3px;text-shadow:1px 1px 1px #606060;max-width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.taglist-wrapper .taglist>li:before{content:'#'}.taglist-wrapper .taglist>li a{color:white;text-shadow:1px 1px 1px #606060}.taglist-wrapper .taglist>li:hover{background-color:#d2d2d2}
+.fixed-width {
+  position: relative;
+  width: 1000px;
+  left: 50%;
+  margin-left: -500px;
+}
+.full-width {
+  width: auto;
+  margin-left: 0;
+  margin-right: 0;
+  left: 0;
+}
+/* Hashtag List CSS-sing */
+.taglist-wrapper {
+  font-size: 10pt;
+}
+.taglist-wrapper .taglist {
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.taglist-wrapper .taglist > li {
+  float: left;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  background-color: #9f9f9f;
+  transition: background-color 250ms linear;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  text-shadow: 1px 1px 1px #606060;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.taglist-wrapper .taglist > li:before {
+  content: '#';
+}
+.taglist-wrapper .taglist > li a {
+  color: white;
+  text-shadow: 1px 1px 1px #606060;
+}
+.taglist-wrapper .taglist > li:hover {
+  background-color: #d2d2d2;
+}

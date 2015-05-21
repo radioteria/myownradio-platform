@@ -11,7 +11,7 @@ namespace Framework\Models;
 
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\UnauthorizedException;
+use Framework\FileServer\Exceptions\LocalFileNotFoundException;
 use Framework\FileServer\Exceptions\NoSpaceForUploadException;
 use Framework\FileServer\FSFile;
 use Framework\Injector\Injectable;
@@ -19,6 +19,8 @@ use Framework\Services\Config;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\HttpRequest;
+use Framework\Services\Locale\I18n;
+use Framework\Services\Locale\L10n;
 use Objects\FileServer\FileServerFile;
 use Objects\Track;
 use REST\Playlist;
@@ -27,6 +29,11 @@ use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
+/**
+ * Class TracksModel
+ * @package Framework\Models
+ * @localized 21.05.2015
+ */
 class TracksModel implements Injectable, SingletonInterface {
 
     use Singleton;
@@ -70,37 +77,37 @@ class TracksModel implements Injectable, SingletonInterface {
         $meta = $id3->analyze($file["tmp_name"]);
         $hash = hash_file(Defaults::HASHING_ALGORITHM, $file["tmp_name"]);
         $duration = Common::getAudioDuration($file["tmp_name"])->getOrElseThrow(
-            new ControllerException(sprintf("File <b>%s</b> appears to be broken", $file["name"]))
+            new ControllerException(L10n::tr("ERROR_UPLOAD_FILE_BROKEN", [$file["name"]]))
         );
 
         \getid3_lib::CopyTagsToComments($meta);
 
         $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
+        $basename = pathinfo($file["name"], PATHINFO_FILENAME);
 
-        $maximalDuration = $config->getSetting('upload', 'maximal_length')->get();
-        $availableFormats = $config->getSetting('upload', 'supported_extensions')->get();
+        $maximalDuration = $config->getSettingOrFail('upload', 'maximal_length');
+        $availableFormats = $config->getSettingOrFail('upload', 'supported_extensions');
 
         if (!preg_match("~^({$availableFormats})$~i", $extension)) {
-            throw new ControllerException("Unsupported type format: " . $extension);
+            throw new ControllerException(I18n::tr("ERROR_UPLOAD_FILE_UNSUPPORTED", [$extension]));
         }
 
         if ($copy = $this->getSameTrack($hash)) {
-            throw new ControllerException(sprintf("File <b>%s</b> already in your library", $file["name"]));
+            throw new ControllerException(I18n::tr("ERROR_UPLOAD_FILE_EXISTS", [$file["name"]]));
         }
 
         $uploadTimeLeft = $currentPlan->getTimeMax() - $this->user->getTracksDuration() - $duration;
 
         if ($duration > $maximalDuration) {
-            throw new ControllerException("Uploaded file is too long: " . $duration);
+            throw new ControllerException(I18n::tr("ERROR_UPLOAD_FILE_LONG", [$file["name"]]));
         }
 
         if ($duration < $currentPlan->getMinTrackLength()) {
-            throw new ControllerException(sprintf("Uploaded file is too short. You can upload only files longer than %d seconds, sorry.",
-                $currentPlan->getMinTrackLength() / 1000));
+            throw new ControllerException(I18n::tr("ERROR_UPLOAD_FILE_SHORT", [$file["name"]]));
         }
 
         if ($uploadTimeLeft < $duration) {
-            throw new ControllerException("You are exceeded available upload time. Please upgrade your account.");
+            throw new ControllerException(I18n::tr("ERROR_UPLOAD_NO_SPACE"));
         }
 
         $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
@@ -118,7 +125,7 @@ class TracksModel implements Injectable, SingletonInterface {
             isset($meta["comments"]["artist"][0]) ? $meta["comments"]["artist"][0] : ""
         );
         $track->setTitle(
-            isset($meta["comments"]["title"][0]) ? $meta["comments"]["title"][0] : $file['name']
+            isset($meta["comments"]["title"][0]) ? $meta["comments"]["title"][0] : $basename
         );
         $track->setAlbum(
             isset($meta["comments"]["album"][0]) ? $meta["comments"]["album"][0] : ""
@@ -139,8 +146,10 @@ class TracksModel implements Injectable, SingletonInterface {
             $file_id = FSFile::registerLink($file["tmp_name"], $hash);
             $track->setFileId($file_id);
             $track->save();
+        } catch (LocalFileNotFoundException $exception) {
+            throw new ControllerException(I18n::tr("ERROR_UPLOAD_FILE_BROKEN", [$file["name"]]));
         } catch (NoSpaceForUploadException $exception) {
-            throw new ControllerException(sprintf("No available servers for uploading file \"%s\"", $file["name"]));
+            throw new ControllerException(I18n::tr("ERROR_UPLOAD_NO_SERVERS", [$file["name"]]));
         }
 
         $this->addToStream($track, $addToStream, $upNext);
@@ -149,7 +158,6 @@ class TracksModel implements Injectable, SingletonInterface {
             $track->getUserID(), $track->getFileName(), $uploadTimeLeft / 1000));
 
         return Playlist::getInstance()->getOneTrack($track->getID());
-
 
     }
 
@@ -165,31 +173,23 @@ class TracksModel implements Injectable, SingletonInterface {
         $trackObject = Track::getByID($trackId)->getOrElseThrow(ControllerException::noTrack($trackId));
 
         if ($trackObject->getUserID() == $this->user->getID()) {
-            throw new ControllerException(sprintf("Track <b>%s</b> is already yours", $trackObject->getFileName()));
+            throw new ControllerException(I18n::tr("ERROR_UPLOAD_FILE_EXISTS", [$trackObject->getFileName()]));
         }
 
         if ($copy = $this->getSameTrack($trackObject->getHash())) {
-            throw new ControllerException(sprintf("File <b>%s</b> already in your library", $trackObject->getFileName()));
+            throw new ControllerException(I18n::tr("ERROR_UPLOAD_FILE_EXISTS", [$trackObject->getFileName()]));
         }
 
         if (!$trackObject->isCanBeShared()) {
-            throw new ControllerException(sprintf("File <b>%s</b> could not be shared due to no permission",
-                $trackObject->getFileName()));
+            throw new ControllerException(I18n::tr("ERROR_COPY_FILE_PROTECTED", [$trackObject->getFileName()]));
         }
 
         $currentPlan = $this->user->getCurrentPlan();
 
         $uploadTimeLeft = $currentPlan->getTimeMax() - $this->user->getTracksDuration() - $trackObject->getDuration();
 
-        if ($trackObject->getDuration() < $currentPlan->getMinTrackLength()) {
-            throw new ControllerException(
-                sprintf("Uploaded file is too short. You can upload only files longer than %d seconds, sorry.",
-                $currentPlan->getMinTrackLength() / 1000)
-            );
-        }
-
         if ($uploadTimeLeft < $trackObject->getDuration()) {
-            throw new ControllerException("You are exceeded available upload time. Please upgrade your account.");
+            throw new ControllerException(I18n::tr("ERROR_UPLOAD_NO_SPACE"));
         }
 
         $copy = $trackObject->cloneObject();
@@ -238,15 +238,9 @@ class TracksModel implements Injectable, SingletonInterface {
 
     private function addToStream(Track $track, Optional $stream, $upNext = false) {
 
-        if (!$stream->validate()) {
-            return Optional::noValue();
-        }
-
-        $streamID = $stream->get();
-
-        $streamObject = new PlaylistModel($streamID);
-
-        $streamObject->addTracks($track->getID(), $upNext);
+        $stream->then(function($stream_id) use ($track, $upNext) {
+            (new PlaylistModel($stream_id))->addTracks($track->getID(), $upNext);
+        });
 
     }
 
@@ -255,11 +249,13 @@ class TracksModel implements Injectable, SingletonInterface {
      */
     public function delete($tracks) {
 
-        foreach (explode(",", $tracks) as $track) {
+        $tracksArray = explode(",", $tracks);
+        foreach ($tracksArray as $track) {
             try {
                 $track = new TrackModel($track);
                 $track->delete();
-            } catch (UnauthorizedException $e) { /* NOP */
+            } catch (ControllerException $e) {
+                error_log($e->getMyMessage());
             }
         }
 
@@ -275,14 +271,13 @@ class TracksModel implements Injectable, SingletonInterface {
         $streams = $db->selectFrom("r_link")
             ->select("stream_id")
             ->selectAlias("GROUP_CONCAT(unique_id)", "unique_ids")
-            ->where("track_id", explode(",", $tracks))
+            ->where("FIND_IN_SET(track_id, ?)", [$tracks])
             ->addGroupBy("stream_id")->fetchAll();
 
         foreach ($streams as $stream) {
 
             $model = new PlaylistModel($stream['stream_id']);
             $model->removeTracks($stream['unique_ids']);
-            unset($model);
 
         }
 

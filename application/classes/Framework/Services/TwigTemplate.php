@@ -10,6 +10,7 @@ namespace Framework\Services;
 
 
 use Framework\Injector\Injectable;
+use Framework\Services\Locale\I18n;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -44,6 +45,10 @@ class TwigTemplate implements Injectable, SingletonInterface {
             return $hours ?
                 sprintf("%2d:%02d:%02d", $hours, $minutes, $seconds) :
                 sprintf("%2d:%02d", $minutes, $seconds);
+        }));
+
+        $this->twig->addFilter(new \Twig_SimpleFilter("tr", function ($src, $args = null) {
+            return I18n::tr($src, $args);
         }));
 
     }

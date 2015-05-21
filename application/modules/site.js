@@ -35,7 +35,8 @@
         }
     }]);
 
-    site.filter("humanTime", [function () {
+    site.filter("humanTime", ["$rootScope", function ($rootScope) {
+
         return function (ms) {
 
             var totalSeconds = parseInt(Math.abs(ms / 1000));
@@ -44,13 +45,13 @@
             var minutes = parseInt(totalSeconds / 60) % 60;
 
             if (ms < 0) {
-                return "Overused (-" + days + " days " + hours + " hours " + minutes + " minutes)";
+                return $rootScope.tr("FR_HUMAN_TIME_OVERUSED", {days:days, hours:hours, minutes:minutes});
             } else {
-                return days + " days " + hours + " hours " + minutes + " minutes";
+                return $rootScope.tr("FR_HUMAN_TIME_FORMAT", {days:days, hours:hours, minutes:minutes});
             }
 
-
         }
+
     }]);
 
     site.filter("lighten", [function () {
@@ -83,7 +84,9 @@
                     ((bb < 16) ? "0" : "") + bb.toString(16);
 
             } else {
+
                 result = null;
+
             }
 
             return result;
@@ -151,8 +154,15 @@
                 activeTab: "@"
             },
             link: function ($scope, $element, $attributes) {
+
                 var CLASS = "active";
+
                 $element.toggleClass(CLASS, $location.url().match($scope.activeTab) !== null);
+
+                $scope.$on("$routeChangeSuccess", function () {
+                    $element.toggleClass(CLASS, $location.url().match($scope.activeTab) !== null);
+                });
+
             }
         };
     }]);
@@ -197,10 +207,48 @@
 
                 };
 
+                var switchCurrent = function () {
+                    $element.children("." + CURRENT_CLASS).toggleClass(SELECTED_CLASS);
+                };
+
+                var keyBindings = function (event) {
+
+                    // Handle key pressing only if body element is active
+                    if ($(document.activeElement).is("body")) {
+
+                        if (event.which === 32) {
+                            switchCurrent();
+                            updateSelection();
+                            event.stopPropagation();
+                            return false;
+                        } else if (event.which === 40) {
+                            $element.children("." + CURRENT_CLASS)
+                                .removeClass(CURRENT_CLASS)
+                                .next().addIfEmpty($element.children(":first"))
+                                .addClass(CURRENT_CLASS);
+                            updateSelection();
+                            event.stopPropagation();
+                            return false;
+                        } else if (event.which === 38) {
+                            $element.children("." + CURRENT_CLASS)
+                                .removeClass(CURRENT_CLASS)
+                                .prev().addClass(CURRENT_CLASS);
+                            updateSelection();
+                            event.stopPropagation();
+                            return false;
+                        }
+
+                    }
+
+                    return true;
+                };
+
+                $document.on("keydown", keyBindings);
                 $document.on("click", selectNothing);
 
                 $scope.$on("$destroy", function () {
                     $document.unbind("click", selectNothing);
+                    $document.unbind("keydown", keyBindings);
                 });
 
                 $element.live("mousedown", function (event) {
@@ -402,11 +450,11 @@
         };
     }]);
 
-    site.filter('bytes', [function () {
+    site.filter('bytes', ["$rootScope", function ($rootScope) {
         return function (bytes, precision) {
             if (isNaN(parseFloat(bytes)) || !isFinite(bytes)) return '-';
             if (typeof precision === 'undefined') precision = 1;
-            var units = ['bytes', 'kB', 'MB', 'GB', 'TB', 'PB'],
+            var units = $rootScope.tr("FR_BYTES_METRICS"),
                 number = Math.floor(Math.log(bytes) / Math.log(1024));
             return (bytes / Math.pow(1024, Math.floor(number))).toFixed(precision) + ' ' + units[number];
         }
@@ -461,14 +509,6 @@
         };
     }]);
 
-    site.directive("alignVertical", [function () {
-        return {
-            link: function ($scope, $element, $attr) {
-
-            }
-        }
-    }]);
-
     site.directive("morSuggest", ["$rootScope", function ($rootScope) {
         return {
             scope: {
@@ -479,7 +519,7 @@
             link: function ($scope, $element, $attributes) {
                 var old;
                 $element.on("keyup", function (event) {
-                    if (event.which < 32) return;
+                    if (event.which < 32 || event.which == 46) return;
                     if (old != event.target.value) {
                         var position = event.target.selectionStart;
                         var temp = $rootScope.lib.genres;
@@ -538,9 +578,6 @@
             scope: {
                 morEdit: "=",
                 morEditSubmit: "&"
-            },
-            link: function ($scope, $element, $attributes) {
-
             }
         }
     }]);
@@ -585,8 +622,8 @@
                         <i class="big-icon icon-question"></i>\
                         <div class="dialog-body">' + question + '</div>\
                         <div class="buttons">\
-                            <span class="button" ng-click="confirm(1)">Yes</span>\
-                            <span class="button" ng-click="closeThisDialog()">No</span>\
+                            <span class="button" ng-click="confirm(1)"><translate>FR_YES</translate></span>\
+                            <span class="button" ng-click="closeThisDialog()"><translate>FR_NO</translate></span>\
                         </div>\
                     </div>',
                     plain: true,
@@ -605,7 +642,7 @@
                     <div class="dialog-wrap">\
                         <div class="dialog-body">' + info + '</div>\
                         <div class="buttons">\
-                            <span class="button" ng-click="closeThisDialog()">OK</span>\
+                            <span class="button" ng-click="closeThisDialog()"><translate>FR_OK</translate></span>\
                         </div>\
                     </div>',
                     plain: true,

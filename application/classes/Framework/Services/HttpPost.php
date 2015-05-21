@@ -8,8 +8,9 @@
 
 namespace Framework\Services;
 
-use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
+use Framework\Services\Locale\I18n;
+use Framework\View\Errors\View400Exception;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -18,14 +19,32 @@ class HttpPost extends HttpRequestAdapter implements Injectable, SingletonInterf
 
     use Singleton;
 
-    public function getParameter($key) {
-        return Optional::ofEmpty(FILTER_INPUT(INPUT_POST, $key));
+    public function getParameter($key, $filter = FILTER_DEFAULT, $options = null) {
+        return Optional::ofEmpty(FILTER_INPUT(INPUT_POST, $key, $filter, $options));
     }
 
-    public function getRequired($key) {
-        return $this->getParameter($key)
-            ->getOrElseThrow(ControllerException::noArgument($key));
+    public function getArrayParameter($key, $filter = FILTER_DEFAULT) {
+        $array = FILTER_INPUT_ARRAY(INPUT_POST, [
+            $key => [
+                "filter" => $filter,
+                "flags"  => FILTER_REQUIRE_ARRAY
+            ]
+        ]);
+        return Optional::ofArray($array[$key]);
     }
 
+    public function getRequired($key, $filter = FILTER_DEFAULT, $options = null) {
+        return $this->getParameter($key, $filter, $options)
+            ->getOrElseThrow($this->getException($key));
+    }
+
+    public function getArrayRequired($key, $definition = null) {
+        return $this->getArrayParameter($key, $definition)
+            ->getOrElseThrow($this->getException($key));
+    }
+
+    private function getException($key) {
+        return new View400Exception(I18n::tr("ERROR_NO_ARGUMENT_SPECIFIED", ["arg" => $key]));
+    }
 
 }

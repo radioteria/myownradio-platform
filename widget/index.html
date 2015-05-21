@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="WidgetLite">
+<html ng-app="application">
 <head>
     <base href="/">
     <meta content="en-us" http-equiv="Content-Language" />
@@ -20,8 +20,14 @@
     <script src="/js/libs/angular.min.js.gz"></script>
     <script src="/js/libs/mortip.js"></script>
     <script src="/js/audio5.js"></script>
-    <script src="/application/modules/mor.stream.scheduler.js"></script>
+
     <script src="/widget/js/lite.ang.js"></script>
+
+    <script src="/application/modules/api/api.core.js"></script>
+    <script src="/application/modules/api/api.schedule.js"></script>
+    <script src="/application/modules/mor.stream.scheduler.js"></script>
+
+    <script src="/application/modules/filters/filter.object.js"></script>
 
 
 </head>
@@ -43,13 +49,13 @@
                     </div>
                     <div class="info">
                         <div class="status">Now on air:</div>
-                        <div class="title" ng-bind="nowPlaying.caption"></div>
+                        <div class="title">{{ nowPlaying | trackCaption }}</div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="footer">
-            <a href="https://myownradio.biz">myownradio.biz</a>
+            Powered by <a href="https://myownradio.biz">MyOwnRadio</a>
         </div>
     </div>
 </body>

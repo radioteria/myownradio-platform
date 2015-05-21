@@ -9,6 +9,7 @@
 namespace REST;
 
 
+use API\REST\TrackCollection;
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
@@ -269,58 +270,32 @@ class Playlist implements SingletonInterface, Injectable {
                     $stream->getStarted() +
                     $stream->getStartedFrom()) % $stream->getTracksDuration(), 0);
 
-            $query = $this->getStreamTracksPrefix();
-
-            $lowRange = $position - self::NOW_PLAYING_TIME_RANGE;
-
-            $highRange = $position + self::NOW_PLAYING_TIME_RANGE;
-
-            $query->select("time_offset");
-
-            $query->where("time_offset + duration > ?", [$lowRange]);
-            $query->where("time_offset <= ?", [$highRange]);
-            $query->where("stream_id", $stream->getID());
+            $tracks = TrackCollection::getInstance()->getTimeLineOnChannel(
+                $id,
+                $position - (Defaults::TIMELINE_WIDTH >> 1),
+                $position + (Defaults::TIMELINE_WIDTH >> 1)
+            );
 
             $currentID = 0;
-
-            $tracks = $query->fetchAll(null, function ($row, $index) use (&$currentID, &$position) {
+            $index = 0;
+            foreach ($tracks as &$row) {
                 if ($row["time_offset"] <= $position && $row["time_offset"] + $row["duration"] >= $position) {
                     $currentID = $index;
                 }
-                $row["caption"] = $row["artist"] . " - " . $row["title"];
-                return $row;
-            });
+                if (!empty($row["artist"]))
+                    $row["caption"] = $row["artist"] . " - " . $row["title"];
+                else
+                    $row["caption"] = $row["title"];
+                $index ++;
+            }
+
 
         }
-
-//        if ($stream->getTracksDuration() < self::NOW_PLAYING_TIME_RANGE * 2) {
-//            $repeats = self::NOW_PLAYING_TIME_RANGE / $stream->getTracksDuration();
-//            $pre = [];
-//            $x = $repeats;
-//            for ($i = 0; $i < $repeats; $i ++) {
-//                foreach ($tracks as $track) {
-//                    $track["time_offset"] = $track["time_offset"] - ($stream->getTracksDuration() * $x);
-//                    $pre[] = $track;
-//                }
-//                $x--;
-//            }
-//            $post = [];
-//            $x = 1;
-//            for ($i = 0; $i < $repeats; $i ++) {
-//                foreach ($tracks as $track) {
-//                    $track["time_offset"] = $track["time_offset"] + ($stream->getTracksDuration() * $x);
-//                    $post[] = $track;
-//                }
-//                $x++;
-//            }
-//            $currentID = count($pre);
-//            $tracks = array_merge($pre, $tracks, $post);
-//        }
 
         return [
             'time' => System::time(),
             'position' => $position,
-            'range' => self::NOW_PLAYING_TIME_RANGE * 2,
+            'range' => Defaults::TIMELINE_WIDTH,
             'current' => $currentID,
             'tracks' => $tracks,
             'listeners_count' => $stream->getListenersCount(),

@@ -13,7 +13,7 @@ use Framework\Services\Database;
 use PDO;
 use Tools\Optional;
 
-abstract class BaseQuery implements \Countable {
+abstract class BaseQuery {
 
     protected $tableName;
 
@@ -22,7 +22,9 @@ abstract class BaseQuery implements \Countable {
     protected $parameters = [
         "SET" => [],
         "WHERE" => [],
-        "INSERT" => []
+        "INSERT" => [],
+        "UPDATE" => [],
+        "HAVING" => []
     ];
 
     protected $limit = null;
@@ -49,14 +51,18 @@ abstract class BaseQuery implements \Countable {
     }
 
     public function getParameters() {
-        return array_merge($this->parameters["INSERT"], $this->parameters["SET"], $this->parameters["WHERE"]);
+        return array_merge($this->parameters["INSERT"], $this->parameters["SET"],
+            $this->parameters["WHERE"], $this->parameters["HAVING"]);
     }
 
     public function orderBy($column) {
-        $this->orders[] = $column;
+        if ($column === null) {
+            $this->orders = [];
+        } else {
+            $this->orders[] = $column;
+        }
         return $this;
     }
-
 
     public function buildLimits() {
 
@@ -109,11 +115,12 @@ abstract class BaseQuery implements \Countable {
     /**
      * @param string|null $key
      * @param callable $callback
+     * @param bool $cached
      * @return array
      */
-    public function fetchAll($key = null, callable $callback = null) {
-        return Database::doInConnection(function (Database $db) use (&$key, &$callback) {
-            return $db->fetchAll($this, null, $key, $callback);
+    public function fetchAll($key = null, callable $callback = null, $cached = false) {
+        return Database::doInConnection(function (Database $db) use (&$key, &$callback, &$cached) {
+            return $db->fetchAll($this, null, $key, $callback, $cached);
         });
     }
 
@@ -170,17 +177,5 @@ abstract class BaseQuery implements \Countable {
         });
     }
 
-    /**
-     * @return int
-     */
-    public function count() {
-        return Database::doInConnection(function (Database $db) use (&$className, &$ctor_args) {
-            $query = clone $this;
-            $query->selectNone()->selCount();
-            $query->limit(null);
-            $query->offset(null);
-            return intval($db->fetchOneColumn($query)->get());
-        });
-    }
 
 } 

@@ -16,6 +16,7 @@ use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
  * @table fs_file
  * @key file_id
  * @do_HASH file_hash = ?
+ * @do_UNUSED use_count = 0
  */
 class FileServerFile extends ActiveRecordObject implements ActiveRecord {
     private $file_id;
@@ -50,6 +51,13 @@ class FileServerFile extends ActiveRecordObject implements ActiveRecord {
      */
     public function getServerId() {
         return $this->server_id;
+    }
+
+    /**
+     * @return FileServer|null
+     */
+    public function getServerObject() {
+        return FileServer::getByID($this->server_id)->getOrElseNull();
     }
 
     /**

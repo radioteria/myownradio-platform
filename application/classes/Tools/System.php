@@ -16,4 +16,11 @@ class System {
     public static function realTime() {
         return intval(microtime(true) * 1000);
     }
+
+    public static function mod($val1, $val2) {
+        while ($val1 < 0) {
+            $val1 += $val2;
+        }
+        return $val1 % $val2;
+    }
 }

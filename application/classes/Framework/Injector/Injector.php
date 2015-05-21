@@ -98,4 +98,8 @@ class Injector implements Injectable, SingletonInterface {
             throw new \Exception("Wrong type of argument");
         }
     }
+
+    public static function run($callable) {
+        return self::getInstance()->call($callable);
+    }
 } 

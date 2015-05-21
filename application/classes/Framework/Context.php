@@ -9,51 +9,56 @@
 namespace Framework;
 
 
-use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
-use Framework\Services\HttpRequest;
+use Framework\Injector\Injector;
+use Framework\Services\HttpGet;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
+/**
+ * Class Context
+ * @package Framework
+ */
 class Context implements SingletonInterface, Injectable {
+
     use Singleton;
 
-    private $streamID;
-
-    /** @var \Tools\Optional */
-    private $offset;
-    private $limit;
-    private $filter;
-
-    function __construct() {
-        $this->offset = $this->getParameters()->getParameter("offset");
-        $this->limit  = $this->getParameters()->getParameter("limit");
-        $this->filter = $this->getParameters()->getParameter("filter");
+    /**
+     * @param $or
+     * @return mixed
+     */
+    public function getLimit($or) {
+        return Injector::run(function (HttpGet $get) use ($or) {
+            return $get->getParameter("limit", FILTER_VALIDATE_INT)->getOrElse($or);
+        });
     }
 
-    public function getStreamID() {
-        return $this->getParameters()
-            ->getParameter("stream_id")->getOrElseThrow(ControllerException::noArgument("stream_id"));
+    /**
+     * @param $or
+     * @return mixed
+     */
+    public function getOffset($or) {
+        return Injector::run(function (HttpGet $get) use ($or) {
+            return $get->getParameter("offset", FILTER_VALIDATE_INT)->getOrElse($or);
+        });
     }
 
-    public function getLimit() {
-        return $this->limit->getOrElseNull();
+    /**
+     * @return mixed
+     */
+    public function getChannelId() {
+        return Injector::run(function (HttpGet $get) {
+            return $get->getRequired("stream_id");
+        });
     }
 
-    public function getOffset() {
-        return $this->offset->getOrElseNull();
+    /**
+     * @return mixed
+     */
+    public function getTrackId() {
+        return Injector::run(function (HttpGet $get) {
+            return $get->getRequired("track_id");
+        });
     }
 
-    public function getFilter() {
-        return $this->filter->getOrElseNull();
-    }
-
-    private function getParameters() {
-        $request = HttpRequest::getInstance();
-        if ($request->getMethod() == "POST") {
-            return $request->getPost();
-        } else {
-            return $request->getParameters();
-        }
-    }
 } 

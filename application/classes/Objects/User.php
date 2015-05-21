@@ -10,6 +10,7 @@ namespace Objects;
 
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
+use REST\Users;
 use Tools\Folders;
 
 /**
@@ -237,6 +238,13 @@ class User extends ActiveRecordObject implements ActiveRecord {
      */
     public function getCountryId() {
         return $this->country_id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function toRestFormat() {
+        return Users::getInstance()->getUserByID($this->getID());
     }
 
 }

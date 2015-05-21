@@ -45,3 +45,15 @@ function camelToUnderscore($input) {
     }
     return implode('_', $ret);
 }
+
+/**
+ * @param string $input
+ * @return string
+ */
+function underscoreToCamelCase($input) {
+    $parts = explode("_", $input);
+    foreach ($parts as &$part) {
+        $part = ucfirst($part);
+    }
+    return implode("", $parts);
+}

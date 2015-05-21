@@ -9,12 +9,14 @@
 namespace Framework\Services\DB\Query;
 
 
+use Framework\Exceptions\ControllerException;
+use Framework\Services\Database;
 use PDO;
 use Tools\Lang;
 
-class SelectQuery extends BaseQuery implements QueryBuilder {
+class SelectQuery extends BaseQuery implements QueryBuilder, \Countable {
 
-    use WhereSection, SelectSection;
+    use WhereSection, SelectSection, HavingSection;
 
 
     protected $groups = [];
@@ -29,6 +31,31 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
         }
     }
 
+    /**
+     * @return int
+     */
+    public function count() {
+        return Database::doInConnection(function (Database $db) use (&$className, &$ctor_args) {
+            $query = clone $this;
+            $query->selectNone()->selCount();
+            $query->limit(null);
+            $query->offset(null);
+            $query->orderBy(null);
+            return intval($db->fetchOneColumn($query)->get());
+        });
+    }
+
+    /**
+     * @param $chunk_size
+     * @param $callback
+     */
+    public function chunk($chunk_size, $callback) {
+        $items = $this->fetchAll();
+        $chunks = array_chunk($items, $chunk_size);
+        while ($chunk = array_shift($chunks)) {
+            call_user_func($callback, $chunk);
+        }
+    }
 
     // Inner join builder section
 
@@ -52,18 +79,26 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
 
     /**
      * @param int $limit
+     * @throws \Framework\Exceptions\ControllerException
      * @return $this
      */
     public function limit($limit) {
+        if ($limit !== null && !is_numeric($limit) && $limit < 0) {
+            throw ControllerException::of("Invalid limit");
+        }
         $this->limit = $limit;
         return $this;
     }
 
     /**
      * @param int $offset
+     * @throws \Framework\Exceptions\ControllerException
      * @return $this
      */
     public function offset($offset) {
+        if ($offset !== null && !is_numeric($offset) && $offset < 0) {
+            throw ControllerException::of("Invalid offset");
+        }
         $this->offset = $offset;
         return $this;
     }
@@ -81,6 +116,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder {
         $query[] = $this->buildLeftJoins();
         $query[] = $this->buildWheres($pdo);
         $query[] = $this->buildGroupBy();
+        $query[] = $this->buildHaving($pdo);
         $query[] = $this->buildOrderBy();
         $query[] = $this->buildLimits();
 

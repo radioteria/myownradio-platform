@@ -25,6 +25,7 @@ class AccountPlan extends ActiveRecordObject implements ActiveRecord {
         $plan_name,
         $plan_duration,
         $plan_value,
+        $plan_period,
         $limit_id,
         $streams_max,
         $time_max,
@@ -94,6 +95,11 @@ class AccountPlan extends ActiveRecordObject implements ActiveRecord {
         return $this->min_track_length;
     }
 
-
+    /**
+     * @return mixed
+     */
+    public function getPlanPeriod() {
+        return $this->plan_period;
+    }
 
 } 

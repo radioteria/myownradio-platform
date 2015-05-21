@@ -1,33 +1,60 @@
 <div class="fixed-width">
     <div id="page-contents">
         <nav class="main" main-navigation=""></nav>
-        <div class="form-wrap full-width" ng-controller="ChangePlanController">
-            <form class="float" name="plan_form" ng-submit="submit()" novalidate="novalidate">
-                <h1><i class="icon-shopping-cart"></i>CHANGE PLAN</h1>
-                <div class="status">{{ data.error }}</div>
+        <div class="form-wrap full-width">
+            <div class="change-plan">
+                <h1>Select a plan</h1>
+                <table id="plans-table">
+                    <tr>
+                        <th class="big">Basic</th>
+                        <th class="big">Extended</th>
+                        <th class="big">Premium</th>
+                    </tr>
+                    <tr>
+                        <td class="small">Free plan for acquaintance.</td>
+                        <td class="small">Most popular plan with 24 hours for music.</td>
+                        <td class="small">Maximal plan optimized for multiple radio stations.</td>
+                    </tr>
+                    <tr>
+                        <td style="vertical-align:middle"><span class="big">Free</span></td>
+                        <td style="vertical-align:middle"><span class="big">$2<sup>50</sup></span> per month</td>
+                        <td style="vertical-align:middle"><span class="big">$5<sup>00</sup></span> per month</td>
+                    </tr>
+                    <tr>
+                        <td class="small">1 Radio Station, 20 Listeners, 8 Hours For Audio Content, Up To 128K Playback Quality.</td>
+                        <td class="small">2 Radio Stations, 100 Listeners, 24 Hours For Audio Content, Up To 320K Playback Quality.</td>
+                        <td class="small">5 Radio Stations, 500 Listeners, 120 Hours For Audio Content, Up To 320K Playback Quality.</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-top:16px"></td>
+                        <td style="padding-top:16px"><a target="_blank" class="submit" href="/subscribe?plan_id=2">Select</a></td>
+                        <td style="padding-top:16px"><a target="_blank" class="submit" href="/subscribe?plan_id=4">Select</a></td>
+                    </tr>
+                </table>
+            </div>
+            <form class="float" name="plan_form" ng-submit="submit()" novalidate="novalidate" ng-controller="ChangePlanController">
+                <h1 class="form-title" style="margin-bottom:8px">
+                    PROMO CODE
+                </h1>
+                <div class="status" bind-html="data.error"></div>
                 <table class="form-table">
                     <tr>
                         <td>
-                            <label for="code">Enter promo code:</label>
+                            <label for="code">
+                                <translate>FR_ENTER_PROMO_CODE</translate>
+                            </label>
                         </td>
                         <td>
-                            <input type="text"
-                                   name="code"
-                                   id="code"
-                                   ng-model="data.code"
-                                   ng-required="true"
-                                   autocomplete="off"
-                                   ng-focus="true"
-                                    />
+                            <input type="text" name="code" id="code" ng-model="data.code" ng-required="true" autocomplete="off" ng-focus="true" />
                             <div class="validation" ng-show="plan_form.code.$focused && plan_form.code.$dirty">
                                 <div ng-if="plan_form.code.$error.required">
-                                    Code must be filled
+                                    <translate>FR_PROMO_MUST_BE_FILLED</translate>
                                 </div>
                             </div>
                         </td>
                     </tr>
                 </table>
-                <input ng-disabled="plan_form.$invalid" type="submit" value="Change" style="float:right">
+                <input ng-disabled="plan_form.$invalid" type="submit" value="{{ tr('FR_SUBMIT') }}" style="float:right">
             </form>
         </div>
     </div>

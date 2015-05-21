@@ -1,0 +1,5 @@
+<?php
+$stream_id = application::get('stream_id', NULL, REQ_INT);
+$stream_data = base64_encode(json_encode(stream::getStreams(user::getCurrentUserId(), $stream_id)));
+?>
+<div class="rm_streams_data" content="<?= $stream_data ?>"></div>

@@ -25,6 +25,8 @@ class FileServer extends ActiveRecordObject implements ActiveRecord {
     private $fs_id;
     private $is_online = 1;
     private $is_enabled = 1;
+    private $fs_host = "";
+    private $files_count;
 
     /**
      * @return mixed
@@ -61,6 +63,26 @@ class FileServer extends ActiveRecordObject implements ActiveRecord {
         $this->is_online = $is_online;
     }
 
+    /**
+     * @param string $fs_host
+     */
+    public function setFsHost($fs_host) {
+        $this->fs_host = $fs_host;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFsHost() {
+        return $this->fs_host;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFilesCount() {
+        return $this->files_count;
+    }
 
 
 } 

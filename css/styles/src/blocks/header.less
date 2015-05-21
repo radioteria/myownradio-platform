@@ -19,21 +19,6 @@ header {
     color: @HEAD_TEXT_COLOR;
   }
 
-  #layer {
-    position: absolute;
-    height: @HEADER_HEIGHT;
-    width: 100%;
-    background-color: @HEAD_BACKGROUND_COLOR;
-    .shaded-bottom();
-
-    #green {
-      width: 50%;
-      background-color: @HEAD_LOGO_BACKGROUND_COLOR;
-      height: @HEADER_HEIGHT;
-      .shaded-bottom();
-    }
-  }
-
   #hd {
     height: @HEADER_HEIGHT;
 
@@ -41,24 +26,30 @@ header {
       background-color: @HEAD_BACKGROUND_COLOR;
       overflow: visible;
       height: @HEADER_HEIGHT;
-      .shaded-bottom();
 
       #logo {
         height: @HEADER_HEIGHT;
         background-color: @HEAD_LOGO_BACKGROUND_COLOR;
-        float: left;
-        padding-top: (@HEADER_HEIGHT / 2) - 20px;
         padding-left: @CELLS_PADDING;
         padding-right: @CELLS_PADDING;
-        box-sizing: border-box;
+        padding-top: 11px;
         font-family: "Myriad Pro Thin", sans-serif;
         font-size: 24pt;
-        .shaded-bottom();
-
+        &:before {
+          content: ' ';
+          display: block;
+          position: absolute;
+          width: 100%;
+          height: @HEADER_HEIGHT;
+          background-color: @HEAD_LOGO_BACKGROUND_COLOR;
+          top: 0;
+          left: -100%;
+        }
 
         a {
           color: white;
         }
+
       }
 
       #search {
@@ -195,14 +186,18 @@ header {
       }
 
       #links {
-        padding-top: (@HEADER_HEIGHT / 2) - 10px;
-        a {
+        display: block;
+        & > a {
           color: #ffffff;
-          &:first-child {
-            padding-left: 16px;
-          }
-          &:not(:last-child) {
-            padding-right: 16px;
+          padding-top: 22px;
+          width: 100px;
+          height: @HEADER_HEIGHT;
+          display: block;
+          float: left;
+          box-sizing: border-box;
+          text-align: center;
+          &:hover, &.active {
+            background-color: darken(@HEAD_BACKGROUND_COLOR, 10%);
           }
         }
         i {

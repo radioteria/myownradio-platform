@@ -1,0 +1,42 @@
+.change-plan {
+  margin-bottom: 32px;
+
+  h1 {
+    text-transform: uppercase;
+  }
+
+  #actual {
+    margin-bottom: 32px;
+  }
+
+  #plans-table {
+    width: 100%;
+    table-layout: fixed;
+    td, th {
+      padding: 8px 8px;
+      text-align: left;
+      vertical-align: top;
+      &:first-child {
+        padding-left: 0;
+      }
+      &:last-child {
+        padding-right: 0;
+      }
+    }
+    .big {
+      font-size: 18pt;
+    }
+  }
+
+  .buy-button {
+    border-radius: 4px;
+    background-color: @HEAD_LOGO_BACKGROUND_COLOR;
+    color: #ffffff;
+    padding: 8px 16px;
+    text-decoration: none;
+    &:hover {
+      background-color: lighten(@HEAD_LOGO_BACKGROUND_COLOR, 20%);
+      color: #ffffff;
+    }
+  }
+}

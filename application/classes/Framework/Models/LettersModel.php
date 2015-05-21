@@ -10,27 +10,33 @@ namespace Framework\Models;
 
 
 use Framework\Exceptions\ControllerException;
+use Framework\Services\Locale\L10n;
 use Framework\Services\Mailer;
 use Framework\Template;
 
+/**
+ * Class LettersModel
+ * @package Framework\Models
+ * @localized 21.05.2015
+ */
 class LettersModel {
 
     public static function sendRegistrationLetter($email) {
 
+        $i18n = L10n::getInstance();
+
         $code = md5($email . "@myownradio.biz@" . $email);
         $confirm = base64_encode(json_encode(['email' => $email, 'code' => $code]));
 
-        $template = new Template("reg.request.mail.tmpl");
+        $template = new Template("locale/{$i18n->getLocale()}.reg.request.mail.tmpl");
         $mailer = new Mailer(REG_MAIL, REG_NAME);
 
         $template->addVariable("confirm", $confirm, false);
 
         $mailer->addAddress($email);
         $mailer->setContentType("text/html");
-        $mailer->setSubject("Registration on myownradio.biz");
+        $mailer->setSubject($i18n->get("EMAIL_REG_TITLE"));
         $mailer->setBody($template->render());
-
-//        $mailer->queue();
 
         try {
             $mailer->send();
@@ -42,12 +48,14 @@ class LettersModel {
 
     public static function sendRegistrationCompleted($email) {
 
-        $template = new Template("reg.complete.tmpl");
+        $i18n = L10n::getInstance();
+
+        $template = new Template("locale/{$i18n->getLocale()}.reg.complete.tmpl");
         $mailer = new Mailer(REG_MAIL, REG_NAME);
 
         $mailer->addAddress($email);
         $mailer->setContentType("text/html");
-        $mailer->setSubject("Registration on myownradio.biz completed");
+        $mailer->setSubject($i18n->get("EMAIL_REG_COMPLETED"));
         $mailer->setBody($template->render());
 
 //        $mailer->queue();
@@ -62,11 +70,13 @@ class LettersModel {
 
     public static function sendResetPasswordLetter($id) {
 
+        $i18n = L10n::getInstance();
+
         $user = new UserModel($id);
 
         $code = base64_encode(json_encode(["login" => $user->getLogin(), "password" => $user->getPassword()]));
 
-        $template = new Template("reg.reset.password.tmpl");
+        $template = new Template("locale/{$i18n->getLocale()}.reset.password.tmpl");
         $mailer = new Mailer(REG_MAIL, REG_NAME);
 
         $template->addVariable("name", $user->getDisplayName(), false);
@@ -75,7 +85,7 @@ class LettersModel {
 
         $mailer->addAddress($user->getEmail());
         $mailer->setContentType("text/html");
-        $mailer->setSubject("Reset password on myownradio.biz");
+        $mailer->setSubject($i18n->get("EMAIL_PASSWORD_RESET"));
         $mailer->setBody($template->render());
 
 //        $mailer->queue();

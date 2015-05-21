@@ -6,15 +6,15 @@ use Framework\Template;
 
 // Redirect from www.
 if (substr($_SERVER['HTTP_HOST'], 0, 4) == "www.") {
-    $redirect = "https://".substr($_SERVER['HTTP_HOST'], 4).$_SERVER['REQUEST_URI'];
+    $redirect = "https://" . substr($_SERVER['HTTP_HOST'], 4) . $_SERVER['REQUEST_URI'];
     header("HTTP/1.1 301 Moved Permanently");
     header("Location: $redirect");
     die();
 }
 
 // Allow only https access
-if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == ""){
-    $redirect = "https://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+if ((!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "") && substr($_SERVER['HTTP_HOST'], 0, 5) != "test.") {
+    $redirect = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
     header("HTTP/1.1 301 Moved Permanently");
     header("Location: $redirect");
     die();
@@ -25,6 +25,7 @@ require_once "application/libs/functions.php";
 require_once "application/libs/acResizeImage.php";
 require_once "dependencies/getid3/getid3.php";
 require_once "dependencies/Twig/Autoloader.php";
+require_once "application/libs/LiqPay.php";
 
 gc_enable();
 
@@ -35,4 +36,5 @@ Template::setTemplatePath("application/tmpl");
 $router = Router::getInstance();
 
 $router->route();
+
 

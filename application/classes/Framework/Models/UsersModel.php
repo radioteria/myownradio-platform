@@ -17,14 +17,19 @@ use Framework\Services\DB\DBQuery;
 use Framework\Services\HttpRequest;
 use Framework\Services\HttpSession;
 use Framework\Services\InputValidator;
+use Framework\Services\Locale\I18n;
 use Framework\Services\Mailer;
 use Objects\User;
 use Tools\Common;
-use Tools\File;
 use Tools\Folders;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
+/**
+ * Class UsersModel
+ * @package Framework\Models
+ * @localized 21.05.2015
+ */
 class UsersModel implements SingletonInterface, Injectable {
 
     use Singleton;
@@ -44,9 +49,9 @@ class UsersModel implements SingletonInterface, Injectable {
         // Try to find user specified by login or email
         $user = DBQuery::getInstance()
             ->selectFrom("r_users")
-            ->where("login = :key OR mail = :key", [ ":key" => $login ])
+            ->where("login = :key OR mail = :key", [":key" => $login])
             ->fetchOneRow()
-            ->getOrElseThrow(UnauthorizedException::noUserExists($login));
+            ->getOrElseThrow(UnauthorizedException::noUserByLogin($login));
 
         if (!password_verify($password, $user["password"])) {
             throw UnauthorizedException::wrongPassword();
@@ -119,7 +124,7 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $user = Database::doInConnection(function (Database $db) use ($id) {
             return $db->fetchOneRow("SELECT * FROM r_users WHERE uid = ?", [$id])
-                ->getOrElseThrow(UnauthorizedException::noUserExists($id));
+                ->getOrElseThrow(UnauthorizedException::noUserByLogin($id));
         });
 
         $token = self::createToken($user["uid"], $session->getSessionId());
@@ -163,9 +168,6 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $newUser->save();
 
-        $this->createUserDirectory($newUser);
-
-
         // Generate Stream Cover
         $random = Common::generateUniqueID();
         $newImageFile = sprintf("avatar%05d_%s.%s", $newUser->getID(), $random, "png");
@@ -176,44 +178,17 @@ class UsersModel implements SingletonInterface, Injectable {
 
         Common::createTemporaryImage($newImagePath);
 
-        $notify = new Mailer("no-reply@myownradio.biz", "myownradio.biz");
+        /* Special */
+        $notify = new Mailer("no-reply@myownradio.biz", "MyOwnRadio Service");
         $notify->addAddress("roman@homefs.biz");
-        $notify->setSubject("You have new user");
+        $notify->setSubject("You have new user on MyOwnRadio service");
         $notify->setBody(sprintf("Hello! You have a new user '%s' (%s).", $login, $email));
         $notify->queue();
+        /* End of special */
 
         LettersModel::sendRegistrationCompleted($newUser->getEmail());
 
         return new UserModel($newUser->getID());
-
-    }
-
-    /**
-     * @param $code
-     * @param $password
-     */
-    public function completePasswordReset($code, $password) {
-
-        $credentials = self::parseResetPasswordCode($code);
-
-        $user = new UserModel($credentials["login"], $credentials["password"]);
-
-        $user->changePasswordNow($password);
-
-    }
-
-    /**
-     * @param User $id
-     */
-    public function createUserDirectory(User $id) {
-
-        $path = new File(Folders::getInstance()->generateUserContentFolder($id));
-
-        error_log($path->path());
-
-        if (! $path->exists()) {
-            $path->createNewDirectory(NEW_DIR_RIGHTS, true);
-        }
 
     }
 
@@ -224,7 +199,7 @@ class UsersModel implements SingletonInterface, Injectable {
      */
     public function parseRegistrationCode($code) {
 
-        $exception = new ControllerException("Entered security code is not correct");
+        $exception = new ControllerException(I18n::tr("ERROR_CODE_INCORRECT"));
 
         $json = base64_decode($code);
 
@@ -244,12 +219,26 @@ class UsersModel implements SingletonInterface, Injectable {
 
     /**
      * @param $code
+     * @param $password
+     */
+    public function completePasswordReset($code, $password) {
+
+        $credentials = self::parseResetPasswordCode($code);
+
+        $user = new UserModel($credentials["login"], $credentials["password"]);
+
+        $user->changePasswordNow($password);
+
+    }
+
+    /**
+     * @param $code
      * @return mixed
      * @throws \Framework\Exceptions\ControllerException
      */
     public function parseResetPasswordCode($code) {
 
-        $exception = new ControllerException("Entered security code is not correct");
+        $exception = new ControllerException(I18n::tr("ERROR_CODE_INCORRECT"));
 
         $json = base64_decode($code);
 
@@ -270,10 +259,11 @@ class UsersModel implements SingletonInterface, Injectable {
             $query->where("password", $decoded["password"]);
             $query->select("*");
 
-            $db->fetchOneRow($query)->getOrElseThrow(new ControllerException("Entered security code is not actual"));
+            $db->fetchOneRow($query)->getOrElseThrow(
+                new ControllerException(I18n::tr("ERROR_CODE_NOT_ACTUAL"))
+            );
 
         });
-
 
         return $decoded;
 

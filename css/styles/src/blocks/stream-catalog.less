@@ -25,18 +25,26 @@
 }
 
 .page-sub-title {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   color: @APP_TEXT_COLOR;
   font-size: 12pt;
+  b {
+    color: #000000;
+  }
 }
 
 .new-stream-catalog-badge {
   margin-right: -12px;
+  .end-of-list {
+    clear: both;
+    height: 0;
+    border-bottom: 1px solid #d8d8d8;
+  }
   .new-stream-catalog {
     overflow: hidden;
     position: relative;
     & > li {
-      box-sizing: border-box;
+      .border-box();
       padding-right: 12px;
       width: 20%;
       float: left;
@@ -77,9 +85,20 @@
 
       .info-section {
         box-sizing: border-box;
-        height: 60px;
+        height: 70px;
         padding: 4px 0;
         margin-bottom: 16px;
+        .now-playing {
+          padding-bottom: 4px;
+          height: 10px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-size: 8pt;
+          i {
+            padding-right: 2px;
+          }
+        }
         .stream-name {
           font-family: "Myriad Pro Thin";
           font-size: 16pt;
@@ -102,6 +121,7 @@
           }
         }
       }
+
     }
   }
 

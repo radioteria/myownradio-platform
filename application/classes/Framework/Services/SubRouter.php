@@ -9,12 +9,13 @@
 namespace Framework\Services;
 
 
+use Framework\Injector\Injectable;
 use Framework\Injector\Injector;
 use Framework\Router;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-class SubRouter implements SingletonInterface {
+class SubRouter implements SingletonInterface, Injectable {
 
     use Singleton;
 
@@ -73,13 +74,13 @@ class SubRouter implements SingletonInterface {
         foreach ($this->routes as $regexp => $data) {
             if (preg_match($regexp, $route, $matches)) {
                 array_shift($matches);
-                $result = array_combine($data["keys"], $matches);
-                if ($result === false) {
+                if (count($data["keys"]) == count($matches)) {
+                    $result = array_combine($data["keys"], $matches);
+                    RouteParams::setData($result);
+                } else {
                     error_log(json_encode($data["keys"]));
                     error_log(json_encode($matches));
                     error_log("");
-                } else {
-                    RouteParams::setData($result);
                 }
                 if (is_string($data["action"])) {
                     Router::getInstance()->callRoute($data["action"]);

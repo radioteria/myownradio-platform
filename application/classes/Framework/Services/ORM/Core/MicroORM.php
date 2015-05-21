@@ -14,6 +14,7 @@ use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordCollection;
+use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 use Framework\Services\ORM\Exceptions\ORMException;
 use Tools\Optional;
 use Tools\Singleton;
@@ -29,11 +30,11 @@ class MicroORM extends FilterORM implements Injectable {
     private $ORMCache = [];
 
     /**
-     * @param ActiveRecord $object
+     * @param ActiveRecordObject $object
      * @internal param null $reflection
      * @return ActiveRecord
      */
-    public function cloneObject(ActiveRecord $object) {
+    public function cloneObject(ActiveRecordObject $object) {
 
         $reflection = new \ReflectionClass($object);
         $beanConfig = $this->getBeanConfig($reflection);
@@ -53,6 +54,18 @@ class MicroORM extends FilterORM implements Injectable {
 
         return $copy;
 
+    }
+
+    /**
+     * @param ActiveRecordObject $object
+     * @return mixed
+     */
+    public function getKeyOf(ActiveRecordObject $object) {
+        $reflection = new \ReflectionClass($object);
+        $beanConfig = $this->getBeanConfig($reflection);
+        $key = $reflection->getProperty($beanConfig["@key"]);
+        $key->setAccessible(true);
+        return $key->getValue($object);
     }
 
     /**
@@ -106,10 +119,10 @@ class MicroORM extends FilterORM implements Injectable {
     }
 
     /**
-     * @param ActiveRecord $object
+     * @param ActiveRecordObject $object
      * @throws ORMException
      */
-    public function deleteObject(ActiveRecord $object) {
+    public function deleteObject(ActiveRecordObject $object) {
 
         $reflection = new \ReflectionClass($object);
 
@@ -125,10 +138,11 @@ class MicroORM extends FilterORM implements Injectable {
         $id = $param->getValue($object);
 
         if (!is_null($id)) {
+            $object->beforeDelete();
             $this->_deleteObject($beanConfig, $id);
+            $param->setValue($object, null);
+            $object->afterDelete();
         }
-
-        $param->setValue($object, null);
 
     }
 
@@ -137,7 +151,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param int|null $limit
      * @param int|null $offset
      * @param null $order
-     * @return Object[]
+     * @return ActiveRecordCollection
      */
     public function getListOfObjects($bean, $limit = null, $offset = null, $order = null) {
 
@@ -157,7 +171,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param int|null $offset
      * @param null $order
      * @internal param null $oder
-     * @return object
+     * @return ActiveRecordCollection
      */
     public function getFilteredListOfObjects($bean, $filter, array $filterArgs = null, $limit = null, $offset = null, $order = null) {
 
@@ -170,22 +184,22 @@ class MicroORM extends FilterORM implements Injectable {
     }
 
     /**
-     * @param ActiveRecord $bean
-     * @throws \Framework\Services\ORM\Exceptions\ORMException
+     * @param ActiveRecordObject $bean
+     * @throws ORMException
      * @internal param $config
      * @return mixed
      */
-    public function saveObject(ActiveRecord $bean) {
+    public function saveObject(ActiveRecordObject $bean) {
 
         $reflection = new \ReflectionClass($bean);
 
         $config = $this->getBeanConfig($reflection);
-        $dbq = DBQuery::getInstance();
 
         if (isset($config["@view"])) {
             throw new ORMException("Object has read only access");
         }
 
+        $bean->beforeUpdate();
 
         $keyProp = $reflection->getProperty($config["@key"]);
         $keyProp->setAccessible(true);
@@ -194,58 +208,88 @@ class MicroORM extends FilterORM implements Injectable {
 
         if (is_null($key)) {
 
-            $query = $dbq->into($config["@table"]);
-
-            foreach ($reflection->getProperties() as $prop) {
-                if ($prop->getName() == $config["@key"])
-                    continue;
-                $prop->setAccessible(true);
-                $query->values($prop->getName(), $prop->getValue($bean));
-                $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] = $prop->getValue($bean);
-            }
-
-            $result = $query->executeInsert();
-
-            $keyProp->setValue($bean, $result);
+            $this->_insertObject($config, $reflection, $bean, $keyProp);
 
         } else {
 
-            $query = $dbq->updateTable($config["@table"]);
-            $test = 0;
-            //$cached = $this->redis->
+            $this->_updateObject($config, $reflection, $bean);
 
-            foreach ($reflection->getProperties() as $prop) {
+        }
 
-                $prop->setAccessible(true);
+        $bean->afterUpdate();
 
-                if ($prop->getName() == $config["@key"]) {
+    }
 
-                    $query->where($prop->getName(), $prop->getValue($bean));
+    /**
+     * Internal method to create new object
+     * @param array $config
+     * @param \ReflectionClass $reflection
+     * @param ActiveRecordObject $bean
+     * @param \ReflectionProperty $keyProp
+     */
+    private function _insertObject(array $config, \ReflectionClass $reflection, ActiveRecordObject $bean, $keyProp) {
 
-                } else {
+        $dbq = DBQuery::getInstance();
 
-                    if (!isset($this->ORMCache[$config["@table"]][$config["@key"]])) {
-                        $this->ORMCache[$config["@table"]][$config["@key"]] = [];
-                    }
+        $query = $dbq->into($config["@table"]);
 
-                    if (!isset($this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()]) ||
-                        $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] !== $prop->getValue($bean)) {
+        foreach ($reflection->getProperties() as $prop) {
+            if ($prop->getName() == $config["@key"])
+                continue;
+            $prop->setAccessible(true);
+            $query->values($prop->getName(), $prop->getValue($bean));
+            $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] = $prop->getValue($bean);
+        }
 
-                        $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] = $prop->getValue($bean);
-                        $query->set($prop->getName(), $prop->getValue($bean));
-                        $test = 1;
+        $result = $query->executeInsert();
 
-                    }
+        $keyProp->setValue($bean, $result);
+
+    }
+
+    /**
+     * Internal method to update existing object
+     * @param array $config
+     * @param \ReflectionClass $reflection
+     * @param ActiveRecordObject $bean
+     */
+    private function _updateObject(array $config, \ReflectionClass $reflection, ActiveRecordObject $bean) {
+
+        $dbq = DBQuery::getInstance();
+
+        $query = $dbq->updateTable($config["@table"]);
+        $test = 0;
+
+        foreach ($reflection->getProperties() as $prop) {
+
+            $prop->setAccessible(true);
+
+            if ($prop->getName() == $config["@key"]) {
+
+                $query->where($prop->getName(), $prop->getValue($bean));
+
+            } else {
+
+                if (!isset($this->ORMCache[$config["@table"]][$config["@key"]])) {
+                    $this->ORMCache[$config["@table"]][$config["@key"]] = [];
+                }
+
+                if (!isset($this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()]) ||
+                    $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] !== $prop->getValue($bean)
+                ) {
+
+                    $this->ORMCache[$config["@table"]][$config["@key"]][$prop->getName()] = $prop->getValue($bean);
+                    $query->set($prop->getName(), $prop->getValue($bean));
+                    $test = 1;
 
                 }
 
             }
 
+        }
 
-            if ($test) {
-                $query->update();
-            }
-
+        if ($test) {
+            $query->update();
         }
 
     }
@@ -310,7 +354,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param int|null $limit
      * @param int|null $offset
      * @param null $order
-     * @return mixed
+     * @return ActiveRecordCollection
      */
     private function _loadObjects($reflection, $config, $filter = null, $filterArgs = null, $limit = null,
                                   $offset = null, $order = null) {
@@ -368,7 +412,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param null|int $limit
      * @param null|int $offset
      * @param null $order
-     * @return ActiveRecord[]
+     * @return ActiveRecordCollection
      */
     protected function _getListOfObjects(SelectQuery $query, \ReflectionClass $reflection, array $config, $limit = null,
                                          $offset = null, $order = null) {
@@ -387,7 +431,7 @@ class MicroORM extends FilterORM implements Injectable {
             $query->orderBy($order);
         }
 
-        $query->eachRow(function ($row) use (&$array, &$config) {
+        $query->eachRow(function ($row) use (&$array) {
 
             $array[] = $row;
 

@@ -4,16 +4,13 @@
 
 (function () {
 
-    var DEFAULT_INTERVAL = 5000,
-
-        scheduler;
-
-    scheduler = angular.module("mor.stream.scheduler", ["Site"]);
+    var DEFAULT_INTERVAL = 5000;
+    var scheduler = angular.module("mor.stream.scheduler", ["Site"]);
 
     scheduler.run(["$rootScope", function ($rootScope) {
         $rootScope.callOrSet = function (key, value, context) {
             if (angular.isUndefined(context[key])) {
-                return false;
+                return;
             }
             $rootScope.$applyAsync(function () {
                 if (typeof context[key] === "function") {
@@ -64,47 +61,47 @@
             controller: [
                 "$scope",
                 "$timeout",
-                "scheduler.rest",
-                function ($scope, $timeout, rest) {
+                "$schedule",
+                function ($scope, $timeout, $schedule) {
                     var delay,
                         prevUniqueId,
                         update = function () {
 
                             $timeout.cancel(delay);
 
-                            if ($scope.ngModel.sid === undefined) {
+                            if (!angular.isObject($scope.ngModel)) {
                                 return
                             }
 
-                            rest.getNowPlaying($scope.ngModel).onSuccess(
-                                function (response) {
-                                    $scope.$root.callOrSet("onInterval", response, $scope);
-                                    if (prevUniqueId !== response.current.unique_id) {
-                                        prevUniqueId = response.current.unique_id;
-                                        $scope.$root.callOrSet("onTrackChange", response.current, $scope);
-                                    }
-                                    var end = response.current.duration + response.current.time_offset - response.position;
-                                    delay = $timeout(update, Math.min(DEFAULT_INTERVAL, end))
-                                }, function () {
-                                    $scope.$root.callOrSet("onInterval", undefined, $scope);
-                                    if (prevUniqueId !== undefined) {
-                                        prevUniqueId = undefined;
-                                        $scope.$root.callOrSet("onTrackChange", undefined, $scope);
-                                    }
-                                    delay = $timeout(update, DEFAULT_INTERVAL)
+                            $schedule.nowPlaying($scope.ngModel).then(function (response) {
+                                $scope.$broadcast("sync:update:tid", response);
+                                $scope.$root.callOrSet("onInterval", response, $scope);
+                                if (prevUniqueId !== response.unique_id) {
+                                    prevUniqueId = response.unique_id;
+                                    $scope.$root.callOrSet("onTrackChange", response, $scope);
                                 }
-                            )
+                                var end = response.duration + response.time_offset - response.position;
+                                delay = $timeout(update, Math.min(DEFAULT_INTERVAL, end))
+                            }, function () {
+                                $scope.$root.callOrSet("onInterval", null, $scope);
+                                if (prevUniqueId !== null) {
+                                    prevUniqueId = null;
+                                    $scope.$root.callOrSet("onTrackChange", null, $scope);
+                                }
+                                delay = $timeout(update, DEFAULT_INTERVAL)
+                            });
+
                         },
                         stop = function () {
 
                             $timeout.cancel(delay);
 
-                            if (prevUniqueId !== undefined) {
-                                $scope.$root.callOrSet("onTrackChange", undefined, $scope);
-                                prevUniqueId = undefined;
+                            if (prevUniqueId !== null) {
+                                $scope.$root.callOrSet("onTrackChange", null, $scope);
+                                prevUniqueId = null;
                             }
 
-                            $scope.$root.callOrSet("onInterval", undefined, $scope);
+                            $scope.$root.callOrSet("onInterval", null, $scope);
 
                         };
 
@@ -134,11 +131,6 @@
                 onInterval: "=",
                 onTrackUpdate: "="
             },
-            link: function ($scope, $element, $attributes) {
-                //$scope.onInterval = $compile($attributes.onInterval)($scope);
-                //$scope.onTrackChange = $compile($attributes.onTrackChange)($scope);
-                //console.log($scope.onInterval);
-            },
             controller: [
                 "$scope",
                 "$timeout",
@@ -148,7 +140,7 @@
                         previousUniqueId,
                         update = function () {
                             if (angular.isUndefined($scope.ngModel.sid)) {
-                                return false;
+                                return;
                             }
 
                             rest.getSchedule($scope.ngModel).onSuccess(

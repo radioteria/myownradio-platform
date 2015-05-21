@@ -1,8 +1,6 @@
 .similar-streams-wrapper {
-  padding: 8px 16px;
+  padding: 8px 32px;
   overflow: hidden;
-
-  .mor-block();
 
   .title {
     font-family: "Myriad Pro Thin";
@@ -45,7 +43,18 @@
           font-family: "Open Sans";
           font-size: 14pt;
           font-weight: 200;
-          margin-bottom: 4px;
+        }
+
+        .now-playing {
+          font-size: 8pt;
+          height: 18px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          color: @APP_TEXT_COLOR;
+          i {
+            padding-right: 2px;
+          }
         }
 
         .taglist {

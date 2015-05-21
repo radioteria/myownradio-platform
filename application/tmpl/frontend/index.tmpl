@@ -31,20 +31,21 @@
     <link rel="stylesheet" type="text/css" href="/css/legacy/ngDialog.css">
     <link rel="stylesheet" type="text/css" href="/css/legacy/ngDialog-theme-default.css">
 
+    <script src="/content/getCurrentLocale"></script>
 
     <!-- jQuery libraries -->
-    <script src="/js/libs/jquery-2.1.3.min.js.gz"></script>
-    <script src="/js/libs/jquery-migrate-1.2.1.min.js.gz"></script>
+    <script src="//rgcdn.pw/js/jquery/jquery-2.1.3.min.js"></script>
+    <script src="//rgcdn.pw/js/jquery/jquery-migrate-1.2.1.min.js"></script>
+    <script src="//rgcdn.pw/js/jquery/jquery-ui-1.11.4/jquery-ui.min.js"></script>
+    <script src="//rgcdn.pw/js/jquery/jquery.cookie.js"></script>
+    <script src="//rgcdn.pw/js/jquery/jquery.livequery.min.js"></script>
 
-    <script src="/js/libs/jquery-ui.min.js.gz"></script>
-
-    <script src="/js/libs/jquery.livequery.min.js"></script>
-    <script src="/js/libs/jquery.cookie.js"></script>
     <script src="/jplayer/jquery.jplayer.min.js"></script>
 
     <script src="/js/libs/angular.min.js.gz"></script>
     <script src="/js/libs/angular-route.min.js.gz"></script>
     <script src="/js/libs/angular-animate.min.js.gz"></script>
+    <script src="/js/modules/angular-contenteditable.js"></script>
 
     <script src="/js/audio5.js"></script>
 
@@ -84,9 +85,11 @@
 
 </head>
 
+
 <body class="{{ rootClass ? rootClass : '' }} {{ player.isLoaded ? 'player-visible' :'' }}" analytics-on="click"
       analytics-event="Click" analytics-category="Application">
 <div id="fb-root"></div>
+
 <script>
     window.fbAsyncInit = function () {
         FB.init({
@@ -114,67 +117,69 @@
 <div class="busy-wrap table ngCloak" ng-show="loader.busy === true">  <!-- todo: move to directive -->
     <div class="row">
         <div class="cell">
-            <i class="icon-spinner9 rotate"></i><br>
-
-            <div class="loading" ng-bind-template="WORKING..."></div>
+            <i class="icon-spinner9 rotate"></i>
+            <br>
+            <div class="loading" bind-html="tr('FR_AJAX_BUSY') | uppercase"></div>
         </div>
     </div>
 </div>
 
-<now ng-if="player.isPlaying" ng-model="player.currentStream" on-track-change="player.nowPlaying"></now>
+<div ng-if="player.isPlaying" >
+    <now ng-model="player.currentStream" on-track-change="player.nowPlaying"></now>
+</div>
+
+<div synchronize="player.currentStream" sync-key="sid"></div>
+<div synchronize="player.nowPlaying" sync-key="tid"></div>
 
 <div class="special">
-    <div class="player-container ngCloak" ng-if="player.isLoaded" mor-background-color="player.currentStream.cover_background">
-        <!--<div class="bg-gradient" ng-if="player.currentStream.cover_url">-->
-            <!--<div class="bg-image" d-background-image="{{ player.currentStream.cover_url }}"></div>-->
-        <!--</div>-->
+    <div class="player-container ngCloak" ng-if="player.isLoaded"
+         mor-background-color="player.currentStream.cover_background">
         <div class="cool-player table">
             <div class="row">
                 <div class="cell radio-cover">
-                    <a ng-href="/streams/{{ player.currentStream.key }}">
+                    <a ng-href="{{ player.currentStream | channelLink }}">
                         <div class="cover dark">
-                            <img ng-if="player.currentStream.cover"
-                                 ng-src="{{ player.currentStream.cover_url }}?size=64">
+                            <img fadein ng-if="player.currentStream.cover"
+                                 ng-src="{{ player.currentStream.cover | channelArtwork }}?size=64">
                         </div>
                     </a>
                 </div>
                 <div class="cell radio-title">
                     <div class="title">
-                        <a ng-href="/streams/{{ player.currentStream.key }}"
+                        <a ng-href="{{ player.currentStream | channelLink }}"
                            ng-bind="player.currentStream.name | uppercase"></a>
                     </div>
                 </div>
                 <div class="cell social-buttons">
-                    <share class="hoverable" ng-model="player.currentStream"></share>
+                    <i share-channel="player.currentStream" class="hoverable"></i>
                     <bookmark class="hoverable" ng-model="player.currentStream"></bookmark>
                     <span ng-if="account.authorized && player.currentStream.uid !== account.user.uid">
                         <span ng-if="player.nowPlaying.can_be_shared">
-                            <i class="icon-cloud-download" mor-tooltip="Copy this track to my account" ng-click="copyTrack(player.nowPlaying)"></i>
+                            <i class="icon-cloud-download"
+                               mor-tooltip="{{ tr('FR_PLAYER_COPY_TRACK') }}"
+                               ng-click="copyTrack(player.nowPlaying)"></i>
                         </span>
                     </span>
-                    <a target="_blank" ng-if="player.nowPlaying.buy" ng-href="{{ player.nowPlaying.buy }}" mor-tooltop="Buy this track">
+                    <a target="_blank" ng-if="player.nowPlaying.buy" ng-href="{{ player.nowPlaying.buy }}"
+                       mor-tooltop="{{ tr('FR_PLAYER_BUY_TRACK') }}">
                         <i class="icon-shopping-cart"></i>
                     </a>
                 </div>
                 <div class="cell track-title">
                     <span ng-if="player.nowPlaying">
-                        <span class="darker" ng-bind-template="ON AIR:"></span> <span
-                            ng-bind-template="{{ player.nowPlaying.artist | uppercase }} - {{ player.nowPlaying.title | uppercase }}"></span>
+                        <span class="darker" ng-bind-template="{{ tr('FR_PLAYER_ON_AIR') }}:"></span>
+                        <span ng-bind-template="{{ player.nowPlaying.artist | uppercase }} - {{ player.nowPlaying.title | uppercase }}"></span>
                     </span>
                 </div>
                 <div class="cell right-tools">
-                <span class="play-stop hoverable" ng-click="player.controls.switch()">
-                    <i ng-class="player.isPlaying ? 'icon-stop2' : 'icon-play'" mor-tooltip="Play / Stop"></i>
-                </span>
+                    <span class="play-stop hoverable" ng-click="player.controls.switch()">
+                        <i ng-class="player.isPlaying ? 'icon-stop2' : 'icon-play'"
+                           mor-tooltip="{{ tr('FR_PLAYER_PLAY_STOP') }}"></i>
+                    </span>
                     <span class="vertical-padding"></span>
-                <span class="stop hoverable" ng-click="player.controls.unload()" mor-tooltip="Stop and close">
-                    <i class="icon-switch"></i>
-                </span>
-                    <!--
-                                    <span class="volume">
-                                        <i class="icon-volume-up"></i>
-                                    </span>
-                    -->
+                    <span class="stop hoverable" ng-click="player.controls.unload()" mor-tooltip="{{ tr('FR_CLOSE') }}">
+                        <i class="icon-switch"></i>
+                    </span>
                 </div>
             </div>
         </div>

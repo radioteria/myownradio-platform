@@ -14,6 +14,11 @@ use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
+/**
+ * Class PlaylistTracksModel
+ * @package Framework\Models
+ * @localized 21.05.2015
+ */
 class PlaylistTracksModel implements SingletonInterface {
 
     use Singleton;
@@ -27,7 +32,6 @@ class PlaylistTracksModel implements SingletonInterface {
 
     public function __construct($id) {
         $this->user = AuthUserModel::getInstance();
-        //$this->stream = new StreamModel($id);
         $this->key = $id;
     }
 

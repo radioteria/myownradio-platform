@@ -17,7 +17,7 @@ use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
  * @package Objects
  * @table mor_payments
  * @key payment_id
- * @do_ACTUAL user_id = ? AND expires > UNIX_TIMESTAMP(NOW()) ORDER BY payment_id DESC
+ * @do_ACTUAL (user_id = ? AND expires > UNIX_TIMESTAMP(NOW()) AND success) ORDER BY payment_id DESC
  */
 class Payment extends ActiveRecordObject implements ActiveRecord {
     private
@@ -26,7 +26,14 @@ class Payment extends ActiveRecordObject implements ActiveRecord {
         $plan_id,
         $expires,
         $payment_comment,
-        $payment_source;
+        $payment_source,
+        $success,
+        $modified;
+
+    function beforeUpdate() {
+        $this->modified = time();
+        return true;
+    }
 
     /**
      * @return mixed
@@ -104,6 +111,21 @@ class Payment extends ActiveRecordObject implements ActiveRecord {
     public function setUserId($user_id) {
         $this->user_id = $user_id;
     }
+
+    /**
+     * @param mixed $success
+     */
+    public function setSuccess($success) {
+        $this->success = $success;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSuccess() {
+        return $this->success;
+    }
+
 
 
 } 

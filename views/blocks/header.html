@@ -1,41 +1,45 @@
-<div id="layer">
-    <div id="green"></div>
-</div>
 <div id="hd">
     <div class="fixed-width">
         <div id="buttons">
             <span ng-hide="account.authorized">
-                <a href="/login" mor-tooltip="Log in to your existing account">Login</a>
-                <a href="/signup" mor-tooltip="Create new account">Sign Up</a>
+                <a href="/login" mor-tooltip="{{ tr('FR_LOGIN_TOOLTIP') }}">
+                    <translate>FR_LOGIN</translate>
+                </a>
+                <a href="/signup" mor-tooltip="{{ tr('FR_SIGN_UP_TOOLTIP') }}">
+                    <translate>FR_SIGN_UP</translate>
+                </a>
             </span>
             <span ng-show="account.authorized">
-                <a href="/profile/" mor-tooltip="Go to your profile page">My Profile</a>
-                <a href="#" ng-click="account.logout()" mor-tooltip="Logout from account">Logout</a>
+                <a href="/profile/" mor-tooltip="{{ tr('FR_PROFILE_TOOLTIP') }}">
+                    <translate>FR_MY_PROFILE</translate>
+                </a>
+                <a href="#" ng-click="account.logout()" mor-tooltip="{{ tr('FR_LOGOUT_TOOLTIP') }}">
+                    <translate>FR_LOGOUT</translate>
+                </a>
             </span>
         </div>
-        <h2 id="logo">
-            <a href="/"><i class="mor-logo"></i>MYOWNRADIO<sup>beta</sup></a>
+        <h2 id="logo" class="left border-box">
+            <a href="/">
+                <i class="mor-logo"></i>MYOWNRADIO <sup>beta</sup>
+            </a>
         </h2>
         <div id="search" ng-controller="SearchFormController">
             <form ng-class="focused ? 'focused' : ''" name="search" novalidate="novalidate">
-                <input ng-model="filter"
-                       class="transparent"
-                       type="text"
-                       placeholder="Search..."
-                       name="filter"
-                       autocomplete="off"
-                       analytics-on="change" analytics-event="Search" analytics-category="Streams" analytics-label="{{ filter }}">
-                <input mor-tooltip="Search" type="submit" value="">
+                <input ng-model="filter" class="transparent" type="text" placeholder="{{ tr('FR_SEARCH_PLACEHOLDER') }}" name="filter"
+                       autocomplete="off" analytics-on="change" analytics-event="Search" analytics-category="Streams" analytics-label="{{ filter }}" />
+                <input mor-tooltip="{{ tr('FR_SEARCH') }}" type="submit" value="" />
             </form>
             <div class="search-hint" ng-if="filter.length > 0 && focused == true">
                 <ul class="items" navigable-list="selected">
                     <li class="head" ng-click="goSearch()">
-                        <a ng-href="/search/{{ filter | escape }}">Search for '<b>{{ filter }}</b>'</a>
+                        <a ng-href="/search/{{ filter | escape }}">
+                            <translate args="{ filter: filter }">FR_SEARCH_FOR</translate>
+                        </a>
                     </li>
-                    <li ng-repeat="stream in streams" ng-click="goStream(stream.key)">
-                        <a ng-href="/streams/{{stream.key}}">
+                    <li ng-repeat="stream in streams" ng-click="goStream(stream)">
+                        <a ng-href="{{ stream | channelLink }}">
                             <div class="cover dark">
-                                <img ng-if="stream.cover" ng-src="{{stream.cover_url}}?size=24">
+                                <img ng-if="stream.cover" ng-src="{{ stream.cover | channelArtwork }}?size=24">
                             </div>
                             {{ stream.name }}
                         </a>
@@ -44,8 +48,12 @@
             </div>
         </div>
         <div id="links">
-            <a href="/streams/" mor-tooltip="Browse streams catalog"><i class="icon-wifi-tethering"></i> Channels</a>
-            <a href="/categories/" mor-tooltip="Browse streams categories"><i class="icon-folder"></i> Categories</a>
+            <a class="border-box" href="/streams/" mor-tooltip="{{ tr('FR_BROWSE_POPULAR') }}" active-tab="^\/streams\/">
+                <translate>FR_STREAMS</translate>
+            </a>
+            <a class="border-box" href="/categories/" mor-tooltip="{{ tr('FR_BROWSE_CATEGORIES') }}" active-tab="^\/categories\/">
+                <translate>FR_CATEGORIES</translate>
+            </a>
         </div>
     </div>
 </div>

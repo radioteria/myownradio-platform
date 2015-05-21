@@ -13,7 +13,9 @@ use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\DeleteQuery;
+use Framework\Services\DB\Query\InsertQuery;
 use Framework\Services\InputValidator;
+use Framework\Services\ValidatorTemplates;
 use Objects\Stream;
 use Objects\Track;
 use Tools\Common;
@@ -22,6 +24,11 @@ use Tools\Folders;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
+/**
+ * Class StreamModel
+ * @package Framework\Models
+ * @localized 21.05.2015
+ */
 class StreamModel extends Model implements SingletonInterface {
 
     use Singleton;
@@ -48,7 +55,7 @@ class StreamModel extends Model implements SingletonInterface {
             ->getOrElseThrow(ControllerException::noStream($this->key));
 
         if ($this->stream->getUserID() !== $this->user->getID()) {
-            throw UnauthorizedException::noAccess();
+            throw UnauthorizedException::noPermission();
         }
 
     }
@@ -148,6 +155,7 @@ class StreamModel extends Model implements SingletonInterface {
 
         $validator = InputValidator::getInstance();
 
+
         $validator->validateStreamPermalink($permalink, $this->key);
         $validator->validateStreamCategory($category);
         $validator->validateStreamAccess($access);
@@ -158,8 +166,18 @@ class StreamModel extends Model implements SingletonInterface {
             ->setPermalink($permalink)
             ->setHashTags($hashtags)
             ->setCategory($category)
-            ->setAccess($access)
-            ->save();
+            ->setAccess($access);
+
+        ValidatorTemplates::validateStreamObject($this->stream);
+
+        $this->stream->save();
+
+        // todo: do this with db query
+        $hashtags_array = explode(",", $hashtags);
+        foreach ($hashtags_array as $tag) {
+            (new InsertQuery("mor_tag_list"))->values("tag_name", trim($tag))
+                ->set("usage_count = usage_count + 1")->update();
+        }
 
     }
 
@@ -237,6 +255,8 @@ class StreamModel extends Model implements SingletonInterface {
         }
 
         $this->stream->delete();
+
+        PlaylistModel::notifyAllStreamers($this->key);
 
     }
 

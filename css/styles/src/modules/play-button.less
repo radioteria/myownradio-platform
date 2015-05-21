@@ -8,10 +8,10 @@ play {
   background-color: rgba(0,0,0, 0.1);
   z-index: 10;
   transition: opacity linear 250ms;
+  opacity: 0;
 
-
-  &:not(:hover) {
-    opacity: 0;
+  &:hover, &.active {
+    opacity: 1;
   }
 
   .play-pause {

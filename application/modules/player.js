@@ -5,9 +5,9 @@
 (function () {
     var player = angular.module("RadioPlayer", ['Site']);
 
-    player.run(["$rootScope", "$http", "Response", "Streams", "$timeout", "$location", "Popup", "$analytics", "TrackPreviewService",
+    player.run(["$rootScope", "$http", "Response", "Streams", "$timeout", "$location", "Popup", "$analytics", "TrackPreviewService", "$filter",
 
-        function ($rootScope, $http, Response, Streams, $timeout, $location, Popup, $analytics, TrackPreviewService) {
+        function ($rootScope, $http, Response, Streams, $timeout, $location, Popup, $analytics, TrackPreviewService, $filter) {
 
             var handle = false;
 
@@ -26,19 +26,25 @@
                 },
                 controls: {
                     reload: function () {
-                        var $stream = $rootScope.player.currentStream;
                         if ($rootScope.player.isPlaying === true) {
-                            $rootScope.player.url = "/flow?s=" + $stream.sid + "&f=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);
+                            $rootScope.player.controls.stop();
+                            $rootScope.player.url = "/flow?s=" + $rootScope.player.currentStream.sid + "&f=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);
                             $rootScope.player.controls.play();
                         }
                     },
                     loadStream: function ($stream) {
+
+                        if ($rootScope.player.isPlaying) {
+                            $rootScope.player.controls.stop();
+                        }
+
                         $rootScope.player.url = "/flow?s=" + $stream.sid + "&f=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);
                         $rootScope.player.currentID = $stream.sid;
-                        $rootScope.player.controls.play();
                         $rootScope.player.currentStream = $stream;
                         $rootScope.player.page = "/streams/" + $stream.key;
                         $rootScope.player.isLoaded = true;
+                        $rootScope.player.controls.play();
+
                     },
                     play: function () {
 
@@ -48,15 +54,30 @@
                         realPlayer.play($rootScope.player.url);
                         $rootScope.player.isPlaying = true;
 
+                        if (angular.isObject($rootScope.player.currentStream)) {
+                            $rootScope.player.currentStream.listeners_count++;
+                            $rootScope.$broadcast("sync:update:sid", $rootScope.player.currentStream);
+                        }
+
                         TrackPreviewService.stop();
 
                     },
                     stop: function () {
+
+                        $rootScope.player.isPlaying = false;
+
                         realPlayer.stop();
+
                         $timeout.cancel(handle);
+
+                        if (angular.isObject($rootScope.player.currentStream)) {
+                            $rootScope.player.currentStream.listeners_count --;
+                            $rootScope.$broadcast("sync:update:sid", $rootScope.player.currentStream);
+                        }
+
                         $rootScope.player.isBuffering = false;
                         $rootScope.player.nowPlaying = null;
-                        $rootScope.player.isPlaying = false;
+
                     },
                     switch: function () {
                         $rootScope.player.isPlaying ?
@@ -64,10 +85,9 @@
                             $rootScope.player.controls.play();
                     },
                     playSwitchStream: function ($stream) {
-                        if ($rootScope.player.currentID == $stream.sid) {
+                        if (angular.isObject($rootScope.player.currentStream) && $rootScope.player.currentStream.sid == $stream.sid) {
                             $rootScope.player.controls.switch();
                         } else {
-                            $rootScope.player.controls.stop();
                             $rootScope.player.controls.loadStream($stream);
                         }
                     },
@@ -83,7 +103,7 @@
 
             $rootScope.$watch("player.nowPlaying.unique_id", function (newValue) {
                 if (newValue && $rootScope.player.isPlaying) {
-                    Popup.message("<b>" + htmlEscape($rootScope.player.nowPlaying.caption) + "</b><br>now on <b>" + htmlEscape($rootScope.player.currentStream.name) + "</b>", 5000);
+                    Popup.message("<b>" + htmlEscape($filter("trackCaption")($rootScope.player.nowPlaying)) + "</b><br>" + htmlEscape($rootScope.player.currentStream.name), 5000);
                 }
             });
 
@@ -104,13 +124,22 @@
                                     $rootScope.player.isBuffering = false;
                                     $rootScope.$digest();
                                 }
-
+                            });
+                            this.on("ended", function () {
+                                if ($rootScope.player.isPlaying) {
+                                    $rootScope.player.isBuffering = true;
+                                    $timeout(function () {
+                                        realPlayer.play(url)
+                                    }, 1000);
+                                }
                             });
                             this.on("error", function () {
-                                $rootScope.player.isBuffering = true;
-                                $timeout(function () {
-                                    realPlayer.play(url)
-                                }, 1000);
+                                if ($rootScope.player.isPlaying) {
+                                    $rootScope.player.isBuffering = true;
+                                    $timeout(function () {
+                                        realPlayer.play(url)
+                                    }, 1000);
+                                }
                             });
 
                             this.load(url);
@@ -130,27 +159,33 @@
 
     ]);
 
-    player.directive("play", [function () {
+    player.directive("play", ["$rootScope", function ($rootScope) {
         return {
             scope: {
                 obj: "="
             },
-            template: '<div class="play-pause"><div class="toggle" ng-click="playRadio(obj)" mor-tooltip="Play/Stop">\
-                            <i ng-show="player.isPlaying && player.currentID == obj.sid" class="icon-stop"></i>\
-                            <i ng-hide="player.isPlaying && player.currentID == obj.sid" class="icon-play-arrow"></i>\
+            template: '<div class="play-pause"><div class="toggle" ng-click="$root.player.controls.playSwitchStream(obj)" mor-tooltip="{{ $root.tr(\'FR_PLAYER_PLAY_STOP\') }}">\
+                            <i ng-show="$root.player.isPlaying && $root.player.currentID == obj.sid" class="icon-stop"></i>\
+                            <i ng-hide="$root.player.isPlaying && $root.player.currentID == obj.sid" class="icon-play-arrow"></i>\
                             </div></div>',
-            controller: ["$scope", "$rootScope", function ($scope, $rootScope) {
-                $scope.playRadio = function ($stream) {
-                    $rootScope.player.controls.playSwitchStream($stream);
-                };
-                $scope.player = $rootScope.player;
-            }]
+            link: function (scope, element, attrs) {
+                var watcher = $rootScope.$watch("player.currentStream", function (stream) {
+                    if (angular.isObject(stream) && angular.isObject(scope.obj) && stream.sid == scope.obj.sid) {
+                        element.addClass("active");
+                    } else {
+                        element.removeClass("active");
+                    }
+                    scope.$on("$destroy", function () {
+                        watcher();
+                    });
+                });
+            }
         }
     }]);
 
     player.directive("preview", ["TrackPreviewService", function (TrackPreviewService) {
         return {
-            template: '<span class="only-first-element" mor-tooltip="Click to preview track">' +
+            template: '<span class="only-first-element" mor-tooltip="{{ $root.tr(\'FR_PLAYER_CLICK_TO_REVIEW\') }}">' +
                 '<i ng-if="!isPlaying" class="icon-play-circle-fill"></i>' +
                 '<i ng-if="isPlaying" class="icon-pause-circle-fill"></i>' +
                 '</span>',
@@ -196,12 +231,10 @@
                 swfPath: "jplayer",
                 supplied: "mp3",
                 play: function (event) {
-                    //Popup.message("Preview of <b>" + htmlEscape(currentTrack.artist + " - " + currentTrack.title) + "</b> is started");
                     $rootScope.player.controls.stop();
                     $rootScope.$broadcast("preview.start", currentTrack);
                 },
                 ended: function (event) {
-                    //Popup.message("Preview of <b>" + htmlEscape(currentTrack.artist + " - " + currentTrack.title) + "</b> is finished");
                     $rootScope.$broadcast("preview.stop");
                     currentTrack = null;
                 },

@@ -8,66 +8,122 @@
 
 namespace Framework\Exceptions;
 
+use Framework\Services\Locale\I18n;
+
+/**
+ * Class ControllerException
+ * @package Framework\Exceptions
+ * @localized 21.05.2015
+ */
 class ControllerException extends \Exception {
 
     private $myMessage = null;
     private $myData = [];
     private $myHttpCode = 200;
+    private $myStatus = 0;
 
-    function __construct($message = null, $data = null, $code = 200) {
+    /**
+     * @param null $message
+     * @param null $data
+     * @param int $status
+     */
+    function __construct($message = null, $data = null, $status = 0) {
         $this->myMessage = $message;
         $this->myData = $data;
-        $this->myHttpCode = $code;
-        //error_log($_SERVER["HTTP_X_REAL_IP"] . " " . $message);
+        $this->myStatus = $status;
     }
 
-    public static function of($message = null, $data = null) {
-        return new self($message, $data);
+    /**
+     * @param null $message
+     * @param null $data
+     * @param int $status
+     * @return ControllerException
+     */
+    public static function of($message = null, $data = null, $status = 0) {
+        return new self($message, $data, $status);
     }
 
-    public static function noBasis($id) {
-        return new self(sprintf("No payment basis with key '%s' found", $id));
+    /**
+     * @param string $key
+     * @param mixed $data
+     * @param int $status
+     * @return ControllerException
+     */
+    public static function tr($key, $data = null, $status = 0) {
+        return new self(I18n::tr($key), $data, $status);
     }
 
+    /**
+     * @return ControllerException
+     */
     public static function noImageAttached() {
-        return new self("No image file attached");
+        return new self(I18n::tr("ERROR_NO_IMAGE_ATTACHED"));
     }
 
+    /**
+     * @return array|null
+     */
     public function getMyData() {
         return $this->myData;
     }
 
+    /**
+     * @return string|null
+     */
     public function getMyMessage() {
         return $this->myMessage;
     }
 
-    public static function wrongLogin() {
-        return new self("Incorrect login or password");
+    /**
+     * @return int
+     */
+    public function getMyStatus() {
+        return $this->myStatus;
     }
 
+    /**
+     * @param $name
+     * @return ControllerException
+     */
     public static function noArgument($name) {
-        return new self(sprintf("No value for argument '%s' specified", $name));
+        return new self(I18n::tr("ERROR_NO_ARGUMENT_SPECIFIED", ["arg" => $name]));
     }
 
-    public static function databaseError($message = "Something wrong with database") {
-        return new self($message);
-    }
-
+    /**
+     * @param $key
+     * @return ControllerException
+     */
     public static function noStream($key) {
-        return new self(sprintf("No stream with key '%s' found", $key));
+        return new self(I18n::tr("ERROR_STREAM_NOT_FOUND", ["arg" => $key]));
     }
 
-    public static function noPermission() {
-        return new self("You don't have permission to access this resource", null, 401);
+    /** @return ControllerException */
+    public static function noStreams() {
+        return new self(I18n::tr("ERROR_NO_STREAMS"));
     }
 
-    public static function noEntity($name) {
-        return new self(sprintf("No entity '%s' found", $name), null, 400);
+    /**
+     * @param $id
+     * @return ControllerException
+     */
+    public static function noUser($id) {
+        return new self(I18n::tr("ERROR_USER_NOT_FOUND", ["id" => $id]));
     }
 
-    public static function noTrack($key) {
-        return new self(sprintf("No track with key '%s' found", $key), null, 400);
+    /**
+     * @param $id
+     * @return ControllerException
+     */
+    public static function noTrack($id) {
+        return new self(I18n::tr("ERROR_TRACK_NOT_FOUND", ["id" => $id]));
     }
 
+    /**
+     * @param $plan_id
+     * @return ControllerException
+     */
+    public static function noAccountPlan($plan_id) {
+        return new self(I18n::tr("ERROR_NO_ACCOUNT_PLAN", ["id" => $plan_id]));
+    }
 
 }

@@ -8,7 +8,13 @@ a {
 
 .hoverable {
   transition: color 0.2s linear;
-  &:hover {
+  &:hover, &.locked {
+    color: @APP_LINK_HOVER_COLOR;
+  }
+}
+
+[active-tab] {
+  &.active {
     color: @APP_LINK_HOVER_COLOR;
   }
 }
@@ -43,63 +49,6 @@ a {
 
 
 
-.context-menu {
-  &.drop-down {
-    display: none;
-    top: 0;
-  }
-  overflow: visible;
-  position: absolute;
-  min-width: 160px;
-  border-radius: 4px;
-  border: 1px solid #e5e5e5;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  box-shadow: rgba(32,32,32,0.3) 0 6px 12px 0;
-  box-sizing: border-box;
-  background: #ffffff;
-  white-space: nowrap;
-
-  z-index: 1000;
-
-  &.fl {
-    right: 0;
-  }
-
-  &.fr {
-    left: 0;
-  }
-
-  &.left-side {
-    right: 100%;
-  }
-
-  &.right-side {
-    left: 100%;
-  }
-
-  & > li {
-    white-space: nowrap;
-    &.divider {
-      height: 1px;
-      margin: 9px 0;
-      overflow: hidden;
-      background-color: #e5e5e5;
-    }
-    &:not(.divider) {
-      padding: 2px 6px;
-      cursor: pointer;
-      position: relative;
-      box-sizing: border-box;
-      &:hover {
-        & > .drop-down {
-          display: block;
-        }
-        background-color: #eeeeee;
-      }
-    }
-  }
-}
 
 .spacer {
   clear: both;
@@ -195,7 +144,8 @@ input:not(.transparent)[type="text"],
 input:not(.transparent)[type="password"],
 input:not(.transparent)[type="email"],
 textarea:not(.transparent),
-select:not(.transparent) {
+select:not(.transparent),
+hashtags {
   font-size: 14px;
   font-family: "Open Sans", sans-serif;
   box-sizing: border-box;
@@ -270,6 +220,7 @@ small {
     -o-filter: blur(64px);
     -moz-filter: blur(64px);
     filter: blur(64px);
+    mask: url("/css/blur.svg");
 
     -webkit-transform: translate3d(0, 0, 0);
     -o-transform: translate3d(0, 0, 0);
@@ -333,5 +284,25 @@ ul.enumerate {
   & > li {
     list-style-type: circle;
     list-style-position: inside;
+  }
+}
+
+.like-box {
+  margin-top: 32px;
+}
+
+.mor-progress {
+  margin-bottom: 16px;
+  .progress-background {
+    margin-top: 8px;
+    position: relative;
+    background-color: #eeeeee;
+    height: 16px;
+    .progress-handle {
+      background-color: #666666;
+      position: relative;
+      height: 16px;
+      transition: .1s linear width;
+    }
   }
 }

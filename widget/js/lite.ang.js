@@ -1,6 +1,6 @@
 (function () {
     var empty = angular.module("Site", []);
-    var m = angular.module("WidgetLite", ["mor.stream.scheduler", "WidgetPlayer"]);
+    var m = angular.module("application", ["mor.stream.scheduler", "WidgetPlayer"]);
     m.config(["$locationProvider", function ($locationProvider) {
         $locationProvider.html5Mode(true);
     }]);

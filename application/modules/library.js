@@ -71,7 +71,9 @@
                 $scope.options = {
                     target: $scope.stream.sid,
                     append: true,
-                    onFinish: function () { $scope.load(true); }
+                    onFinish: function () {
+                        $scope.load(true);
+                    }
                 };
                 ngDialog.open({
                     templateUrl: "/views/auth/upload.html",
@@ -91,7 +93,12 @@
 
                 TrackWorks.getByStreamID(streamId, offset, $scope.filter).onSuccess(function (data) {
 
-                    $scope.tracks = clear ? data : $scope.tracks.concat(data);
+                    if (clear) {
+                        $scope.tracks = data;
+                    } else for (var i = 0; i < data.length; i++) {
+                        $scope.tracks.push(data[i]);
+                    }
+
                     $scope.tracksPending = false;
 
                     if (data.length > 0) {
@@ -112,7 +119,10 @@
 
                 TrackPreviewService.stop();
                 TrackAction.removeTracksFromStream($scope.stream, $scope.target, function () {
-                    Popup.message($scope.target.length + " track(s) successfully removed from stream <b>" + htmlEscape($scope.stream.name) + "</b>");
+                    Popup.message($rootScope.tr("FR_TRACKS_REMOVED_FROM_STATION", {
+                        count: $scope.target.length,
+                        name: $scope.stream.name
+                    }));
                     deleteMatching($scope.tracks, function (track) {
                         return $scope.target.indexOf(track) != -1;
                     });
@@ -127,7 +137,7 @@
 
                 TrackPreviewService.stop();
                 TrackAction.removeTracksFromAccount($scope.target, function () {
-                    Popup.message($scope.target.length + " track(s) successfully removed from your account");
+                    Popup.message($rootScope.tr("FR_TRACKS_REMOVED_FROM_LIBRARY", {count: $scope.target.length}));
                     deleteMatching($scope.tracks, function (track) {
                         return $scope.target.indexOf(track) != -1;
                     });
@@ -152,7 +162,10 @@
 
             $scope.addToStream = function (stream) {
                 TrackAction.addTracksToStream(stream, $scope.target, function () {
-                    Popup.message($scope.target.length + " track(s) successfully added to stream <b>" + htmlEscape(stream.name) + "</b>");
+                    Popup.message($rootScope.tr("FR_TRACKS_ADDED_TO_STATION", {
+                        count: $scope.target.length,
+                        name: stream.name
+                    }));
                     if (stream.sid == $scope.stream.sid) {
                         $scope.load(true);
                     }
@@ -163,6 +176,10 @@
 
             $scope.moveToStream = function (stream) {
                 TrackAction.moveTracksToOtherStream($scope.stream, $scope.target, stream, function () {
+                    Popup.message($rootScope.tr("FR_TRACKS_MOVED_TO_STATION", {
+                        count: $scope.target.length,
+                        name: stream.name
+                    }));
                     deleteMatching($scope.tracks, function (track) {
                         return $scope.target.indexOf(track) != -1;
                     });
@@ -193,7 +210,10 @@
             };
 
             $scope.remove = function () {
-                TrackAction.deleteStream($scope.stream);
+                TrackAction.deleteStream($scope.stream, function () {
+                    Popup.tr("FR_STREAM_DELETED_SUCCESSFULLY", $scope.stream);
+                    $rootScope.account.init("/profile/streams/");
+                });
             };
 
             $scope.readStream();
@@ -201,7 +221,7 @@
         }
     ]);
 
-    lib.controller("TracksLibraryController",["$rootScope", "$scope", "TrackWorks", "StreamWorks",
+    lib.controller("TracksLibraryController", ["$rootScope", "$scope", "TrackWorks", "StreamWorks",
         "ngDialog", "$route", "$dialog", "AudioInfoEditor", "TrackAction", "Popup", "TrackPreviewService",
 
         function ($rootScope, $scope, TrackWorks, StreamWorks, ngDialog, $route,
@@ -249,14 +269,19 @@
                 TrackWorks.getAllTracks($scope.tracks.length, $scope.filter, $route.current.unused === true, $scope.sorting.row, $scope.sorting.order, busy)
                     .onSuccess(function (data) {
 
-                    $scope.tracks = $scope.tracks.concat(data);
-                    $scope.tracksPending = false;
+                        if (clear) {
+                            $scope.tracks = data;
+                        } else for (var i = 0; i < data.length; i++) {
+                            $scope.tracks.push(data[i]);
+                        }
 
-                    if (data.length > 0) {
-                        $scope.busy = false;
-                    }
+                        $scope.tracksPending = false;
 
-                });
+                        if (data.length > 0) {
+                            $scope.busy = false;
+                        }
+
+                    });
 
             };
 
@@ -272,9 +297,9 @@
             };
 
             $scope.deleteSelected = function () {
-                TrackPreviewService.stop();
+                TrackPreviewService.stop(); //147
                 TrackAction.removeTracksFromAccount($scope.target, function () {
-                    Popup.message($scope.target.length + " track(s) successfully removed from your account");
+                    Popup.message($rootScope.tr("FR_TRACKS_REMOVED_FROM_LIBRARY", {count: $scope.target.length}));
                     deleteMatching($scope.tracks, function (track) {
                         return $scope.target.indexOf(track) != -1;
                     });
@@ -285,7 +310,10 @@
 
             $scope.addToStream = function (streamObject) {
                 TrackAction.addTracksToStream(streamObject, $scope.target, function () {
-                    Popup.message($scope.target.length + " track(s) successfully added to stream <b>" + htmlEscape(streamObject.name) + "</b>");
+                    Popup.message($rootScope.tr("FR_TRACKS_ADDED_TO_STATION", {
+                        count: $scope.target.length,
+                        name: streamObject.name
+                    }));
                     if ($route.current.unused === true) {
                         deleteMatching($scope.tracks, function (track) {
                             return $scope.target.indexOf(track) != -1
@@ -298,6 +326,7 @@
 
             $scope.changeGroup = function (groupObject) {
                 TrackAction.changeTracksColor(groupObject, $scope.target, function () {
+                    Popup.message($rootScope.tr("FR_TRACKS_UPDATED", {count: $scope.target.length}));
                     for (var n = 0; n < $scope.target.length; n += 1) {
                         $scope.target[n].color = groupObject.color_id;
                     }
@@ -313,109 +342,131 @@
     ]);
 
     lib.controller("UploadController", ["$scope", "$rootScope", "TrackWorks", "StreamWorks",
-        "Response", "$http", "$q", "Popup", "$analytics",
+        "Response", "$http", "$q", "Popup", "$analytics", "$library",
 
-        function ($scope, $rootScope, TrackWorks, StreamWorks, Response, $http, $q, Popup, $analytics) {
+        function ($scope, $rootScope, TrackWorks, StreamWorks, Response, $http, $q, Popup, $analytics, $library) {
 
-        $scope.upNext = false;
-        $scope.progress = {
-            status: false,
-            file: null,
-            percent: 0
-        };
-        $scope.uploadQueue = [];
+            $scope.upNext = false;
+            $scope.progress = {
+                status: false,
+                file: null,
+                percent: 0
+            };
+            $scope.uploadQueue = [];
 
-        $scope.options = $scope.options || {
-            target: null,
-            append: false,
-            unique: false,
-            onFinish: function () {}
-        };
-
-        var canceller = $q.defer();
-
-        $scope.browse = function () {
-            var selector = $("<input>");
-            selector.attr("type", "file");
-            selector.attr("accept", "audio/*");
-            selector.attr("multiple", "multiple");
-            selector.attr("name", "file");
-            selector.on("change", function () {
-                if (this.files.length == 0) return;
-                var that = this;
-                $scope.$applyAsync(function () {
-                    for (var i = 0; i < that.files.length; i++) {
-                        $scope.uploadQueue.push(that.files[i]);
-                    }
-                });
-            });
-            selector.click();
-        };
-
-        $scope.cancel = function () {
-            $scope.options.onFinish.call();
-            $scope.closeThisDialog();
-        };
-
-        $scope.$on("$destroy", function () {
-            canceller.resolve("Upload aborted by user");
-        });
-
-        $scope.upload = function () {
-            if ($scope.uploadQueue.length == 0) {
-                $scope.cancel();
-                return;
-            }
-            var file = $scope.uploadQueue.shift();
-            var form = new FormData();
-            form.append('file', file);
-
-            if ($scope.options.target)
-                form.append("stream_id", $scope.options.target);
-
-            if ($scope.options.unique)
-                form.append("skip_copies", 1);
-
-            $scope.progress.status = true;
-            $scope.progress.file = file.name;
-
-            var uploader = Response($http({
-                method: "POST",
-                url: "/api/v2/track/upload",
-                data: form,
-                transformRequest: angular.identity,
-                headers: {'Content-Type': undefined},
-                timeout: canceller.promise
-            }));
-
-            uploader.onSuccess(function (data) {
-                var i;
-                if ($scope.options.append === true) {
-                    for (i = 0; i < data.tracks.length; i++) {
-                        $scope.$parent.tracks.push(data.tracks[i]);
-                        $rootScope.account.user.tracks_count += 1;
-                    }
-                } else {
-                    for (i = data.tracks.length - 1; i >= 0; i--) {
-                        $scope.$parent.tracks.unshift(data.tracks[i]);
-                        $rootScope.account.user.tracks_count += 1;
-                    }
+            $scope.options = $scope.options || {
+                target: null,
+                append: false,
+                unique: false,
+                onFinish: function () {
                 }
-                $analytics.eventTrack('Upload', { category: 'Actions' });
-                $scope.upload();
-            }, function (message) {
-                Popup.message(message);
-                $scope.upload();
-            });
-        };
+            };
 
-    }
+            var canceller = $q.defer(),
+                promise = null;
+
+            $scope.browse = function () {
+                var selector = $("<input>");
+                selector.attr("type", "file");
+                selector.attr("accept", "audio/*");
+                selector.attr("multiple", "multiple");
+                selector.attr("name", "file");
+                selector.on("change", function () {
+                    if (this.files.length == 0) return;
+                    var that = this;
+                    $scope.$applyAsync(function () {
+                        for (var i = 0; i < that.files.length; i++) if (that.files[i].size <= Of.megabytes(512)) {
+                            $scope.uploadQueue.push(that.files[i]);
+                        }
+                    });
+                });
+                selector.click();
+            };
+
+            $scope.cancel = function () {
+                $scope.options.onFinish.call();
+                $scope.closeThisDialog();
+            };
+
+            $scope.$on("$destroy", function () {
+                if (promise !== null) {
+                    promise.abort();
+                }
+            });
+
+            $scope.upload = function () {
+                if ($scope.uploadQueue.length == 0) {
+                    $scope.cancel();
+                    return;
+                }
+                var file = $scope.uploadQueue.shift();
+                var form = new FormData();
+                var progress = function (evt) {
+
+                    if (evt.lengthComputable) {
+
+                        var percentComplete = evt.loaded / evt.total;
+                        percentComplete = parseInt(percentComplete * 100);
+
+                        $(".progress-cursor").css("width", percentComplete + "%");
+
+                    }
+
+                };
+
+                form.append('file', file);
+
+                if ($scope.options.target)
+                    form.append("stream_id", $scope.options.target);
+
+                if ($scope.options.unique)
+                    form.append("skip_copies", 1);
+
+                $scope.progress.status = true;
+                $scope.progress.file = file.name;
+
+
+                promise = $library.upload(form, progress);
+
+                promise.then(function (data) {
+
+                    var i;
+
+                    promise = null;
+
+                    if ($scope.options.append === true) {
+                        for (i = 0; i < data.tracks.length; i++) {
+                            $scope.$parent.tracks.push(data.tracks[i]);
+                            $rootScope.account.user.tracks_count += 1;
+                        }
+                    } else {
+                        for (i = data.tracks.length - 1; i >= 0; i--) {
+                            $scope.$parent.tracks.unshift(data.tracks[i]);
+                            $rootScope.account.user.tracks_count += 1;
+                        }
+                    }
+
+                    $rootScope.account.init();
+
+                    $analytics.eventTrack('Upload', {category: 'Actions'});
+                    $scope.upload();
+
+                }, function (message) {
+
+                    Popup.message(message);
+                    $scope.upload();
+
+                });
+
+            };
+
+        }
 
     ]);
 
     lib.factory("TracksScopeActions", [function () {
         return {
-            removeTracksFromStream: function($stream, $tracks, $callback) {
+            removeTracksFromStream: function ($stream, $tracks, $callback) {
                 TrackPreviewService.stop();
 
             }

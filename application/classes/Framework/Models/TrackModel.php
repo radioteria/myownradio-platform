@@ -13,13 +13,18 @@ use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\FileServer\FileServerFacade;
 use Framework\FileServer\FSFile;
-use Framework\Services\Config;
+use Framework\Object;
+use Framework\Services\Locale\I18n;
 use Objects\FileServer\FileServerFile;
 use Objects\Track;
-use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
+/**
+ * Class TrackModel
+ * @package Framework\Models
+ * @localized 21.05.2015
+ */
 class TrackModel extends Model implements SingletonInterface {
 
     use Singleton;
@@ -32,29 +37,42 @@ class TrackModel extends Model implements SingletonInterface {
     /** @var Track $object */
     protected $object;
 
+    /**
+     * @param int|Track $id
+     */
     public function __construct($id) {
 
         parent::__construct();
 
         $this->user = AuthUserModel::getInstance();
-        $this->key = $id;
-        $this->reload();
+
+        if ($id instanceof Track) {
+            $this->key = $id->getID();
+            $this->object = $id;
+        } else {
+            $this->key = $id;
+            $this->reload();
+        }
+
+        $this->checkAccess();
 
     }
 
     /**
+     * @throws \Framework\Exceptions\ControllerException
      * @return $this
-     * @throws \Framework\Exceptions\UnauthorizedException
      */
     public function reload() {
 
         $this->object = Track::getByID($this->key)
             ->getOrElseThrow(ControllerException::noTrack($this->key));
 
-        if ($this->object->getUserID() != $this->user->getID()) {
-            throw UnauthorizedException::noAccess();
-        }
+    }
 
+    public function checkAccess() {
+        if ($this->object->getUserID() != $this->user->getID()) {
+            throw UnauthorizedException::noPermission();
+        }
     }
 
     public function save() {
@@ -168,40 +186,15 @@ class TrackModel extends Model implements SingletonInterface {
         return $this->object->getOriginalFile();
     }
 
+    /**
+     * @return string
+     */
     public function getFileUrl() {
         /** @var FileServerFile $file */
         $file = FileServerFile::getByID($this->object->getFileId())
-            ->getOrElseThrow(new ControllerException(
-                sprintf("Track \"%d\" is not uploaded to any file server", $this->object->getID())
-            ));
+            ->getOrElseThrow(I18n::tr("ERROR_TRACK_NOT_AVAILABLE", ["id" => $this->object->getID()]));
 
         return FileServerFacade::getServerNameById($file->getServerId()).$file->getFileHash();
-    }
-
-    /**
-     * @param Optional $artist
-     * @param Optional $title
-     * @param Optional $album
-     * @param Optional $trackNR
-     * @param Optional $genre
-     * @param Optional $date
-     * @param Optional $color
-     * @return $this
-     */
-    public function edit($artist, $title, $album, $trackNR, $genre, $date, $color) {
-
-        $artist ->then(function ($artist)   { $this->object->setArtist($artist); });
-        $title  ->then(function ($title)    { $this->object->setTitle($title); });
-        $album  ->then(function ($album)    { $this->object->setAlbum($album); });
-        $trackNR->then(function ($trackNR)  { $this->object->setTrackNumber($trackNR); });
-        $genre  ->then(function ($genre)    { $this->object->setGenre($genre); });
-        $date   ->then(function ($date)     { $this->object->setDate($date); });
-        $color  ->then(function ($color)    { $this->object->setColor($color); });
-
-        $this->object->save();
-
-        return $this;
-
     }
 
     public function changeColor($color) {
@@ -216,31 +209,9 @@ class TrackModel extends Model implements SingletonInterface {
      */
     public function delete() {
 
-        logger(sprintf("User #%d is deleting track %s", $this->getUserID(), $this->getFileName()));
+        error_log(sprintf("User #%d is deleting track %s", $this->getUserID(), $this->getFileName()));
         FSFile::deleteLink($this->object->getFileId());
         $this->object->delete();
-
-    }
-
-    public function preview() {
-
-        $config = Config::getInstance();
-
-        $trackFile = $this->getOriginalFile();
-        $streamer = $config->getSetting("streaming", "track_preview")->get();
-
-        $command = sprintf($streamer, escapeshellarg($trackFile));
-
-        $fh = popen($command, "r");
-
-        header("Content-Type: audio/mpeg");
-
-        while ($data = fread($fh, 4096)) {
-            echo $data;
-            flush();
-        }
-
-        pclose($fh);
 
     }
 

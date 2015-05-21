@@ -36,6 +36,18 @@
     b {
       color: #808080;
     }
+    .progress-bar {
+      margin-top: 8px;
+      position: relative;
+      background-color: #eeeeee;
+      height: 16px;
+      .progress-cursor {
+        background-color: #666666;
+        position: relative;
+        height: 16px;
+        transition: .1s linear width;
+      }
+    }
   }
   .selected-files {
     margin-top: 8px;
@@ -66,8 +78,12 @@
               text-overflow: ellipsis;
               white-space: nowrap;
             }
-            &:last-child {
+            &:nth-last-child(2) {
               width: 60px;
+              text-align: right;
+            }
+            &:nth-last-child(1) {
+              width: 20px;
               text-align: right;
             }
           }

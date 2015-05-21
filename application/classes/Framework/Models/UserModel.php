@@ -3,13 +3,12 @@
 namespace Framework\Models;
 
 use Framework\Exceptions\ApplicationException;
-use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\Stats;
-use Framework\Services\Config;
+use Framework\Services\DB\Query\DeleteQuery;
 use Framework\Services\InputValidator;
+use Framework\Services\ValidatorTemplates;
 use Objects\AccountPlan;
-use Objects\Link;
 use Objects\Payment;
 use Objects\Stream;
 use Objects\Track;
@@ -46,7 +45,8 @@ class UserModel extends Model implements SingletonInterface {
             $id = func_get_arg(0);
 
             $this->user = User::getByID($id)->getOrElseThrow(
-                new ControllerException(sprintf("User with id '%s' not exists", $id)));
+                UnauthorizedException::noUser($id)
+            );
 
         } elseif (func_num_args() == 1) {
 
@@ -54,7 +54,7 @@ class UserModel extends Model implements SingletonInterface {
 
             $this->user = User::getByFilter("FIND_BY_KEY_PARAMS", [":key" => $key])
                 ->getOrElseThrow(
-                    new ControllerException(sprintf("User with login or email '%s' not exists", $key))
+                    UnauthorizedException::noUserByLogin($key)
                 );
 
         } elseif (func_num_args() == 2) {
@@ -63,11 +63,11 @@ class UserModel extends Model implements SingletonInterface {
             $password = func_get_arg(1);
 
             $this->user = User::getByFilter("FIND_BY_CREDENTIALS", [":login" => $login, ":password" => $password])
-                ->getOrElseThrow(ControllerException::wrongLogin());
+                ->getOrElseThrow(UnauthorizedException::wrongLogin());
 
         } else {
 
-            throw new \Exception("Incorrect number of arguments");
+            throw ApplicationException::of("Incorrect number of arguments");
 
         }
 
@@ -137,8 +137,7 @@ class UserModel extends Model implements SingletonInterface {
     }
 
     public function changePasswordNow($password) {
-        $validator = InputValidator::getInstance();
-        $validator->validatePassword($password);
+        ValidatorTemplates::validatePassword($password);
         $crypt = password_hash($password, PASSWORD_DEFAULT);
         $this->user->setPassword($crypt)->save();
     }
@@ -146,20 +145,21 @@ class UserModel extends Model implements SingletonInterface {
     /**
      * @param AccountPlan $plan
      * @param $source
+     * @param string $data
      */
-    public function changeAccountPlan(AccountPlan $plan, $source) {
+    public function changeAccountPlan(AccountPlan $plan, $source, $data = "") {
         $payment = new Payment();
         $payment->setUserId($this->user->getID());
         $payment->setPlanId($plan->getPlanId());
         $payment->setPaymentSource($source);
-        $payment->setPaymentComment("");
+        $payment->setPaymentComment($data);
         $payment->setExpires($this->planExpires + $plan->getPlanDuration());
         $payment->save();
     }
 
     public function getDisplayName() {
 
-        return empty($this->getName()) ? $this->getLogin() : $this->getName();
+        return $this->getName() ?: $this->getLogin();
 
     }
 
@@ -213,33 +213,6 @@ class UserModel extends Model implements SingletonInterface {
 
     }
 
-    public function downloadAvatar($url) {
-
-        $avatar = file_get_contents($url);
-
-        $folders = Folders::getInstance();
-
-//        $validator = InputValidator::getInstance();
-//        $validator->validateImageMIME($file["tmp_name"]);
-
-//        $random = Common::generateUniqueID();
-//
-//        $this->removeAvatar();
-//
-//        $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
-//        $newImageFile = sprintf("avatar%05d_%s.%s", $this->userID, $random, strtolower($extension));
-//        $newImagePath = $folders->genAvatarPath($newImageFile);
-//
-//        $result = move_uploaded_file($file['tmp_name'], $newImagePath);
-//        if ($result !== false) {
-//            $this->user->setAvatar($newImageFile)->save();
-//            return $folders->genAvatarUrl($newImageFile);
-//        } else {
-//            return null;
-//        }
-
-    }
-
     /**
      * @return null|string
      */
@@ -266,43 +239,31 @@ class UserModel extends Model implements SingletonInterface {
         /* Delete user's streams */
         $streams = Stream::getListByFilter("uid", [$this->user->getID()]);
 
+        /** @var Stream $stream */
         foreach ($streams as $stream) {
-            $links = Link::getListByFilter("stream_id", [$stream->getID()]);
-            foreach ($links as $link) {
-                $link->delete();
-            }
+            (new DeleteQuery("r_link"))
+                ->where("stream_id", $stream->getID())->update();
             $stream->delete();
         }
 
+        $tracks = Track::getListByFilter("uid", [$this->user->getID()])->cast(TrackModel::className());
 
-        /* Delete user's tracks */
-        $tracks = Track::getListByFilter("uid", [$this->user->getID()]);
+        foreach ($tracks as $track) { $track->delete(); }
 
-        foreach ($tracks as $track) {
-            $model = new TrackModel($track->getID());
-            $model->delete();
-        }
-
-        $id = $this->user->getID();
-
-        /* Delete account object */
         $this->user->delete();
-
-        /* Delete user's directory */
-        $contentFolder = Config::getInstance()->getSetting("content", "content_folder")
-            ->getOrElseThrow(ApplicationException::of("CONTENT FOLDER NOT SPECIFIED"));
-
-        $path = new File(sprintf("%s/ui_%d", $contentFolder, $id));
-        if ($path->exists()) {
-            $path->delete();
-        }
 
     }
 
+    /**
+     *
+     */
     public function touchLastLoginDate() {
         $this->user->setLastVisitDate(time())->save();
     }
 
+    /**
+     * @return mixed
+     */
     public function toRestFormat() {
         return Users::getInstance()->getUserByID($this->getID(), true);
     }

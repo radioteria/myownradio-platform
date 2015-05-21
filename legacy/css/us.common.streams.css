@@ -1,0 +1,133 @@
+.page-stream-list h1 {
+    font-size: 30pt;
+    font-family: "Myriad Pro Thin";
+    margin: 16px 0;
+    color: #ffffff;
+}
+
+.page-stream-list h1 > a {
+    color: #ffffff;
+}
+
+.page-stream-list h1 > a > i {
+    font-size: 12pt;
+    vertical-align: inline;
+    line-height: 16px;
+}
+
+.page-stream-list-list {
+    overflow: hidden;
+}
+
+.page-stream-list-list > li {
+    margin-left: 0;
+    margin-top: 0;
+    margin-bottom: 16px;
+    margin-right: 0px;
+    width: 100%;
+    height: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+    opacity: 0;
+    transition: opacity linear 150ms;
+}
+
+.page-stream-list-list > li:not(:last-child)
+{
+    padding-bottom: 16px;
+    border-bottom: 1px solid #000000;
+}
+
+.page-stream-list-list > li a {
+    color: #ffffff;
+    text-shadow: 0 0 3px #000000;
+}
+
+.page-stream-list-item {
+    box-sizing: border-box;
+    transition: background-color linear 150ms;
+    height: 100%;
+    float: right;
+    width: 850px;
+    padding-left: 16px;
+    vertical-align: middle;
+}
+
+.page-stream-list-item-title {
+    text-align: left;
+    font-size: 22pt;
+    font-family: "Myriad Pro Thin";
+    margin-bottom: 5px;
+}
+
+.page-stream-list-item-genres {
+    margin-bottom: 8px;
+}
+
+.page-stream-list-item-genres > span {
+    color: #ffffff;
+}
+
+.page-stream-list-item-info {
+    line-height: 125%;
+}
+
+.page-stream-list-item-cover-wrapper {
+    width: 150px;
+    height: 150px;
+    float: left;
+    background-image: url("/images/static/nocover.png");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    border-radius: 5px;
+    padding: 0px;
+    margin: 0px;
+    background-color: #272d43;
+    box-sizing: border-box;
+}
+
+.page-stream-list-item-cover {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 5px;
+    opacity: 0;
+    transition: opacity linear 150ms;
+}
+
+.page-stream-list-item-title-bitrates {
+    overflow: hidden;
+    float: right;
+    line-height: 20px;
+}
+
+.page-stream-list-item-title-bitrates > li {
+    display: inline-block;
+    font-size: 16px;
+    padding: 0px 4px;
+    background-color: #3369b1;
+    border-radius: 5px;
+    opacity: 1;
+    transition: opacity linear 150ms;
+    vertical-align: middle;
+}
+
+.page-stream-list-item-title-bitrates > li.orange {
+    background-color: #F59500;
+    color: #FFFFFF;
+}
+
+.page-stream-list-item-title-bitrates > li:hover {
+    opacity: 0.7;
+}
+
+.page-stream-list-item-title-bitrates > li a {
+    color: #ddd;
+    text-shadow: none;
+}
+
+.page-stream-no-results {
+    
+}

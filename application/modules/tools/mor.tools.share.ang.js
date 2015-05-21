@@ -19,20 +19,23 @@
 
     }]);
 
-    tools.directive("share", [function () {
+    tools.directive("shareChannel", [function () {
         return {
             scope: {
-                ngModel: "="
+                shareObject: "=shareChannel"
             },
-            restrict: "E",
-            required: "ngModel",
-            template: "<i class='icon-share-alt' mor-tooltip='Share this radio channel' ng-click='share()'></i>",
-            controller: ["$scope", "ngDialog", function ($scope, ngDialog) {
+            restrict: "A",
+            replace: true,
+            template: "<i class=\"icon-share-alt\" mor-tooltip=\"{{ tr('FR_SHARE_THIS') }}\" ng-click=\"share()\"></i>",
+            controller: ["$scope", "ngDialog", "$rootScope", function ($scope, ngDialog, $rootScope) {
+                $scope.tr = $rootScope.tr;
                 $scope.share = function () {
-                    if (angular.isDefined($scope.ngModel)) {
+                    if (angular.isDefined($scope.shareObject)) {
                         var scope = $scope.$new();
-                        scope.streamObject = $scope.ngModel;
-                        scope.streamObject.url = "https://myownradio.biz/streams/" + scope.streamObject.key;
+                        var key = scope.shareObject.permalink || scope.shareObject.sid;
+                        scope.streamObject = $scope.shareObject;
+                        scope.streamObject.url = "https://myownradio.biz/streams/" + key;
+                        scope.tr = $rootScope.tr;
                         ngDialog.open({
                             templateUrl: "/views/blocks/share.html",
                             controller: "StreamShareController",

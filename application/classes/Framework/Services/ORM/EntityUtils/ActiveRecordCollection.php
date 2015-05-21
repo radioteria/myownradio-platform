@@ -11,14 +11,13 @@ namespace Framework\Services\ORM\EntityUtils;
 
 use Framework\Services\ORM\Core\MicroORM;
 
-class ActiveRecordCollection implements \ArrayAccess, \Countable, \Iterator, \JsonSerializable {
+class ActiveRecordCollection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSerializable {
 
     private $collection = [];
-    private $objectName = null;
-    private $position = 0;
+    private $object = null;
 
     function __construct($objectName) {
-        $this->objectName = $objectName;
+        $this->object = $objectName;
     }
 
     public function addMany(array $objects) {
@@ -33,7 +32,7 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \Iterator, \Js
 
     public function offsetGet($offset) {
         return MicroORM::getInstance()
-            ->getObjectByData($this->objectName, $this->collection[$offset]);
+            ->getObjectByData($this->object, $this->collection[$offset]);
     }
 
     public function offsetSet($offset, $value) {
@@ -48,24 +47,11 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \Iterator, \Js
         return count($this->collection);
     }
 
-    public function current() {
-        return $this->offsetGet($this->position);
-    }
-
-    public function next() {
-        $this->position++;
-    }
-
-    public function key() {
-        return $this->position;
-    }
-
-    public function valid() {
-        return isset($this->collection[$this->position]);
-    }
-
-    public function rewind() {
-        $this->position = 0;
+    public function getIterator() {
+        $orm = MicroORM::getInstance();
+        foreach ($this->collection as $item) {
+            yield $orm->getObjectByData($this->object, $item);
+        }
     }
 
     public function jsonSerialize() {
@@ -74,6 +60,26 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \Iterator, \Js
             $data[] = $item->jsonSerialize();
         }
         return $data;
+    }
+
+    /**
+     * @param $className
+     * @return \Generator
+     */
+    public function cast($className) {
+        foreach ($this->collection as $item) {
+            yield new $className($item);
+        }
+    }
+
+    /**
+     * @return \Generator
+     */
+    public function getKeys() {
+        /** @var ActiveRecordObject $item */
+        foreach ($this->collection as $item) {
+            yield $item->getKey();
+        }
     }
 
 }

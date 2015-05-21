@@ -10,6 +10,7 @@ namespace Business\Validator;
 
 
 use Framework\Services\DB\DBQuery;
+use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\ValidatorTemplates;
 
 class BusinessValidator extends Validator {
@@ -101,13 +102,18 @@ class BusinessValidator extends Validator {
     }
 
     /**
+     * @param $ignore
      * @return $this
      */
-    public function isLoginAvailable() {
+    public function isLoginAvailable($ignore = null) {
 
         $copy = $this->copy();
-        $copy->addPredicate(function ($value) {
-            return count(DBQuery::getInstance()->selectFrom("r_users")->where("login", $value)) == 0;
+        $copy->addPredicate(function ($value) use ($ignore) {
+            $query = new SelectQuery("r_users", "login", $value);
+            if ($ignore !== null) {
+                $query->where("uid != ?", [$ignore]);
+            }
+            return count($query) == 0;
         });
 
         return $copy;

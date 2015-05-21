@@ -26,60 +26,106 @@ class Validator {
         $this->predicates = $predicates;
     }
 
+    /**
+     * @return $this
+     */
     function isNumber() {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) { return is_numeric($value); });
         return $copy;
     }
 
+    /**
+     * @return $this
+     */
     function isString() {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) { return is_string($value); });
         return $copy;
     }
 
-    function stringOrNull() {
+    /**
+     * @return $this
+     */
+    function isStringOrNull() {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) { return is_null($value) || is_string($value); });
         return $copy;
     }
 
+    /**
+     * @param $length
+     * @return $this
+     */
     function minLength($length) {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($length) { return strlen($value) >= $length; });
         return $copy;
     }
 
+    /**
+     * @param $length
+     * @return $this
+     */
     function maxLength($length) {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($length) { return strlen($value) <= $length; });
         return $copy;
     }
 
+    /**
+     * @param $min
+     * @param $max
+     * @return $this
+     */
+    function inRange($min, $max) {
+        return $this->minLength($min)->maxLength($max);
+    }
+
+    /**
+     * @param $than
+     * @return $this
+     */
     function greaterOrEqual($than) {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($than) { return $value >= $than; });
         return $copy;
     }
 
+    /**
+     * @param $than
+     * @return $this
+     */
     function lessOrEqual($than) {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($than) { return $value <= $than; });
         return $copy;
     }
 
+    /**
+     * @param $pattern
+     * @return $this
+     */
     function pattern($pattern) {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($pattern) { return preg_match($pattern, $value); });
         return $copy;
     }
 
+    /**
+     * @param $array
+     * @return $this
+     */
     function isExistsInArray($array) {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($array) { return array_search($value, $array) !== false; });
         return $copy;
     }
 
+    /**
+     * @param \Iterator $iterator
+     * @return $this
+     */
     function isExistsInIterator(\Iterator $iterator) {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($iterator) {

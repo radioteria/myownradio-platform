@@ -17,7 +17,6 @@ use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\InsertQuery;
 use Framework\Services\HttpRequest;
 use Framework\Services\HttpSession;
-use Framework\Services\InputValidator;
 use Framework\Services\Locale\I18n;
 use Framework\Services\Mailer;
 use Objects\User;
@@ -148,12 +147,8 @@ class UsersModel implements SingletonInterface, Injectable {
      */
     public function completeRegistration($code, $login, $password, $name, $info, $permalink, $country) {
 
-        $validator = InputValidator::getInstance();
-
         $email = self::parseRegistrationCode($code);
         $crypt = password_hash($password, PASSWORD_DEFAULT);
-
-        $validator->validateUniqueUserEmail($email);
 
         $newUser = new User();
 

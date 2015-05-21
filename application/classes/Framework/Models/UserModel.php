@@ -235,10 +235,9 @@ class UserModel extends Model implements SingletonInterface {
      */
     public function delete() {
 
-        /* Delete user's streams */
+        /** @var Stream[] $streams */
         $streams = Stream::getListByFilter("uid", [$this->user->getID()]);
 
-        /** @var Stream $stream */
         foreach ($streams as $stream) {
             (new DeleteQuery("r_link"))
                 ->where("stream_id", $stream->getID())->update();

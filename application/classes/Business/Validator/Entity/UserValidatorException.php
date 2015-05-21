@@ -11,6 +11,11 @@ namespace Business\Validator\Entity;
 
 use Business\Validator\ValidatorException;
 
+/**
+ * Class UserValidatorException
+ * @package Business\Validator\Entity
+ * todo: translate
+ */
 class UserValidatorException extends ValidatorException {
     function __construct($message = null, $data = null, $status = 0) {
         parent::__construct($message, $data, $status);
@@ -30,5 +35,17 @@ class UserValidatorException extends ValidatorException {
 
     public static function newIncorrectNameLength() {
         return self::tr("VALIDATOR_USER_NAME_LENGTH");
+    }
+
+    public static function newInfoTooLong() {
+        return self::tr("VALIDATOR_USER_INFO_LENGTH");
+    }
+
+    public static function newIncorrectEmail() {
+        return self::tr("VALIDATOR_USER_EMAIL_FORMAT");
+    }
+
+    public static function newUnavailableEmail() {
+        return self::tr("VALIDATOR_USER_EMAIL_UNAVAILABLE");
     }
 }

@@ -12,6 +12,7 @@ namespace Business\Validator;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\ValidatorTemplates;
+use Objects\Country;
 
 class BusinessValidator extends Validator {
 
@@ -32,9 +33,9 @@ class BusinessValidator extends Validator {
         return $copy;
     }
 
-    public function isPermalink() {
+    public function permalink() {
         $copy = $this->copy();
-        $copy->addPredicate(function ($value) { return is_null($value) || preg_match(self::PERMALINK_REGEXP_PATTERN, $value); });
+        $copy->addPredicate(function ($value) { return preg_match(self::PERMALINK_REGEXP_PATTERN, $value); });
         return $copy;
     }
 
@@ -87,19 +88,24 @@ class BusinessValidator extends Validator {
     }
 
     /**
+     * @param $ignoredId
      * @return $this
      */
-    public function isEmailAvailable() {
+    public function isEmailAvailable($ignoredId) {
 
         $copy = $this->copy();
-        $copy->addPredicate(function ($value) {
-            $query = DBQuery::getInstance()->selectFrom("r_users")->where("mail", $value);
+        $copy->addPredicate(function ($value) use ($ignoredId) {
+            $query = new SelectQuery("r_users", "mail", $value);
+            if (is_numeric($ignoredId)) {
+                $query->where("uid != ?", [$ignoredId]);
+            }
             return count($query) == 0;
         });
 
         return $copy;
 
     }
+
 
     /**
      * @param $ignore
@@ -120,10 +126,18 @@ class BusinessValidator extends Validator {
 
     }
 
+    public function isCountryIdCorrect() {
+        $copy = $this->copy();
+        $copy->addPredicate(function ($value) {
+            return Country::getByID($value)->validate();
+        });
+        return $copy;
+    }
+
     public function isPasswordCorrect($hash) {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($hash) {
-            return ;
+            return false;
         });
 
         return $copy;

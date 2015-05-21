@@ -14,6 +14,7 @@ use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
+use Framework\Services\DB\Query\InsertQuery;
 use Framework\Services\HttpRequest;
 use Framework\Services\HttpSession;
 use Framework\Services\InputValidator;
@@ -78,9 +79,9 @@ class UsersModel implements SingletonInterface, Injectable {
             $clientUserAgent = HttpRequest::getInstance()->getHttpUserAgent()->getOrElse("None");
 
             do $token = md5($userId . $clientAddress . rand(1, 1000000) . "tokenizer" . time());
-            while ($db->fetchOneColumn("SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->get() > 0);
+            while ($db->fetchRowCount("FROM r_sessions WHERE token = ?", [$token]) > 0);
 
-            $query = $db->getDBQuery()->into("r_sessions");
+            $query = new InsertQuery("r_sessions");
             $query->values("uid", $userId);
             $query->values("ip", $clientAddress);
             $query->values("token", $token);
@@ -91,7 +92,7 @@ class UsersModel implements SingletonInterface, Injectable {
             $query->values("session_id", $sessionId);
             $query->values("expires = NOW() + INTERVAL 1 YEAR");
 
-            $db->executeInsert($query);
+            $db->executeUpdate($query);
 
             return $token;
 

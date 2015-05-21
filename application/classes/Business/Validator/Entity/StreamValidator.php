@@ -32,10 +32,10 @@ class StreamValidator {
      */
     public static function validate(Stream $stream) {
         self::validateStreamName($stream->getName());
-        self::validateStreamPermalink($stream->getPermalink(), $stream->getID());
         self::validateAccessMode($stream->getAccess());
         self::validateStreamCategory($stream->getCategory());
         self::validateStreamInformation($stream->getInfo());
+        self::validateStreamPermalink($stream->getPermalink(), $stream->getID());
     }
 
     /**
@@ -44,8 +44,7 @@ class StreamValidator {
      */
     private static function validateStreamName($name) {
         (new BusinessValidator($name))
-            ->minLength(self::$NAME_MIN_LENGTH)
-            ->maxLength(self::$NAME_MAX_LENGTH)
+            ->isInRange(self::$NAME_MIN_LENGTH, self::$NAME_MAX_LENGTH)
             ->throwOnFail(StreamValidatorException::newStreamNameLength());
     }
 
@@ -61,7 +60,7 @@ class StreamValidator {
         }
 
         (new BusinessValidator($permalink))
-            ->isPermalink()
+            ->permalink()
             ->throwOnFail(ValidatorException::tr("VALIDATOR_PERMALINK_CHARS"))
             ->isPermalinkAvailableForStream($ignore_self)
             ->throwOnFail(ValidatorException::tr("VALIDATOR_PERMALINK_USED"));

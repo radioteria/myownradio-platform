@@ -8,6 +8,7 @@
 
 namespace Objects;
 
+use Business\Validator\Entity\UserValidator;
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 use REST\Users;
@@ -245,6 +246,10 @@ class User extends ActiveRecordObject implements ActiveRecord {
      */
     public function toRestFormat() {
         return Users::getInstance()->getUserByID($this->getID());
+    }
+
+    function beforeUpdate() {
+        UserValidator::validate($this);
     }
 
 }

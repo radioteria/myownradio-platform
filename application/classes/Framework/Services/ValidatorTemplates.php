@@ -79,7 +79,7 @@ trait ValidatorTemplates {
         }
 
         (new BusinessValidator($permalink))
-            ->isPermalink()
+            ->permalink()
             ->throwOnFail(new ControllerException(I18n::tr("VALIDATOR_PERMALINK_CHARS")))
             ->isPermalinkAvailableForStream($ignore_self)
             ->throwOnFail(new ControllerException(I18n::tr("VALIDATOR_PERMALINK_USED")));
@@ -98,7 +98,7 @@ trait ValidatorTemplates {
         }
 
         (new BusinessValidator($permalink))
-            ->isPermalink()
+            ->permalink()
             ->throwOnFail(new ControllerException(I18n::tr("VALIDATOR_PERMALINK_CHARS")))
             ->isPermalinkAvailableForUser($ignore_self)
             ->throwOnFail(new ControllerException(I18n::tr("VALIDATOR_PERMALINK_USED")));

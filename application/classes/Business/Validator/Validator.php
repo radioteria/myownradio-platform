@@ -78,7 +78,7 @@ class Validator {
      * @param $max
      * @return $this
      */
-    function inRange($min, $max) {
+    function isInRange($min, $max) {
         return $this->minLength($min)->maxLength($max);
     }
 

@@ -421,4 +421,13 @@ class Database implements SingletonInterface, Injectable {
 
     }
 
+    /**
+     * @param $queryPart
+     * @param null $array
+     * @return int
+     */
+    public function fetchRowCount($queryPart, $array = null) {
+        return $this->fetchOneColumn("SELECT COUNT(*) ". $queryPart, $array)->getOrElseZero();
+    }
+
 }

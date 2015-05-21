@@ -174,7 +174,6 @@ class UserModel extends Model implements SingletonInterface {
 
     }
 
-
     public function removeAvatar() {
 
         $folders = Folders::getInstance();

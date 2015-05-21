@@ -47,13 +47,10 @@ class DoSelf implements Controller {
 
     public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response, InputValidator $validator) {
 
-        $name       = $post->getRequired("name");
+        $name       = $post->getParameter("name")->getOrElseEmpty();
         $info       = $post->getParameter("info")->getOrElseEmpty();
         $permalink  = $post->getParameter("permalink")->getOrElseNull();
         $countryId  = $post->getParameter("country_id")->getOrElseNull();
-
-        $validator->validateUserPermalink($permalink, $user->getID());
-        $validator->validateCountryID($countryId);
 
         $user->edit($name, $info, $permalink, $countryId);
 

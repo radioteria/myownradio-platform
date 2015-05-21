@@ -14,7 +14,6 @@ use Framework\Injector\Injectable;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\InsertQuery;
-use Framework\Services\InputValidator;
 use Objects\Stream;
 use Tools\Common;
 use Tools\Folders;
@@ -44,20 +43,24 @@ class StreamsModel implements Injectable, SingletonInterface {
     }
 
 
+    /**
+     * @param $name
+     * @param $info
+     * @param $hashtags
+     * @param $category
+     * @param Optional $permalink
+     * @param $access
+     * @return int
+     * @throws \Framework\Exceptions\ControllerException
+     * todo: localize
+     */
     public function create($name, $info, $hashtags, $category, Optional $permalink, $access) {
 
         if ($this->user->getCurrentPlan()->getStreamsMax() !== null &&
             $this->user->getStreamsCount() >= $this->user->getCurrentPlan()->getStreamsMax()) {
-            throw ControllerException::of(sprintf("You are already created %d streams of %d available. Please upgrade account.",
+            throw ControllerException::of(sprintf("You are already created %d streams of %d available. Please upgrade your account.",
                 $this->user->getStreamsCount(), $this->user->getCurrentPlan()->getStreamsMax()));
         }
-
-        $validator = InputValidator::getInstance();
-
-        // Validate parameters
-        $validator->validateStreamName($name);
-        $validator->validateStreamPermalink($permalink->getOrElseNull());
-        $validator->validateStreamAccess($access);
 
         $stream = new Stream();
         $stream->setUserID($this->user->getID());

@@ -76,9 +76,9 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \IteratorAggre
      * @return \Generator
      */
     public function getKeys() {
-        /** @var ActiveRecordObject $item */
+        $orm = MicroORM::getInstance();
         foreach ($this->collection as $item) {
-            yield $item->getKey();
+            yield $orm->getObjectByData($this->object, $item)->getKey();
         }
     }
 

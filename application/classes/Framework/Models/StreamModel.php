@@ -33,13 +33,11 @@ class StreamModel extends Model implements SingletonInterface {
 
     use Singleton;
 
+    /** @var int */
     protected $key;
-
-
-    /** @var UserModel $user */
+    /** @var UserModel */
     protected $user;
-
-    /** @var Stream $stream */
+    /** @var Stream */
     protected $stream;
 
     public function __construct($id) {
@@ -151,14 +149,15 @@ class StreamModel extends Model implements SingletonInterface {
         return $this->stream->getUserID();
     }
 
+    /**
+     * @param $name
+     * @param $info
+     * @param $permalink
+     * @param $hashtags
+     * @param $category
+     * @param $access
+     */
     public function update($name, $info, $permalink, $hashtags, $category, $access) {
-
-        $validator = InputValidator::getInstance();
-
-
-        $validator->validateStreamPermalink($permalink, $this->key);
-        $validator->validateStreamCategory($category);
-        $validator->validateStreamAccess($access);
 
         $this->stream
             ->setName($name)
@@ -168,11 +167,8 @@ class StreamModel extends Model implements SingletonInterface {
             ->setCategory($category)
             ->setAccess($access);
 
-        ValidatorTemplates::validateStreamObject($this->stream);
-
         $this->stream->save();
 
-        // todo: do this with db query
         $hashtags_array = explode(",", $hashtags);
         foreach ($hashtags_array as $tag) {
             (new InsertQuery("mor_tag_list"))->values("tag_name", trim($tag))

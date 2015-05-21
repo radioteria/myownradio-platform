@@ -8,6 +8,8 @@
 
 namespace Objects;
 
+use Business\Validator\Entity\StreamValidator;
+use Business\Validator\ValidatorException;
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 use Tools\Folders;
@@ -255,19 +257,15 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     }
 
     /**
-     * @return User
-     */
-//    public function getUser() {
-//        return User::getByID($this->getUserID())->get();
-//    }
-
-    /**
      * @return null|string
      */
     public function getCoverUrl() {
         return Folders::getInstance()->genStreamCoverUrl($this->cover);
     }
 
+    /**
+     * @return string
+     */
     public function getStreamUrl() {
         return Folders::getInstance()->genStreamUrl($this->sid);
     }
@@ -284,6 +282,13 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      */
     public function getCoverBackground() {
         return $this->cover_background;
+    }
+
+    /**
+     * @throws ValidatorException
+     */
+    function beforeUpdate() {
+        StreamValidator::validate($this);
     }
 
 

@@ -138,19 +138,19 @@ abstract class ActiveRecordObject implements JsonSerializable {
     }
 
     function beforeUpdate() {
-        return true;
+
     }
 
     function beforeDelete() {
-        return true;
+
     }
 
     function afterUpdate() {
-        return true;
+
     }
 
     function afterDelete() {
-        return true;
+
     }
 
 } 

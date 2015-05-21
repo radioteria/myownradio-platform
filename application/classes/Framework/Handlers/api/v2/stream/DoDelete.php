@@ -10,21 +10,16 @@ namespace Framework\Handlers\api\v2\stream;
 
 
 use Framework\Controller;
-use Framework\Models\Factory;
 use Framework\Models\StreamModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
-use Framework\Services\Notifier;
 
 class DoDelete implements Controller {
 
-    public function doPost(HttpPost $post, Factory $fabric, JsonResponse $response, Notifier $notif1er) {
+    public function doPost(HttpPost $post, JsonResponse $response) {
 
         $id = $post->getRequired("stream_id");
-        $model = StreamModel::getInstance($id);
-        $model->delete();
-
-        $notif1er->event("channel", $id, "delete", null);
+        StreamModel::getInstance($id)->delete();
 
     }
 

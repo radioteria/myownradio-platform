@@ -52,7 +52,7 @@ class StreamValidatorException extends ValidatorException {
      * @return StreamValidatorException
      * todo: localize
      */
-    public static function newStreamNameTooLong() {
+    public static function newStreamNameLength() {
         return self::tr("VALIDATOR_STREAM_NAME_LENGTH");
     }
 }

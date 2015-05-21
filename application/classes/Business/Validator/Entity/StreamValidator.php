@@ -15,10 +15,15 @@ use Business\Validator\ValidatorException;
 use Objects\Category;
 use Objects\Stream;
 
+/**
+ * Class StreamValidator
+ * @package Business\Validator\Entity
+ */
 class StreamValidator {
 
     private static $ACCESS_MODES = ["PUBLIC", "UNLISTED", "PRIVATE"];
     private static $INFO_MAX_LENGTH = 4096;
+    private static $NAME_MIN_LENGTH = 3;
     private static $NAME_MAX_LENGTH = 32;
 
     /**
@@ -33,12 +38,22 @@ class StreamValidator {
         self::validateStreamInformation($stream->getInfo());
     }
 
+    /**
+     * @param $name
+     * @throws ValidatorException
+     */
     private static function validateStreamName($name) {
         (new BusinessValidator($name))
+            ->minLength(self::$NAME_MIN_LENGTH)
             ->maxLength(self::$NAME_MAX_LENGTH)
-            ->throwOnFail(StreamValidatorException::newStreamNameTooLong());
+            ->throwOnFail(StreamValidatorException::newStreamNameLength());
     }
 
+    /**
+     * @param $permalink
+     * @param $ignore_self
+     * @throws ValidatorException
+     */
     private static function validateStreamPermalink($permalink, $ignore_self) {
 
         if (is_null($permalink)) {
@@ -53,11 +68,19 @@ class StreamValidator {
 
     }
 
+    /**
+     * @param $mode
+     * @throws ValidatorException
+     */
     private static function validateAccessMode($mode) {
         (new Validator($mode))->isExistsInArray(self::$ACCESS_MODES)
             ->throwOnFail(StreamValidatorException::newWrongAccessMode($mode));
     }
 
+    /**
+     * @param $category_id
+     * @throws ValidatorException
+     */
     private static function validateStreamCategory($category_id) {
         (new Validator($category_id))
             ->isNumber()
@@ -65,6 +88,10 @@ class StreamValidator {
             ->throwOnFail(StreamValidatorException::newWrongCategoryId($category_id));
     }
 
+    /**
+     * @param $info
+     * @throws ValidatorException
+     */
     private static function validateStreamInformation($info) {
         (new Validator($info))
             ->isString()

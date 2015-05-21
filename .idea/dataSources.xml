@@ -5,8 +5,6 @@
       <driver-ref>mysql</driver-ref>
       <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
       <jdbc-url>jdbc:mysql://myownradio.biz:3306/myownradio</jdbc-url>
-      <user-name>mor</user-name>
-      <user-password>df99dfc8dffddfcedfe4dfe4dfcbdf9adfdc</user-password>
       <driver-properties>
         <property name="zeroDateTimeBehavior" value="convertToNull" />
         <property name="tinyInt1isBit" value="false" />

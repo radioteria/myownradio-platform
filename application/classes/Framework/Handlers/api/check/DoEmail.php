@@ -10,14 +10,21 @@ namespace Framework\Handlers\api\check;
 
 
 use Framework\ControllerImpl;
+use Framework\Exceptions\ControllerException;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
+use Framework\Services\ValidatorTemplates;
 
 class DoEmail extends ControllerImpl {
     public function doPost(HttpPost $post, JsonResponse $response, DBQuery $query) {
         $field = $post->getRequired("field");
-        $count = !boolval(count($query->selectFrom("r_users")->where("mail", $field)));
-        $response->setData(["available" => $count]);
+        try {
+            ValidatorTemplates::validateEmail($field);
+            $available = true;
+        } catch (ControllerException $ex) {
+            $available = false;
+        }
+        $response->setData(["available" => $available]);
     }
 } 

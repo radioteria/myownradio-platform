@@ -23,8 +23,6 @@ class DoStop implements Controller {
 
         PlaylistModel::getInstance($id)->scStop();
 
-        $notif1er->event("channel", $id, "stop", null);
-
     }
 
 } 

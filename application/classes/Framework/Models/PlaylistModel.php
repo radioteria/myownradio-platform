@@ -13,13 +13,10 @@ use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\StreamControl;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
-use Framework\Services\DB\DBQueryPool;
 use Framework\Services\DB\Query\DeleteQuery;
-use Framework\Services\DB\Query\SelectQuery;
-use Framework\Services\DB\Query\UpdateQuery;
 use Objects\Link;
-use Objects\StreamTrack;
 use Objects\Stream;
+use Objects\StreamTrack;
 use Objects\Track;
 use Tools\Common;
 use Tools\Optional;
@@ -30,6 +27,7 @@ use Tools\System;
 /**
  * Class PlaylistModel
  * @package Model
+ * @localized 21.05.2015
  */
 class PlaylistModel extends Model implements \Countable, SingletonInterface {
 

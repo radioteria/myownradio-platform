@@ -13,15 +13,15 @@ use Framework\ControllerImpl;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
 use Framework\Services\HttpPost;
-use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
+use Framework\Services\ValidatorTemplates;
 
 class DoStreamPermalink extends ControllerImpl {
-    public function doPost(HttpPost $post, InputValidator $validator, AuthUserModel $user, JsonResponse $response) {
+    public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
         $field = $post->getRequired("field");
         $context = $post->getParameter("context")->getOrElseNull();
         try {
-            $validator->validateStreamPermalink($field, $context);
+            ValidatorTemplates::validateStreamPermalink($field, $context);
             $response->setData(["available" => true]);
         } catch (ControllerException $ex) {
             $response->setData(["available" => false]);

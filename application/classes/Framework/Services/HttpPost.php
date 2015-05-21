@@ -8,8 +8,9 @@
 
 namespace Framework\Services;
 
-use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
+use Framework\Services\Locale\I18n;
+use Framework\View\Errors\View400Exception;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -34,12 +35,16 @@ class HttpPost extends HttpRequestAdapter implements Injectable, SingletonInterf
 
     public function getRequired($key, $filter = FILTER_DEFAULT, $options = null) {
         return $this->getParameter($key, $filter, $options)
-            ->getOrElseThrow(ControllerException::noArgument($key));
+            ->getOrElseThrow($this->getException($key));
     }
 
     public function getArrayRequired($key, $definition = null) {
         return $this->getArrayParameter($key, $definition)
-            ->getOrElseThrow(ControllerException::noArgument($key));
+            ->getOrElseThrow($this->getException($key));
+    }
+
+    private function getException($key) {
+        return new View400Exception(I18n::tr("ERROR_NO_ARGUMENT_SPECIFIED", ["arg" => $key]));
     }
 
 }

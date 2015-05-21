@@ -19,9 +19,9 @@ class DoPayment extends ControllerImpl {
     public function doPost(HttpPost $post) {
 
         $data = $post->getParameter("data")
-            ->getOrElseThrow(View400Exception::getClass());
+            ->getOrElseThrow(View400Exception::className());
         $signature = $post->getParameter("signature")
-            ->getOrElseThrow(View400Exception::getClass());
+            ->getOrElseThrow(View400Exception::className());
 
         // Check signature
         if (base64_encode(sha1(LiqPay::$private_key . $data . LiqPay::$private_key, 1)) !== $signature) {

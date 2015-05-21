@@ -9,14 +9,22 @@
 namespace Framework\Handlers;
 
 
+use Business\Validator\Validator;
 use Framework\Controller;
-use Framework\Services\ORM\Wrapper\Wrapper;
 
 class DoGradient implements Controller {
+
     public function doGet() {
-        $wrapper = new Wrapper();
-        echo $wrapper->keyToGetter("user_id");
+        $v = new Validator(2);
+        echo $v->isExistsInIterator([1,2,3])->run();
     }
 
+    private function getGenerator() {
+        echo "Init...";
+        yield 1;
+        yield 2;
+        yield 3;
+        echo "Done...";
+    }
 
 } 

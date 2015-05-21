@@ -8,6 +8,7 @@
 
 namespace Framework\Services;
 
+use Business\Validator\BusinessValidator;
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
@@ -74,13 +75,11 @@ class InputValidator implements Injectable {
      */
     public function validateEmail($email) {
 
-        if (!preg_match(self::EMAIL_REGEXP_PATTERN, $email)) {
-            throw new ControllerException(I18n::tr("VALIDATOR_EMAIL_FORMAT"));
-        }
+        $validator = new BusinessValidator($email);
 
-        if (count((new SelectQuery("r_users"))->where("mail", [$email]))) {
-            throw new ControllerException(I18n::tr("VALIDATOR_EMAIL_UNAVAILABLE"));
-        }
+        $validator
+            ->email()           ->throwOnFail(new ControllerException(I18n::tr("VALIDATOR_EMAIL_FORMAT")))
+            ->isEmailAvailable()  ->throwOnFail(new ControllerException(I18n::tr("VALIDATOR_EMAIL_UNAVAILABLE")));
 
     }
 

@@ -9,14 +9,15 @@
 namespace Framework\Models\Traits;
 
 use Framework\Exceptions\ControllerException;
+use Objects\Stream;
 use Objects\StreamStats;
 use Objects\StreamTrack;
-use Objects\Stream;
 use Tools\System;
 
 /**
  * Class StreamControl
  * @package Model\Traits
+ * @localized 21.05.2015
  */
 trait StreamControl {
 

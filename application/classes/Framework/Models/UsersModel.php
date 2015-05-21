@@ -21,11 +21,15 @@ use Framework\Services\Locale\I18n;
 use Framework\Services\Mailer;
 use Objects\User;
 use Tools\Common;
-use Tools\File;
 use Tools\Folders;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
+/**
+ * Class UsersModel
+ * @package Framework\Models
+ * @localized 21.05.2015
+ */
 class UsersModel implements SingletonInterface, Injectable {
 
     use Singleton;
@@ -45,7 +49,7 @@ class UsersModel implements SingletonInterface, Injectable {
         // Try to find user specified by login or email
         $user = DBQuery::getInstance()
             ->selectFrom("r_users")
-            ->where("login = :key OR mail = :key", [ ":key" => $login ])
+            ->where("login = :key OR mail = :key", [":key" => $login])
             ->fetchOneRow()
             ->getOrElseThrow(UnauthorizedException::noUserByLogin($login));
 
@@ -164,8 +168,6 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $newUser->save();
 
-        $this->createUserDirectory($newUser);
-
         // Generate Stream Cover
         $random = Common::generateUniqueID();
         $newImageFile = sprintf("avatar%05d_%s.%s", $newUser->getID(), $random, "png");
@@ -197,7 +199,7 @@ class UsersModel implements SingletonInterface, Injectable {
      */
     public function parseRegistrationCode($code) {
 
-        $exception = new ControllerException(I18n::tr("CEX_CODE_INCORRECT"));
+        $exception = new ControllerException(I18n::tr("ERROR_CODE_INCORRECT"));
 
         $json = base64_decode($code);
 
@@ -212,21 +214,6 @@ class UsersModel implements SingletonInterface, Injectable {
         }
 
         return $decoded["email"];
-
-    }
-
-    /**
-     * @param User $id
-     */
-    public function createUserDirectory(User $id) {
-
-        $path = new File(Folders::getInstance()->generateUserContentFolder($id));
-
-        error_log($path->path());
-
-        if (! $path->exists()) {
-            $path->createNewDirectory(NEW_DIR_RIGHTS, true);
-        }
 
     }
 
@@ -251,7 +238,7 @@ class UsersModel implements SingletonInterface, Injectable {
      */
     public function parseResetPasswordCode($code) {
 
-        $exception = new ControllerException(I18n::tr("CEX_CODE_INCORRECT"));
+        $exception = new ControllerException(I18n::tr("ERROR_CODE_INCORRECT"));
 
         $json = base64_decode($code);
 
@@ -273,11 +260,10 @@ class UsersModel implements SingletonInterface, Injectable {
             $query->select("*");
 
             $db->fetchOneRow($query)->getOrElseThrow(
-                new ControllerException(I18n::tr("CEX_CODE_NOT_ACTUAL"))
+                new ControllerException(I18n::tr("ERROR_CODE_NOT_ACTUAL"))
             );
 
         });
-
 
         return $decoded;
 

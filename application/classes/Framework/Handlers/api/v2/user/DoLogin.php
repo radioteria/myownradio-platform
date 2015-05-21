@@ -22,7 +22,6 @@ class DoLogin implements Controller {
 
         $login = $post->getParameter("login")->getOrElseThrow(ControllerException::noArgument("login"));
         $password = $post->getParameter("password")->getOrElseThrow(ControllerException::noArgument("password"));
-        $remember = boolval($post->getParameter("remember")->getOrElseFalse());
 
         $users->logout();
 

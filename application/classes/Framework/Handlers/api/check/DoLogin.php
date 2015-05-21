@@ -10,21 +10,36 @@ namespace Framework\Handlers\api\check;
 
 
 use Framework\ControllerImpl;
+use Framework\Exceptions\ControllerException;
 use Framework\Preferences;
-use Framework\Services\DB\DBQuery;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
+use Framework\Services\ValidatorTemplates;
 
 class DoLogin extends ControllerImpl {
-    public function doPost(HttpPost $post, JsonResponse $response, DBQuery $query, Preferences $preferences) {
+    public function doPost(HttpPost $post, JsonResponse $response, Preferences $preferences) {
+
         $field = $post->getRequired("field");
 
-        if (array_search($field, $preferences->get("invalid", "login")->get()) !== false) {
-            $response->setData(["available" => false]);
-        } else {
-            $count = !boolval(count($query->selectFrom("r_users")->where("login", $field)));
-            $response->setData(["available" => $count]);
+        try {
+
+            if (array_search($field, $preferences->get("invalid", "login")->get()) !== false) {
+
+                throw new ControllerException();
+
+            }
+
+            ValidatorTemplates::validateLogin($field);
+
+            $available = true;
+
+        } catch (ControllerException $ex) {
+
+            $available = false;
+
         }
+
+        $response->setData(["available" => $available]);
 
     }
 } 

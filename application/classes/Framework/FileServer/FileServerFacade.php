@@ -19,6 +19,11 @@ use Framework\FileServer\Exceptions\ServerNotRegisteredException;
 use Framework\Services\Locale\I18n;
 use Objects\FileServer\FileServer;
 
+/**
+ * Class FileServerFacade
+ * @package Framework\FileServer
+ * @localized 21.05.2015
+ */
 class FileServerFacade {
 
     const FS_PATTERN = "http://fs%d.myownradio.biz/";
@@ -30,7 +35,7 @@ class FileServerFacade {
     function __construct($fs_id) {
         $this->fs_object = FileServer::getByID($fs_id)
             ->getOrElseThrow(new ServerNotRegisteredException(
-                I18n::tr("FS_DOES_NOT_EXIST", ["id" => $fs_id])
+                I18n::tr("ERROR_FS_DOES_NOT_EXIST", ["id" => $fs_id])
             ));
         $this->fs_id = $fs_id;
     }
@@ -64,7 +69,7 @@ class FileServerFacade {
                 return $fs;
             }
         }
-        throw new NoSpaceForUploadException(I18n::tr("FS_NO_FREE_SPACE", ["amount" => $need_bytes]));
+        throw new NoSpaceForUploadException(I18n::tr("ERROR_FS_NO_FREE_SPACE", ["amount" => $need_bytes]));
     }
 
     /**
@@ -101,7 +106,7 @@ class FileServerFacade {
     public function uploadFile($file_path, $hash = null) {
 
         if (!file_exists($file_path)) {
-            throw new LocalFileNotFoundException(I18n::tr("CMN_FILE_NOT_FOUND", ["name" => $file_path]));
+            throw new LocalFileNotFoundException(I18n::tr("ERROR_FILE_NOT_FOUND", ["name" => $file_path]));
         }
 
         $ch = $this->curlInit();
@@ -208,7 +213,7 @@ class FileServerFacade {
         curl_close($ch);
 
         if ($http_code == 404) {
-            throw new RemoteFileNotFoundException("File not found: " . $hash);
+            throw new RemoteFileNotFoundException(I18n::tr("ERROR_FILE_NOT_FOUND", ["name" => $hash]));
         } else if ($http_code != 200) {
             throw new FileServerErrorException("Server response code: " . $http_code);
         }

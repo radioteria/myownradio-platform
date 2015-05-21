@@ -24,8 +24,6 @@ class DoSetCurrentTrack implements Controller {
 
         PlaylistModel::getInstance($id)->scPlayByUniqueID($track);
 
-        $notif1er->event("tracklist", $id, "state_change", null);
-
     }
 
 } 

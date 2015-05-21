@@ -2,6 +2,7 @@
 
 namespace Framework\Services;
 
+use Framework\Exceptions\ApplicationException;
 use Framework\Injector\Injectable;
 use Tools\Optional;
 use Tools\Singleton;
@@ -20,6 +21,16 @@ class Config implements SingletonInterface, Injectable {
      */
     public function getSetting($section, $setting) {
         return Optional::ofNullable(@$this->config[$section][$setting]);
+    }
+
+    /**
+     * @param $section
+     * @param $setting
+     * @return string
+     */
+    public function getSettingOrFail($section, $setting) {
+        return Optional::ofNullable(@$this->config[$section][$setting])
+            ->getOrElseThrow(ApplicationException::of("Setting \"$setting\" not found"));
     }
 
     /**

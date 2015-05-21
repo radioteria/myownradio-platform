@@ -15,6 +15,11 @@ use Framework\FileServer\Exceptions\LocalFileNotFoundException;
 use Framework\Services\Locale\I18n;
 use Objects\FileServer\FileServerFile;
 
+/**
+ * Class FSFile
+ * @package Framework\FileServer
+ * @localized 21.05.2015
+ */
 class FSFile {
 
     /**
@@ -27,7 +32,7 @@ class FSFile {
     public static function registerLink($file_path, $hash = null) {
 
         if (!file_exists($file_path)) {
-            throw new LocalFileNotFoundException(I18n::tr("CMN_FILE_NOT_FOUND", ["name" => $file_path]));
+            throw new LocalFileNotFoundException(I18n::tr("ERROR_FILE_NOT_FOUND", ["name" => $file_path]));
         }
 
         if ($hash === null) {

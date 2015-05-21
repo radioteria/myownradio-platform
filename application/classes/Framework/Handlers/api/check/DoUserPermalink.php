@@ -13,14 +13,14 @@ use Framework\ControllerImpl;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
 use Framework\Services\HttpPost;
-use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
+use Framework\Services\ValidatorTemplates;
 
 class DoUserPermalink extends ControllerImpl {
-    public function doPost(HttpPost $post, InputValidator $validator, AuthUserModel $user, JsonResponse $response) {
+    public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
         $field = $post->getRequired("field");
         try {
-            $validator->validateUserPermalink($field, $user->getID());
+            ValidatorTemplates::validateUserPermalink($field, $user->getID());
             $response->setData(["available" => true]);
         } catch (ControllerException $ex) {
             $response->setData(["available" => false]);

@@ -15,6 +15,11 @@ use LiqPay;
 use Objects\AccountPlan;
 use Objects\Payment;
 
+/**
+ * Class PaymentModel
+ * @package Framework\Models
+ * @localized 21.05.2015
+ */
 class PaymentModel {
     public static function confirmOrder($order_id, $data = null) {
         /** @var Payment $payment */

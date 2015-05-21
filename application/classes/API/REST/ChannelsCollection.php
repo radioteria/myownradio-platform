@@ -15,8 +15,8 @@ use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
-use Framework\Services\Database;
 use Framework\Services\DB\Query\SelectQuery;
+use Framework\Services\Locale\I18n;
 use Tools\Common;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -25,6 +25,7 @@ use Tools\System;
 /**
  * Class ChannelsCollection
  * @package API
+ * @localized 21.05.2015
  */
 class ChannelsCollection implements Injectable, SingletonInterface {
 
@@ -120,7 +121,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
             ->having("acc >= ?", [$rand])->fetchOneColumn()->get();
         $query->where("sid", $ch);
 
-        return $query->fetchOneRow()->getOrElseThrow(ControllerException::of("No available channels found!"));
+        return $query->fetchOneRow()->getOrElseThrow(ControllerException::of(I18n::tr("ERROR_NO_STREAMS")));
 
     }
 
@@ -194,8 +195,6 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         if (is_numeric($limit)) {
             $query->limit(min($limit, self::CHANNELS_PER_REQUEST_MAX));
         }
-
-        //$query->where("a.created")
 
         $query->orderBy("a.created DESC");
 

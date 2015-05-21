@@ -6,15 +6,13 @@
  * Time: 14:31
  */
 
-namespace Framework\Services;
+namespace Business\Validator;
 
 
-use Framework\Injector\Injectable;
 use Tools\Optional;
 use Tools\Singleton;
-use Tools\SingletonInterface;
 
-class Validator implements Injectable {
+class Validator {
 
     const EMAIL_REGEXP_PATTERN = "~^[\\w\\S]+@[\\w\\S]+\\.[\\w]{2,4}$~";
 
@@ -28,25 +26,31 @@ class Validator implements Injectable {
         $this->predicates = $predicates;
     }
 
-    function number() {
+    function isNumber() {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) { return is_numeric($value); });
         return $copy;
     }
 
-    function string() {
+    function isString() {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) { return is_string($value); });
         return $copy;
     }
 
-    function min_length($length) {
+    function stringOrNull() {
+        $copy = $this->copy();
+        $copy->addPredicate(function ($value) { return is_null($value) || is_string($value); });
+        return $copy;
+    }
+
+    function minLength($length) {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($length) { return strlen($value) >= $length; });
         return $copy;
     }
 
-    function max_length($length) {
+    function maxLength($length) {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($length) { return strlen($value) <= $length; });
         return $copy;
@@ -70,6 +74,28 @@ class Validator implements Injectable {
         return $copy;
     }
 
+    function isExistsInArray($array) {
+        $copy = $this->copy();
+        $copy->addPredicate(function ($value) use ($array) { return array_search($value, $array) !== false; });
+        return $copy;
+    }
+
+    function isExistsInIterator(\Iterator $iterator) {
+        $copy = $this->copy();
+        $copy->addPredicate(function ($value) use ($iterator) {
+            foreach ($iterator as $item) {
+                if ($item === $value) {
+                    return true;
+                }
+            }
+            return false;
+        });
+        return $copy;
+    }
+
+    /**
+     * @return $this
+     */
     function email() {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) { return preg_match(self::EMAIL_REGEXP_PATTERN, $value); });
@@ -78,10 +104,17 @@ class Validator implements Injectable {
 
 
     /**
-     * @return Validator
+     * @return $this
      */
     protected function copy() {
-        return new Validator($this->variable, $this->predicates);
+        return new $this($this->variable, $this->predicates);
+    }
+
+    /**
+     * @return $this
+     */
+    protected function clear() {
+        return new $this($this->variable);
     }
 
     /**
@@ -93,9 +126,11 @@ class Validator implements Injectable {
 
     /**
      * @param \Exception $exception
+     * @return $this
      */
     public function throwOnFail(\Exception $exception) {
         $this->run()->justThrow($exception);
+        return $this->clear();
     }
 
     /**
@@ -110,12 +145,19 @@ class Validator implements Injectable {
      */
     public function run() {
         foreach ($this->predicates as $predicate) {
-            $result = call_user_func_array($predicate, $this->variable);
+            $result = $predicate($this->variable);
             if (!$result) {
                 return Optional::noValue();
             }
         }
         return Optional::hasValue($this->variable);
+    }
+
+    /**
+     * @return bool
+     */
+    public function ok() {
+        return $this->run()->validate();
     }
 
 }

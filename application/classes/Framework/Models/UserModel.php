@@ -3,13 +3,12 @@
 namespace Framework\Models;
 
 use Framework\Exceptions\ApplicationException;
-use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\Stats;
-use Framework\Services\Config;
+use Framework\Services\DB\Query\DeleteQuery;
 use Framework\Services\InputValidator;
+use Framework\Services\ValidatorTemplates;
 use Objects\AccountPlan;
-use Objects\Link;
 use Objects\Payment;
 use Objects\Stream;
 use Objects\Track;
@@ -46,7 +45,8 @@ class UserModel extends Model implements SingletonInterface {
             $id = func_get_arg(0);
 
             $this->user = User::getByID($id)->getOrElseThrow(
-                new ControllerException(sprintf("User with id '%s' not exists", $id)));
+                UnauthorizedException::noUser($id)
+            );
 
         } elseif (func_num_args() == 1) {
 
@@ -54,7 +54,7 @@ class UserModel extends Model implements SingletonInterface {
 
             $this->user = User::getByFilter("FIND_BY_KEY_PARAMS", [":key" => $key])
                 ->getOrElseThrow(
-                    new ControllerException(sprintf("User with login or email '%s' not exists", $key))
+                    UnauthorizedException::noUserByLogin($key)
                 );
 
         } elseif (func_num_args() == 2) {
@@ -67,7 +67,7 @@ class UserModel extends Model implements SingletonInterface {
 
         } else {
 
-            throw new \Exception("Incorrect number of arguments");
+            throw ApplicationException::of("Incorrect number of arguments");
 
         }
 
@@ -137,8 +137,7 @@ class UserModel extends Model implements SingletonInterface {
     }
 
     public function changePasswordNow($password) {
-        $validator = InputValidator::getInstance();
-        $validator->validatePassword($password);
+        ValidatorTemplates::validatePassword($password);
         $crypt = password_hash($password, PASSWORD_DEFAULT);
         $this->user->setPassword($crypt)->save();
     }
@@ -160,7 +159,7 @@ class UserModel extends Model implements SingletonInterface {
 
     public function getDisplayName() {
 
-        return empty($this->getName()) ? $this->getLogin() : $this->getName();
+        return $this->getName() ?: $this->getLogin();
 
     }
 
@@ -240,31 +239,31 @@ class UserModel extends Model implements SingletonInterface {
         /* Delete user's streams */
         $streams = Stream::getListByFilter("uid", [$this->user->getID()]);
 
+        /** @var Stream $stream */
         foreach ($streams as $stream) {
-            $links = Link::getListByFilter("stream_id", [$stream->getID()]);
-            foreach ($links as $link) {
-                $link->delete();
-            }
+            (new DeleteQuery("r_link"))
+                ->where("stream_id", $stream->getID())->update();
             $stream->delete();
         }
 
-        /* Delete user's tracks */
-        $tracks = Track::getListByFilter("uid", [$this->user->getID()]);
+        $tracks = Track::getListByFilter("uid", [$this->user->getID()])->cast(TrackModel::className());
 
-        foreach ($tracks as $track) {
-            $model = new TrackModel($track->getID());
-            $model->delete();
-        }
+        foreach ($tracks as $track) { $track->delete(); }
 
-        /* Delete account object */
         $this->user->delete();
 
     }
 
+    /**
+     *
+     */
     public function touchLastLoginDate() {
         $this->user->setLastVisitDate(time())->save();
     }
 
+    /**
+     * @return mixed
+     */
     public function toRestFormat() {
         return Users::getInstance()->getUserByID($this->getID(), true);
     }

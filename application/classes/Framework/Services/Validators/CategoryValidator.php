@@ -9,10 +9,10 @@
 namespace Framework\Services\Validators;
 
 
+use Business\Validator\Validator;
 use Framework\Exceptions\ControllerException;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Locale\I18n;
-use Framework\Services\Validator;
 
 class CategoryValidator extends Validator {
     /**

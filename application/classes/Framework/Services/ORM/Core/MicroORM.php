@@ -57,6 +57,18 @@ class MicroORM extends FilterORM implements Injectable {
     }
 
     /**
+     * @param ActiveRecordObject $object
+     * @return mixed
+     */
+    public function getKeyOf(ActiveRecordObject $object) {
+        $reflection = new \ReflectionClass($object);
+        $beanConfig = $this->getBeanConfig($reflection);
+        $key = $reflection->getProperty($beanConfig["@key"]);
+        $key->setAccessible(true);
+        return $key->getValue($object);
+    }
+
+    /**
      * @param string $bean
      * @param array $data
      * @return object
@@ -139,7 +151,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param int|null $limit
      * @param int|null $offset
      * @param null $order
-     * @return Object[]
+     * @return ActiveRecordCollection
      */
     public function getListOfObjects($bean, $limit = null, $offset = null, $order = null) {
 
@@ -159,7 +171,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param int|null $offset
      * @param null $order
      * @internal param null $oder
-     * @return object
+     * @return ActiveRecordCollection
      */
     public function getFilteredListOfObjects($bean, $filter, array $filterArgs = null, $limit = null, $offset = null, $order = null) {
 
@@ -342,7 +354,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param int|null $limit
      * @param int|null $offset
      * @param null $order
-     * @return mixed
+     * @return ActiveRecordCollection
      */
     private function _loadObjects($reflection, $config, $filter = null, $filterArgs = null, $limit = null,
                                   $offset = null, $order = null) {
@@ -400,7 +412,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param null|int $limit
      * @param null|int $offset
      * @param null $order
-     * @return ActiveRecord[]
+     * @return ActiveRecordCollection
      */
     protected function _getListOfObjects(SelectQuery $query, \ReflectionClass $reflection, array $config, $limit = null,
                                          $offset = null, $order = null) {

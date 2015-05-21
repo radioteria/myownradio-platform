@@ -22,6 +22,11 @@ use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
+/**
+ * Class StreamsModel
+ * @package Framework\Models
+ * @localized 21.05.2015
+ */
 class StreamsModel implements Injectable, SingletonInterface {
 
     use Singleton;

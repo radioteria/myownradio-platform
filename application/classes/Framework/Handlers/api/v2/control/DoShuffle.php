@@ -23,8 +23,6 @@ class DoShuffle implements Controller {
 
         PlaylistModel::getInstance($id)->shuffleTracks();
 
-        $notif1er->event("tracklist", $id, "state_change", null);
-
     }
 
 } 

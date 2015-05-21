@@ -23,8 +23,6 @@ class DoPlay implements Controller {
 
         PlaylistModel::getInstance($id)->scPlay();
 
-        $notif1er->event("channel", $id, "state_change", null);
-
     }
 
 } 

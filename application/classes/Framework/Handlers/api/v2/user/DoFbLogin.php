@@ -65,8 +65,6 @@ class DoFbLogin implements Controller {
                     $user->setPermalink(NULL);
                     $user->save();
 
-                    UsersModel::getInstance()->createUserDirectory($user);
-
                     $notify = new Mailer("no-reply@myownradio.biz", "myownradio.biz");
                     $notify->addAddress("roman@homefs.biz");
                     $notify->setSubject("You have new user");

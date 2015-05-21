@@ -62,4 +62,24 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \IteratorAggre
         return $data;
     }
 
+    /**
+     * @param $className
+     * @return \Generator
+     */
+    public function cast($className) {
+        foreach ($this->collection as $item) {
+            yield new $className($item);
+        }
+    }
+
+    /**
+     * @return \Generator
+     */
+    public function getKeys() {
+        /** @var ActiveRecordObject $item */
+        foreach ($this->collection as $item) {
+            yield $item->getKey();
+        }
+    }
+
 }

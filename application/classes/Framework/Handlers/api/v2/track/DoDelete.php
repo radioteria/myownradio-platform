@@ -23,14 +23,14 @@ class DoDelete implements Controller {
 
     public function doPost(HttpPost $post, TracksModel $model, JsonResponse $response) {
 
-        $id = $post->getParameter("track_id")
+        $ids = $post->getParameter("track_id")
             ->getOrElseThrow(ControllerException::noArgument("track_id"));
 
         // Delete tracks from streams if they appears
-        $model->deleteFromStreams($id);
+        $model->deleteFromStreams($ids);
 
         // Delete tracks from service
-        $model->delete($id);
+        $model->delete($ids);
 
     }
 

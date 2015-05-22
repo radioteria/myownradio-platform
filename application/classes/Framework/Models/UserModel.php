@@ -246,7 +246,7 @@ class UserModel extends Model implements SingletonInterface {
 
         /** @var Track[] $tracks */
         $tracks = Track::getListByFilter("uid", [$this->user->getID()])
-            ->cast(TrackModel::className());
+            ->wrap(TrackModel::className());
 
         foreach ($tracks as $track) { $track->delete(); }
 

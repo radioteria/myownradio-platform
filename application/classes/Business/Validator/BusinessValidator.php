@@ -19,19 +19,9 @@ class BusinessValidator extends Validator {
     use ValidatorTemplates;
 
     const PERMALINK_REGEXP_PATTERN = "~(^[a-z0-9\\-]+$)~";
-    const LOGIN_PATTERN = "~^[0-9a-z\\_]+$~";
-
-    const LOGIN_MIN_LENGTH = 3;
-    const LOGIN_MAX_LENGTH = 32;
 
     const PASSWORD_MIN_LENGTH = 6;
     const PASSWORD_MAX_LENGTH = 32;
-
-    public function login() {
-        $copy = $this->copy();
-        $copy->addPredicate(function ($value) { return preg_match(self::LOGIN_PATTERN, $value); });
-        return $copy;
-    }
 
     public function permalink() {
         $copy = $this->copy();
@@ -126,6 +116,9 @@ class BusinessValidator extends Validator {
 
     }
 
+    /**
+     * @return $this
+     */
     public function isCountryIdCorrect() {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) {
@@ -134,6 +127,10 @@ class BusinessValidator extends Validator {
         return $copy;
     }
 
+    /**
+     * @param $hash
+     * @return $this
+     */
     public function isPasswordCorrect($hash) {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($hash) {

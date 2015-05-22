@@ -16,6 +16,7 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \IteratorAggre
     private $collection = [];
     private $object = null;
 
+
     function __construct($objectName) {
         $this->object = $objectName;
     }
@@ -56,6 +57,7 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \IteratorAggre
 
     public function jsonSerialize() {
         $data = [];
+        /** @var ActiveRecordObject[] $this */
         foreach ($this as $item) {
             $data[] = $item->jsonSerialize();
         }
@@ -66,7 +68,7 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \IteratorAggre
      * @param $className
      * @return \Generator
      */
-    public function cast($className) {
+    public function wrap($className) {
         foreach ($this->collection as $item) {
             yield new $className($item);
         }

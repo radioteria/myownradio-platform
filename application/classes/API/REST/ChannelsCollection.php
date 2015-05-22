@@ -25,7 +25,7 @@ use Tools\System;
 /**
  * Class ChannelsCollection
  * @package API
- * @localized 21.05.2015
+ * @localized 22.05.2015
  */
 class ChannelsCollection implements Injectable, SingletonInterface {
 
@@ -121,7 +121,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
             ->having("acc >= ?", [$rand])->fetchOneColumn()->get();
         $query->where("sid", $ch);
 
-        return $query->fetchOneRow()->getOrElseThrow(ControllerException::of(I18n::tr("ERROR_NO_STREAMS")));
+        return $query->fetchOneRow()->getOrElseThrow(ControllerException::of(I18n::tr("ERROR_CATALOG_NO_STREAMS")));
 
     }
 

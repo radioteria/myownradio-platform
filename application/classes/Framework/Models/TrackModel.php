@@ -192,7 +192,7 @@ class TrackModel extends Model implements SingletonInterface {
     public function getFileUrl() {
         /** @var FileServerFile $file */
         $file = FileServerFile::getByID($this->object->getFileId())
-            ->getOrElseThrow(I18n::tr("ERROR_TRACK_NOT_AVAILABLE", ["id" => $this->object->getID()]));
+            ->getOrElseThrow(I18n::tr("ERROR_TRACK_NOT_AVAILABLE", [ $this->object->getID() ]));
 
         return FileServerFacade::getServerNameById($file->getServerId()).$file->getFileHash();
     }

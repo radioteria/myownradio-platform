@@ -21,10 +21,10 @@ use Objects\Stream;
  */
 class StreamValidator implements EntityValidator {
 
-    private static $ACCESS_MODES = ["PUBLIC", "UNLISTED", "PRIVATE"];
-    private static $INFO_MAX_LENGTH = 4096;
-    private static $NAME_MIN_LENGTH = 3;
-    private static $NAME_MAX_LENGTH = 32;
+    public static $ACCESS_MODES = ["PUBLIC", "UNLISTED", "PRIVATE"];
+    public static $INFO_MAX_LENGTH = 4096;
+    public static $NAME_MIN_LENGTH = 3;
+    public static $NAME_MAX_LENGTH = 32;
 
     /** @var Stream */
     private $stream;

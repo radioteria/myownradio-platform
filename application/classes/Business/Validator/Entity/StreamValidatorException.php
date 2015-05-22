@@ -24,7 +24,6 @@ class StreamValidatorException extends ValidatorException {
 
     /**
      * @return StreamValidatorException
-     * todo: localize
      */
     public static function newWrongAccessMode() {
         return self::tr("VALIDATOR_STREAM_ACCESS_MODE");
@@ -32,15 +31,13 @@ class StreamValidatorException extends ValidatorException {
 
     /**
      * @return StreamValidatorException
-     * todo: localize
      */
     public static function newStreamInformationTooLong() {
-        return self::tr("VALIDATOR_STREAM_INFO_LENGTH");
+        return self::tr("VALIDATOR_STREAM_INFO_LENGTH", [ 0, StreamValidator::$INFO_MAX_LENGTH ]);
     }
 
     /**
      * @return StreamValidatorException
-     * todo: localize
      */
     public static function newWrongCategoryId() {
         return self::tr("VALIDATOR_STREAM_CATEGORY");
@@ -48,9 +45,10 @@ class StreamValidatorException extends ValidatorException {
 
     /**
      * @return StreamValidatorException
-     * todo: localize
      */
     public static function newStreamNameLength() {
-        return self::tr("VALIDATOR_STREAM_NAME_LENGTH");
+        return self::tr("VALIDATOR_STREAM_NAME_LENGTH", [
+            StreamValidator::$NAME_MIN_LENGTH, StreamValidator::$NAME_MAX_LENGTH
+        ]);
     }
 }

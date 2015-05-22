@@ -14,7 +14,6 @@ use Business\Validator\ValidatorException;
 /**
  * Class UserValidatorException
  * @package Business\Validator\Entity
- * todo: translate
  */
 class UserValidatorException extends ValidatorException {
     function __construct($message = null, $data = null, $status = 0) {
@@ -22,7 +21,9 @@ class UserValidatorException extends ValidatorException {
     }
 
     public static function newIncorrectLoginLength() {
-        return self::tr("VALIDATOR_USER_LOGIN_LENGTH");
+        return self::tr("VALIDATOR_USER_LOGIN_LENGTH", [
+            UserValidator::$LOGIN_MIN_LENGTH, UserValidator::$LOGIN_MAX_LENGTH
+        ]);
     }
 
     public static function newIncorrectLoginChars() {
@@ -34,11 +35,11 @@ class UserValidatorException extends ValidatorException {
     }
 
     public static function newIncorrectNameLength() {
-        return self::tr("VALIDATOR_USER_NAME_LENGTH");
+        return self::tr("VALIDATOR_USER_NAME_LENGTH", [ 0, UserValidator::$NAME_MAX_LENGTH ]);
     }
 
     public static function newInfoTooLong() {
-        return self::tr("VALIDATOR_USER_INFO_LENGTH");
+        return self::tr("VALIDATOR_USER_INFO_LENGTH", [ 0, UserValidator::$INFO_MAX_LENGTH ]);
     }
 
     public static function newIncorrectEmail() {

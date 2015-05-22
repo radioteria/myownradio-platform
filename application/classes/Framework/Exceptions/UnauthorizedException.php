@@ -14,7 +14,7 @@ use Framework\Services\Locale\I18n;
 /**
  * Class UnauthorizedException
  * @package Framework\Exceptions
- * @localized 21.05.2015
+ * @localized 22.05.2015
  */
 class UnauthorizedException extends ControllerException {
 
@@ -23,7 +23,7 @@ class UnauthorizedException extends ControllerException {
     }
 
     static function noUserByLogin($id) {
-        return new self(I18n::tr("ERROR_NO_USER_BY_LOGIN", ["login" => $id]));
+        return new self(I18n::tr("ERROR_NO_USER_BY_LOGIN", [ $id ]));
     }
 
     public static function wrongLogin() {

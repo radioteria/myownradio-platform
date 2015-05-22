@@ -16,11 +16,11 @@ use Objects\User;
 
 class UserValidator implements EntityValidator {
 
-    const LOGIN_MIN_LENGTH = 3;
-    const LOGIN_MAX_LENGTH = 32;
-    const LOGIN_PATTERN = "~^[0-9a-z\\_]+$~";
-    const NAME_MAX_LENGTH = 32;
-    const INFO_MAX_LENGTH = 4096;
+    public static $LOGIN_MIN_LENGTH = 3;
+    public static $LOGIN_MAX_LENGTH = 32;
+    public static $LOGIN_PATTERN = "~^[0-9a-z\\_]+$~";
+    public static $NAME_MAX_LENGTH = 32;
+    public static $INFO_MAX_LENGTH = 4096;
 
     /** @var User */
     private $user;
@@ -49,9 +49,9 @@ class UserValidator implements EntityValidator {
 
     public function validateLogin() {
         (new BusinessValidator($this->user->getLogin()))
-            ->isInRange(self::LOGIN_MIN_LENGTH, self::LOGIN_MAX_LENGTH)
+            ->isInRange(self::$LOGIN_MIN_LENGTH, self::$LOGIN_MAX_LENGTH)
             ->throwOnFail(UserValidatorException::newIncorrectLoginLength())
-            ->pattern(self::LOGIN_PATTERN)
+            ->pattern(self::$LOGIN_PATTERN)
             ->throwOnFail(UserValidatorException::newIncorrectLoginChars())
             ->isLoginAvailable($this->user->getId())
             ->throwOnFail(UserValidatorException::newLoginUnavailable());
@@ -59,7 +59,7 @@ class UserValidator implements EntityValidator {
 
     public function validateName() {
         (new BusinessValidator($this->user->getName()))
-            ->maxLength(self::NAME_MAX_LENGTH)
+            ->maxLength(self::$NAME_MAX_LENGTH)
             ->throwOnFail(UserValidatorException::newIncorrectNameLength());
     }
 
@@ -72,7 +72,7 @@ class UserValidator implements EntityValidator {
 
     public function validateInfo() {
         (new Validator($this->user->getInfo()))
-            ->maxLength(self::INFO_MAX_LENGTH)
+            ->maxLength(self::$INFO_MAX_LENGTH)
             ->throwOnFail(UserValidatorException::newInfoTooLong());
     }
 

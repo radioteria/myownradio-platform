@@ -32,7 +32,7 @@ class FSFile {
     public static function registerLink($file_path, $hash = null) {
 
         if (!file_exists($file_path)) {
-            throw new LocalFileNotFoundException(I18n::tr("ERROR_FILE_NOT_FOUND", ["name" => $file_path]));
+            throw new LocalFileNotFoundException(I18n::tr("ERROR_FILE_NOT_FOUND", [ $file_path ]));
         }
 
         if ($hash === null) {

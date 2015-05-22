@@ -13,7 +13,7 @@ use Framework\Services\Locale\I18n;
 /**
  * Class ControllerException
  * @package Framework\Exceptions
- * @localized 21.05.2015
+ * @localized 22.05.2015
  */
 class ControllerException extends \Exception {
 
@@ -86,7 +86,7 @@ class ControllerException extends \Exception {
      * @return ControllerException
      */
     public static function noArgument($name) {
-        return new self(I18n::tr("ERROR_NO_ARGUMENT_SPECIFIED", ["arg" => $name]));
+        return new self(I18n::tr("ERROR_NO_ARGUMENT_SPECIFIED", [ $name ]));
     }
 
     /**
@@ -94,12 +94,12 @@ class ControllerException extends \Exception {
      * @return ControllerException
      */
     public static function noStream($key) {
-        return new self(I18n::tr("ERROR_STREAM_NOT_FOUND", ["arg" => $key]));
+        return new self(I18n::tr("ERROR_CATALOG_STREAM_NOT_FOUND", [ $key ]));
     }
 
     /** @return ControllerException */
     public static function noStreams() {
-        return new self(I18n::tr("ERROR_NO_STREAMS"));
+        return new self(I18n::tr("ERROR_CATALOG_NO_STREAMS"));
     }
 
     /**
@@ -107,7 +107,7 @@ class ControllerException extends \Exception {
      * @return ControllerException
      */
     public static function noUser($id) {
-        return new self(I18n::tr("ERROR_USER_NOT_FOUND", ["id" => $id]));
+        return new self(I18n::tr("ERROR_USER_NOT_FOUND", [ $id ]));
     }
 
     /**
@@ -115,7 +115,7 @@ class ControllerException extends \Exception {
      * @return ControllerException
      */
     public static function noTrack($id) {
-        return new self(I18n::tr("ERROR_TRACK_NOT_FOUND", ["id" => $id]));
+        return new self(I18n::tr("ERROR_TRACK_NOT_FOUND", [ $id ]));
     }
 
     /**
@@ -123,7 +123,7 @@ class ControllerException extends \Exception {
      * @return ControllerException
      */
     public static function noAccountPlan($plan_id) {
-        return new self(I18n::tr("ERROR_NO_ACCOUNT_PLAN", ["id" => $plan_id]));
+        return new self(I18n::tr("ERROR_NO_ACCOUNT_PLAN", [ $plan_id ]));
     }
 
 }

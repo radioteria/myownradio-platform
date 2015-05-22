@@ -17,7 +17,6 @@ use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\InsertQuery;
 use Framework\Services\HttpRequest;
 use Framework\Services\HttpSession;
-use Framework\Services\Locale\I18n;
 use Framework\Services\Mailer;
 use Objects\User;
 use Tools\Common;
@@ -195,7 +194,7 @@ class UsersModel implements SingletonInterface, Injectable {
      */
     public function parseRegistrationCode($code) {
 
-        $exception = new ControllerException(I18n::tr("ERROR_CODE_INCORRECT"));
+        $exception = ControllerException::tr("ERROR_CODE_INCORRECT");
 
         $json = base64_decode($code);
 
@@ -234,7 +233,7 @@ class UsersModel implements SingletonInterface, Injectable {
      */
     public function parseResetPasswordCode($code) {
 
-        $exception = new ControllerException(I18n::tr("ERROR_CODE_INCORRECT"));
+        $exception = ControllerException::tr("ERROR_CODE_INCORRECT");
 
         $json = base64_decode($code);
 
@@ -256,7 +255,7 @@ class UsersModel implements SingletonInterface, Injectable {
             $query->select("*");
 
             $db->fetchOneRow($query)->getOrElseThrow(
-                new ControllerException(I18n::tr("ERROR_CODE_NOT_ACTUAL"))
+                ControllerException::tr("ERROR_CODE_NOT_ACTUAL")
             );
 
         });

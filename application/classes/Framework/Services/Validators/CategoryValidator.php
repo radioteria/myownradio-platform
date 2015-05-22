@@ -14,6 +14,11 @@ use Framework\Exceptions\ControllerException;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Locale\I18n;
 
+/**
+ * Class CategoryValidator
+ * @package Framework\Services\Validators
+ * @deprecated
+ */
 class CategoryValidator extends Validator {
     /**
      * @param $category_permalink

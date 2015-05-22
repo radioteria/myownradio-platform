@@ -1,0 +1,460 @@
+{
+    "ERROR_NO_IMAGE_ATTACHED"           : "No image file attached",
+    "ERROR_NO_ARGUMENT_SPECIFIED"       : "No value for argument \"%arg%\" specified",
+    "ERROR_STREAM_NOT_FOUND"            : "Radio station with id \"%key%\" not found",
+    "ERROR_NO_STREAMS"                  : "No available radio stations found",
+    "ERROR_USER_NOT_FOUND"              : "User with id \"%id%\" not found",
+    "ERROR_TRACK_NOT_FOUND"             : "Track with id \"%id%\" not found",
+    "ERROR_NO_ACCOUNT_PLAN"             : "Account plan \"%id%\" not found",
+    "ERROR_NOTHING_PLAYING"             : "Nothing playing on this radio station",
+
+    "ERROR_FS_DOES_NOT_EXIST"           : "File server with id %id% does not exist",
+    "ERROR_FS_NO_FREE_SPACE"            : "There is no servers available to upload %amount% bytes of data",
+    "ERROR_FILE_NOT_FOUND"              : "File <b>%name%</b> not found",
+    "ERROR_TRACK_NOT_AVAILABLE"         : "Track with id \"%id%\" is not exists on any file servers",
+
+    "ERROR_NO_USER_BY_LOGIN"            : "User with login \"%login%\" does not exist",
+    "ERROR_INCORRECT_LOGIN_OR_PASSWORD" : "Incorrect login or password",
+    "ERROR_INCORRECT_PASSWORD"          : "You're entered incorrect current password",
+    "ERROR_NO_PERMISSION"               : "You don't have permission to access this resource",
+    "ERROR_UNAUTHORIZED"                : "To use this feature you need to be authorized",
+
+    "ERROR_UPLOAD_FILE_BROKEN"          : "File <b>%0%</b> appears to be broken",
+    "ERROR_UPLOAD_FILE_UNSUPPORTED"     : "Unsupported file format: <b>%0%</b>",
+    "ERROR_UPLOAD_FILE_EXISTS"          : "File <b>%0%</b> already present in your library",
+    "ERROR_UPLOAD_FILE_LONG"            : "File <b>%0%</b> is too long",
+    "ERROR_UPLOAD_FILE_SHORT"           : "File <b>%0%</b> is too short",
+    "ERROR_UPLOAD_NO_SPACE"             : "You are exceeded available upload time. Please upgrade your account.",
+    "ERROR_UPLOAD_NO_SERVERS"           : "No available servers to upload file <b>%0%</b>. This incident will be resolved soon.",
+
+    "ERROR_COPY_FILE_PROTECTED"         : "File <b>%0%</b> is copy-protected",
+
+    "ERROR_CODE_INCORRECT"              : "Entered security code is not correct",
+    "ERROR_CODE_NOT_ACTUAL"             : "Entered security code is not actual",
+
+    "VALIDATOR_INVALID_CATEGORY"        : "Category with id %id% doesn't exists",
+    "VALIDATOR_INVALID_PERMALINK_CHARS" : "Permalink may contain only letters, numbers and dashes",
+    "VALIDATOR_INVALID_PERMALINK_USED"  : "This permalink is not available",
+
+    "VALIDATOR_EMAIL_FORMAT"            : "Incorrect email format",
+    "VALIDATOR_EMAIL_UNAVAILABLE"       : "This email address is unavailable",
+    "VALIDATOR_LOGIN_CHARS"             : "Login must contain only letters, numbers or underscores chars",
+    "VALIDATOR_LOGIN_LENGTH"            : "Login length must be in range of %0% to %1% chars",
+    "VALIDATOR_LOGIN_UNAVAILABLE"       : "This login is unavailable",
+
+    "LABEL_" : "",
+    "ASK_" : "",
+    "MSG_" : "",
+    "ITM_" : "",
+
+    "VALIDATOR_CODE_INVALID"            : "Entered security code is not valid",
+    "VALIDATOR_CODE_MATCH"              : "Entered security code does not match the email",
+
+    "VALIDATOR_NO_COUNTRY"              : "Country with id %0% does not exist",
+    "VALIDATOR_PASSWORD_LENGTH"         : "Password length must be between %0% and %1% chars",
+    "VALIDATOR_EMAIL_EMPTY"             : "Email must be filled",
+    "VALIDATOR_STREAM_NAME_SHORT"       : "Stream name must contain at least 3 chars",
+    "VALIDATOR_STREAM_WORDS"            : "Stream name contains words that can not be used",
+    "VALIDATOR_PERMALINK_EMPTY"         : "Permalink couldn't be an empty string",
+    "VALIDATOR_USER_NAME_LENGTH"        : "User name can not be longer than %0% chars",
+    "VALIDATOR_EMAIL_EXISTS"            : "User with email <b>%0%</b> already exists",
+    "VALIDATOR_TRACKLIST"               : "Invalid tracks list",
+    "VALIDATOR_INVALID_ACCESS"          : "Invalid stream access mode - <b>%0%</b>",
+    "VALIDATOR_IMAGE_MIME"              : "File <b>%0%</b> is not valid image file",
+    "VALIDATOR_TRACK_COLOR"             : "Invalid color id specified - <b>%0%</b>",
+    "VALIDATOR_INVALID_CATEGORY_NAME"   : "Invalid radio station category specified - <b>%0%</b>",
+
+    "PROMO_CODE_INCORRECT"              : "You are entered incorrect promo code. Please try another one.",
+
+
+
+    "EMAIL_REG_TITLE"                   : "Registration on MyOwnRadio service",
+    "EMAIL_REG_COMPLETED"               : "Successfully registered on MyOwnRadio service",
+    "EMAIL_PASSWORD_RESET"              : "Reset password on MyOwnRadio service",
+    "EMAIL_QUEUE_FULL"                  : "Sorry, but too many letters has been sent from your address. Wait for one hour and try again.",
+
+
+
+    "YOU_ALREADY_VOTED"                 : "You're already voted for this track",
+    "YOU_JUST_VOTED"                    : "You're successfully voted for this track",
+    "LIKE_THIS_TRACK"                   : "Like this track",
+    "DISLIKE_THIS_TRACK"                : "Dislike this track",
+    "TRACK_LIKED_TIMES": {
+        "0": "This track has no likes",
+        "1": "This track has one like",
+        "other": "This track liked %% times"
+    },
+    "TRACK_DISLIKED_TIMES": {
+        "0": "This track has no dislikes",
+        "1": "This track has one dislike",
+        "other": "This track disliked %% times"
+    },
+
+    "FR_LOGIN_MESSAGE"                  : "Welcome, <b>%name%</b>!<br>You're successfully logged in!",
+    "FR_PLAN_CHANGED_MESSAGE"           : "You have successfully upgraded your current account to <b>%0%</b>",
+
+    "FR_WELCOME_MESSAGE"                : "Create your own web radio station\nor discover dozens of existing.",
+    "FR_CLICK_TO_BROWSE"                : "Click here to browse existing radio stations",
+    "FR_BROWSE_STREAMS"                 : "Listen to the Radio",
+    "FR_LOGIN_TOOLTIP"                  : "Log in to the service",
+    "FR_SIGN_UP_TOOLTIP"                : "Create account",
+    "FR_PROFILE_TOOLTIP"                : "Go to your profile",
+    "FR_LOGOUT_TOOLTIP"                 : "Logout from account",
+
+    "FR_BOOKMARK_ADD_TIP"               : "Add radio station to bookmarks",
+    "FR_BOOKMARK_REMOVE_TIP"            : "Remove radio station from bookmarks",
+
+    "FR_BOOKMARK_ADD_SUCCESS"           : "<b>%0%</b> successfully added to your bookmarks",
+    "FR_BOOKMARK_REMOVE_SUCCESS"        : "<b>%0%</b> successfully removed from your bookmarks",
+
+    "FR_PLAYER_COPY_TRACK"              : "Copy this track to my library",
+    "FR_PLAYER_BUY_TRACK"               : "Buy this track",
+    "FR_PLAYER_ON_AIR"                  : "ON AIR",
+    "FR_PLAYER_PLAY_STOP"               : "Play / Stop",
+    "FR_PLAYER_AUDIO_FORMAT"            : "Audio Format",
+    "FR_PLAYER_OPEN_EXTERNAL"           : "Open in external player",
+    "FR_PLAYER_CLICK_TO_REVIEW"         : "Click to preview this track",
+
+    "FR_SHOW"                           : "Show",
+    "FR_HIDE"                           : "Hide",
+    "FR_UNSPECIFIED"                    : "Unspecified",
+    "FR_CLOSE"                          : "Close",
+    "FR_CANCEL"                         : "Cancel",
+    "FR_CREATE"                         : "Create",
+    "FR_HOME"                           : "Home",
+    "FR_LOGIN"                          : "Login",
+    "FR_ENTER"                          : "Enter",
+    "FR_CHANGE"                         : "Change",
+    "FR_SUBMIT"                         : "Submit",
+    "FR_UPDATE"                         : "Update",
+    "FR_LISTEN"                         : "Listen",
+    "FR_SHUFFLE"                        : "Shuffle",
+    "FR_UPLOAD"                         : "Upload",
+    "FR_EDIT"                           : "Edit",
+    "FR_DELETE"                         : "Delete",
+    "FR_PASSWORD"                       : "Password",
+    "FR_PASSWORD_AGAIN"                 : "Password again",
+    "FR_SETTINGS"                       : "Settings",
+    "FR_BUFFERING"                      : "Buffering...",
+    "FR_NOW_PLAYING"                    : "Now playing",
+    "FR_SIGN_UP"                        : "Sign Up",
+    "FR_BACK_HOME"                      : "Back to Home",
+    "FR_PASSWORD_RECOVERY"              : "Password Recovery",
+    "FR_PASSWORD_CHANGE"                : "Change Password",
+    "FR_BEGIN"                          : "Begin",
+    "FR_EMAIL"                          : "Email",
+    "FR_SEND_LETTER"                    : "Send a letter",
+    "FR_YOUR_NAME"                      : "Your name",
+    "FR_COUNTRY"                        : "Country:",
+    "FR_LOGOUT"                         : "Logout",
+    "FR_SEARCH_PLACEHOLDER"             : "Search station by name or genre...",
+    "FR_SEARCH"                         : "Search",
+    "FR_SEARCH_FOR"                     : "Search for <b>%filter%</b>",
+    "FR_CHANNELS"                       : "Channels",
+    "FR_POPULAR"                        : "Popular",
+    "FR_CATEGORIES"                     : "Categories",
+    "FR_CURRENT_PASSWORD"               : "Current password:",
+    "FR_NEW_PASSWORD"                   : "New password:",
+    "FR_NEW_PASSWORD_AGAIN"             : "New password again:",
+    "FR_STATION_NAME"                   : "Station name:",
+    "FR_USER_NAME"                      : "Your name:",
+    "FR_USER_LOGIN"                     : "Your login:",
+    "FR_USER_COUNTRY"                   : "You are from:",
+    "FR_USER_INFORMATION"               : "Information:",
+    "FR_HASHTAGS"                       : "Hashtags:",
+    "FR_PERMALINK"                      : "Permalink:",
+    "FR_INFORMATION"                    : "Information:",
+    "FR_CATEGORY"                       : "Category:",
+    "FR_ACCESS"                         : "Access:",
+    "FR_FOR"                            : "for",
+    "FR_FOR_TRACKS"                     : "tracks",
+    "FR_SAVE"                           : "Save",
+    "FR_NEVER"                          : "Never",
+    "FR_NONE"                           : "None",
+    "FR_MY_PROFILE"                     : "My Profile",
+    "FR_STREAMS"                        : "Stations",
+
+    "FR_LOGIN_DOTS"                     : "Login:",
+    "FR_PASSWORD_DOTS"                  : "Password:",
+    "FR_PASSWORD_AGAIN_DOTS"            : "Password again:",
+    "FR_PREVIEW_DOTS"                   : "Preview:",
+    "FR_EMAIL_DOTS"                     : "Email:",
+    "FR_YOUR_NAME_DOTS"                 : "Your name:",
+    "FR_COUNTRY_DOTS"                   : "Country:",
+    "FR_LISTENERS_DOTS"                 : "Active listeners:",
+    "FR_YES"                            : "Yes",
+    "FR_NO"                             : "No",
+    "FR_OK"                             : "OK",
+
+
+    "FR_BROWSE_POPULAR"                 : "Browse popular radio stations",
+    "FR_BROWSE_CATEGORIES"              : "Browse categories",
+    "FR_BROWSE_CHANNELS"                : "Browse channels",
+    "FR_REPORT_QUESTION"                : "Report problem or ask question",
+    "FR_SEARCH_RESULTS_FOR"             : "Search results for",
+    "FR_SIMILAR_CHANNELS"               : "Similar radio stations",
+    "FR_ALL_CHANNELS"                   : "All radio stations",
+
+    "FR_LOGIN_MUST_BE_FILLED"           : "Login must be filled",
+    "FR_PASSWORD_MUST_BE_FILLED"        : "Password must be filled",
+    "FR_REMEMBER_ME"                    : "Remember me on this computer",
+    "FR_OR_LOGIN_SOCIAL_DOTS"           : "or use social network to login:",
+    "FR_OR_SIGN_UP_SOCIAL_DOTS"         : "or use social network to sign up:",
+    "FR_EDIT_CHANNEL_INFO"              : "Edit station information",
+    "FR_EDIT_CHANNEL_TRACKLIST"         : "Edit station tracklist",
+    "FR_EDIT_TRACK_INFO"                : "Edit track information",
+    "FR_REMOVE_TRACK_FROM_STREAM"       : "Remove track from stream",
+    "FR_KILL_EM_ALL"                    : "Kill all users",
+
+    "FR_DONT_HAVE_ACCOUNT"              : "Don't have an account yet?",
+    "FR_FORGOT_PASSWORD"                : "Forgot your password?",
+    "FR_ALREADY_REGISTERED"             : "Already registered?",
+
+    "FR_CREATE_IT"                      : "Create it!",
+    "FR_RECOVER_IT"                     : "Recover it!",
+
+
+    "FR_FOUND_RESULTS"                  : "Here what we found based on your search request",
+    "FR_NOTHING_FOUND"                  : "Nothing found for request <b>%0%</b>. Check spelling, or try a different search.",
+
+    "FR_STREAM_CREATED_AT"              : "Stream created at",
+    "FR_STREAM_NO_ACCESS"               : "Sorry, but this channel is down or you have no access to listen it.",
+    "FR_RECENT_UPCOMING"                : "Recent and Upcoming",
+    "FR_MY_BOOKMARKS"                   : "My Bookmarks",
+    "FR_MY_STREAMS"                     : "My Streams",
+
+    "FR_BROWSE_CHANNELS_DESCRIPTION"    : "Browse radio stations which are up and streaming now on MyOwnRadio",
+    "FR_NO_STREAMS_CREATE_NEW"          : "No streams found for your request. May be you want to <a href=\"/profile/new-stream\">create</a> your own?",
+    "FR_NO_STREAMS_BY_USER"             : "This user has no public streams.",
+
+    "FR_PROFILE_UPDATED"                : "Profile successfully updated",
+    "FR_PASSWORD_CHANGED"               : "Password successfully changed",
+
+    "FR_AJAX_BUSY"                      : "Working...",
+
+    "FR_CONGRATULATIONS"                : "Congratulations",
+    "FR_REG_COMPLETED_TEXT"             : "You are successfully registered on <a href=\"/\">MyOwnRadio</a>.<br>Now you can proceed to login into service!",
+    "FR_REG_LETTER_SENT"                : "We sent to your email address a letter with further steps to continue registration.<br>Please check your mailbox in a few minutes for letter and follow confirmation link in it.",
+    "FR_PASSWORD_RESET_SENT"            : "We sent to your email address a letter with further steps to reset your password.<br>Please check your mailbox for letter and follow confirmation link in it.",
+    "FR_PASSWORD_SUCCESS"               : "You're successfully changed your password. Now you can proceed to login with your new credentials.",
+
+    "FR_HOW_TO_RESET_PASSWORD"          : "Tell us your login or email address and we'll send you instructions on how to reset your password.",
+    "FR_CHANGE_PASSWORD_HINT"           : "If you forget your existing password here you can change it to another one. Please enter new password for your account.",
+    "FR_PASSWORD_MISMATCH"              : "Entered password must match previous",
+    "FR_I_FORGOT_MY_PASSWORD"           : "I forgot my current password",
+
+    "FR_SIGN_UP_WELCOME"                : "To begin registration on <a href='/'>MyOwnRadio</a> please enter your email in to the field below:",
+    "FR_SIGN_UP_COMPLETE_WELCOME"       : "To complete registration please fill the following fields:",
+
+    "FR_PROFILE_MY"                     : "My Profile",
+    "FR_PROFILE_EDIT"                   : "Edit profile",
+    "FR_PROFILE_PASSWORD_CHANGE"        : "Change password",
+    "FR_PROFILE_CHANGE_PLAN"            : "Change plan",
+    "FR_PROFILE_MY_TRACKS"              : "My Tracks",
+    "FR_PROFILE_ALL_TRACKS"             : "All tracks",
+    "FR_PROFILE_UNUSED_TRACKS"          : "Unused tracks",
+    "FR_PROFILE_MY_CHANNELS"            : "My Radio Stations",
+    "FR_PROFILE_NEW_CHANNEL"            : "Create new...",
+
+    "FR_SHARE_CHANNEL_TEXT"             : "Share <b>%name%</b> on your social network:",
+    "FR_SHARE_EMBED_CODE"               : "Embed code:",
+    "FR_SHARE_TAB_SHARE"                : "Share",
+    "FR_SHARE_TAB_EMBED"                : "Embed",
+    "FR_SHARE_TITLE"                    : "Share radio station <b>%name%</b>",
+    "FR_SHARE_THIS"                     : "Share this radio station",
+
+    "FR_CHANGE_PLAN_TITLE"              : "Change Plan",
+    "FR_ENTER_PROMO_CODE"               : "Enter promo code:",
+    "FR_PROMO_MUST_BE_FILLED"           : "Promo code must be filled",
+
+    "FR_PROMO_ARTWORK_CHANGE"           : "Change",
+    "FR_PROMO_ARTWORK_DELETE"           : "Remove",
+
+    "FR_HASHTAGS_PLACEHOLDER"           : "Values separated by comma",
+
+    "FR_METADATA_TITLE"                 : "Edit information",
+    "FR_METADATA_TRACK_TITLE"           : "Title:",
+    "FR_METADATA_TRACK_ARTIST"          : "Artist:",
+    "FR_METADATA_TRACK_ALBUM"           : "Album:",
+    "FR_METADATA_TR_NUMBER"             : "Track Number:",
+    "FR_METADATA_TRACK_GENRE"           : "Genre:",
+    "FR_METADATA_TRACK_DATE"            : "Date:",
+    "FR_METADATA_TRACK_BUY"             : "Buy link:",
+    "FR_METADATA_TRACK_ACCESS"          : "Access:",
+
+    "FR_METADATA_ACCESS_PRIVATE"        : "Private - people can't copy this track to their library",
+    "FR_METADATA_ACCESS_PUBLIC"         : "Public - people can copy this track(s) to their library",
+    "FR_METADATA_ACCESS_HINT"           : "Make tracks public only if you <b>really</b> know that copying will not violate any copyright laws.",
+
+    "FR_CREATE_STATION"                 : "Create new radio station",
+
+    "FR_PROFILE_TITLE"                  : "Profile overview",
+    "FR_PROFILE_USER_INFO"              : "User information",
+    "FR_PROFILE_MEDIA_INFO"             : "Media information",
+    "FR_PROFILE_TOTAL_TRACKS"           : "Total tracks",
+    "FR_PROFILE_TOTAL_CHANNELS"         : "Total radio stations",
+    "FR_PROFILE_TRACKS_DURATION"        : "Your tracks duration",
+    "FR_PROFILE_ACCOUNT_INFO"           : "Account information",
+    "FR_PROFILE_ACCOUNT_PLAN"           : "Current account plan",
+    "FR_PROFILE_ACCOUNT_EXPIRE"         : "Expires",
+    "FR_PROFILE_ACCOUNT_TILE_LEFT"      : "Time left for tracks",
+
+    "FR_TYPE_ARTIST_OR_TITLE"           : "Type artist or title",
+    "FR_LISTEN_TO_THIS"                 : "Listen to this stream",
+    "FR_SHUFFLE_TRACKS"                 : "Shuffle tracks",
+    "FR_UPLOAD_NEW_TRACKS"              : "Upload new tracks",
+
+    "FR_LOADING"                        : "Loading...",
+    "FR_EMPTY"                          : "Empty",
+    "FR_EMPTY_HINT"                     : "Add some tracks from your profile or <a ng-click=\"upload()\">upload</a> more.",
+    "FR_TRACKS"                         : "Tracks:",
+    "FR_STATIONS"                       : "Stations:",
+
+    "FR_STATIONS_NAME"                  : "Station name",
+    "FR_STATIONS_ACTION"                : "Actions",
+    "FR_STATIONS_LISTENERS"             : "Listening now",
+    "FR_STATIONS_TRACKS"                : "Tracks",
+    "FR_STATIONS_DURATION"              : "Duration",
+    "FR_STATIONS_START_STOP"            : "Start or stop streaming",
+    "FR_STATIONS_START"                 : "Start streaming",
+    "FR_STATIONS_STOP"                  : "Stop streaming",
+
+    "FR_CHANGE_COLOR"                   : "Change color",
+    "FR_ADD_TO_STREAM"                  : "Add to station playlist",
+    "FR_REMOVE_FROM_STREAM"             : "Remove from station playlist",
+    "FR_DELETE_TRACKS"                  : "Delete tracks",
+
+    "FR_SORT_TITLE"                     : "Title",
+    "FR_SORT_ARTIST"                    : "Artist",
+    "FR_SORT_GENRE"                     : "Genre",
+    "FR_SORT_TIME"                      : "Time",
+
+    "FR_SORT_BY_DATE"                   : "Sort by upload date",
+    "FR_SORT_BY_TITLE"                  : "Sort by track title",
+    "FR_SORT_BY_ARTIST"                 : "Sort by artist name",
+    "FR_SORT_BY_GENRE"                  : "Sort by track genre",
+    "FR_SORT_BY_TIME"                   : "Sort by track duration",
+
+    "FR_UPLOAD_WINDOW_TITLE"            : "Upload audio files",
+    "FR_UPLOAD_MESSAGE"                 : "Before upload make sure that your audio file(s):",
+    "FR_UPLOAD_CONDITION"               : [
+        "Has not violate any copyright laws.",
+        "Has not exceed <b>512 MB</b>.",
+        "Has good quality with high bitrate (<b>256 kbit/s or greater</b>)",
+        "Is in one of this formats: <b>mp3</b>, <b>flac</b>, <b>ogg</b>, <b>m4a</b>, <b>ape</b>, <b>aac</b>.",
+        "Is not shorter than <b>15 seconds</b> and not longer than <b>240 minutes</b>."
+    ],
+
+    "FR_UPLOAD_BUTTON_HINT"             : "Click here to select audio files from your computer",
+    "FR_UPLOAD_BUTTON_TEXT"             : "Select files from PC...",
+    "FR_UPLOAD_SELECTED_COUNT"          : "Selected <b>%0%</b> files:",
+    "FR_UPLOAD_ADD_TO_STREAM"           : "Automatically add uploaded tracks to this stream:",
+    "FR_UPLOADING_FILE"                 : "Uploading <b>%0%</b>...",
+    "FR_UPLOADING_LEFT"                 : "(left: %0%)",
+    "FR_UPLOAD_CANCEL_HINT"             : "Cancel upload",
+    "FR_UPLOAD_START_HINT"              : "Start upload",
+
+    "FR_CATEGORIES_TITLE"               : "Choose category of radio stations",
+
+    "FR_CONFIRM_STREAM_DELETE"          : "Are you sure want to delete your radio station<br><b>%0%</b>?",
+    "FR_CONFIRM_STREAM_STOP"            : "Are you sure want to STOP radio your radio station<br><b>%0%</b>?",
+
+    "FR_TRACKS_REMOVED_FROM_STATION"    : "<b>%count%</b> track(s) successfully removed from <b>%name%</b>",
+    "FR_TRACKS_REMOVED_FROM_LIBRARY"    : "<b>%count%</b> track(s) successfully removed from your library",
+    "FR_TRACKS_ADDED_TO_STATION"        : "<b>%count%</b> track(s) successfully added to radio station <b>%name%</b>",
+    "FR_TRACKS_MOVED_TO_STATION"        : "<b>%count%</b> track(s) successfully moved to radio station <b>%name%</b>",
+    "FR_TRACKS_UPDATED"                 : "Information for <b>%count%</b> track(s) successfully updated",
+    "FR_STREAM_DELETED_SUCCESSFULLY"    : "Radio station <b>%name%</b> successfully deleted",
+    "FR_TRACK_COPIED_SUCCESSFULLY"      : "Track <b>%filename%</b> successfully added to your library",
+
+    "FR_HUMAN_TIME_OVERUSED"            : "Overused (%days% days %hours% hours %minutes% minutes)",
+    "FR_HUMAN_TIME_FORMAT"              : "%days% days %hours% hours %minutes% minutes",
+
+    "FR_BYTES_METRICS"                  : ["byte(s)", "kB", "MB", "GB", "TB", "PB"],
+
+    "FR_MOVE_TRACKS_CONFIRM": {
+        "1"     : "Move <b>%tracks.0.filename%</b> to <b>%stream.name%</b>?",
+        "11"    : "Move <b>%tracks.length%</b> tracks to <b>%stream.name%</b>?",
+        "*1"    : "Move <b>%tracks.length%</b> track to <b>%stream.name%</b>?",
+        "other" : "Move <b>%tracks.length%</b> tracks to <b>%stream.name%</b>?"
+    },
+
+    "FR_DELETE_FROM_STREAM_CONFIRM": {
+        "1"     : "Delete track <b>%tracks.0.filename%</b> from <b>%stream.name%</b>?",
+        "11"    : "Delete <b>%tracks.length%</b> tracks from <b>%stream.name%</b>?",
+        "*1"    : "Delete <b>%tracks.length%</b> track from <b>%stream.name%</b>?",
+        "other" : "Delete <b>%tracks.length%</b> tracks from <b>%stream.name%</b>?"
+    },
+
+    "FR_DELETE_FROM_ACCOUNT_CONFIRM": {
+        "1"     : "Delete <b>%tracks.0.filename%</b> from your library?",
+        "11"    : "Delete <b>%tracks.length%</b> tracks from your library?",
+        "*1"    : "Delete <b>%tracks.length%</b> track from your library?",
+        "other" : "Delete <b>%tracks.length%</b> tracks from your library?"
+    },
+
+    "FR_STREAM_BOOKMARKED_TIMES": {
+        "0"     : "This radio station has no bookmarks",
+        "1"     : "This radio station bookmarked by 1 user",
+        "other" : "This radio station bookmarked by %% users"
+    },
+
+    "FR_COUNT_USERS_LISTENING": {
+        "0"     : "This radio station has no listeners",
+        "1"     : "1 user listening to this radio station",
+        "other" : "%% users listening to this radio station"
+    },
+
+    "FR_CATEGORIES_LIST_LABEL": {
+        "1"     : "stream",
+        "other" : "streams"
+    },
+
+    "FR_CHANNELS_BY_CATEGORY_TITLE": {
+        "1"     : "<b>1</b> radio station in category <b>%category_name%</b>",
+        "other" : "<b>%%</b> radio stations in category <b>%category_name%</b>"
+    },
+
+    "FR_CHANNELS_BY_TAG_TITLE": {
+        "1"     : "<b>1</b> radio station found for tag <b>%query%</b>",
+        "other" : "<b>%%</b> radio stations found for tag <b>%query%</b>"
+    },
+
+    "FR_CHANNELS_BY_SEARCH_TITLE": {
+        "1"     : "<b>1</b> radio station found for request <b>%query%</b>",
+        "other" : "<b>%%</b> radio stations found for request <b>%query%</b>"
+    },
+
+    "FR_CHANNELS_BY_USER_TITLE": {
+        "1"     : "<b>%name%</b> has <b>1</b> radio station",
+        "other" : "<b>%name%</b> has <b>%%</b> radio stations"
+    },
+
+    "FR_CHANNELS_BY_YOU_TITLE": {
+        "1"     : "You have <b>1</b> radio station",
+        "other" : "You have <b>%%</b> radio stations"
+    },
+
+    "FR_CHANNELS_BY_BOOKMARKS_TITLE": {
+        "1"     : "You have <b>1</b> bookmarked radio station",
+        "other" : "You have <b>%%</b> bookmarked radio stations"
+    },
+
+    "FR_STREAM_PLAYED_TIMES": {
+        "0"     : "This radio station never played",
+        "1"     : "This radio station played 1 time",
+        "other" : "This radio station played %% times"
+    },
+
+    "FR_CHANNELS_BY_POPULAR_TITLE"  : "What's popular on <b>MyOwnRadio</b>",
+    "FR_CHANNELS_BY_NEW_TITLE"      : "Newest radio stations on <b>MyOwnRadio</b>",
+
+    "FR_NO_STREAMS_BOOKMARKS"    : "You have no bookmarked radio stations.",
+
+    "FR_CATALOG_POPULAR_STATIONS"   : "Popular",
+    "FR_CATALOG_MY_STATIONS"        : "My Stations",
+    "FR_CATALOG_MY_BOOKMARKS"       : "My Bookmarks",
+    "FR_CATALOG_NEW_STATIONS"       : "New"
+
+}
+

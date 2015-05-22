@@ -23,7 +23,7 @@ use Tools\System;
 /**
  * Class TrackCollection
  * @package API\REST
- * @localized 21.05.2015
+ * @localized 22.05.2015
  */
 class TrackCollection implements Injectable, SingletonInterface {
     use Singleton;
@@ -217,7 +217,7 @@ class TrackCollection implements Injectable, SingletonInterface {
             ->getOrElseThrow(ControllerException::noStream($stream_id));
 
         if ($stream_object->getTracksDuration() == 0 || $stream_object->getStatus() == 0) {
-            throw ControllerException::of(I18n::tr("ERROR_NOTHING_PLAYING"));
+            throw ControllerException::of(I18n::tr("ERROR_STREAM_NOTHING_PLAYING"));
         }
 
         $items = [];

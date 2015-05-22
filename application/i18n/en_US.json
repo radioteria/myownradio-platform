@@ -50,7 +50,8 @@
     "ERROR_COPY_FILE_PROTECTED": "Audio file %0% is protected from copying",
 
     "ERROR_CODE_INCORRECT": "Entered code is incorrect",
-    "ERROR_CODE_NOT_ACTUAL": "Entered code is not actual"
+    "ERROR_CODE_NOT_ACTUAL": "Entered code is not actual",
 
+    "HELLO": "HELLO"
 
 }

@@ -45,7 +45,7 @@
     "ERROR_UPLOAD_FILE_EXISTS": "File %0% already exists in your library",
     "ERROR_UPLOAD_FILE_LONG": "Uploaded audio file %0% is too long",
     "ERROR_UPLOAD_FILE_SHORT": "Uploaded audio file %0% is too short",
-    "ERROR_UPLOAD_NO_SPACE": "You're exhausted available space in your library. Upgrade your account, please"
+    "ERROR_UPLOAD_NO_SPACE": "You're exhausted available space in your library. Upgrade your account, please",
     "ERROR_UPLOAD_NO_SERVERS": "No servers available to proceed your upload",
     "ERROR_COPY_FILE_PROTECTED": "Audio file %0% is protected from copying",
 

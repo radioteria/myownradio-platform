@@ -8,7 +8,6 @@
 
 namespace Framework\Services;
 
-use Business\Validator\BusinessValidator;
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
@@ -66,20 +65,6 @@ class InputValidator implements Injectable {
                 self::PASSWORD_MIN_LENGTH, self::PASSWORD_MAX_LENGTH
             ]));
         }
-
-    }
-
-    /**
-     * @param string $email
-     * @throws ControllerException
-     */
-    public function validateEmail($email) {
-
-        $validator = new BusinessValidator($email);
-
-        $validator
-            ->email()           ->throwOnFail(new ControllerException(I18n::tr("VALIDATOR_EMAIL_FORMAT")))
-            ->isEmailAvailable()  ->throwOnFail(new ControllerException(I18n::tr("VALIDATOR_EMAIL_UNAVAILABLE")));
 
     }
 

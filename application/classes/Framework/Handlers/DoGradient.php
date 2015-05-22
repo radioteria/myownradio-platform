@@ -14,8 +14,6 @@ use Framework\Controller;
 class DoGradient implements Controller {
 
     public function doGet() {
-
     }
-
 
 } 

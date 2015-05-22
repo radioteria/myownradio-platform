@@ -44,7 +44,7 @@ class DoFbLogin implements Controller {
                 ->then(function (User $user) use ($response, $model) {
 
                     /** @var UserModel $userModel */
-                    $userModel = $model->authorizeById($user->getID());
+                    $userModel = $model->authorizeById($user->getId());
 
                     $response->setData($userModel->toRestFormat());
 
@@ -77,7 +77,7 @@ class DoFbLogin implements Controller {
                     LettersModel::sendRegistrationCompleted($user_profile->getEmail());
 
                     /** @var UserModel $userModel */
-                    $userModel = $model->authorizeById($user->getID());
+                    $userModel = $model->authorizeById($user->getId());
 
                     $response->setData($userModel->toRestFormat());
 

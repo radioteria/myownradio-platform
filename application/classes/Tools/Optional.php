@@ -125,7 +125,7 @@ class Optional implements \JsonSerializable {
     /**
      * @return boolean
      */
-    public function validate() {
+    public function notEmpty() {
         return $this->test();
     }
 

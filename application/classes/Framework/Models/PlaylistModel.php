@@ -170,7 +170,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
             call_user_func($callable);
 
-            if (StreamTrack::getByID($track->getUniqueID())->validate()) {
+            if (StreamTrack::getByID($track->getUniqueID())->notEmpty()) {
                 $this->scPlayByUniqueID($track->getUniqueID(), $trackPosition, false);
             } else {
                 $this->scPlayByOrderID($track->getTrackOrder());

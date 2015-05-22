@@ -166,7 +166,7 @@ class UsersModel implements SingletonInterface, Injectable {
 
         // Generate Stream Cover
         $random = Common::generateUniqueID();
-        $newImageFile = sprintf("avatar%05d_%s.%s", $newUser->getID(), $random, "png");
+        $newImageFile = sprintf("avatar%05d_%s.%s", $newUser->getId(), $random, "png");
         $newImagePath = Folders::getInstance()->genAvatarPath($newImageFile);
 
         $newUser->setAvatar($newImageFile);
@@ -184,7 +184,7 @@ class UsersModel implements SingletonInterface, Injectable {
 
         LettersModel::sendRegistrationCompleted($newUser->getEmail());
 
-        return new UserModel($newUser->getID());
+        return new UserModel($newUser->getId());
 
     }
 

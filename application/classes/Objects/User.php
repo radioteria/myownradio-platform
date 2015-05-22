@@ -27,18 +27,18 @@ use Tools\Folders;
 class User extends ActiveRecordObject implements ActiveRecord {
 
     protected
-        $uid                = null,
-        $mail               = "",
-        $login              = null,
-        $password           = null,
-        $name               = null,
-        $info               = null,
-        $rights             = null,
-        $registration_date  = null,
-        $last_visit_date    = null,
-        $permalink          = "",
-        $avatar             = null,
-        $country_id         = null;
+        $uid = null,
+        $mail = "",
+        $login = null,
+        $password = null,
+        $name = null,
+        $info = null,
+        $rights = null,
+        $registration_date = null,
+        $last_visit_date = null,
+        $permalink = null,
+        $avatar = null,
+        $country_id = null;
 
     /**
      * @return mixed
@@ -113,7 +113,7 @@ class User extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return mixed
      */
-    public function getID() {
+    public function getId() {
         return $this->uid;
     }
 
@@ -245,10 +245,10 @@ class User extends ActiveRecordObject implements ActiveRecord {
      * @return mixed
      */
     public function toRestFormat() {
-        return Users::getInstance()->getUserByID($this->getID());
+        return Users::getInstance()->getUserByID($this->getId());
     }
 
-    function beforeUpdate() {
+    public function beforeUpdate() {
         UserValidator::validate($this);
     }
 

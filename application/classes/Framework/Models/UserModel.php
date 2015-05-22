@@ -107,7 +107,7 @@ class UserModel extends Model implements SingletonInterface {
     }
 
     public function getID() {
-        return $this->user->getID();
+        return $this->user->getId();
     }
 
     public function getLogin() {
@@ -149,7 +149,7 @@ class UserModel extends Model implements SingletonInterface {
      */
     public function changeAccountPlan(AccountPlan $plan, $source, $data = "") {
         $payment = new Payment();
-        $payment->setUserId($this->user->getID());
+        $payment->setUserId($this->user->getId());
         $payment->setPlanId($plan->getPlanId());
         $payment->setPaymentSource($source);
         $payment->setPaymentComment($data);
@@ -236,7 +236,7 @@ class UserModel extends Model implements SingletonInterface {
     public function delete() {
 
         /** @var Stream[] $streams */
-        $streams = Stream::getListByFilter("uid", [$this->user->getID()]);
+        $streams = Stream::getListByFilter("uid", [$this->user->getId()]);
 
         foreach ($streams as $stream) {
             (new DeleteQuery("r_link"))
@@ -245,7 +245,7 @@ class UserModel extends Model implements SingletonInterface {
         }
 
         /** @var Track[] $tracks */
-        $tracks = Track::getListByFilter("uid", [$this->user->getID()])
+        $tracks = Track::getListByFilter("uid", [$this->user->getId()])
             ->wrap(TrackModel::className());
 
         foreach ($tracks as $track) { $track->delete(); }

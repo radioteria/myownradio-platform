@@ -9,21 +9,21 @@
 namespace Framework\Handlers\api\check;
 
 
+use Business\Test\TestFields;
 use Framework\ControllerImpl;
-use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 use Framework\Services\ValidatorTemplates;
 
 class DoUserPermalink extends ControllerImpl {
-    public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
+    public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response, TestFields $test) {
+
         $field = $post->getRequired("field");
-        try {
-            ValidatorTemplates::validateUserPermalink($field, $user->getID());
-            $response->setData(["available" => true]);
-        } catch (ControllerException $ex) {
-            $response->setData(["available" => false]);
-        }
+
+        $result = $test->testUserPermalink($field);
+
+        $response->setData(["available" => $result === false || $result == $user->getID()]);
+
     }
 } 

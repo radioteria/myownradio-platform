@@ -23,12 +23,11 @@ class StreamValidatorException extends ValidatorException {
     }
 
     /**
-     * @param $mode
      * @return StreamValidatorException
      * todo: localize
      */
-    public static function newWrongAccessMode($mode) {
-        return self::tr("VALIDATOR_STREAM_ACCESS_MODE", ["mode" => $mode]);
+    public static function newWrongAccessMode() {
+        return self::tr("VALIDATOR_STREAM_ACCESS_MODE");
     }
 
     /**
@@ -40,12 +39,11 @@ class StreamValidatorException extends ValidatorException {
     }
 
     /**
-     * @param $category_id
      * @return StreamValidatorException
      * todo: localize
      */
-    public static function newWrongCategoryId($category_id) {
-        return self::tr("VALIDATOR_STREAM_CATEGORY", ["id" => $category_id]);
+    public static function newWrongCategoryId() {
+        return self::tr("VALIDATOR_STREAM_CATEGORY");
     }
 
     /**

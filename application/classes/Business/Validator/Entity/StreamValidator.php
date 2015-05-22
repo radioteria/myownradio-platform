@@ -19,81 +19,89 @@ use Objects\Stream;
  * Class StreamValidator
  * @package Business\Validator\Entity
  */
-class StreamValidator {
+class StreamValidator implements EntityValidator {
 
     private static $ACCESS_MODES = ["PUBLIC", "UNLISTED", "PRIVATE"];
     private static $INFO_MAX_LENGTH = 4096;
     private static $NAME_MIN_LENGTH = 3;
     private static $NAME_MAX_LENGTH = 32;
 
+    /** @var Stream */
+    private $stream;
+
     /**
      * @param Stream $stream
-     * @throws ValidatorException
+     * @throws StreamValidatorException
      */
     public static function validate(Stream $stream) {
-        self::validateStreamName($stream->getName());
-        self::validateAccessMode($stream->getAccess());
-        self::validateStreamCategory($stream->getCategory());
-        self::validateStreamInformation($stream->getInfo());
-        self::validateStreamPermalink($stream->getPermalink(), $stream->getID());
+        $validator = new self($stream);
+        $validator->validateAllFields();
+    }
+
+    public function __construct(Stream $stream) {
+        $this->stream = $stream;
     }
 
     /**
-     * @param $name
-     * @throws ValidatorException
+     * @throws StreamValidatorException
      */
-    private static function validateStreamName($name) {
-        (new BusinessValidator($name))
+    public function validateAllFields() {
+        $this->validateStreamName();
+        $this->validateStreamPermalink();
+        $this->validateAccessMode();
+        $this->validateStreamCategory();
+        $this->validateStreamInformation();
+    }
+
+    /**
+     * @throws StreamValidatorException
+     */
+    private function validateStreamName() {
+        (new BusinessValidator($this->stream->getName()))
             ->isInRange(self::$NAME_MIN_LENGTH, self::$NAME_MAX_LENGTH)
             ->throwOnFail(StreamValidatorException::newStreamNameLength());
     }
 
     /**
-     * @param $permalink
-     * @param $ignore_self
-     * @throws ValidatorException
+     * @throws StreamValidatorException
      */
-    private static function validateStreamPermalink($permalink, $ignore_self) {
+    private function validateStreamPermalink() {
 
-        if (is_null($permalink)) {
+        if (is_null($this->stream->getPermalink())) {
             return;
         }
 
-        (new BusinessValidator($permalink))
+        (new BusinessValidator($this->stream->getPermalink()))
             ->permalink()
             ->throwOnFail(ValidatorException::tr("VALIDATOR_PERMALINK_CHARS"))
-            ->isPermalinkAvailableForStream($ignore_self)
+            ->isPermalinkAvailableForStream($this->stream->getID())
             ->throwOnFail(ValidatorException::tr("VALIDATOR_PERMALINK_USED"));
 
     }
 
     /**
-     * @param $mode
-     * @throws ValidatorException
+     * @throws StreamValidatorException
      */
-    private static function validateAccessMode($mode) {
-        (new Validator($mode))->isExistsInArray(self::$ACCESS_MODES)
-            ->throwOnFail(StreamValidatorException::newWrongAccessMode($mode));
+    private function validateAccessMode() {
+        (new Validator($this->stream->getAccess()))->isExistsInArray(self::$ACCESS_MODES)
+            ->throwOnFail(StreamValidatorException::newWrongAccessMode());
     }
 
     /**
-     * @param $category_id
-     * @throws ValidatorException
+     * @throws StreamValidatorException
      */
-    private static function validateStreamCategory($category_id) {
-        (new Validator($category_id))
+    private function validateStreamCategory() {
+        (new Validator($this->stream->getCategory()))
             ->isNumber()
             ->isExistsInIterator(Category::getList()->getKeys())
-            ->throwOnFail(StreamValidatorException::newWrongCategoryId($category_id));
+            ->throwOnFail(StreamValidatorException::newWrongCategoryId());
     }
 
     /**
-     * @param $info
-     * @throws ValidatorException
+     * @throws StreamValidatorException
      */
-    private static function validateStreamInformation($info) {
-        (new Validator($info))
-            ->isString()
+    private function validateStreamInformation() {
+        (new Validator($this->stream->getInfo()))
             ->maxLength(self::$INFO_MAX_LENGTH)
             ->throwOnFail(StreamValidatorException::newStreamInformationTooLong());
     }

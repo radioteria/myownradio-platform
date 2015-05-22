@@ -52,16 +52,16 @@ class Playlist implements SingletonInterface, Injectable {
         $safeRow            = isset($availableRows[$sortRow]) ? $sortRow : 0;
         $safeOrder          = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
 
-        if ($color->validate()) {
+        if ($color->notEmpty()) {
             $query->where("color", $color->get());
         }
 
-        if ($filter->validate()) {
+        if ($filter->notEmpty()) {
             $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
                 Common::searchQueryFilter($filter->get())]);
         }
 
-        if ($offset->validate()) {
+        if ($offset->notEmpty()) {
             $query->offset($offset->get());
         }
 
@@ -85,16 +85,16 @@ class Playlist implements SingletonInterface, Injectable {
         $safeRow            = isset($availableRows[$sortRow]) ? $sortRow : 0;
         $safeOrder          = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
 
-        if ($color->validate()) {
+        if ($color->notEmpty()) {
             $query->where("color", $color->get());
         }
 
-        if ($filter->validate()) {
+        if ($filter->notEmpty()) {
             $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
                 Common::searchQueryFilter($filter->get())]);
         }
 
-        if ($offset->validate()) {
+        if ($offset->notEmpty()) {
             $query->offset($offset->get());
         }
 
@@ -175,16 +175,16 @@ class Playlist implements SingletonInterface, Injectable {
 
         $query->select("unique_id", "time_offset");
 
-        if ($color->validate()) {
+        if ($color->notEmpty()) {
             $query->where("color", $color);
         }
 
-        if ($filter->validate()) {
+        if ($filter->notEmpty()) {
             $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
                 Common::searchQueryFilter($filter->get())]);
         }
 
-        if ($offset->validate()) {
+        if ($offset->notEmpty()) {
             $query->offset($offset->get());
         }
 

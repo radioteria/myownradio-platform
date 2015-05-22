@@ -203,7 +203,7 @@ class Validator {
      * @return bool
      */
     public function ok() {
-        return $this->run()->validate();
+        return $this->run()->notEmpty();
     }
 
 }

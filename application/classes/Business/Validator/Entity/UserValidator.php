@@ -53,7 +53,7 @@ class UserValidator implements EntityValidator {
             ->throwOnFail(UserValidatorException::newIncorrectLoginLength())
             ->pattern(self::LOGIN_PATTERN)
             ->throwOnFail(UserValidatorException::newIncorrectLoginChars())
-            ->isLoginAvailable($this->user->getID())
+            ->isLoginAvailable($this->user->getId())
             ->throwOnFail(UserValidatorException::newLoginUnavailable());
     }
 
@@ -84,7 +84,7 @@ class UserValidator implements EntityValidator {
         (new BusinessValidator($this->user->getPermalink()))
             ->permalink()
             ->throwOnFail(ValidatorException::newIncorrectPermalink())
-            ->isPermalinkAvailableForUser($this->user->getID())
+            ->isPermalinkAvailableForUser($this->user->getId())
             ->throwOnFail(ValidatorException::newPermalinkIsUnavailable());
     }
 
@@ -92,7 +92,7 @@ class UserValidator implements EntityValidator {
         (new BusinessValidator($this->user->getEmail()))
             ->email()
             ->throwOnFail(UserValidatorException::newIncorrectEmail())
-            ->isEmailAvailable($this->user->getID())
+            ->isEmailAvailable($this->user->getId())
             ->throwOnFail(UserValidatorException::newUnavailableEmail());
     }
 

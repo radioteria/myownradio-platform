@@ -9,8 +9,7 @@
 namespace Business\Validator;
 
 
-use Framework\Services\DB\DBQuery;
-use Framework\Services\DB\Query\SelectQuery;
+use Business\Test\TestFields;
 use Framework\Services\ValidatorTemplates;
 use Objects\Country;
 
@@ -30,51 +29,38 @@ class BusinessValidator extends Validator {
     }
 
     /**
-     * @param int|null $user_id
+     * @param int|null $ignoredId
      * @return $this
      */
-    public function isPermalinkAvailableForUser($user_id = null) {
+    public function isPermalinkAvailableForUser($ignoredId = null) {
+
         $copy = $this->copy();
-        $copy->addPredicate(function ($value) use ($user_id) {
-
-            $dbq = DBQuery::getInstance();
-
-            $query = $dbq->selectFrom("r_users")
-                ->where("(permalink = :key OR uid = :key)", [":key" => $value]);
-
-            if ($user_id) {
-                $query->where("(uid != :ignore)", [":ignore" => $user_id]);
-            }
-
-            return count($query) == 0;
-
+        $copy->addPredicate(function ($value) use ($ignoredId) {
+            $test = TestFields::getInstance();
+            $result = $test->testUserPermalink($value);
+            return $result === false || $result == $ignoredId;
         });
 
         return $copy;
+
     }
 
     /**
-     * @param int|null $stream_id
+     * @param int|null $ignoredId
      * @return $this
      */
-    public function isPermalinkAvailableForStream($stream_id = null) {
+    public function isPermalinkAvailableForStream($ignoredId = null) {
+
         $copy = $this->copy();
-        $copy->addPredicate(function ($value) use ($stream_id) {
-
-            $dbq = DBQuery::getInstance();
-
-            $query = $dbq->selectFrom("r_streams")
-                ->where("(permalink = :key OR sid = :key)", [":key" => $value]);
-
-            if ($stream_id) {
-                $query->where("(sid != :ignore)", [":ignore" => $stream_id]);
-            }
-
-            return count($query) == 0;
+        $copy->addPredicate(function ($value) use ($ignoredId) {
+            $test = TestFields::getInstance();
+            $result = $test->testStreamPermalink($value);
+            return $result === false || $result == $ignoredId;
 
         });
 
         return $copy;
+
     }
 
     /**
@@ -85,11 +71,9 @@ class BusinessValidator extends Validator {
 
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($ignoredId) {
-            $query = new SelectQuery("r_users", "mail", $value);
-            if (is_numeric($ignoredId)) {
-                $query->where("uid != ?", [$ignoredId]);
-            }
-            return count($query) == 0;
+            $test = TestFields::getInstance();
+            $result = $test->testEmail($value);
+            return $result === false || $result == $ignoredId;
         });
 
         return $copy;
@@ -98,18 +82,16 @@ class BusinessValidator extends Validator {
 
 
     /**
-     * @param $ignore
+     * @param $ignoredId
      * @return $this
      */
-    public function isLoginAvailable($ignore = null) {
+    public function isLoginAvailable($ignoredId = null) {
 
         $copy = $this->copy();
-        $copy->addPredicate(function ($value) use ($ignore) {
-            $query = new SelectQuery("r_users", "login", $value);
-            if ($ignore !== null) {
-                $query->where("uid != ?", [$ignore]);
-            }
-            return count($query) == 0;
+        $copy->addPredicate(function ($value) use ($ignoredId) {
+            $test = TestFields::getInstance();
+            $result = $test->testLogin($value);
+            return $result === false || $result == $ignoredId;
         });
 
         return $copy;
@@ -122,7 +104,7 @@ class BusinessValidator extends Validator {
     public function isCountryIdCorrect() {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) {
-            return Country::getByID($value)->validate();
+            return Country::getByID($value)->notEmpty();
         });
         return $copy;
     }

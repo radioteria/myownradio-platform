@@ -89,7 +89,7 @@ class Folders implements Injectable, SingletonInterface {
     }
 
     function generateUserContentFolder(User $user) {
-        return sprintf("%s/ui_%d", self::MOR_CONTENT_FOLDER, $user->getID());
+        return sprintf("%s/ui_%d", self::MOR_CONTENT_FOLDER, $user->getId());
     }
 
     function genStreamUrl($id) {

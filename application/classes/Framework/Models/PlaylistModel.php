@@ -286,7 +286,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
         return Database::doInConnection(function (Database $conn) {
 
             do {
-                $generated = Common::generateUniqueID();
+                $generated = Common::generateUniqueId();
             } while ($conn->fetchOneColumn("SELECT COUNT(*) FROM r_link WHERE unique_id = ?", [$generated])->get());
 
             return $generated;

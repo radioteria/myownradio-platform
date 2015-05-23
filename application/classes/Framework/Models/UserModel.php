@@ -197,7 +197,7 @@ class UserModel extends Model implements SingletonInterface {
         $folders = Folders::getInstance();
         $validator = InputValidator::getInstance();
         $validator->validateImageMIME($file["tmp_name"]);
-        $random = Common::generateUniqueID();
+        $random = Common::generateUniqueId();
         $this->removeAvatar();
         $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
         $newImageFile = sprintf("avatar%05d_%s.%s", $this->userID, $random, strtolower($extension));

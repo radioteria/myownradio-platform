@@ -10,6 +10,7 @@ namespace Framework;
 
 
 use Framework\Injector\Injectable;
+use Tools\Common;
 use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -23,11 +24,29 @@ class Preferences implements Injectable, SingletonInterface {
         ]
     ];
 
+    private static $prefs;
+
+    public static function staticInit() {
+        self::$prefs = parse_ini_file("settings.ini", true);
+    }
+
     /**
-     * @param null $_
+     * @param string $section
+     * @param string $setting
+     * @param array $context
+     * @return mixed
+     */
+    public static function getSetting($section, $setting, array $context = null) {
+        if ($context === null) {
+            return self::$prefs[$section][$setting];
+        }
+        return Common::quickReplace(self::$prefs[$section][$setting], $context);
+    }
+
+    /**
      * @return Optional
      */
-    public function get($_ = null) {
+    public function get() {
         $count = func_num_args();
         $accumulator = self::$config;
         for ($i = 0; $i < $count; $i++) {

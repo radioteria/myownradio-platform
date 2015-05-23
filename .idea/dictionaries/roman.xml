@@ -4,14 +4,17 @@
       <w>aacplus</w>
       <w>addr</w>
       <w>authtoken</w>
+      <w>bitrate</w>
       <w>concat</w>
       <w>ctor</w>
+      <w>ffprobe</w>
       <w>filesize</w>
       <w>finfo</w>
       <w>fpdo</w>
       <w>gzhandler</w>
       <w>hashtags</w>
       <w>mpeg</w>
+      <w>prefs</w>
       <w>referer</w>
       <w>signup</w>
       <w>streamcovers</w>

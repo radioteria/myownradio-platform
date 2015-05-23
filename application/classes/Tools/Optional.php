@@ -16,11 +16,17 @@ class Optional implements \JsonSerializable {
     private $value;
     private $predicate;
 
+    private static $empty;
+
+    public static function staticInit() {
+        self::$empty = self::noValue();
+    }
+
     /**
      * @param Object $value
-     * @param callable $predicate
+     * @param callable|boolean $predicate
      */
-    public function __construct($value, callable $predicate) {
+    public function __construct($value, $predicate) {
         $this->value = $value;
         $this->predicate = $predicate;
     }
@@ -133,7 +139,13 @@ class Optional implements \JsonSerializable {
      * @return boolean
      */
     private function test() {
-        return boolval(call_user_func($this->predicate, $this->value));
+        if (is_bool($this->predicate)) {
+            return $this->predicate;
+        }
+        if (is_callable($this->predicate)) {
+            return boolval(call_user_func($this->predicate, $this->value));
+        }
+        return false;
     }
 
     /*---------------------------------------------------------------*/
@@ -238,7 +250,7 @@ class Optional implements \JsonSerializable {
      * @return Optional
      */
     public static function noValue() {
-        return new self(null, function () { return false; });
+        return self::$empty;
     }
 
     /**
@@ -246,7 +258,7 @@ class Optional implements \JsonSerializable {
      * @return Optional
      */
     public static function hasValue($value) {
-        return new self($value, function () { return true; });
+        return new self($value, true);
     }
 
     /**
@@ -272,3 +284,4 @@ class Optional implements \JsonSerializable {
     }
 
 }
+

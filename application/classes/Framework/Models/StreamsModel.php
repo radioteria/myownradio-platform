@@ -80,7 +80,7 @@ class StreamsModel implements Injectable, SingletonInterface {
         }
 
         // Generate Stream Cover
-        $random = Common::generateUniqueID();
+        $random = Common::generateUniqueId();
         $newImageFile = sprintf("stream%05d_%s.%s", $stream->getID(), $random, "png");
         $newImagePath = Folders::getInstance()->genStreamCoverPath($newImageFile);
 

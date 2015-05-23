@@ -20,6 +20,7 @@ function loadClass($class_name) {
     $filename = APP_ROOT . str_replace("\\", "/", $class_name) . '.php';
     if (file_exists($filename)) {
         require $filename;
+        if (method_exists($class_name, 'static_init')) { $class_name::staticInit(); }
     }
 }
 

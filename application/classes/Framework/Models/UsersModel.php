@@ -84,7 +84,7 @@ class UsersModel implements SingletonInterface, Injectable {
             $query->values("ip", $clientAddress);
             $query->values("token", $token);
             $query->values("permanent", 1);
-            $query->values("client_id", Common::generateUniqueID(self::CLIENT_ID_LENGTH));
+            $query->values("client_id", Common::generateUniqueId(self::CLIENT_ID_LENGTH));
             $query->values("authorized = NOW()");
             $query->values("http_user_agent", $clientUserAgent);
             $query->values("session_id", $sessionId);
@@ -164,7 +164,7 @@ class UsersModel implements SingletonInterface, Injectable {
         $newUser->save();
 
         // Generate Stream Cover
-        $random = Common::generateUniqueID();
+        $random = Common::generateUniqueId();
         $newImageFile = sprintf("avatar%05d_%s.%s", $newUser->getId(), $random, "png");
         $newImagePath = Folders::getInstance()->genAvatarPath($newImageFile);
 

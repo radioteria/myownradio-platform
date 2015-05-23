@@ -15,7 +15,7 @@ class Common {
 
     /**
      * @param $delimiter
-     * @param $str
+     * @param string|null $str
      * @return array|null
      */
     public static function split($delimiter, $str) {
@@ -28,7 +28,7 @@ class Common {
      * @param array $args
      * @return mixed
      */
-    private function quick_replace($pattern, array $args = null) {
+    public static function quickReplace($pattern, array $args = null) {
         return preg_replace_callback('~(%[a-z0-9\_]+%)~', function ($match) use ($args) {
             $key = trim($match[1], "%");
             if (isset($args[$key])) {
@@ -58,7 +58,7 @@ class Common {
 
     }
 
-    static function generateUniqueID($length = self::GENERATED_ID_LENGTH) {
+    static function generateUniqueId($length = self::GENERATED_ID_LENGTH) {
 
         $idCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         $id = "";

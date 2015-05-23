@@ -206,7 +206,7 @@ class StreamModel extends Model implements SingletonInterface {
 
         $validator->validateImageMIME($file["tmp_name"]);
 
-        $random = Common::generateUniqueID();
+        $random = Common::generateUniqueId();
 
         $this->removeCover();
 

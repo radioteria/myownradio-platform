@@ -150,12 +150,12 @@ class UsersModel implements SingletonInterface, Injectable {
      */
     public function completeRegistration($code, $login, $password, $name, $info, $permalink, $country) {
 
-        $email = self::parseRegistrationCode($code);
+        $code = self::parseRegistrationCode($code);
         $pwd = new Password($password);
 
         $newUser = new User();
 
-        $newUser->setEmail($email);
+        $newUser->setEmail($code->getEmail());
         $newUser->setLogin($login);
         $newUser->setPassword($pwd->hash());
         $newUser->setName($name);
@@ -181,7 +181,7 @@ class UsersModel implements SingletonInterface, Injectable {
         $notify = new Mailer("no-reply@myownradio.biz", "MyOwnRadio Service");
         $notify->addAddress("roman@homefs.biz");
         $notify->setSubject("You have new user on MyOwnRadio service");
-        $notify->setBody(sprintf("Hello! You have a new user '%s' (%s).", $login, $email));
+        $notify->setBody(sprintf("Hello! You have a new user '%s' (%s).", $login, $code));
         $notify->queue();
         /* End of special */
 
@@ -192,27 +192,16 @@ class UsersModel implements SingletonInterface, Injectable {
     }
 
     /**
-     * @param $code
+     * @param $base64
      * @return mixed
      * @throws \Framework\Exceptions\ControllerException
      */
-    public function parseRegistrationCode($code) {
+    public function parseRegistrationCode($base64) {
 
-        $exception = ControllerException::tr("ERROR_CODE_INCORRECT");
+        $code = new Code($base64);
+        $code->hasOrError("email", "code");
 
-        $json = base64_decode($code);
-
-        if ($json === false) {
-            throw $exception;
-        }
-
-        $decoded = json_decode($json, true);
-
-        if (is_null($decoded) || empty($decoded["email"]) || empty($decoded["code"])) {
-            throw $exception;
-        }
-
-        return $decoded["email"];
+        return $code;
 
     }
 
@@ -225,7 +214,7 @@ class UsersModel implements SingletonInterface, Injectable {
         $credentials = self::parseResetPasswordCode($code);
         $pwd = new Password($password);
 
-        $user = new UserModel($credentials["login"], $credentials["password"]);
+        $user = new UserModel($credentials->getLogin(), $credentials->getPassword());
 
         $user->changePasswordNow($pwd);
 
@@ -240,7 +229,7 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $code = new Code($base64);
 
-        $code->has("login", "password");
+        $code->hasOrError("login", "password");
 
         Database::doInConnection(function (Database $db) use ($code) {
 

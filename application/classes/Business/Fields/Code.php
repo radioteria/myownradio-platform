@@ -11,9 +11,6 @@ namespace Business\Fields;
 /**
  * Class Code
  * @package Business\Fields
- * @method getLogin
- * @method getPassword
- * @method getEmail
  */
 class Code {
 
@@ -40,7 +37,7 @@ class Code {
         return $this->object[$key];
     }
 
-    public function has() {
+    public function hasOrError() {
         foreach (func_get_args() as $arg) {
             if (!isset($this->object[$arg])) {
                 throw CodeException::newCodeIncorrect();

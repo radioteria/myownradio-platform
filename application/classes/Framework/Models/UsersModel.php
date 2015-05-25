@@ -9,6 +9,7 @@
 namespace Framework\Models;
 
 
+use Business\Fields\Code;
 use Business\Fields\Password;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
@@ -231,31 +232,21 @@ class UsersModel implements SingletonInterface, Injectable {
     }
 
     /**
-     * @param $code
-     * @return mixed
+     * @param $base64
+     * @return Code
      * @throws \Framework\Exceptions\ControllerException
      */
-    public function parseResetPasswordCode($code) {
+    public function parseResetPasswordCode($base64) {
 
-        $exception = ControllerException::tr("ERROR_CODE_INCORRECT");
+        $code = new Code($base64);
 
-        $json = base64_decode($code);
+        $code->has("login", "password");
 
-        if ($json === false) {
-            throw $exception;
-        }
-
-        $decoded = json_decode($json, true);
-
-        if (empty($decoded["login"]) || empty($decoded["password"])) {
-            throw $exception;
-        }
-
-        Database::doInConnection(function (Database $db) use ($decoded) {
+        Database::doInConnection(function (Database $db) use ($code) {
 
             $query = $db->getDBQuery()->selectFrom("r_users");
-            $query->where("login", $decoded["login"]);
-            $query->where("password", $decoded["password"]);
+            $query->where("login", $code->getLogin());
+            $query->where("password", $code->getPassword());
             $query->select("*");
 
             $db->fetchOneRow($query)->getOrElseThrow(
@@ -264,7 +255,7 @@ class UsersModel implements SingletonInterface, Injectable {
 
         });
 
-        return $decoded;
+        return $code;
 
     }
 

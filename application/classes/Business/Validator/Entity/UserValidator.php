@@ -49,7 +49,7 @@ class UserValidator implements EntityValidator {
 
     public function validateLogin() {
         (new BusinessValidator($this->user->getLogin()))
-            ->isInRange(self::$LOGIN_MIN_LENGTH, self::$LOGIN_MAX_LENGTH)
+            ->length(self::$LOGIN_MIN_LENGTH, self::$LOGIN_MAX_LENGTH)
             ->throwOnFail(UserValidatorException::newIncorrectLoginLength())
             ->pattern(self::$LOGIN_PATTERN)
             ->throwOnFail(UserValidatorException::newIncorrectLoginChars())
@@ -90,7 +90,7 @@ class UserValidator implements EntityValidator {
 
     public function validateEmail() {
         (new BusinessValidator($this->user->getEmail()))
-            ->email()
+            ->isEmail()
             ->throwOnFail(UserValidatorException::newIncorrectEmail())
             ->isEmailAvailable($this->user->getId())
             ->throwOnFail(UserValidatorException::newUnavailableEmail());

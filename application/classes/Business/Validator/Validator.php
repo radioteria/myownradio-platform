@@ -27,11 +27,35 @@ class Validator {
     }
 
     /**
+     * @param array|callable $callable
+     * @return $this
+     */
+    function predicate($callable) {
+        $copy = $this->copy();
+        $copy->addPredicate(function ($value) use (&$callable) {
+            return boolval(call_user_func($callable, $value));
+        });
+        return $copy;
+    }
+
+    /**
      * @return $this
      */
     function isNumber() {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) { return is_numeric($value); });
+        return $copy;
+    }
+
+    /**
+     * @param $that
+     * @return $this
+     */
+    function is($that) {
+        $copy = $this->copy();
+        $copy->addPredicate(function ($value) use (&$that) {
+            return $value === $that || $value instanceof $that;
+        });
         return $copy;
     }
 
@@ -47,9 +71,9 @@ class Validator {
     /**
      * @return $this
      */
-    function isStringOrNull() {
+    function isNull() {
         $copy = $this->copy();
-        $copy->addPredicate(function ($value) { return is_null($value) || is_string($value); });
+        $copy->addPredicate(function ($value) { return is_null($value); });
         return $copy;
     }
 
@@ -78,7 +102,7 @@ class Validator {
      * @param $max
      * @return $this
      */
-    function isInRange($min, $max) {
+    function length($min, $max) {
         return $this->minLength($min)->maxLength($max);
     }
 
@@ -103,7 +127,7 @@ class Validator {
     }
 
     /**
-     * @param $pattern
+     * @param string $pattern
      * @return $this
      */
     function pattern($pattern) {
@@ -116,7 +140,7 @@ class Validator {
      * @param $array
      * @return $this
      */
-    function isExistsInArray($array) {
+    function existsInArray($array) {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($array) { return array_search($value, $array) !== false; });
         return $copy;
@@ -126,7 +150,7 @@ class Validator {
      * @param \Iterator $iterator
      * @return $this
      */
-    function isExistsInIterator(\Iterator $iterator) {
+    function existsInIterator(\Iterator $iterator) {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($iterator) {
             foreach ($iterator as $item) {
@@ -142,7 +166,7 @@ class Validator {
     /**
      * @return $this
      */
-    function email() {
+    function isEmail() {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) { return preg_match(self::EMAIL_REGEXP_PATTERN, $value); });
         return $copy;

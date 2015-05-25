@@ -218,7 +218,7 @@ class User extends ActiveRecordObject implements ActiveRecord {
     }
 
     public function getKey() {
-        return isset($this->permalink) ? $this->permalink : $this->uid;
+        return $this->permalink ?: $this->uid;
     }
 
     public function getAvatarUrl() {

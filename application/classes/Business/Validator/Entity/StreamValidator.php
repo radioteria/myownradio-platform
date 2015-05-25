@@ -58,7 +58,7 @@ class StreamValidator implements EntityValidator {
      */
     private function validateStreamName() {
         (new BusinessValidator($this->stream->getName()))
-            ->isInRange(self::$NAME_MIN_LENGTH, self::$NAME_MAX_LENGTH)
+            ->length(self::$NAME_MIN_LENGTH, self::$NAME_MAX_LENGTH)
             ->throwOnFail(StreamValidatorException::newStreamNameLength());
     }
 
@@ -83,7 +83,7 @@ class StreamValidator implements EntityValidator {
      * @throws StreamValidatorException
      */
     private function validateAccessMode() {
-        (new Validator($this->stream->getAccess()))->isExistsInArray(self::$ACCESS_MODES)
+        (new Validator($this->stream->getAccess()))->existsInArray(self::$ACCESS_MODES)
             ->throwOnFail(StreamValidatorException::newWrongAccessMode());
     }
 
@@ -93,7 +93,7 @@ class StreamValidator implements EntityValidator {
     private function validateStreamCategory() {
         (new Validator($this->stream->getCategory()))
             ->isNumber()
-            ->isExistsInIterator(Category::getList()->getKeys())
+            ->existsInIterator(Category::getList()->getKeys())
             ->throwOnFail(StreamValidatorException::newWrongCategoryId());
     }
 

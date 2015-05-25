@@ -7,6 +7,7 @@
  */
 
 namespace Business\Fields;
+use Framework\Services\DB\Query\SelectQuery;
 
 /**
  * Class Code
@@ -44,6 +45,12 @@ class Code {
             }
         }
         return true;
+    }
+
+    public function addWhere(SelectQuery $query) {
+        foreach ($this->object as $key) {
+            $query->where($key, $this->object[$key]);
+        }
     }
 
 }

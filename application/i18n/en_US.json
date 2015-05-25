@@ -18,6 +18,8 @@
     "VALIDATOR_PERMALINK_UNAVAILABLE": "This permalink is unavailable",
     "VALIDATOR_PERMALINK_CHARS": "Permalink may contain only letters, numbers and dashes",
 
+    "VALIDATOR_PASSWORD_LENGTH": "Password length must be in range from %0% to %0% chars",
+
     "ERROR_NO_IMAGE_ATTACHED": "No image file attached to request",
     "ERROR_NO_ARGUMENT_SPECIFIED": "No value for argument %0% specified",
     "ERROR_USER_NOT_FOUND": "User with id %0% not found",

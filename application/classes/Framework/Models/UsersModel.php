@@ -9,6 +9,7 @@
 namespace Framework\Models;
 
 
+use Business\Fields\Password;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
@@ -45,6 +46,8 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $session = HttpSession::getInstance();
 
+        $pwd = new Password($password);
+
         // Try to find user specified by login or email
         $user = DBQuery::getInstance()
             ->selectFrom("r_users")
@@ -52,7 +55,7 @@ class UsersModel implements SingletonInterface, Injectable {
             ->fetchOneRow()
             ->getOrElseThrow(UnauthorizedException::noUserByLogin($login));
 
-        if (!password_verify($password, $user["password"])) {
+        if (!$pwd->matches($user["password"])) {
             throw UnauthorizedException::wrongPassword();
         }
 
@@ -147,13 +150,13 @@ class UsersModel implements SingletonInterface, Injectable {
     public function completeRegistration($code, $login, $password, $name, $info, $permalink, $country) {
 
         $email = self::parseRegistrationCode($code);
-        $crypt = password_hash($password, PASSWORD_DEFAULT);
+        $pwd = new Password($password);
 
         $newUser = new User();
 
         $newUser->setEmail($email);
         $newUser->setLogin($login);
-        $newUser->setPassword($crypt);
+        $newUser->setPassword($pwd->hash());
         $newUser->setName($name);
         $newUser->setInfo($info);
         $newUser->setPermalink($permalink);
@@ -219,10 +222,11 @@ class UsersModel implements SingletonInterface, Injectable {
     public function completePasswordReset($code, $password) {
 
         $credentials = self::parseResetPasswordCode($code);
+        $pwd = new Password($password);
 
         $user = new UserModel($credentials["login"], $credentials["password"]);
 
-        $user->changePasswordNow($password);
+        $user->changePasswordNow($pwd);
 
     }
 

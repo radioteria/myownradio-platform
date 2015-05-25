@@ -2,6 +2,7 @@
 
 namespace Framework\Models;
 
+use Business\Fields\Password;
 use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\Stats;
@@ -128,18 +129,19 @@ class UserModel extends Model implements SingletonInterface {
 
     public function changePassword($newPassword, $oldPassword) {
 
-        if (!password_verify($oldPassword, $this->user->getPassword())) {
+        $new = new Password($newPassword);
+        $old = new Password($oldPassword);
+
+        if (!$old->matches($this->user->getPassword())) {
             throw UnauthorizedException::wrongPassword();
         }
 
-        $this->changePasswordNow($newPassword);
+        $this->changePasswordNow($new);
 
     }
 
-    public function changePasswordNow($password) {
-        ValidatorTemplates::validatePassword($password);
-        $crypt = password_hash($password, PASSWORD_DEFAULT);
-        $this->user->setPassword($crypt)->save();
+    public function changePasswordNow(Password $password) {
+        $this->user->setPassword($password->hash())->save();
     }
 
     /**

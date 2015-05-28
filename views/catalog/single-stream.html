@@ -19,12 +19,12 @@
                         <ul class="icons">
                             <li ng-if="data.channel.uid === account.user.uid">
                                 <a href="/profile/edit-stream/{{ data.channel.sid }}">
-                                    <i class="icon-mode-edit" mor-tooltip="{{ tr('FR_EDIT_CHANNEL_INFO') }}"></i>
+                                    <i class="icon-mode-edit" mor-tooltip="{{ tr('TOOLTIP_EDIT_STATION_INFO') }}"></i>
                                 </a>
                             </li>
                             <li ng-if="data.channel.uid === account.user.uid">
                                 <a href="/profile/streams/{{ data.channel.sid }}">
-                                    <i class="icon-toc" mor-tooltip="{{ tr('FR_EDIT_CHANNEL_TRACKLIST') }}"></i>
+                                    <i class="icon-toc" mor-tooltip="{{ tr('TOOLTIP_EDIT_STATION_TRACKLIST') }}"></i>
                                 </a>
                             </li>
                             <li ng-if="data.channel.uid === account.user.uid" class="vertical-separator"></li>
@@ -32,15 +32,15 @@
                                 <icon share-channel="data.channel"></icon>
                             </li>
                             <li ng-init="badgeShown=false" ng-click-outside="badgeShown=false">
-                                <i class="icon-settings" ng-class="{shown: badgeShown}" ng-click="badgeShown=!badgeShown" mor-tooltip="{{ tr('FR_SETTINGS') }}"></i>
+                                <i class="icon-settings" ng-class="{shown: badgeShown}" ng-click="badgeShown=!badgeShown" mor-tooltip="{{ tr('LABEL_SETTINGS') }}"></i>
                                 <div ng-show="badgeShown" class="settings-badge">
                                     <h3>
-                                        <translate>FR_PLAYER_AUDIO_FORMAT</translate>
+                                        <translate>LABEL_AUDIO_FORMAT</translate>
                                     </h3>
                                     <h4 class="format">aac+</h4>
                                     <ul class="formats">
                                         <li ng-repeat="f in defaults.formats.aac"
-                                            ng-class="{current: defaults.format == f.key}"
+                                            ng-class="{ current: defaults.format == f.key }"
                                             ng-click="setDefaultFormat(f.key)"
                                             ng-bind="f.bitrate"></li>
                                     </ul>
@@ -48,7 +48,7 @@
                                     <h4 class="format">mp3</h4>
                                     <ul class="formats">
                                         <li ng-repeat="f in defaults.formats.mp3"
-                                            ng-class="{current: defaults.format == f.key}"
+                                            ng-class="{ current: defaults.format == f.key }"
                                             ng-click="setDefaultFormat(f.key)"
                                             ng-bind="f.bitrate"></li>
                                     </ul>
@@ -57,7 +57,7 @@
                                     <ul class="formats">
                                         <li>
                                             <a target="_self" href="/content/m3u/{{ data.channel | channelKey }}.m3u">
-                                                <translate>FR_PLAYER_OPEN_EXTERNAL</translate>
+                                                <translate>LABEL_OPEN_EXTERNAL</translate>
                                             </a>
                                         </li>
                                     </ul>
@@ -73,15 +73,15 @@
                     </div>
                     <!-- CHANNEL STATS -->
                     <div class="stats">
-                        <span mor-tooltip="{{ pl('FR_COUNT_USERS_LISTENING', data.channel.listeners_count) }}">
+                        <span mor-tooltip="{{ pl('TOOLTIP_USERS_LISTENING', data.channel.listeners_count) }}">
                             <i class="icon-hearing"></i>
                             <span>{{ data.channel.listeners_count | number }}</span>
                         </span>
-                        <span mor-tooltip="{{ pl('FR_STREAM_BOOKMARKED_TIMES', data.channel.bookmarks_count) }}">
+                        <span mor-tooltip="{{ pl('TOOLTIP_BOOKMARKED_TIMES', data.channel.bookmarks_count) }}">
                             <i bookmark-icon="data.channel" class="icon-heart hoverable" ng-click="action.bookmark()"></i>
                             <span>{{ data.channel.bookmarks_count | number }}</span>
                         </span>
-                        <span mor-tooltip="{{ pl('FR_STREAM_PLAYED_TIMES', data.channel.playbacks) }}">
+                        <span mor-tooltip="{{ pl('TOOLTIP_PLAYED_TIMES', data.channel.playbacks) }}">
                             <i class="icon-play-circle-fill"></i>
                             <span>{{ data.channel.playbacks | number }}</span>
                         </span>
@@ -94,7 +94,7 @@
                             </div>
                             <div ng-if="player.isPlaying && player.currentStream.sid == data.channel.sid">
                                 <div class="key overflow-hidden">
-                                    <div class="left">{{ player.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}</div>
+                                    <div class="left">{{ player.isBuffering ? tr('LABEL_BUFFERING') : tr("LABEL_NOW_PLAYING") }}</div>
                                     <div class="left" like-track="player.nowPlaying"></div>
                                 </div>
                                 <div class="value">
@@ -110,17 +110,17 @@
             <div class="tracks-toggle" ng-click="scheduleShown = !scheduleShown">
                 <span ng-show="!scheduleShown" class="tracks-toggle-text-content">
                     <i class="icon-chevron-down"></i>
-                    <translate>FR_SHOW</translate>
+                    <translate>LABEL_SHOW</translate>
                 </span>
                 <span ng-show="scheduleShown" class="tracks-toggle-text-content">
                     <i class="icon-chevron-up"></i>
-                    <translate>FR_HIDE</translate>
+                    <translate>LABEL_HIDE</translate>
                 </span>
                 <span class="tracks-toggle-text-content">
-                    <translate>FR_RECENT_UPCOMING</translate>
+                    <translate>LABEL_RECENT_UPCOMING</translate>
                 </span>
             </div>
-            <div ng-class="{open: scheduleShown}" class="tracks-list">
+            <div ng-class="{ open: scheduleShown }" class="tracks-list">
                 <div class="track-row" ng-class="{current: $index == schedule.source.current}" ng-repeat="track in schedule.destination.tracks">
                     <div class="fixed-width">
                         <div class="track-duration" ng-bind="track.duration | msToTime"></div>
@@ -132,8 +132,8 @@
                         <div class="track-title">
                             <span ng-bind="track.title"></span>
                             <span class="track-edit-tools" ng-if="data.channel.uid == account.user.uid">
-                                <i class="icon-mode-edit" mor-tooltip="{{ tr('FR_EDIT_TRACK_INFO') }}" ng-click="trackAction.editTrack([track])"></i>
-                                <i class="icon-trash" mor-tooltip="{{ tr('FR_REMOVE_TRACK_FROM_STREAM') }}" ng-click="action.removeTrack(track)"></i>
+                                <i class="icon-mode-edit" mor-tooltip="{{ tr('MENU_EDIT_TRACK') }}" ng-click="trackAction.editTrack([track])"></i>
+                                <i class="icon-trash" mor-tooltip="{{ tr('LABEL_REMOVE_FROM_STATION') }}" ng-click="action.removeTrack(track)"></i>
                             </span>
                         </div>
                     </div>
@@ -154,7 +154,7 @@
     <div class="fixed-width">
         <div class="similar-streams-wrapper" ng-if="data.channels.items.length > 0">
             <div class="title">
-                <translate filter="uppercase">FR_SIMILAR_CHANNELS</translate>
+                <translate filter="uppercase">FRAME_SIMILAR_STATIONS</translate>
             </div>
             <ul class="similar-streams" np-refresh="stream">
                 <li ng-repeat="stream in data.channels.items" synchronize="stream" sync-key="sid">

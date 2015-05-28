@@ -36,36 +36,8 @@
                     <div class="spacer"></div>
                 </div>
 
-                <ul class="context-menu select-persistent fixed" id="track-menu">
-                    <li>
-                        <i class="icon-add"></i> <translate>FR_ADD_TO_STREAM</translate><span class="expand"></span>
-                        <ul class="context-menu drop-down right-side">
-                            <li class="hiddenOverflow relative" ng-repeat="stream in account.streams" ng-click="addToStream(stream)">
-                                <span class="grey right" ng-bind="stream.tracks_count"></span>
-                                <i class="icon-wifi-tethering"></i>
-                                <span class="ellipsis" ng-bind="stream.name"></span>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <i class="icon-create"></i> <translate>FR_CHANGE_COLOR</translate><span class="expand"></span>
-                        <ul class="context-menu drop-down right-side">
-                            <li ng-repeat="group in lib.groups" ng-click="changeGroup(group)">
-                                <i style="color:{{ group.color_code || 'none' }}" class="icon-circle"></i> {{ group.color_name }}
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="menu-item divider"></li>
-                    <li class="menu-item" ng-click="edit()">
-                        <i class="icon-mode-edit"></i>
-                        <translate>FR_EDIT_TRACK_INFO</translate>
-                    </li>
-                    <li class="menu-item divider"></li>
-                    <li ng-click="deleteSelected()">
-                        <i class="icon-delete"></i>
-                        <translate>FR_DELETE_TRACKS</translate>
-                    </li>
-                </ul>
+                <div ng-include="'/views/blocks/library-track-menu.html'"></div>
+
                 <table class="tracks">
                     <tbody>
                     <tr style="background-color: #ffffff">

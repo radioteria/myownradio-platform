@@ -1,11 +1,19 @@
 <div class="page-sub-title right">
-    <a href="/new/" active-tab="^\/new\/"><translate>FR_CATALOG_NEW_STATIONS</translate></a>
+    <a href="/streams/" active-tab="^\/streams\/">
+        <translate>LABEL_POPULAR_STATIONS</translate>
+    </a>
     |
-    <a href="/streams/" active-tab="^\/streams\/"><translate>FR_CATALOG_POPULAR_STATIONS</translate></a>
+    <a href="/new/" active-tab="^\/new\/">
+        <translate>LABEL_NEW_STATIONS</translate>
+    </a>
     <span ng-if="account.authorized">
         |
-        <a href="/my/" active-tab="^\/my\/"><translate>FR_CATALOG_MY_STATIONS</translate></a>
+        <a href="/my/" active-tab="^\/my\/">
+            <translate>LABEL_MY_STATIONS</translate>
+        </a>
         |
-        <a href="/bookmarks/" active-tab="^\/bookmarks\/"><translate>FR_CATALOG_MY_BOOKMARKS</translate></a>
+        <a href="/bookmarks/" active-tab="^\/bookmarks\/">
+            <translate>LABEL_MY_BOOKMARKS</translate>
+        </a>
     </span>
 </div>

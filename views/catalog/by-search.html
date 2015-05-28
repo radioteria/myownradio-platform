@@ -2,11 +2,11 @@
     <div id="page-contents">
         <div ng-include="'/views/catalog/right-menu.html'"></div>
         <div class="page-sub-title">
-            <pluralize count="data.channels.items.length" when="FR_CHANNELS_BY_SEARCH_TITLE" args="data"></pluralize>
+            <pluralize count="data.channels.items.length" when="RESULT_BY_SEARCH" args="data"></pluralize>
         </div>
         <div ng-include="'/views/catalog/grid.html'"></div>
         <div class="no-streams" ng-if="empty">
-            <translate>FR_NO_STREAMS_CREATE_NEW</translate>
+            <translate>RESULT_EMPTY_SEARCH</translate>
         </div>
     </div>
 </div>

@@ -118,14 +118,13 @@
                     }
                     return obj;
                 } else if (angular.isString(input)) {
-                    return input.replace(/(%[a-z0-9\\_\\.]*%)/g, function (match) {
-                        var key = match.substr(1, match.length - 2);
-                        return htmlEscape(grabObject(context, key, count));
+                    return input.replace(/\{\{\s*([a-z0-9\\_\.]*)\s*\}\}/g, function (k1, k2) {
+                        return htmlEscape(grabObject(context, k2, count));
                     });
                 } else if (angular.isNumber(input)) {
                     return input;
                 } else {
-                    return "FR_UNKNOWN_OBJECT";
+                    return "???";
                 }
             },
             pluralize: function (when, count, context, offset) {

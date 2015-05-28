@@ -261,6 +261,7 @@
     "FR_SHARE_TAB_SHARE"                : "Share",
     "FR_SHARE_TAB_EMBED"                : "Embed",
     "FR_SHARE_TITLE"                    : "Share radio station <b>%name%</b>",
+    "FR_SHARE_TITLE"                    : "Share radio station <b>%name%</b>",
     "FR_SHARE_THIS"                     : "Share this radio station",
 
     "FR_CHANGE_PLAN_TITLE"              : "Change Plan",

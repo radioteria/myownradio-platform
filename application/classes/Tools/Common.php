@@ -29,14 +29,34 @@ class Common {
      * @return mixed
      */
     public static function quickReplace($pattern, array $args = null) {
-        return preg_replace_callback('~(%[a-z0-9\_]+%)~', function ($match) use ($args) {
-            $key = trim($match[1], "%");
+        return preg_replace_callback('~%([a-z0-9\_\.]+)%~', function ($match) use ($args) {
+            $key = $match[1];
             if (isset($args[$key])) {
                 return $args[$key];
             } else {
                 return "";
             }
         }, $pattern);
+    }
+
+    /**
+     * @param string $template
+     * @param array $context
+     * @return string
+     */
+    public static function deepTemplate($template, array $context = null) {
+        return preg_replace_callback('~{{\s*([a-z0-9\_\.]+)\s*}}~', function ($match) use ($context) {
+            $path = explode(".", $match[1]);
+            $current = $context;
+            foreach ($path as $item) {
+                if (is_array($current) && array_key_exists($item, $current)) {
+                    $current = $current[$item];
+                } else {
+                    return "";
+                }
+            }
+            return $current;
+        }, $template);
     }
 
     public static function searchQueryFilter($text) {

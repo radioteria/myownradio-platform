@@ -10,16 +10,16 @@
             <div class="info-section">
                 <div class="now-playing" mor-tooltip="{{ channel.now_playing }}">
                     <i class="icon-music"></i>
-                    {{ channel.now_playing }}
+                    <span ng-bind="channel.now_playing"></span>
                 </div>
                 <div class="stream-name">
                     <a ng-href="{{ channel | channelLink }}" ng-bind="channel.name"></a>
                 </div>
                 <div class="stats">
-                    <span mor-tooltip="{{ pl('FR_COUNT_USERS_LISTENING', channel.listeners_count) }}">
+                    <span mor-tooltip="{{ pl('TOOLTIP_USERS_LISTENING', channel.listeners_count) }}">
                         <i class="icon-hearing"></i><span>{{ channel.listeners_count | number }}</span>
                     </span>
-                    <span mor-tooltip="{{ pl('FR_STREAM_BOOKMARKED_TIMES', channel.bookmarks_count) }}">
+                    <span mor-tooltip="{{ pl('TOOLTIP_BOOKMARKED_TIMES', channel.bookmarks_count) }}">
                         <i bookmark-icon="channel" class="icon-heart hoverable" ng-click="actions.bookmark()"></i>
                         <span>{{ channel.bookmarks_count | number }}</span>
                     </span>

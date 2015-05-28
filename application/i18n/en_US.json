@@ -1,15 +1,15 @@
 {
 
     "VALIDATOR_STREAM_ACCESS_MODE": "Entered wrong access mode",
-    "VALIDATOR_STREAM_INFO_LENGTH": "Radio station information may contain from %0% to %0% chars",
+    "VALIDATOR_STREAM_INFO_LENGTH": "Radio station information may contain from {{ 0 }} to {{ 1 }} chars",
     "VALIDATOR_STREAM_CATEGORY": "Entered wrong radio station category",
-    "VALIDATOR_STREAM_NAME_LENGTH": "Radio station name may contain from %0% to %0% chars",
+    "VALIDATOR_STREAM_NAME_LENGTH": "Radio station name may contain from {{ 0 }} to {{ 1 }} chars",
 
-    "VALIDATOR_USER_LOGIN_LENGTH": "User login may contain from %0% to %0% chars",
+    "VALIDATOR_USER_LOGIN_LENGTH": "User login may contain from {{ 0 }} to {{ 1 }} chars",
     "VALIDATOR_USER_LOGIN_CHARS": "User login may contain only letters, numbers and underscores",
     "VALIDATOR_USER_LOGIN_UNAVAILABLE": "Someone else used this login earlier. Try another one",
-    "VALIDATOR_USER_NAME_LENGTH": "User name may contain from %0% to %0% chars",
-    "VALIDATOR_USER_INFO_LENGTH": "User information may contain from %0% to %0% chars",
+    "VALIDATOR_USER_NAME_LENGTH": "User name may contain from {{ 0 }} to {{ 1 }} chars",
+    "VALIDATOR_USER_INFO_LENGTH": "User information may contain from {{ 0 }} to {{ 1 }} chars",
     "VALIDATOR_USER_EMAIL_FORMAT": "Typed email has incorrect format",
     "VALIDATOR_USER_EMAIL_UNAVAILABLE": "This email used by another user",
 
@@ -18,42 +18,151 @@
     "VALIDATOR_PERMALINK_UNAVAILABLE": "This permalink is unavailable",
     "VALIDATOR_PERMALINK_CHARS": "Permalink may contain only letters, numbers and dashes",
 
-    "VALIDATOR_PASSWORD_LENGTH": "Password length must be in range from %0% to %0% chars",
+    "VALIDATOR_PASSWORD_LENGTH": "Password length must be in range from {{ 0 }} to {{ 1 }} chars",
 
     "ERROR_NO_IMAGE_ATTACHED": "No image file attached to request",
-    "ERROR_NO_ARGUMENT_SPECIFIED": "No value for argument %0% specified",
-    "ERROR_USER_NOT_FOUND": "User with id %0% not found",
-    "ERROR_TRACK_NOT_FOUND": "Audio file with id %0% not found",
-    "ERROR_NO_ACCOUNT_PLAN": "Account plan with id %0% not found",
+    "ERROR_NO_ARGUMENT_SPECIFIED": "No value for argument {{ 0 }} specified",
+    "ERROR_USER_NOT_FOUND": "User #{{ 0 }} not found",
+    "ERROR_TRACK_NOT_FOUND": "Audio file #{{ 0 }} not found",
+    "ERROR_NO_ACCOUNT_PLAN": "Account plan #{{ 0 }} not found",
 
     "ERROR_CATALOG_NO_STREAMS": "No radio stations available",
-    "ERROR_CATALOG_STREAM_NOT_FOUND": "Radio station with id %0% not found",
+    "ERROR_CATALOG_STREAM_NOT_FOUND": "Radio station #{{ 0 }} not found",
 
-    "ERROR_STREAM_NOTHING_PLAYING": "This radio station is not broadcasting",
+    "ERROR_STREAM_NOTHING_PLAYING": "This radio station is suspended",
 
-    "ERROR_NO_USER_BY_LOGIN": "User with login %0% not found",
+    "ERROR_NO_USER_BY_LOGIN": "User with login {{ 0 }} not found",
     "ERROR_INCORRECT_LOGIN_OR_PASSWORD": "Entered password or login is incorrect",
     "ERROR_INCORRECT_PASSWORD": "Entered password is incorrect",
     "ERROR_NO_PERMISSION": "You have not permission to touch this resource",
     "ERROR_UNAUTHORIZED": "You're not authorized to do this. Log in, please",
 
-    "ERROR_FS_DOES_NOT_EXIST": "File server with id %0% not exists",
-    "ERROR_FS_NO_FREE_SPACE": "No servers available to allocate %0% bytes for file",
-    "ERROR_FILE_NOT_FOUND": "File %0% not found",
+    "ERROR_FS_DOES_NOT_EXIST": "File server with id {{ 0 }} not exists",
+    "ERROR_FS_NO_FREE_SPACE": "No servers available to allocate {{ 0 }} bytes for file",
+    "ERROR_FILE_NOT_FOUND": "File {{ 0 }} not found",
 
-    "ERROR_TRACK_NOT_AVAILABLE": "Audio file with id %0% is not available",
+    "ERROR_TRACK_NOT_AVAILABLE": "Audio file with id {{ 0 }} is not available",
     "ERROR_UPLOAD_FILE_BROKEN": "Uploaded audio file appears to be broken",
-    "ERROR_UPLOAD_FILE_UNSUPPORTED": "File format %0% is not supported",
-    "ERROR_UPLOAD_FILE_EXISTS": "File %0% already exists in your library",
-    "ERROR_UPLOAD_FILE_LONG": "Uploaded audio file %0% is too long",
-    "ERROR_UPLOAD_FILE_SHORT": "Uploaded audio file %0% is too short",
+    "ERROR_UPLOAD_FILE_UNSUPPORTED": "File format {{ 0 }} is not supported",
+    "ERROR_UPLOAD_FILE_EXISTS": "File {{ 0 }} already exists in your library",
+    "ERROR_UPLOAD_FILE_LONG": "Uploaded audio file {{ 0 }} is too long",
+    "ERROR_UPLOAD_FILE_SHORT": "Uploaded audio file {{ 0 }} is too short",
     "ERROR_UPLOAD_NO_SPACE": "You're exhausted available space in your library. Upgrade your account, please",
     "ERROR_UPLOAD_NO_SERVERS": "No servers available to proceed your upload",
-    "ERROR_COPY_FILE_PROTECTED": "Audio file %0% is protected from copying",
+    "ERROR_COPY_FILE_PROTECTED": "Audio file {{ 0 }} is protected from copying",
 
     "ERROR_CODE_INCORRECT": "Entered code is incorrect",
     "ERROR_CODE_NOT_ACTUAL": "Entered code is not actual",
 
+    "TOOLTIP_LOGIN": "Login into MyOwnRadio",
+    "TOOLTIP_SIGNUP": "Sign Up on MyOwnRadio",
+    "TOOLTIP_ENTER": "Go to your profile",
+    "TOOLTIP_LOGOUT": "Logout from MyOwnRadio",
+    "TOOLTIP_SEARCH": "Search",
+    "TOOLTIP_BROWSE_STATIONS": "Browse radio stations",
+    "TOOLTIP_BROWSE_CATEGORIES": "Browse radio categories",
+    "TOOLTIP_USERS_LISTENING": {
+        "0": "This radio station has no listeners",
+        "1": "1 user listening to this radio station",
+        "other": "{{ }} users listening to this radio station"
+    },
+    "TOOLTIP_BOOKMARKED_TIMES": {
+        "0": "This radio station has no bookmarks",
+        "1": "This radio station bookmarked by 1 user",
+        "other": "This radio station bookmarked by {{ }} users"
+    },
+    "TOOLTIP_PLAYED_TIMES": {
+        "0": "This radio station never listened",
+        "1": "This radio station listened by one user",
+        "other": "This radio station listened {{ }} times"
+    },
+    "TOOLTIP_EDIT_STATION_INFO": "Edit radio station's information",
+    "TOOLTIP_EDIT_STATION_TRACKLIST": "Edit radio station's tracklist",
 
+    "LABEL_LOGIN": "Login",
+    "LABEL_SIGNUP": "Sign Up",
+    "LABEL_ENTER": "Profile",
+    "LABEL_LOGOUT": "Logout",
+    "LABEL_SEARCH_FOR": "Search for <b>{{ filter }}</b>",
+    "LABEL_BROWSE_STATIONS": "Stations",
+    "LABEL_BROWSE_CATEGORIES": "Categories",
+    "LABEL_MY_PROFILE": "My Profile",
+    "LABEL_EDIT_PROFILE": "Edit Profile",
+    "LABEL_CHANGE_PASSWORD": "Change Password",
+    "LABEL_UPGRADE_ACCOUNT": "Upgrade Account",
+    "LABEL_MY_LIBRARY": "My Library",
+    "LABEL_MY_ALL": "All Tracks",
+    "LABEL_MY_UNUSED": "Unused Tracks",
+    "LABEL_MY_RADIO_STATIONS": "My Radio Stations",
+    "LABEL_MY_CREATE_STATION": "Create New Station...",
+    "LABEL_SHARE_STATION": "Share <b>{{ name }}</b> on your social network:",
+    "LABEL_EMBED_CODE": "Embed code:",
+    "LABEL_PREVIEW": "Preview:",
+    "LABEL_CLOSE": "Close",
+    "LABEL_NEW_STATIONS": "New",
+    "LABEL_POPULAR_STATIONS": "Popular",
+    "LABEL_MY_STATIONS": "My Stations",
+    "LABEL_MY_BOOKMARKS": "My Bookmarks",
+    "LABEL_SETTINGS": "Settings",
+    "LABEL_AUDIO_FORMAT": "Audio Format",
+    "LABEL_OPEN_EXTERNAL": "Open in external player",
+    "LABEL_BUFFERING": "Buffering...",
+    "LABEL_NOW_PLAYING": "Now playing",
+    "LABEL_SHOW": "Show",
+    "LABEL_HIDE": "Hide",
+    "LABEL_RECENT_UPCOMING": "Recent & Upcoming",
+    "LABEL_REMOVE_FROM_STATION": "Remove Track from Radio Station",
+
+    "PLACEHOLDER_SEARCH_RADIO": "Search...",
+
+    "FRAME_SHARE_RADIO_STATION": "Share {{ name }}",
+    "FRAME_SIMILAR_STATIONS": "Similar Radio Stations",
+
+    "TAB_SHARE": "Share",
+    "TAB_EMBED": "Embed",
+
+    "MENU_PLAY_FROM": "Start from Selected Track",
+    "MENU_EDIT_TRACK": "Edit Track Metadata",
+    "MENU_ADD_TO_STATION": "Add Selected Track(s) to...",
+    "MENU_MOVE_TO_STATION": "Move Selected Track(s) to...",
+    "MENU_CHANGE_COLOR": "Change Track(s) Color...",
+    "MENU_REMOVE_FROM_STATION": "Remove Selected Track(s) from <b>{{ name }}</b>",
+    "MENU_REMOVE_FROM_LIBRARY": "Remove Selected Track(s) from Library",
+
+    "RESULT_EMPTY_BOOKMARKS": "You have no bookmarked radio stations.",
+    "RESULT_EMPTY_CATEGORY": "No radio stations found in this category. May be you want to <a href=\"/profile/new-stream\">create</a> your own?",
+    "RESULT_EMPTY_BY_SELF": "You have no radio stations. May be you want to <a href=\"/profile/new-stream\">create</a> your own?",
+    "RESULT_EMPTY_NEW": "No new radio stations.",
+    "RESULT_EMPTY_POPULAR": "It's incredible but there are no popular radio stations yet.",
+    "RESULT_EMPTY_SEARCH": "No streams found for your request.",
+    "RESULT_EMPTY_TAG": "No streams found by tag <b>#{{ query }}</b>.",
+    "RESULT_EMPTY_BY_USER": "This user has no public radio stations.",
+
+    "RESULT_BY_BOOKMARKS": {
+        "1"     : "You have <b>1</b> bookmarked radio station",
+        "other" : "You have <b>{{}}</b> bookmarked radio stations"
+    },
+    "RESULT_BY_CATEGORY": {
+        "1"     : "<b>1</b> radio station in category <b>{{ category_name }}</b>",
+        "other" : "<b>{{ }}</b> radio stations in category <b>{{ category_name }}</b>"
+    },
+    "RESULT_BY_SELF": {
+        "1"     : "You have <b>1</b> radio station",
+        "other" : "You have <b>{{ }}</b> radio stations"
+    },
+    "RESULT_BY_NEW": "Newest radio stations on <b>MyOwnRadio</b>",
+    "RESULT_BY_POPULAR": "What's popular on <b>MyOwnRadio</b>",
+    "RESULT_BY_SEARCH": {
+        "1"     : "<b>1</b> radio station found for request <b>{{ query }}</b>",
+        "other" : "<b>{{ }}</b> radio stations found for request <b>{{ query }}</b>"
+    },
+    "RESULT_BY_TAG": {
+        "1"     : "<b>1</b> radio station found by tag <b>{{ query }}</b>",
+        "other" : "<b>{{ }}</b> radio stations found by tag <b>{{ query }}</b>"
+    },
+    "RESULT_BY_USER": {
+        "1"     : "<b>{{ name }}</b> has <b>1</b> radio station",
+        "other" : "<b>{{ name }}</b> has <b>{{ }}</b> radio stations"
+    }
 
 }

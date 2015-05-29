@@ -10,11 +10,9 @@ namespace Business\Validator\Entity;
 
 
 use Business\Validator\Validator;
+use Framework\Preferences;
 
 class PasswordValidator implements EntityValidator {
-
-    public static $PASSWORD_MIN_LENGTH = 6;
-    public static $PASSWORD_MAX_LENGTH = 32;
 
     private $password;
 
@@ -32,7 +30,8 @@ class PasswordValidator implements EntityValidator {
      */
     public function validateAllFields() {
         (new Validator($this->password))
-            ->length(self::$PASSWORD_MIN_LENGTH, self::$PASSWORD_MAX_LENGTH)
+            ->length(Preferences::getSetting("validator", "user.password.min"),
+                Preferences::getSetting("validator", "user.password.max"))
             ->throwOnFail(PasswordValidatorException::newBadPasswordLength());
     }
 

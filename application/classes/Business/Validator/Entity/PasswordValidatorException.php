@@ -10,6 +10,7 @@ namespace Business\Validator\Entity;
 
 
 use Business\Validator\ValidatorException;
+use Framework\Preferences;
 
 class PasswordValidatorException extends ValidatorException {
 
@@ -19,7 +20,8 @@ class PasswordValidatorException extends ValidatorException {
 
     public static function newBadPasswordLength() {
         return self::tr("VALIDATOR_PASSWORD_LENGTH", [
-            PasswordValidator::$PASSWORD_MIN_LENGTH, PasswordValidator::$PASSWORD_MAX_LENGTH
+            Preferences::getSetting("validator", "user.password.min"),
+            Preferences::getSetting("validator", "user.password.max")
         ]);
     }
 

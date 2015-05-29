@@ -9,12 +9,13 @@
 namespace Business\Validator;
 
 
+use Framework\Preferences;
 use Tools\Optional;
 use Tools\Singleton;
 
 class Validator {
 
-    const EMAIL_REGEXP_PATTERN = "~^[\\w\\S]+@[\\w\\S]+\\.[\\w]{2,4}$~";
+    const EMAIL_REGEXP_PATTERN = '~^[\w\S]+@[\w\S]+\.[\w]{2,4}$~';
 
     /** @var callable[] */
     protected $predicates = [];
@@ -132,7 +133,7 @@ class Validator {
      */
     function pattern($pattern) {
         $copy = $this->copy();
-        $copy->addPredicate(function ($value) use ($pattern) { return preg_match($pattern, $value); });
+        $copy->addPredicate(function ($value) use ($pattern) { return preg_match("~$pattern~", $value); });
         return $copy;
     }
 
@@ -167,9 +168,7 @@ class Validator {
      * @return $this
      */
     function isEmail() {
-        $copy = $this->copy();
-        $copy->addPredicate(function ($value) { return preg_match(self::EMAIL_REGEXP_PATTERN, $value); });
-        return $copy;
+        return $this->pattern(Preferences::getSetting("validator", "email.pattern"));
     }
 
 

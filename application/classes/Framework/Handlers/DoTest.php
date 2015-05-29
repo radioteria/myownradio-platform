@@ -10,9 +10,10 @@ namespace Framework\Handlers;
 
 
 use Framework\ControllerImpl;
+use Framework\Preferences;
 
 class DoTest extends ControllerImpl {
     public function doGet() {
-
+        echo Preferences::getSetting("validator", "user.login.min");
     }
 }

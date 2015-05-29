@@ -19,8 +19,16 @@
                             </label>
                         </td>
                         <td>
-                            <input type="email" name="email" id="email" ng-model="signup.email" ng-required="true" pattern="^[\w\S]+@[\w\S]+\.[\w]{2,4}$"
-                                   ensure-unique="email" autocomplete="off" autofocus="true" ng-focus="true" />
+                            <input type="email"
+                                   name="email"
+                                   id="email"
+                                   ng-model="signup.email"
+                                   ng-required="true"
+                                   ng-pattern="config.validator.email.pattern"
+                                   ensure-unique="email"
+                                   autocomplete="off"
+                                   autofocus="true"
+                                   ng-focus="true" />
 
                             <div class="validation" ng-show="signup_form.email.$focused && !signup_form.email.$pristine">
                                 <div ng-if="signup_form.email.$error.required">

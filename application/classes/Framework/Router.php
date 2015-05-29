@@ -46,6 +46,7 @@ class Router implements SingletonInterface, Injectable {
 
         /* Public side routes register */
         $sub->addRoute("content/application.modules.js", "content\\DoGetJavascriptModules");
+        $sub->addRoute("content/application.config.js", "content\\DoGetJavascriptSettings");
 
         /* Dashboard redirect */
         $sub->addRouteRegExp("~^profile(\\/.+)*$~", "content\\DoDashboard");

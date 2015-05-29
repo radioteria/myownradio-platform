@@ -10,6 +10,7 @@ namespace Business\Validator\Entity;
 
 
 use Business\Validator\ValidatorException;
+use Framework\Preferences;
 
 class StreamValidatorException extends ValidatorException {
 
@@ -33,7 +34,7 @@ class StreamValidatorException extends ValidatorException {
      * @return StreamValidatorException
      */
     public static function newStreamInformationTooLong() {
-        return self::tr("VALIDATOR_STREAM_INFO_LENGTH", [ 0, StreamValidator::$INFO_MAX_LENGTH ]);
+        return self::tr("VALIDATOR_STREAM_INFO_LENGTH", [ 0, Preferences::getSetting("validator", "stream.info.max") ]);
     }
 
     /**
@@ -48,7 +49,8 @@ class StreamValidatorException extends ValidatorException {
      */
     public static function newStreamNameLength() {
         return self::tr("VALIDATOR_STREAM_NAME_LENGTH", [
-            StreamValidator::$NAME_MIN_LENGTH, StreamValidator::$NAME_MAX_LENGTH
+            Preferences::getSetting("validator", "stream.name.min"),
+            Preferences::getSetting("validator", "stream.name.max")
         ]);
     }
 }

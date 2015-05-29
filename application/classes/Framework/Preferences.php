@@ -24,10 +24,12 @@ class Preferences implements Injectable, SingletonInterface {
         ]
     ];
 
-    private static $prefs;
+    private static $prefs = null;
 
     public static function staticInit() {
-        self::$prefs = parse_ini_file("settings.ini", true);
+        if (self::$prefs === null) {
+            self::$prefs = parse_ini_file("application/settings.ini", true);
+        }
     }
 
     /**
@@ -37,10 +39,34 @@ class Preferences implements Injectable, SingletonInterface {
      * @return mixed
      */
     public static function getSetting($section, $setting, array $context = null) {
+        self::staticInit();
         if ($context === null) {
             return self::$prefs[$section][$setting];
         }
         return Common::quickReplace(self::$prefs[$section][$setting], $context);
+    }
+
+    public static function json() {
+        self::staticInit();
+        $target = [];
+        foreach (self::$prefs as $section => $settings) {
+            $target[$section] = [];
+            foreach ($settings as $setting => $value) {
+                $path = explode(".", $setting);
+                $temp = &$target[$section];
+                foreach ($path as $index => $part) {
+                    if ($index + 1 == count($path)) {
+                        $temp[$part] = $value;
+                    } else {
+                        if (!isset($temp[$part])) {
+                            $temp[$part] = [];
+                        }
+                        $temp = &$temp[$part];
+                    }
+                }
+            }
+        }
+        return json_encode($target);
     }
 
     /**

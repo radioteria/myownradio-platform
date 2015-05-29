@@ -12,6 +12,7 @@ namespace Business\Validator\Entity;
 use Business\Validator\BusinessValidator;
 use Business\Validator\Validator;
 use Business\Validator\ValidatorException;
+use Framework\Preferences;
 use Objects\Category;
 use Objects\Stream;
 
@@ -22,9 +23,6 @@ use Objects\Stream;
 class StreamValidator implements EntityValidator {
 
     public static $ACCESS_MODES = ["PUBLIC", "UNLISTED", "PRIVATE"];
-    public static $INFO_MAX_LENGTH = 4096;
-    public static $NAME_MIN_LENGTH = 3;
-    public static $NAME_MAX_LENGTH = 32;
 
     /** @var Stream */
     private $stream;
@@ -58,7 +56,8 @@ class StreamValidator implements EntityValidator {
      */
     private function validateStreamName() {
         (new BusinessValidator($this->stream->getName()))
-            ->length(self::$NAME_MIN_LENGTH, self::$NAME_MAX_LENGTH)
+            ->length(Preferences::getSetting("validator", "stream.name.min"),
+                Preferences::getSetting("validator", "stream.name.max"))
             ->throwOnFail(StreamValidatorException::newStreamNameLength());
     }
 
@@ -102,7 +101,7 @@ class StreamValidator implements EntityValidator {
      */
     private function validateStreamInformation() {
         (new Validator($this->stream->getInfo()))
-            ->maxLength(self::$INFO_MAX_LENGTH)
+            ->maxLength(Preferences::getSetting("validator", "stream.info.max"))
             ->throwOnFail(StreamValidatorException::newStreamInformationTooLong());
     }
 

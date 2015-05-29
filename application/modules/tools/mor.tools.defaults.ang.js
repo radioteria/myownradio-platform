@@ -14,6 +14,8 @@
             $rootScope.player.controls.reload();
         };
 
+        $rootScope.config = $CONFIG;
+
     }]);
 
     tools.factory("Defaults", [function () {

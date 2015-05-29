@@ -10,12 +10,9 @@ namespace Business\Validator;
 
 
 use Business\Test\TestFields;
-use Framework\Services\ValidatorTemplates;
 use Objects\Country;
 
 class BusinessValidator extends Validator {
-
-    use ValidatorTemplates;
 
     const PERMALINK_REGEXP_PATTERN = "~(^[a-z0-9\\-]+$)~";
 

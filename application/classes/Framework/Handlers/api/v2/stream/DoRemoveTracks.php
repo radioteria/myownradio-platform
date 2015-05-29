@@ -13,7 +13,6 @@ use Framework\Controller;
 use Framework\Models\PlaylistModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
-use Framework\Services\Notifier;
 
 class DoRemoveTracks implements Controller {
 

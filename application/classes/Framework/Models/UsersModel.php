@@ -234,9 +234,8 @@ class UsersModel implements SingletonInterface, Injectable {
         Database::doInConnection(function (Database $db) use ($code) {
 
             $query = $db->getDBQuery()->selectFrom("r_users");
-            $code->addWhere($query);
-//            $query->where("login", $code->getLogin());
-//            $query->where("password", $code->getPassword());
+            $query->where("login", $code->getLogin());
+            $query->where("password", $code->getPassword());
             $query->select("*");
 
             $db->fetchOneRow($query)->getOrElseThrow(

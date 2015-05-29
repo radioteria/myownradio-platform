@@ -112,11 +112,18 @@
     "LABEL_HIDE": "Hide",
     "LABEL_RECENT_UPCOMING": "Recent & Upcoming",
     "LABEL_REMOVE_FROM_STATION": "Remove Track from Radio Station",
+    "LABEL_RESET_PASSWORD1": "Tell us your login or email address and we'll send you instructions on how to reset your password.",
+    "LABEL_LOGIN_EMAIL": "Your login or email:",
+    "LABEL_SUBMIT": "Submit",
+
+    "WARN_LOGIN_EMPTY": "Login must be filled",
+    "WARN_NO_USER_BY_LOGIN": "User with login <b>{{ login }}</b> does not exist",
 
     "PLACEHOLDER_SEARCH_RADIO": "Search...",
 
     "FRAME_SHARE_RADIO_STATION": "Share {{ name }}",
     "FRAME_SIMILAR_STATIONS": "Similar Radio Stations",
+    "FRAME_PASSWORD_RECOVERY": "Password Recovery",
 
     "TAB_SHARE": "Share",
     "TAB_EMBED": "Embed",

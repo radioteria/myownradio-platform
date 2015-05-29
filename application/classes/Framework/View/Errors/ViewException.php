@@ -11,7 +11,6 @@ namespace Framework\View\Errors;
 
 use Framework\Exceptions\ApplicationException;
 use Framework\Object;
-use Framework\Template;
 
 class ViewException extends ApplicationException {
 

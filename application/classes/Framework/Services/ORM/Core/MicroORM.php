@@ -383,6 +383,7 @@ class MicroORM extends FilterORM implements Injectable {
             $this->ORMCache[$config["@table"]] = [];
         }
 
+
         $query->limit(1);
 
         $row = $query->fetchOneRow($query)
@@ -400,6 +401,7 @@ class MicroORM extends FilterORM implements Injectable {
             $prop->setAccessible(true);
             $prop->setValue($instance, @$row[$prop->getName()]);
         }
+
 
         return Optional::hasValue($instance);
 

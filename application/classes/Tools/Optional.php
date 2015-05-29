@@ -16,11 +16,7 @@ class Optional implements \JsonSerializable {
     private $value;
     private $predicate;
 
-    private static $empty;
-
-    public static function staticInit() {
-        self::$empty = self::noValue();
-    }
+    private static $empty = null;
 
     /**
      * @param Object $value
@@ -250,6 +246,9 @@ class Optional implements \JsonSerializable {
      * @return Optional
      */
     public static function noValue() {
+        if (is_null(self::$empty)) {
+            self::$empty = new self(null, false);
+        }
         return self::$empty;
     }
 

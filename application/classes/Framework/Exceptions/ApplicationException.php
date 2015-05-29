@@ -11,7 +11,6 @@ namespace Framework\Exceptions;
 
 use Exception;
 use Framework\View\Errors\View500Exception;
-use Framework\View\Errors\View501Exception;
 
 class ApplicationException extends Exception {
     public function __construct($message = "", $code = 0, Exception $previous = null) {

@@ -13,5 +13,6 @@ use Framework\ControllerImpl;
 
 class DoTest extends ControllerImpl {
     public function doGet() {
+
     }
-} 
+}

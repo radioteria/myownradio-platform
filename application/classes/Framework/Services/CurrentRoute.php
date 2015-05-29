@@ -9,7 +9,6 @@
 namespace Framework\Services;
 
 use Framework\Injector\Injectable;
-use Framework\Injector\Injector;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 

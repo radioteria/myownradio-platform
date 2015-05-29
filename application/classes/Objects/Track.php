@@ -9,7 +9,6 @@
 namespace Objects;
 
 use Framework\Exceptions\ControllerException;
-use Framework\FileServer\FileServerFacade;
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 use Objects\FileServer\FileServerFile;

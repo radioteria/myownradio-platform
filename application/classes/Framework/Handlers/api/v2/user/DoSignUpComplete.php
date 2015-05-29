@@ -13,12 +13,11 @@ use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\UsersModel;
 use Framework\Services\HttpPost;
-use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
 
 class DoSignUpComplete implements Controller {
 
-    public function doPost(HttpPost $post, InputValidator $validator, UsersModel $users, JsonResponse $response) {
+    public function doPost(HttpPost $post, UsersModel $users, JsonResponse $response) {
 
         $code = $post->getParameter("code")->getOrElseThrow(ControllerException::noArgument("code"));
         $login = $post->getParameter("login")->getOrElseThrow(ControllerException::noArgument("login"));
@@ -28,11 +27,11 @@ class DoSignUpComplete implements Controller {
         $permalink = $post->getParameter("permalink")->getOrElseNull();
         $countryId = $post->getParameter("country_id")->getOrElseNull();
 
-        $validator->validateRegistrationCode($code);
-        $validator->validatePassword($password);
-        $validator->validateLogin($login);
-        $validator->validateUserPermalink($permalink);
-        $validator->validateCountryID($countryId);
+//        $validator->validateRegistrationCode($code);
+//        $validator->validatePassword($password);
+//        $validator->validateLogin($login);
+//        $validator->validateUserPermalink($permalink);
+//        $validator->validateCountryID($countryId);
 
         $users->completeRegistration($code, $login, $password, $name, $info, $permalink, $countryId);
 

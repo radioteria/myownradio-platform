@@ -183,7 +183,8 @@ class Optional implements \JsonSerializable {
     public static function ofEmpty($value) {
         return new self($value, function ($v) {
             if (is_null($v)) return false;
-            if (strlen($v) == 0) return false;
+            if (is_array($v) && count($v) == 0) return false;
+            if (is_string($v) && strlen($v) == 0) return false;
             return true;
         });
     }

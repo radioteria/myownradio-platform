@@ -23,7 +23,7 @@ use Framework\Services\Notifier;
 class DoLike extends ControllerImpl {
     public function doPost(HttpPost $post, JsonResponse $response,
                            DBQuery $dbq, AuthUserModel $userModel,
-                           TrackCollection $trackCollection, Notifier $notif1er) {
+                           TrackCollection $trackCollection, Notifier $notifier) {
         $track_id = $post->getRequired("track_id", FILTER_VALIDATE_INT);
         $query = $dbq->into("mor_track_like");
         $query->values("user_id", $userModel->getID());
@@ -37,7 +37,7 @@ class DoLike extends ControllerImpl {
         $track = $trackCollection->getSingleTrack($track_id);
         $response->setData($track);
 
-        $notif1er->event("track", $track_id, "like", $track);
+        $notifier->shout("track_" . $track_id, "like", $track["likes"]);
 
     }
 } 

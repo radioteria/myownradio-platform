@@ -240,5 +240,18 @@ class Common {
 
     }
 
+    /**
+     * @param $glue
+     * @param array $pieces
+     * @param callable $callback
+     * @return string
+     */
+    static function join($glue, array $pieces, callable $callback) {
+        foreach ($pieces as &$piece) {
+            $piece = $callback($piece);
+        }
+        return implode($glue, $pieces);
+    }
+
 
 } 

@@ -86,7 +86,7 @@
             }
             keys = path.split(".");
             accumulator = obj;
-            for (i = 0; i < keys.length; i+=1) {
+            for (i = 0; i < keys.length; i += 1) {
                 if (!angular.isObject(accumulator)) {
                     return "";
                 }

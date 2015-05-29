@@ -44,10 +44,8 @@ class UserValidator implements EntityValidator {
 
     public function validateLogin() {
         (new BusinessValidator($this->user->getLogin()))
-            ->length(
-                Preferences::getSetting("validator", "user.login.min"),
-                Preferences::getSetting("validator", "user.login.max")
-            )
+            ->length(Preferences::getSetting("validator", "user.login.min"),
+                Preferences::getSetting("validator", "user.login.max"))
             ->throwOnFail(UserValidatorException::newIncorrectLoginLength())
             ->pattern(Preferences::getSetting("validator", "user.login.pattern"))
             ->throwOnFail(UserValidatorException::newIncorrectLoginChars())

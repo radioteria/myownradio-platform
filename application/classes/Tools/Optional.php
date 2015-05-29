@@ -154,7 +154,7 @@ class Optional implements \JsonSerializable {
      * Use this constructor if your variable must not be a null
      */
     public static function ofNullable($value) {
-        return new self($value, function ($v) { return !is_null($v); });
+        return new self($value, !is_null($value));
     }
 
     /**
@@ -162,7 +162,7 @@ class Optional implements \JsonSerializable {
      * @return Optional
      */
     public static function ofZeroable($value) {
-        return new self($value, function ($v) { return intval($v) > 0; });
+        return new self($value, intval($value) > 0);
     }
 
     /**
@@ -195,7 +195,7 @@ class Optional implements \JsonSerializable {
      * Use this variable if your variable must be an number
      */
     public static function ofNumber($value) {
-        return new self($value, function ($v) { return is_numeric($v); });
+        return new self($value, is_numeric($value));
     }
 
     /**
@@ -205,7 +205,7 @@ class Optional implements \JsonSerializable {
      * Use this constructor if $value must be an instance of $object
      */
     public static function ofObject($value, $object) {
-        return new self($value, function ($v) use ($object) { return $v instanceof $object; });
+        return new self($value, $value instanceof $object);
     }
 
     /**
@@ -213,7 +213,7 @@ class Optional implements \JsonSerializable {
      * @return Optional
      */
     public static function ofArray($value) {
-        return new self($value, function ($value) { return is_array($value); });
+        return new self($value, is_array($value));
     }
 
     /**
@@ -222,7 +222,7 @@ class Optional implements \JsonSerializable {
      * Use this constructor if your variable must be a positive number
      */
     public static function ofPositiveNumber($value) {
-        return new self($value, function ($v) { return is_numeric($v) && $v > 0; });
+        return new self($value, is_numeric($value) && $value > 0);
     }
 
     /**
@@ -231,7 +231,7 @@ class Optional implements \JsonSerializable {
      * Use this constructor if your variable must not be a false
      */
     public static function ofDeceptive($value) {
-        return new self($value, function ($v) { return $v !== false; });
+        return new self($value, $value !== false);
     }
 
     /**

@@ -12,15 +12,10 @@ namespace Business\Validator\Entity;
 use Business\Validator\BusinessValidator;
 use Business\Validator\Validator;
 use Business\Validator\ValidatorException;
+use Framework\Preferences;
 use Objects\User;
 
 class UserValidator implements EntityValidator {
-
-    public static $LOGIN_MIN_LENGTH = 3;
-    public static $LOGIN_MAX_LENGTH = 32;
-    public static $LOGIN_PATTERN = "~^[0-9a-z\\_]+$~";
-    public static $NAME_MAX_LENGTH = 32;
-    public static $INFO_MAX_LENGTH = 4096;
 
     /** @var User */
     private $user;
@@ -49,9 +44,12 @@ class UserValidator implements EntityValidator {
 
     public function validateLogin() {
         (new BusinessValidator($this->user->getLogin()))
-            ->length(self::$LOGIN_MIN_LENGTH, self::$LOGIN_MAX_LENGTH)
+            ->length(
+                Preferences::getSetting("validator", "user.login.min"),
+                Preferences::getSetting("validator", "user.login.max")
+            )
             ->throwOnFail(UserValidatorException::newIncorrectLoginLength())
-            ->pattern(self::$LOGIN_PATTERN)
+            ->pattern(Preferences::getSetting("validator", "user.login.pattern"))
             ->throwOnFail(UserValidatorException::newIncorrectLoginChars())
             ->isLoginAvailable($this->user->getId())
             ->throwOnFail(UserValidatorException::newLoginUnavailable());
@@ -59,7 +57,7 @@ class UserValidator implements EntityValidator {
 
     public function validateName() {
         (new BusinessValidator($this->user->getName()))
-            ->maxLength(self::$NAME_MAX_LENGTH)
+            ->maxLength(Preferences::getSetting("validator", "user.name.max"))
             ->throwOnFail(UserValidatorException::newIncorrectNameLength());
     }
 
@@ -72,7 +70,7 @@ class UserValidator implements EntityValidator {
 
     public function validateInfo() {
         (new Validator($this->user->getInfo()))
-            ->maxLength(self::$INFO_MAX_LENGTH)
+            ->maxLength(Preferences::getSetting("validator", "user.info.max"))
             ->throwOnFail(UserValidatorException::newInfoTooLong());
     }
 

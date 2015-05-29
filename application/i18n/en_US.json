@@ -115,15 +115,21 @@
     "LABEL_RESET_PASSWORD1": "Tell us your login or email address and we'll send you instructions on how to reset your password.",
     "LABEL_LOGIN_EMAIL": "Your login or email:",
     "LABEL_SUBMIT": "Submit",
+    "LABEL_CHANGE_PASSWORD1": "If you forget your existing password here you can change it to another one. Please enter new password for your account.",
+    "LABEL_NEW_PASSWORD": "New password:",
+    "LABEL_PASSWORD_AGAIN": "Password again:",
 
     "WARN_LOGIN_EMPTY": "Login must be filled",
+    "WARN_PASSWORD_EMPTY": "Password must be filled",
     "WARN_NO_USER_BY_LOGIN": "User with login <b>{{ login }}</b> does not exist",
+    "WARN_PASSWORD_MISMATCH": "Password must match previous",
 
     "PLACEHOLDER_SEARCH_RADIO": "Search...",
 
     "FRAME_SHARE_RADIO_STATION": "Share {{ name }}",
     "FRAME_SIMILAR_STATIONS": "Similar Radio Stations",
     "FRAME_PASSWORD_RECOVERY": "Password Recovery",
+    "FRAME_CHANGE_PASSWORD": "Change Password",
 
     "TAB_SHARE": "Share",
     "TAB_EMBED": "Embed",

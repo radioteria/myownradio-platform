@@ -10,6 +10,7 @@ namespace Business\Validator\Entity;
 
 
 use Business\Validator\ValidatorException;
+use Framework\Preferences;
 
 /**
  * Class UserValidatorException
@@ -22,7 +23,8 @@ class UserValidatorException extends ValidatorException {
 
     public static function newIncorrectLoginLength() {
         return self::tr("VALIDATOR_USER_LOGIN_LENGTH", [
-            UserValidator::$LOGIN_MIN_LENGTH, UserValidator::$LOGIN_MAX_LENGTH
+            Preferences::getSetting("validator", "user.login.min"),
+            Preferences::getSetting("validator", "user.login.max")
         ]);
     }
 
@@ -35,11 +37,11 @@ class UserValidatorException extends ValidatorException {
     }
 
     public static function newIncorrectNameLength() {
-        return self::tr("VALIDATOR_USER_NAME_LENGTH", [ 0, UserValidator::$NAME_MAX_LENGTH ]);
+        return self::tr("VALIDATOR_USER_NAME_LENGTH", [ 0, Preferences::getSetting("validator", "user.name.max") ]);
     }
 
     public static function newInfoTooLong() {
-        return self::tr("VALIDATOR_USER_INFO_LENGTH", [ 0, UserValidator::$INFO_MAX_LENGTH ]);
+        return self::tr("VALIDATOR_USER_INFO_LENGTH", [ 0, Preferences::getSetting("validator", "user.info.max") ]);
     }
 
     public static function newIncorrectEmail() {

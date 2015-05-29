@@ -35,6 +35,7 @@
                             { key: "aacplus_128k", bitrate: "128K"}
                         ],
                         mp3: [
+                            { key: "mp3_64k", bitrate: "64K" },
                             { key: "mp3_128k", bitrate: "128K" },
                             { key: "mp3_256k", bitrate: "256K" }
                         ]

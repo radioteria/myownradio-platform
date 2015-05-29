@@ -131,10 +131,10 @@
                 var key;
                 offset = offset || 0;
                 if (!angular.isObject(when)) {
-                    throw new Error("'when' must be an object!");
+                    return "";
                 }
                 if (!angular.isNumber(count)) {
-                    throw new Error("'count' must be a number!");
+                    return "";
                 }
                 for (key in when) if (when.hasOwnProperty(key)) {
                     if (angular.isNumber(count) && count == parseInt(key)) {

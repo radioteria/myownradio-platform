@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="myownradio.biz" promptOnLocalOverwrite="false" autoUploadExternalChanges="true">
+  <component name="PublishConfigData" serverName="myownradio.biz" promptOnLocalOverwrite="false" uploadOnCheckin="53b50d36-d425-44eb-b84a-589f8f3613cb" autoUploadExternalChanges="true">
     <serverData>
       <paths name="myownradio.biz">
         <serverdata>
@@ -10,5 +10,6 @@
         </serverdata>
       </paths>
     </serverData>
+    <option name="myUploadOnCheckinName" value="myownradio.biz" />
   </component>
 </project>

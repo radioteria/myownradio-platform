@@ -118,6 +118,8 @@
     "LABEL_CHANGE_PASSWORD1": "If you forget your existing password here you can change it to another one. Please enter new password for your account.",
     "LABEL_NEW_PASSWORD": "New password:",
     "LABEL_PASSWORD_AGAIN": "Password again:",
+    "LABEL_CURRENT_PASSWORD": "Current password:",
+    "LABEL_I_FORGOT_PASSWORD": "I forgot my current password",
 
     "WARN_LOGIN_EMPTY": "Login must be filled",
     "WARN_PASSWORD_EMPTY": "Password must be filled",

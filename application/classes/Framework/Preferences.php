@@ -46,12 +46,21 @@ class Preferences implements Injectable, SingletonInterface {
         return Common::quickReplace(self::$prefs[$section][$setting], $context);
     }
 
+    /**
+     * @param $section
+     * @return mixed
+     */
+    public static function getSection($section) {
+        self::staticInit();
+        return self::$prefs[$section];
+    }
+
     public static function json() {
         self::staticInit();
         $allowed = explode("|", self::getSetting("frontend", "serialized.sections"));
         $target = [];
         foreach (self::$prefs as $section => $settings) {
-            if (!array_key_exists($section, $allowed)) {
+            if (array_search($section, $allowed) === false) {
                 continue;
             }
             $target[$section] = [];

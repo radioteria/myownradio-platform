@@ -6,6 +6,7 @@ use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\DatabaseException;
 use Framework\Injector\Injectable;
+use Framework\Preferences;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\DBQueryPool;
 use Framework\Services\DB\DBQueryWrapper;
@@ -27,11 +28,7 @@ class Database implements SingletonInterface, Injectable {
 
     public function __construct() {
 
-        $this->settings = Config::getInstance()->getSection('database')->getOrElse([
-            "db_login" => "root",
-            "db_password" => "",
-            "db_dsn" => "mysql:host=localhost;dbname=myownradio"
-        ]);
+        $this->settings = Preferences::getSection("server");
 
     }
 
@@ -42,9 +39,9 @@ class Database implements SingletonInterface, Injectable {
     public function connect() {
 
         try {
-            $this->pdo = new PDO($this->settings['db_dsn'],
-                $this->settings['db_login'],
-                $this->settings['db_password'], [
+            $this->pdo = new PDO($this->settings['db.dsn'],
+                $this->settings['db.login'],
+                $this->settings['db.password'], [
                     PDO::ATTR_EMULATE_PREPARES => false,
                     PDO::ATTR_PERSISTENT => true,
                     PDO::ATTR_AUTOCOMMIT => true

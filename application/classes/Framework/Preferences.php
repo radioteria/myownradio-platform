@@ -57,7 +57,7 @@ class Preferences implements Injectable, SingletonInterface {
 
     public static function json() {
         self::staticInit();
-        $allowed = explode("|", self::getSetting("frontend", "serialized.sections"));
+        $allowed = explode("|", self::getSetting("misc", "serialized.sections"));
         $target = [];
         foreach (self::$prefs as $section => $settings) {
             if (array_search($section, $allowed) === false) {

@@ -120,11 +120,16 @@
     "LABEL_PASSWORD_AGAIN": "Password again:",
     "LABEL_CURRENT_PASSWORD": "Current password:",
     "LABEL_I_FORGOT_PASSWORD": "I forgot my current password",
+    "LABEL_PROMO_CODE": "Promo code:",
+    "LABEL_APPLY": "Apply",
+    "LABEL_ACTIVE:": "Active",
+
 
     "WARN_LOGIN_EMPTY": "Login must be filled",
     "WARN_PASSWORD_EMPTY": "Password must be filled",
     "WARN_NO_USER_BY_LOGIN": "User with login <b>{{ login }}</b> does not exist",
     "WARN_PASSWORD_MISMATCH": "Password must match previous",
+    "WARN_PROMO_CODE": "Promo code must be filled",
 
     "PLACEHOLDER_SEARCH_RADIO": "Search...",
 
@@ -132,6 +137,8 @@
     "FRAME_SIMILAR_STATIONS": "Similar Radio Stations",
     "FRAME_PASSWORD_RECOVERY": "Password Recovery",
     "FRAME_CHANGE_PASSWORD": "Change Password",
+    "FRAME_PROMO_CODE": "Enter Promo Code",
+    "FRAME_SELECT_PLAN": "Select Account Plan",
 
     "TAB_SHARE": "Share",
     "TAB_EMBED": "Embed",

@@ -8,6 +8,7 @@
 
 namespace Framework\Exceptions;
 
+use Framework\Object;
 use Framework\Services\Locale\I18n;
 
 /**
@@ -16,6 +17,8 @@ use Framework\Services\Locale\I18n;
  * @localized 22.05.2015
  */
 class ControllerException extends \Exception {
+
+    use Object;
 
     private $myMessage = null;
     private $myData = [];

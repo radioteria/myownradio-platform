@@ -10,9 +10,11 @@ namespace Framework\Handlers;
 
 
 use Framework\ControllerImpl;
+use Framework\Exceptions\ControllerException;
+use Objects\User;
 
 class DoTest extends ControllerImpl {
     public function doGet() {
-
+        User::getByID(1)->getOrElseThrow(ControllerException::className());
     }
 }

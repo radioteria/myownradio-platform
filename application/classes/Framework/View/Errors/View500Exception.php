@@ -9,12 +9,10 @@
 namespace Framework\View\Errors;
 
 
-use Framework\Services\TwigTemplate;
-
 class View500Exception extends ViewException {
 
     function __construct($message = null) {
-        $this->code = 500;
-        $this->body = TwigTemplate::getInstance()->renderTemplate("error_500.tmpl", ["message" => $message]);
+        parent::__construct($message, 500);
     }
+
 }

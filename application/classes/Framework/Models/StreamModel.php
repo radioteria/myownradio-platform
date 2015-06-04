@@ -9,8 +9,8 @@
 namespace Framework\Models;
 
 
+use Framework\Exceptions\Auth\NoPermissionException;
 use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\DeleteQuery;
 use Framework\Services\DB\Query\InsertQuery;
@@ -53,7 +53,7 @@ class StreamModel extends Model implements SingletonInterface {
             ->getOrElseThrow(ControllerException::noStream($this->key));
 
         if ($this->stream->getUserID() !== $this->user->getID()) {
-            throw UnauthorizedException::noPermission();
+            throw new NoPermissionException();
         }
 
     }

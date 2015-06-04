@@ -11,8 +11,9 @@ namespace Framework\Models;
 
 use Business\Fields\Code;
 use Business\Fields\Password;
+use Framework\Exceptions\Auth\IncorrectPasswordException;
+use Framework\Exceptions\Auth\NoUserByLoginException;
 use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
@@ -40,7 +41,7 @@ class UsersModel implements SingletonInterface, Injectable {
     /**
      * @param string $login
      * @param string $password
-     * @throws \Framework\Exceptions\UnauthorizedException
+     * @throws \Framework\Exceptions\AccessException
      * @return UserModel
      */
     public function authorizeByLoginPassword($login, $password) {
@@ -54,10 +55,10 @@ class UsersModel implements SingletonInterface, Injectable {
             ->selectFrom("r_users")
             ->where("login = :key OR mail = :key", [":key" => $login])
             ->fetchOneRow()
-            ->getOrElseThrow(UnauthorizedException::noUserByLogin($login));
+            ->getOrElseThrow(NoUserByLoginException::className(), $login);
 
         if (!$pwd->matches($user["password"])) {
-            throw UnauthorizedException::wrongPassword();
+            throw new IncorrectPasswordException();
         }
 
         $token = self::createToken($user["uid"], $session->getSessionId());
@@ -127,7 +128,7 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $user = Database::doInConnection(function (Database $db) use ($id) {
             return $db->fetchOneRow("SELECT * FROM r_users WHERE uid = ?", [$id])
-                ->getOrElseThrow(UnauthorizedException::noUserByLogin($id));
+                ->getOrElseThrow(NoUserByLoginException::className(), $id);
         });
 
         $token = self::createToken($user["uid"], $session->getSessionId());

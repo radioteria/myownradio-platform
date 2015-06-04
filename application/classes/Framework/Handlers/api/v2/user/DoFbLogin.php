@@ -13,7 +13,7 @@ use Facebook\FacebookRequest;
 use Facebook\FacebookSession;
 use Facebook\GraphUser;
 use Framework\Controller;
-use Framework\Exceptions\UnauthorizedException;
+use Framework\Exceptions\Auth\NoPermissionException;
 use Framework\Models\LettersModel;
 use Framework\Models\UserModel;
 use Framework\Models\UsersModel;
@@ -82,7 +82,7 @@ class DoFbLogin implements Controller {
                 });
 
         } else {
-            throw UnauthorizedException::noPermission();
+            throw new NoPermissionException();
         }
 
     }

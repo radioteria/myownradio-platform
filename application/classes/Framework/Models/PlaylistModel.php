@@ -8,8 +8,8 @@
 
 namespace Framework\Models;
 
+use Framework\Exceptions\Auth\NoPermissionException;
 use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\StreamControl;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
@@ -66,7 +66,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                 ->getOrElseThrow(ControllerException::noStream($this->key));
 
             if (intval($stats["uid"]) !== $this->user->getID()) {
-                throw UnauthorizedException::noPermission();
+                throw new NoPermissionException();
             }
 
             $this->tracks_count = intval($stats["tracks_count"]);

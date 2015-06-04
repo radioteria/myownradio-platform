@@ -15,6 +15,7 @@ use Framework\Services\CurrentRoute;
 use Framework\Services\HttpRequest;
 use Framework\Services\JsonResponse;
 use Framework\Services\SubRouter;
+use Framework\View\Errors\View404Exception;
 use Framework\View\Errors\View500Exception;
 use Framework\View\Errors\View501Exception;
 use Framework\View\Errors\ViewException;
@@ -82,8 +83,7 @@ class Router implements SingletonInterface, Injectable {
 
         // Default route
         $sub->defaultRoute(function (Router $router) {
-            http_response_code(404);
-            $router->callRoute("content\\DoDefaultTemplate");
+            throw new View404Exception("try again later");
         });
 
     }
@@ -98,6 +98,12 @@ class Router implements SingletonInterface, Injectable {
             }
 
         } catch (ControllerException $e) {
+
+            if (!JsonResponse::hasInstance()) {
+                $exception = new ViewException($e->getMyMessage(), 400);
+                $exception->render();
+                return;
+            }
 
             $this->exceptionRouter($e);
 

@@ -10,7 +10,7 @@ namespace Framework\Handlers;
 
 
 use Framework\Controller;
-use Framework\Exceptions\UnauthorizedException;
+use Framework\Exceptions\Auth\NoPermissionException;
 use Framework\FileServer\FSFile;
 use Framework\Services\Date;
 use Framework\Services\HttpRequest;
@@ -23,7 +23,7 @@ class DoCron implements Controller {
     public function doCron(HttpRequest $request, Date $date, MailQueue $queue) {
 
         if ($request->getServerAddress() != $request->getRemoteAddress()) {
-            throw UnauthorizedException::noPermission();
+            throw new NoPermissionException();
         }
 
         /* Every hour */

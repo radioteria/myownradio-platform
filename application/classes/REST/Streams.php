@@ -10,8 +10,8 @@ namespace REST;
 
 
 use Framework\Defaults;
+use Framework\Exceptions\Auth\NoUserByLoginException;
 use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
 use Framework\Models\UserModel;
@@ -247,10 +247,10 @@ class Streams implements \Countable, Injectable, SingletonInterface {
     public function getByUser($userKey) {
 
         $user = User::getByFilter("FIND_BY_KEY", [ ":key" => $userKey ])
-            ->getOrElseThrow(UnauthorizedException::noUserByLogin($userKey));
+            ->getOrElseThrow(NoUserByLoginException::className(), $userKey);
 
         $query = $this->getStreamsPrefix();
-        $query->where("a.uid", [$user->getID()]);
+        $query->where("a.uid", [ $user->getID() ]);
 
         $userId = AuthUserModel::getAuthorizedUserID();
 

@@ -9,11 +9,8 @@
 namespace Framework\View\Errors;
 
 
-use Framework\Services\TwigTemplate;
-
 class View501Exception extends ViewException {
-    function __construct() {
-        $this->code = 501;
-        $this->body = TwigTemplate::getInstance()->renderTemplate("error_501.tmpl", []);
+    function __construct($message = null) {
+        parent::__construct($message, 501);
     }
 } 

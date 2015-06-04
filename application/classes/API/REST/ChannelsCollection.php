@@ -11,8 +11,8 @@ namespace API\REST;
 
 use Framework\Context;
 use Framework\Defaults;
+use Framework\Exceptions\AccessException;
 use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
 use Framework\Services\DB\Query\SelectQuery;
@@ -332,7 +332,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
     /**
      * @param int $offset
      * @param int $limit
-     * @throws UnauthorizedException
+     * @throws AccessException
      * @return array
      */
     public function getChannelsListBySelf($offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {

@@ -9,7 +9,8 @@
 namespace Framework\Models;
 
 
-use Framework\Exceptions\UnauthorizedException;
+use Framework\Exceptions\AccessException;
+use Framework\Exceptions\Auth\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Services\Database;
 use Framework\Services\HttpSession;
@@ -28,18 +29,16 @@ class AuthUserModel extends UserModel implements Injectable {
 
     private function getIdBySessionToken() {
 
-        $exception = UnauthorizedException::unAuthorized();
+        $token = HttpSession::getInstance()->get("TOKEN")->getOrElse(UnauthorizedException::className());
 
-        $token = HttpSession::getInstance()->get("TOKEN")->getOrElse($exception);
-
-        $session = Database::doInConnection(function (Database $db) use ($token, $exception) {
+        $session = Database::doInConnection(function (Database $db) use ($token) {
 
             $query = $db->getDBQuery()
                 ->selectFrom("r_sessions a")->innerJoin("r_users b", "a.uid = b.uid")
                 ->select("*")
                 ->where("a.token", $token);
 
-            $session = $db->fetchOneRow($query)->getOrElseThrow($exception);
+            $session = $db->fetchOneRow($query)->getOrElseThrow(UnauthorizedException::className());
 
             $this->userToken = $token;
 
@@ -69,7 +68,7 @@ class AuthUserModel extends UserModel implements Injectable {
     public static function getAuthorizedUserID() {
         try {
             return self::getInstance()->getID();
-        } catch (UnauthorizedException $e) {
+        } catch (AccessException $e) {
             return null;
         }
     }

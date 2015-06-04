@@ -10,7 +10,7 @@ namespace Framework\Handlers\content;
 
 
 use Framework\Controller;
-use Framework\Exceptions\UnauthorizedException;
+use Framework\Exceptions\AccessException;
 use Framework\Models\AuthUserModel;
 use Framework\Services\HttpGet;
 use Framework\Template;
@@ -29,7 +29,7 @@ class DoM3u implements Controller {
 
         try {
             $clientId = AuthUserModel::getInstance()->getClientId();
-        } catch (UnauthorizedException $exception) {
+        } catch (AccessException $exception) {
             $clientId = "";
         }
 

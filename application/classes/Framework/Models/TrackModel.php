@@ -9,8 +9,8 @@
 namespace Framework\Models;
 
 
+use Framework\Exceptions\Auth\NoPermissionException;
 use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\UnauthorizedException;
 use Framework\FileServer\FileServerFacade;
 use Framework\FileServer\FSFile;
 use Framework\Object;
@@ -71,7 +71,7 @@ class TrackModel extends Model implements SingletonInterface {
 
     public function checkAccess() {
         if ($this->object->getUserID() != $this->user->getID()) {
-            throw UnauthorizedException::noPermission();
+            throw new NoPermissionException();
         }
     }
 

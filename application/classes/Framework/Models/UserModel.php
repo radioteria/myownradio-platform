@@ -3,8 +3,11 @@
 namespace Framework\Models;
 
 use Business\Fields\Password;
+use Framework\Exceptions\AccessException;
 use Framework\Exceptions\ApplicationException;
-use Framework\Exceptions\UnauthorizedException;
+use Framework\Exceptions\Auth\IncorrectLoginException;
+use Framework\Exceptions\Auth\IncorrectPasswordException;
+use Framework\Exceptions\Auth\NoUserByLoginException;
 use Framework\Models\Traits\Stats;
 use Framework\Services\DB\Query\DeleteQuery;
 use Framework\Services\InputValidator;
@@ -46,7 +49,7 @@ class UserModel extends Model implements SingletonInterface {
             $id = func_get_arg(0);
 
             $this->user = User::getByID($id)->getOrElseThrow(
-                UnauthorizedException::noUser($id)
+                AccessException::noUser($id)
             );
 
         } elseif (func_num_args() == 1) {
@@ -54,9 +57,7 @@ class UserModel extends Model implements SingletonInterface {
             $key = func_get_arg(0);
 
             $this->user = User::getByFilter("FIND_BY_KEY_PARAMS", [":key" => $key])
-                ->getOrElseThrow(
-                    UnauthorizedException::noUserByLogin($key)
-                );
+                ->getOrElseThrow(NoUserByLoginException::className(), $key);
 
         } elseif (func_num_args() == 2) {
 
@@ -64,7 +65,7 @@ class UserModel extends Model implements SingletonInterface {
             $password = func_get_arg(1);
 
             $this->user = User::getByFilter("FIND_BY_CREDENTIALS", [":login" => $login, ":password" => $password])
-                ->getOrElseThrow(UnauthorizedException::wrongLogin());
+                ->getOrElseThrow(IncorrectLoginException::className());
 
         } else {
 
@@ -133,7 +134,7 @@ class UserModel extends Model implements SingletonInterface {
         $old = new Password($oldPassword);
 
         if (!$old->matches($this->user->getPassword())) {
-            throw UnauthorizedException::wrongPassword();
+            throw new IncorrectPasswordException();
         }
 
         $this->changePasswordNow($new);
@@ -223,11 +224,11 @@ class UserModel extends Model implements SingletonInterface {
 
     /**
      * @param $password
-     * @throws UnauthorizedException
+     * @throws AccessException
      */
     public function checkPassword($password) {
         if (!password_verify($password, $this->user->getPassword())) {
-            throw UnauthorizedException::wrongPassword();
+            throw new IncorrectPasswordException();
         }
     }
 

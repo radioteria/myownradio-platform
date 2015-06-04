@@ -15,6 +15,6 @@ use Objects\User;
 
 class DoTest extends ControllerImpl {
     public function doGet() {
-        User::getByID(1)->getOrElseThrow(ControllerException::className());
+        User::getByID(999)->getOrElseThrow(ControllerException::getMethod("noArgument"), "Hello");
     }
 }

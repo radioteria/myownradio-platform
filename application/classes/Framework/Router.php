@@ -9,7 +9,6 @@
 namespace Framework;
 
 use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Injector\Injector;
 use Framework\Services\CurrentRoute;
@@ -98,11 +97,6 @@ class Router implements SingletonInterface, Injectable {
                 $sub->goMatching($this->currentRoute->getLegacy());
             }
 
-
-        } catch (UnauthorizedException $e) {
-
-            $this->exceptionRouter($e);
-
         } catch (ControllerException $e) {
 
             $this->exceptionRouter($e);
@@ -110,6 +104,7 @@ class Router implements SingletonInterface, Injectable {
         } catch (ViewException $exception) {
 
             $exception->render();
+
             return;
 
         }

@@ -28,18 +28,24 @@ class Optional implements \JsonSerializable {
     }
 
     /**
-     * @param Exception|string $exception
-     * @param null $args
-     * @throws \Exception
-     * @throws string
+     * @param string|Exception|\ReflectionMethod
+     * @throws mixed
      * @return mixed
      */
-    public function getOrElseThrow($exception, $args = null) {
+    public function getOrElseThrow() {
+        $args = func_get_args();
+        $exception = array_shift($args);
         if ($this->test()) {
             return $this->value;
         } else {
             if (is_string($exception)) {
-                throw new $exception($args);
+                $reflection = new \ReflectionClass($exception);
+                $obj = $reflection->newInstanceArgs($args);
+                if ($obj instanceof Exception) {
+                    throw $obj;
+                }
+            } else if ($exception instanceof \ReflectionMethod && $exception->isStatic()) {
+                throw $exception->invokeArgs(null, $args);
             } else {
                 throw $exception;
             }

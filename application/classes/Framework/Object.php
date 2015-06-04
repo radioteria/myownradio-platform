@@ -9,8 +9,6 @@
 namespace Framework;
 
 
-use ReflectionClass;
-
 trait Object {
     /**
      * @return string
@@ -20,9 +18,26 @@ trait Object {
     }
 
     /**
-     * @return ReflectionClass
+     * @return \ReflectionClass
      */
     public static function getClass() {
-        return new ReflectionClass(self::className());
+        return new \ReflectionClass(self::className());
+    }
+
+    /**
+     * @param string $name
+     * @return \ReflectionMethod
+     */
+    public static function getMethod($name) {
+        $reflection = new \ReflectionClass(self::className());
+        return $reflection->getMethod($name);
+    }
+
+    /**
+     * @param string $className
+     * @return $className
+     */
+    public function wrap($className) {
+        return new $className($this);
     }
 } 

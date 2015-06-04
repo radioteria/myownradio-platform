@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <link href='http://fonts.googleapis.com/css?family=Fira+Sans:300,400&subset=cyrillic,latin' rel='stylesheet' type='text/css'>
-    <title>{{ error.code }} - {{ error.message }}</title>
+    <title>${error.code} - ${error.message}</title>
     <style>
         body {
             background-color: #ffffff;
@@ -31,9 +31,9 @@
 <body>
 <div class="centr-text">
     <p>
-        <span style="color:#059528; font-size:200px; font-weight:400;">{{ error.code }}</span><br>
-        {{ error.message }}<br>
-        <span style="font-size:32px;">{{ error.hint }}</span>
+        <span style="color:#059528; font-size:200px; font-weight:400;">${error.code}</span><br>
+        ${error.message}<br>
+        <span style="font-size:32px;">${error.hint}</span>
     </p>
 </div>
 

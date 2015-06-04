@@ -84,8 +84,6 @@ class ViewException extends ApplicationException {
     public function render() {
         $template = new Template("frontend/error.tmpl");
         http_response_code($this->code);
-        $template->setPrefix("{{");
-        $template->setSuffix("}}");
         $template->putObject([
             "error" => [
                 "code" => $this->getCode(),

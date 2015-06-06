@@ -12,5 +12,8 @@ namespace Framework\Handlers;
 use Framework\ControllerImpl;
 
 class DoTest extends ControllerImpl {
+    public function doGet($user_id) {
+        echo $user_id;
 
+    }
 }

@@ -9,6 +9,8 @@
 namespace Framework\Injector;
 
 
+use Framework\Services\HttpGet;
+use Framework\Services\HttpRequest;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -17,18 +19,22 @@ class Injector implements Injectable, SingletonInterface {
     use Singleton;
 
     /**
-     * @param \ReflectionClass $class
+     * @param \ReflectionParameter $class
      * @return mixed|object
      * @throws \Exception
      */
     public function injectByClass($class) {
-        if (!$class->implementsInterface("Framework\\Injector\\Injectable")) {
+        if (is_null($class->getClass())) {
+            $arg = $class->getName();
+            return HttpGet::getInstance()->getRequired($arg);
+        }
+        if (!$class->getClass()->implementsInterface("Framework\\Injector\\Injectable")) {
             throw new InjectorException("Object could not be injected");
         }
-        if ($class->implementsInterface("Tools\\SingletonInterface")) {
-            return $class->getMethod("getInstance")->invoke(null);
+        if ($class->getClass()->implementsInterface("Tools\\SingletonInterface")) {
+            return $class->getClass()->getMethod("getInstance")->invoke(null);
         } else {
-            return $class->newInstanceArgs();
+            return $class->getClass()->newInstanceArgs();
         }
     }
 
@@ -75,7 +81,7 @@ class Injector implements Injectable, SingletonInterface {
     public function injectByFunctionArguments(array $arguments) {
         $array = [];
         foreach ($arguments as $argument) {
-            $array[] = $this->injectByClass($argument->getClass());
+            $array[] = $this->injectByClass($argument);
         }
         return $array;
     }

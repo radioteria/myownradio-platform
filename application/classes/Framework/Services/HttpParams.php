@@ -1,12 +1,13 @@
 <?php
 /**
  * Created by PhpStorm.
- * UserModel: roman
- * Date: 13.12.14
- * Time: 18:26
+ * User: roman
+ * Date: 6/6/15
+ * Time: 8:57 PM
  */
 
 namespace Framework\Services;
+
 
 use Framework\Injector\Injectable;
 use Framework\Services\Locale\I18n;
@@ -15,27 +16,28 @@ use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-class HttpPost extends HttpRequestAdapter implements Injectable, SingletonInterface {
+class HttpParams extends HttpRequestAdapter implements SingletonInterface, Injectable {
 
     use Singleton;
 
-    public function getParameter($key, $filter = FILTER_DEFAULT, $options = null) {
-        return Optional::ofEmpty(FILTER_INPUT(INPUT_POST, $key, $filter, $options));
+    private function getParameter($key, $filter = FILTER_DEFAULT, $args = null) {
+        $value = FILTER_INPUT(INPUT_POST, $key, $filter) ?: FILTER_INPUT(INPUT_GET, $key, $filter) ?: RouteParams::getInstance()->get($key);
+        return Optional::ofNullable($value);
+    }
+
+    public function getRequired($key, $filter = FILTER_DEFAULT, $args = null) {
+        return $this->getParameter($key, $filter, $args)
+            ->getOrElseThrow($this->getException($key));
     }
 
     public function getArrayParameter($key, $filter = FILTER_DEFAULT) {
-        $array = FILTER_INPUT_ARRAY(INPUT_POST, [
+        $array = FILTER_INPUT_ARRAY(INPUT_GET, [
             $key => [
                 "filter" => $filter,
                 "flags"  => FILTER_REQUIRE_ARRAY
             ]
         ]);
         return Optional::ofArray($array[$key]);
-    }
-
-    public function getRequired($key, $filter = FILTER_DEFAULT, $options = null) {
-        return $this->getParameter($key, $filter, $options)
-            ->getOrElseThrow($this->getException($key));
     }
 
     public function getArrayRequired($key, $definition = null) {

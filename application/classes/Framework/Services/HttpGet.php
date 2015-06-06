@@ -52,7 +52,7 @@ class HttpGet extends HttpRequestAdapter implements SingletonInterface, Injectab
     }
 
     private function getException($key) {
-        return new View400Exception(I18n::tr("ERROR_NO_ARGUMENT_SPECIFIED", ["arg" => $key]));
+        return new View400Exception(I18n::tr("ERROR_NO_ARGUMENT_SPECIFIED", [ $key ]));
     }
 
 }

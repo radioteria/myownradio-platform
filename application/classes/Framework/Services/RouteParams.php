@@ -25,6 +25,10 @@ class RouteParams extends HttpRequestAdapter implements SingletonInterface, Inje
         self::$params = $params;
     }
 
+    public function get($key) {
+        return @self::$params[$key];
+    }
+
     /**
      * @param $key
      * @return Optional

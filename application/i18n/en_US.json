@@ -21,7 +21,7 @@
     "VALIDATOR_PASSWORD_LENGTH": "Password length must be in range from {{ 0 }} to {{ 1 }} chars",
 
     "ERROR_NO_IMAGE_ATTACHED": "No image file attached to request",
-    "ERROR_NO_ARGUMENT_SPECIFIED": "No value for argument {{ 0 }} specified",
+    "ERROR_NO_ARGUMENT_SPECIFIED": "No value for argument <b>{{ 0 }}</b> specified",
     "ERROR_USER_NOT_FOUND": "User #{{ 0 }} not found",
     "ERROR_TRACK_NOT_FOUND": "Audio file #{{ 0 }} not found",
     "ERROR_NO_ACCOUNT_PLAN": "Account plan #{{ 0 }} not found",

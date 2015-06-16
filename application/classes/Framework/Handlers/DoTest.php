@@ -10,10 +10,9 @@ namespace Framework\Handlers;
 
 
 use Framework\ControllerImpl;
-use Tools\Functional\Range;
 
 class DoTest extends ControllerImpl {
     public function doGet() {
-        return (new Range(0, 20))->odd();
+        
     }
 }

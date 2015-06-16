@@ -1,5 +1,2 @@
-(function () {
-    require(["/js/test.js"], function () {
+var square = (x) -> x * x;
 
-    });
-})();

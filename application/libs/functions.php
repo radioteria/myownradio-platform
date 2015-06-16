@@ -57,3 +57,15 @@ function underscoreToCamelCase($input) {
     }
     return implode("", $parts);
 }
+
+/**
+ * @param $array
+ * @return \Tools\Optional
+ */
+function array_first($array) {
+    $value = array_shift($array);
+    if ($value) {
+        return \Tools\Optional::hasValue($value);
+    }
+    return \Tools\Optional::noValue();
+}

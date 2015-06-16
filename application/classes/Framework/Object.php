@@ -20,7 +20,7 @@ trait Object {
     /**
      * @return \ReflectionClass
      */
-    public static function getClass() {
+    public static function getClassReflection() {
         return new \ReflectionClass(self::className());
     }
 
@@ -28,7 +28,7 @@ trait Object {
      * @param string $name
      * @return \ReflectionMethod
      */
-    public static function getMethod($name) {
+    public static function getMethodReflection($name) {
         $reflection = new \ReflectionClass(self::className());
         return $reflection->getMethod($name);
     }

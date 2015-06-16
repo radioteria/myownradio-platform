@@ -10,12 +10,15 @@ namespace Framework\Services;
 
 
 use Framework\Injector\Injectable;
+use Framework\Object;
+use Framework\Services\Locale\I18n;
+use Framework\View\Errors\View400Exception;
 use Tools\Optional;
 use Tools\Singleton;
 
 class HttpRequest implements Injectable {
 
-    use Singleton;
+    use Singleton, Object;
 
     function __construct() {
     }
@@ -150,10 +153,46 @@ class HttpRequest implements Injectable {
     }
 
     /**
+     * @param string $parameter
+     * @return Optional
+     */
+    public function getParameter($parameter) {
+        $sources = [
+            HttpPost::getInstance()->getParameter($parameter),
+            HttpPut::getInstance()->getParameter($parameter),
+            HttpGet::getInstance()->getParameter($parameter)
+        ];
+        return array_first(
+            array_map(function (Optional $o) { return $o->get(); },
+                array_filter($sources, function (Optional $source) {
+                    return $source->notEmpty();
+                })
+            )
+        );
+    }
+
+    /**
+     * @param $parameter
+     * @return mixed
+     */
+    public function getParameterOrFail($parameter) {
+        return $this->getParameter($parameter)
+            ->getOrElseThrow($this->getException($parameter));
+    }
+
+    /**
      * @param string $param
      * @return mixed
      */
     private function filterInputServer($param) {
         return FILTER_INPUT(INPUT_SERVER, $param);
+    }
+
+    /**
+     * @param $key
+     * @return View400Exception
+     */
+    private function getException($key) {
+        return new View400Exception(I18n::tr("ERROR_NO_ARGUMENT_SPECIFIED", [ $key ]));
     }
 } 

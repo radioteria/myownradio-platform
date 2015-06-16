@@ -10,9 +10,10 @@ namespace Framework\Handlers;
 
 
 use Framework\ControllerImpl;
+use Tools\Optional;
 
 class DoTest extends ControllerImpl {
-    public function doGet($user_id) {
-        return $user_id;
+    public function doGet(Optional $user_id) {
+        return $user_id->getOrElse(123);
     }
 }

@@ -11,7 +11,6 @@ namespace Framework\Handlers\api\check;
 
 use Business\Test\TestFields;
 use Framework\ControllerImpl;
-use Framework\Services\ValidatorTemplates;
 
 class DoEmail extends ControllerImpl {
     public function doPost($field, TestFields $test) {

@@ -12,19 +12,14 @@ namespace Framework\Handlers\api\check;
 use Business\Test\TestFields;
 use Framework\ControllerImpl;
 use Framework\Models\AuthUserModel;
-use Framework\Services\HttpPost;
-use Framework\Services\JsonResponse;
 use Framework\Services\ValidatorTemplates;
+use Tools\Optional;
 
 class DoStreamPermalink extends ControllerImpl {
-    public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response, TestFields $test) {
-
-        $field = $post->getRequired("field");
-        $context = $post->getParameter("context")->getOrElseNull();
+    public function doPost($field, Optional $context, AuthUserModel $user, TestFields $test) {
 
         $result = $test->testStreamPermalink($field);
-
-        $response->setData(["available" => $result === false || $result == $context]);
+        return ["available" => $result === false || $result == $context->getOrElseNull()];
 
     }
 } 

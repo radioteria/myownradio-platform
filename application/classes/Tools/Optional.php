@@ -9,8 +9,11 @@
 namespace Tools;
 
 use Exception;
+use Framework\Object;
 
 class Optional implements \JsonSerializable {
+
+    use Object;
 
     /** @var Object $value */
     private $value;

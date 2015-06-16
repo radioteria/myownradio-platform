@@ -61,4 +61,12 @@ abstract class HttpRequestAdapter implements \ArrayAccess {
 
     }
 
+    /**
+     * @param $key
+     * @return Optional mixed
+     */
+    public function __invoke($key) {
+        return $this->getParameter($key);
+    }
+
 } 

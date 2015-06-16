@@ -31,13 +31,40 @@ class Optional implements \JsonSerializable {
     }
 
     /**
-     * @param string|Exception|\ReflectionMethod
+     * @param $args
+     * @return mixed|null
+     * @throws Exception
+     * @throws \ReflectionMethod
      * @throws mixed
-     * @return mixed
      */
-    public function getOrElseThrow() {
-        $args = func_get_args();
-        $exception = array_shift($args);
+    public function __invoke(...$args) {
+
+        if (count($args) == 0) {
+            return $this->getOrElseNull();
+        }
+
+        if ($args[0] instanceof Exception) {
+            return $this->getOrElseThrow($args[0]);
+        }
+
+        if (is_callable($args[0])) {
+            return $this->orElseCall($args[0]);
+        }
+
+        return $this->getOrElse($args[0]);
+
+    }
+
+    /**
+     * @param $exception
+     * @param $args
+     * @return mixed
+     * @throws
+     * @throws Exception
+     * @throws \ReflectionMethod
+     * @internal param $ string|Exception|\ReflectionMethod
+     */
+    public function getOrElseThrow($exception, ...$args) {
         if ($this->test()) {
             return $this->value;
         } else {
@@ -46,6 +73,8 @@ class Optional implements \JsonSerializable {
                 $obj = $reflection->newInstanceArgs($args);
                 if ($obj instanceof Exception) {
                     throw $obj;
+                } else {
+                    throw new Exception;
                 }
             } else if ($exception instanceof \ReflectionMethod && $exception->isStatic()) {
                 throw $exception->invokeArgs(null, $args);

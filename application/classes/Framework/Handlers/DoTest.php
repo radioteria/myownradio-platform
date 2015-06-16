@@ -14,6 +14,6 @@ use Tools\Optional;
 
 class DoTest extends ControllerImpl {
     public function doGet(Optional $user_id) {
-        return $user_id->getOrElse(123);
+        return $user_id(100);
     }
 }

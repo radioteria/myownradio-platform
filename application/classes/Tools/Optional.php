@@ -62,7 +62,6 @@ class Optional implements \JsonSerializable {
      * @throws
      * @throws Exception
      * @throws \ReflectionMethod
-     * @internal param $ string|Exception|\ReflectionMethod
      */
     public function getOrElseThrow($exception, ...$args) {
         if ($this->test()) {

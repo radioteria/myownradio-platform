@@ -78,8 +78,10 @@ class Optional implements \JsonSerializable {
                 }
             } else if ($exception instanceof \ReflectionMethod && $exception->isStatic()) {
                 throw $exception->invokeArgs(null, $args);
-            } else {
+            } else if ($exception instanceof Exception) {
                 throw $exception;
+            } else {
+                throw new Exception;
             }
         }
     }

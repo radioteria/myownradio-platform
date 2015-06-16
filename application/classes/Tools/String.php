@@ -9,7 +9,11 @@
 namespace Tools;
 
 
+use Framework\Object;
+
 class String implements \Countable {
+
+    use Object;
 
     private $string;
 

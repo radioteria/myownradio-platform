@@ -10,10 +10,10 @@ namespace Framework\Handlers;
 
 
 use Framework\ControllerImpl;
-use Tools\Optional;
+use Tools\Functional\Range;
 
 class DoTest extends ControllerImpl {
-    public function doGet(Optional $user_id) {
-        return $user_id(100);
+    public function doGet() {
+        return (new Range(0, 20))->odd();
     }
 }

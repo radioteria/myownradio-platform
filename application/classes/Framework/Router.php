@@ -155,8 +155,11 @@ class Router implements SingletonInterface, Injectable {
 
         try {
 
-            Injector::getInstance()->call([$classInstance, $method]);
+            $result = Injector::getInstance()->call([$classInstance, $method]);
 
+            if (!is_null($result)) {
+                JsonResponse::getInstance()->setData($result);
+            }
 
         } catch (\ReflectionException $e) {
 

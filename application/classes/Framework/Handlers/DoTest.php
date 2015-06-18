@@ -14,17 +14,18 @@ use Framework\ControllerImpl;
 class DoTest extends ControllerImpl {
     public function doGet() {
         $counter = makeCounter();
-        echo $counter();
-        echo $counter();
-        echo $counter();
+        echo call_user_func($counter->inc);
+        echo call_user_func($counter->inc);
+        echo call_user_func($counter->dec);
         $counter2 = makeCounter();
-        echo $counter2();
+        echo call_user_func($counter2->dec);
     }
 }
 
 function makeCounter() {
     $value = 0;
-    return function () use (&$value) {
-        return $value ++;
-    };
+    return (object) [
+        "inc" => function () use (&$value) { return ++ $value; },
+        "dec" => function () use (&$value) { return ++ $value; },
+    ];
 }

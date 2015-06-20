@@ -82,17 +82,6 @@ function partial($func, ...$arg1) {
 }
 
 /**
- * @param $expr
- * @param $true
- * @param $false
- * @return mixed
- */
-function when($expr, $true, $false) {
-    $result = $expr ? $true : $false;
-    return is_callable($result) ? $result() : $result;
-}
-
-/**
  * @param $exp
  * @return mixed
  */
@@ -107,9 +96,23 @@ function call_or_get($exp) {
 function any(...$func) {
     foreach ($func as $f) {
         $result = call_or_get($f);
-        if ($result) {
+        if ($result !== null && $result !== false) {
             return $result;
         }
     }
     return null;
+}
+
+/**
+ * @param ...$args
+ * @return bool
+ */
+function eq(...$args) {
+    $first = array_shift($args);
+    foreach ($args as $arg) {
+        if ($arg !== $first) {
+            return false;
+        }
+    }
+    return true;
 }

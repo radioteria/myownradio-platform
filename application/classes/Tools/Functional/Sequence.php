@@ -23,6 +23,20 @@ class Sequence implements \Countable, \IteratorAggregate, \JsonSerializable {
     }
 
     /**
+     * @return mixed
+     */
+    public function head() {
+        return $this->array[0];
+    }
+
+    /**
+     * @return Sequence
+     */
+    public function tail() {
+        return new self(array_slice($this->array, 1));
+    }
+
+    /**
      * @return int
      */
     public function count() {

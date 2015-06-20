@@ -80,3 +80,36 @@ function partial($func, ...$arg1) {
         return $func(...$arg1, ...$arg2);
     };
 }
+
+/**
+ * @param $expr
+ * @param $true
+ * @param $false
+ * @return mixed
+ */
+function when($expr, $true, $false) {
+    $result = $expr ? $true : $false;
+    return is_callable($result) ? $result() : $result;
+}
+
+/**
+ * @param $exp
+ * @return mixed
+ */
+function call_or_get($exp) {
+    return is_callable($exp) ? $exp() : $exp;
+}
+
+/**
+ * @param ...$func
+ * @return mixed|null
+ */
+function any(...$func) {
+    foreach ($func as $f) {
+        $result = call_or_get($f);
+        if ($result) {
+            return $result;
+        }
+    }
+    return null;
+}

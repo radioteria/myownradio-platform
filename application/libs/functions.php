@@ -69,3 +69,14 @@ function array_first($array) {
     }
     return \Tools\Optional::noValue();
 }
+
+/**
+ * @param $func
+ * @param ...$arg1
+ * @return callable
+ */
+function partial($func, ...$arg1) {
+    return function(...$arg2) use (&$func, &$arg1) {
+        return $func(...$arg1, ...$arg2);
+    };
+}

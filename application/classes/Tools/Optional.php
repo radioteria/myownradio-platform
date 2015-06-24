@@ -324,3 +324,17 @@ class Optional implements \JsonSerializable {
 
 }
 
+/**
+ * @return Optional
+ */
+function None() {
+    return Optional::noValue();
+}
+
+/**
+ * @param $value
+ * @return Optional
+ */
+function Some($value) {
+    return Optional::hasValue($value);
+}

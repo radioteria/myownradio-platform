@@ -25,4 +25,8 @@ class Some extends Option {
         return $this->value;
     }
 
+    public function __toString() {
+        return "Some(" . $this->value . ")";
+    }
+
 }

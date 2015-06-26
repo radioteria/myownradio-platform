@@ -93,7 +93,7 @@ class Optional {
      * @return mixed
      */
     public function getOrElse($value) {
-        return $this->option->orElse($value);
+        return $this->option->getOrElse($value);
     }
 
     public function getCheckType($escape) {
@@ -310,6 +310,10 @@ class Optional {
 
     public function getOrElseZero() {
         return $this->getOrElse(0);
+    }
+
+    public function __call($name, $arguments) {
+        return $this->option->__call($name, $arguments);
     }
 
 }

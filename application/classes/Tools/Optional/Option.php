@@ -125,6 +125,15 @@ abstract class Option {
         return Some($value);
     }
 
+    /**
+     * @param $name
+     * @param $arguments
+     * @return mixed|None
+     */
+    function __call($name, $arguments) {
+        return $this->isEmpty() ? None() : Some(call_user_func_array([$this->get(), $name], $arguments));
+    }
+
 }
 
 /**

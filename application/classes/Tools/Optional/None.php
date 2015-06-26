@@ -40,6 +40,10 @@ class None extends Option {
         throw new OptionException("No such element");
     }
 
+    public function __toString() {
+        return "None";
+    }
+
 }
 
 class OptionException extends \Exception {

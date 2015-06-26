@@ -10,14 +10,14 @@ namespace Framework\Handlers;
 
 
 use Framework\ControllerImpl;
-use Objects\User;
+use Tools\Optional\Option;
 
 class DoTest extends ControllerImpl {
     public function doGet() {
 
-        $object = User::getByID();
+        $object = Option::None();
 
-        echo $object->getName();
+        echo $object;
 
     }
 }

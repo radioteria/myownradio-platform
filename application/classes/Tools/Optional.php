@@ -298,7 +298,7 @@ class Optional {
      * @return string
      */
     public function __toString() {
-        return "[Optional:" . ($this->test() ? "Has Value" : "Has No Value") . "]";
+        return $this->option->__toString();
     }
 
     /**
@@ -312,8 +312,23 @@ class Optional {
         return $this->getOrElse(0);
     }
 
+    /**
+     * @param $name
+     * @param $arguments
+     * @return Option
+     */
     public function __call($name, $arguments) {
         return $this->option->__call($name, $arguments);
     }
+
+    /**
+     * @param $name
+     * @return Option
+     */
+    function __get($name) {
+        return $this->option->__get($name);
+    }
+
+
 
 }

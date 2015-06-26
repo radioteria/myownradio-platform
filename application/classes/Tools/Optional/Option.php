@@ -46,7 +46,7 @@ abstract class Option {
      * @return Option
      */
     public function map($callable) {
-        return $this->isEmpty() ? None() : Some($callable($this->get()));
+        return $this->isEmpty() ? $this : Some($callable($this->get()));
     }
 
     /**

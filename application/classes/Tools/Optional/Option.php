@@ -37,8 +37,38 @@ abstract class Option {
         return $this->getOrElse(null);
     }
 
+    public function orCall($callable) {
+        return ($this->isEmpty()) ? $callable() : $this->get();
+    }
+
     public function orElse(Option $alternative) {
         return ($this->isEmpty()) ? $alternative : $this;
+    }
+
+    public function orThrow($exception, ...$args) {
+
+        if ($this->isEmpty()) {
+
+            if (is_string($exception)) {
+
+                $reflection = new \ReflectionClass($exception);
+                $obj = $reflection->newInstanceArgs($args);
+                if ($obj instanceof \Exception) {
+                    throw $obj;
+                } else {
+                    throw new OptionException("Invalid exception passed");
+                }
+
+            } else if ($exception instanceof \ReflectionMethod && $exception->isStatic()) {
+                throw $exception->invokeArgs(null, $args);
+            } else if ($exception instanceof \Exception) {
+                throw $exception;
+            }
+
+        }
+
+        return $this->get();
+
     }
 
     /**

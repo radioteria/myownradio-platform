@@ -10,14 +10,16 @@ namespace Tools;
 
 use Exception;
 use Framework\Object;
+use Tools\Optional\Option;
 
-class Optional implements \JsonSerializable {
+class Optional {
 
     use Object;
 
-    /** @var Object $value */
-    private $value;
-    private $predicate;
+    /**
+     * @var Option
+     */
+    private $option;
 
     private static $empty = null;
 
@@ -26,8 +28,25 @@ class Optional implements \JsonSerializable {
      * @param callable|boolean $predicate
      */
     public function __construct($value, $predicate) {
-        $this->value = $value;
-        $this->predicate = $predicate;
+
+        if (is_bool($predicate)) {
+            if ($predicate) {
+                $this->option = Option::Some($value);
+            } else {
+                $this->option = Option::None();
+            }
+        } else if (is_callable($predicate)) {
+
+            if (call_user_func($predicate, $value)) {
+                $this->option = Option::Some($value);
+            } else {
+                $this->option = Option::None();
+            }
+
+        } else {
+            $this->option = Option::None();
+        }
+
     }
 
     /**
@@ -40,7 +59,7 @@ class Optional implements \JsonSerializable {
     public function __invoke(...$args) {
 
         if (count($args) == 0) {
-            return $this->getOrElseNull();
+            return $this->get();
         }
 
         if ($args[0] instanceof Exception) {
@@ -64,25 +83,9 @@ class Optional implements \JsonSerializable {
      * @throws \ReflectionMethod
      */
     public function getOrElseThrow($exception, ...$args) {
-        if ($this->test()) {
-            return $this->value;
-        } else {
-            if (is_string($exception)) {
-                $reflection = new \ReflectionClass($exception);
-                $obj = $reflection->newInstanceArgs($args);
-                if ($obj instanceof Exception) {
-                    throw $obj;
-                } else {
-                    throw new Exception;
-                }
-            } else if ($exception instanceof \ReflectionMethod && $exception->isStatic()) {
-                throw $exception->invokeArgs(null, $args);
-            } else if ($exception instanceof Exception) {
-                throw $exception;
-            } else {
-                throw new Exception;
-            }
-        }
+
+        return $this->option->orThrow($exception, ...$args);
+
     }
 
     /**
@@ -90,14 +93,15 @@ class Optional implements \JsonSerializable {
      * @return mixed
      */
     public function getOrElse($value) {
-        return $this->test() ? $this->value : $value;
+        return $this->option->orElse($value);
     }
 
     public function getCheckType($escape) {
-        if (gettype($this->value) == gettype($escape)) {
-            return $this->value;
+        if (gettype($this->option->get()) == gettype($escape)) {
+            return Option::Some($this->option->get());
+        } else {
+            return Option::None();
         }
-        return $escape;
     }
 
     /**
@@ -111,7 +115,7 @@ class Optional implements \JsonSerializable {
      * @return mixed
      */
     public function get() {
-        return $this->value;
+        return $this->option->get();
     }
 
     /**
@@ -119,14 +123,14 @@ class Optional implements \JsonSerializable {
      * @return mixed
      */
     public function orElseCall(callable $callable) {
-        return $this->test() ? $this->value : call_user_func($callable);
+        return $this->option->orCall($callable);
     }
 
     /**
      * @return mixed
      */
     public function getOrElseEmpty() {
-        return $this->test() ? $this->value : "";
+        return $this->getOrElse("");
     }
 
     /**
@@ -135,9 +139,7 @@ class Optional implements \JsonSerializable {
      * @return $this
      */
     public function justThrow(Exception $exception) {
-        if (!$this->test()) {
-            throw $exception;
-        }
+        $this->option->orThrow($exception);
         return $this;
     }
 
@@ -146,9 +148,7 @@ class Optional implements \JsonSerializable {
      * @return $this|mixed
      */
     public function then(callable $callable) {
-        if ($this->test()) {
-            call_user_func_array($callable, [&$this->value]);
-        }
+        $this->option->then($callable);
         return $this;
     }
 
@@ -174,13 +174,7 @@ class Optional implements \JsonSerializable {
      * @return boolean
      */
     private function test() {
-        if (is_bool($this->predicate)) {
-            return $this->predicate;
-        }
-        if (is_callable($this->predicate)) {
-            return boolval(call_user_func($this->predicate, $this->value));
-        }
-        return false;
+        return $this->option->nonEmpty();
     }
 
     /*---------------------------------------------------------------*/
@@ -314,27 +308,8 @@ class Optional implements \JsonSerializable {
         return $this->getOrElse(false);
     }
 
-    public function jsonSerialize() {
-        return ["test" => $this->test() ? "true" : "false", "value" => $this->value];
-    }
-
     public function getOrElseZero() {
         return $this->getOrElse(0);
     }
 
 }
-
-///**
-// * @return Optional
-// */
-//function None() {
-//    return Optional::noValue();
-//}
-
-///**
-// * @param $value
-// * @return Optional
-// */
-//function Some($value) {
-//    return Optional::hasValue($value);
-//}

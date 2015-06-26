@@ -10,15 +10,17 @@ namespace Framework\Handlers;
 
 
 use Framework\ControllerImpl;
-use Objects\User;
-use Tools\Optional;
+use Tools\Optional\Option;
 
 class DoTest extends ControllerImpl {
     public function doGet() {
 
-        $user = User::getByID(1);
+        $object = Option::Some([
+            "id" => 1,
+            "name" => "Mike"
+        ]);
 
-        echo $user->getName()->get();
+        $object["name"] = "John";
 
     }
 }

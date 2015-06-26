@@ -9,7 +9,7 @@
 namespace Tools\Optional;
 
 
-abstract class Option {
+abstract class Option implements \ArrayAccess {
 
     use OptionMixin;
 
@@ -133,6 +133,32 @@ abstract class Option {
     function __call($name, $arguments) {
         return $this->isEmpty() ? None() : Some(call_user_func_array([$this->get(), $name], $arguments));
     }
+
+    /**
+     * @param $name
+     * @return Option
+     */
+    function __get($name) {
+        return $this->isEmpty() ? None() : Some($this->get()->$name);
+    }
+
+    public function offsetExists($offset) {
+        throw new \Exception("This feature is not available");
+    }
+
+    public function offsetGet($offset) {
+        return $this->isEmpty() ? None() : Some($this->get()[$offset]);
+    }
+
+    public function offsetSet($offset, $value) {
+        throw new \Exception("This feature is not available");
+    }
+
+
+    public function offsetUnset($offset) {
+        throw new \Exception("This feature is not available");
+    }
+
 
 }
 

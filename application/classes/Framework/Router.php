@@ -113,6 +113,10 @@ class Router implements SingletonInterface, Injectable {
 
             return;
 
+        } catch (\Exception $e) {
+
+            (new View500Exception($e->getMessage()))->render();
+
         }
 
         if (JsonResponse::hasInstance()) {

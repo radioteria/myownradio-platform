@@ -32,6 +32,10 @@ class None extends Option {
         return true;
     }
 
+    /**
+     * @throws OptionException
+     * @return null
+     */
     public function get() {
         throw new OptionException("No such element");
     }

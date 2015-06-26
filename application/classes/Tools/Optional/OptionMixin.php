@@ -78,19 +78,5 @@ trait OptionMixin {
         return file_exists($filePath) ? Some($filePath) : None();
     }
 
-    /**
-     * @return None
-     */
-    public static function none() {
-        return None();
-    }
-
-    /**
-     * @param $value
-     * @return Some
-     */
-    public static function some($value) {
-        return Some($value);
-    }
 
 }

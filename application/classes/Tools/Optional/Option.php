@@ -80,6 +80,21 @@ abstract class Option {
         if ($this->nonEmpty()) $callable($this->get());
     }
 
+    /**
+     * @return None
+     */
+    public static function None() {
+        return None();
+    }
+
+    /**
+     * @param $value
+     * @return Some
+     */
+    public static function Some($value) {
+        return Some($value);
+    }
+
 }
 
 /**

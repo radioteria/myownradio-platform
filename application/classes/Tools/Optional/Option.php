@@ -8,7 +8,11 @@
 
 namespace Tools\Optional;
 
-
+/**
+ * Class Option
+ * @package Tools\Optional
+ * @uses $this->get()
+ */
 abstract class Option implements \ArrayAccess {
 
     use OptionMixin;

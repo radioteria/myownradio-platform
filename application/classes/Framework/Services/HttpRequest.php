@@ -171,6 +171,7 @@ class HttpRequest implements Injectable {
         );
     }
 
+
     /**
      * @param $parameter
      * @return mixed

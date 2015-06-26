@@ -17,7 +17,7 @@ class DoTest extends ControllerImpl {
 
         $object = Option::None();
 
-        echo $object;
+        return $object;
 
     }
 }

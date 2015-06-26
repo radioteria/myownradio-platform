@@ -40,4 +40,5 @@ trait Object {
     public function wrap($className) {
         return new $className($this);
     }
-} 
+
+}

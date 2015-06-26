@@ -13,7 +13,6 @@ use Framework\Services\ORM\Core\MicroORM;
 use Framework\Services\ORM\Exceptions\ORMException;
 use JsonSerializable;
 use Tools\Optional;
-use Tools\Singleton;
 
 abstract class ActiveRecordObject implements JsonSerializable {
 
@@ -67,8 +66,12 @@ abstract class ActiveRecordObject implements JsonSerializable {
     /**
      * @param int $id
      * @return Optional
+     * @throws ORMException
      */
     public static function getByID($id) {
+        if (!$id) {
+            throw new ORMException("\$id not provided");
+        }
         return MicroORM::getInstance()->getObjectByID(get_called_class(), $id);
     }
 

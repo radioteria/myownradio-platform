@@ -9,6 +9,8 @@
 namespace Tools\Functional;
 
 
+use Tools\Optional\Option;
+
 class Sequence implements \Countable, \IteratorAggregate, \JsonSerializable {
 
     private $array = [];
@@ -77,7 +79,28 @@ class Sequence implements \Countable, \IteratorAggregate, \JsonSerializable {
      * @return mixed
      */
     public function reduce($callback, $initial = null) {
+        if (count($this->array) == 0) {
+            return null;
+        }
+        if ($initial == null) {
+            $head = $this->array[0];
+            $rest = array_slice($this->array, 1);
+            return array_reduce($rest, $callback, $head);
+        }
         return array_reduce($this->array, $callback, $initial);
+    }
+
+    /**
+     * @param $callback
+     * @return Option
+     */
+    public function findFirst($callback) {
+        foreach ($this->array as $item) {
+            if ($callback($item)) {
+                return Option::Some($item);
+            }
+        }
+        return Option::None();
     }
 
     /**

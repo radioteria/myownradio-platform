@@ -8,7 +8,10 @@
 
 namespace Tools\Optional;
 
-
+/**
+ * Class Some
+ * @package Tools\Optional
+ */
 class Some extends Option {
 
     private $value;

@@ -10,14 +10,13 @@ namespace Framework\Handlers;
 
 
 use Framework\ControllerImpl;
-use Objects\User;
+use Framework\Services\Http\HttpGet;
+use Framework\Services\Http\HttpParameter;
 
 class DoTest extends ControllerImpl {
-    public function doGet() {
+    public function doGet(HttpParameter $parameter, HttpGet $get) {
 
-        $object = User::getByID(1000);
-
-        return $object->getName()->get();
+        echo $parameter->get("id");
 
     }
 }

@@ -12,12 +12,25 @@ use Framework\Injector\Injectable;
 use Framework\Services\Locale\I18n;
 use Framework\View\Errors\View400Exception;
 use Tools\Optional;
+use Tools\Optional\Option;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
 class HttpPost extends HttpRequestAdapter implements Injectable, SingletonInterface {
 
     use Singleton;
+
+    /**
+     * @param string $key
+     * @return Option
+     */
+    public function getParam($key) {
+        if (is_null(FILTER_INPUT(INPUT_GET, $key))) {
+            return Option::None();
+        } else {
+            return Option::Some(FILTER_INPUT(INPUT_GET, $key));
+        }
+    }
 
     public function getParameter($key, $filter = FILTER_DEFAULT, $options = null) {
         return Optional::ofEmpty(FILTER_INPUT(INPUT_POST, $key, $filter, $options));

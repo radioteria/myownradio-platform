@@ -9,8 +9,6 @@
 namespace Tools\Optional;
 
 
-use Exception;
-
 class None extends Option {
 
     private static $_instance = null;
@@ -44,11 +42,5 @@ class None extends Option {
         return "None";
     }
 
-}
-
-class OptionException extends \Exception {
-    public function __construct($message = "", $code = 0, Exception $previous = null) {
-        parent::__construct($message, $code, $previous);
-    }
 }
 

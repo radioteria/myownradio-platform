@@ -7,19 +7,27 @@
  */
 
 namespace Tools\Optional;
+use Traversable;
 
 /**
  * Class Option
  * @package Tools\Optional
- * @uses $this->get()
  */
-abstract class Option implements \ArrayAccess {
+abstract class Option implements \ArrayAccess, \IteratorAggregate {
 
     use OptionMixin;
 
     public abstract function isEmpty();
 
     public abstract function get();
+
+    /**
+     * @return \Iterator
+     */
+    public function getIterator() {
+        if ($this->nonEmpty())
+            yield $this->get();
+    }
 
     public function nonEmpty() {
         return !$this->isEmpty();
@@ -165,6 +173,13 @@ abstract class Option implements \ArrayAccess {
 
 
 }
+
+class OptionException extends \Exception {
+    public function __construct($message = "", $code = 0, \Exception $previous = null) {
+        parent::__construct($message, $code, $previous);
+    }
+}
+
 
 /**
  * @return None

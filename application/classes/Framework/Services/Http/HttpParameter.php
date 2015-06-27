@@ -47,13 +47,13 @@ class HttpParameter extends MapSupport implements SingletonInterface, Injectable
      * @return mixed
      */
     protected function getValue($key) {
-        $getter = function (MapSupport $support) use (&$key) {
+        $unpack = function (MapSupport $support) use (&$key) {
             return $support->get($key);
         };
         $reduce = function (Option $a, Option $b) {
             return $a->orElse($b);
         };
-        return $this->sources->map($getter)->reduce($reduce)->get();
+        return $this->sources->map($unpack)->reduce($reduce)->get();
     }
 
 }

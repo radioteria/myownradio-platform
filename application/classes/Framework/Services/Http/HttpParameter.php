@@ -39,7 +39,7 @@ class HttpParameter extends MapSupport implements SingletonInterface, Injectable
         $isDefined = function (MapSupport $o) use (&$key) {
             return $o->isDefined($key);
         };
-        return $this->sources->findFirst($isDefined)->nonEmpty();
+        return $this->sources->firstMatching($isDefined)->nonEmpty();
     }
 
     /**

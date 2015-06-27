@@ -94,7 +94,7 @@ class Sequence implements \Countable, \IteratorAggregate, \JsonSerializable {
      * @param $callback
      * @return Option
      */
-    public function findFirst($callback) {
+    public function firstMatching($callback) {
         foreach ($this->array as $item) {
             if ($callback($item)) {
                 return Option::Some($item);

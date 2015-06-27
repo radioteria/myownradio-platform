@@ -9,8 +9,10 @@
 namespace Framework\Injector;
 
 
+use Framework\Services\Http\HttpParameter;
 use Framework\Services\HttpRequest;
 use Tools\Optional;
+use Tools\Optional\Option;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -27,10 +29,12 @@ class Injector implements Injectable, SingletonInterface {
         if (is_null($class->getClass())) {
             $arg = $class->getName();
             return HttpRequest::getInstance()->getParameterOrFail($arg);
-        }
-        if ($class->getClass()->getName() === Optional::className()) {
+        } else if ($class->getClass()->getName() === Optional::className()) {
             $arg = $class->getName();
             return HttpRequest::getInstance()->getParameter($arg);
+        } else if ($class->getClass()->getName() === Option::class) {
+            $arg = $class->getName();
+            return HttpParameter::getInstance()->get($arg);
         }
         if (!$class->getClass()->implementsInterface("Framework\\Injector\\Injectable")) {
             throw new InjectorException("Object could not be injected");

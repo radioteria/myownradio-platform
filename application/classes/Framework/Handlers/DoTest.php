@@ -10,13 +10,12 @@ namespace Framework\Handlers;
 
 
 use Framework\ControllerImpl;
-use Framework\Services\Http\HttpGet;
-use Framework\Services\Http\HttpParameter;
+use Tools\Optional\Option;
 
 class DoTest extends ControllerImpl {
-    public function doGet(HttpParameter $parameter, HttpGet $get) {
+    public function doGet(Option $id) {
 
-        echo $parameter->get("id");
+        echo $id;
 
     }
 }

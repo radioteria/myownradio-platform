@@ -13,7 +13,7 @@ use Traversable;
  * Class Option
  * @package Tools\Optional
  */
-abstract class Option implements \ArrayAccess, \IteratorAggregate {
+abstract class Option implements \ArrayAccess, \IteratorAggregate, \JsonSerializable {
 
     use OptionMixin;
 
@@ -171,6 +171,9 @@ abstract class Option implements \ArrayAccess, \IteratorAggregate {
         throw new \Exception("This feature is not available");
     }
 
+    function jsonSerialize() {
+        return $this->get();
+    }
 
 }
 

@@ -1,6 +1,7 @@
 <?php
 
 use Facebook\FacebookSession;
+use Framework\Init;
 use Framework\Router;
 use Framework\Template;
 
@@ -32,6 +33,10 @@ gc_enable();
 Twig_Autoloader::register(true);
 FacebookSession::setDefaultApplication('731742683610572', 'f84af1cdddcc6ac06c6ebf606fb616c3');
 Template::setTemplatePath("application/tmpl");
+
+$initializer = new Init();
+$initializer->init();
+
 
 $router = Router::getInstance();
 

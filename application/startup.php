@@ -23,4 +23,3 @@ function loadClass($class_name) {
     }
 }
 
-

@@ -15,7 +15,6 @@ use Framework\Services\CurrentRoute;
 use Framework\Services\HttpRequest;
 use Framework\Services\JsonResponse;
 use Framework\Services\SubRouter;
-use Framework\View\Errors\View404Exception;
 use Framework\View\Errors\View500Exception;
 use Framework\View\Errors\View501Exception;
 use Framework\View\Errors\ViewException;
@@ -35,56 +34,6 @@ class Router implements SingletonInterface, Injectable {
 
         $route = CurrentRoute::getInstance();
         $this->currentRoute = $route;
-
-        $this->registerSubRoutes();
-
-    }
-
-    private function registerSubRoutes() {
-
-        $sub = SubRouter::getInstance();
-
-        /* Public side routes register */
-        $sub->addRoute("content/application.modules.js", "content\\DoGetJavascriptModules");
-        $sub->addRoute("content/application.config.js", "content\\DoGetJavascriptSettings");
-
-        /* Dashboard redirect */
-        $sub->addRouteRegExp("~^profile(\\/.+)*$~", "content\\DoDashboard");
-
-        $sub->addRoutes([
-            "index",
-            "streams",
-            "bookmarks",
-            "login",
-            "recover",
-            "recover/:code",
-            "tag/:tag",
-            "signup",
-            "signup/:code",
-            "static/registrationLetterSent",
-            "static/registrationCompleted",
-            "static/resetLetterSent",
-            "static/resetPasswordCompleted",
-            "categories"
-        ], "content\\DoDefaultTemplate");
-
-        $sub->addRoute("category/:category", "helpers\\DoCategory");
-        $sub->addRoute("streams/:id", "helpers\\DoStream");
-        $sub->addRoute("user/:id", "helpers\\DoUser");
-        $sub->addRoute("search/:query", "helpers\\DoSearch");
-
-        $sub->addRoute("content/streamcovers/:fn", "content\\DoGetStreamCover");
-        $sub->addRoute("content/avatars/:fn", "content\\DoGetUserAvatar");
-        $sub->addRoute("content/audio/&id", "content\\DoGetPreviewAudio");
-        $sub->addRoute("content/m3u/:stream_id.m3u", "content\\DoM3u");
-        $sub->addRoute("content/trackinfo/&id", "content\\DoTrackExtraInfo");
-
-        $sub->addRoute("subscribe", "api\\v3\\DoAcquire");
-
-        // Default route
-        $sub->defaultRoute(function (Router $router) {
-            throw new View404Exception("try again later");
-        });
 
     }
 
@@ -141,18 +90,17 @@ class Router implements SingletonInterface, Injectable {
 
         $request = HttpRequest::getInstance();
         $method = "do" . ucfirst(strtolower($request->getMethod()));
-        $class = str_replace("/", "\\", CONTROLLERS_ROOT . $className);
 
         // Reflect controller class
-        if (!class_exists($class, true)) {
+        if (!class_exists($className, true)) {
             return false;
         }
 
-        $reflection = new \ReflectionClass($class);
+        $reflection = new \ReflectionClass($className);
 
         // Check for valid reflector
-        if (!$reflection->implementsInterface("Framework\\Controller")) {
-            throw new View500Exception("Controller must implement Framework\\Controller interface");
+        if (!$reflection->implementsInterface(Controller::class)) {
+            throw new View500Exception("Controller must implement Controller interface");
         }
 
         $classInstance = $reflection->newInstance();

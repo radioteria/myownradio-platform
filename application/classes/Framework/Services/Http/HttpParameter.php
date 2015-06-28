@@ -56,4 +56,16 @@ class HttpParameter extends MapSupport implements SingletonInterface, Injectable
         return $this->sources->map($unpack)->reduce($reduce)->get();
     }
 
+    /**
+     * @param $provider
+     * @return $this
+     */
+    public function registerExceptionProvider($provider) {
+        foreach ($this->sources as $source) {
+            $source->registerExceptionProvider($provider);
+        }
+        return parent::registerExceptionProvider($provider);
+    }
+
+
 }

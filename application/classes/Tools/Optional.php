@@ -12,6 +12,11 @@ use Exception;
 use Framework\Object;
 use Tools\Optional\Option;
 
+/**
+ * Class Optional
+ * @package Tools
+ * @deprecated
+ */
 class Optional {
 
     use Object;

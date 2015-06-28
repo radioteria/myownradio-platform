@@ -26,7 +26,7 @@ class CurrentRoute implements Injectable, SingletonInterface {
         $route_array = explode("/", $this->legacy);
         $count = count($route_array);
         $route_array[$count - 1] = "Do" . ucfirst($route_array[$count - 1]);
-        $this->route = implode("/", $route_array);
+        $this->route = str_replace("/", "\\", CONTROLLERS_ROOT . implode("/", $route_array));
 
     }
 

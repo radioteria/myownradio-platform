@@ -28,7 +28,7 @@ class Injector implements Injectable, SingletonInterface {
     public function injectByClass($class) {
         if (is_null($class->getClass())) {
             $arg = $class->getName();
-            return HttpRequest::getInstance()->getParameterOrFail($arg);
+            return HttpParameter::getInstance()->getOrError($arg);
         } else if ($class->getClass()->getName() === Optional::className()) {
             $arg = $class->getName();
             return HttpRequest::getInstance()->getParameter($arg);
@@ -36,10 +36,10 @@ class Injector implements Injectable, SingletonInterface {
             $arg = $class->getName();
             return HttpParameter::getInstance()->get($arg);
         }
-        if (!$class->getClass()->implementsInterface("Framework\\Injector\\Injectable")) {
+        if (!$class->getClass()->implementsInterface(Injectable::class)) {
             throw new InjectorException("Object could not be injected");
         }
-        if ($class->getClass()->implementsInterface("Tools\\SingletonInterface")) {
+        if ($class->getClass()->implementsInterface(SingletonInterface::class)) {
             return $class->getClass()->getMethod("getInstance")->invoke(null);
         } else {
             return $class->getClass()->newInstanceArgs();

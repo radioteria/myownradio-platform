@@ -10,10 +10,9 @@ namespace Framework\Handlers;
 
 
 use Framework\ControllerImpl;
-use Tools\Optional\Option;
 
 class DoTest extends ControllerImpl {
-    public function doGet(Option $id) {
+    public function doGet($id) {
 
         echo $id;
 

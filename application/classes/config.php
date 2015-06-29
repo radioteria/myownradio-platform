@@ -20,3 +20,4 @@ return [
         "track_preview_command" => "ffmpeg -v quiet -ss %time% -i %path% -filter 'afade=t=in:ss=0:d=2' -vn -acodec libmp3lame -ac 2 -ar 44100 -ab 128k -f mp3 -"
     ]
 ];
+

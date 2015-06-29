@@ -5,6 +5,7 @@
  * Date: 20.12.14
  * Time: 10:07
  */
+use Tools\Optional\Option;
 
 /**
  * @param string $string
@@ -60,14 +61,14 @@ function underscoreToCamelCase($input) {
 
 /**
  * @param $array
- * @return \Tools\Optional
+ * @return Option
  */
 function array_first($array) {
     $value = array_shift($array);
     if ($value) {
-        return \Tools\Optional::hasValue($value);
+        return Option::Some($value);
     }
-    return \Tools\Optional::noValue();
+    return Option::None();
 }
 
 /**

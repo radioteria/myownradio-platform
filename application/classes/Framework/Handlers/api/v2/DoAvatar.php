@@ -12,21 +12,19 @@ namespace Framework\Handlers\api\v2;
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
-use Framework\Services\HttpFiles;
+use Framework\Services\Http\HttpFile;
 use Framework\Services\JsonResponse;
 
 class DoAvatar implements Controller {
 
-    public function doPost(HttpFiles $file, AuthUserModel $user, JsonResponse $response) {
+    public function doPost(HttpFile $file, AuthUserModel $user) {
 
-        logger(print_r($_FILES, true));
-
-        $image = $file->getFirstFile()
-            ->getOrElseThrow(ControllerException::noImageAttached());
+        $image = $file->findAny()
+            ->orThrow(ControllerException::noImageAttached());
 
         $url = $user->changeAvatar($image);
 
-        $response->setData($url);
+        return $url;
 
     }
 
@@ -34,8 +32,8 @@ class DoAvatar implements Controller {
         $user->removeAvatar();
     }
 
-    public function doGet(AuthUserModel $user, JsonResponse $response) {
-        $response->setData($user->getAvatarUrl());
+    public function doGet(AuthUserModel $user) {
+        return $user->getAvatarUrl();
     }
 
 } 

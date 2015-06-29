@@ -57,8 +57,21 @@ abstract class MapSupport {
 
     /**
      * @param $key
+     * @param callable $filter
+     * @return mixed
+     */
+    public function getFiltered($key, callable $filter) {
+        $raiser = function () use (&$key) {
+            $this->raiseError($key);
+        };
+        return $this->get($key)->filter($filter)->orCall($raiser);
+    }
+
+    /**
+     * @param $key
      * @return mixed
      * @throws \Exception
+     * @throws mixed
      */
     public function getOrError($key) {
         if ($this->isDefined($key)) {

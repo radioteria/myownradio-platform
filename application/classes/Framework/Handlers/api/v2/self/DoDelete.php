@@ -11,14 +11,11 @@ namespace Framework\Handlers\api\v2\self;
 
 use Framework\Controller;
 use Framework\Models\AuthUserModel;
-use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 
 class DoDelete implements Controller {
 
-    public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
-
-        $password = $post->getRequired("password");
+    public function doPost($password, AuthUserModel $user, JsonResponse $response) {
 
         $user->checkPassword($password);
 

@@ -12,7 +12,7 @@ namespace Framework\Services\ORM\EntityUtils;
 use Framework\Services\ORM\Core\MicroORM;
 use Framework\Services\ORM\Exceptions\ORMException;
 use JsonSerializable;
-use Tools\Optional;
+use Tools\Optional\Option;
 
 abstract class ActiveRecordObject implements JsonSerializable {
 
@@ -65,7 +65,7 @@ abstract class ActiveRecordObject implements JsonSerializable {
 
     /**
      * @param int $id
-     * @return Optional
+     * @return Option
      * @throws ORMException
      */
     public static function getByID($id) {
@@ -78,7 +78,7 @@ abstract class ActiveRecordObject implements JsonSerializable {
     /**
      * @param string $filter
      * @param array $args
-     * @return Optional
+     * @return Option
      */
     public static function getByFilter($filter, array $args = null) {
         return MicroORM::getInstance()->getObjectByFilter(get_called_class(), $filter, $args);
@@ -107,7 +107,6 @@ abstract class ActiveRecordObject implements JsonSerializable {
     }
 
     /**
-     * @internal param $reflection
      * @return $this
      */
     public function cloneObject() {

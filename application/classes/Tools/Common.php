@@ -9,6 +9,8 @@
 namespace Tools;
 
 
+use Tools\Optional\Option;
+
 class Common {
 
     const GENERATED_ID_LENGTH = 8;
@@ -211,7 +213,7 @@ class Common {
 
     /**
      * @param $filename
-     * @return Optional
+     * @return Option
      * @throws \Framework\Exceptions\ControllerException
      */
     static function getAudioDuration($filename) {
@@ -224,7 +226,7 @@ class Common {
 
         exec($fetchCommand, $tagsData, $exit);
 
-        return Optional::ofNullable(isset($tagsData[0]) ? $tagsData[0] : null);
+        return Option::ofNullable(isset($tagsData[0]) ? $tagsData[0] : null);
 
     }
 

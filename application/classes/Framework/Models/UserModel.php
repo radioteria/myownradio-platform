@@ -11,7 +11,6 @@ use Framework\Exceptions\Auth\NoUserByLoginException;
 use Framework\Models\Traits\Stats;
 use Framework\Services\DB\Query\DeleteQuery;
 use Framework\Services\InputValidator;
-use Framework\Services\ValidatorTemplates;
 use Objects\AccountPlan;
 use Objects\Payment;
 use Objects\Stream;
@@ -48,7 +47,7 @@ class UserModel extends Model implements SingletonInterface {
 
             $id = func_get_arg(0);
 
-            $this->user = User::getByID($id)->getOrElseThrow(
+            $this->user = User::getByID($id)->orThrow(
                 AccessException::noUser($id)
             );
 
@@ -57,7 +56,7 @@ class UserModel extends Model implements SingletonInterface {
             $key = func_get_arg(0);
 
             $this->user = User::getByFilter("FIND_BY_KEY_PARAMS", [":key" => $key])
-                ->getOrElseThrow(NoUserByLoginException::className(), $key);
+                ->orThrow(NoUserByLoginException::class, $key);
 
         } elseif (func_num_args() == 2) {
 
@@ -65,7 +64,7 @@ class UserModel extends Model implements SingletonInterface {
             $password = func_get_arg(1);
 
             $this->user = User::getByFilter("FIND_BY_CREDENTIALS", [":login" => $login, ":password" => $password])
-                ->getOrElseThrow(IncorrectLoginException::className());
+                ->orThrow(IncorrectLoginException::class);
 
         } else {
 
@@ -82,7 +81,7 @@ class UserModel extends Model implements SingletonInterface {
     public function loadAccountQuote() {
         $defaultPlan = AccountPlan::getByID(1)->get();
         /** @var Payment $actualPayment */
-        $actualPayment = Payment::getByFilter("ACTUAL", [$this->getID()])->getOrElseNull();
+        $actualPayment = Payment::getByFilter("ACTUAL", [$this->getID()])->orNull();
         if ($actualPayment === null) {
             $this->planExpires = time();
             $this->planObject = $defaultPlan;

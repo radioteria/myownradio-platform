@@ -13,7 +13,8 @@ use Framework\Injector\Injectable;
 use Framework\Object;
 use Framework\Services\Locale\I18n;
 use Framework\View\Errors\View400Exception;
-use Tools\Optional;
+use http\Env;
+use Tools\Optional\Option;
 use Tools\Singleton;
 
 class HttpRequest implements Injectable {
@@ -25,10 +26,10 @@ class HttpRequest implements Injectable {
 
     /**
      * @param string $key
-     * @return Optional
+     * @return Option
      */
     public function getHeader($key) {
-        return Optional::ofNullable(http\Env::getRequestHeader($key));
+        return Option::ofNullable(Env::getRequestHeader($key));
     }
 
     /**
@@ -67,10 +68,10 @@ class HttpRequest implements Injectable {
     }
 
     /**
-     * @return Optional
+     * @return Option
      */
     public function getLanguage() {
-        return Optional::ofDeceptive(substr(@filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE'), 0, 2));
+        return Option::ofDeceptive(substr(@filter_input(INPUT_SERVER, 'HTTP_ACCEPT_LANGUAGE'), 0, 2));
     }
 
     /**
@@ -81,38 +82,38 @@ class HttpRequest implements Injectable {
     }
 
     /**
-     * @return Optional
+     * @return Option
      */
     public function getHttpAccept() {
-        return Optional::ofNullable($this->filterInputServer("HTTP_ACCEPT"));
+        return Option::ofNullable($this->filterInputServer("HTTP_ACCEPT"));
     }
 
     /**
-     * @return Optional
+     * @return Option
      */
     public function getHttpHost() {
-        return Optional::ofNullable($this->filterInputServer("HTTP_HOST"));
+        return Option::ofNullable($this->filterInputServer("HTTP_HOST"));
     }
 
     /**
-     * @return Optional
+     * @return Option
      */
     public function getHttpReferer() {
-        return Optional::ofNullable($this->filterInputServer("HTTP_REFERER"));
+        return Option::ofNullable($this->filterInputServer("HTTP_REFERER"));
     }
 
     /**
-     * @return Optional
+     * @return Option
      */
     public function getHttpUserAgent() {
-        return Optional::ofNullable($this->filterInputServer("HTTP_USER_AGENT"));
+        return Option::ofNullable($this->filterInputServer("HTTP_USER_AGENT"));
     }
 
     /**
-     * @return Optional
+     * @return Option
      */
     public function getHttps() {
-        return Optional::ofNullable($this->filterInputServer("HTTPS"));
+        return Option::ofNullable($this->filterInputServer("HTTPS"));
     }
 
     /**
@@ -136,49 +137,6 @@ class HttpRequest implements Injectable {
      */
     public function getRequestUri() {
         return $this->filterInputServer("REQUEST_URI");
-    }
-
-    /**
-     * @return HttpGet
-     */
-    public function getParameters() {
-        return HttpGet::getInstance();
-    }
-
-    /**
-     * @return HttpPost
-     */
-    public function getPost() {
-        return HttpPost::getInstance();
-    }
-
-    /**
-     * @param string $parameter
-     * @return Optional
-     */
-    public function getParameter($parameter) {
-        $sources = [
-            HttpPost::getInstance()->getParameter($parameter),
-            HttpPut::getInstance()->getParameter($parameter),
-            HttpGet::getInstance()->getParameter($parameter)
-        ];
-        return array_first(
-            array_map(function (Optional $o) { return $o->get(); },
-                array_filter($sources, function (Optional $source) {
-                    return $source->notEmpty();
-                })
-            )
-        );
-    }
-
-
-    /**
-     * @param $parameter
-     * @return mixed
-     */
-    public function getParameterOrFail($parameter) {
-        return $this->getParameter($parameter)
-            ->getOrElseThrow($this->getException($parameter));
     }
 
     /**

@@ -11,15 +11,16 @@ namespace Framework\Handlers\api\v2\channels;
 
 use API\REST\ChannelsCollection;
 use Framework\Controller;
-use Framework\Services\HttpGet;
-use Framework\Services\JsonResponse;
+use Framework\Services\Http\HttpGet;
+use Tools\Optional\Filter;
 
 class DoBookmarks implements Controller {
-    public function doGet(HttpGet $get, JsonResponse $response, ChannelsCollection $collection) {
-        $offset = $get->getParameter("offset", FILTER_VALIDATE_INT)->getOrElse(0);
-        $limit = $get->getParameter("limit", FILTER_VALIDATE_INT)->getOrElse(ChannelsCollection::CHANNELS_PER_REQUEST_MAX);
-        $response->setData([
-            "channels" => $collection->getBookmarkedChannels($offset, $limit)
-        ]);
+    public function doGet(HttpGet $get, ChannelsCollection $collection) {
+        $offset = $get->get("offset")->filter(Filter::$isNumber)
+                      ->orZero();
+        $limit = $get->get("limit")->filter(Filter::$isNumber)
+                      ->getOrElse(ChannelsCollection::CHANNELS_PER_REQUEST_MAX);
+
+        return ["channels" => $collection->getBookmarkedChannels($offset, $limit)];
     }
 } 

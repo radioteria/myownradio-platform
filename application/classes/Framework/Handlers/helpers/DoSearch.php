@@ -11,13 +11,12 @@ namespace Framework\Handlers\helpers;
 
 use Framework\Controller;
 use Framework\Defaults;
-use Framework\Services\HttpGet;
 use Framework\Template;
 
 class DoSearch implements Controller {
-    public function doGet(HttpGet $get) {
+    public function doGet() {
 
-        $pageTitle = "Search results on ".Defaults::SITE_TITLE;
+        $pageTitle = "Search results on " . Defaults::SITE_TITLE;
 
         $template = new Template("frontend/index.tmpl");
         $template->putObject([

@@ -15,7 +15,6 @@ use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\DeleteQuery;
 use Framework\Services\DB\Query\InsertQuery;
 use Framework\Services\InputValidator;
-use Framework\Services\ValidatorTemplates;
 use Objects\Stream;
 use Objects\Track;
 use Tools\Common;
@@ -50,7 +49,7 @@ class StreamModel extends Model implements SingletonInterface {
     private function load() {
 
         $this->stream = Stream::getByID($this->key)
-            ->getOrElseThrow(ControllerException::noStream($this->key));
+            ->orThrow(ControllerException::noStream($this->key));
 
         if ($this->stream->getUserID() !== $this->user->getID()) {
             throw new NoPermissionException();
@@ -177,27 +176,6 @@ class StreamModel extends Model implements SingletonInterface {
 
     }
 
-    public function removeCover() {
-
-        $folders = Folders::getInstance();
-
-        if (!is_null($this->stream->getCover())) {
-
-            $file = new File($folders->genStreamCoverPath($this->stream->getCover()));
-
-            if ($file->exists()) {
-                $file->delete();
-            }
-
-            $this->stream->setCoverBackground(null);
-            $this->stream->setCover(null);
-            $this->stream->save();
-
-
-        }
-
-    }
-
     public function changeCover($file) {
 
         $folders = Folders::getInstance();
@@ -238,6 +216,27 @@ class StreamModel extends Model implements SingletonInterface {
 
     }
 
+    public function removeCover() {
+
+        $folders = Folders::getInstance();
+
+        if (!is_null($this->stream->getCover())) {
+
+            $file = new File($folders->genStreamCoverPath($this->stream->getCover()));
+
+            if ($file->exists()) {
+                $file->delete();
+            }
+
+            $this->stream->setCoverBackground(null);
+            $this->stream->setCover(null);
+            $this->stream->save();
+
+
+        }
+
+    }
+
     public function delete() {
 
         (new DeleteQuery("r_link"))->where("stream_id", $this->key)->update();
@@ -261,7 +260,7 @@ class StreamModel extends Model implements SingletonInterface {
         $dbq = DBQuery::getInstance();
 
         /** @var Stream $stream */
-        $stream = Stream::getByID($streamId)->getOrElseThrow(ControllerException::noStream($streamId));
+        $stream = Stream::getByID($streamId)->orThrow(ControllerException::noStream($streamId));
         $stream->setUserID($targetUser->getID());
         $stream->save();
 

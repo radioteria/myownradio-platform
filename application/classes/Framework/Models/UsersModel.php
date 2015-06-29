@@ -41,10 +41,11 @@ class UsersModel implements SingletonInterface, Injectable {
     /**
      * @param string $login
      * @param string $password
-     * @throws \Framework\Exceptions\AccessException
+     * @param bool $save
      * @return UserModel
+     * @throws IncorrectPasswordException
      */
-    public function authorizeByLoginPassword($login, $password) {
+    public function authorizeByLoginPassword($login, $password, $save = false) {
 
         $session = HttpSession::getInstance();
 
@@ -55,7 +56,7 @@ class UsersModel implements SingletonInterface, Injectable {
             ->selectFrom("r_users")
             ->where("login = :key OR mail = :key", [":key" => $login])
             ->fetchOneRow()
-            ->getOrElseThrow(NoUserByLoginException::className(), $login);
+            ->orThrow(NoUserByLoginException::className(), $login);
 
         if (!$pwd->matches($user["password"])) {
             throw new IncorrectPasswordException();
@@ -128,7 +129,7 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $user = Database::doInConnection(function (Database $db) use ($id) {
             return $db->fetchOneRow("SELECT * FROM r_users WHERE uid = ?", [$id])
-                ->getOrElseThrow(NoUserByLoginException::className(), $id);
+                ->orThrow(NoUserByLoginException::className(), $id);
         });
 
         $token = self::createToken($user["uid"], $session->getSessionId());
@@ -239,7 +240,7 @@ class UsersModel implements SingletonInterface, Injectable {
             $query->where("password", $code->getPassword());
             $query->select("*");
 
-            $db->fetchOneRow($query)->getOrElseThrow(
+            $db->fetchOneRow($query)->orThrow(
                 ControllerException::tr("ERROR_CODE_NOT_ACTUAL")
             );
 

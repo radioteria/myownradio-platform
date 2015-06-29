@@ -17,7 +17,7 @@ use Framework\Services\DB\Query\InsertQuery;
 use Objects\Stream;
 use Tools\Common;
 use Tools\Folders;
-use Tools\Optional;
+use Tools\Optional\Option;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -48,13 +48,13 @@ class StreamsModel implements Injectable, SingletonInterface {
      * @param $info
      * @param $hashtags
      * @param $category
-     * @param Optional $permalink
+     * @param Option $permalink
      * @param $access
      * @return int
      * @throws \Framework\Exceptions\ControllerException
      * todo: localize
      */
-    public function create($name, $info, $hashtags, $category, Optional $permalink, $access) {
+    public function create($name, $info, $hashtags, $category, Option $permalink, $access) {
 
         if ($this->user->getCurrentPlan()->getStreamsMax() !== null &&
             $this->user->getStreamsCount() >= $this->user->getCurrentPlan()->getStreamsMax()) {

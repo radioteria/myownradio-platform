@@ -12,20 +12,17 @@ namespace Framework\Handlers\content;
 use Framework\Controller;
 use Framework\Exceptions\AccessException;
 use Framework\Models\AuthUserModel;
-use Framework\Services\HttpGet;
 use Framework\Template;
 use Framework\View\Errors\View404Exception;
 use Objects\Stream;
 
 class DoM3u implements Controller {
-    public function doGet(HttpGet $get) {
+    public function doGet($stream_id) {
 
-        $id = $get->getRequired("stream_id");
         $template = new Template("playlist.tmpl");
 
         /** @var Stream $stream */
-        $stream = Stream::getByFilter("GET_BY_KEY", [":key" => $id])->getOrElseThrow(new View404Exception());
-
+        $stream = Stream::getByFilter("GET_BY_KEY", [":key" => $stream_id])->orThrow(new View404Exception());
 
         try {
             $clientId = AuthUserModel::getInstance()->getClientId();

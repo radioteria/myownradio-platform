@@ -77,7 +77,6 @@ class SubRouter implements SingletonInterface, Injectable {
                 array_shift($matches);
                 if (count($data["keys"]) == count($matches)) {
                     $result = array_combine($data["keys"], $matches);
-                    RouteParams::setData($result);
                     HttpRouteMap::getInstance()->setMapData($result);
                 }
                 if (is_string($data["action"])) {

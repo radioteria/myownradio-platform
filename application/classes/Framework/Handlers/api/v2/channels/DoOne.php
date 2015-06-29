@@ -12,17 +12,15 @@ namespace Framework\Handlers\api\v2\channels;
 use API\REST\ChannelsCollection;
 use API\REST\UserCollection;
 use Framework\Controller;
-use Framework\Services\HttpGet;
-use Framework\Services\JsonResponse;
 
 class DoOne implements Controller {
-    public function doGet(HttpGet $get, ChannelsCollection $collection, UserCollection $userCollection, JsonResponse $response) {
-        $stream_id = $get->getRequired("stream_id");
-        $channel_data = $collection->getOneChannel($stream_id);
-        $user_data = $userCollection->getSingleUser($channel_data["uid"]);
-        $response->setData([
+    public function doGet($stream_id, ChannelsCollection $collection, UserCollection $userCollection) {
+        $channel_data   = $collection->getOneChannel($stream_id);
+        $user_data      = $userCollection->getSingleUser($channel_data["uid"]);
+
+        return [
             "channel"   => $channel_data,
             "owner"     => $user_data
-        ]);
+        ];
     }
 } 

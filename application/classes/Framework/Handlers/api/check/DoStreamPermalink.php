@@ -11,15 +11,15 @@ namespace Framework\Handlers\api\check;
 
 use Business\Test\TestFields;
 use Framework\ControllerImpl;
-use Framework\Models\AuthUserModel;
-use Framework\Services\ValidatorTemplates;
-use Tools\Optional;
+use Tools\Optional\Option;
 
 class DoStreamPermalink extends ControllerImpl {
-    public function doPost($field, Optional $context, AuthUserModel $user, TestFields $test) {
+    public function doPost($field, Option $context, /*AuthUserModel $user, */
+                           TestFields $test) {
 
         $result = $test->testStreamPermalink($field);
-        return ["available" => $result === false || $result == $context->getOrElseNull()];
+
+        return array("available" => $result === false || $result == $context->orNull());
 
     }
 } 

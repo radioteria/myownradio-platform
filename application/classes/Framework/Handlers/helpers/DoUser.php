@@ -13,34 +13,30 @@ use Framework\Controller;
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Router;
-use Framework\Services\HttpGet;
 use Framework\Template;
 use Objects\User;
-use REST\Users;
 
 class DoUser implements Controller {
-    public function doGet(HttpGet $get, Users $users) {
-
-        $id = $get->getRequired("id");
+    public function doGet($id) {
 
         try {
             /** @var User $user */
-            $user = User::getByFilter("FIND_BY_KEY", [":key" => $id])->getOrElseThrow(
+            $user = User::getByFilter("FIND_BY_KEY", [":key" => $id])->orThrow(
                 ControllerException::noUser($id)
             );
 
             $title = $user->getName() ? $user->getName() : $user->getLogin();
 
-            $pageTitle = $title."'s radio channels on ".Defaults::SITE_TITLE;
+            $pageTitle = $title . "'s radio channels on " . Defaults::SITE_TITLE;
 
             $metadata = new Template("frontend/meta.user.tmpl");
             $metadata->putObject([
-                "title"         => $pageTitle,
-                "description"   => $user->getInfo(),
-                "keywords"      => "",
-                "url"           => "https://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'],
-                "image"         => $user->getAvatarUrl(),
-                "name"          => $title
+                "title" => $pageTitle,
+                "description" => $user->getInfo(),
+                "keywords" => "",
+                "url" => "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'],
+                "image" => $user->getAvatarUrl(),
+                "name" => $title
             ]);
 
             $template = new Template("frontend/index.tmpl");

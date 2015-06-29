@@ -10,11 +10,13 @@ namespace Framework\Handlers;
 
 
 use Framework\ControllerImpl;
+use Tools\Optional\Filter;
+use Tools\Optional\Option;
 
 class DoTest extends ControllerImpl {
-    public function doGet($id) {
+    public function doGet(Option $id) {
 
-        echo $id;
+        echo $id->filter(Filter::$isValidId)->get();
 
     }
 }

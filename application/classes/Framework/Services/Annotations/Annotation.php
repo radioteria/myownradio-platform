@@ -9,7 +9,7 @@
 namespace Framework\Services\Annotations;
 
 
-use Tools\Optional;
+use Tools\Optional\Option;
 
 class Annotation {
 
@@ -19,28 +19,6 @@ class Annotation {
     function __construct($name, array $parameters = null) {
         $this->name = $name;
         $this->parameters = $parameters;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getName() {
-        return $this->name;
-    }
-
-    /**
-     * @param $key
-     * @return Optional
-     */
-    public function getParameter($key) {
-        return Optional::ofNullable(@$this->parameters[$key]);
-    }
-
-    /**
-     * @return Optional
-     */
-    public function getDefault() {
-        return $this->getParameter("value");
     }
 
     /**
@@ -55,6 +33,28 @@ class Annotation {
             return new self($match[1], ["value" => json_decode($match[2], true)]);
         }
 
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getName() {
+        return $this->name;
+    }
+
+    /**
+     * @return Option
+     */
+    public function getDefault() {
+        return $this->getParameter("value");
+    }
+
+    /**
+     * @param $key
+     * @return Option
+     */
+    public function getParameter($key) {
+        return Option::ofNullable(@$this->parameters[$key]);
     }
 
 } 

@@ -11,16 +11,13 @@ namespace Framework\Handlers\api\v2\user;
 
 use Framework\Controller;
 use Framework\Models\LettersModel;
-use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 
 class DoPasswordResetBegin implements Controller {
 
-    public function doPost(HttpPost $post, JsonResponse $response) {
+    public function doPost($login, JsonResponse $response) {
 
-        $id = $post->getRequired("login");
-
-        LettersModel::sendResetPasswordLetter($id);
+        LettersModel::sendResetPasswordLetter($login);
 
     }
 

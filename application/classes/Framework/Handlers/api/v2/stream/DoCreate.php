@@ -12,29 +12,27 @@ namespace Framework\Handlers\api\v2\stream;
 use Framework\Controller;
 use Framework\Models\StreamModel;
 use Framework\Models\StreamsModel;
-use Framework\Services\HttpFiles;
-use Framework\Services\HttpPost;
-use Framework\Services\JsonResponse;
+use Framework\Services\Http\HttpFile;
+use Framework\Services\Http\HttpPost;
 
 class DoCreate implements Controller {
-    public function doPost(HttpPost $post, StreamsModel $model,
-                           JsonResponse $response, HttpFiles $file) {
+    public function doPost(HttpPost $post, StreamsModel $model, HttpFile $file) {
 
-        $name       = $post->getParameter("name")       ->getOrElseEmpty();
-        $info       = $post->getParameter("info")       ->getOrElseEmpty();
-        $tags       = $post->getParameter("tags")       ->getOrElseEmpty();
-        $permalink  = $post->getParameter("permalink");
-        $category   = $post->getParameter("category")   ->getOrElseNull();
-        $access     = $post->getParameter("access")     ->getOrElse(StreamsModel::ACCESS_PUBLIC);
+        $name = $post->get("name")->orEmpty();
+        $info = $post->get("info")->orEmpty();
+        $tags = $post->get("tags")->orEmpty();
+        $permalink = $post->get("permalink");
+        $category = $post->get("category")->orNull();
+        $access = $post->get("access")->getOrElse(StreamsModel::ACCESS_PUBLIC);
 
         $stream = $model->create($name, $info, $tags, $category, $permalink, $access);
 
-        $file->getFirstFile()->then(function ($file) use ($stream) {
+        $file->findAny()->then(function ($file) use ($stream) {
             (new StreamModel($stream))->changeCover($file);
         });
 
         // Write out new stream object
-        $response->setData($stream);
+        return $stream;
 
     }
 } 

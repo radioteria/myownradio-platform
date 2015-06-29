@@ -13,20 +13,19 @@ use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\AuthUserModel;
 use Framework\Services\Config;
-use Framework\Services\HttpGet;
 use Framework\View\Errors\View401Exception;
 use Framework\View\Errors\View404Exception;
 use Objects\Track;
 
 class DoGetPreviewAudio implements Controller {
-    public function doGet(HttpGet $get, AuthUserModel $user, Config $config) {
+    public function doGet($id, AuthUserModel $user, Config $config) {
+
         try {
-            $id = $get->getRequired("id");
 
             /**
              * @var Track $track
              */
-            $track = Track::getByID($id)->getOrElseThrow(new View404Exception());
+            $track = Track::getByID($id)->orThrow(new View404Exception());
 
 
             if ($track->getUserID() != $user->getID()) {
@@ -46,7 +45,7 @@ class DoGetPreviewAudio implements Controller {
             set_time_limit(0);
 
             $program = $config->getSetting("streaming", "track_preview")
-                ->getOrElseThrow(ControllerException::of("No preview configured"));
+                ->orThrow(ControllerException::of("No preview configured"));
 
             $process = sprintf($program, $track->getDuration() / 3000, escapeshellarg($track->getFileUrl()));
 

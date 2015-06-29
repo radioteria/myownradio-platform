@@ -10,19 +10,19 @@ namespace Framework\Handlers\content;
 
 
 use Framework\Controller;
-use Framework\Services\HttpGet;
+use Framework\Services\Http\HttpParameter;
 use Framework\View\Errors\View404Exception;
 use Tools\File;
 use Tools\Folders;
 
 class DoGetStreamCover implements Controller {
 
-    public function doGet(HttpGet $get, Folders $folders) {
+    public function doGet(HttpParameter $get, Folders $folders) {
 
 
-        $fn = $get->getParameter("fn")->getOrElseThrow(new View404Exception());
+        $fn = $get->get("fn")->orThrow(new View404Exception());
 
-        $size = $get->getParameter("size")->getOrElseNull();
+        $size = $get->get("size")->orNull();
 
         $path = new File($folders->genStreamCoverPath($fn));
 

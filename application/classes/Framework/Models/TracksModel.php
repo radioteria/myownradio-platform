@@ -23,7 +23,7 @@ use Objects\FileServer\FileServerFile;
 use Objects\Track;
 use REST\Playlist;
 use Tools\Common;
-use Tools\Optional;
+use Tools\Optional\Option;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -51,14 +51,14 @@ class TracksModel implements Injectable, SingletonInterface {
 
     /**
      * @param array $file
-     * @param Optional $addToStream
+     * @param Option $addToStream
      * @param bool $upNext
      * @param bool $skipCopies
      * @throws \Framework\Exceptions\ApplicationException
      * @throws \Framework\Exceptions\ControllerException
      * @return Track
      */
-    public function upload(array $file, Optional $addToStream, $upNext = false, $skipCopies = false) {
+    public function upload(array $file, Option $addToStream, $upNext = false, $skipCopies = false) {
 
         $config = Config::getInstance();
         $request = HttpRequest::getInstance();
@@ -74,7 +74,7 @@ class TracksModel implements Injectable, SingletonInterface {
 
         $meta = $id3->analyze($file["tmp_name"]);
         $hash = hash_file(Defaults::HASHING_ALGORITHM, $file["tmp_name"]);
-        $duration = Common::getAudioDuration($file["tmp_name"])->getOrElseThrow(
+        $duration = Common::getAudioDuration($file["tmp_name"])->orThrow(
             ControllerException::tr("ERROR_UPLOAD_FILE_BROKEN", [ $file["name"] ])
         );
 
@@ -161,14 +161,14 @@ class TracksModel implements Injectable, SingletonInterface {
 
     /**
      * @param $trackId
-     * @param null|\Tools\Optional $destinationStream
+     * @param Option $destinationStream
      * @param bool $upNext
      * @return mixed
      * @throws \Framework\Exceptions\ControllerException
      */
-    public function copy($trackId, Optional $destinationStream = null, $upNext = false) {
+    public function copy($trackId, Option $destinationStream, $upNext = false) {
         /** @var Track $trackObject */
-        $trackObject = Track::getByID($trackId)->getOrElseThrow(ControllerException::noTrack($trackId));
+        $trackObject = Track::getByID($trackId)->orThrow(ControllerException::noTrack($trackId));
 
         if ($trackObject->getUserID() == $this->user->getID()) {
             throw ControllerException::tr("ERROR_UPLOAD_FILE_EXISTS", [ $trackObject->getFileName() ]);
@@ -224,7 +224,7 @@ class TracksModel implements Injectable, SingletonInterface {
     public function getSameTrack($hash) {
 
         /** @var Track $copy */
-        $copy = Track::getByFilter("hash = ? AND uid = ?", [$hash, $this->user->getID()])->getOrElseNull();
+        $copy = Track::getByFilter("hash = ? AND uid = ?", [$hash, $this->user->getID()])->orNull();
 
         if (is_null($copy)) {
             return $copy;
@@ -234,7 +234,7 @@ class TracksModel implements Injectable, SingletonInterface {
 
     }
 
-    private function addToStream(Track $track, Optional $stream, $upNext = false) {
+    private function addToStream(Track $track, Option $stream, $upNext = false) {
 
         $stream->then(function($stream_id) use ($track, $upNext) {
             (new PlaylistModel($stream_id))->addTracks($track->getID(), $upNext);

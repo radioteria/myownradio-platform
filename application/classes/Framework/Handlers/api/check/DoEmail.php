@@ -15,7 +15,7 @@ use Framework\ControllerImpl;
 class DoEmail extends ControllerImpl {
     public function doPost($field, TestFields $test) {
 
-        return ["available" => !$test->testEmail($field)];
+        return array("available" => !$test->testEmail($field));
 
     }
 } 

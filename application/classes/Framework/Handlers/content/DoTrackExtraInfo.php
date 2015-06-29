@@ -12,18 +12,14 @@ namespace Framework\Handlers\content;
 use Framework\Controller;
 use Framework\Models\AuthUserModel;
 use Framework\Services\DB\DBQuery;
-use Framework\Services\HttpGet;
-use Framework\Services\SomeClass;
 use Framework\Services\TwigTemplate;
 use Objects\Track;
 
 class DoTrackExtraInfo implements Controller {
-    public function doGet(HttpGet $get, AuthUserModel $user, DBQuery $query, TwigTemplate $template) {
-
-        $id = $get->getRequired("id");
+    public function doGet($id, AuthUserModel $user, DBQuery $query, TwigTemplate $template) {
 
         /** @var Track $track */
-        $track = Track::getByID($id)->getOrElseNull();
+        $track = Track::getByID($id)->orNull();
 
         if ($track === null) {
 

@@ -11,7 +11,7 @@ namespace Framework;
 
 use Framework\Injector\Injectable;
 use Tools\Common;
-use Tools\Optional;
+use Tools\Optional\Option;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -83,7 +83,7 @@ class Preferences implements Injectable, SingletonInterface {
     }
 
     /**
-     * @return Optional
+     * @return Option
      */
     public function get() {
         $count = func_num_args();
@@ -92,9 +92,9 @@ class Preferences implements Injectable, SingletonInterface {
             if (isset($accumulator[func_get_arg($i)])) {
                 $accumulator = $accumulator[func_get_arg($i)];
             } else {
-                return Optional::noValue();
+                return Option::None();
             }
         }
-        return Optional::ofEmpty($accumulator);
+        return Option::Some($accumulator);
     }
 } 

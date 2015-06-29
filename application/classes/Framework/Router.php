@@ -64,7 +64,7 @@ class Router implements SingletonInterface, Injectable {
 
         } catch (\Exception $e) {
 
-            (new View500Exception($e->getMessage()))->render();
+            (new View500Exception($e->getMessage(), $e->getTraceAsString()))->render();
 
         }
 

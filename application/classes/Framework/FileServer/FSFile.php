@@ -41,7 +41,7 @@ class FSFile {
 
 
         /** @var FileServerFile $object */
-        $object = FileServerFile::getByFilter("HASH", [$hash])->getOrElseNull();
+        $object = FileServerFile::getByFilter("HASH", [$hash])->orNull();
 
         if (is_null($object)) {
 

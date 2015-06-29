@@ -10,21 +10,23 @@ namespace Framework\Handlers\api\v2\tracks;
 
 
 use Framework\Controller;
-use Framework\Services\HttpGet;
+use Framework\Services\Http\HttpGet;
 use REST\Playlist;
+use Tools\Optional\Filter;
+use Tools\Optional\Transform;
 
 class DoGetAll implements Controller {
     public function doGet(HttpGet $get, Playlist $playlist) {
 
-        $color = $get->getParameter("color_id");
-        $offset = $get->getParameter("offset");
-        $filter = $get->getParameter("filter");
-        $unused = boolval($get->getParameter("unused")->getOrElseFalse());
+        $color = $get->get("color_id")->filter(Filter::$isNumber);
+        $offset = $get->get("offset")->filter(Filter::$isNumber);
+        $filter = $get->get("filter")->filter(Filter::$notEmpty);
+        $unused = $get->get("unused")->map(Transform::$toBoolean)->orFalse();
 
-        $sortRow = $get->getParameter("row")->getOrElse(0);
-        $sortOrder = $get->getParameter("order")->getOrElse(0);
+        $sortRow    = $get->get("row")->filter(Filter::$isNumber)->orZero();
+        $sortOrder  = $get->get("order")->filter(Filter::$isNumber)->orZero();
 
-        if ($unused) {
+        if ($unused == true) {
             $playlist->getUnusedTracks($color, $filter, $offset, $sortRow, $sortOrder);
         } else {
             $playlist->getAllTracks($color, $filter, $offset, $sortRow, $sortOrder);

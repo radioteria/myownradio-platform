@@ -10,24 +10,22 @@ namespace Framework\Handlers\api\v2\user;
 
 
 use Framework\Controller;
-use Framework\Exceptions\ControllerException;
 use Framework\Models\UsersModel;
-use Framework\Services\HttpPost;
-use Framework\Services\JsonResponse;
+use Framework\Services\Http\HttpPost;
 use REST\Users;
 
 class DoLogin implements Controller {
 
-    public function doPost(HttpPost $post, UsersModel $users, JsonResponse $response, Users $usersRest) {
+    public function doPost(HttpPost $post, UsersModel $users, Users $usersRest) {
 
-        $login = $post->getParameter("login")->getOrElseThrow(ControllerException::noArgument("login"));
-        $password = $post->getParameter("password")->getOrElseThrow(ControllerException::noArgument("password"));
+        $login = $post->getOrError("login");
+        $password = $post->getOrError("password");
 
         $users->logout();
 
         $userModel = $users->authorizeByLoginPassword($login, $password);
 
-        $response->setData($usersRest->getUserByID($userModel->getID(), true));
+        return $usersRest->getUserByID($userModel->getID(), true);
 
     }
 

@@ -9,10 +9,9 @@ use Framework\Injector\Injectable;
 use Framework\Preferences;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\DBQueryPool;
-use Framework\Services\DB\DBQueryWrapper;
 use Framework\Services\DB\Query\QueryBuilder;
 use PDO;
-use Tools\Optional;
+use Tools\Optional\Option;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -298,7 +297,7 @@ class Database implements SingletonInterface, Injectable {
      * @param string $query
      * @param array $params
      * @param Callable $callback
-     * @return Optional
+     * @return Option
      * @throws ControllerException
      */
     public function fetchOneRow($query, array $params = null, $callback = null) {
@@ -311,7 +310,7 @@ class Database implements SingletonInterface, Injectable {
             $row = call_user_func($callback, $row);
         }
 
-        return Optional::ofDeceptive($row);
+        return $row === false ? Option::None() : Option::Some($row);
 
     }
 
@@ -319,7 +318,7 @@ class Database implements SingletonInterface, Injectable {
      * @param string $query
      * @param array $params
      * @param int $column
-     * @return Optional
+     * @return Option
      * @throws ControllerException
      */
     public function fetchOneColumn($query, array $params = null, $column = 0) {
@@ -332,7 +331,7 @@ class Database implements SingletonInterface, Injectable {
             $row = intval($row);
         }
 
-        return Optional::ofDeceptive($row);
+        return $row === false ? Option::None() : Option::Some($row);
 
     }
 
@@ -341,7 +340,7 @@ class Database implements SingletonInterface, Injectable {
      * @param array $params
      * @param string $class
      * @param array|null $args
-     * @return Optional
+     * @return Option
      * @throws ControllerException
      */
     public function fetchOneObject($query, array $params = null, $class, array $args = []) {
@@ -350,7 +349,7 @@ class Database implements SingletonInterface, Injectable {
 
         $object = $resource->fetchObject($class, $args);
 
-        return Optional::ofDeceptive($object);
+        return $object === false ? Option::None() : Option::Some($object);
 
     }
 
@@ -424,7 +423,7 @@ class Database implements SingletonInterface, Injectable {
      * @return int
      */
     public function fetchRowCount($queryPart, $array = null) {
-        return $this->fetchOneColumn("SELECT COUNT(*) ". $queryPart, $array)->getOrElseZero();
+        return $this->fetchOneColumn("SELECT COUNT(*) ". $queryPart, $array)->orZero();
     }
 
 }

@@ -48,6 +48,10 @@ abstract class Option implements \ArrayAccess, \IteratorAggregate, \JsonSerializ
         return $this->getOrElse(null);
     }
 
+    public function orEmpty() {
+        return $this->getOrElse("");
+    }
+
     public function orCall($callable) {
         return ($this->isEmpty()) ? $callable() : $this->get();
     }
@@ -116,9 +120,15 @@ abstract class Option implements \ArrayAccess, \IteratorAggregate, \JsonSerializ
 
     /**
      * @param $callable
+     * @param null $otherwise
      */
-    public function then($callable) {
-        if ($this->nonEmpty()) $callable($this->get());
+    public function then($callable, $otherwise = null) {
+        if ($this->nonEmpty())
+            $callable($this->get());
+        else if (is_callable($otherwise)) {
+            $otherwise();
+        }
+
     }
 
     /**
@@ -134,15 +144,6 @@ abstract class Option implements \ArrayAccess, \IteratorAggregate, \JsonSerializ
      */
     public static function Some($value) {
         return Some($value);
-    }
-
-    /**
-     * @param $name
-     * @param $arguments
-     * @return mixed|None
-     */
-    function __call($name, $arguments) {
-        return $this->isEmpty() ? None() : Some(call_user_func_array([$this->get(), $name], $arguments));
     }
 
     /**

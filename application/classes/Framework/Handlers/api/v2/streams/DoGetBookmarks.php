@@ -11,17 +11,14 @@ namespace Framework\Handlers\api\v2\streams;
 
 use Framework\Controller;
 use Framework\Models\AuthUserModel;
-use Framework\Services\HttpGet;
-use Framework\Services\JsonResponse;
 use REST\Streams;
+use Tools\Optional\Option;
 
 class DoGetBookmarks implements Controller {
 
-    public function doGet(JsonResponse $response, Streams $streams, HttpGet $get, AuthUserModel $model) {
+    public function doGet(Option $offset, Streams $streams, AuthUserModel $model) {
 
-        $offset = $get->getParameter("offset")->getOrElse(0);
-
-        $response->setData($streams->getBookmarksByUser($model, $offset));
+        return $streams->getBookmarksByUser($model, $offset->orZero());
 
     }
 

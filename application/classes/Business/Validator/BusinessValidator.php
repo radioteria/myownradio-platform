@@ -64,7 +64,7 @@ class BusinessValidator extends Validator {
      * @param $ignoredId
      * @return $this
      */
-    public function isEmailAvailable($ignoredId) {
+    public function isEmailAvailable($ignoredId = null) {
 
         $copy = $this->copy();
         $copy->addPredicate(function ($value) use ($ignoredId) {
@@ -101,7 +101,7 @@ class BusinessValidator extends Validator {
     public function isCountryIdCorrect() {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) {
-            return Country::getByID($value)->notEmpty();
+            return Country::getByID($value)->nonEmpty();
         });
         return $copy;
     }

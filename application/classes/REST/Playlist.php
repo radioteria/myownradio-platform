@@ -20,7 +20,7 @@ use Framework\Services\DB\Query\SelectQuery;
 use Objects\StreamStats;
 use Tools\Common;
 use Tools\JsonPrinter;
-use Tools\Optional;
+use Tools\Optional\Option;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 use Tools\System;
@@ -33,14 +33,15 @@ class Playlist implements SingletonInterface, Injectable {
     const REAL_TIME_DELAY_MS = 10000;
 
     /**
-     * @param Optional $color
-     * @param Optional $filter
-     * @param Optional $offset
+     * @param Option $color
+     * @param Option $filter
+     * @param Option $offset
      * @param int $sortRow
      * @param int $sortOrder
      * @return array
+     * @throws ControllerException
      */
-    public function getAllTracks(Optional $color, Optional $filter, Optional $offset, $sortRow = 0, $sortOrder = 0) {
+    public function getAllTracks(Option $color, Option $filter, Option $offset, $sortRow = 0, $sortOrder = 0) {
 
         $me = AuthUserModel::getInstance();
 
@@ -52,16 +53,16 @@ class Playlist implements SingletonInterface, Injectable {
         $safeRow            = isset($availableRows[$sortRow]) ? $sortRow : 0;
         $safeOrder          = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
 
-        if ($color->notEmpty()) {
+        if ($color->nonEmpty()) {
             $query->where("color", $color->get());
         }
 
-        if ($filter->notEmpty()) {
+        if ($filter->nonEmpty()) {
             $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
                 Common::searchQueryFilter($filter->get())]);
         }
 
-        if ($offset->notEmpty()) {
+        if ($offset->nonEmpty()) {
             $query->offset($offset->get());
         }
 
@@ -73,7 +74,7 @@ class Playlist implements SingletonInterface, Injectable {
 
     }
 
-    public function getUnusedTracks(Optional $color, Optional $filter, Optional $offset, $sortRow = 0, $sortOrder = 0) {
+    public function getUnusedTracks(Option $color, Option $filter, Option $offset, $sortRow = 0, $sortOrder = 0) {
 
         $me = AuthUserModel::getInstance();
 
@@ -85,16 +86,16 @@ class Playlist implements SingletonInterface, Injectable {
         $safeRow            = isset($availableRows[$sortRow]) ? $sortRow : 0;
         $safeOrder          = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
 
-        if ($color->notEmpty()) {
+        if ($color->nonEmpty()) {
             $query->where("color", $color->get());
         }
 
-        if ($filter->notEmpty()) {
+        if ($filter->nonEmpty()) {
             $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
                 Common::searchQueryFilter($filter->get())]);
         }
 
-        if ($offset->notEmpty()) {
+        if ($offset->nonEmpty()) {
             $query->offset($offset->get());
         }
 
@@ -115,7 +116,7 @@ class Playlist implements SingletonInterface, Injectable {
 
         $index = 0;
 
-        $query->eachRow(function ($row) use ($printer, &$index) {
+        $query->eachRow(function ($row) use (&$printer, &$index) {
             if ($index++ > 0) {
                 $printer->brComma();
             }
@@ -135,7 +136,7 @@ class Playlist implements SingletonInterface, Injectable {
         $query = $this->getTracksPrefix()->where("uid", $me->getID());
         $query->where("tid", $trackID);
 
-        return $query->fetchOneRow()->getOrElseThrow(ControllerException::noTrack($trackID));
+        return $query->fetchOneRow()->orThrow(ControllerException::noTrack($trackID));
 
     }
 
@@ -161,12 +162,12 @@ class Playlist implements SingletonInterface, Injectable {
 
     /**
      * @param StreamModel $stream
-     * @param Optional $color
-     * @param Optional $filter
-     * @param Optional $offset
+     * @param Option $color
+     * @param Option $filter
+     * @param Option $offset
      * @return array
      */
-    public function getTracksByStream(StreamModel $stream, Optional $color, Optional $filter, Optional $offset) {
+    public function getTracksByStream(StreamModel $stream, Option $color, Option $filter, Option $offset) {
 
         $printer = JsonPrinter::getInstance()->successPrefix();
 
@@ -175,16 +176,16 @@ class Playlist implements SingletonInterface, Injectable {
 
         $query->select("unique_id", "time_offset");
 
-        if ($color->notEmpty()) {
+        if ($color->nonEmpty()) {
             $query->where("color", $color);
         }
 
-        if ($filter->notEmpty()) {
+        if ($filter->nonEmpty()) {
             $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
                 Common::searchQueryFilter($filter->get())]);
         }
 
-        if ($offset->notEmpty()) {
+        if ($offset->nonEmpty()) {
             $query->offset($offset->get());
         }
 
@@ -215,7 +216,7 @@ class Playlist implements SingletonInterface, Injectable {
         /** @var StreamStats $stream */
 
         $stream = StreamStats::getByFilter("sid = :id OR permalink = :id", [":id" => $id])
-            ->getOrElseThrow(ControllerException::noStream($id));
+            ->orThrow(ControllerException::noStream($id));
 
         if ($stream->getStatus() == 0) {
             throw ControllerException::noStream($id);
@@ -238,7 +239,7 @@ class Playlist implements SingletonInterface, Injectable {
         $query->where("time_offset <= ?", [$position]);
         $query->where("stream_id", $stream->getID());
 
-        $track = $query->fetchOneRow()->getOrElseThrow(new ControllerException(sprintf("Nothing playing on stream '%s'", $id)));
+        $track = $query->fetchOneRow()->orThrow(new ControllerException(sprintf("Nothing playing on stream '%s'", $id)));
 
         $track["caption"] = $track["artist"] . " - " . $track["title"];
 
@@ -256,7 +257,7 @@ class Playlist implements SingletonInterface, Injectable {
 
         /** @var StreamStats $stream */
         $stream = StreamStats::getByFilter("sid = :id OR permalink = :id", [":id" => $id])
-            ->getOrElseThrow(ControllerException::noStream($id));
+            ->orThrow(ControllerException::noStream($id));
 
         if ($stream->getTracksDuration() == 0 || $stream->getStatus() == 0) {
 

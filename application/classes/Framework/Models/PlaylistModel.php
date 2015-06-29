@@ -19,7 +19,7 @@ use Objects\Stream;
 use Objects\StreamTrack;
 use Objects\Track;
 use Tools\Common;
-use Tools\Optional;
+use Tools\Optional\Option;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 use Tools\System;
@@ -63,7 +63,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                 ->select("a.uid, a.started, a.started_from, a.status, b.tracks_count, b.tracks_duration");
 
             $stats = $db->fetchOneRow($query)
-                ->getOrElseThrow(ControllerException::noStream($this->key));
+                ->orThrow(ControllerException::noStream($this->key));
 
             if (intval($stats["uid"]) !== $this->user->getID()) {
                 throw new NoPermissionException();
@@ -105,7 +105,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
             if ($upNext) {
                 $nowPlaying = $this->getPlayingTrack();
             } else {
-                $nowPlaying = Optional::noValue();
+                $nowPlaying = Option::None();
             }
 
             foreach ($tracksToAdd as $track) {
@@ -170,13 +170,13 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
             call_user_func($callable);
 
-            if (StreamTrack::getByID($track->getUniqueID())->notEmpty()) {
+            if (StreamTrack::getByID($track->getUniqueID())->nonEmpty()) {
                 $this->scPlayByUniqueID($track->getUniqueID(), $trackPosition, false);
             } else {
                 $this->scPlayByOrderID($track->getTrackOrder());
             }
 
-        })->orElseCall($callable);
+        }, $callable);
 
         return $this;
 
@@ -184,14 +184,14 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     /**
      * @param int|null $time
-     * @return Optional
+     * @return Option
      */
     public function getPlayingTrack($time = null) {
 
-        $position = $this->getStreamPosition($time)->getOrElseNull();
+        $position = $this->getStreamPosition($time)->orNull();
 
         if (is_null($position)) {
-            return Optional::noValue();
+            return Option::None();
         }
 
         return $this->getTrackByTime($position);
@@ -200,16 +200,16 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     /**
      * @param int|null $time
-     * @return Optional
+     * @return Option
      */
     public function getStreamPosition($time = null) {
 
         if ($this->tracks_duration == 0) {
-            return Optional::ofNullable(0);
+            return Option::None();
         }
 
         if ($this->status == 0) {
-            return Optional::ofNullable(null);
+            return Option::None();
         }
 
         if (is_null($time)) {
@@ -218,18 +218,18 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
         $position = ($time - $this->started + $this->started_from) % $this->tracks_duration;
 
-        return Optional::ofNullable($position);
+        return Option::Some($position);
 
     }
 
     /**
      * @param $time
-     * @return Optional
+     * @return Option
      */
     public function getTrackByTime($time) {
 
         if ($this->getStreamDuration() == 0) {
-            return Optional::noValue();
+            return Option::None();
         }
 
         $mod = $time % $this->getStreamDuration();
@@ -251,7 +251,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     /**
      * @param string $filter
      * @param array $args
-     * @return Optional
+     * @return Option
      */
     protected function _getPlaylistTrack($filter, array $args = null) {
 
@@ -367,7 +367,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     /**
      * @param $id
-     * @return Optional
+     * @return Option
      */
     public function getTrackByOrder($id) {
 
@@ -426,7 +426,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     }
 
     /**
-     * @return Optional
+     * @return Option
      */
     protected function _getRandomTrack() {
 

@@ -238,7 +238,7 @@ class Track extends ActiveRecordObject implements ActiveRecord {
 
         /** @var FileServerFile $file */
         $file = FileServerFile::getByID($this->getFileId())
-            ->getOrElseThrow(new ControllerException(
+            ->orThrow(new ControllerException(
                 sprintf("Track \"%d\" is not uploaded to any file server", $this->getID())
             ));
         $server = $file->getServerObject();

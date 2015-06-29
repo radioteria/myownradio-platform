@@ -13,6 +13,7 @@ use Framework\Injector\Injectable;
 use Framework\Preferences;
 use Objects\Stream;
 use Objects\User;
+use Tools\Optional\Transform;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -21,24 +22,24 @@ class TestFields implements Injectable, SingletonInterface {
 
     /**
      * @param string $email
-     * @return bool|int
+     * @return int|bool
      */
     public function testEmail($email) {
-        $result = User::getByFilter("mail = ?", [ $email ])->getOrElseNull();
-        return is_null($result) ? false : $result->getId();
+        return User::getByFilter("mail = ?", [ $email ])
+            ->map(Transform::$userToId)->orFalse();
     }
 
     /**
      * @param string $login
-     * @return bool|int
+     * @return int|bool
      */
     public function testLogin($login) {
         $preferences = Preferences::getInstance();
-        if(array_search($login, $preferences->get("invalid", "login")->getOrElse([])) !== false) {
+        if (in_array($login, $preferences->get("invalid", "login")->getOrElse([]))) {
             return false;
         }
-        $result = User::getByFilter("login = :id OR mail = :id", [ ":id" => $login ])->getOrElseNull();
-        return is_null($result) ? false : $result->getId();
+        return User::getByFilter("login = :id OR mail = :id", [ ":id" => $login ])
+            ->map(Transform::$userToId)->orFalse();
     }
 
     /**
@@ -46,18 +47,19 @@ class TestFields implements Injectable, SingletonInterface {
      * @return bool|int
      */
     public function testStreamPermalink($permalink) {
-        /** @var Stream $object */
-        $object = Stream::getByFilter("permalink = ?", [ $permalink ])->getOrElseNull();
-        return is_null($object) ? false : $object->getId();
+        return Stream::getByFilter("permalink = ?", [ $permalink ])
+            ->map(Transform::$userToId)->orFalse();
     }
 
     /**
      * @param $permalink
-     * @return bool|mixed
+     * @return bool|int
      */
     public function testUserPermalink($permalink) {
-        /** @var User $object */
-        $object = User::getByFilter("permalink = ?", [ $permalink ])->getOrElseNull();
-        return is_null($object) ? false : $object->getId();
+        $getIdFunc = function (User $user) {
+            return $user->getId();
+        };
+        return User::getByFilter("permalink = ?", [ $permalink ])
+            ->map($getIdFunc)->orFalse();
     }
 }

@@ -14,8 +14,6 @@ use Framework\ControllerImpl;
 
 class DoLogin extends ControllerImpl {
     public function doPost($field, TestFields $test) {
-        return [
-            "exists" => $test->testLogin($field)
-        ];
+        return array("exists" => $test->testLogin($field));
     }
 } 

@@ -16,7 +16,7 @@ use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordCollection;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 use Framework\Services\ORM\Exceptions\ORMException;
-use Tools\Optional;
+use Tools\Optional\Option;
 use Tools\Singleton;
 
 /**
@@ -92,7 +92,7 @@ class MicroORM extends FilterORM implements Injectable {
     /**
      * @param string $bean
      * @param int $id
-     * @return Optional
+     * @return Option
      */
     public function getObjectByID($bean, $id) {
 
@@ -108,7 +108,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param string $bean
      * @param string $filter
      * @param array $args
-     * @return Optional
+     * @return Option
      */
     public function getObjectByFilter($bean, $filter, array $args = null) {
 
@@ -298,7 +298,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param \ReflectionClass $reflection
      * @param array $config
      * @param int $id
-     * @return Optional
+     * @return Option
      */
     private function _loadObject($reflection, array $config, $id) {
 
@@ -316,7 +316,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param array $config
      * @param $filter
      * @param array $args
-     * @return Optional
+     * @return Option
      */
     private function _getObjectByFilter($reflection, array $config, $filter, array $args = null) {
 
@@ -375,7 +375,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param SelectQuery $query
      * @param \ReflectionClass $reflection
      * @param $config
-     * @return Optional
+     * @return Option
      */
     protected function _getSingleObject(SelectQuery $query, \ReflectionClass $reflection, $config) {
 
@@ -386,11 +386,10 @@ class MicroORM extends FilterORM implements Injectable {
 
         $query->limit(1);
 
-        $row = $query->fetchOneRow($query)
-            ->getOrElseNull();
+        $row = $query->fetchOneRow($query)->orNull();
 
         if ($row === null) {
-            return Optional::noValue();
+            return Option::None();
         }
 
         $this->ORMCache[$config["@table"]][$config["@key"]] = $row;
@@ -403,7 +402,7 @@ class MicroORM extends FilterORM implements Injectable {
         }
 
 
-        return Optional::hasValue($instance);
+        return Option::Some($instance);
 
     }
 

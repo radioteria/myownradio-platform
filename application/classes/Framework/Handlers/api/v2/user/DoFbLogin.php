@@ -17,7 +17,6 @@ use Framework\Exceptions\Auth\NoPermissionException;
 use Framework\Models\LettersModel;
 use Framework\Models\UserModel;
 use Framework\Models\UsersModel;
-use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 use Framework\Services\Mailer;
 use Objects\User;
@@ -26,9 +25,7 @@ class DoFbLogin implements Controller {
 
     const FB_USER_PREFIX = "fbuser_";
 
-    public function doPost(HttpPost $post, JsonResponse $response, UsersModel $model) {
-
-        $token = $post->getRequired("token");
+    public function doPost($token, JsonResponse $response, UsersModel $model) {
 
         $session = new FacebookSession($token);
 
@@ -39,8 +36,7 @@ class DoFbLogin implements Controller {
                 $session, 'GET', '/me?fields=email,name'
             ))->execute()->getGraphObject(GraphUser::className());
 
-            User::getByFilter("login = ? OR mail = ?", [self::FB_USER_PREFIX.$user_profile->getId(), $user_profile->getEmail()])
-
+            User::getByFilter("login = ? OR mail = ?", [self::FB_USER_PREFIX . $user_profile->getId(), $user_profile->getEmail()])
                 ->then(function (User $user) use ($response, $model) {
 
                     /** @var UserModel $userModel */
@@ -48,12 +44,10 @@ class DoFbLogin implements Controller {
 
                     $response->setData($userModel->toRestFormat());
 
-                })
-
-                ->otherwise(function () use ($user_profile, $response, $model) {
+                }, function () use ($user_profile, $response, $model) {
 
                     $user = new User();
-                    $user->setLogin(self::FB_USER_PREFIX.$user_profile->getId());
+                    $user->setLogin(self::FB_USER_PREFIX . $user_profile->getId());
                     $user->setPassword(NULL);
                     $user->setName($user_profile->getName());
                     $user->setAvatar(NULL);

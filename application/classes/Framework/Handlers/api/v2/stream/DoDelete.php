@@ -11,15 +11,13 @@ namespace Framework\Handlers\api\v2\stream;
 
 use Framework\Controller;
 use Framework\Models\StreamModel;
-use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 
 class DoDelete implements Controller {
 
-    public function doPost(HttpPost $post, JsonResponse $response) {
+    public function doPost($stream_id, JsonResponse $response) {
 
-        $id = $post->getRequired("stream_id");
-        StreamModel::getInstance($id)->delete();
+        StreamModel::getInstance($stream_id)->delete();
 
     }
 

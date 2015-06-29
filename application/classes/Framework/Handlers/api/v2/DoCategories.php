@@ -11,11 +11,9 @@ namespace Framework\Handlers\api\v2;
 
 use Framework\Controller;
 use Framework\Services\DB\DBQuery;
-use Framework\Services\JsonResponse;
 
 class DoCategories implements Controller {
-    public function doGet(DBQuery $query, JsonResponse $response) {
-        $categories = $query->selectFrom("r_categories")->fetchAll();
-        $response->setData($categories);
+    public function doGet(DBQuery $query) {
+        return $query->selectFrom("r_categories")->fetchAll();
     }
 } 

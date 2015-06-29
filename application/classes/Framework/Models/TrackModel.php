@@ -13,7 +13,6 @@ use Framework\Exceptions\Auth\NoPermissionException;
 use Framework\Exceptions\ControllerException;
 use Framework\FileServer\FileServerFacade;
 use Framework\FileServer\FSFile;
-use Framework\Object;
 use Framework\Services\Locale\I18n;
 use Objects\FileServer\FileServerFile;
 use Objects\Track;
@@ -65,7 +64,7 @@ class TrackModel extends Model implements SingletonInterface {
     public function reload() {
 
         $this->object = Track::getByID($this->key)
-            ->getOrElseThrow(ControllerException::noTrack($this->key));
+            ->orThrow(ControllerException::noTrack($this->key));
 
     }
 
@@ -124,13 +123,6 @@ class TrackModel extends Model implements SingletonInterface {
     }
 
     /**
-     * @return string
-     */
-    public function getFileName() {
-        return $this->object->getFileName();
-    }
-
-    /**
      * @return int
      */
     public function getFileSize() {
@@ -168,13 +160,6 @@ class TrackModel extends Model implements SingletonInterface {
     /**
      * @return int
      */
-    public function getUserID() {
-        return $this->object->getUserID();
-    }
-
-    /**
-     * @return int
-     */
     public function getUploaded() {
         return $this->object->getUploaded();
     }
@@ -192,9 +177,9 @@ class TrackModel extends Model implements SingletonInterface {
     public function getFileUrl() {
         /** @var FileServerFile $file */
         $file = FileServerFile::getByID($this->object->getFileId())
-            ->getOrElseThrow(I18n::tr("ERROR_TRACK_NOT_AVAILABLE", [ $this->object->getID() ]));
+            ->orThrow(I18n::tr("ERROR_TRACK_NOT_AVAILABLE", [$this->object->getID()]));
 
-        return FileServerFacade::getServerNameById($file->getServerId()).$file->getFileHash();
+        return FileServerFacade::getServerNameById($file->getServerId()) . $file->getFileHash();
     }
 
     public function changeColor($color) {
@@ -213,6 +198,20 @@ class TrackModel extends Model implements SingletonInterface {
         FSFile::deleteLink($this->object->getFileId());
         $this->object->delete();
 
+    }
+
+    /**
+     * @return int
+     */
+    public function getUserID() {
+        return $this->object->getUserID();
+    }
+
+    /**
+     * @return string
+     */
+    public function getFileName() {
+        return $this->object->getFileName();
     }
 
 }

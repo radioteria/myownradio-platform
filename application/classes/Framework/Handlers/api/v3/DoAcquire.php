@@ -11,18 +11,19 @@ namespace Framework\Handlers\api\v3;
 
 use Framework\ControllerImpl;
 use Framework\Models\PaymentModel;
-use Framework\Services\HttpGet;
+use Framework\Services\Http\HttpGet;
 use Framework\View\Errors\View400Exception;
+use Tools\Optional\Filter;
 
 class DoAcquire extends ControllerImpl {
     public function doGet(HttpGet $get) {
 
-        $plan_id = $get->getParameter("plan_id", FILTER_VALIDATE_INT)
-            ->getOrElseThrow(View400Exception::className());
+        $plan_id = $get->get("plan_id")
+            ->filter(Filter::$isValidId)->orThrow(View400Exception::class);
 
         $available = [2, 4];
 
-        if (array_search($plan_id, $available) === false) {
+        if (in_array($plan_id, $available)) {
             throw new View400Exception();
         }
 

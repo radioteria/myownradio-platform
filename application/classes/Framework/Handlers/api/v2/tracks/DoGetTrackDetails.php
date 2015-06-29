@@ -10,13 +10,10 @@ namespace Framework\Handlers\api\v2\tracks;
 
 
 use Framework\Controller;
-use Framework\Services\HttpGet;
-use Framework\Services\JsonResponse;
 use REST\Playlist;
 
 class DoGetTrackDetails implements Controller {
-    public function doGet(HttpGet $get, JsonResponse $response, Playlist $playlist) {
-        $track_id = $get->getRequired("track_id");
-        $response->setData($playlist->getOneTrack($track_id));
+    public function doGet($track_id, Playlist $playlist) {
+        return $playlist->getOneTrack($track_id);
     }
 } 

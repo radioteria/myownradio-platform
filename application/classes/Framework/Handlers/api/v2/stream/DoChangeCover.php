@@ -11,23 +11,19 @@ namespace Framework\Handlers\api\v2\stream;
 
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
-use Framework\Services\HttpFiles;
-use Framework\Services\HttpPost;
-use Framework\Services\JsonResponse;
+use Framework\Services\Http\HttpFile;
+use Framework\Services\Http\HttpPost;
 use Framework\Services\Services;
 
 class DoChangeCover implements Controller {
 
-    function doPost(HttpPost $post, HttpFiles $file, Services $svc, JsonResponse $response) {
+    function doPost(HttpPost $post, HttpFile $file, Services $svc) {
 
-        $id = $post->getParameter("stream_id")
-            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
-        $file = $file->getFirstFile()
-            ->getOrElseThrow(new ControllerException("No image file attached"));
+        $streamId = $post->getOrError("stream_id");
+        $file = $file->findAny()
+            ->orThrow(new ControllerException("No image file attached"));
 
-        $url = $svc->getStream($id)->changeCover($file);
-
-        $response->setData($url);
+        return $svc->getStream($streamId)->changeCover($file);
 
     }
 

@@ -11,7 +11,7 @@ namespace Framework\View\Errors;
 
 class View500Exception extends ViewException {
 
-    function __construct($message = null) {
+    function __construct($message = null, $stackTrace = null) {
         parent::__construct($message, 500);
     }
 

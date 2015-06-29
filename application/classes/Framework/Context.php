@@ -11,7 +11,7 @@ namespace Framework;
 
 use Framework\Injector\Injectable;
 use Framework\Injector\Injector;
-use Framework\Services\HttpGet;
+use Framework\Services\Http\HttpGet;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -29,7 +29,7 @@ class Context implements SingletonInterface, Injectable {
      */
     public function getLimit($or) {
         return Injector::run(function (HttpGet $get) use ($or) {
-            return $get->getParameter("limit", FILTER_VALIDATE_INT)->getOrElse($or);
+            return $get->get("limit", FILTER_VALIDATE_INT)->getOrElse($or);
         });
     }
 
@@ -39,7 +39,7 @@ class Context implements SingletonInterface, Injectable {
      */
     public function getOffset($or) {
         return Injector::run(function (HttpGet $get) use ($or) {
-            return $get->getParameter("offset", FILTER_VALIDATE_INT)->getOrElse($or);
+            return $get->get("offset", FILTER_VALIDATE_INT)->getOrElse($or);
         });
     }
 
@@ -48,7 +48,7 @@ class Context implements SingletonInterface, Injectable {
      */
     public function getChannelId() {
         return Injector::run(function (HttpGet $get) {
-            return $get->getRequired("stream_id");
+            return $get->getOrError("stream_id");
         });
     }
 
@@ -57,7 +57,7 @@ class Context implements SingletonInterface, Injectable {
      */
     public function getTrackId() {
         return Injector::run(function (HttpGet $get) {
-            return $get->getRequired("track_id");
+            return $get->getOrError("track_id");
         });
     }
 

@@ -10,8 +10,7 @@ namespace Business\Validator;
 
 
 use Framework\Preferences;
-use Tools\Optional;
-use Tools\Singleton;
+use Tools\Optional\Option;
 
 class Validator {
 
@@ -198,35 +197,35 @@ class Validator {
      * @return $this
      */
     public function throwOnFail(\Exception $exception) {
-        $this->run()->justThrow($exception);
+        $this->run()->orThrow($exception);
         return $this->clear();
     }
 
     /**
      * @param callable $callable
      */
-    public function doOnSuccess(Callable $callable) {
+    public function doOnSuccess(callable $callable) {
         $this->run()->then($callable);
     }
 
     /**
-     * @return Optional
+     * @return Option
      */
     public function run() {
         foreach ($this->predicates as $predicate) {
             $result = $predicate($this->variable);
             if (!$result) {
-                return Optional::noValue();
+                return Option::None();
             }
         }
-        return Optional::hasValue($this->variable);
+        return Option::Some($this->variable);
     }
 
     /**
      * @return bool
      */
     public function ok() {
-        return $this->run()->notEmpty();
+        return $this->run()->nonEmpty();
     }
 
 }

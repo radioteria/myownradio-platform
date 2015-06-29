@@ -11,17 +11,13 @@ namespace Framework\Handlers\api\v2\stream;
 
 use Framework\Controller;
 use Framework\Models\PlaylistModel;
-use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 
 class DoRemoveTracks implements Controller {
 
-    public function doPost(HttpPost $post, JsonResponse $response) {
+    public function doPost($stream_id, $unique_ids, JsonResponse $response) {
 
-        $id = $post->getRequired("stream_id");
-        $tracks = $post->getRequired("unique_ids");
-
-        PlaylistModel::getInstance($id)->removeTracks($tracks);
+        PlaylistModel::getInstance($stream_id)->removeTracks($unique_ids);
 
     }
 

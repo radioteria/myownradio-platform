@@ -312,7 +312,7 @@ class acResizeImage {
      * @return array            Массив, содержащий размеры нового изображения
      */
     private function getSizeByFramework($width, $height) {
-        if ($this->width <= $width && $this->height <= height)
+        if ($this->width <= $width && $this->height <= $height)
             return array($this->width, $this->height);
         if ($this->width / $width > $this->height / $height) {
             $newSize[0] = $width;
@@ -370,7 +370,7 @@ class acResizeImage {
      * @return array            Массив, содержащий размеры нового изображения
      */
     private function getSizeByThumbnail($width, $height, $c) {
-        if ($this->width <= $width && $this->height <= height)
+        if ($this->width <= $width && $this->height <= $height)
             return array($this->width, $this->height);
         $realW = $this->width;
         $realH = $this->height;

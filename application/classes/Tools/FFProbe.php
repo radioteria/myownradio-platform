@@ -10,6 +10,7 @@ namespace Tools;
 
 
 use Framework\Preferences;
+use Tools\Optional\Option;
 
 class FFProbe implements \JsonSerializable {
 
@@ -28,13 +29,13 @@ class FFProbe implements \JsonSerializable {
 
     /**
      * @param string $filename
-     * @return Optional
+     * @return Option
      */
     public static function read($filename) {
 
         if (! file_exists($filename)) {
             error_log("File {$filename} doesn't exists!");
-            return Optional::noValue();
+            return Option::None();
         }
 
         $escapedFilename = escapeshellarg($filename);
@@ -48,7 +49,7 @@ class FFProbe implements \JsonSerializable {
         exec($command, $result, $status);
 
         if ($status != 0) {
-            return Optional::noValue();
+            return Option::None();
         }
 
         $json = json_decode(implode("", $result), true);
@@ -70,7 +71,7 @@ class FFProbe implements \JsonSerializable {
             $object->metaTrackNumber    = @$json["format"]["tags"]["track"];
         }
 
-        return Optional::hasValue($object);
+        return Option::Some($object);
 
     }
 

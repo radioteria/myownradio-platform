@@ -11,13 +11,10 @@ namespace Framework\Handlers\api\v2\schedule;
 
 use API\REST\TrackCollection;
 use Framework\Controller;
-use Framework\Services\HttpGet;
-use Framework\Services\JsonResponse;
 
 class DoOnSelectedChannels implements Controller {
-    public function doGet(HttpGet $get, JsonResponse $response, TrackCollection $trackCollection) {
-        $stream_ids = $get->getRequired("stream_ids");
+    public function doGet($stream_ids, TrackCollection $trackCollection) {
         $ids_array = explode(",", $stream_ids);
-        $response->setData($trackCollection->getPlayingOnChannels($ids_array));
+        return $trackCollection->getPlayingOnChannels($ids_array);
     }
 } 

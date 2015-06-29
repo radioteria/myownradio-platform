@@ -12,45 +12,44 @@ namespace Framework\Handlers\api\v2;
 use Framework\Controller;
 use Framework\Models\AuthUserModel;
 use Framework\Models\UsersModel;
-use Framework\Services\HttpPost;
-use Framework\Services\HttpPut;
-use Framework\Services\InputValidator;
+use Framework\Services\Http\HttpPost;
+use Framework\Services\Http\HttpPut;
 use Framework\Services\JsonResponse;
 use REST\Streams;
 use REST\Users;
+use Tools\Optional\Transform;
 
 class DoSelf implements Controller {
 
-    public function doGet(AuthUserModel $userModel, JsonResponse $response, Streams $streams, Users $users) {
+    public function doGet(AuthUserModel $userModel, Streams $streams, Users $users) {
 
-        $response->setData([
-            'user'      => $users->getUserByID($userModel->getID(), true),
-            'streams'   => $streams->getByUser($userModel->getID()),
+        return array(
+            'user' => $users->getUserByID($userModel->getID(), true),
+            'streams' => $streams->getByUser($userModel->getID()),
             'client_id' => $userModel->getClientId()
-        ]);
-        
+        );
+
     }
 
     public function doPut(HttpPut $put, UsersModel $users, JsonResponse $response) {
 
-        $login = $put->getRequired("login");
-        $password = $put->getRequired("password");
-        $remember = boolval($put->getParameter("remember")->getOrElseFalse());
+        $login = $put->getOrError("login");
+        $password = $put->getOrError("password");
+        $remember = $put->get("remember")->map(Transform::$toBoolean)->orFalse();
 
         $users->logout();
-        $users->authorizeByLoginPassword($login, $password);
+        $users->authorizeByLoginPassword($login, $password, $remember);
 
-        $token = AuthUserModel::getInstance()->getToken();
-        $response->setData($token);
+        return AuthUserModel::getInstance()->getToken();
 
     }
 
-    public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response, InputValidator $validator) {
+    public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
 
-        $name       = $post->getParameter("name")->getOrElseEmpty();
-        $info       = $post->getParameter("info")->getOrElseEmpty();
-        $permalink  = $post->getParameter("permalink")->getOrElseNull();
-        $countryId  = $post->getParameter("country_id")->getOrElseNull();
+        $name = $post->get("name")->orEmpty();
+        $info = $post->get("info")->orEmpty();
+        $permalink = $post->get("permalink")->orNull();
+        $countryId = $post->get("country_id")->orNull();
 
         $user->edit($name, $info, $permalink, $countryId);
 

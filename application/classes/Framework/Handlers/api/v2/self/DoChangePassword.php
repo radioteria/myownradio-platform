@@ -11,14 +11,14 @@ namespace Framework\Handlers\api\v2\self;
 
 use Framework\Controller;
 use Framework\Models\AuthUserModel;
-use Framework\Services\HttpPost;
+use Framework\Services\Http\HttpPost;
 use Framework\Services\JsonResponse;
 
 class DoChangePassword implements Controller {
     public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
 
-        $oldPassword = $post->getRequired("old_password");
-        $newPassword = $post->getRequired("new_password");
+        $oldPassword = $post->getOrError("old_password");
+        $newPassword = $post->getOrError("new_password");
 
         $user->changePassword($newPassword, $oldPassword);
 

@@ -9,24 +9,20 @@
 namespace Framework\Handlers\api\v2\streams;
 
 use Framework\Controller;
-use Framework\Services\HttpGet;
-use Framework\Services\JsonResponse;
+use Framework\Services\Http\HttpGet;
 use REST\Streams;
 
 class DoGetList implements Controller {
 
-    /**
-     * This method invoked on GET method
-     */
-    public function doGet(HttpGet $get, JsonResponse $response, Streams $streams) {
+    public function doGet(HttpGet $get, Streams $streams) {
 
-        $filter = $get->getParameter("filter")->getOrElseNull();
-        $category = $get->getParameter("category")->getOrElseNull();
+        $filter     = $get->get("filter")->orNull();
+        $category   = $get->get("category")->orNull();
 
-        $offset = $get->getParameter("offset")->getOrElse(0);
-        $limit = $get->getParameter("limit")->getOrElse(50);
+        $offset     = $get->get("offset")->orZero();
+        $limit      = $get->get("limit")->getOrElse(50);
 
-        $response->setData($streams->getStreamListFiltered($filter, $category, $offset, $limit));
+        return $streams->getStreamListFiltered($filter, $category, $offset, $limit);
 
     }
 

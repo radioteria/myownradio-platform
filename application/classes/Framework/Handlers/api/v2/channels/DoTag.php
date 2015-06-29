@@ -11,19 +11,20 @@ namespace Framework\Handlers\api\v2\channels;
 
 use API\REST\ChannelsCollection;
 use Framework\Controller;
-use Framework\Services\HttpGet;
-use Framework\Services\JsonResponse;
+use Framework\Services\Http\HttpGet;
+use Tools\Optional\Filter;
 
 class DoTag implements Controller {
-    public function doGet(HttpGet $get, ChannelsCollection $collection, JsonResponse $response) {
-        $filter = $get->getRequired("tag");
-        $offset = $get->getParameter("offset", FILTER_VALIDATE_INT)->getOrElse(0);
-        $limit = $get->getParameter("limit", FILTER_VALIDATE_INT)
-            ->getOrElse(ChannelsCollection::CHANNELS_PER_REQUEST_MAX);
+    public function doGet(HttpGet $get, ChannelsCollection $collection) {
+        $filter = $get->getOrError("tag");
+        $offset = $get->get("offset")->filter(Filter::$isNumber)
+                      ->orZero();
+        $limit  = $get->get("limit")->filter(Filter::$isNumber)
+                      ->getOrElse(ChannelsCollection::CHANNELS_PER_REQUEST_MAX);
 
-        $response->setData([
+        return [
             "query" => $filter,
             "channels" => $collection->getChannelsListByTag($filter, $offset, $limit)
-        ]);
+        ];
     }
 } 

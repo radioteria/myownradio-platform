@@ -11,8 +11,8 @@ namespace Framework;
 
 use Tools\File;
 
-class Init {
-    public function init() {
+class Startup {
+    public function start() {
         $path = new File("application/startup/");
         foreach ($path->getDirContents() as $file) {
             /** @var File $file */

@@ -10,13 +10,22 @@ namespace Framework\Handlers;
 
 
 use Framework\ControllerImpl;
+use Objects\User;
 use Tools\Optional\Filter;
 use Tools\Optional\Option;
+use Tools\Optional\Transform;
 
 class DoTest extends ControllerImpl {
     public function doGet(Option $id) {
 
-        echo $id->filter(Filter::$isValidId)->get();
+        $userName = $id->map(Transform::toNumber())
+            ->reject(Filter::value(1))
+            ->flatMap(Transform::call(User::class, "getById"))
+            ->map(Transform::method("getName"));
+
+
+        echo $userName;
+
 
     }
 }

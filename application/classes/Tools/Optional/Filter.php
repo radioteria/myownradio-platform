@@ -11,33 +11,82 @@ namespace Tools\Optional;
 
 class Filter {
 
-    public static $isNumber;
-    public static $isValidId;
-    public static $isArray;
-    public static $notEmpty;
+    /**
+     * @param \Closure ...$filters
+     * @return \Closure
+     */
+    public static function matchAll(\Closure ...$filters) {
+        return function ($obj) use (&$filters) {
+            foreach ($filters as &$filter) {
+                if (! $filter($obj)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+    }
 
-    public static function init() {
-        self::$isNumber = function ($v) {
-            return is_numeric($v);
+    /**
+     * @param \Closure ...$filters
+     * @return \Closure
+     */
+    public static function matchAny(\Closure ...$filters) {
+        return function ($obj) use (&$filters) {
+            foreach ($filters as &$filter) {
+                if ($filter($obj)) {
+                    return true;
+                }
+            }
+            return false;
         };
-        self::$isValidId = function ($v) {
-            return is_numeric($v) && $v > 0;
-        };
-        self::$isArray = function ($v) {
-            return is_array($v);
-        };
-        self::$notEmpty = function ($v) {
-            if (is_array($v) && count($v) == 0) {
+    }
+
+    /**
+     * @return \Closure
+     */
+    public static function isNumber() {
+        return function ($value) { return is_numeric($value); };
+    }
+
+    /**
+     * @return \Closure
+     */
+    public static function isValidId() {
+        return function ($value) { return is_numeric($value) && $value > 0; };
+    }
+
+    /**
+     * @return \Closure
+     */
+    public static function isArray() {
+        return function ($value) { return is_array($value); };
+    }
+
+    /**
+     * @return \Closure
+     */
+    public static function notEmpty() {
+        return function ($value) {
+            if (is_array($value) && count($value) == 0) {
                 return false;
-            } else if (is_string($v) && strlen($v) == 0) {
+            } else if (is_string($value) && strlen($value) == 0) {
                 return false;
-            } else if (is_null($v)) {
+            } else if (is_null($value)) {
                 return false;
             }
             return true;
         };
     }
 
+    /**
+     * @param $that
+     * @return \Closure
+     */
+    public static function value($that) {
+        return function ($value) use (&$that) {
+            return $value === $that;
+        };
+    }
+
 }
 
-Filter::init();

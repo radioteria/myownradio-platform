@@ -18,9 +18,9 @@ use Tools\Optional\Filter;
 class DoCategory implements Controller {
     public function doGet(HttpGet $get, ChannelsCollection $collection, CategoryValidator $validator) {
         $category_name  = $get->getOrError("category_name");
-        $offset         = $get->get("offset")->filter(Filter::$isNumber)
+        $offset         = $get->get("offset")->filter(Filter::isNumber())
                               ->orZero();
-        $limit          = $get->get("limit")->filter(Filter::$isNumber)
+        $limit          = $get->get("limit")->filter(Filter::isNumber())
                               ->getOrElse(ChannelsCollection::CHANNELS_PER_REQUEST_MAX);
 
         // todo: update category validator

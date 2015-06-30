@@ -27,7 +27,7 @@ class DoOptions implements Controller {
             new ControllerException("Options could not be applied for you")
         );
 
-        $post->get("options")->filter(Filter::$isArray)
+        $post->get("options")->filter(Filter::isArray())
             ->then(function (array $options) use ($object) {
 
                 foreach ($options as $key => $option) {

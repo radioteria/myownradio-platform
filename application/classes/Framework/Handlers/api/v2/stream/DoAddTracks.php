@@ -22,7 +22,7 @@ class DoAddTracks implements Controller {
         $streamId = $post->getOrError("stream_id");
         $tracks = $post->getOrError("tracks");
         $upNext = $post->get("up_next")
-            ->map(Transform::$toBoolean)->orFalse();
+            ->map(Transform::toBoolean())->orFalse();
 
         $validator->validateTracksList($tracks);
 

@@ -26,7 +26,7 @@ class TestFields implements Injectable, SingletonInterface {
      */
     public function testEmail($email) {
         return User::getByFilter("mail = ?", [ $email ])
-            ->map(Transform::$userToId)->orFalse();
+            ->map(Transform::method("getId"))->orFalse();
     }
 
     /**
@@ -39,7 +39,7 @@ class TestFields implements Injectable, SingletonInterface {
             return false;
         }
         return User::getByFilter("login = :id OR mail = :id", [ ":id" => $login ])
-            ->map(Transform::$userToId)->orFalse();
+            ->map(Transform::method("getId"))->orFalse();
     }
 
     /**
@@ -48,7 +48,7 @@ class TestFields implements Injectable, SingletonInterface {
      */
     public function testStreamPermalink($permalink) {
         return Stream::getByFilter("permalink = ?", [ $permalink ])
-            ->map(Transform::$userToId)->orFalse();
+            ->map(Transform::method("getId"))->orFalse();
     }
 
     /**
@@ -56,10 +56,7 @@ class TestFields implements Injectable, SingletonInterface {
      * @return bool|int
      */
     public function testUserPermalink($permalink) {
-        $getIdFunc = function (User $user) {
-            return $user->getId();
-        };
         return User::getByFilter("permalink = ?", [ $permalink ])
-            ->map($getIdFunc)->orFalse();
+            ->map(Transform::method("getId"))->orFalse();
     }
 }

@@ -9,28 +9,78 @@
 namespace Tools\Optional;
 
 
-use Objects\User;
-
 class Transform {
 
-    /* Basic transformations */
-    public static $toBoolean;
-
-    /* Model transformations */
-    public static $userToId;
-    public static $trim;
-
-    public static function init() {
-        self::$toBoolean = function ($v) {
-            return boolval($v);
-        };
-        self::$userToId = function (User $user) {
-            return $user->getId();
-        };
-        self::$trim = function ($v) {
-
+    /**
+     * @param $name
+     * @return \Closure
+     */
+    public static function method($name) {
+        return function ($obj) use (&$name) {
+            return $obj->$name();
         };
     }
+
+    /**
+     * @param $name
+     * @return \Closure
+     */
+    public static function field($name) {
+        return function ($obj) use (&$name) {
+            return $obj->$name;
+        };
+    }
+
+    /**
+     * @param $key
+     * @return \Closure
+     */
+    public static function key($key) {
+        return function ($arr) use (&$key) {
+            return $arr[$key];
+        };
+    }
+
+    /**
+     * @return \Closure
+     */
+    public static function toBoolean() {
+        return function ($value) {
+            return boolval($value);
+        };
+    }
+
+    /**
+     * @return \Closure
+     */
+    public static function trim() {
+        return function ($value) {
+            return trim($value);
+        };
+    }
+
+    /**
+     * @return \Closure
+     */
+    public static function toNumber() {
+        return function ($value) {
+            return intval($value);
+        };
+    }
+
+    /**
+     * @param mixed $class Class name or object instance
+     * @param string $method Method name to invoke
+     * @return \Closure
+     */
+    public static function call($class, $method) {
+        return function ($value) use (&$class, &$method) {
+            return is_string($class)
+                ? $class::$method($value)
+                : (new $class)->$method($value);
+        };
+    }
+
 }
 
-Transform::init();
+

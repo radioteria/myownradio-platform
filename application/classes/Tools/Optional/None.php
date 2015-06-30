@@ -103,7 +103,7 @@ final class None extends Option {
         return $this;
     }
 
-    public function filterNot($predicate) {
+    public function reject($predicate) {
         return $this;
     }
 

@@ -155,4 +155,11 @@ abstract class ActiveRecordObject implements JsonSerializable {
 
     }
 
+    /**
+     * @return string
+     */
+    function __toString() {
+        return self::class . "(" . implode(",", array_values(get_object_vars($this))) . ")";
+    }
+
 } 

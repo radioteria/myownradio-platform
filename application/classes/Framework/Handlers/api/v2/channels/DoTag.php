@@ -17,9 +17,9 @@ use Tools\Optional\Filter;
 class DoTag implements Controller {
     public function doGet(HttpGet $get, ChannelsCollection $collection) {
         $filter = $get->getOrError("tag");
-        $offset = $get->get("offset")->filter(Filter::$isNumber)
+        $offset = $get->get("offset")->filter(Filter::isNumber())
                       ->orZero();
-        $limit  = $get->get("limit")->filter(Filter::$isNumber)
+        $limit  = $get->get("limit")->filter(Filter::isNumber())
                       ->getOrElse(ChannelsCollection::CHANNELS_PER_REQUEST_MAX);
 
         return [

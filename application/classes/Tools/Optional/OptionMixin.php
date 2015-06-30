@@ -21,7 +21,7 @@ trait OptionMixin {
      * @return Option
      */
     public static function ofNullable($value) {
-        return is_null($value) ? None() : Some($value);
+        return is_null($value) ? None::instance() : new Some($value);
     }
 
     /**
@@ -30,7 +30,7 @@ trait OptionMixin {
      * @return Option
      */
     public static function of($value, $predicate) {
-        return $predicate($value) ? Some($value) : None();
+        return $predicate($value) ? new Some($value) : None::instance();
     }
 
     /**
@@ -39,11 +39,11 @@ trait OptionMixin {
      */
     public static function ofEmpty($value) {
 
-        if (is_null($value)) return None();
-        if (is_array($value) && count($value) == 0) return None();
-        if (is_string($value) && strlen($value) == 0) return None();
+        if (is_null($value)) return None::instance();
+        if (is_array($value) && count($value) == 0) return None::instance();
+        if (is_string($value) && strlen($value) == 0) return None::instance();
 
-        return Some($value);
+        return new Some($value);
 
     }
 
@@ -52,7 +52,7 @@ trait OptionMixin {
      * @return Option
      */
     public static function ofNumber($value) {
-        return is_numeric($value) ? Some($value) : None();
+        return is_numeric($value) ? new Some($value) : None::instance();
     }
 
     /**
@@ -60,7 +60,7 @@ trait OptionMixin {
      * @return Option
      */
     public static function ofArray($value) {
-        return is_array($value) ? Some($value) : None();
+        return is_array($value) ? new Some($value) : None::instance();
     }
 
     /**
@@ -68,7 +68,7 @@ trait OptionMixin {
      * @return Option
      */
     public static function ofDeceptive($value) {
-        return $value === false ? None() : Some($value);
+        return $value === false ? None::instance() : new Some($value);
     }
 
     /**
@@ -76,7 +76,7 @@ trait OptionMixin {
      * @return Option
      */
     public static function ofFile($filePath) {
-        return file_exists($filePath) ? Some($filePath) : None();
+        return file_exists($filePath) ? new Some($filePath) : None::instance();
     }
 
 

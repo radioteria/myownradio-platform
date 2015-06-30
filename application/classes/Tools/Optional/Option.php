@@ -16,42 +16,111 @@ abstract class Option implements \IteratorAggregate, \JsonSerializable {
 
     use OptionMixin;
 
+    /**
+     * @return bool
+     */
     public abstract function isEmpty();
 
+    /**
+     * @return mixed
+     */
     public abstract function get();
 
+    /**
+     * @return \Iterator
+     */
     public abstract function getIterator();
 
+    /**
+     * @return bool
+     */
     public abstract function nonEmpty();
 
+    /**
+     * @param $other
+     * @return mixed
+     */
     public abstract function getOrElse($other);
 
+    /**
+     * @return mixed
+     */
     public abstract function orFalse();
 
+    /**
+     * @return mixed
+     */
     public abstract function orZero();
 
+    /**
+     * @return mixed
+     */
     public abstract function orNull();
 
+    /**
+     * @return mixed
+     */
     public abstract function orEmpty();
 
+    /**
+     * @param $callable
+     * @return mixed
+     */
     public abstract function orCall($callable);
 
+    /**
+     * @param Option $alternative
+     * @return Option
+     */
     public abstract function orElse(Option $alternative);
 
+    /**
+     * @param $exception
+     * @param ...$args
+     * @return mixed
+     */
     public abstract function orThrow($exception, ...$args);
 
+    /**
+     * @param $callable
+     * @return $this
+     */
     public abstract function map($callable);
 
+    /**
+     * @param $callable
+     * @return $this
+     */
     public abstract function flatMap($callable);
 
+    /**
+     * @param $predicate
+     * @return $this
+     */
     public abstract function filter($predicate);
 
-    public abstract function filterNot($predicate);
+    /**
+     * @param $predicate
+     * @return $this
+     */
+    public abstract function reject($predicate);
 
+    /**
+     * @param callable $callable
+     * @param callable|null $otherwise
+     */
     public abstract function then($callable, $otherwise = null);
 
+    /**
+     * @param $value
+     * @return $this
+     */
     public abstract function select($value);
 
+    /**
+     * @param $object
+     * @return $this
+     */
     public abstract function selectInstance($object);
 
     /**
@@ -76,17 +145,4 @@ abstract class Option implements \IteratorAggregate, \JsonSerializable {
 
 }
 
-/**
- * @return None
- */
-function None() {
-    return None::instance();
-}
 
-/**
- * @param $value
- * @return Some
- */
-function Some($value) {
-    return new Some($value);
-}

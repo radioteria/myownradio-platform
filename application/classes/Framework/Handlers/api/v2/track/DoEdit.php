@@ -35,7 +35,7 @@ class DoEdit implements Controller {
         $color      = $post->get("color_id");
         $cue        = $post->get("cue");
         $buy        = $post->get("buy");
-        $sharable   = $post->get("can_be_shared")->map(Transform::$toBoolean);
+        $sharable   = $post->get("can_be_shared")->map(Transform::toBoolean());
 
         $validator->validateTracksList($id);
 

@@ -16,9 +16,9 @@ use Tools\Optional\Filter;
 
 class DoBookmarks implements Controller {
     public function doGet(HttpGet $get, ChannelsCollection $collection) {
-        $offset = $get->get("offset")->filter(Filter::$isNumber)
+        $offset = $get->get("offset")->filter(Filter::isNumber())
                       ->orZero();
-        $limit = $get->get("limit")->filter(Filter::$isNumber)
+        $limit = $get->get("limit")->filter(Filter::isNumber())
                       ->getOrElse(ChannelsCollection::CHANNELS_PER_REQUEST_MAX);
 
         return ["channels" => $collection->getBookmarkedChannels($offset, $limit)];

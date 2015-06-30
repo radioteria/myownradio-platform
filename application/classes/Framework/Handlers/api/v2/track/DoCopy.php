@@ -19,6 +19,6 @@ class DoCopy implements Controller {
     public function doPost($track_id, $stream_id, Option $up_next,
                            TracksModel $model, JsonResponse $response) {
 
-        $model->copy($track_id, $stream_id, $up_next->map(Transform::$toBoolean)->orFalse());
+        $model->copy($track_id, $stream_id, $up_next->map(Transform::toBoolean())->orFalse());
     }
 } 

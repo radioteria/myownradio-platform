@@ -35,7 +35,7 @@ class DoSelf implements Controller {
 
         $login = $put->getOrError("login");
         $password = $put->getOrError("password");
-        $remember = $put->get("remember")->map(Transform::$toBoolean)->orFalse();
+        $remember = $put->get("remember")->map(Transform::toBoolean())->orFalse();
 
         $users->logout();
         $users->authorizeByLoginPassword($login, $password, $remember);

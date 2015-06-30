@@ -85,11 +85,19 @@ final class Some extends Option {
     }
 
     public function filter($predicate) {
-        return $predicate($this->get()) ? $this : None::instance();
+        if (is_callable($predicate)) {
+            return $predicate($this->get()) ? $this : None::instance();
+        } else {
+            return $this->get() === $predicate ? $this : None::instance();
+        }
     }
 
-    public function filterNot($predicate) {
-        return $predicate($this->get()) ? None::instance() : $this;
+    public function reject($predicate) {
+        if (is_callable($predicate)) {
+            return $predicate($this->get()) ? None::instance() : $this;
+        } else {
+            return $this->get() === $predicate ? None::instance() : $this;
+        }
     }
 
     public function then($callable, $otherwise = null) {

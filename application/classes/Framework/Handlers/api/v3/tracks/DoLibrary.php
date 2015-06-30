@@ -17,8 +17,8 @@ use Tools\Optional\Filter;
 
 class DoLibrary extends ControllerImpl {
     public function doGet(HttpGet $get, JsonResponse $response, TrackCollection $trackCollection) {
-        $offset     = $get->get("offset")->filter(Filter::$isNumber)->orZero();
-        $limit      = $get->get("limit")->filter(Filter::$isNumber)
+        $offset     = $get->get("offset")->filter(Filter::isNumber())->orZero();
+        $limit      = $get->get("limit")->filter(Filter::isNumber())
                           ->getOrElse(TrackCollection::TRACKS_PER_REQUEST_MAX);
         $response->setData($trackCollection->getTracksFromLibrary($offset, $limit));
     }

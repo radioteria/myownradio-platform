@@ -19,9 +19,9 @@ class DoGetByStream implements Controller {
     public function doGet(HttpGet $get, Playlist $playlist) {
 
         $id = $get->getOrError("stream_id");
-        $color = $get->get("color_id")->filter(Filter::$isNumber);
-        $offset = $get->get("offset")->filter(Filter::$isNumber);
-        $filter = $get->get("filter")->filter(Filter::$notEmpty);
+        $color = $get->get("color_id")->filter(Filter::isNumber());
+        $offset = $get->get("offset")->filter(Filter::isNumber());
+        $filter = $get->get("filter")->filter(Filter::notEmpty());
 
         $stream = StreamModel::getInstance($id);
 

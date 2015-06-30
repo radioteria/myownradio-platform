@@ -21,7 +21,7 @@ class DoUpload implements Controller {
         ignore_user_abort(true);
 
         $streamId = $post->get("stream_id");
-        $upNext = $post->get("up_next")->map(Transform::$toBoolean)->orFalse();
+        $upNext = $post->get("up_next")->map(Transform::toBoolean())->orFalse();
         $skipCopies = true;
 
         $uploaded = [];

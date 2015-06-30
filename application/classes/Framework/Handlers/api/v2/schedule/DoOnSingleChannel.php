@@ -16,7 +16,7 @@ use Tools\Optional\Filter;
 
 class DoOnSingleChannel implements Controller {
     public function doGet(HttpGet $get, TrackCollection $trackCollection) {
-        $stream_id = $get->getFiltered("stream_id", Filter::$isNumber);
+        $stream_id = $get->getFiltered("stream_id", Filter::isNumber());
         return $trackCollection->getPlayingOnChannel($stream_id);
     }
 } 

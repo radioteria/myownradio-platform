@@ -81,6 +81,16 @@ class Transform {
         };
     }
 
+    /**
+     * @param $name
+     * @return \Closure
+     */
+    public static function func($name) {
+        return function ($value) use (&$name) {
+            return $name($value);
+        };
+    }
+
 }
 
 

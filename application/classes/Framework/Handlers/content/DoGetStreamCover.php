@@ -20,7 +20,7 @@ class DoGetStreamCover implements Controller {
     public function doGet(HttpParameter $get, Folders $folders) {
 
 
-        $fn = $get->get("fn")->orThrow(new View404Exception());
+        $fn = $get->get("fn")->getOrThrow(new View404Exception());
 
         $size = $get->get("size")->orNull();
 

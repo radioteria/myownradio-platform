@@ -18,8 +18,8 @@ use LiqPay;
 class DoPayment extends ControllerImpl {
     public function doPost(HttpPost $post) {
 
-        $data       = $post->get("data")->orThrow(View400Exception::class);
-        $signature  = $post->get("signature")->orThrow(View400Exception::class);
+        $data       = $post->get("data")->getOrThrow(View400Exception::class);
+        $signature  = $post->get("signature")->getOrThrow(View400Exception::class);
 
         // Check signature
         if (base64_encode(sha1(LiqPay::$private_key . $data . LiqPay::$private_key, 1)) !== $signature) {

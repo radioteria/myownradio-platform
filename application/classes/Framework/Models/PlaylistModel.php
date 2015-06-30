@@ -63,7 +63,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                 ->select("a.uid, a.started, a.started_from, a.status, b.tracks_count, b.tracks_duration");
 
             $stats = $db->fetchOneRow($query)
-                ->orThrow(ControllerException::noStream($this->key));
+                ->getOrThrow(ControllerException::noStream($this->key));
 
             if (intval($stats["uid"]) !== $this->user->getID()) {
                 throw new NoPermissionException();

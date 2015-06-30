@@ -37,7 +37,7 @@ class AuthUserModel extends UserModel implements Injectable {
                 ->select("*")
                 ->where("a.token", $token);
 
-            $session = $db->fetchOneRow($query)->orThrow(UnauthorizedException::class);
+            $session = $db->fetchOneRow($query)->getOrThrow(UnauthorizedException::class);
 
             $this->userToken = $token;
 

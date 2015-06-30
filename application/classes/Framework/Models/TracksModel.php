@@ -74,7 +74,7 @@ class TracksModel implements Injectable, SingletonInterface {
 
         $meta = $id3->analyze($file["tmp_name"]);
         $hash = hash_file(Defaults::HASHING_ALGORITHM, $file["tmp_name"]);
-        $duration = Common::getAudioDuration($file["tmp_name"])->orThrow(
+        $duration = Common::getAudioDuration($file["tmp_name"])->getOrThrow(
             ControllerException::tr("ERROR_UPLOAD_FILE_BROKEN", [ $file["name"] ])
         );
 
@@ -168,7 +168,7 @@ class TracksModel implements Injectable, SingletonInterface {
      */
     public function copy($trackId, Option $destinationStream, $upNext = false) {
         /** @var Track $trackObject */
-        $trackObject = Track::getByID($trackId)->orThrow(ControllerException::noTrack($trackId));
+        $trackObject = Track::getByID($trackId)->getOrThrow(ControllerException::noTrack($trackId));
 
         if ($trackObject->getUserID() == $this->user->getID()) {
             throw ControllerException::tr("ERROR_UPLOAD_FILE_EXISTS", [ $trackObject->getFileName() ]);

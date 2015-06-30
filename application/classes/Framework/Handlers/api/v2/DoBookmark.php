@@ -20,7 +20,7 @@ class DoBookmark implements Controller {
     public function doPut($stream_id, JsonResponse $response, StreamsModel $streams) {
 
         $stream = Stream::getByID($stream_id)
-            ->orThrow(ControllerException::noStream($stream_id));
+            ->getOrThrow(ControllerException::noStream($stream_id));
 
         $streams->addBookmark($stream);
 
@@ -29,7 +29,7 @@ class DoBookmark implements Controller {
     public function doDelete($stream_id, JsonResponse $response, StreamsModel $streams) {
 
         $stream = Stream::getByID($stream_id)
-            ->orThrow(ControllerException::noStream($stream_id));
+            ->getOrThrow(ControllerException::noStream($stream_id));
 
         $streams->deleteBookmark($stream);
 

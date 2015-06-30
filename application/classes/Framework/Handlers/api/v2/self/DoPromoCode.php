@@ -25,10 +25,10 @@ class DoPromoCode implements Controller {
             ->where("expires > UNIX_TIMESTAMP(NOW())")
             ->where("use_left > 0")
             ->fetchOneColumn()
-            ->orThrow(ControllerException::tr("PROMO_CODE_INCORRECT"));
+            ->getOrThrow(ControllerException::tr("PROMO_CODE_INCORRECT"));
         /** @var AccountPlan $newPlan */
         $newPlan = AccountPlan::getByID($planId)
-            ->orThrow(ControllerException::of("This plan is not available"));
+            ->getOrThrow(ControllerException::of("This plan is not available"));
         $user->changeAccountPlan($newPlan, "Promo Code - " . $promoCode);
 
         $dbq->updateTable("mor_promo_codes")

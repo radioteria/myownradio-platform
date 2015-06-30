@@ -108,7 +108,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->where("((a.sid = :key) OR (a.permalink IS NOT NULL AND a.permalink = :key))", [":key" => $channel_id]);
 
-        return $query->fetchOneRow()->orThrow(ControllerException::noStream($channel_id));
+        return $query->fetchOneRow()->getOrThrow(ControllerException::noStream($channel_id));
 
     }
 
@@ -121,7 +121,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
             ->having("acc >= ?", [$rand])->fetchOneColumn()->get();
         $query->where("sid", $ch);
 
-        return $query->fetchOneRow()->orThrow(ControllerException::of(I18n::tr("ERROR_CATALOG_NO_STREAMS")));
+        return $query->fetchOneRow()->getOrThrow(ControllerException::of(I18n::tr("ERROR_CATALOG_NO_STREAMS")));
 
     }
 

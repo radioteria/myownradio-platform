@@ -23,7 +23,7 @@ class DoOptions implements Controller {
 
         /** @var Options $object */
 
-        $object = Options::getByID($userModel->getID())->orThrow(
+        $object = Options::getByID($userModel->getID())->getOrThrow(
             new ControllerException("Options could not be applied for you")
         );
 

@@ -21,7 +21,7 @@ class DoChangeCover implements Controller {
 
         $streamId = $post->getOrError("stream_id");
         $file = $file->findAny()
-            ->orThrow(new ControllerException("No image file attached"));
+            ->getOrThrow(new ControllerException("No image file attached"));
 
         return $svc->getStream($streamId)->changeCover($file);
 

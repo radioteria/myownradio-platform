@@ -34,7 +34,7 @@ class FileServerFacade {
 
     function __construct($fs_id) {
         $this->fs_object = FileServer::getByID($fs_id)
-            ->orThrow(new ServerNotRegisteredException(
+            ->getOrThrow(new ServerNotRegisteredException(
                 I18n::tr("ERROR_FS_DOES_NOT_EXIST", [ $fs_id ])
             ));
         $this->fs_id = $fs_id;

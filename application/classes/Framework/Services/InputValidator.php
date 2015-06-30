@@ -50,7 +50,7 @@ class InputValidator implements Injectable {
         if (is_null($countryID)) return;
 
         Country::getByID($countryID)
-            ->orThrow(new ControllerException(I18n::tr("VALIDATOR_NO_COUNTRY", [$countryID])));
+            ->getOrThrow(new ControllerException(I18n::tr("VALIDATOR_NO_COUNTRY", [$countryID])));
     }
 
     /**
@@ -244,7 +244,7 @@ class InputValidator implements Injectable {
      */
     public function validateStreamCategory($category) {
 
-        Category::getByID($category)->orThrow(
+        Category::getByID($category)->getOrThrow(
             new ControllerException(I18n::tr("VALIDATOR_INVALID_CATEGORY", [$category]))
         );
 
@@ -276,7 +276,7 @@ class InputValidator implements Injectable {
 
     public function validateTrackColor($color) {
         Color::getByID($color)
-            ->orThrow(ControllerException::tr("VALIDATOR_TRACK_COLOR", [$color]));
+            ->getOrThrow(ControllerException::tr("VALIDATOR_TRACK_COLOR", [$color]));
     }
 
 }

@@ -32,7 +32,7 @@ class UserCollection implements Injectable, SingletonInterface  {
 
         $query = $this->getUsersPrefix();
         $query->where("(uid = :key) OR (permalink IS NOT NULL AND permalink = :key)", [ ":key" => $userKey ]);
-        return $query->fetchOneRow()->orThrow(ControllerException::noUser($userKey));
+        return $query->fetchOneRow()->getOrThrow(ControllerException::noUser($userKey));
 
     }
 } 

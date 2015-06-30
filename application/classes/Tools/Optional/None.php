@@ -71,7 +71,7 @@ final class None extends Option {
         return $alternative;
     }
 
-    public function orThrow($exception, ...$args) {
+    public function getOrThrow($exception, ...$args) {
 
         if (is_string($exception)) {
 
@@ -90,6 +90,18 @@ final class None extends Option {
         }
 
     }
+
+
+    /**
+     * @param $callable
+     * @param ...$args
+     * @return $this
+     */
+    public function orThrow($callable, ...$args) {
+        $this->getOrThrow($callable, ...$args);
+        return $this;
+    }
+
 
     public function map($callable) {
         return $this;

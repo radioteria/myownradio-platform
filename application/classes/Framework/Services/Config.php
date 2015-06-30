@@ -30,7 +30,7 @@ class Config implements SingletonInterface, Injectable {
      */
     public function getSettingOrFail($section, $setting) {
         return Option::ofNullable(@$this->config[$section][$setting])
-            ->orThrow(ApplicationException::of("Setting \"$setting\" not found"));
+            ->getOrThrow(ApplicationException::of("Setting \"$setting\" not found"));
     }
 
     /**

@@ -197,7 +197,7 @@ class Validator {
      * @return $this
      */
     public function throwOnFail(\Exception $exception) {
-        $this->run()->orThrow($exception);
+        $this->run()->getOrThrow($exception);
         return $this->clear();
     }
 

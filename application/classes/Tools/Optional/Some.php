@@ -68,7 +68,7 @@ final class Some extends Option {
         return $this;
     }
 
-    public function orThrow($exception, ...$args) {
+    public function getOrThrow($exception, ...$args) {
         return $this->get();
     }
 
@@ -112,4 +112,12 @@ final class Some extends Option {
         return ($this->get() instanceof $object) ? $this : None::instance();
     }
 
+    /**
+     * @param $callable
+     * @param ...$args
+     * @return $this
+     */
+    public function orThrow($callable, ...$args) {
+        return $this;
+    }
 }

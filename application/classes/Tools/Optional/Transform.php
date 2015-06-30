@@ -91,6 +91,16 @@ class Transform {
         };
     }
 
+    /**
+     * @param $template
+     * @return \Closure
+     */
+    public static function template($template) {
+        return function ($value) use (&$template) {
+            return str_replace("%%", $value, $template);
+        };
+    }
+
 }
 
 

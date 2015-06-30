@@ -21,7 +21,7 @@ use REST\Streams;
 class DoStream implements Controller {
     public function doGet(HttpParameter $get, Streams $streams) {
 
-        $id = $get->get("id")->orThrow(new View404Exception());
+        $id = $get->get("id")->getOrThrow(new View404Exception());
 
         try {
 

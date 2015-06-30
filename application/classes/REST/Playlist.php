@@ -136,7 +136,7 @@ class Playlist implements SingletonInterface, Injectable {
         $query = $this->getTracksPrefix()->where("uid", $me->getID());
         $query->where("tid", $trackID);
 
-        return $query->fetchOneRow()->orThrow(ControllerException::noTrack($trackID));
+        return $query->fetchOneRow()->getOrThrow(ControllerException::noTrack($trackID));
 
     }
 
@@ -216,7 +216,7 @@ class Playlist implements SingletonInterface, Injectable {
         /** @var StreamStats $stream */
 
         $stream = StreamStats::getByFilter("sid = :id OR permalink = :id", [":id" => $id])
-            ->orThrow(ControllerException::noStream($id));
+            ->getOrThrow(ControllerException::noStream($id));
 
         if ($stream->getStatus() == 0) {
             throw ControllerException::noStream($id);
@@ -239,7 +239,7 @@ class Playlist implements SingletonInterface, Injectable {
         $query->where("time_offset <= ?", [$position]);
         $query->where("stream_id", $stream->getID());
 
-        $track = $query->fetchOneRow()->orThrow(new ControllerException(sprintf("Nothing playing on stream '%s'", $id)));
+        $track = $query->fetchOneRow()->getOrThrow(new ControllerException(sprintf("Nothing playing on stream '%s'", $id)));
 
         $track["caption"] = $track["artist"] . " - " . $track["title"];
 
@@ -257,7 +257,7 @@ class Playlist implements SingletonInterface, Injectable {
 
         /** @var StreamStats $stream */
         $stream = StreamStats::getByFilter("sid = :id OR permalink = :id", [":id" => $id])
-            ->orThrow(ControllerException::noStream($id));
+            ->getOrThrow(ControllerException::noStream($id));
 
         if ($stream->getTracksDuration() == 0 || $stream->getStatus() == 0) {
 

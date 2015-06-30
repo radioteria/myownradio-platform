@@ -21,7 +21,7 @@ class DoUser implements Controller {
 
         try {
             /** @var User $user */
-            $user = User::getByFilter("FIND_BY_KEY", [":key" => $id])->orThrow(
+            $user = User::getByFilter("FIND_BY_KEY", [":key" => $id])->getOrThrow(
                 ControllerException::noUser($id)
             );
 

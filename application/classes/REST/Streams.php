@@ -74,14 +74,14 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         }
 
         $stream = $queryStream->fetchOneRow()
-            ->orThrow(new ControllerException("Stream not found"));
+            ->getOrThrow(new ControllerException("Stream not found"));
 
         $this->processStreamRow($stream);
 
         $queryUser = $this->getUsersPrefix()->where('uid', $stream['uid']);
 
         $stream["owner"] = $queryUser->fetchOneRow()
-            ->orThrow(new ControllerException("Stream owner not found"));
+            ->getOrThrow(new ControllerException("Stream owner not found"));
 
         $this->processUserRow($stream["owner"]);
 
@@ -245,7 +245,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
 
         /** @var User $user */
         $user = User::getByFilter("FIND_BY_KEY", [ ":key" => $userKey ])
-            ->orThrow(NoUserByLoginException::class, $userKey);
+            ->getOrThrow(NoUserByLoginException::class, $userKey);
 
         $query = $this->getStreamsPrefix();
         $query->where("a.uid", [ $user->getID() ]);

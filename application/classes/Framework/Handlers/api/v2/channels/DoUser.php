@@ -26,7 +26,7 @@ class DoUser implements Controller {
 
         /** @var User $user */
         $user = User::getByFilter("FIND_BY_KEY", [":key" => $key])
-            ->orThrow(NoUserByLoginException::class, $key);
+            ->getOrThrow(NoUserByLoginException::class, $key);
 
         return [
             "user" => $user->toRestFormat(),

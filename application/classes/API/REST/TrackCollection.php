@@ -96,7 +96,7 @@ class TrackCollection implements Injectable, SingletonInterface {
         $query->select(":micro AS time");
         $query->select("MOD(:micro - (r_streams.started - r_streams.started_from), r_static_stream_vars.tracks_duration) AS position");
 
-        return $query->fetchOneRow()->orThrow(ControllerException::of("ERROR_NOTHING_PLAYING"));
+        return $query->fetchOneRow()->getOrThrow(ControllerException::of("ERROR_NOTHING_PLAYING"));
 
     }
 
@@ -191,7 +191,7 @@ class TrackCollection implements Injectable, SingletonInterface {
 
         $query->where("r_tracks.tid", $track_id);
 
-        return $query->fetchOneRow()->orThrow(ControllerException::noTrack($track_id));
+        return $query->fetchOneRow()->getOrThrow(ControllerException::noTrack($track_id));
 
     }
 
@@ -212,7 +212,7 @@ class TrackCollection implements Injectable, SingletonInterface {
 
         /** @var StreamStats $stream_object */
         $stream_object = StreamStats::getByID($stream_id)
-            ->orThrow(ControllerException::noStream($stream_id));
+            ->getOrThrow(ControllerException::noStream($stream_id));
 
         if ($stream_object->getTracksDuration() == 0 || $stream_object->getStatus() == 0) {
             throw ControllerException::of(I18n::tr("ERROR_STREAM_NOTHING_PLAYING"));

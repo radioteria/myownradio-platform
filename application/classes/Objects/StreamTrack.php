@@ -31,7 +31,7 @@ class StreamTrack extends Track {
 
         /** @var StreamStats $stream */
         $stream = StreamStats::getByID($streamID)
-            ->orThrow(ControllerException::noStream($streamID));
+            ->getOrThrow(ControllerException::noStream($streamID));
 
         if ($stream->getStatus() == 0) {
             return Option::None();

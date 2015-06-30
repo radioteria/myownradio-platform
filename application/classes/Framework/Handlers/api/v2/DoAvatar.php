@@ -20,7 +20,7 @@ class DoAvatar implements Controller {
     public function doPost(HttpFile $file, AuthUserModel $user) {
 
         $image = $file->findAny()
-            ->orThrow(ControllerException::noImageAttached());
+            ->getOrThrow(ControllerException::noImageAttached());
 
         $url = $user->changeAvatar($image);
 

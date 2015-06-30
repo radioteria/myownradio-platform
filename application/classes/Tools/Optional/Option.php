@@ -79,7 +79,7 @@ abstract class Option implements \IteratorAggregate, \JsonSerializable {
      * @param ...$args
      * @return mixed
      */
-    public abstract function orThrow($exception, ...$args);
+    public abstract function getOrThrow($exception, ...$args);
 
     /**
      * @param $callable
@@ -104,6 +104,13 @@ abstract class Option implements \IteratorAggregate, \JsonSerializable {
      * @return $this
      */
     public abstract function reject($predicate);
+
+    /**
+     * @param $callable
+     * @param ...$args
+     * @return $this
+     */
+    public abstract function orThrow($callable, ...$args);
 
     /**
      * @param callable $callable

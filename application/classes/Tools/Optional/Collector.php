@@ -9,7 +9,7 @@
 namespace Tools\Optional;
 
 
-class Collect {
+class Collector {
 
     public static $toOption;
 
@@ -21,4 +21,4 @@ class Collect {
 
 }
 
-Collect::init();
+Collector::init();

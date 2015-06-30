@@ -80,6 +80,16 @@ class Template {
         echo $this->render();
     }
 
+    private function getObjectProperty($object, $property) {
+        if (is_object($object)) {
+
+        }
+    }
+
+    private function under2camel($text) {
+        return "get" . (implode("", array_map(function ($p) { return ucfirst($p); }, explode("_", $text))));
+    }
+
     private function getObjectParameter($key) {
         $slices = explode(".", $key);
         $current = $this->variables;
@@ -122,6 +132,18 @@ class Template {
         foreach ($stream as $key => $val) {
             $this->addVariable($key, $val, false);
         }
+    }
+
+    /**
+     * @param $template
+     * @return \Closure
+     */
+    public static function map($template) {
+        return function ($value) use (&$template) {
+            $t = new self($template);
+            $t->putObject($value);
+            return $t->render();
+        };
     }
 
     /**

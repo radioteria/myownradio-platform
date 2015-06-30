@@ -64,7 +64,7 @@ class TrackModel extends Model implements SingletonInterface {
     public function reload() {
 
         $this->object = Track::getByID($this->key)
-            ->orThrow(ControllerException::noTrack($this->key));
+            ->getOrThrow(ControllerException::noTrack($this->key));
 
     }
 
@@ -177,7 +177,7 @@ class TrackModel extends Model implements SingletonInterface {
     public function getFileUrl() {
         /** @var FileServerFile $file */
         $file = FileServerFile::getByID($this->object->getFileId())
-            ->orThrow(I18n::tr("ERROR_TRACK_NOT_AVAILABLE", [$this->object->getID()]));
+            ->getOrThrow(I18n::tr("ERROR_TRACK_NOT_AVAILABLE", [$this->object->getID()]));
 
         return FileServerFacade::getServerNameById($file->getServerId()) . $file->getFileHash();
     }

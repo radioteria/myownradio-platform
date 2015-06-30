@@ -19,7 +19,7 @@ class DoAcquire extends ControllerImpl {
     public function doGet(HttpGet $get) {
 
         $plan_id = $get->get("plan_id")
-            ->filter(Filter::isValidId())->orThrow(View400Exception::class);
+            ->filter(Filter::isValidId())->getOrThrow(View400Exception::class);
 
         $available = [2, 4];
 

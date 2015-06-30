@@ -49,7 +49,7 @@ class StreamModel extends Model implements SingletonInterface {
     private function load() {
 
         $this->stream = Stream::getByID($this->key)
-            ->orThrow(ControllerException::noStream($this->key));
+            ->getOrThrow(ControllerException::noStream($this->key));
 
         if ($this->stream->getUserID() !== $this->user->getID()) {
             throw new NoPermissionException();
@@ -260,7 +260,7 @@ class StreamModel extends Model implements SingletonInterface {
         $dbq = DBQuery::getInstance();
 
         /** @var Stream $stream */
-        $stream = Stream::getByID($streamId)->orThrow(ControllerException::noStream($streamId));
+        $stream = Stream::getByID($streamId)->getOrThrow(ControllerException::noStream($streamId));
         $stream->setUserID($targetUser->getID());
         $stream->save();
 

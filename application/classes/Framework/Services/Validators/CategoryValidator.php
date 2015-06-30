@@ -27,7 +27,7 @@ class CategoryValidator extends Validator {
      */
     public function validateChannelCategoryByPermalink($category_permalink) {
         $category_object = (new SelectQuery("r_categories"))->where("category_permalink", $category_permalink)
-            ->fetchOneRow()->orThrow(ControllerException::of(
+            ->fetchOneRow()->getOrThrow(ControllerException::of(
                 I18n::tr("VALIDATOR_INVALID_CATEGORY_NAME", [$category_permalink])
             ));
         return $category_object;
@@ -40,7 +40,7 @@ class CategoryValidator extends Validator {
      */
     public function validateChannelCategoryById($category_id) {
         $category_object = (new SelectQuery("r_categories"))->where("category_id", $category_id)
-            ->fetchOneRow()->orThrow(ControllerException::of(
+            ->fetchOneRow()->getOrThrow(ControllerException::of(
                 I18n::tr("VALIDATOR_INVALID_CATEGORY_NAME", [$category_id])
             ));
         return $category_object;

@@ -47,7 +47,7 @@ class UserModel extends Model implements SingletonInterface {
 
             $id = func_get_arg(0);
 
-            $this->user = User::getByID($id)->orThrow(
+            $this->user = User::getByID($id)->getOrThrow(
                 AccessException::noUser($id)
             );
 
@@ -56,7 +56,7 @@ class UserModel extends Model implements SingletonInterface {
             $key = func_get_arg(0);
 
             $this->user = User::getByFilter("FIND_BY_KEY_PARAMS", [":key" => $key])
-                ->orThrow(NoUserByLoginException::class, $key);
+                ->getOrThrow(NoUserByLoginException::class, $key);
 
         } elseif (func_num_args() == 2) {
 
@@ -64,7 +64,7 @@ class UserModel extends Model implements SingletonInterface {
             $password = func_get_arg(1);
 
             $this->user = User::getByFilter("FIND_BY_CREDENTIALS", [":login" => $login, ":password" => $password])
-                ->orThrow(IncorrectLoginException::class);
+                ->getOrThrow(IncorrectLoginException::class);
 
         } else {
 

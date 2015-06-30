@@ -12,7 +12,7 @@ namespace Tools\Optional;
  * Class Option
  * @package Tools\Optional
  */
-abstract class Option implements \ArrayAccess, \IteratorAggregate, \JsonSerializable {
+abstract class Option implements \IteratorAggregate, \JsonSerializable {
 
     use OptionMixin;
 
@@ -20,156 +20,55 @@ abstract class Option implements \ArrayAccess, \IteratorAggregate, \JsonSerializ
 
     public abstract function get();
 
-    /**
-     * @return \Iterator
-     */
-    public function getIterator() {
-        if ($this->nonEmpty())
-            yield $this->get();
-    }
+    public abstract function getIterator();
 
-    public function nonEmpty() {
-        return !$this->isEmpty();
-    }
+    public abstract function nonEmpty();
 
-    public function getOrElse($other) {
-        return ($this->isEmpty()) ? $other : $this->get();
-    }
+    public abstract function getOrElse($other);
 
-    public function orFalse() {
-        return $this->getOrElse(false);
-    }
+    public abstract function orFalse();
 
-    public function orZero() {
-        return $this->getOrElse(0);
-    }
+    public abstract function orZero();
 
-    public function orNull() {
-        return $this->getOrElse(null);
-    }
+    public abstract function orNull();
 
-    public function orEmpty() {
-        return $this->getOrElse("");
-    }
+    public abstract function orEmpty();
 
-    public function orCall($callable) {
-        return ($this->isEmpty()) ? $callable() : $this->get();
-    }
+    public abstract function orCall($callable);
 
-    public function orElse(Option $alternative) {
-        return ($this->isEmpty()) ? $alternative : $this;
-    }
+    public abstract function orElse(Option $alternative);
 
-    public function orThrow($exception, ...$args) {
+    public abstract function orThrow($exception, ...$args);
 
-        if ($this->isEmpty()) {
+    public abstract function map($callable);
 
-            if (is_string($exception)) {
+    public abstract function flatMap($callable);
 
-                $reflection = new \ReflectionClass($exception);
-                $obj = $reflection->newInstanceArgs($args);
-                if ($obj instanceof \Exception) {
-                    throw $obj;
-                } else {
-                    throw new OptionException("Invalid exception passed");
-                }
+    public abstract function filter($predicate);
 
-            } else if ($exception instanceof \ReflectionMethod && $exception->isStatic()) {
-                throw $exception->invokeArgs(null, $args);
-            } else if ($exception instanceof \Exception) {
-                throw $exception;
-            }
+    public abstract function filterNot($predicate);
 
-        }
+    public abstract function then($callable, $otherwise = null);
 
-        return $this->get();
+    public abstract function select($value);
 
-    }
+    public abstract function selectInstance($object);
 
     /**
-     * @param $callable
      * @return Option
-     */
-    public function map($callable) {
-        return $this->isEmpty() ? $this : Some($callable($this->get()));
-    }
-
-    /**
-     * @param $callable
-     * @return None|mixed
-     */
-    public function flatMap($callable) {
-        return $this->isEmpty() ? None() : $callable($this->get());
-    }
-
-    /**
-     * @param $predicate
-     * @return Option
-     */
-    public function filter($predicate) {
-        return ($this->isEmpty() || $predicate($this->get())) ? $this : None();
-    }
-
-    /**
-     * @param $predicate
-     * @return Option
-     */
-    public function filterNot($predicate) {
-        return ($this->isEmpty() || !$predicate($this->get())) ? $this : None();
-    }
-
-    /**
-     * @param $callable
-     * @param null $otherwise
-     */
-    public function then($callable, $otherwise = null) {
-        if ($this->nonEmpty())
-            $callable($this->get());
-        else if (is_callable($otherwise)) {
-            $otherwise();
-        }
-
-    }
-
-    /**
-     * @return None
      */
     public static function None() {
-        return None();
+        return None::instance();
     }
 
     /**
      * @param $value
-     * @return Some
-     */
-    public static function Some($value) {
-        return Some($value);
-    }
-
-    /**
-     * @param $name
      * @return Option
      */
-    function __get($name) {
-        return $this->isEmpty() ? None() : Some($this->get()->$name);
+    public static function Some($value) {
+        return new Some($value);
     }
 
-    public function offsetExists($offset) {
-        throw new \Exception("This feature is not available");
-    }
-
-    public function offsetGet($offset) {
-        return $this->isEmpty() ? None() : Some($this->get()[$offset]);
-    }
-
-    public function offsetSet($offset, $value) {
-        throw new \Exception("This feature is not available");
-    }
-
-
-    public function offsetUnset($offset) {
-        throw new \Exception("This feature is not available");
-    }
 
     function jsonSerialize() {
         return $this->get();
@@ -181,7 +80,7 @@ abstract class Option implements \ArrayAccess, \IteratorAggregate, \JsonSerializ
  * @return None
  */
 function None() {
-    return None::getInstance();
+    return None::instance();
 }
 
 /**

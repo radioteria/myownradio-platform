@@ -18,6 +18,14 @@ trait Object {
     }
 
     /**
+     * @param ...$args
+     * @return self
+     */
+    public static function newInstance(...$args) {
+        return new self(...$args);
+    }
+
+    /**
      * @return \ReflectionClass
      */
     public static function getClassReflection() {

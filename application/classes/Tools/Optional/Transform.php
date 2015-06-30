@@ -82,6 +82,16 @@ class Transform {
     }
 
     /**
+     * @param $class
+     * @return \Closure
+     */
+    public static function newInstance($class) {
+        return function ($value) use (&$class) {
+            return new $class($value);
+        };
+    }
+
+    /**
      * @param $name
      * @return \Closure
      */
@@ -98,6 +108,13 @@ class Transform {
     public static function template($template) {
         return function ($value) use (&$template) {
             return str_replace("%%", $value, $template);
+        };
+    }
+
+    public static function count() {
+        $v = 0;
+        return function () use (&$v) {
+            return $v ++;
         };
     }
 

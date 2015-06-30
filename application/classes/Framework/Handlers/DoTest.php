@@ -10,11 +10,9 @@ namespace Framework\Handlers;
 
 
 use Framework\ControllerImpl;
-use Framework\Events\RegistrationSuccessfulPublisher;
 use Framework\Exceptions\ControllerException;
-use Framework\Exceptions\Entity\UserNotFoundException;
-use Framework\Template;
-use Objects\User;
+use Framework\Models\UserModel;
+use Framework\Services\JsonResponse;
 use Tools\Optional\Consumer;
 use Tools\Optional\Filter;
 use Tools\Optional\Option;
@@ -22,16 +20,22 @@ use Tools\Optional\Transform;
 
 class DoTest extends ControllerImpl {
 
-    public function doGet(Option $id) {
+    public function doGet(Option $id, JsonResponse $response) {
 
-        $id ->filter(Filter::isNumber())
+        $id->filter(Filter::isNumber())
             ->orThrow(ControllerException::class, "Hello, World!")
-            ->flatMap(Transform::call(User::class, "getById"))
-            ->orThrow(UserNotFoundException::class)
-            ->then(RegistrationSuccessfulPublisher::send())
-            ->map(Transform::method("jsonSerialize"))
-            ->map(Template::map("hello.tmpl"))
+            ->map(Transform::newInstance(UserModel::class))
+            ->map(Transform::method("toRestFormat"))
+            ->map(Transform::key("name"))
             ->then(Consumer::write());
+
+
+//            ->flatMap(Transform::call(User::class, "getById"))
+//            ->orThrow(UserNotFoundException::class)
+//            ->then(RegistrationSuccessfulPublisher::send())
+//            ->map(Transform::method("jsonSerialize"))
+//            ->map(Template::map("hello.tmpl"))
+//            ->then(Consumer::write());
 
     }
 

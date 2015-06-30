@@ -111,12 +111,6 @@ class Transform {
         };
     }
 
-    public static function count() {
-        $v = 0;
-        return function () use (&$v) {
-            return $v ++;
-        };
-    }
 
 }
 

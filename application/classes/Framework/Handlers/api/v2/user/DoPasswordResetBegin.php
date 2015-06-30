@@ -15,7 +15,7 @@ use Framework\Services\JsonResponse;
 
 class DoPasswordResetBegin implements Controller {
 
-    public function doPost($login, JsonResponse $response) {
+    public function doPost(JsonResponse $response, $login) {
 
         LettersModel::sendResetPasswordLetter($login);
 

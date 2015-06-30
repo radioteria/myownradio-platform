@@ -16,8 +16,8 @@ use Framework\Services\JsonResponse;
 
 class DoPasswordResetComplete implements Controller {
 
-    public function doPost($code, $password, InputValidator $validator,
-                           UsersModel $users, JsonResponse $response) {
+    public function doPost(JsonResponse $response, $code, $password, InputValidator $validator,
+                           UsersModel $users) {
 
         $validator->validatePassword($password);
 

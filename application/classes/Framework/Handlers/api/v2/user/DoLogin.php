@@ -12,14 +12,15 @@ namespace Framework\Handlers\api\v2\user;
 use Framework\Controller;
 use Framework\Models\UsersModel;
 use Framework\Services\Http\HttpPost;
+use Framework\Services\JsonResponse;
 use REST\Users;
 
 class DoLogin implements Controller {
 
-    public function doPost(HttpPost $post, UsersModel $users, Users $usersRest) {
+    public function doPost(JsonResponse $response, HttpPost $post, UsersModel $users, Users $usersRest) {
 
-        $login = $post->getOrError("login");
-        $password = $post->getOrError("password");
+        $login      = $post->getOrError("login");
+        $password   = $post->getOrError("password");
 
         $users->logout();
 

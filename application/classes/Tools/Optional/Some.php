@@ -101,8 +101,10 @@ final class Some extends Option {
     }
 
     public function then($callable, $otherwise = null) {
-        return $callable($this->get());
+        $callable($this->get());
+        return $this;
     }
+
 
     /**
      * @param \Closure $producer

@@ -123,7 +123,7 @@ final class None extends Option {
         if (is_callable($otherwise)) {
             return $otherwise();
         }
-        return null;
+        return $this;
     }
 
     /**

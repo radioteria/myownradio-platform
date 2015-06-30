@@ -77,7 +77,7 @@ class Transform {
         return function ($value) use (&$class, &$method) {
             return is_string($class)
                 ? $class::$method($value)
-                : (new $class)->$method($value);
+                : $class->$method($value);
         };
     }
 

@@ -14,7 +14,7 @@ trait Object {
      * @return string
      */
     public static function className() {
-        return self::class;
+        return get_called_class();
     }
 
     /**

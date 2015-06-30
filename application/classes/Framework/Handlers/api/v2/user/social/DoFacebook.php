@@ -14,6 +14,7 @@ use Facebook\FacebookSDKException;
 use Facebook\FacebookSession;
 use Facebook\GraphUser;
 use Framework\Controller;
+use Framework\Events\RegistrationSuccessfulPublisher;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\UsersModel;
 use Objects\User;
@@ -42,8 +43,9 @@ class DoFacebook implements Controller {
             $name = $profile->getName();
 
             User::getByFilter("login = ? OR mail = ?", array($login, $email))
-                ->map(Transform::method("getId"))
                 ->otherwise($this->createNewUser($login, $email, $name))
+                ->then(RegistrationSuccessfulPublisher::send())
+                ->map(Transform::method("getId"))
                 ->map(Transform::call($model, "authorizeById"))
                 ->map(Transform::method("toRestFormat"))
                 ->then(Consumer::json());

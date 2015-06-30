@@ -115,13 +115,13 @@ abstract class Option implements \IteratorAggregate, \JsonSerializable {
     /**
      * @param callable $callable
      * @param callable|null $otherwise
+     * @return $this
      */
     public abstract function then($callable, $otherwise = null);
 
-
     /**
      * @param \Closure $producer
-     * @return Option
+     * @return $this
      */
     public abstract function otherwise(\Closure $producer);
 

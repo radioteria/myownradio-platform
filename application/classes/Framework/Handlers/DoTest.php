@@ -22,13 +22,11 @@ class DoTest extends ControllerImpl {
 
     public function doGet(Option $id) {
 
-        $id->filter(Filter::isNumber())
-            ->map(Transform::toNumber())
-            ->reject(Filter::value(1))
+        $id ->filter(Filter::isNumber())
             ->flatMap(Transform::call(User::class, "getById"))
+            ->orThrow(UserNotFoundException::class)
             ->map(Transform::method("jsonSerialize"))
             ->map(Template::map("hello.tmpl"))
-            ->orThrow(UserNotFoundException::class)
             ->then(Consumer::write());
 
     }

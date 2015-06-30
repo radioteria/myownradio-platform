@@ -78,6 +78,15 @@ class Validator {
     }
 
     /**
+     * @return $this
+     */
+    public function isNullOrNumber() {
+        $copy = $this->copy();
+        $copy->addPredicate(function ($value) { return is_null($value) || is_numeric($value); });
+        return $copy;
+    }
+
+    /**
      * @param $length
      * @return $this
      */

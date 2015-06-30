@@ -61,7 +61,7 @@ class UserValidator implements EntityValidator {
 
     public function validateCountryId() {
         (new BusinessValidator($this->user->getCountryId()))
-            ->isNumber()
+            ->isNullOrNumber()
             ->isCountryIdCorrect()
             ->throwOnFail(UserValidatorException::newIncorrectCountryId());
     }
@@ -73,7 +73,7 @@ class UserValidator implements EntityValidator {
     }
 
     public function validatePermalink() {
-        if (is_null($this->user->getPermalink())) {
+        if (is_null($this->user->getPermalink()) || empty($this->user->getPermalink())) {
             return;
         }
 

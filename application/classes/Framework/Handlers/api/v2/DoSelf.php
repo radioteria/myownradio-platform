@@ -21,7 +21,7 @@ use Tools\Optional\Transform;
 
 class DoSelf implements Controller {
 
-    public function doGet(AuthUserModel $userModel, Streams $streams, Users $users) {
+    public function doGet(JsonResponse $response, AuthUserModel $userModel, Streams $streams, Users $users) {
 
         return array(
             'user' => $users->getUserByID($userModel->getID(), true),
@@ -31,7 +31,7 @@ class DoSelf implements Controller {
 
     }
 
-    public function doPut(HttpPut $put, UsersModel $users, JsonResponse $response) {
+    public function doPut(JsonResponse $response, HttpPut $put, UsersModel $users) {
 
         $login = $put->getOrError("login");
         $password = $put->getOrError("password");
@@ -44,7 +44,7 @@ class DoSelf implements Controller {
 
     }
 
-    public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response) {
+    public function doPost(JsonResponse $response, HttpPost $post, AuthUserModel $user) {
 
         $name = $post->get("name")->orEmpty();
         $info = $post->get("info")->orEmpty();

@@ -101,8 +101,17 @@ final class Some extends Option {
     }
 
     public function then($callable, $otherwise = null) {
-        $callable($this->get());
+        return $callable($this->get());
     }
+
+    /**
+     * @param \Closure $producer
+     * @return Option
+     */
+    public function otherwise(\Closure $producer) {
+        return $this;
+    }
+
 
     public function select($value) {
         return $this->get() === $value ? $this : None::instance();

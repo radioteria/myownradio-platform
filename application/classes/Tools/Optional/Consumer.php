@@ -9,11 +9,23 @@
 namespace Tools\Optional;
 
 
+use Framework\Services\JsonResponse;
+
 class Consumer {
     /**
      * @return \Closure
      */
     public static function write() {
         return function ($value) { echo $value; };
+    }
+
+    /**
+     * @return \Closure
+     */
+    public static function json() {
+        $response = JsonResponse::getInstance();
+        return function ($data) use (&$response) {
+            $response->setData($data);
+        };
     }
 }

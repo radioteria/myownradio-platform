@@ -121,9 +121,19 @@ final class None extends Option {
 
     public function then($callable, $otherwise = null) {
         if (is_callable($otherwise)) {
-            $otherwise();
+            return $otherwise();
         }
+        return null;
     }
+
+    /**
+     * @param \Closure $producer
+     * @return Option
+     */
+    public function otherwise(\Closure $producer) {
+        return Option::Some($producer());
+    }
+
 
     public function select($value) {
         return $this;

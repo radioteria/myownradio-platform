@@ -15,25 +15,16 @@ use Facebook\FacebookSession;
 use Facebook\GraphUser;
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
-use Framework\Models\UserModel;
 use Framework\Models\UsersModel;
-use Framework\Services\JsonResponse;
 use Objects\User;
+use Tools\Optional\Consumer;
+use Tools\Optional\Transform;
 
 class DoFacebook implements Controller {
 
     const FB_USER_PREFIX = "fbuser_";
 
-    public $model;
-    public $response;
-
-    public function doPost($token, JsonResponse $response, UsersModel $model) {
-
-        /** @var JsonResponse */
-        $this->response = $response;
-
-        /** @var UsersModel */
-        $this->model = $model;
+    public function doPost($token, UsersModel $model) {
 
         $session = new FacebookSession($token);
 
@@ -48,30 +39,51 @@ class DoFacebook implements Controller {
 
             $login = self::FB_USER_PREFIX . $profile->getId();
             $email = $profile->getEmail();
-
-            $update = function(User $user) use (&$model, &$response) {
-                /** @var UserModel $userModel */
-                $userModel = $model->authorizeById($user->getId());
-                $response->setData($userModel->toRestFormat());
-            };
-
-            $create = function () {
-
-            };
-
+            $name = $profile->getName();
 
             User::getByFilter("login = ? OR mail = ?", array($login, $email))
-                ->then(function (User $user) {
-
-                });
-
-
+                ->map(Transform::method("getId"))
+                ->otherwise($this->createNewUser($login, $email, $name))
+                ->map(Transform::call($model, "authorizeById"))
+                ->map(Transform::method("toRestFormat"))
+                ->then(Consumer::json());
 
         } catch (FacebookSDKException $e) {
 
             throw ControllerException::of($e->getMessage());
 
         }
+
+    }
+
+    /**
+     * @param $login
+     * @param $email
+     * @param $name
+     * @return \Closure
+     */
+    private function createNewUser($login, $email, $name) {
+
+        return function () use ($login, $email, $name) {
+
+            $user = User::getByData([
+                "login" => $login,
+                "name" => $name,
+                "email" => $email,
+                "info" => "",
+                "password" => null,
+                "avatar" => null,
+                "country_id" => null,
+                "permalink" => null,
+                "registration_date" => time(),
+                "rights" => 1
+            ]);
+
+            $user->save();
+
+            return $user->getId();
+
+        };
 
     }
 

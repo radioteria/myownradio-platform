@@ -101,7 +101,7 @@ class BusinessValidator extends Validator {
     public function isCountryIdCorrect() {
         $copy = $this->copy();
         $copy->addPredicate(function ($value) {
-            return Country::getByID($value)->nonEmpty();
+            return $value === null || Country::getByID($value)->nonEmpty();
         });
         return $copy;
     }
@@ -118,5 +118,6 @@ class BusinessValidator extends Validator {
 
         return $copy;
     }
+
 
 } 

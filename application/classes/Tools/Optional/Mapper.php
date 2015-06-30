@@ -15,11 +15,12 @@ class Mapper {
 
     /**
      * @param $name
-     * @return \Closure
+     * @param $args
+     * @return callable
      */
-    public static function method($name) {
-        return function ($obj) use (&$name) {
-            return $obj->$name();
+    public static function method($name, ...$args) {
+        return function ($obj) use (&$name, &$args) {
+            return $obj->$name(...$args);
         };
     }
 
@@ -84,17 +85,6 @@ class Mapper {
                 : $class->$method($value);
         };
     }
-
-    /**
-     * @param $template
-     * @return \Closure
-     */
-    public static function template($template) {
-        return function ($value) use (&$template) {
-            return str_replace("%%", $value, $template);
-        };
-    }
-
 
 }
 

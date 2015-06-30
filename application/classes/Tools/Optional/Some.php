@@ -72,8 +72,14 @@ final class Some extends Option {
         return $this->get();
     }
 
+    /**
+     * @param $callable
+     * @return Option
+     */
     public function map($callable) {
-        return new Some($callable($this->get()));
+        return substr($callable, 0, 2) == "::"
+            ? Mapper::method(substr($callable, 2))
+            : new Some($callable($this->get()));
     }
 
     public function flatMap($callable) {

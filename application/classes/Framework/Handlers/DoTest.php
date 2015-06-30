@@ -28,7 +28,7 @@ class DoTest extends ControllerImpl {
             ->orThrow(ControllerException::class, "Parameter id must be a valid number!")
             ->flatMap(Mapper::call(User::class, "getById"))
             ->orThrow(UserNotFoundException::class)
-            ->map(Mapper::method("jsonSerialize"))
+            ->map("::jsonSerialize")
             ->map(Template::map("hello.tmpl"))
             ->then(Consumer::write());
 

@@ -12,7 +12,7 @@ use Framework\Controller;
 use Framework\Models\TracksModel;
 use Framework\Services\Http\HttpFile;
 use Framework\Services\Http\HttpPost;
-use Tools\Optional\Transform;
+use Tools\Optional\Mapper;
 
 class DoUpload implements Controller {
 
@@ -21,7 +21,7 @@ class DoUpload implements Controller {
         ignore_user_abort(true);
 
         $streamId = $post->get("stream_id");
-        $upNext = $post->get("up_next")->map(Transform::toBoolean())->orFalse();
+        $upNext = $post->get("up_next")->map(Mapper::toBoolean())->orFalse();
         $skipCopies = true;
 
         $uploaded = [];

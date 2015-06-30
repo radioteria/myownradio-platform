@@ -14,7 +14,7 @@ use Framework\Models\PlaylistModel;
 use Framework\Services\Http\HttpPost;
 use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
-use Tools\Optional\Transform;
+use Tools\Optional\Mapper;
 
 class DoAddTracks implements Controller {
     public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response) {
@@ -22,7 +22,7 @@ class DoAddTracks implements Controller {
         $streamId = $post->getOrError("stream_id");
         $tracks = $post->getOrError("tracks");
         $upNext = $post->get("up_next")
-            ->map(Transform::toBoolean())->orFalse();
+            ->map(Mapper::toBoolean())->orFalse();
 
         $validator->validateTracksList($tracks);
 

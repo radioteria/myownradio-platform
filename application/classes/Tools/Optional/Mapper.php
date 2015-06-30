@@ -9,7 +9,9 @@
 namespace Tools\Optional;
 
 
-class Transform {
+class Mapper {
+
+    const NEW_INSTANCE_METHOD = "new";
 
     /**
      * @param $name
@@ -76,28 +78,10 @@ class Transform {
     public static function call($class, $method) {
         return function ($value) use (&$class, &$method) {
             return is_string($class)
-                ? $class::$method($value)
+                ? ($method === self::NEW_INSTANCE_METHOD
+                    ? new $class($value)
+                    : $class::$method($value))
                 : $class->$method($value);
-        };
-    }
-
-    /**
-     * @param $class
-     * @return \Closure
-     */
-    public static function newInstance($class) {
-        return function ($value) use (&$class) {
-            return new $class($value);
-        };
-    }
-
-    /**
-     * @param $name
-     * @return \Closure
-     */
-    public static function func($name) {
-        return function ($value) use (&$name) {
-            return $name($value);
         };
     }
 

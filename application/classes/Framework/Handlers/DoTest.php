@@ -11,31 +11,26 @@ namespace Framework\Handlers;
 
 use Framework\ControllerImpl;
 use Framework\Exceptions\ControllerException;
-use Framework\Models\UserModel;
-use Framework\Services\JsonResponse;
+use Framework\Exceptions\Entity\UserNotFoundException;
+use Framework\Template;
+use Objects\User;
 use Tools\Optional\Consumer;
 use Tools\Optional\Filter;
+use Tools\Optional\Mapper;
 use Tools\Optional\Option;
-use Tools\Optional\Transform;
 
 class DoTest extends ControllerImpl {
 
-    public function doGet(Option $id, JsonResponse $response) {
+    public function doGet(Option $id) {
 
-        $id->filter(Filter::isNumber())
-            ->orThrow(ControllerException::class, "Hello, World!")
-            ->map(Transform::newInstance(UserModel::class))
-            ->map(Transform::method("toRestFormat"))
-            ->map(Transform::key("name"))
+        $id ->orThrow(ControllerException::class, "Parameter id is not set!")
+            ->filter(Filter::isNumber())
+            ->orThrow(ControllerException::class, "Parameter id must be a valid number!")
+            ->flatMap(Mapper::call(User::class, "getById"))
+            ->orThrow(UserNotFoundException::class)
+            ->map(Mapper::method("jsonSerialize"))
+            ->map(Template::map("hello.tmpl"))
             ->then(Consumer::write());
-
-
-//            ->flatMap(Transform::call(User::class, "getById"))
-//            ->orThrow(UserNotFoundException::class)
-//            ->then(RegistrationSuccessfulPublisher::send())
-//            ->map(Transform::method("jsonSerialize"))
-//            ->map(Template::map("hello.tmpl"))
-//            ->then(Consumer::write());
 
     }
 

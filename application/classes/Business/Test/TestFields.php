@@ -13,7 +13,7 @@ use Framework\Injector\Injectable;
 use Framework\Preferences;
 use Objects\Stream;
 use Objects\User;
-use Tools\Optional\Transform;
+use Tools\Optional\Mapper;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -26,7 +26,7 @@ class TestFields implements Injectable, SingletonInterface {
      */
     public function testEmail($email) {
         return User::getByFilter("mail = ?", [ $email ])
-            ->map(Transform::method("getId"))->orFalse();
+            ->map(Mapper::method("getId"))->orFalse();
     }
 
     /**
@@ -39,7 +39,7 @@ class TestFields implements Injectable, SingletonInterface {
             return false;
         }
         return User::getByFilter("login = :id OR mail = :id", [ ":id" => $login ])
-            ->map(Transform::method("getId"))->orFalse();
+            ->map(Mapper::method("getId"))->orFalse();
     }
 
     /**
@@ -48,7 +48,7 @@ class TestFields implements Injectable, SingletonInterface {
      */
     public function testStreamPermalink($permalink) {
         return Stream::getByFilter("permalink = ?", [ $permalink ])
-            ->map(Transform::method("getId"))->orFalse();
+            ->map(Mapper::method("getId"))->orFalse();
     }
 
     /**
@@ -57,6 +57,6 @@ class TestFields implements Injectable, SingletonInterface {
      */
     public function testUserPermalink($permalink) {
         return User::getByFilter("permalink = ?", [ $permalink ])
-            ->map(Transform::method("getId"))->orFalse();
+            ->map(Mapper::method("getId"))->orFalse();
     }
 }

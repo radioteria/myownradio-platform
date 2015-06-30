@@ -16,7 +16,7 @@ use Framework\Services\DB\Query\UpdateQuery;
 use Framework\Services\Http\HttpPost;
 use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
-use Tools\Optional\Transform;
+use Tools\Optional\Mapper;
 
 class DoEdit implements Controller {
     /** @var UpdateQuery $query */
@@ -35,7 +35,7 @@ class DoEdit implements Controller {
         $color      = $post->get("color_id");
         $cue        = $post->get("cue");
         $buy        = $post->get("buy");
-        $sharable   = $post->get("can_be_shared")->map(Transform::toBoolean());
+        $sharable   = $post->get("can_be_shared")->map(Mapper::toBoolean());
 
         $validator->validateTracksList($id);
 

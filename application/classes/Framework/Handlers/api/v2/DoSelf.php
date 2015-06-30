@@ -17,7 +17,7 @@ use Framework\Services\Http\HttpPut;
 use Framework\Services\JsonResponse;
 use REST\Streams;
 use REST\Users;
-use Tools\Optional\Transform;
+use Tools\Optional\Mapper;
 
 class DoSelf implements Controller {
 
@@ -35,7 +35,7 @@ class DoSelf implements Controller {
 
         $login = $put->getOrError("login");
         $password = $put->getOrError("password");
-        $remember = $put->get("remember")->map(Transform::toBoolean())->orFalse();
+        $remember = $put->get("remember")->map(Mapper::toBoolean())->orFalse();
 
         $users->logout();
         $users->authorizeByLoginPassword($login, $password, $remember);

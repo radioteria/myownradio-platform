@@ -12,13 +12,13 @@ namespace Framework\Handlers\api\v2\track;
 use Framework\Controller;
 use Framework\Models\TracksModel;
 use Framework\Services\JsonResponse;
+use Tools\Optional\Mapper;
 use Tools\Optional\Option;
-use Tools\Optional\Transform;
 
 class DoCopy implements Controller {
     public function doPost($track_id, $stream_id, Option $up_next,
                            TracksModel $model, JsonResponse $response) {
 
-        $model->copy($track_id, $stream_id, $up_next->map(Transform::toBoolean())->orFalse());
+        $model->copy($track_id, $stream_id, $up_next->map(Mapper::toBoolean())->orFalse());
     }
 } 

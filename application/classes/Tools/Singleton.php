@@ -8,30 +8,38 @@ trait Singleton {
     protected static $_instance = [];
 
     /**
+     * @param $args
      * @return static
      */
-    public static function getInstance() {
+    public static function getInstance(...$args) {
         $calledClass = get_called_class();
-        $calledArgs = func_get_args();
-        $hash = md5($calledClass . serialize($calledArgs));
+        $hash = $calledClass . " -> " . serialize($args);
 
         if (!isset(self::$_instance[$hash])) {
             $reflector = new \ReflectionClass($calledClass);
-            self::$_instance[$hash] = $reflector->newInstanceArgs($calledArgs);
+            self::$_instance[$hash] = $reflector->newInstanceArgs($args);
         }
         return self::$_instance[$hash];
     }
 
     /**
+     * @param $args
      * @return bool
      */
-    public static function hasInstance() {
-        $hash = serialize(func_get_args());
+    public static function hasInstance(...$args) {
+        $calledClass = get_called_class();
+        $hash = $calledClass . " -> " . serialize($args);
+
         return isset(self::$_instance[$hash]) ? true : false;
     }
 
-    public static function killInstance() {
-        $hash = serialize(func_get_args());
+    /**
+     * @param ...$args
+     */
+    public static function killInstance(...$args) {
+        $calledClass = get_called_class();
+        $hash = $calledClass . " -> " . serialize($args);
+
         unset(self::$_instance[$hash]);
     }
 }

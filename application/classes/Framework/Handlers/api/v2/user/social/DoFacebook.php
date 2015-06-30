@@ -17,15 +17,15 @@ use Framework\Controller;
 use Framework\Events\RegistrationSuccessfulPublisher;
 use Framework\Exceptions\ControllerException;
 use Framework\Models\UsersModel;
+use Framework\Services\JsonResponse;
 use Objects\User;
-use Tools\Optional\Consumer;
-use Tools\Optional\Transform;
+use Tools\Optional\Mapper;
 
 class DoFacebook implements Controller {
 
     const FB_USER_PREFIX = "fbuser_";
 
-    public function doPost($token, UsersModel $model) {
+    public function doPost(JsonResponse $response, $token, UsersModel $model) {
 
         $session = new FacebookSession($token);
 
@@ -33,22 +33,24 @@ class DoFacebook implements Controller {
 
             $session->validate();
 
-            /** @var GraphUser $profile */
+            /**
+             * @var GraphUser $profile
+             */
             $profile = (new FacebookRequest($session, 'GET', '/me?fields=email,name'))
                 ->execute()
                 ->getGraphObject(GraphUser::class);
 
             $login = self::FB_USER_PREFIX . $profile->getId();
             $email = $profile->getEmail();
-            $name = $profile->getName();
+            $name  = $profile->getName();
 
             User::getByFilter("login = ? OR mail = ?", array($login, $email))
                 ->otherwise($this->createNewUser($login, $email, $name))
                 ->then(RegistrationSuccessfulPublisher::send())
-                ->map(Transform::method("getId"))
-                ->map(Transform::call($model, "authorizeById"))
-                ->map(Transform::method("toRestFormat"))
-                ->then(Consumer::json());
+                ->map(Mapper::method("getId"))
+                ->map(Mapper::call($model, "authorizeById"))
+                ->map(Mapper::method("toRestFormat"))
+                ->then(Mapper::call($response, "setData"));
 
         } catch (FacebookSDKException $e) {
 

@@ -18,6 +18,7 @@ use Objects\Category;
 use Tools\Optional\Filter;
 
 class DoCategory implements Controller {
+
     public function doGet(JsonResponse $response, HttpGet $get, ChannelsCollection $collection) {
 
         $category_name  = $get->getOrError("category_name");
@@ -41,4 +42,5 @@ class DoCategory implements Controller {
             "channels" => $collection->getChannelsListByCategory($category->getId(), $offset, $limit)
         ];
     }
+
 } 

@@ -51,6 +51,27 @@ class Filter {
     /**
      * @return \Closure
      */
+    public static function isString() {
+        return function ($value) { return is_string($value); };
+    }
+
+    /**
+     * @return \Closure
+     */
+    public static function isNull() {
+        return function ($value) { return is_null($value); };
+    }
+
+    /**
+     * @return \Closure
+     */
+    public static function isNullOrNumber() {
+        return function ($value) { return is_null($value) || is_numeric($value); };
+    }
+
+    /**
+     * @return \Closure
+     */
     public static function isValidId() {
         return function ($value) { return is_numeric($value) && $value > 0; };
     }

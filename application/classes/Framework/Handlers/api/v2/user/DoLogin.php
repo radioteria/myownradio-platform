@@ -9,24 +9,20 @@
 namespace Framework\Handlers\api\v2\user;
 
 
+use Business\Forms\LoginForm;
 use Framework\Controller;
+use Framework\Events\LoginSuccessfulPublisher;
 use Framework\Models\UsersModel;
-use Framework\Services\Http\HttpPost;
 use Framework\Services\JsonResponse;
-use REST\Users;
+use Tools\Optional\Mapper;
 
 class DoLogin implements Controller {
 
-    public function doPost(JsonResponse $response, HttpPost $post, UsersModel $users, Users $usersRest) {
+    public function doPost(JsonResponse $response, LoginForm $form, UsersModel $users) {
 
-        $login      = $post->getOrError("login");
-        $password   = $post->getOrError("password");
-
-        $users->logout();
-
-        $userModel = $users->authorizeByLoginPassword($login, $password);
-
-        return $usersRest->getUserByID($userModel->getID(), true);
+        $form ->wrap()
+              ->then(LoginSuccessfulPublisher::send())
+              ->then(Mapper::call($users, "authorizeByLoginForm"));
 
     }
 

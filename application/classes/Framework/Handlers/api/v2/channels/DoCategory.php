@@ -39,7 +39,7 @@ class DoCategory implements Controller {
 
         return [
             "category" => $category,
-            "channels" => $collection->getChannelsListByCategory($category->getId(), $offset, $limit)
+            "channels" => $collection->getChannelsListByCategory($category, $offset, $limit)
         ];
     }
 

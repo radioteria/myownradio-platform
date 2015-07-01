@@ -16,6 +16,7 @@ use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
 use Framework\Services\DB\Query\SelectQuery;
 use Framework\Services\Locale\I18n;
+use Objects\Category;
 use Tools\Common;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -198,18 +199,19 @@ class ChannelsCollection implements Injectable, SingletonInterface {
     }
 
     /**
-     * @param int $category_id
+     * @param Category $category
      * @param int $offset
      * @param int $limit
      * @return array
+     * @throws ControllerException
      */
-    public function getChannelsListByCategory($category_id, $offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
+    public function getChannelsListByCategory(Category $category, $offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
 
         $query = $this->channelPrefix();
 
         $this->addNowPlaying($query);
 
-        $query->where("a.category", $category_id);
+        $query->where("a.category", $category->getId());
 
         if (is_numeric($offset) && $offset >= 0) {
             $query->offset($offset);

@@ -11,6 +11,7 @@ namespace Framework\Models;
 
 use Business\Fields\Code;
 use Business\Fields\Password;
+use Business\Forms\LoginForm;
 use Framework\Exceptions\Auth\IncorrectPasswordException;
 use Framework\Exceptions\Auth\NoUserByLoginException;
 use Framework\Exceptions\ControllerException;
@@ -71,6 +72,34 @@ class UsersModel implements SingletonInterface, Injectable {
     }
 
     /**
+     * @param LoginForm $form
+     * @throws IncorrectPasswordException | NoUserByLoginException
+     */
+    public function authorizeByLoginForm(LoginForm $form) {
+
+        $password = new Password($form->getPassword());
+
+        /**
+         * @var User $user
+         */
+        $user = User::getByFilter("login = :key OR mail = :key", [":key" => $form->getLogin()])
+            ->getOrThrow(NoUserByLoginException::class, $form->getLogin());
+
+        if (!$password->matches($user->getPassword())) {
+            throw new IncorrectPasswordException();
+        }
+
+        $session = HttpSession::getInstance();
+
+        self::logout();
+
+        $token = self::createToken($user->getId(), $session->getSessionId());
+
+        $session->set("TOKEN", $token);
+
+    }
+
+    /**
      * @param $userId
      * @param $sessionId
      * @return string
@@ -79,8 +108,10 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $token = Database::doInConnection(function (Database $db) use ($userId, $sessionId) {
 
-            $clientAddress = HttpRequest::getInstance()->getRemoteAddress();
-            $clientUserAgent = HttpRequest::getInstance()->getHttpUserAgent()->getOrElse("None");
+            $request = HttpRequest::getInstance();
+
+            $clientAddress      = $request->getRemoteAddress();
+            $clientUserAgent    = $request->getHttpUserAgent()->getOrElse("None");
 
             do $token = md5($userId . $clientAddress . rand(1, 1000000) . "tokenizer" . time());
             while ($db->fetchRowCount("FROM r_sessions WHERE token = ?", [$token]) > 0);
@@ -111,9 +142,7 @@ class UsersModel implements SingletonInterface, Injectable {
      */
     public function logout() {
 
-        $session = HttpSession::getInstance();
-
-        $session->get("TOKEN")->then(function ($token) {
+        HttpSession::getInstance()->get("TOKEN")->then(function ($token) {
             DBQuery::getInstance()->deleteFrom("r_sessions", "token", $token)->update();
         });
 

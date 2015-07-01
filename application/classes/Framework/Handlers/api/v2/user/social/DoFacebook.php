@@ -20,6 +20,7 @@ use Framework\Models\UsersModel;
 use Framework\Services\JsonResponse;
 use Objects\User;
 use Tools\Optional\Mapper;
+use Tools\Optional\Option;
 
 class DoFacebook implements Controller {
 
@@ -45,12 +46,10 @@ class DoFacebook implements Controller {
             $name  = $profile->getName();
 
             User::getByFilter("login = ? OR mail = ?", array($login, $email))
-                ->otherwise($this->createNewUser($login, $email, $name))
+                ->orCall($this->createNewUser($login, $email, $name))
                 ->then(RegistrationSuccessfulPublisher::send())
                 ->map(Mapper::method("getId"))
-                ->map(Mapper::call($model, "authorizeById"))
-                ->map(Mapper::method("toRestFormat"))
-                ->then(Mapper::call($response, "setData"));
+                ->then(Mapper::call($model, "authorizeById"));
 
         } catch (FacebookSDKException $e) {
 
@@ -85,7 +84,7 @@ class DoFacebook implements Controller {
 
             $user->save();
 
-            return $user->getId();
+            return Option::Some($user);
 
         };
 

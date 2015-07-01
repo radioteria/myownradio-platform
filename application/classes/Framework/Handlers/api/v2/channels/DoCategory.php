@@ -11,24 +11,34 @@ namespace Framework\Handlers\api\v2\channels;
 
 use API\REST\ChannelsCollection;
 use Framework\Controller;
+use Framework\Exceptions\ControllerException;
 use Framework\Services\Http\HttpGet;
-use Framework\Services\Validators\CategoryValidator;
+use Framework\Services\JsonResponse;
+use Objects\Category;
 use Tools\Optional\Filter;
 
 class DoCategory implements Controller {
-    public function doGet(HttpGet $get, ChannelsCollection $collection, CategoryValidator $validator) {
+    public function doGet(JsonResponse $response, HttpGet $get, ChannelsCollection $collection) {
+
         $category_name  = $get->getOrError("category_name");
-        $offset         = $get->get("offset")->filter(Filter::isNumber())
+
+        $offset         = $get->get("offset")
+                              ->filter(Filter::isNumber())
                               ->orZero();
-        $limit          = $get->get("limit")->filter(Filter::isNumber())
+
+        $limit          = $get->get("limit")
+                              ->filter(Filter::isNumber())
                               ->getOrElse(ChannelsCollection::CHANNELS_PER_REQUEST_MAX);
 
-        // todo: update category validator
-        $category = $validator->validateChannelCategoryByPermalink($category_name);
+        /**
+         * @var Category $category
+         */
+        $category = Category::getByFilter("key", [":key" => $category_name])
+            ->getOrThrow(ControllerException::tr("VALIDATOR_INVALID_CATEGORY_NAME", [ $category_name ]));
 
         return [
             "category" => $category,
-            "channels" => $collection->getChannelsListByCategory($category["category_id"], $offset, $limit)
+            "channels" => $collection->getChannelsListByCategory($category->getId(), $offset, $limit)
         ];
     }
 } 

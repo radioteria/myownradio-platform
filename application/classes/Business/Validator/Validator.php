@@ -9,10 +9,11 @@
 namespace Business\Validator;
 
 
+use Framework\Injector\Injectable;
 use Framework\Preferences;
 use Tools\Optional\Option;
 
-class Validator {
+class Validator implements Injectable {
 
     const EMAIL_REGEXP_PATTERN = '~^[\w\S]+@[\w\S]+\.[\w]{2,4}$~';
 

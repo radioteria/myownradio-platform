@@ -94,6 +94,7 @@ abstract class BaseQuery {
      */
     public function fetchOneRow() {
         return Database::doInConnection(function (Database $db) {
+            /** @var SelectQuery $query */
             $query = clone $this;
             $query->limit(1);
             return $db->fetchOneRow($query);

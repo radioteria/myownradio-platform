@@ -386,7 +386,7 @@ class MicroORM extends FilterORM implements Injectable {
 
         $query->limit(1);
 
-        $row = $query->fetchOneRow($query)->orNull();
+        $row = $query->fetchOneRow()->orNull();
 
         if ($row === null) {
             return Option::None();

@@ -166,8 +166,8 @@
         "other" : "You have <b>{{}}</b> bookmarked radio stations"
     },
     "RESULT_BY_CATEGORY": {
-        "1"     : "<b>1</b> radio station in category <b>{{ category_name }}</b>",
-        "other" : "<b>{{ }}</b> radio stations in category <b>{{ category_name }}</b>"
+        "1"     : "<b>1</b> radio station in category <b>{{ name }}</b>",
+        "other" : "<b>{{ }}</b> radio stations in category <b>{{ name }}</b>"
     },
     "RESULT_BY_SELF": {
         "1"     : "You have <b>1</b> radio station",

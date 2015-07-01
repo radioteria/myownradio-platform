@@ -114,7 +114,7 @@ abstract class ActiveRecordObject implements JsonSerializable {
     }
 
     /**
-     * @return array|mixed
+     * @return array
      */
     public function jsonSerialize() {
         $data = [];
@@ -159,7 +159,7 @@ abstract class ActiveRecordObject implements JsonSerializable {
      * @return string
      */
     function __toString() {
-        return self::class . "(" . implode(",", array_values(get_object_vars($this))) . ")";
+        return $this->className() . "(" . implode(",", array_values(get_object_vars($this))) . ")";
     }
 
 } 

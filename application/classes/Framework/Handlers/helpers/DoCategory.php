@@ -18,10 +18,10 @@ use Objects\Category;
 class DoCategory implements Controller {
     public function doGet($category) {
 
-        Category::getByFilter("key", ["key:" => $category])->orCall(function () {
-            throw new View404Exception();
-        });
+        Category::getByFilter("key", [":key" => $category])
+            ->orThrow(View404Exception::class);
 
+        
         $description = "Create your own free web radio station in a minutes";
         $keywords = "music, radio, create, radio station, web radio, listen, free, own";
 

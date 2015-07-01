@@ -25,7 +25,8 @@
             $scope.actionProvider = ChannelListActions;
             $scope.load = function () {
                 $scope.busy = true;
-                $channels.getCategoryChannels($scope.data.channels.items.length).then(function (data) {
+                $channels.getCategoryChannels(channelsData.category.permalink,
+                    $scope.data.channels.items.length).then(function (data) {
                     for (var i = 0; i < data.channels.items.length; i++) {
                         $scope.data.channels.items.push(data.channels.items[i]);
                     }

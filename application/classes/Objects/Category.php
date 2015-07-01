@@ -16,17 +16,17 @@ use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
  * @package Objects
  * @table r_categories
  * @key category_id
- * @do_key category_id = :key or category_permalink = :key
+ * @do_key category_permalink = :key
  * @view
  */
 class Category extends ActiveRecordObject implements ActiveRecord {
 
-    private $category_id, $category_name, $category_permalink;
+    protected $category_id, $category_name, $category_permalink;
 
     /**
      * @return mixed
      */
-    public function getID() {
+    public function getId() {
         return $this->category_id;
     }
 
@@ -43,5 +43,6 @@ class Category extends ActiveRecordObject implements ActiveRecord {
     public function getPermalink() {
         return $this->category_permalink;
     }
+
 
 } 

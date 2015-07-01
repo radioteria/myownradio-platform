@@ -9,23 +9,16 @@
 namespace Framework\Handlers\api\v2\user;
 
 
-use Business\Validator\BusinessValidator;
-use Business\Validator\Entity\UserValidatorException;
+use Business\Forms\SignUpStartForm;
 use Framework\Controller;
 use Framework\Models\LettersModel;
 use Framework\Services\JsonResponse;
 
 class DoSignUpBegin implements Controller {
 
-    public function doPost($email, JsonResponse $response) {
+    public function doPost(JsonResponse $response, SignUpStartForm $form) {
 
-        (new BusinessValidator($email))
-            ->isEmail()
-            ->throwOnFail(UserValidatorException::newIncorrectEmail())
-            ->isEmailAvailable()
-            ->throwOnFail(UserValidatorException::newUnavailableEmail());
-
-        LettersModel::sendRegistrationLetter($email);
+        LettersModel::sendRegistrationLetter($form->getEmail());
 
     }
 

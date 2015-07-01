@@ -74,10 +74,11 @@ final class Some extends Option {
 
     /**
      * @param $callable
+     * @param $args
      * @return Option
      */
-    public function map($callable) {
-        return new Some($callable($this->get()));
+    public function map($callable, ...$args) {
+        return new Some($callable($this->get(), ...$args));
     }
 
     public function flatMap($callable) {

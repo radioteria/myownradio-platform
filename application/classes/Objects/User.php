@@ -23,6 +23,7 @@ use Tools\Folders;
  * @do_FIND_BY_KEY_PARAMS login = :key OR mail = :key
  * @do_FIND_BY_CREDENTIALS (login = :login) AND (password = :password)
  * @do_FIND_BY_KEY (uid = :key) OR (permalink = :key AND permalink IS NOT NULL)
+ * @do_FIND_BY_EMAIL mail = ?
  */
 class User extends ActiveRecordObject implements ActiveRecord {
 

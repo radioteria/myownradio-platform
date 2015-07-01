@@ -83,9 +83,10 @@ abstract class Option implements \IteratorAggregate, \JsonSerializable {
 
     /**
      * @param $callable
+     * @param $args
      * @return $this
      */
-    public abstract function map($callable);
+    public abstract function map($callable, ...$args);
 
     /**
      * @param $callable

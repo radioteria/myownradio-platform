@@ -9,6 +9,7 @@
 namespace Framework\Handlers\api\v2\user;
 
 
+use Business\Forms\SignUpCompleteForm;
 use Framework\Controller;
 use Framework\Models\UsersModel;
 use Framework\Services\Http\HttpPost;
@@ -16,7 +17,7 @@ use Framework\Services\JsonResponse;
 
 class DoSignUpComplete implements Controller {
 
-    public function doPost(HttpPost $post, UsersModel $users, JsonResponse $response) {
+    public function doPost(JsonResponse $response, SignUpCompleteForm $form, HttpPost $post, UsersModel $users) {
 
         $code       = $post->getOrError("code");
         $login      = $post->getOrError("login");

@@ -103,7 +103,7 @@ final class None extends Option {
     }
 
 
-    public function map($callable) {
+    public function map($callable, ...$args) {
         return $this;
     }
 

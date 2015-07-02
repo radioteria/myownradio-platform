@@ -17,6 +17,7 @@
 
     "VALIDATOR_PERMALINK_UNAVAILABLE": "This permalink is unavailable",
     "VALIDATOR_PERMALINK_CHARS": "Permalink may contain only letters, numbers and dashes",
+    "VALIDATOR_PERMALINK_LENGTH": "Permalink may contain from {{ 0 }} to {{ 1 }} chars or be empty",
 
     "VALIDATOR_PASSWORD_LENGTH": "Password length must be in range from {{ 0 }} to {{ 1 }} chars",
 

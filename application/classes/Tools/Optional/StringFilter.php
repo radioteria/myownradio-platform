@@ -10,12 +10,21 @@ namespace Tools\Optional;
 
 
 class StringFilter {
+
+    /**
+     * @param $length
+     * @return \Closure
+     */
+    public static function lengthIs($length) {
+        return function ($value) use (&$length) { return strlen($value) == $length; };
+    }
+
     /**
      * @param $length
      * @return \Closure
      */
     public static function minLength($length) {
-        return function ($value) use (&$length) { return strlen($value) <= $length; };
+        return function ($value) use (&$length) { return strlen($value) >= $length; };
     }
 
     /**
@@ -23,7 +32,7 @@ class StringFilter {
      * @return \Closure
      */
     public static function maxLength($length) {
-        return function ($value) use (&$length) { return strlen($value) >= $length; };
+        return function ($value) use (&$length) { return strlen($value) <= $length; };
     }
 
     /**

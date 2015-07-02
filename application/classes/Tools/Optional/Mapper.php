@@ -86,6 +86,16 @@ class Mapper {
         };
     }
 
+    /**
+     * Returns NULL if $value is empty otherwise returns $value.
+     * @return \Closure
+     */
+    public static function emptyToNull() {
+        return function ($value) {
+            return empty($value) ? null : $value;
+        };
+    }
+
 }
 
 

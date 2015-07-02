@@ -12,6 +12,8 @@ namespace Framework\Models;
 use Business\Fields\Code;
 use Business\Fields\Password;
 use Business\Forms\LoginForm;
+use Business\Forms\SignUpCompleteForm;
+use Framework\Events\RegistrationSuccessfulPublisher;
 use Framework\Exceptions\Auth\IncorrectPasswordException;
 use Framework\Exceptions\Auth\NoUserByLoginException;
 use Framework\Exceptions\ControllerException;
@@ -21,7 +23,6 @@ use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\InsertQuery;
 use Framework\Services\HttpRequest;
 use Framework\Services\HttpSession;
-use Framework\Services\Mailer;
 use Objects\User;
 use Tools\Common;
 use Tools\Folders;
@@ -170,31 +171,32 @@ class UsersModel implements SingletonInterface, Injectable {
     }
 
     /**
-     * @param $code
-     * @param $login
-     * @param $password
-     * @param $name
-     * @param $info
-     * @param $permalink
-     * @param $country
+     * @param SignUpCompleteForm $form
      * @return UserModel
+     * @throws ControllerException
+     * @internal param $code
+     * @internal param $login
+     * @internal param $password
+     * @internal param $name
+     * @internal param $info
+     * @internal param $permalink
+     * @internal param $country
      */
-    public function completeRegistration($code, $login, $password, $name, $info, $permalink, $country) {
+    public function completeRegistration(SignUpCompleteForm $form) {
 
-        $code = self::parseRegistrationCode($code);
-        $pwd = new Password($password);
+        $pwd = new Password($form->getPassword());
 
         $newUser = new User();
 
-        $newUser->setEmail($code->getEmail());
-        $newUser->setLogin($login);
+        $newUser->setEmail($form->getEmail());
+        $newUser->setLogin($form->getLogin());
         $newUser->setPassword($pwd->hash());
-        $newUser->setName($name);
-        $newUser->setInfo($info);
-        $newUser->setPermalink($permalink);
+        $newUser->setName($form->getName());
+        $newUser->setInfo($form->getInfo());
+        $newUser->setPermalink($form->getPermalink());
         $newUser->setRights(1);
         $newUser->setRegistrationDate(time());
-        $newUser->setCountryId($country);
+        $newUser->setCountryId($form->getCountryId());
 
         $newUser->save();
 
@@ -208,13 +210,8 @@ class UsersModel implements SingletonInterface, Injectable {
 
         Common::createTemporaryImage($newImagePath);
 
-        /* Special */
-        $notify = new Mailer("no-reply@myownradio.biz", "MyOwnRadio Service");
-        $notify->addAddress("roman@homefs.biz");
-        $notify->setSubject("You have new user on MyOwnRadio service");
-        $notify->setBody(sprintf("Hello! You have a new user '%s' (%s).", $login, $code));
-        $notify->queue();
-        /* End of special */
+        // todo: fix this
+        RegistrationSuccessfulPublisher::getInstance()->publish($newUser);
 
         LettersModel::sendRegistrationCompleted($newUser->getEmail());
 

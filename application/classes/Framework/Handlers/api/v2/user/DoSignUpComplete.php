@@ -12,12 +12,11 @@ namespace Framework\Handlers\api\v2\user;
 use Business\Forms\SignUpCompleteForm;
 use Framework\Controller;
 use Framework\Models\UsersModel;
-use Framework\Services\Http\HttpPost;
 use Framework\Services\JsonResponse;
 
 class DoSignUpComplete implements Controller {
 
-    public function doPost(JsonResponse $response, SignUpCompleteForm $form, HttpPost $post, UsersModel $users) {
+    public function doPost(JsonResponse $response, SignUpCompleteForm $form, UsersModel $users) {
 
         $code       = $post->getOrError("code");
         $login      = $post->getOrError("login");
@@ -27,7 +26,7 @@ class DoSignUpComplete implements Controller {
         $permalink  = $post->get("permalink")->orNull();
         $countryId  = $post->get("country_id")->orNull();
 
-        $users->completeRegistration($code, $login, $password, $name, $info, $permalink, $countryId);
+        $users->completeRegistration($form);
 
     }
 

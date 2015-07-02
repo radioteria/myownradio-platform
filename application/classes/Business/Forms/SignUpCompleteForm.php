@@ -9,17 +9,22 @@
 namespace Business\Forms;
 
 
-use Business\Validators\Exceptions\Code\CodeNotActualException;
-use Business\Validators\Exceptions\Code\CodeParsingException;
-use Business\Validators\Exceptions\Etc\UserNameLengthException;
-use Business\Validators\Exceptions\Login\LoginCharsException;
-use Business\Validators\Exceptions\Login\LoginLengthException;
-use Business\Validators\Exceptions\Login\LoginUnavailableException;
-use Business\Validators\Exceptions\Password\PasswordLengthException;
+use Business\Validators\CountryFilter;
+use Business\Validators\EmailFilter;
+use Business\Validators\Exceptions\Code;
+use Business\Validators\Exceptions\Email\EmailInvalidException;
+use Business\Validators\Exceptions\Email\EmailUnavailableException;
+use Business\Validators\Exceptions\Etc;
+use Business\Validators\Exceptions\Etc\UserInfoLengthException;
+use Business\Validators\Exceptions\Login;
+use Business\Validators\Exceptions\Password;
+use Business\Validators\Exceptions\Permalink;
 use Business\Validators\LoginFilter;
 use Business\Validators\PasswordFilter;
+use Business\Validators\PermalinkFilter;
 use Framework\Injector\Injectable;
 use Framework\Preferences;
+use Tools\Optional\Mapper;
 use Tools\Optional\Option;
 use Tools\Optional\StringFilter;
 use Tools\Singleton;
@@ -36,20 +41,19 @@ class SignUpCompleteForm extends HttpForm implements SingletonInterface, Injecta
     }
 
     /**
-     * @return bool
-     * @throws CodeNotActualException
-     * @throws CodeParsingException
+     * @throws Code\CodeNotActualException
+     * @throws Code\CodeParsingException
      */
     public function extractEmail() {
 
         $array = self::parseCode($this->code);
 
         if (!isset($array["email"], $array["code"])) {
-            throw new CodeParsingException;
+            throw new Code\CodeParsingException;
         }
 
         if ($array["code"] !== md5($array["email"] . "@myownradio.biz@" . $array["email"])) {
-            throw new CodeNotActualException;
+            throw new Code\CodeNotActualException;
         }
 
         $this->_email = $array["email"];
@@ -62,28 +66,44 @@ class SignUpCompleteForm extends HttpForm implements SingletonInterface, Injecta
 
         Option::Some($this->login)
             ->filter(LoginFilter::validLength())
-            ->orThrow(LoginLengthException::class)
+            ->orThrow(Login\LoginLengthException::class)
             ->filter(LoginFilter::validChars())
-            ->orThrow(LoginCharsException::class)
+            ->orThrow(Login\LoginCharsException::class)
             ->filter(LoginFilter::isAvailable())
-            ->orThrow(LoginUnavailableException::class);
+            ->orThrow(Login\LoginUnavailableException::class);
 
         Option::Some($this->password)
             ->filter(PasswordFilter::validLength())
-            ->orThrow(PasswordLengthException::class);
+            ->orThrow(Password\PasswordLengthException::class);
 
         Option::Some($this->name)
             ->filter(StringFilter::maxLength(
                 Preferences::getSetting("validator", "user.name.max")))
-            ->orThrow(UserNameLengthException::class);
+            ->orThrow(Etc\UserNameLengthException::class);
 
-        Option::Some($this->permalink);
+        Option::Some($this->permalink)
+            ->filter(PermalinkFilter::validLength())
+            ->orThrow(Permalink\PermalinkLengthException::class)
+            ->filter(PermalinkFilter::validChars())
+            ->orThrow(Permalink\PermalinkCharsException::class)
+            ->filter(PermalinkFilter::isAvailableForUser())
+            ->orThrow(Permalink\PermalinkUnavailableException::class);
 
-        Option::Some($this->country_id);
+        Option::Some($this->country_id)
+            ->map(Mapper::emptyToNull())
+            ->filter(CountryFilter::validCountryId())
+            ->orThrow(Etc\BadCountryException::class);
 
-        Option::Some($this->info);
+        Option::Some($this->info)
+            ->filter(StringFilter::maxLength(
+                Preferences::getSetting("validator", "user.info.max")))
+            ->orThrow(UserInfoLengthException::class);
 
-        Option::Some($this->_email);
+        Option::Some($this->_email)
+            ->filter(EmailFilter::isValid())
+            ->orThrow(EmailInvalidException::class)
+            ->filter(EmailFilter::isAvailable())
+            ->orThrow(EmailUnavailableException::class);
 
     }
 
@@ -135,7 +155,6 @@ class SignUpCompleteForm extends HttpForm implements SingletonInterface, Injecta
     public function getEmail() {
         return $this->_email;
     }
-
 
 
 }

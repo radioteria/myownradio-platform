@@ -58,8 +58,6 @@ class LettersModel {
         $mailer->setSubject($i18n->get("EMAIL_REG_COMPLETED"));
         $mailer->setBody($template->render());
 
-//        $mailer->queue();
-//
         try {
             $mailer->send();
         } catch (\Exception $exception) {

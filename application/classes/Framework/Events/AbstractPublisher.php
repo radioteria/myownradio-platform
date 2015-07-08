@@ -28,9 +28,9 @@ abstract class AbstractPublisher implements SingletonInterface {
     /**
      * @param null $scope
      */
-    function publish($scope = null) {
+    function publish(...$scope) {
         foreach ($this->subscribers as $subscriber) {
-            $subscriber($scope);
+            $subscriber(...$scope);
         }
     }
 

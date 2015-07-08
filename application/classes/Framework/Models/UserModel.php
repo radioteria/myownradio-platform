@@ -120,7 +120,7 @@ class UserModel extends Model implements SingletonInterface {
     }
 
     public function getName() {
-        return $this->user->getName();
+        return empty($this->user->getName()) ? $this->user->getLogin() : $this->user->getName();
     }
 
     public function getPassword() {

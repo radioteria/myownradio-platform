@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="4255853753">
+  <component name="DataSourceManagerImpl" format="xml" hash="1544066953">
     <data-source source="LOCAL" name="MySQL - myownradio@myownradio.biz" uuid="5f12eccb-baa5-4d58-abf7-3356ecebfc45">
       <driver-ref>mysql</driver-ref>
       <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
@@ -13,4 +13,3 @@
     </data-source>
   </component>
 </project>
-

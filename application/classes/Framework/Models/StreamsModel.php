@@ -9,6 +9,7 @@
 namespace Framework\Models;
 
 
+use Framework\Events\ChannelFavPublisher;
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
 use Framework\Services\Database;
@@ -130,6 +131,10 @@ class StreamsModel implements Injectable, SingletonInterface {
                 "stream_id" => $stream->getID()
             ])
             ->update();
+
+        ChannelFavPublisher::getInstance()
+            ->publish($stream, AuthUserModel::getInstance());
+
     }
 
     public function deleteBookmark(Stream $stream) {

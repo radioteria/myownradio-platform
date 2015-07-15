@@ -6,7 +6,10 @@ import gemini.myownradio.ff.FFDecoderBuilder;
 import gemini.myownradio.tools.MORLogger;
 import gemini.myownradio.tools.io.PipeIO;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Created by Roman on 07.10.14.
@@ -50,7 +53,7 @@ public class TrackPlayer implements AbstractPlayer {
 
         logger.println("Initializing process builder...");
         pb = new ProcessBuilder(new FFDecoderBuilder(file, offset, jingled).generate());
-        pb.redirectError(new File("/tmp/decode_" + Thread.currentThread().getName() + "_" + System.currentTimeMillis() +".log"));
+        //pb.redirectError(new File("/tmp/decode_" + Thread.currentThread().getName() + "_" + System.currentTimeMillis() +".log"));
 
         synchronized (lock) {
             process = pb.start();
@@ -61,9 +64,10 @@ public class TrackPlayer implements AbstractPlayer {
 
         try (
                 InputStream in = process.getInputStream();
-//                OutputStream out = process.getOutputStream();
+                //OutputStream out = process.getOutputStream();
+                //InputStream url = new URL(this.file).openStream()
         ) {
-            //pipeIO = new PipeIO(new FileInputStream(file), out, true);
+            //pipeIO = new PipeIO(url, out, true);
 
             byte[] buffer = new byte[4096];
             int length;

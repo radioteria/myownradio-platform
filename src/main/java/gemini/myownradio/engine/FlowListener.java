@@ -2,6 +2,7 @@ package gemini.myownradio.engine;
 
 import gemini.myownradio.tools.JDBCPool;
 import gemini.myownradio.tools.MORLogger;
+import gemini.myownradio.engine.Notif1er.Event;
 
 import java.sql.*;
 
@@ -35,6 +36,7 @@ public class FlowListener {
         PreparedStatement ps;
         ResultSet rs;
         try (Connection connection = JDBCPool.getConnection()) {
+
             ps = connection.prepareStatement(
                     "INSERT INTO r_listener (client_ip, client_ua, stream, quality, started, finished) VALUES (?, ?, ?, ?, NOW(), NULL)",
                     Statement.RETURN_GENERATED_KEYS);
@@ -53,6 +55,9 @@ public class FlowListener {
             connection.commit();
 
             logger.sprintf("New listener obtained ID #%d", this.listener_id);
+
+            new Event("listener.new", this.stream_id, this.listener_id).queue("str");
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -61,12 +66,17 @@ public class FlowListener {
     public void finish() throws SQLException {
         PreparedStatement ps;
         try (Connection connection = JDBCPool.getConnection()) {
+
             ps = connection.prepareStatement("UPDATE r_listener SET finished = NOW() WHERE client_id = ?");
             ps.setInt(1, this.listener_id);
             ps.executeUpdate();
 
             connection.commit();
+
             logger.sprintf("Finishing listener #%d session", this.listener_id);
+
+            new Event("listener.gone", this.stream_id, this.listener_id).queue("str");
+
         }
     }
 

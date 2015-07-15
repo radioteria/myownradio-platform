@@ -17,17 +17,17 @@ public class ConcurrentBufferRepository {
     private static Map<Integer, Map<ConcurrentBufferKey, ConcurrentBuffer>> repo =
             new ConcurrentHashMap<>();
 
-    public static boolean BCExists(ConcurrentBufferKey streamKey) {
+    public static boolean isBufferExists(ConcurrentBufferKey streamKey) {
         int streamId = streamKey.getStream();
         return repo.containsKey(streamId) && repo.get(streamId).containsKey(streamKey);
     }
 
-    public static ConcurrentBuffer getBC(ConcurrentBufferKey streamKey) {
+    public static ConcurrentBuffer getBuffer(ConcurrentBufferKey streamKey) {
         int streamId = streamKey.getStream();
         return repo.getOrDefault(streamId, Collections.emptyMap()).get(streamKey);
     }
 
-    public static ConcurrentBuffer createBC(ConcurrentBufferKey streamKey, int size) {
+    public static ConcurrentBuffer createBuffer(ConcurrentBufferKey streamKey, int size) {
         ConcurrentBuffer buffer;
         int streamId = streamKey.getStream();
         repo.computeIfAbsent(streamId, v -> new ConcurrentHashMap<>())
@@ -35,7 +35,7 @@ public class ConcurrentBufferRepository {
         return buffer;
     }
 
-    public static void deleteBC(ConcurrentBufferKey streamKey) {
+    public static void deleteBuffer(ConcurrentBufferKey streamKey) {
         int streamId = streamKey.getStream();
         repo.getOrDefault(streamId, Collections.emptyMap())
                 .remove(streamKey);

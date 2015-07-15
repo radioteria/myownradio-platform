@@ -12,7 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Created by LRU on 01.05.2015.
  */
-public class Notif1er {
+public class Notifier {
 
     public static class Event {
 

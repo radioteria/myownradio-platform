@@ -2,7 +2,7 @@ package gemini.myownradio.engine;
 
 import gemini.myownradio.tools.JDBCPool;
 import gemini.myownradio.tools.MORLogger;
-import gemini.myownradio.engine.Notif1er.Event;
+import gemini.myownradio.engine.Notifier.Event;
 
 import java.sql.*;
 

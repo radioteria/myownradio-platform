@@ -2,7 +2,7 @@ package gemini.myownradio.LHttp.ContextHandlers;
 
 import gemini.myownradio.LHttp.LHttpHandler;
 import gemini.myownradio.LHttp.LHttpProtocol;
-import gemini.myownradio.engine.Notif1er;
+import gemini.myownradio.engine.Notifier;
 import gemini.myownradio.tools.ClientCounter;
 
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class GetRunStateHandler implements LHttpHandler {
         }
 
         out.println("");
-        out.println("Event queue size : " + Notif1er.queueSize());
+        out.println("Event queue size : " + Notifier.queueSize());
 
         exchange.flush();
 

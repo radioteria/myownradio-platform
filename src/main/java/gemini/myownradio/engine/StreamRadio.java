@@ -51,7 +51,7 @@ public class StreamRadio implements Runnable {
             logger.exception(e);
         } finally {
             logger.sprintf("Destroying streamer thread");
-            ConcurrentBufferRepository.deleteBC(this.broadcast.getStreamKey());
+            ConcurrentBufferRepository.deleteBuffer(this.broadcast.getStreamKey());
             logger.sprintf("Calling garbage collector");
             System.gc();
         }

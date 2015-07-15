@@ -75,8 +75,8 @@ public class AudioFlowBootstrap {
 
         logger.sprintf("Using buffer size=%d key=%s", bufferSize, streamKey.toString());
 
-        if ((broadcast = ConcurrentBufferRepository.getBC(streamKey)) == null) {
-            broadcast = ConcurrentBufferRepository.createBC(streamKey, bufferSize);
+        if ((broadcast = ConcurrentBufferRepository.getBuffer(streamKey)) == null) {
+            broadcast = ConcurrentBufferRepository.createBuffer(streamKey, bufferSize);
             Thread streamer = new Thread(new StreamRadio(broadcast, encoder, streamObject));
             streamer.setName(streamKey.toString());
             streamer.setDaemon(true);

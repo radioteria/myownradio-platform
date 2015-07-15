@@ -31,6 +31,7 @@ public class ConcurrentBufferKey {
 
     @Override
     public boolean equals(Object o) {
+
         if (this == o) return true;
         if (!(o instanceof ConcurrentBufferKey)) return false;
 
@@ -38,9 +39,9 @@ public class ConcurrentBufferKey {
 
         if (stream != concurrentBufferKey.stream) return false;
         if (bitrate != concurrentBufferKey.bitrate) return false;
-        if (!Objects.equals(format, concurrentBufferKey.format)) return false;
 
-        return true;
+        return Objects.equals(format, concurrentBufferKey.format);
+
     }
 
     @Override

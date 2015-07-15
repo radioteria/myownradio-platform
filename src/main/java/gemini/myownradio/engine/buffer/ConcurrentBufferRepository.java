@@ -1,53 +1,50 @@
 package gemini.myownradio.engine.buffer;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 /**
  * Created by Roman on 02.10.14.
- *
+ * <p>
  * Repository of currently streaming audio flows
  */
 public class ConcurrentBufferRepository {
 
-    final private static Object locker = new Object();
-    private static Map<ConcurrentBufferKey, ConcurrentBuffer> repository =
-            new HashMap<>();
+    private static Map<Integer, Map<ConcurrentBufferKey, ConcurrentBuffer>> repo =
+            new ConcurrentHashMap<>();
 
     public static boolean BCExists(ConcurrentBufferKey streamKey) {
-        synchronized (locker) {
-            return repository.containsKey(streamKey);
-        }
+        int streamId = streamKey.getStream();
+        return repo.containsKey(streamId) && repo.get(streamId).containsKey(streamKey);
     }
 
     public static ConcurrentBuffer getBC(ConcurrentBufferKey streamKey) {
-        synchronized (locker) {
-            return repository.get(streamKey);
-        }
+        int streamId = streamKey.getStream();
+        return repo.getOrDefault(streamId, Collections.emptyMap()).get(streamKey);
     }
 
     public static ConcurrentBuffer createBC(ConcurrentBufferKey streamKey, int size) {
-        synchronized (locker) {
-            ConcurrentBuffer temp;
-            repository.put(streamKey, temp = new ConcurrentBuffer(streamKey, size));
-            return temp;
-        }
+        ConcurrentBuffer buffer;
+        int streamId = streamKey.getStream();
+        repo.computeIfAbsent(streamId, v -> new ConcurrentHashMap<>())
+                .put(streamKey, buffer = new ConcurrentBuffer(streamKey, size));
+        return buffer;
     }
 
     public static void deleteBC(ConcurrentBufferKey streamKey) {
-        synchronized (locker) {
-            Map<ConcurrentBufferKey, ConcurrentBuffer> temp =
-                    new HashMap<>(repository);
-            temp.remove(streamKey);
-            repository = temp;
-        }
+        int streamId = streamKey.getStream();
+        repo.getOrDefault(streamId, Collections.emptyMap())
+                .remove(streamKey);
     }
 
-    public static Stream<ConcurrentBufferKey> getKeys() {
-        synchronized (locker) {
-            return repository.keySet().stream();
-        }
+    public static Stream<ConcurrentBuffer> getBuffersByStream(int streamId) {
+        return repo.getOrDefault(streamId, Collections.emptyMap())
+                .values()
+                .stream();
     }
 
 }

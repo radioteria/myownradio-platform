@@ -28,10 +28,7 @@ public class SetStreamStateNotifyHandler implements LHttpHandler {
         }
 
         long notified = ConcurrentBufferRepository
-                .getKeys()
-                .parallel()
-                .filter(o -> o.getStream() == stream_id)
-                .map(ConcurrentBufferRepository::getBC)
+                .getBuffersByStream(stream_id)
                 .map(ConcurrentBuffer::setNotify)
                 .count();
 

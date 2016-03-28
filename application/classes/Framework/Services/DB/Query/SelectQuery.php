@@ -35,7 +35,7 @@ class SelectQuery extends BaseQuery implements QueryBuilder, \Countable {
      * @return int
      */
     public function count() {
-        return Database::doInConnection(function (Database $db) use (&$className, &$ctor_args) {
+        return Database::doInConnection(function (Database $db) {
             $query = clone $this;
             $query->selectNone()->selCount();
             $query->limit(null);

@@ -117,6 +117,17 @@ class TrackCollection implements Injectable, SingletonInterface {
 
     }
 
+    public function getPlayingOnAllChannels() {
+        
+        $query = $this->getSchedulePrefix();
+
+        $query->select("r_static_stream_vars.listeners_count");
+        $query->select("r_static_stream_vars.bookmarks_count");
+
+        return $query->fetchAll("sid");
+
+    }
+
     /**
      * @param int $offset
      * @param int $limit

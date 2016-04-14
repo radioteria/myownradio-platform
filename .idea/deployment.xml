@@ -2,10 +2,31 @@
 <project version="4">
   <component name="PublishConfigData" autoUpload="Always" serverName="myownradio.biz" promptOnLocalOverwrite="false" autoUploadExternalChanges="true">
     <serverData>
-      <paths name="myownradio.biz">
+      <paths name="homefs.biz">
         <serverdata>
           <mappings>
-            <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="jobs.ru.com">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="radioteria.com">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="yllamusic.com">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
@@ -13,4 +34,3 @@
     <option name="myAutoUpload" value="ALWAYS" />
   </component>
 </project>
-

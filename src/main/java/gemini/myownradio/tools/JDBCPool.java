@@ -7,7 +7,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * Created by Roman on 29.10.14.
+ * Created by Roman on 29.10.14
  */
 public class JDBCPool {
 
@@ -18,11 +18,11 @@ public class JDBCPool {
 
         ds.setDriverClassName(MORSettings.getFirstString("server", "jdbc_driver").orElse("com.mysql.jdbc.Driver"));
         ds.setUrl(String.format("jdbc:mysql://%s:3306/%s",
-                MORSettings.getFirstString("database", "db_hostname").orElse("myownradio.biz"),
+                MORSettings.getFirstString("database", "db_hostname").orElse("localhost"),
                 MORSettings.getFirstString("database", "db_database").orElse("myownradio")));
 
-        ds.setUsername(MORSettings.getFirstString("database", "db_login").orElse("mor"));
-        ds.setPassword(MORSettings.getFirstString("database", "db_password").orElse("3bWdNNa0v"));
+        ds.setUsername(MORSettings.getFirstString("database", "db_login").orElse("root"));
+        ds.setPassword(MORSettings.getFirstString("database", "db_password").orElse(""));
 
         ds.setMinIdle(1);
         ds.setMaxIdle(20);

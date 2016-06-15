@@ -1,5 +1,8 @@
 package gemini.myownradio.tools;
 
+import org.ini4j.Ini;
+import org.ini4j.IniPreferences;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +31,7 @@ public class MORSettings {
     }
 
     private static void readFile() {
+
         try (
                 FileReader file = new FileReader(iniFile);
                 BufferedReader buffered = new BufferedReader(file);
@@ -40,7 +44,7 @@ public class MORSettings {
                 tline = line.trim();
                 if (tline.startsWith("[") && tline.endsWith("]")) {
                     section = tline.substring(1, tline.length() - 1);
-                } else if ((m = RegExpTools.getMatcher("(.+?)(\\[\\])* *= *\"(.+)\" *(;*)*", tline)) != null) {
+                } else if ((m = RegExpTools.getMatcher("(.+?)(\\[\\])* *= *\"(.*)\" *(;*)*", tline)) != null) {
                     // Quoted setting
                     putSetting(section, m.group(1).trim(), m.group(3).trim());
                 } else if ((m = RegExpTools.getMatcher("(.+?)(\\[\\])* *= *(.*) *(;*)*", tline)) != null) {

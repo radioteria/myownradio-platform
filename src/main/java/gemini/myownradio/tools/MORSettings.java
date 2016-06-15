@@ -10,7 +10,7 @@ import java.util.regex.Matcher;
 import static java.net.URLDecoder.decode;
 
 /**
- * Created by Roman on 08.10.14.
+ * Created by Roman on 08.10.14
  */
 public class MORSettings {
 
@@ -19,7 +19,11 @@ public class MORSettings {
     private static HashMap<String, ArrayList<String>> settings = new HashMap<>();
 
     static {
-        iniFile = new File("/usr/local/myownradio/conf/mor.conf");
+        String confFile = System.getenv("MOR_CONFIG_FILE");
+        if (confFile == null) {
+            throw new RuntimeException("MOR_CONFIG_FILE environment variable not set.");
+        }
+        iniFile = new File(confFile);
         readFile();
     }
 

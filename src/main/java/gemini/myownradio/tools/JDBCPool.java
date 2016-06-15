@@ -13,6 +13,9 @@ public class JDBCPool {
 
     private static DataSource dataSource;
 
+    private static MORLogger logger = new MORLogger(MORLogger.MessageKind.SERVER);
+
+
     static {
         BasicDataSource ds = new BasicDataSource();
 
@@ -21,8 +24,14 @@ public class JDBCPool {
                 MORSettings.getFirstString("database", "db_hostname").orElse("localhost"),
                 MORSettings.getFirstString("database", "db_database").orElse("myownradio")));
 
-        ds.setUsername(MORSettings.getFirstString("database", "db_login").orElse("root"));
-        ds.setPassword(MORSettings.getFirstString("database", "db_password").orElse(""));
+        String login = MORSettings.getFirstString("database", "db_login").orElse("root");
+        String passw = MORSettings.getFirstString("database", "db_password").orElse("");
+
+        ds.setUsername(login);
+        ds.setPassword(passw);
+
+        logger.sprintf("Using login: %s", login);
+        logger.sprintf("Using password: %s", new String(new char[passw.length()]).replace('\0', '*'));
 
         ds.setMinIdle(1);
         ds.setMaxIdle(20);

@@ -57,6 +57,14 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $session->set("TOKEN", $token);
 
+        \Mixpanel::getInstance('02099ce8dcddbc93c2a4e0842d124635')
+            ->people
+            ->set($user->getID(), [
+                '$first_name' => $user->getName(),
+                '$email' => $user->getEmail(),
+            ]);
+
+
         return UserModel::getInstance($user["uid"]);
 
     }

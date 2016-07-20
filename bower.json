@@ -1,0 +1,21 @@
+{
+  "name": "myownradio-api-server",
+  "authors": [
+    "roman <roman_gemini@ukr.net>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-mixpanel": "^1.1.2"
+  }
+}

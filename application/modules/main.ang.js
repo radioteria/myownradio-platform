@@ -14,11 +14,16 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
         "Account", "Site", "Catalog", "RadioPlayer", "Search", "Profile", "Library", "AudioInfo", "mor-loader", "Dialogs",
 
-        "mor.stream.scheduler", "mor.tools", "contenteditable"
+        "mor.stream.scheduler", "mor.tools", "contenteditable", "analytics.mixpanel"
 
     ]);
 
     md.controller("MainController", [function () { }]);
+
+    md.module('analytics.mixpanel').config(['$mixpanelProvider', function ($mixpanelProvider) {
+        $mixpanelProvider.apiKey('2ee908297abdde848aeacf6572ec211e');
+
+    }]);
 
     var settings = {
         REST_LOCATION: "http://myownradio.biz/api/v2",
@@ -29,24 +34,11 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
         /* Home Page */
         PATH_HOME: ["/", {
             templateUrl: "/views/home.html",
-            rootClass: "image"
+            rootClass: "image",
+            controller: ['$mixpanel', function ($mixpanel) {
+                $mixpanel.track('Home Page View');
+            }]
         }],
-
-//        /* Streams List */
-//        PATH_STREAMS_BOOKMARKS: ["/bookmarks/", {
-//            templateUrl: "/views/streams.html",
-//            controller: 'BookmarksController',
-//            title: "Your bookmarks on " + SITE_TITLE,
-//            needsAuth: true,
-//            resolve: {
-//                channelData: ["Resolvers", "STREAMS_PER_SCROLL",
-//                    function (Resolvers, STREAMS_PER_SCROLL) {
-//                        return Resolvers.getBookmarks(0, STREAMS_PER_SCROLL);
-//                    }
-//                ]
-//            }
-//        }],
-
 
         PATH_LOGIN: ["/login/", {
             templateUrl: "/views/login.html",

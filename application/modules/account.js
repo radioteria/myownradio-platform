@@ -46,7 +46,7 @@
                     $rootScope.account.pending = false;
                     $rootScope.account.client_id = data.client_id;
 
-                    $mixpanel.people.set(data.user.id, {
+                    $mixpanel.people.set({
                         '$email': data.user.email,
                         '$first_name': data.user.name
                     });

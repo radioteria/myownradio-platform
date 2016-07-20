@@ -5,8 +5,8 @@
 
     var account = angular.module("Account", ["Site"]);
 
-    account.run(["$rootScope", "User", "$location", "$route", "$cacheFactory", "$http",
-        function ($rootScope, User, $location, $route, $cacheFactory, $http) {
+    account.run(["$rootScope", "User", "$location", "$route", "$cacheFactory", "$http", "$mixpanel",
+        function ($rootScope, User, $location, $route, $cacheFactory, $http, $mixpanel) {
 
             // Initial account state
             $rootScope.account = {authorized: false, user: null, pending: true, streams: null, client_id: null};
@@ -18,6 +18,7 @@
                 if (value == true) return;
 
                 if ($rootScope.account.authorized == false && $route.current.needsAuth === true) {
+                    $mixpanel.track("Redirecting to login page");
                     $location.url("/login");
                 }
 
@@ -44,7 +45,7 @@
                     $rootScope.account.streams = data.streams;
                     $rootScope.account.pending = false;
                     $rootScope.account.client_id = data.client_id;
-
+                    $mixpanel.identify(data.client_id);
                     if (typeof go == "string") {
                         $location.url(go);
                     }
@@ -60,6 +61,7 @@
             $rootScope.account.logout = function () {
                 $cacheFactory.get('$http').removeAll();
                 User.logout().onSuccess(function () {
+                    $mixpanel.track("Logout");
                     $route.reload();
                 });
             };

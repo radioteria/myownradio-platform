@@ -164,6 +164,13 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $newUser->save();
 
+        \Mixpanel::getInstance('02099ce8dcddbc93c2a4e0842d124635')
+            ->people
+            ->set($newUser->getID(), [
+                '$first_name' => $newUser->getName(),
+                '$email' => $newUser->getEmail(),
+            ]);
+
         $this->createUserDirectory($newUser);
 
         // Generate Stream Cover

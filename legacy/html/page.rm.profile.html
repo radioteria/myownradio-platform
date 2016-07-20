@@ -1,0 +1,85 @@
+<?php
+    $userProfile = user::getUserByUid(user::getCurrentUserId());
+    $userAvatar = user::getUserAvatar(user::getCurrentUserId());
+    if(file_exists(folders::getUserPicturePath(user::getCurrentUserId())))
+    {
+        $profileAvatar = folders::getUserPicturePath(user::getCurrentUserId(), false) . "?s=150&c=1";
+    }
+    else
+    {
+        $profileAvatar = "";
+    }
+?>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Profile Settings - My Own Radio Manager</title>
+        <!-- module:rm.common -->
+        <!-- include:css -->
+        <!-- include:js -->
+    </head>
+    <body class="partial library">
+        <div id="jplayer"></div>
+        <!-- module:rm.header -->
+        <div class="rm_body_wrap rm_max_width">
+            <!-- module:rm.sidebar -->
+            <div class="rm_content_wrap">
+                <div class="rm-profile-wrapper">
+                    <input type="file" style="display: none;" accept="image/*" />
+                    <form id="modifyProfile" method="POST">
+                        <input type="hidden" name="authtoken" value="<?= user::getCurrentUserToken() ?>" />
+                        <div class="rm-profile-wrapper-header">
+                            <tools>
+                                <a href='#' id='changePwd'>Change password</a>
+                            </tools>
+                            <h1><i class="icon-profile"></i>User Profile</h1>
+                        </div>
+                        <div class="rm-profile-wrapper-base">
+                            <div class="rm-profile-wrapper-cover">
+                                <div class="rm-profile-wrapper-cover-image">
+                                    <img src="<?= $profileAvatar ?>" />
+                                    <span id="changeImage" class="rmButton">Change image</span>
+                                </div>
+                            </div>
+                            <div class="rm-profile-wrapper-common">
+                                <div class="rm-profile-wrapper-common-outsize">
+                                    <div class="rm-profile-wrapper-common-field">
+                                        <label for="username">Username:</label>
+                                        <input id="username" autocomplete="off" class="rmBigTextInput rm-profile-wrapper-common-input" type="text" name="name" placeholder="Your name" value="<?= htmlspecialchars($userProfile['name']) ?>" />
+                                    </div>
+                                    <div class="rm-profile-wrapper-common-field">
+                                        <label for="permalink">Permanent link:</label>
+                                        <input \
+                                            style="padding-left: 154px;" \
+                                            id="permalink" \
+                                            autocomplete="off" \
+                                            class="rmBigTextInput rm-profile-wrapper-common-input" \
+                                            type="text" \
+                                            name="permalink" \
+                                            placeholder="id<?= user::getCurrentUserId() ?>" \
+                                            value="<?= htmlspecialchars($userProfile['permalink']) ?>" \
+                                        />
+                                        <div class="rm-profile-wrapper-permalink-validate"></div>
+                                        <label for="permalink">
+                                            <div class="rm-profile-wrapper-permalink-prefix">http://myownradio.biz/</div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rm-profile-wrapper-additional">
+                            <div class="rm-profile-wrapper-common-field">
+                                <label for="info">Additional info:</label>
+                                <textarea id="info" autocomplete="off" class="rmBigTextInput rm-profile-wrapper-common-input" name="info" placeholder=""><?= htmlspecialchars($userProfile['info']) ?></textarea>
+                            </div>
+                        </div>
+                        <div class="rm-profile-wrapper-buttons">
+                            <input id="#submit" type="submit" class="rm-profile-wrapper-common-submit rmButton" value="Save" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

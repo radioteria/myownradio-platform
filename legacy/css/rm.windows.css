@@ -1,0 +1,124 @@
+div.rm_popup_form_background {
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+
+div.rm_popup_form {
+    position: absolute;
+    z-index: 100;
+    box-shadow: 0px 0px 32px rgba(0,0,0,0.7);
+    background: #fff;
+    line-height: 1.5em;
+    left: 50%;
+    top: 50%;
+}
+
+.rm_window_header {
+    width: 100%;
+    padding: 6px 10px;
+    box-sizing: border-box;
+    background: #5594b4;
+    font-weight: bold;
+    color: white;
+}
+
+.rm_window_body {
+    padding: 8px 10px;
+    box-sizing: border-box;
+    margin-bottom: 48px;
+}
+
+.rm_window_bottom {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    height: 48px;
+    background: #eee;
+    text-align: right;
+}
+
+.rm_window_close_wrap {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity linear 250ms;
+}
+
+.rm_window_close_wrap:hover {
+    opacity: 1;
+}
+
+.rm_mbox_shader {
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+}
+
+.rm_mbox_wrap {
+    box-shadow: 0px 0px 32px rgba(0,0,0,0.7);
+    background: #fff;
+    line-height: 1.5em;
+    min-width: 320px;
+    min-height: 32px;
+    position: relative;
+}
+
+.rm_mbox_header {
+    width: 100%;
+    padding: 6px 10px;
+    box-sizing: border-box;
+    background: #5594b4;
+    font-weight: bold;
+    color: white;    
+}
+
+.rm_mbox_close_btn {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity linear 250ms;   
+}
+
+.rm_mbox_close_btn:hover {
+    opacity: 1;
+}
+
+.rm_mbox_footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    height: 48px;
+    background: #eee;
+    text-align: right; 
+}
+
+.rm_mbox_text {
+    position: relative;
+    padding: 32px 8px;
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.rm_mbox_wrap .rm_ui_def_button {
+    margin-left: 4px;
+}

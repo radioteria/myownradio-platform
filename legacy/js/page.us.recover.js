@@ -1,0 +1,1 @@
+$(".page-user-form.recover").jsubmit("/");

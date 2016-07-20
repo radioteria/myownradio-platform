@@ -1,0 +1,17 @@
+<?php
+
+$from   = application::post("from", 0, REQ_INT);
+$filter = application::post("filter", "", REQ_STRING);
+
+if(strlen($filter)>0)
+{
+    $tracks = track::getFilteredTracks(user::getCurrentUserId(), misc::searchQueryFilter($filter), $from, config::getSetting("json", "tracks_per_query"));
+} 
+else
+{
+    $tracks = track::getTracks(user::getCurrentUserId(), $from, config::getSetting("json", "tracks_per_query"));
+}
+
+echo json_encode($tracks);
+
+

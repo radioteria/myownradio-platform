@@ -1,0 +1,19 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <div class="page-sub-title">
+            <translate>FR_CATEGORIES_TITLE</translate>
+        </div>
+        <ul class="categories_container">
+            <li ng-repeat="category in lib.categories" ng-if="category.streams_count > 0">
+                <a href="/category/{{ category.category_permalink }}">
+                    <img fadein ng-src="/images/categories/{{ category.category_id + 1 }}.png" />
+                    <div class="fixed">
+                        <div class="name">
+                            <span ng-bind="category.category_name"></span>
+                        </div>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

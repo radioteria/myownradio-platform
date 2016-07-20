@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title><?= application::getDocTitle("Password Reset"); ?></title>
+        <!-- module:us.common -->
+        <!-- include:css -->
+        <!-- include:js -->
+    </head>
+    <body>
+        <!-- module:us.header -->
+        <div class="page">
+            <div class="page-form-frame">
+                <h1>PASSWORD RESET</h1>
+                <div class="page-form-description">To recover access to your account please enter your login or email into field below and press <span>Reset</span> button. Link for password reset will be sent to your email address.</div>
+                <form action="/api/v2/auth/passwordRecoverRequest" method="post" class="page-user-form recover">
+                    <table class="page-form-table">
+                        <tr>
+                            <td>Login or Email:</td>
+                            <td><input type="text"  data-type="login" value="" name="email" required /></td>
+                            <td><div class="page-form-input-status login">This field must be filled</div></td>
+                        </tr>
+                    </table>
+                    <div class="page-form-buttons">
+                        <input type="submit" value="Reset" />
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- module:us.footer -->
+        </body>
+</html>

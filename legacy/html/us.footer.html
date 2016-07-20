@@ -1,0 +1,52 @@
+<?php
+$date = date("Y", time());
+if($date != 2014)
+{
+    $copy = "2014 - {$date}";
+}
+else
+{
+    $copy = "2014";
+}
+?><div class="page-footer-background">
+   <div class="page-footer-content -limit-width -shadow-both -show-overflow">
+        <ul class="page-footer-content-list -show-overflow">
+            <li>
+                <h1>MYOWNRADIO</h1>
+                <ul class="page-footer-content-subitem-list">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/browse">Browse streams</a></li>
+                    <li><a href="/categories">Categories</a></li>
+                    <li><a href="/radiomanager">Radio Manager</a></li>
+                </ul>
+            </li>
+            <li>
+                <h1>COMMUNITY</h1>
+                <ul class="page-footer-content-subitem-list">
+                    <!--<li><a href="#">Facebook</a></li>
+                    <li><a href="#">Google+</a></li>
+                    <li><a href="#">Twitter</a></li>
+                    <li><a href="#">VK</a></li>-->
+                </ul>
+            </li>
+            <li>
+                <h1>COMPANY</h1>
+                <ul class="page-footer-content-subitem-list">
+                    <!--<li><a href="/static/about-us">About Us</a></li>
+                    <li><a href="/static/terms-of-use">Terms of Use</a></li>
+                    <li><a href="/static/copyright-infringement">Copyright Infringement</a></li>
+                    <li><a href="/static/DMCA">DMCA</a></li>-->
+                </ul>
+            </li>
+            <li>
+                <h1>HELP & SUPPORT</h1>
+                <ul class="page-footer-content-subitem-list">
+                    <!--<li><a href="/static/faq">FAQ</a></li>
+                    <li><a href="/static/contact-us">Contact Us</a></li>
+                    <li><a href="/static/provacy">Privacy</a></li>-->
+                </ul>
+            </li>
+        </ul>
+        <div class="page-footer-copyright">MYOWNRADIO &copy; <?= $copy ?></div>
+    </div>
+</div>

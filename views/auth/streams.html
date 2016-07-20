@@ -1,0 +1,106 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <nav class="main" main-navigation=""></nav>
+        <div class="form-wrap full-width" ng-controller="MyStreamsController">
+            <div class="stats">
+                <translate>FR_TRACKS</translate>
+                <b>{{ account.user.tracks_count }}</b>
+                |
+                <translate>FR_STATIONS</translate>
+                <b>{{ account.user.streams_count }}</b>
+            </div>
+            <h1 class="form-title">
+                <i class="icon-wifi-tethering"></i>
+                <translate filter="uppercase">FR_PROFILE_MY_CHANNELS</translate>
+            </h1>
+            <div class="my-streams-wrapper">
+                <div class="streams-actions">
+                    <a href="/profile/new-stream">
+                        <i class="icon-magic"></i>
+                        <translate>FR_CREATE_STATION</translate>
+                    </a>
+                </div>
+                <div class="table">
+                    <ul class="row caption">
+                        <li class="cell"></li>
+                        <li class="cell">
+                            <translate>FR_STATIONS_NAME</translate>
+                        </li>
+                        <li class="cell">
+                            <translate>FR_STATIONS_ACTION</translate>
+                        </li>
+                        <li class="cell">
+                            <translate>FR_STATIONS_LISTENERS</translate>
+                        </li>
+                        <li class="cell">
+                            <translate>FR_STATIONS_TRACKS</translate>
+                        </li>
+                        <li class="cell">
+                            <translate>FR_STATIONS_DURATION</translate>
+                        </li>
+                    </ul>
+                    <ul class="row" ng-repeat="stream in account.streams" context-menu="" data-target="stream-menu-{{$index}}"
+                        onselectstart='return false;' unselectable='on'>
+                        <li class="cell">
+                            <a ng-click="changeStreamState(stream)" mor-tooltip="{{ tr('FR_STATIONS_START_STOP') }}">
+                                <span ng-if="stream.status == 0"><i class="icon-portable-wifi-off"></i></span>
+                                <span ng-if="stream.status != 0"><i class="icon-wifi-tethering"></i></span>
+                            </a>
+                        </li>
+                        <li class="cell">
+                            <a ng-href="/profile/streams/{{stream.sid}}" ng-bind="stream.name"></a>
+                            <ul class="context-menu select-persistent fixed" id="stream-menu-{{$index}}">
+                                <li class="menu-item">
+                                    <a ng-click="changeStreamState(stream)">
+                                        <span ng-if="stream.status != 0">
+                                            <i class="icon-stop2"></i>
+                                            <translate>FR_STATIONS_STOP</translate>
+                                        </span>
+                                        <span ng-if="stream.status == 0">
+                                            <i class="icon-play"></i>
+                                            <translate>FR_STATIONS_START</translate>
+                                        </span>
+                                    </a>
+                                </li>
+                                <li class="menu-item divider"></li>
+                                <li class="menu-item">
+                                    <a ng-href="/profile/edit-stream/{{stream.sid}}">
+                                        <i class="icon-mode-edit"></i>
+                                        <translate>FR_EDIT_CHANNEL_INFO</translate>
+                                    </a>
+                                </li>
+                                <li class="menu-item">
+                                    <a ng-href="/profile/streams/{{stream.sid}}">
+                                        <i class="icon-toc"></i>
+                                        <translate>FR_EDIT_CHANNEL_TRACKLIST</translate>
+                                    </a>
+                                </li>
+                                <li class="menu-item divider"></li>
+                                <li class="menu-item">
+                                    <a ng-click="deleteStream(stream)">
+                                        <i class="icon-trash"></i>
+                                        <translate>TR_DELETE</translate>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="cell">
+                            <a href="/profile/edit-stream/{{stream.sid}}" mor-tooltip="{{ tr('FR_EDIT_CHANNEL_INFO') }}">
+                                <i class="icon-mode-edit"></i>
+                            </a>
+                            <a href="/profile/streams/{{stream.sid}}" mor-tooltip="{{ tr('FR_EDIT_CHANNEL_TRACKLIST') }}">
+                                <i class="icon-toc"></i>
+                            </a>
+                            <a mor-tooltip="Delete this stream" ng-click="deleteStream(stream)">
+                                <i class="icon-trash"></i>
+                            </a>
+                        </li>
+                        <li class="cell" ng-bind="stream.listeners_count"></li>
+                        <li class="cell" ng-bind="stream.tracks_count"></li>
+                        <li class="cell" ng-bind="stream.tracks_duration | msToTime"></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,51 @@
+<?php
+$stream = application::singular('stream', $_MODULE['stream_id']);
+$stream_owner = user::getUserByUid($stream->getOwner());
+$stream_genres = explode(",", strtoupper($stream->getStreamGenres()));
+?>
+<div class="page-player-background stopped awaiting">
+    <div class="-limit-width -no-overflow page-title-content">
+        <div class="page-title-text"><?= strtoupper($stream->getStreamName()); ?></div>
+    </div>
+    <div class="-limit-width -no-overflow page-player-content">
+        <div class="-float-right page-player-title-block">
+            <div class="page-player-title-nowplaying">STOPPED</div>
+            <div class="page-player-title-hider">
+                <div class="page-player-title-track">NONE</div>
+                <div class="page-player-title-progress">
+                    <div class="page-player-title-progress-value">
+                        <div class="page-player-title-progress-value-roll"><i class="icon-arrow-right2 -no-padding"></i></div>
+                    </div>
+                </div>
+                <div class="page-player-title-next">NEXT WILL BE</div>
+                <div class="page-player-title-next-track"></div>
+            </div>
+        </div>
+        <div class="-float-left page-player-control-block -fix-center">
+            <i class="icon-play page-player-control-button _player-status-toggle"></i>
+        </div>
+        <?php if($stream->getOwner() === user::GetCurrentUserId()): ?>
+           <div class="page-player-stream-control">
+                <ul class="page-player-stream-control-actions">
+                    <li><a href="javascript:commonPreviousTrack();" title="Previous track">PREV</a></li>
+                    <li><a href="javascript:removeTrackFromStream();" title="Remove from stream">REM</a></li>
+                    <li><a href="javascript:removeTrackTotally();" title="Remove track completely">KILL</a></li>
+                    <li><a href="javascript:commonNextTrack();" title="Next track">NEXT</a></li>
+                </ul>
+           </div>
+        <?php endif; ?>
+    </div>
+</div>
+<div class="page-info-background">
+    <div class="-limit-width -no-overflow page-info-content">
+        <div class="page-info-description -float-right">
+            <div class="page-info-description-text"><?= $stream->getStreamInfo(); ?></div>
+        </div>
+        <div class="page-info-main -float-left">
+            <div class="page-info-main-title">STREAM OWNER</div>
+            <div class="page-info-main-value"><?= strtoupper($stream_owner['name']); ?></div>
+            <div class="page-info-main-title">STREAM TAGS</div>
+            <div class="page-info-main-value"><ul class="page-info-stream-genres"><?= layout::parseHashTags($stream->getStreamGenres(), 'li'); ?></ul></div>
+        </div>
+    </div>
+</div>

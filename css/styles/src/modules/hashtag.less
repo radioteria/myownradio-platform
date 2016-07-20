@@ -1,0 +1,35 @@
+hashtags {
+  display: inline-block;
+  cursor: text;
+  font-size: 9pt;
+  vertical-align: middle;
+  .current-tag {
+    float: left;
+    cursor: text;
+    outline: none;
+    padding: 1px 4px 0px;
+    min-width: 1px;
+    &:empty:before {
+      display: block;
+      content: attr(placeholder);
+    }
+  }
+  .tags {
+    float: left;
+    .tag {
+      padding: 1px 6px;
+      border-radius: 8px;
+      margin-right: 4px;
+      display: inline-block;
+      background-color: #9f9f9f;
+      text-shadow: 1px 1px 1px #606060;
+      color: #ffffff;
+      &:before {
+        content: "#";
+      }
+      &:hover {
+        text-decoration: line-through;
+      }
+    }
+  }
+}

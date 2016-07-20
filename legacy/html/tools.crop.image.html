@@ -1,0 +1,82 @@
+<?php
+
+$input_file 	= application::get('f', NULL, REQ_STRING);
+$input_size 	= application::get('s', 64, REQ_INT);
+$crop_enable 	= application::get('c', false, REQ_BOOL);
+
+$cache_enable 	= 1;
+
+if(!file_exists($input_file))
+{
+    header('HTTP/1.0 404 Not Found');
+    exit('<h1>File not found!</h1>');
+}
+
+$cache = config::getSetting("content", "content_folder") . "/../cache/" . md5(serialize(application::getAll(array("rnd")))) . ".jpg";
+$file_mtime = filemtime($input_file);
+
+
+if($cache_enable) 
+{
+	/* Проверим не кэшировано ли изображение на стороне клиента */
+	if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) >= $file_mtime) 
+	{
+		header($_SERVER["SERVER_PROTOCOL"].' 304 Not Modified');
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s", $file_mtime) . " GMT");
+		header('Cache-Control: max-age=0');
+		die();
+	} 
+	else 
+	{
+		header("Last-Modified: " . gmdate("D, d M Y H:i:s", $file_mtime) . " GMT");
+		header('Cache-Control: max-age=0');
+	}
+
+	/* Проверим не кэшировано ли изображение на стороне сервера */
+//	if(file_exists($cache) && (filemtime($cache) == $file_mtime) ) 
+//	{
+//		header($_SERVER["SERVER_PROTOCOL"].' 301 Moved Permanently');
+//		header("Location: /" . $cache);
+//		exit();
+//	}
+}
+
+
+/* Создаем класс обработки изображений и 
+получаем детальную информацию для кэширования */
+$img = new acResizeImage($input_file);
+$pi = pathinfo($cache);
+
+/* Если папка для кэша не существует - создаём её */
+if(!file_exists($pi['dirname'])) mkdir($pi['dirname'], 0770, true);
+
+if($crop_enable)
+{
+	$img	->cropSquare();
+}
+
+$img->resize($input_size);
+
+
+        
+$new = $img->interlace()->save($pi['dirname'] . "/", $pi['filename'], 'jpg', true, 100);
+
+
+if($new) 
+{
+	if(file_exists($new))
+		touch($new, $file_mtime, null);
+
+	/* Перенаправляем браузер на созданное изображение */
+	//header($_SERVER["SERVER_PROTOCOL"].' 301 Moved Permanently');
+	//header("Location: /" . $new);
+	header("Content-Type: image/jpeg");
+	echo file_get_contents($new);
+} 
+else 
+{
+	/* Если что-то пошло не так - ругаемся */
+	header($_SERVER["SERVER_PROTOCOL"].' 500 Internal Server Error');
+	echo "Check directory permission.";
+}
+

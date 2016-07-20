@@ -1,0 +1,59 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <ul class="sections">
+            <li active-tab="^\/streams\/">
+                <a href="/streams/">
+                    <translate filter="uppercase">FR_ALL_CHANNELS</translate>
+                </a>
+            </li>
+            <li active-tab="^\/bookmarks\/" ng-if="account.authorized">
+                <a href="/bookmarks/">
+                    <translate filter="uppercase">FR_MY_BOOKMARKS</translate>
+                </a>
+            </li>
+            <li active-tab="^\/user\/{{ account.user.key | regExpEscape }}$" ng-if="account.authorized">
+                <a href="/user/{{ account.user.key }}">
+                    <translate filter="uppercase">FR_MY_STREAMS</translate>
+                </a>
+            </li>
+            <li active-tab="^\/user\/.+$" ng-if="content.owner && account.user.uid !== content.owner.uid">
+                <a href="/user/{{ content.owner.key }}">
+                    <i class="icon-user"></i>
+                    {{ content.owner | userDisplayName | uppercase }}
+                </a>
+            </li>
+        </ul>
+        <div class="page-sub-title">
+            <translate>FR_BROWSE_CHANNELS_DESCRIPTION</translate>
+        </div>
+        <div class="new-stream-catalog-badge">
+            <div class="no-streams" ng-if="content.empty">
+                <translate>FR_NO_STREAMS_CREATE_NEW</translate>
+            </div>
+            <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy" infinite-scroll-distance="1">
+                <li ng-repeat="stream in content.streams">
+                    <div class="cover-section">
+                        <div class="cover">
+                            <img fadein ng-if="stream.cover_url" ng-src="{{stream.cover_url}}?size=200">
+                            <play obj="stream" ng-if="stream.status != 0"></play>
+                        </div>
+                    </div>
+                    <div class="info-section">
+                        <div class="stream-name">
+                            <a ng-href="{{ stream.key | streamsCatalog }}" ng-bind="stream.name"></a>
+                        </div>
+                        <div class="stats">
+                                <span mor-tooltip="{{ pl('FR_COUNT_USERS_LISTENING', stream.listeners_count) }}">
+                                    <i class="icon-hearing"></i><span>{{ stream.listeners_count | number }}</span>
+                                </span>
+                                <span mor-tooltip="{{ pl('FR_STREAM_BOOKMARKED_TIMES', stream.bookmarks_count) }}">
+                                    <i class="icon-heart"></i> <span>{{ stream.bookmarks_count | number }}</span>
+                                </span>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,105 @@
+.rm_status_wrap {
+    padding: 8px;
+    overflow: hidden;
+    background: #eee;
+    height: 48px;
+    box-sizing: border-box;
+}
+
+.rm_status_wrap .ttl {
+    font-weight: bold;
+}
+
+.rm_status_wrap li {
+    overflow: hidden;
+    text-overflow: ellipsis; 
+}
+
+.rm_float_list {
+    overflow: hidden;
+}
+
+.rm_float_list > li {
+    float: left;
+}
+
+.rm_float_list > li#open,
+.rm_float_list > li#listen {
+    margin-right: 8px;
+}
+
+
+/* Switcher Button */
+
+.mor_ui_switch {
+    width: 42px;
+    height: 22px;
+    border-radius: 11px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    box-sizing: border-box;
+    display: inline-block;
+    box-shadow: inset 1px 1px 1px rgba(0,0,0,.3), inset -1px -1px 1px rgba(0,0,0,.1);
+    vertical-align: text-bottom;
+    margin: 0 4px;
+}
+
+.mor_ui_switch:not(.on) {
+    background: #ff6464;
+}
+
+.mor_ui_switch.on {
+    background: #1fd40c;
+}
+
+.mor_ui_switch .rm_ui_switch_handle {
+    width: 18px;
+    height: 18px;
+    margin: 2px;
+    border-radius: 10px;
+    background: #f9f9f9;
+    box-sizing: border-box;
+    position: absolute;
+    left: 0px;
+}
+
+.mor_ui_switch.on .rm_ui_switch_handle {
+    left: 20px;
+}
+
+.mor_ui_switch.on .rm_ui_switch_text {
+    left: 0px ;
+}
+
+.rm-stream-status-listen:hover {
+    background-color: #fafafa;
+}
+
+.rm-stream-ctrl-button {
+    text-align: center;
+}
+
+.rm-stream-ctrl-button > i {
+    position: relative;
+    margin: 0;
+    font-size: 12pt;
+    vertical-align: -2px;
+}
+
+.rm-stream-status-now {
+    overflow: hidden;
+    cursor: default;
+}
+
+.rm-stream-status-inner {
+    padding: 8px 8px;
+    margin: 0 8px;
+    border-radius: 6px;
+    background-color: #25749c;
+    color: #eeeeee;
+    box-shadow: inset 2px 2px 4px #1b5978, 0 0 1px #1b5978;
+    text-shadow: 1px 1px 1px #1b5978;
+}
+
+

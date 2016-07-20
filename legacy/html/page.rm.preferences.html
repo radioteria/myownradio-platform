@@ -1,0 +1,39 @@
+<?php
+    $userProfile = user::getUserByUid(user::getCurrentUserId());
+    $userAvatar = user::getUserAvatar(user::getCurrentUserId());
+    if(file_exists(folders::getUserPicturePath(user::getCurrentUserId())))
+    {
+        $profileAvatar = folders::getUserPicturePath(user::getCurrentUserId(), false) . "?s=150&c=1";
+    }
+    else
+    {
+        $profileAvatar = "";
+    }
+?>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Preferences @ My Own Radio Manager</title>
+        <!-- module:rm.common -->
+        <!-- include:css -->
+        <!-- include:js -->
+    </head>
+    <body class="partial library">
+        <div id="jplayer"></div>
+        <!-- module:rm.header -->
+        <div class="rm_body_wrap rm_max_width">
+            <!-- module:rm.sidebar -->
+            <div class="rm_content_wrap">
+                <div class="rm-misc-wrapper">
+                    <form id="modifyPreferences" method="POST">
+                        <input type="hidden" name="authtoken" value="<?= user::getCurrentUserToken() ?>" />
+                        <div class="rm-misc-wrapper-header">
+                            <h1><i class="icon-tools"></i>Preferences</h1>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,44 @@
+<ul class="context-menu select-persistent fixed" id="track-menu">
+    <li class="menu-item" ng-if="target.length == 1" ng-click="playFrom()"><i class="icon-play-arrow"></i> Play form here</li>
+    <li class="menu-item" ng-click="edit()"><i class="icon-mode-edit"></i> Edit info</li>
+    <li class="menu-item divider"></li>
+    <li>
+        <i class="icon-add"></i>
+        <translate>FR_ADD_TO_STREAM</translate>
+        <span class="expand"></span>
+        <ul class="context-menu left-side drop-down">
+            <li ng-repeat="stream in account.streams" ng-click="addToStream(stream)">
+                <span class="grey right">{{stream.tracks_count}}</span>
+                <i class="icon-wifi-tethering"></i>
+                {{ stream.name }}
+            </li>
+        </ul>
+    </li>
+    <li>
+        <i class="icon-add"></i> Move to stream <span class="expand"></span>
+        <ul class="context-menu left-side drop-down">
+            <li ng-repeat="stream in account.streams" ng-click="moveToStream(stream)">
+                <span class="grey right">{{stream.tracks_count}}</span>
+                <i class="icon-wifi-tethering"></i>
+                {{ stream.name }}
+            </li>
+        </ul>
+    </li>
+    <li>
+        <i class="icon-create"></i> Change color <span class="expand"></span>
+        <ul class="context-menu drop-down left-side" align-vertical="">
+            <li ng-repeat="group in lib.groups" ng-click="changeGroup(group)">
+                <i style="color:{{ group.color_code || 'none' }}" class="icon-circle"></i> {{ group.color_name }}
+            </li>
+        </ul>
+    </li>
+    <li class="menu-item divider"></li>
+    <li class="menu-item" ng-click="deleteSelected()">
+        <i class="icon-cross"></i>
+        <translate>FR_REMOVE_FROM_STREAM</translate>
+    </li>
+    <li class="menu-item" ng-click="deleteCompletelySelected()">
+        <i class="icon-delete"></i>
+        <translate>FR_DELETE_TRACKS</translate>
+    </li>
+</ul>

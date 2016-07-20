@@ -1,0 +1,61 @@
+div.rm_upload_frame {
+    margin-top: 16px;
+}
+
+.rm_upload_progress_wrap {
+    text-align: left;
+    position: relative;
+    display: none;
+
+    margin-top: 8px;
+    margin-left: 8px;
+    margin-right: 8px;
+    box-sizing: border-box;
+}
+
+.rm_upload_progress_wrap.visible {
+    display: block;
+}
+
+#progress_background {
+    margin-top: 8px;
+    height: 8px;
+    border: 1px solid #5594b4;
+    position: relative;
+}
+
+#progress_background #progress_handle {
+    height: 100%;
+    width: 0;
+    background: #93ceec;
+}
+
+.rm_upload_progress_wrap  #title {
+    text-align: center;
+    white-space: nowrap;
+    font-size: 1.1em;
+    padding-bottom: 16px;
+}
+
+#curr_id, #total_id {
+	
+}
+
+#curr_name {
+    color: #2578a2;
+}
+
+
+.rm_abort_icon {
+    float: right;
+    opacity: 0.5;
+    cursor: pointer;
+    background: url(/images/iconCancel.png) no-repeat;
+    width: 10px;
+    height: 10px;
+    margin-top: 6px;
+}
+
+.rm_upload_prompt.hidden {
+    display: none;
+}

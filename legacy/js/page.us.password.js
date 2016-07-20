@@ -1,0 +1,1 @@
+$(".page-user-form.passwordReset").jsubmit("/login?msg=PASSWORD_CHANGED");

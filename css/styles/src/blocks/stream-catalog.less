@@ -1,0 +1,139 @@
+.sections {
+  & > li {
+    display: inline-block;
+    vertical-align: middle;
+    &:not(:last-child) {
+      margin-right: 24px;
+    }
+    &.active {
+      border-bottom: 2px solid @HEAD_LOGO_BACKGROUND_COLOR;
+    }
+  }
+  font-family: "Myriad Pro Thin", sans-serif;
+  font-size: 24pt;
+  margin-bottom: 16px;
+}
+
+.catalog-title {
+  font-family: "Myriad Pro Thin", sans-serif;
+  font-size: 24pt;
+  .text {
+    .highlight {
+      font-weight: bold;
+    }
+  }
+}
+
+.page-sub-title {
+  margin-bottom: 32px;
+  color: @APP_TEXT_COLOR;
+  font-size: 12pt;
+  b {
+    color: #000000;
+  }
+}
+
+.new-stream-catalog-badge {
+  margin-right: -12px;
+  .end-of-list {
+    clear: both;
+    height: 0;
+    border-bottom: 1px solid #d8d8d8;
+  }
+  .new-stream-catalog {
+    overflow: hidden;
+    position: relative;
+    & > li {
+      .border-box();
+      padding-right: 12px;
+      width: 20%;
+      float: left;
+
+      .cover-section {
+        width: 100%;
+        height: 178px;
+        .cover {
+          height: 100%;
+          width: 100%;
+          play {
+            i {
+              font-size: 48pt;
+              line-height: 84px;
+            }
+          }
+          .overlay-section {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background-color: rgba(0,0,0,0.5);
+            color: #ffffff;
+            border-radius: 4px;
+            padding: 6px;
+            font-size: 10pt;
+            .stats {
+              i {
+                padding-right: 4px;
+              }
+              & > span:not(:last-child) {
+                padding-right: 8px;
+              }
+            }
+          }
+        }
+
+      }
+
+      .info-section {
+        box-sizing: border-box;
+        height: 70px;
+        padding: 4px 0;
+        margin-bottom: 16px;
+        .now-playing {
+          padding-bottom: 4px;
+          height: 10px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-size: 8pt;
+          i {
+            padding-right: 2px;
+          }
+        }
+        .stream-name {
+          font-family: "Myriad Pro Thin";
+          font-size: 16pt;
+          text-transform: uppercase;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          a {
+            display: block;
+          }
+        }
+        .stats {
+          color: @APP_TEXT_COLOR;
+          font-size: 9pt;
+          i {
+            padding-right: 4px;
+          }
+          & > span:not(:last-child) {
+            padding-right: 8px;
+          }
+        }
+      }
+
+    }
+  }
+
+}
+
+
+.no-streams {
+  font-size: 12pt;
+  a {
+    color: @APP_LINK_COLOR;
+    &:hover {
+      color: @APP_LINK_HOVER_COLOR;
+    }
+  }
+}

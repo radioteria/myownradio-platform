@@ -1,0 +1,83 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <nav class="main" main-navigation=""></nav>
+        <div class="form-wrap full-width" ng-controller="ProfileController">
+            <div class="avatar-changer" ng-controller="UserAvatarController">
+                <div class="cover" ng-click="upload()">
+                    <img fadein ng-if="avatarUrl" ng-src="{{avatarUrl}}?size=96" />
+                </div>
+                <div ng-click="upload()" class="button">
+                    <translate>FR_PROMO_ARTWORK_CHANGE</translate>
+                </div>
+            </div>
+            <form class="float" name="profile_form" ng-submit="submit()" novalidate="novalidate">
+                <h1 class="form-title">
+                    <i class="icon-mode-edit"></i>
+                    <translate filter="uppercase">FR_PROFILE_EDIT</translate>
+                </h1>
+                <div class="status" bind-html="error"></div>
+                <div class="status info" bind-html="status"></div>
+                <table class="form-table">
+                    <tr>
+                        <td>
+                            <label for="name">
+                                <translate>FR_USER_NAME</translate>
+                            </label>
+                        </td>
+                        <td>
+                            <input type="text" name="name" id="name" ng-model="details.name" ng-maxlength="32" autocomplete="off" />
+                            <div ng-show="stream_form.name.$dirty">
+                                <div class="validation" ng-show="stream_form.name.$error.maxlength">
+                                    <translate>VALIDATOR_USER_NAME_LENGTH</translate>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="name">
+                                <translate>FR_COUNTRY</translate>
+                            </label>
+                        </td>
+                        <td>
+                            <select name="country_id" ng-model="details.country_id"
+                                    ng-options="country.country_id as country.country_name for country in lib.countries">
+                                <option value="" selected>Unspecified</option>
+                            </select>
+                            <div class="padding"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label for="permalink">
+                                <translate>FR_PERMALINK</translate>
+                            </label>
+                        </td>
+                        <td>
+                            <label for="permalink" class="permalink-prefix">http://myownradio.biz/users/</label>
+                            <input type="text" class="user-permalink" name="permalink" id="permalink"
+                                   ng-model="details.permalink" is-available="userPermalink" pattern="^[a-z0-9\\-]*$"
+                                   autocomplete="off" />
+
+                            <div ng-show="stream_form.permalink.$dirty">
+                                <div class="validation" ng-show="stream_form.permalink.$error.pattern">
+                                    <translate>VALIDATOR_PERMALINK_CHARS</translate>
+                                </div>
+                                <div class="validation" ng-show="stream_form.permalink.$error.available">
+                                    <translate>VALIDATOR_PERMALINK_USED</translate>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <label for="info">Information:</label>
+                            <textarea class="under-label" name="info" id="info" ng-model="details.info"></textarea>
+                        </td>
+                    </tr>
+                </table>
+                <input ng-disabled="stream_form.$invalid" type="submit" value="{{ tr('FR_UPDATE') }}" style="float:right">
+            </form>
+        </div>
+    </div>
+</div>

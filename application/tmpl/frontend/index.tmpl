@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html ng-app="application" ng-controller="MainController">
+
+<head>
+
+    <title>${title}</title>
+
+    <base href="/">
+
+    <meta name="google-site-verification" content="l7PQWFkBsr1lzH2jzY80K_acxDtksCG8QzJE1aG58i8"/>
+    <meta name="blitz" content="mu-d8917424-45532ba5-15616ea5-f171dee5">
+
+    <meta name="viewport" content="width=1024, initial-scale=1.0"/>
+
+    <link rel="icon" href="/images/logos/site-icon-32.png">
+
+    <meta name="viewport" content="width=1024"/>
+
+    ${metadata}
+
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:400,300,600&subset=latin,cyrillic' rel='stylesheet'
+          type='text/css'>
+    <link rel="stylesheet" type="text/css" href="/css/styles/compiled/application.css">
+
+    <link rel="stylesheet" type="text/css" href="/css/legacy/common.css">
+    <link rel="stylesheet" type="text/css" href="/css/legacy/fonts.css">
+    <link rel="stylesheet" type="text/css" href="/css/legacy/blocks.css">
+
+    <link rel="stylesheet" type="text/css" href="/icomoon/style.css">
+    <link rel="stylesheet" type="text/css" href="/css/legacy/loadingbar.css">
+    <link rel="stylesheet" type="text/css" href="/css/legacy/ngDialog.css">
+    <link rel="stylesheet" type="text/css" href="/css/legacy/ngDialog-theme-default.css">
+
+    <script src="/content/getCurrentLocale"></script>
+
+    <!-- jQuery libraries -->
+    <script src="/js/jquery/jquery-2.1.3.min.js"></script>
+    <script src="/js/jquery/jquery-migrate-1.2.1.min.js"></script>
+    <script src="/js/jquery/jquery-ui-1.11.4/jquery-ui.min.js"></script>
+    <script src="/js/jquery/jquery.cookie.js"></script>
+    <script src="/js/jquery/jquery.livequery.min.js"></script>
+
+    <script src="/jplayer/jquery.jplayer.min.js"></script>
+
+    <script src="/js/libs/angular.min.js.gz"></script>
+    <script src="/js/libs/angular-route.min.js.gz"></script>
+    <script src="/js/libs/angular-animate.min.js.gz"></script>
+    <script src="/js/modules/angular-contenteditable.js"></script>
+
+    <script src="/js/audio5.js"></script>
+
+    <script>
+
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            };
+            i[r].l = new Date();
+            a = s.createElement(o);
+            m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m);
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-58564686-1', 'auto');
+        ga('send', 'pageview');
+
+    </script>
+
+    <script type="text/javascript">var switchTo5x = true;</script>
+    <script type="text/javascript" src="https://ws.sharethis.com/button/buttons.js"></script>
+    <script type="text/javascript">stLight.options({
+        publisher: "de700707-90c8-4e3a-a916-5e4fea867686",
+        doNotHash: false,
+        doNotCopy: false,
+        hashAddressBar: false,
+        popup: 'true',
+        onhover: false
+    });</script>
+
+    <script src="/content/application.modules.js"></script>
+    <script src="/js/functions.js"></script>
+
+</head>
+
+
+<body class="{{ rootClass ? rootClass : '' }} {{ player.isLoaded ? 'player-visible' :'' }}" analytics-on="click"
+      analytics-event="Click" analytics-category="Application">
+<div id="fb-root"></div>
+
+<script>
+    window.fbAsyncInit = function () {
+        FB.init({
+            appId: '731742683610572',
+            xfbml: true,
+            version: 'v2.1',
+            channel: 'https://myownradio.biz/api/v2/user/fbLogin',
+            oauth: true,
+            cookie: true
+        });
+    };
+
+    (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {
+            return;
+        }
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<div class="busy-wrap table ngCloak" ng-show="loader.busy === true">  <!-- todo: move to directive -->
+    <div class="row">
+        <div class="cell">
+            <i class="icon-spinner9 rotate"></i>
+            <br>
+            <div class="loading" bind-html="tr('FR_AJAX_BUSY') | uppercase"></div>
+        </div>
+    </div>
+</div>
+
+<div ng-if="player.isPlaying" >
+    <now ng-model="player.currentStream" on-track-change="player.nowPlaying"></now>
+</div>
+
+<div synchronize="player.currentStream" sync-key="sid"></div>
+<div synchronize="player.nowPlaying" sync-key="tid"></div>
+
+<div class="special">
+    <div class="player-container ngCloak" ng-if="player.isLoaded"
+         mor-background-color="player.currentStream.cover_background">
+        <div class="cool-player table">
+            <div class="row">
+                <div class="cell radio-cover">
+                    <a ng-href="{{ player.currentStream | channelLink }}">
+                        <div class="cover dark">
+                            <img fadein ng-if="player.currentStream.cover"
+                                 ng-src="{{ player.currentStream.cover | channelArtwork }}?size=64">
+                        </div>
+                    </a>
+                </div>
+                <div class="cell radio-title">
+                    <div class="title">
+                        <a ng-href="{{ player.currentStream | channelLink }}"
+                           ng-bind="player.currentStream.name | uppercase"></a>
+                    </div>
+                </div>
+                <div class="cell social-buttons">
+                    <i share-channel="player.currentStream" class="hoverable"></i>
+                    <bookmark class="hoverable" ng-model="player.currentStream"></bookmark>
+                    <span ng-if="account.authorized && player.currentStream.uid !== account.user.uid">
+                        <span ng-if="player.nowPlaying.can_be_shared">
+                            <i class="icon-cloud-download"
+                               mor-tooltip="{{ tr('FR_PLAYER_COPY_TRACK') }}"
+                               ng-click="copyTrack(player.nowPlaying)"></i>
+                        </span>
+                    </span>
+                    <a target="_blank" ng-if="player.nowPlaying.buy" ng-href="{{ player.nowPlaying.buy }}"
+                       mor-tooltop="{{ tr('FR_PLAYER_BUY_TRACK') }}">
+                        <i class="icon-shopping-cart"></i>
+                    </a>
+                </div>
+                <div class="cell track-title">
+                    <span ng-if="player.nowPlaying">
+                        <span class="darker" ng-bind-template="{{ tr('FR_PLAYER_ON_AIR') }}:"></span>
+                        <span ng-bind-template="{{ player.nowPlaying.artist | uppercase }} - {{ player.nowPlaying.title | uppercase }}"></span>
+                    </span>
+                </div>
+                <div class="cell right-tools">
+                    <span class="play-stop hoverable" ng-click="player.controls.switch()">
+                        <i ng-class="player.isPlaying ? 'icon-stop2' : 'icon-play'"
+                           mor-tooltip="{{ tr('FR_PLAYER_PLAY_STOP') }}"></i>
+                    </span>
+                    <span class="vertical-padding"></span>
+                    <span class="stop hoverable" ng-click="player.controls.unload()" mor-tooltip="{{ tr('FR_CLOSE') }}">
+                        <i class="icon-switch"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <header></header>
+    <div id="contents">
+        <div id="body">
+            <div ng-view="" autoscroll=""></div>
+        </div>
+    </div>
+    <footer></footer>
+</div>
+
+</body>
+</html>

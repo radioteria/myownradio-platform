@@ -1,0 +1,62 @@
+<div class="uploader">
+    <h1><translate filter="uppercase">FR_UPLOAD_WINDOW_TITLE</translate></h1>
+    <div ng-if="!progress.status">
+        <div class="info-block">
+            <translate>FR_UPLOAD_MESSAGE</translate>
+            <ul class="enumerate">
+                <li ng-repeat="condition in tr('FR_UPLOAD_CONDITION')" bind-html="condition"></li>
+            </ul>
+        </div>
+        <div class="controls">
+            <div class="upload-frame" ng-click="browse()" mor-tooltip="{{ tr('FR_UPLOAD_BUTTON_HINT') }}">
+                <i class="icon-cloud-upload"></i>
+                <translate>FR_UPLOAD_BUTTON_TEXT</translate>
+            </div>
+            <div class="selected-files" ng-if="uploadQueue.length">
+                <h2><translate args="[uploadQueue.length]">FR_UPLOAD_SELECTED_COUNT</translate></h2>
+                <div class="scroll-y">
+                    <ul class="list table">
+                        <li class="row" ng-repeat="file in uploadQueue">
+                            <div class="cell">{{file.name}}</div>
+                            <div class="cell">{{file.size | bytes}}</div>
+                            <div class="cell"><i class="icon-delete" ng-click="uploadQueue.splice($index, 1)"></i></div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="stream-selector">
+            <translate>FR_UPLOAD_ADD_TO_STREAM</translate>
+            <div class="padding"></div>
+            <select name="stream_id" ng-model="options.target" ng-options="stream.sid as stream.name for stream in account.streams">
+                <option value="" selected bind-html="tr('FR_NONE')"></option>
+            </select>
+        </div>
+    </div>
+
+    <div class="progress" ng-if="progress.status">
+        <translate args="[progress.file]">FR_UPLOADING_FILE</translate>
+        <span ng-if="uploadQueue.length">
+            <translate args="[uploadQueue.length]">FR_UPLOADING_LEFT</translate>
+        </span>
+        <div class="progress-bar">
+            <div class="progress-cursor"></div>
+        </div>
+    </div>
+
+    <div class="part">
+        <div class="right">{{ (account.user.plan_data.time_max - account.user.tracks_duration) | humanTime }}</div>
+        Time available on your account:
+    </div>
+    <div class="mor-progress" progress-value="account.user.plan_data.time_max - account.user.tracks_duration" progress-max="account.user.plan_data.time_max"></div>
+
+    <div class="buttons">
+        <span class="button" ng-click="cancel()" mor-tooltip="{{ tr('FR_UPLOAD_CANCEL_HINT') }}">
+            <translate>FR_CANCEL</translate>
+        </span>
+        <span ng-if="uploadQueue.length && !progress.status" class="button" ng-click="upload()" mor-tooltip="{{ tr('FR_UPLOAD_START_HINT') }}">
+            <translate>FR_UPLOAD</translate>
+        </span>
+    </div>
+
+</div>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>categories @ myownradio.biz</title>
+        <!-- module:us.common -->
+        <!-- module:us.common.streams -->
+        <!-- include:css -->
+        <!-- include:js -->
+    </head>
+    <body>
+        <!-- module:us.header -->
+        <div class="page">
+            <div class="page-body">
+                <div class="us-categories-wrap -limit-width">
+                    <h1 class="us-section-label">STREAM CATEGORIES</h1>
+                    <ul class="us-categories-list">
+                    <?php foreach(category::getAllCategories() as $category): ?>
+                        <li><a href="/category/<?= $category['permalink']; ?>"><?= htmlspecialchars($category['name']); ?></a></li>
+                    <?php endforeach; ?>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- module:us.footer -->
+    </body>
+</html>

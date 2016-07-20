@@ -1,0 +1,66 @@
+<div class="nav-wrap">
+    <ul class="main-menu">
+        <li>
+            <a href="/profile/">
+                <i class="icon-account-child"></i>
+                <translate>FR_PROFILE_MY</translate>
+            </a>
+            <ul class="sub-menu">
+                <li active-tab="^\/profile\/edit">
+                    <a href="/profile/edit">
+                        <translate>FR_PROFILE_EDIT</translate>
+                    </a>
+                </li>
+                <li active-tab="^\/profile\/password">
+                    <a href="/profile/password">
+                        <translate>FR_PROFILE_PASSWORD_CHANGE</translate>
+                    </a>
+                </li>
+                <li active-tab="^\/profile\/plan">
+                    <a href="/profile/plan">
+                        <translate>FR_PROFILE_CHANGE_PLAN</translate>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a href="/profile/tracks">
+                <i class="icon-music"></i>
+                <translate>FR_PROFILE_MY_TRACKS</translate>
+            </a>
+            <ul class="sub-menu">
+                <li active-tab="^\/profile\/tracks\/$">
+                    <a href="/profile/tracks/">
+                        <span class="grey right">{{ account.user.tracks_count }}</span>
+                        <translate>FR_PROFILE_ALL_TRACKS</translate>
+                    </a>
+                </li>
+                <li active-tab="^\/profile\/tracks\/unused">
+                    <a href="/profile/tracks/unused">
+                        <span class="grey right">{{ account.user.unused_count }}</span>
+                        <translate>FR_PROFILE_UNUSED_TRACKS</translate>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a href="/profile/streams">
+                <i class="icon-wifi-tethering"></i>
+                <translate>FR_PROFILE_MY_CHANNELS</translate>
+            </a>
+            <ul class="sub-menu">
+                <li active-tab="^\/profile\/new-stream$">
+                    <a ng-href="/profile/new-stream">
+                        <translate>FR_PROFILE_NEW_CHANNEL</translate>
+                    </a>
+                </li>
+                <li active-tab="^\/profile\/streams\/{{stream.sid}}$" ng-repeat="stream in account.streams">
+                    <a ng-href="/profile/streams/{{stream.sid}}">
+                        <span class="grey right">{{stream.tracks_count}}</span>
+                        {{ stream.name }}
+                    </a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>

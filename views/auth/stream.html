@@ -1,0 +1,106 @@
+<div class="fixed-width">
+    <div id="page-contents" ng-init="now={}">
+        <nav class="main" main-navigation=""></nav>
+        <div class="form-wrap full-width" ng-controller="StreamLibraryController">
+            <div class="stats">
+                <a class="button" href="/profile/edit-stream/{{ stream.sid }}" mor-tooltip="{{ tr('FR_EDIT_CHANNEL_INFO') }}">
+                    <i class="icon-mode-edit"></i>
+                    <translate>FR_EDIT</translate>
+                </a>
+                <a class="button red" mor-tooltip="Delete radio channel" ng-click="remove()">
+                    <i class="icon-delete"></i>
+                    <translate>FR_DELETE</translate>
+                </a>
+            </div>
+            <h1>
+                <i class="icon-music"></i> {{ stream.name | uppercase}}
+            </h1>
+            <div class="link" ng-visible="stream.url">
+                <span>URL <a class="small" href="{{stream.url}}">https:{{stream.url}}</a></span>
+            </div>
+
+            <now ng-model="stream" on-track-change="now"></now>
+
+            <div class="tracks-wrap">
+                <div class="dws-wrap">
+                    <div class="filter">
+                        <input type="text"
+                               cleanable="cleanable"
+                               id="filter"
+                               name="filter"
+                               ng-model="filter"
+                               autocomplete="off"
+                               placeholder="{{ tr('FR_TYPE_ARTIST_OR_TITLE') }}"
+                               ng-change-action="load(true)"
+                               ng-change-delay="350"
+                                />
+                    </div>
+                    <div class="controls select-persistent">
+                        <div ng-if="stream.status" class="button" ng-click="player.controls.playSwitchStream(stream)" mor-tooltip="{{ tr('FR_LISTEN_TO_THIS') }}">
+                            <i class="icon-play-arrow"></i>
+                            <translate>FR_LISTEN</translate>
+                        </div>
+                        <div class="button" ng-click="shuffle()" mor-tooltip="{{ tr('FR_SHUFFLE_TRACKS') }}">
+                            <i class="icon-shuffle"></i>
+                            <translate>FR_SHUFFLE</translate>
+                        </div>
+                        <div class="button" ng-click="upload()" mor-tooltip="{{ tr('FR_UPLOAD_NEW_TRACKS') }}">
+                            <i class="icon-cloud-upload"></i>
+                            <translate>FR_UPLOAD</translate>
+                        </div>
+                    </div>
+                    <div class="spacer"></div>
+                </div>
+                <table class="tracks">
+                    <tbody>
+                        <tr style="background-color: #ffffff">
+                            <td>#</td>
+                            <td></td>
+                            <td><translate>FR_SORT_TITLE</translate></td>
+                            <td><translate>FR_SORT_ARTIST</translate></td>
+                            <td><translate>FR_SORT_GENRE</translate></td>
+                            <td><translate>FR_SORT_TIME</translate></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="height: 4px;"></div>
+                <div class="loading-placeholder" ng-if="tracksPending">
+                    <translate>FR_LOADING</translate>
+                </div>
+                <div ng-include="'/views/blocks/streams-track-menu.html'"></div>
+                <div ng-if="empty && !tracksPending" class="empty-playlist">
+                    <div class="inner">
+                        <h1>
+                            <translate filter="uppercase">FR_EMPTY</translate>
+                        </h1>
+                        <translate>FR_EMPTY_HINT</translate>
+                    </div>
+                </div>
+                <table class="tracks" context-menu="" data-target="track-menu" onselectstart='return false;' unselectable='on'>
+                    <tbody infinite-scroll="load(false)"
+                           infinite-scroll-disabled="busy"
+                           infinite-scroll-distance="1"
+                           multiple-select=""
+                           ms-tick="test()"
+                           ms-source="tracks"
+                           ms-destination="target"
+                           ui-sortable="sortableOptions"
+                           ng-model="tracks">
+                    <tr class="item" ng-repeat="track in tracks" ng-class="{now: track.unique_id === now.unique_id, new: track.is_new}">
+                        <td ng-class="'col' + track.color" ng-switch on="track.unique_id == now.unique_id"
+                            class="only-first-element">
+                            <i ng-switch-when="true" class="icon-volume-up blink-opacity" mor-tooltip="Now on air"></i>
+                            <span ng-switch-default="">{{ $index + 1 }}</span>
+                        </td>
+                        <td><preview ng-model="track"></preview></td>
+                        <td mor-tooltip-url="/content/trackinfo/{{track.tid}}">{{track.title}}</td>
+                        <td>{{track.artist}}</td>
+                        <td>{{track.genre}}</td>
+                        <td>{{track.duration | msToTime}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

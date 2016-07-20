@@ -1,0 +1,45 @@
+.metadata-editor {
+  h1 {
+    .big-title();
+  }
+  .subinfo {
+    margin-bottom: 8px;
+  }
+  .bold {
+    font-weight: bold;
+  }
+  .editor {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    tr {
+      td {
+        padding-top: 4px;
+        padding-bottom: 4px;
+        vertical-align: top;
+        textarea {
+          min-height: 200px;
+          font-family: monospace;
+        }
+        &:first-child {
+          width: 120px;
+        }
+        &:nth-child(2) {
+          width: 30px;
+        }
+        .info-block {
+          font-size: 9pt;
+          color: #ff6b72;
+          padding: 0 8px;
+        }
+      }
+    }
+  }
+  .controls {
+    text-align: right;
+    margin-top: 8px;
+    .button {
+      min-width: 100px;
+    }
+  }
+}

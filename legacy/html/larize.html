@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Larize Module Editor</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/css/reset.css" />
+        <link rel="stylesheet" href="/icomoon/style.css" />
+        <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAAEEfUpiAAAACXBIWXMAAC4jAAAuIwF4pT92AAABNmlDQ1BQaG90b3Nob3AgSUNDIHByb2ZpbGUAAHjarY6xSsNQFEDPi6LiUCsEcXB4kygotupgxqQtRRCs1SHJ1qShSmkSXl7VfoSjWwcXd7/AyVFwUPwC/0Bx6uAQIYODCJ7p3MPlcsGo2HWnYZRhEGvVbjrS9Xw5+8QMUwDQCbPUbrUOAOIkjvjB5ysC4HnTrjsN/sZ8mCoNTIDtbpSFICpA/0KnGsQYMIN+qkHcAaY6addAPAClXu4vQCnI/Q0oKdfzQXwAZs/1fDDmADPIfQUwdXSpAWpJOlJnvVMtq5ZlSbubBJE8HmU6GmRyPw4TlSaqo6MukP8HwGK+2G46cq1qWXvr/DOu58vc3o8QgFh6LFpBOFTn3yqMnd/n4sZ4GQ5vYXpStN0ruNmAheuirVahvAX34y/Axk/96FpPYgAAACBjSFJNAAB6JQAAgIMAAPn/AACA6AAAUggAARVYAAA6lwAAF2/XWh+QAAACX0lEQVR42mL8//8/AzJgYWBgYEha9QguysSABmACJjABAAAAAP//YkQ3gwlmBswcxsSVD1GUMM0Lk2NE4ocBAAAA///CMAMdoLgLWTdU7CzMWWehgruRNCszMDCcJWgFAAAA//8iqICJgQCAOfIuAwODEprcvXlhcsowE5QYGBjezwuTY0TyiRLcBCgQRI4GFCtgAEs4MMB9gU33vDA5RoLeBAAAAP//IqiAqGBABkmrHrkwMDDsxqOnYl6YXCeGC5JWPVrFwMAQiqRQaF6Y3Hskg9HlXeeFye1BdkEomk3vklY9wuf63QwMDIwsuGTREi5xgZi06tE7BgYGQSLDb9a8MLl0imOBiYFCAAAAAP//GngXUGwAtpS4CkuawBm9yClRiYGB4S6RFivPC5O7h+4CZM1n54XJmaC57D+aWkbkwrQDzZkmWGx9jy8MyvHYRp9YWI0tq5KUErE4Gx7SaN6bycDAkAaLTuRYMGFgYDiDHNIEygPUMJgXJncWauosIlzeOYwyEwAAAP//7Fa7EcMgDH0rZAGKrMAKzghmAIqsYK/gEZKCAWAFj0BWcMEkaVTojBHx5+IU0R0dd3ogvc/uJ5z+gsPlRCrrU8csSBeuBcoskzMqbB6B9ekC4CFp24p6ATBLxMoAUOO4kHi4Kg1ka9y5WwB3AI0AZHRG3SRfreWKqsZYn/RMETISO6P6EoAozPaw4rY0Z4E+mwWTMPuP89IeHegr841bG1mftPUpkp2ILLjSEtVC3pO4PhQWsWEnC4Xf1oH1AAqgWrYjXeWXRjoAEJZE6G9GPwHgPQB3hQShcxkghwAAAABJRU5ErkJggg==" />
+        <!-- include:css -->
+        <script src="/js/jquery-1.11.0.min.js.gz"></script>
+        <script src="/js/jquery-migrate-1.2.1.min.js.gz"></script>
+        <script src="/js/jquery-ui.min.js.gz"></script>
+        <script src="/js/jquery.livequery.js.gz"></script>
+        <script src="/js/jquery.tmpl.js"></script>
+        <script src="/js/jquery.change.js"></script>
+        <!-- include:js -->
+        <script src="/includes/ace/ace.js"></script>
+        <script src="/includes/ace/ext-language_tools.js"></script>
+    </head>
+    <body">
+        <div id="ajax">Working...</div>
+        <div class="page_wrap">
+            <!-- include:tmpl -->
+            <div class="page_content">
+                <table class="editor">
+                    <tr>
+                        <td id="list">
+                            <div id="lrz-resizer"></div>
+                            <h1 id="title">.larize</h1>
+                            Modules:
+                            <ul id="ml"></ul>
+                            <input id="create" type="button" value="New module..." />
+                        </td>
+                        <td id="editor">
+                            <div id="tabs">
+                                <ul class="hz mlist"></ul>
+                            </div>
+                            <div class="editor">
+                                <input class="saveModule" type="button" value="Save Module" />
+                                <input class="saveSection" type="button" value="Save Section" />
+                                <ul class="sections hz">
+                                    <li data-section="html" class="html">code</li>
+                                    <li data-section="css" class="css">stylesheet</li>
+                                    <li data-section="js" class="js">javascript</li>
+                                    <li data-section="tmpl" class="tmpl">templates</li>
+                                    <li data-section="post" class="post">post</li>
+                                </ul>
+                                <div class="switchers">
+                                    
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,57 @@
+@-webkit-keyframes spin {
+  from { -webkit-transform: rotate(0deg); opacity: 0.4; }
+  50%  { -webkit-transform: rotate(180deg); opacity: 1; }
+  to   { -webkit-transform: rotate(360deg); opacity: 0.4; }
+}
+
+@-moz-keyframes spin {
+  from { -moz-transform: rotate(0deg); opacity: 0.4; }
+  50%  { -moz-transform: rotate(180deg); opacity: 1; }
+  to   { -moz-transform: rotate(360deg); opacity: 0.4; }
+}
+
+@-ms-keyframes spin {
+  from { -ms-transform: rotate(0deg); opacity: 0.4; }
+  50%  { -ms-transform: rotate(180deg); opacity: 1; }
+  to   { -ms-transform: rotate(360deg); opacity: 0.4; }
+}
+
+@-o-keyframes spin {
+  from { -o-transform: rotate(0deg); opacity: 0.4; }
+  50%  { -o-transform: rotate(180deg); opacity: 1; }
+  to   { -o-transform: rotate(360deg); opacity: 0.4; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); opacity: 0.2; }
+  50%  { transform: rotate(180deg); opacity: 1; }
+  to   { transform: rotate(360deg); opacity: 0.2; }
+}
+
+.busy-wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #FFFFFF;
+  z-index: 10000;
+  color: #808080;
+  .cell {
+    vertical-align: middle;
+    text-align: center;
+    .rotate {
+      font-size: 96px;
+      -webkit-animation: spin 1s linear infinite;
+      -moz-animation: spin 1s linear infinite;
+      -ms-animation: spin 1s linear infinite;
+      -o-animation: spin 1s linear infinite;
+      animation: spin 1s linear infinite;
+    }
+    .loading {
+      font-size: 18pt;
+      font-family: "Myriad Pro Thin", sans-serif;
+      padding-top: 4px;
+    }
+  }
+}

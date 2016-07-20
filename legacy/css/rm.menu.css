@@ -1,0 +1,86 @@
+div.rm_mouse_menu_wrap {
+    position: absolute;
+}
+
+ul.rm_mouse_menu {
+    position: absolute;
+    background: #ffffff;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px #888;
+    width: 200px;
+    list-style-type: none;
+    list-style-position: outside;
+}
+
+ul.rm_mouse_menu > li.rm_mouse_menu_item {
+    padding: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    position: relative;
+}
+
+span.rm_mouse_menu_title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+li.rm_mouse_menu_item > ul.rm_mouse_menu {
+    display: none;
+}
+
+li.rm_mouse_menu_item > ul.rm_mouse_menu:not(.rm_menu_right) {
+    left: 200px;
+}
+
+li.rm_mouse_menu_item > ul.rm_mouse_menu.rm_menu_right {
+    right: 200px;
+}
+
+li.rm_mouse_menu_item > ul.rm_mouse_menu:not(.rm_menu_bottom) {
+    top: 0px;
+}
+
+li.rm_mouse_menu_item > ul.rm_mouse_menu.rm_menu_bottom {
+    bottom: 0px;
+}
+
+
+li.rm_mouse_menu_item:hover > ul.rm_mouse_menu {
+    display: block;
+}
+
+ul.rm_mouse_menu > li.rm_mouse_menu_item:first-child {
+    border-radius: 5px 5px 0 0;
+}
+
+ul.rm_mouse_menu > li:not(.rm_mouse_menu_separator):last-child {
+    border-radius: 0 0 5px 5px;
+}
+
+ul.rm_mouse_menu > li.rm_mouse_menu_separator
+{
+    height: 8px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+ul.rm_mouse_menu > li.rm_mouse_menu_item:not(.rm_mouse_menu_disabled):not(.rm_mouse_menu_separator):hover {
+    background: #c2c7d1;
+}
+
+.rm_menu_arrow {
+    float: right;
+    font-size: 12pt;
+    line-height: 10px;
+    top: 0;
+}
+
+.rm_mouse_menu_disabled {
+    cursor: default !important;
+    color: rgba(0,0,0,0.3);
+}
+
+ul.rm_mouse_menu .rm-right {
+    float: right;
+    margin: 0;
+}

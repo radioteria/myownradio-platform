@@ -1,0 +1,1 @@
+$(".page-user-form.signup").jsubmit("/static/message-sent");

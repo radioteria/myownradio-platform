@@ -1,0 +1,42 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <div class="catalog-title">
+            <span class="text">
+                <translate filter="uppercase">FR_SEARCH_RESULTS_FOR</translate>
+                <span class="highlight">&laquo;{{ query | uppercase }}&raquo;</span>
+            </span>
+        </div>
+        <div class="new-stream-catalog-badge">
+            <div class="page-sub-title" ng-if="!content.empty">
+                <translate>FR_FOUND_RESULTS</translate>
+            </div>
+            <div class="page-sub-title" ng-if="content.empty">
+                <translate args="[query]">FR_NOTHING_FOUND</translate>
+            </div>
+            <ul class="new-stream-catalog" infinite-scroll="load()" infinite-scroll-disabled="busy" infinite-scroll-distance="1">
+                <li ng-repeat="stream in content.streams">
+                    <div class="cover-section">
+                        <div class="cover">
+                            <img fadein ng-if="stream.cover_url" ng-src="{{stream.cover_url}}?size=200">
+                            <play obj="stream" ng-if="stream.status != 0"></play>
+                        </div>
+                    </div>
+                    <div class="info-section">
+                        <div class="stream-name">
+                            <a ng-href="{{ stream.key | streamsCatalog }}" ng-bind="stream.name"></a>
+                        </div>
+                        <div class="stats">
+                                <span mor-tooltip="{{ pl('FR_COUNT_USERS_LISTENING', stream.listeners_count) }}">
+                                    <i class="icon-hearing"></i><span>{{ stream.listeners_count | number }}</span>
+                                </span>
+                                <span mor-tooltip="{{ pl('FR_STREAM_BOOKMARKED_TIMES', stream.bookmarks_count) }}">
+                                    <i class="icon-heart"></i> <span>{{ stream.bookmarks_count | number }}</span>
+                                </span>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</div>

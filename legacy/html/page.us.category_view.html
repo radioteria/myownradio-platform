@@ -1,0 +1,26 @@
+<?php
+    $c_handle = application::singular("category", application::get("permalink", "uncategorized", REQ_STRING));
+    if($c_handle->exists() === false)
+    {
+        echo application::getModule("page.us.static.nocategory");
+        exit();
+    }
+?><!DOCTYPE html>
+<html>
+    <head>
+        <title><?= htmlspecialchars($c_handle->getName()) ?> @ myownradio.biz - create your own web radio station</title>
+        <!-- module:us.common -->
+        <!-- module:us.common.streams -->
+        <!-- include:css -->
+        <!-- include:js -->
+    </head>
+    <body class="partial">
+        <!-- module:us.header -->
+        <div class="page">
+            <div class="page-body">
+                <!-- module:us.catstreams -->
+            </div>
+        </div>
+        <!-- module:us.footer -->
+    </body>
+</html>

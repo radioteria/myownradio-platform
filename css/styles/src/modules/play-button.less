@@ -1,0 +1,34 @@
+play {
+
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0, 0.1);
+  z-index: 10;
+  transition: opacity linear 250ms;
+  opacity: 0;
+
+  &:hover, &.active {
+    opacity: 1;
+  }
+
+  .play-pause {
+    width: 50%;
+    height: 50%;
+    position: relative;
+    left: 50%;
+    top: 50%;
+    margin-left: -25%;
+    margin-top: -25%;
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 50%;
+    color: #eee;
+    text-align: center;
+    cursor: pointer;
+    //box-shadow: 0 0 6px #000;
+  }
+
+}
+

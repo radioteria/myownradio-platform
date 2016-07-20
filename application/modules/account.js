@@ -71,9 +71,9 @@
     /*
      Login Controller
      */
-    account.controller("LoginForm", ["$scope", "$rootScope", "User", "$location", "Popup", "Account", "$analytics",
+    account.controller("LoginForm", ["$scope", "$rootScope", "User", "$location", "Popup", "Account", "$analytics", "$mixpanel",
 
-        function ($scope, $rootScope, User, $location, Popup, Account, $analytics) {
+        function ($scope, $rootScope, User, $location, Popup, Account, $analytics, $mixpanel) {
 
             // Init variables
             $scope.credentials = {login: "", password: "", save: false};
@@ -139,9 +139,9 @@
     /*
      Sign Up Controllers
      */
-    account.controller("SignUpBeginForm", ["$scope", "$location", "Account", "Popup",
+    account.controller("SignUpBeginForm", ["$scope", "$location", "Account", "Popup", "$mixpanel",
 
-        function ($scope, $location, Account, Popup) {
+        function ($scope, $location, Account, Popup, $mixpanel) {
 
             // Init variables
             $scope.signup = {email: "", code: ""};
@@ -159,6 +159,7 @@
                 FB.login(function (response) {
                     if (response.status === "connected") {
                         Account.loginByFacebook(response.authResponse).onSuccess(function (data) {
+                            $mixpanel.track("User registration using Facebook");
                             Popup.message($scope.tr("FR_LOGIN_MESSAGE", data));
                             $scope.account.init("/profile/");
                         }, function (error) {

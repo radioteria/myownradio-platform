@@ -57,14 +57,6 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $session->set("TOKEN", $token);
 
-        \Mixpanel::getInstance('02099ce8dcddbc93c2a4e0842d124635')
-            ->people
-            ->set($user["uid"], [
-                '$first_name' => $user["name"],
-                '$email' => $user["email"],
-            ]);
-
-
         return UserModel::getInstance($user["uid"]);
 
     }
@@ -171,13 +163,6 @@ class UsersModel implements SingletonInterface, Injectable {
         $newUser->setCountryId($country);
 
         $newUser->save();
-
-        \Mixpanel::getInstance('02099ce8dcddbc93c2a4e0842d124635')
-            ->people
-            ->set($newUser->getID(), [
-                '$first_name' => $newUser->getName(),
-                '$email' => $newUser->getEmail(),
-            ]);
 
         $this->createUserDirectory($newUser);
 

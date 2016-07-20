@@ -45,7 +45,13 @@
                     $rootScope.account.streams = data.streams;
                     $rootScope.account.pending = false;
                     $rootScope.account.client_id = data.client_id;
-                    $mixpanel.identify(data.client_id);
+
+                    $mixpanel.people.set(data.user.id, {
+                        '$email': data.user.email,
+                        '$first_name': data.user.name
+                    });
+                    $mixpanel.identify(data.user.id);
+
                     if (typeof go == "string") {
                         $location.url(go);
                     }

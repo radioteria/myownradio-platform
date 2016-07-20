@@ -81,6 +81,8 @@
 
         function ($scope, $rootScope, User, $location, Popup, Account, $analytics, $mixpanel) {
 
+            $mixpanel.track("View login form");
+
             // Init variables
             $scope.credentials = {login: "", password: "", save: false};
             $scope.status = "";

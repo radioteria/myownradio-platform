@@ -21,7 +21,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
     md.controller("MainController", [function () { }]);
 
     angular.module('analytics.mixpanel').config(['$mixpanelProvider', function ($mixpanelProvider) {
-        $mixpanelProvider.apiKey('2ee908297abdde848aeacf6572ec211e');
+        $mixpanelProvider.apiKey('02099ce8dcddbc93c2a4e0842d124635');
     }]);
 
     var settings = {

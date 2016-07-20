@@ -83,6 +83,7 @@
                     .onSuccess(function (data) {
                         $analytics.eventTrack('Login', { category: 'Actions' });
                         Popup.message($scope.tr("FR_LOGIN_MESSAGE", data));
+                        $mixpanel.track("User login");
                         $scope.status = "";
                         $rootScope.account.init("/profile/");
                         if (typeof $location.search().go != "undefined") {
@@ -100,6 +101,7 @@
                 FB.login(function (response) {
                     if (response.status === "connected") {
                         Account.loginByFacebook(response.authResponse).onSuccess(function(data) {
+                            $mixpanel.track("User login using Facebook");
                             Popup.message($scope.tr("FR_LOGIN_MESSAGE", data));
                             $scope.status = "";
                             $scope.account.init("/profile/");

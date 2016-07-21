@@ -150,11 +150,12 @@
     account.controller("SignUpBeginForm", ["$scope", "$location", "Account", "Popup", "$mixpanel",
 
         function ($scope, $location, Account, Popup, $mixpanel) {
-
+            $mixpanel.track('Viewing sign up page');
             // Init variables
             $scope.signup = {email: "", code: ""};
             $scope.status = "";
             $scope.submit = function () {
+                $mixpanel.track("Submitting sign up form");
                 Account.signUpRequest($scope.signup).onSuccess(function () {
                     $scope.status = "";
                     $location.url("/static/registrationLetterSent");
@@ -164,6 +165,7 @@
             };
 
             $scope.signUpFacebook = function () {
+                $mixpanel.track('Signing up using facebook');
                 FB.login(function (response) {
                     if (response.status === "connected") {
                         Account.loginByFacebook(response.authResponse).onSuccess(function (data) {
@@ -183,13 +185,15 @@
 
     ]);
 
-    account.controller("SignUpCompleteForm", ["$scope", "$location", "Account", "$routeParams",
+    account.controller("SignUpCompleteForm", ["$scope", "$location", "Account", "$routeParams", "$mixpanel",
 
-        function ($scope, $location, Account, $routeParams) {
+        function ($scope, $location, Account, $routeParams, $mixpanel) {
+            $mixpanel.track('Viewing sign up completion page');
             // Init variables
             $scope.signup = {code: $routeParams.code, login: "", password: "", name: "", info: "", permalink: "", country_id: null};
             $scope.status = "";
             $scope.submit = function () {
+                $mixpanel.track('Completing signing up');
                 Account.signUp($scope.signup).onSuccess(function () {
                     $scope.status = "";
                     $location.url("/static/registrationCompleted");
@@ -204,13 +208,16 @@
     /*
      Password Recovery Controllers
      */
-    account.controller("PasswordResetBeginForm", ["$scope", "$location", "Account",
+    account.controller("PasswordResetBeginForm", ["$scope", "$location", "Account", "$mixpanel",
 
-        function ($scope, $location, Account) {
+        function ($scope, $location, Account, $mixpanel) {
+            $mixpanel.track("Viewing password reset form");
             // Init variables
             $scope.reset = {login: ""};
             $scope.status = "";
             $scope.submit = function () {
+                $mixpanel.track("Sends password reset request");
+
                 Account.resetRequest($scope.reset).onSuccess(function () {
                     $scope.status = "";
                     $location.url("/static/resetLetterSent"); // todo: add email hint
@@ -222,14 +229,16 @@
 
     ]);
 
-    account.controller("PasswordResetCompleteForm", ["$scope", "$location", "Account", "$routeParams",
+    account.controller("PasswordResetCompleteForm", ["$scope", "$location", "Account", "$routeParams", "$mixpanel",
 
-        function ($scope, $location, Account, $routeParams) {
+        function ($scope, $location, Account, $routeParams, $mixpanel) {
+            $mixpanel.track('Viewing password reset complete form');
             // Init variables
             $scope.reset = {code: $routeParams.code, password: ""};
             $scope.check = "";
             $scope.status = "";
             $scope.submit = function () {
+                $mixpanel.track('Completing password reset');
                 Account.resetPassword($scope.reset).onSuccess(function () {
                     $scope.status = "";
                     $location.url("/static/resetPasswordCompleted");

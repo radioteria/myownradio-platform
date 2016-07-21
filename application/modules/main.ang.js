@@ -33,10 +33,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
         /* Home Page */
         PATH_HOME: ["/", {
             templateUrl: "/views/home.html",
-            rootClass: "image",
-            controller: ['$mixpanel', function ($mixpanel) {
-                $mixpanel.track('Home Page View');
-            }]
+            rootClass: "image"
         }],
 
         PATH_LOGIN: ["/login/", {
@@ -320,9 +317,9 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
         }]);
 
-    md.run(["$rootScope", "$location", "$route", "$document", "SITE_TITLE", "$analytics", "Response", "$http",
+    md.run(["$rootScope", "$location", "$route", "$document", "SITE_TITLE", "$analytics", "Response", "$http", '$mixpanel',
 
-        function ($rootScope, $location, $route, $document, SITE_TITLE, $analytics, Response, $http) {
+        function ($rootScope, $location, $route, $document, SITE_TITLE, $analytics, Response, $http, $mixpanel) {
 
         $rootScope.lib = {
             countries: [],
@@ -359,6 +356,8 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             $rootScope.url = $location.url();
 
             $document.get(0).title = currentRoute.title || SITE_TITLE;
+
+            $mixpanel.track('Viewing page - ' + (currentRoute.title || SITE_TITLE));
 
         });
 

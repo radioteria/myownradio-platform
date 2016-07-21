@@ -10,11 +10,11 @@
 
     lib.controller("StreamLibraryController", ["$scope", "$rootScope", "TrackWorks", "StreamWorks",
         "Streams", "$routeParams", "AudioInfoEditor", "TrackAction", "Popup", "TrackPreviewService",
-        "ngDialog", "$location", "TracksScopeActions",
+        "ngDialog", "$location", "TracksScopeActions", "$mixpanel",
 
         function ($scope, $rootScope, TrackWorks, StreamWorks, Streams,
                   $routeParams, AudioInfoEditor, TrackAction, Popup, TrackPreviewService,
-                  ngDialog, $location, TracksScopeActions) {
+                  ngDialog, $location, TracksScopeActions, $mixpanel) {
 
             $scope.tracksPending = true;
             $scope.tracks = [];

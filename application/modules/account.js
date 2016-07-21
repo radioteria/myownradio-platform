@@ -81,8 +81,6 @@
 
         function ($scope, $rootScope, User, $location, Popup, Account, $analytics, $mixpanel) {
 
-            $mixpanel.track("View login form");
-
             // Init variables
             $scope.credentials = {login: "", password: "", save: false};
             $scope.status = "";
@@ -150,7 +148,6 @@
     account.controller("SignUpBeginForm", ["$scope", "$location", "Account", "Popup", "$mixpanel",
 
         function ($scope, $location, Account, Popup, $mixpanel) {
-            $mixpanel.track('Viewing sign up page');
             // Init variables
             $scope.signup = {email: "", code: ""};
             $scope.status = "";
@@ -211,7 +208,6 @@
     account.controller("PasswordResetBeginForm", ["$scope", "$location", "Account", "$mixpanel",
 
         function ($scope, $location, Account, $mixpanel) {
-            $mixpanel.track("Viewing password reset form");
             // Init variables
             $scope.reset = {login: ""};
             $scope.status = "";
@@ -232,7 +228,6 @@
     account.controller("PasswordResetCompleteForm", ["$scope", "$location", "Account", "$routeParams", "$mixpanel",
 
         function ($scope, $location, Account, $routeParams, $mixpanel) {
-            $mixpanel.track('Viewing password reset complete form');
             // Init variables
             $scope.reset = {code: $routeParams.code, password: ""};
             $scope.check = "";

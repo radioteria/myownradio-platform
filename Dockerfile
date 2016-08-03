@@ -8,4 +8,4 @@ WORKDIR /opt/ss/
 
 RUN mvn clean install
 
-CMD mvn exec:exec
+CMD mvn exec:java

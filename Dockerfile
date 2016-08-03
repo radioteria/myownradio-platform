@@ -1,0 +1,1 @@
+FROM myownradio/ss-container

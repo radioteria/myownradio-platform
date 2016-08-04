@@ -1,11 +1,21 @@
 FROM myownradio/ss-container
 
-RUN mkdir -p /opt/ss
+RUN mkdir -p /opt/stream-server/build
 
-ADD src/ manifest/ pom.xml /opt/ss/
+COPY . /opt/stream-server/build/
 
-WORKDIR /opt/ss/
+WORKDIR /opt/stream-server/build/
 
-RUN mvn clean install
+RUN mvn clean package && \
+    mv target/stream-server.jar ..
 
-CMD mvn exec:java
+WORKDIR /opt/stream-server/
+
+RUN rm -rf build && \
+    rm -rf ~/.m2/*
+
+COPY server.properties .
+
+ENV MOR_CONFIG_FILE=/opt/stream-server/server.properties
+
+CMD java -jar stream-server.jar

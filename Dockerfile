@@ -6,13 +6,16 @@ COPY . /opt/stream-server/build/
 
 WORKDIR /opt/stream-server/build/
 
-RUN mvn clean package && \
-    mv target/stream-server.jar ..
+RUN mvn package
+
+WORKDIR /opt/stream-server/build/target/
+
+RUN mv -v stream-server.jar ../../
 
 WORKDIR /opt/stream-server/
 
-RUN rm -rf build && \
-    rm -rf ~/.m2/*
+RUN rm -rfv build && \
+    rm -rfv ~/.m2/*
 
 COPY server.properties .
 

@@ -18,4 +18,4 @@ COPY server.properties .
 
 ENV MOR_CONFIG_FILE=/opt/stream-server/server.properties
 
-CMD java -jar stream-server.jar
+ENTRYPOINT java -jar stream-server.jar

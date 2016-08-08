@@ -2,37 +2,47 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
-    <groupId>gemini.myownradio</groupId>
-    <artifactId>WebRadio</artifactId>
+    <groupId>biz.streamserver</groupId>
+    <artifactId>StreamServer</artifactId>
     <version>2.3-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>stream-server</name>
+    <name>Stream Server</name>
+
     <properties>
         <spring.version>4.3.2.RELEASE</spring.version>
         <jackson.version>2.5.3</jackson.version>
+        <log4j.version>2.6.2</log4j.version>
     </properties>
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/com.sun.net.httpserver/http -->
-        <!--<dependency>-->
-            <!--<groupId>com.sun.net.httpserver</groupId>-->
-            <!--<artifactId>http</artifactId>-->
-            <!--<version>20070405</version>-->
-        <!--</dependency>-->
+        <!-- Embedded Http Server -->
+        <dependency>
+            <groupId>com.sun.net.httpserver</groupId>
+            <artifactId>http</artifactId>
+            <version>20070405</version>
+        </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.springframework/spring-core -->
+        <!-- Spring Framework -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>${spring.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.springframework/spring-context -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${spring.version}</version>
         </dependency>
 
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+
+        <!-- Database -->
         <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
@@ -44,6 +54,8 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.33</version>
         </dependency>
+
+        <!-- Serialization -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>

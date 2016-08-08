@@ -1,6 +1,6 @@
 package biz.streamserver;
 
-import biz.streamserver.core.ApplicationInterface;
+import biz.streamserver.core.Application;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -14,15 +14,8 @@ public class Bootstrap
         ApplicationContext applicationContext =
                 new ClassPathXmlApplicationContext("classpath:spring/application-context.xml");
 
-        ApplicationInterface application = applicationContext.getBean(ApplicationInterface.class);
+        Application application = applicationContext.getBean(Application.class);
 
-        System.err.println("Setting up application");
-        application.setup();
-
-        System.err.println("Starting application");
         application.start();
-
-        System.err.println("Stopping application");
-        application.stop();
     }
 }

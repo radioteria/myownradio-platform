@@ -12,11 +12,15 @@
 
     <tx:annotation-driven/>
 
+    <!-- Database Connection Settings -->
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
         <property name="url" value="${jdbc.url}"/>
         <property name="username" value="${jdbc.login}"/>
         <property name="password" value="${jdbc.password}"/>
         <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="defaultAutoCommit" value="false"/>
     </bean>
+
+    <bean id="connection" factory-bean="dataSource" factory-method="getConnection"/>
 
 </beans>

@@ -6,14 +6,17 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
-    <context:component-scan base-package="biz.streamserver" annotation-config="true" />
+    <context:component-scan base-package="biz.streamserver" annotation-config="true"/>
 
-    <!--<tx:annotation-driven/>-->
+    <context:property-placeholder location="classpath:application.properties"/>
+
+    <tx:annotation-driven/>
 
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
-        <property name="url" value="${dataSource.url}" />
-        <property name="username" value="${dataSource.username}" />
-        <property name="password" value="${dataSource.password}" />
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.login}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="driverClassName" value="${jdbc.driver}"/>
     </bean>
 
 </beans>

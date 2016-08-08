@@ -14,6 +14,7 @@
         <spring.version>4.3.2.RELEASE</spring.version>
         <jackson.version>2.5.3</jackson.version>
         <log4j.version>2.6.2</log4j.version>
+        <hibernate.version>5.1.0.Final</hibernate.version>
     </properties>
     <dependencies>
         <!-- Embedded Http Server -->
@@ -32,6 +33,11 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
             <version>${spring.version}</version>
         </dependency>
 
@@ -54,6 +60,13 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.33</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-core -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
 
         <!-- Serialization -->
         <dependency>

@@ -14,8 +14,8 @@ RUN mv -v stream-server.jar ../../
 
 WORKDIR /opt/stream-server/
 
-RUN rm -rfv build && \
-    rm -rfv ~/.m2/*
+RUN rm -rf build && \
+    rm -rf ~/.m2/*
 
 COPY server.properties .
 

@@ -12,12 +12,12 @@ public class DelayedAction {
 
     private Thread thread;
 
-    private static final MORLogger logger = new MORLogger(MORLogger.MessageKind.SERVER);
+    private static final Logger logger = new Logger(Logger.MessageKind.SERVER);
 
     public DelayedAction(Runnable action, long delay) {
         this.action = action;
         this.delay = delay;
-        logger.println("Initializing delayed action");
+        logger.print("Initializing delayed action");
     }
 
     public void start() {
@@ -28,10 +28,10 @@ public class DelayedAction {
             catch (InterruptedException e) { /* NOP */ }
 
             if (!cancel) {
-                logger.println("Delayed action started");
+                logger.print("Delayed action started");
                 action.run();
             } else {
-                logger.println("Delayed action cancelled");
+                logger.print("Delayed action cancelled");
             }
 
         });

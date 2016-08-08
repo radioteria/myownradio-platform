@@ -12,7 +12,7 @@ public class CircularByteBuffer {
     private int length;
     private byte[] raw;
 
-    final private static MORLogger logger = new MORLogger(MORLogger.MessageKind.CONCURRENT_BUFFER);
+    final private static Logger logger = new Logger(Logger.MessageKind.CONCURRENT_BUFFER);
 
     // Default read timeout is 5 seconds.
     private static final long DEFAULT_TIMEOUT = 5_000L;

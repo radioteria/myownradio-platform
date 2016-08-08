@@ -2,7 +2,6 @@ package biz.myownradio.LHttp.ContextHandlers;
 
 import biz.myownradio.LHttp.LHttpHandler;
 import biz.myownradio.LHttp.LHttpProtocol;
-import biz.myownradio.engine.Notifier;
 import biz.myownradio.tools.ClientCounter;
 
 import java.io.IOException;
@@ -45,9 +44,6 @@ public class GetRunStateHandler implements LHttpHandler {
         for (Integer key : ClientCounter.getClients().keySet()) {
             out.println(key + ": " + ClientCounter.getClients().get(key));
         }
-
-        out.println("");
-        out.println("Event queue size : " + Notifier.queueSize());
 
         exchange.flush();
 

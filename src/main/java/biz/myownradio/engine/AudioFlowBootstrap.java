@@ -10,7 +10,7 @@ import biz.myownradio.engine.entity.Stream;
 import biz.myownradio.exception.RadioException;
 import biz.myownradio.ff.FFEncoderBuilder;
 import biz.myownradio.tools.ClientCounter;
-import biz.myownradio.tools.MORLogger;
+import biz.myownradio.tools.Logger;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -29,7 +29,7 @@ public class AudioFlowBootstrap {
     private boolean useIcyMetadata;
     private Stream streamObject;
 
-    private static MORLogger logger = new MORLogger(MORLogger.MessageKind.PLAYER);
+    private static Logger logger = new Logger(Logger.MessageKind.PLAYER);
 
     public AudioFlowBootstrap(LHttpProtocol exchange, int stream_id, FFEncoderBuilder encoder, boolean useIcyMetadata)
             throws SQLException, RadioException, IOException {
@@ -48,7 +48,7 @@ public class AudioFlowBootstrap {
 
         this.encoder = encoder;
 
-        logger.sprintf("Starting to transmit stream (id=%s, name=%s)",
+        logger.printf("Starting to transmit stream (id=%s, name=%s)",
                 this.streamObject.getId(), this.streamObject.getName());
 
     }
@@ -72,7 +72,7 @@ public class AudioFlowBootstrap {
 
         ConcurrentBuffer broadcast;
 
-        logger.sprintf("Using buffer size=%d key=%s", bufferSize, streamKey.toString());
+        logger.printf("Using buffer size=%d key=%s", bufferSize, streamKey.toString());
 
         if ((broadcast = ConcurrentBufferRepository.getBuffer(streamKey)) == null) {
             broadcast = ConcurrentBufferRepository.createBuffer(streamKey, bufferSize);

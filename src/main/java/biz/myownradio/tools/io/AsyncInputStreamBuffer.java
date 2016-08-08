@@ -1,6 +1,6 @@
 package biz.myownradio.tools.io;
 
-import biz.myownradio.tools.MORLogger;
+import biz.myownradio.tools.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,14 +22,14 @@ public class AsyncInputStreamBuffer extends InputStream {
     private ByteBuffer buffer;
     private int count;
 
-    private final MORLogger logger = new MORLogger(MORLogger.MessageKind.BUFFER);
+    private final Logger logger = new Logger(Logger.MessageKind.BUFFER);
 
     public AsyncInputStreamBuffer(InputStream source, int maximalSize) {
         this.source = source;
         this.buffer = ByteBuffer.allocateDirect(maximalSize);
         this.count = 0;
         this.justReadInputStream();
-        logger.println("Initialized");
+        logger.print("Initialized");
     }
 
     public AsyncInputStreamBuffer(InputStream source) {
@@ -44,7 +44,7 @@ public class AsyncInputStreamBuffer extends InputStream {
             int length;
 
             try (InputStream tmp = source) {
-                logger.println("Starting to read input stream");
+                logger.print("Starting to read input stream");
                 while ((length = tmp.read(data)) != -1) {
                     synchronized (this) {
                         while (buffer.capacity() < length + count) {
@@ -55,7 +55,7 @@ public class AsyncInputStreamBuffer extends InputStream {
                         notify();
                     }
                 }
-                logger.sprintf("Input stream read completed! Remaining: %d bytes\n", count);
+                logger.printf("Input stream read completed! Remaining: %d bytes\n", count);
             } catch (IOException | InterruptedException e) { /* NOP */ }
 
         });

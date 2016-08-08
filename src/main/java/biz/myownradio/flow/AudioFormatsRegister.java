@@ -1,14 +1,14 @@
 package biz.myownradio.flow;
 
 import biz.myownradio.ff.FFEncoderBuilder;
-import biz.myownradio.tools.MORLogger;
+import biz.myownradio.tools.Logger;
 
 /**
  * Created by Roman on 07.10.14.
  */
 public class AudioFormatsRegister {
 
-    private static MORLogger logger = new MORLogger(MORLogger.MessageKind.SERVER);
+    private static Logger logger = new Logger(Logger.MessageKind.SERVER);
 
     public static FFEncoderBuilder analyzeFormat(String format, int limitId) {
 

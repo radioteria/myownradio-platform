@@ -10,9 +10,9 @@ import java.util.Formatter;
 /**
  * Created by Roman on 01.12.14
  */
-public class MORLogger {
+public class Logger {
 
-    final private static String logFile = MORSettings.getString("server.logdir").orElse("/tmp") + "/stream-server.log";
+    final private static String logFile = MORSettings.getString("server.logdir") + "/stream-server.log";
     final private static PrintWriter pw;
 
     static {
@@ -28,11 +28,11 @@ public class MORLogger {
 
     final private MessageKind kind;
 
-    public MORLogger(MessageKind kind) {
+    public Logger(MessageKind kind) {
         this.kind = kind;
     }
 
-    public synchronized void println(String message) {
+    public synchronized void print(String message) {
 
         String date = new Date().toString();
         String thread = Thread.currentThread().getName();
@@ -42,23 +42,19 @@ public class MORLogger {
             pw.println(out);
         }
 
-        System.out.println(out);
+        System.err.println(out);
 
     }
 
-    public void sprintf(String message) {
-        this.println(message);
-    }
-
-    public void sprintf(String format, Object... args) {
-        this.println(new Formatter().format(format, args).toString());
+    public void printf(String format, Object... args) {
+        this.print(new Formatter().format(format, args).toString());
     }
 
     public void exception(Throwable e) {
         String title = e.getClass().getName();
         String body = e.getMessage();
         String stack = Arrays.toString(e.getStackTrace());
-        this.sprintf("Exception: %s, Message: %s, Stack: %s", title, body, stack);
+        this.printf("Exception: %s, Message: %s, Stack: %s", title, body, stack);
     }
 
     public enum MessageKind {

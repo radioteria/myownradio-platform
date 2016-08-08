@@ -20,7 +20,7 @@ public class FFDecoderBuilder {
 
         cmd = jingled ?
                 new String[]{
-                        MORSettings.getString("command.ffmpeg").orElse("ffmpeg"),
+                        MORSettings.getString("command.ffmpeg"),
                         "-fflags", "nobuffer",
                        // "-re",
 //                        "-loglevel", "quiet",
@@ -37,7 +37,7 @@ public class FFDecoderBuilder {
                         "-"
                 } :
                 new String[]{
-                        MORSettings.getString("command.ffmpeg").orElse("ffmpeg"),
+                        MORSettings.getString("command.ffmpeg"),
                         "-fflags", "nobuffer",
                        // "-re",
 //                        "-loglevel", "quiet",

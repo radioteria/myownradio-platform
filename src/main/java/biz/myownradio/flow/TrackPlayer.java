@@ -3,7 +3,7 @@ package biz.myownradio.flow;
 import biz.myownradio.engine.buffer.ConcurrentBuffer;
 import biz.myownradio.exception.DecoderException;
 import biz.myownradio.ff.FFDecoderBuilder;
-import biz.myownradio.tools.MORLogger;
+import biz.myownradio.tools.Logger;
 import biz.myownradio.tools.MORSettings;
 import biz.myownradio.tools.io.PipeIO;
 
@@ -20,7 +20,7 @@ public class TrackPlayer implements AbstractPlayer {
 
     private static final Object lock = new Object();
 
-    MORLogger logger = new MORLogger(MORLogger.MessageKind.PLAYER);
+    Logger logger = new Logger(Logger.MessageKind.PLAYER);
 
     public TrackPlayer(ConcurrentBuffer broadcast, OutputStream output, String file, boolean jingled)
             throws FileNotFoundException {
@@ -46,7 +46,7 @@ public class TrackPlayer implements AbstractPlayer {
 
         String[] command = new FFDecoderBuilder(file, offset, jingled).getCommand();
 
-        String decoderLogFile = MORSettings.getString("server.logdir").orElse("/tmp") +
+        String decoderLogFile = MORSettings.getString("server.logdir") +
                 "/decoder_" + Thread.currentThread().getName() + "_" + System.currentTimeMillis() +".log";
 
         ProcessBuilder pb;
@@ -54,14 +54,14 @@ public class TrackPlayer implements AbstractPlayer {
 
         int bytesDecoded = 0;
 
-        logger.println("Initializing process builder...");
+        logger.print("Initializing process builder...");
 
         pb = new ProcessBuilder(command);
         pb.redirectError(new File(decoderLogFile));
 
         synchronized (lock) {
             process = pb.start();
-            logger.println("Initialization done");
+            logger.print("Initialization done");
         }
 
         PipeIO pipeIO;
@@ -75,7 +75,7 @@ public class TrackPlayer implements AbstractPlayer {
 
             byte[] buffer = new byte[4096];
             int length;
-            logger.println("[START]");
+            logger.print("[START]");
             while ((length = in.read(buffer)) != -1) {
                 bytesDecoded += length;
                 output.write(buffer, 0, length);
@@ -85,14 +85,14 @@ public class TrackPlayer implements AbstractPlayer {
                     break;
                 }
             }
-            logger.println("[DONE]");
+            logger.print("[DONE]");
         } catch (IOException e) {
-            logger.println("[EXCEPTION]");
+            logger.print("[EXCEPTION]");
             if (e.getMessage().equals("Shutdown")) {
                 throw new IOException(e);
             }
         } finally {
-            logger.println("[FINALLY]");
+            logger.print("[FINALLY]");
             try {
                 process.destroyForcibly().waitFor();
             } catch (InterruptedException ie) { /* NOP */ }
@@ -100,8 +100,8 @@ public class TrackPlayer implements AbstractPlayer {
 
         int exitStatus = process.exitValue();
 
-        logger.sprintf("Exit value: %d", exitStatus);
-        logger.sprintf("Bytes decoded: %d", bytesDecoded);
+        logger.printf("Exit value: %d", exitStatus);
+        logger.printf("Bytes decoded: %d", bytesDecoded);
 
         if (bytesDecoded == 0) {
             throw new DecoderException();

@@ -1,8 +1,7 @@
 package biz.myownradio.engine;
 
 import biz.myownradio.tools.JDBCPool;
-import biz.myownradio.tools.MORLogger;
-import biz.myownradio.engine.Notifier.Event;
+import biz.myownradio.tools.Logger;
 
 import java.sql.*;
 
@@ -18,7 +17,7 @@ public class FlowListener {
     private int stream_id;
     private String quality;
 
-    private static MORLogger logger = new MORLogger(MORLogger.MessageKind.SERVER);
+    private static Logger logger = new Logger(Logger.MessageKind.SERVER);
 
     static {
         init();
@@ -54,9 +53,7 @@ public class FlowListener {
 
             connection.commit();
 
-            logger.sprintf("New listener obtained ID #%d", this.listener_id);
-
-            new Event("listener.new", this.stream_id, this.listener_id).queue("str");
+            logger.printf("New listener obtained ID #%d", this.listener_id);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -73,9 +70,7 @@ public class FlowListener {
 
             connection.commit();
 
-            logger.sprintf("Finishing listener #%d session", this.listener_id);
-
-            new Event("listener.gone", this.stream_id, this.listener_id).queue("str");
+            logger.printf("Finishing listener #%d session", this.listener_id);
 
         }
     }

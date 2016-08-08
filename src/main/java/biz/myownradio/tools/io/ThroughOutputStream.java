@@ -1,6 +1,6 @@
 package biz.myownradio.tools.io;
 
-import biz.myownradio.tools.MORLogger;
+import biz.myownradio.tools.Logger;
 
 import java.io.*;
 
@@ -19,7 +19,7 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
 
     protected PipeIO pipe;
 
-    static MORLogger logger = new MORLogger(MORLogger.MessageKind.PLAYER);
+    static Logger logger = new Logger(Logger.MessageKind.PLAYER);
 
     public ThroughOutputStream(OutputStream out, String[] cmd) throws IOException {
         this(out, null, cmd);
@@ -54,7 +54,7 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
         int len;
         while (err.available() > 0) {
             len = err.read(buffer, 0, Math.min(err.available(), buffer.length));
-            logger.println(new String(buffer, 0, len));
+            logger.print(new String(buffer, 0, len));
         }
     }
 
@@ -97,9 +97,9 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
             try {
                 pipe.thread().join();
                 pr.waitFor();
-                logger.println("STREAMER SUCCESSFULLY INTERRUPTED");
+                logger.print("STREAMER SUCCESSFULLY INTERRUPTED");
             } catch (InterruptedException e) {
-                logger.println("STREAMER STOP INTERRUPTED");
+                logger.print("STREAMER STOP INTERRUPTED");
             }
         }
 

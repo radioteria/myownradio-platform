@@ -23,11 +23,11 @@ follow:
 	@ docker logs -f $(CONTAINER_ID)
 
 stop:
-	@ docker stop $(CONTAINER_ID) 2>&1 >/dev/null; \
-	  docker rm $(CONTAINER_ID) 2>&1 >/dev/null; \
-	  echo ""
+	@ docker stop $(CONTAINER_ID) >/dev/null 2>&1; \
+	  docker rm $(CONTAINER_ID) >/dev/null 2>&1; \
+	  exit 0
 
 deinstall: stop
 	@ rm -rf log; \
-	  docker rmi --force $(IMAGE_ID) 2>&1 >/dev/null; \
-	  echo ""
+	  docker rmi --force $(IMAGE_ID) >/dev/null 2>&1; \
+	  exit 0

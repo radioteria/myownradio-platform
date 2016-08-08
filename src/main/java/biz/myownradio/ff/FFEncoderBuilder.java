@@ -21,7 +21,7 @@ public class FFEncoderBuilder {
         switch (format.getCodec()) {
             case "libfdk_aac":
                 cmd = new String[]{
-                        MORSettings.getString("command.ffmpeg").orElse("ffmpeg"),
+                        MORSettings.getString("command.ffmpeg"),
                         "-hide_banner",
                         "-loglevel", "quiet",
                         "-acodec", "pcm_s16le",
@@ -44,7 +44,7 @@ public class FFEncoderBuilder {
                 break;
             default:
                 cmd = new String[]{
-                        MORSettings.getString("command.ffmpeg").orElse("ffmpeg"),
+                        MORSettings.getString("command.ffmpeg"),
                         "-hide_banner",
                         "-loglevel", "quiet",
                         "-acodec", "pcm_s16le",

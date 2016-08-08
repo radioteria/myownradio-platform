@@ -6,9 +6,9 @@ import java.util.*;
 /**
  * Created by Roman on 08.10.14
  */
-public class MORSettings {
-
-    private static Properties properties = new Properties();
+public class MORSettings
+{
+    final private static Properties properties = new Properties();
 
     static {
         String confFile = System.getenv("MOR_CONFIG_FILE");
@@ -24,12 +24,18 @@ public class MORSettings {
         }
     }
 
-    public static Optional<String> getString(String key) {
+    public static String getString(String key)
+    {
         String value = properties.getProperty(key);
-        return value == null ? Optional.empty() : Optional.of(value);
+        if (value == null) {
+            throw new RuntimeException("Setting {" + key + "} not found in .properties file");
+        }
+        return value;
     }
 
-    public static Optional<Integer> getInteger(String key) {
-        return getString(key).map(Integer::parseInt);
+    public static int getInteger(String key)
+    {
+        String value = getString(key);
+        return Integer.parseInt(value);
     }
 }

@@ -6,9 +6,8 @@ import javax.persistence.*;
  * Created by roman on 8/10/16
  */
 @Entity
-@Table(name="r_streams")
-public class Stream
-{
+@Table(name = "r_streams")
+public class Stream {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "sid")
@@ -97,5 +96,13 @@ public class Stream
 
     public void setStartedFrom(Long startedFrom) {
         this.startedFrom = startedFrom;
+    }
+
+    @Override
+    public String toString() {
+        return "Stream{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

@@ -67,9 +67,8 @@ public class StreamRadio implements Runnable {
         logger.sprintf("Streamer preload time=%d", preloadTime);
 
         Boolean firstPlayingTrack = true;
-        int trackSkipTimes = 0;
 
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) {
 
             try {
 
@@ -92,28 +91,14 @@ public class StreamRadio implements Runnable {
 
                 } catch (FileNotFoundException e) {
                     logger.sprintf("File not found: %s", e.getMessage());
-                    if (trackSkipTimes >= 5) {
-                        logger.sprintf("Too many skip attempts. Stopping streamer");
-                        return;
-                    }
-                    stream.skipMilliseconds(trackItem.getTimeRemainder());
-                    trackSkipTimes ++;
-                    logger.sprintf("Skip attempt: %d", trackSkipTimes);
-                    continue;
+                    return;
                 }
 
                 logger.println("---- PLAYER START ----");
                 try {
                     trackPlayer.play(trackItem.getTrackOffset());
-                    trackSkipTimes = 0;
                 } catch (DecoderException e) {
-                    if (trackSkipTimes >= 5) {
-                        logger.sprintf("Too many skip attempts. Stopping streamer");
-                        return;
-                    }
-                    logger.println("Track couldn't be decoded. Will skip it.");
-                    stream.skipMilliseconds(trackItem.getTimeRemainder());
-                    trackSkipTimes ++;
+                    return;
                 }
 
                 logger.println("---- PLAYER STOP  ----");

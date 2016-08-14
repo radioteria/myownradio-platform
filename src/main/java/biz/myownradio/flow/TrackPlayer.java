@@ -54,25 +54,16 @@ public class TrackPlayer implements AbstractPlayer {
 
         int bytesDecoded = 0;
 
-        logger.println("Initializing process builder...");
-
         pb = new ProcessBuilder(command);
         pb.redirectError(new File(decoderLogFile));
 
         synchronized (lock) {
             process = pb.start();
-            logger.println("Initialization done");
         }
-
-        PipeIO pipeIO;
 
         try (
                 InputStream in = process.getInputStream();
-                //OutputStream out = process.getOutputStream();
-                //InputStream url = new URL(this.file).openStream()
         ) {
-            //pipeIO = new PipeIO(url, out, true);
-
             byte[] buffer = new byte[4096];
             int length;
             logger.println("[START]");

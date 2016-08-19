@@ -15,7 +15,9 @@ public class SetStreamStateNotifyHandler implements LHttpHandler {
 
     public void handle(LHttpProtocol exchange) throws IOException {
 
-        if (!exchange.getClientIP().equals("127.0.0.1")) {
+        String code = exchange.getParameter("token", null);
+
+        if (code == null || !code.equals("notify_me")) {
             throw LHttpException.forbidden();
         }
 

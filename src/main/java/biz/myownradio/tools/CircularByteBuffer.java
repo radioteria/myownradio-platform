@@ -20,6 +20,7 @@ public class CircularByteBuffer {
     private long timeout;
 
     public CircularByteBuffer(int size, long timeout) {
+        logger.sprintf("Initializing circular buffer (size %d, timeout %d)", size, timeout);
         this.count = 0L;
         this.raw = new byte[size + Long.BYTES];
         this.length = size;
@@ -35,6 +36,8 @@ public class CircularByteBuffer {
     public synchronized void putBytes(byte[] b, int pos, int len) {
 
         long cursor = ByteTools.bytesToLong(raw);
+
+        logger.sprintf("Putting %d bytes into circular buffer at %d", len, cursor);
 
         System.arraycopy(raw, Long.BYTES + len, raw, Long.BYTES, length - len);
         System.arraycopy(b, pos, raw, raw.length - len, len);
@@ -85,7 +88,6 @@ public class CircularByteBuffer {
 
                 long tmpCursor;
                 int newBytes;
-                int length;
 
                 byte[] copy = new byte[raw.length];
 
@@ -94,23 +96,19 @@ public class CircularByteBuffer {
                 }
 
                 tmpCursor = ByteTools.bytesToLong(copy);
-                newBytes = (int) (tmpCursor - after);
+                newBytes = (int) Math.min(len, tmpCursor - after);
 
-                if (newBytes > len) {
-                    System.arraycopy(copy, copy.length - newBytes, b, off, len);
-                    length = len;
-                } else {
-                    System.arraycopy(copy, copy.length - newBytes, b, off, newBytes);
-                    length = newBytes;
-                }
+                logger.sprintf("Getting %d bytes from circular buffer", newBytes);
 
-                return length;
+                System.arraycopy(copy, copy.length - newBytes, b, off, newBytes);
+
+                return newBytes;
 
             }
 
         }
 
-        throw new IOException("Data wait timed out");
+        throw new IOException("Data timed out");
 
     }
 

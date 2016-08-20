@@ -97,7 +97,7 @@ public class CircularByteBuffer {
                 }
 
                 tmpCursor = ByteTools.bytesToLong(copy);
-                newBytes = (int) Math.min(len, tmpCursor - after);
+                newBytes = (int) (tmpCursor - after);
 
                 //logger.sprintf("Getting %d bytes from circular buffer", newBytes);
 

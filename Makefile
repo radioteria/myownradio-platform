@@ -10,6 +10,7 @@ ifeq ([], $(shell docker inspect $(IMAGE_ID) 2> /dev/null))
 	@ echo "Please, run 'make install' before 'make start'" >&2; exit 1;
 else
 	@ docker run -d \
+		--restart=always \
 		--name $(CONTAINER_ID) \
 		-v $(CURDIR)/log:/opt/stream-server/log \
 		-p 7778:7778 \
@@ -27,7 +28,13 @@ stop:
 	  docker rm $(CONTAINER_ID) 2>&1 >/dev/null; \
 	  echo ""
 
+pull:
+	git pull
+
 deinstall: stop
 	@ rm -rf log; \
 	  docker rmi --force $(IMAGE_ID) 2>&1 >/dev/null; \
 	  echo ""
+
+rebuild: stop pull build start
+

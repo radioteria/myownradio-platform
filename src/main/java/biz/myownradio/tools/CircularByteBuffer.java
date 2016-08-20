@@ -37,7 +37,7 @@ public class CircularByteBuffer {
 
         long cursor = ByteTools.bytesToLong(raw);
 
-        logger.sprintf("Putting %d bytes into circular buffer at %d", len, cursor);
+        //logger.sprintf("Putting %d bytes into circular buffer at %d", len, cursor);
 
         System.arraycopy(raw, Long.BYTES + len, raw, Long.BYTES, length - len);
         System.arraycopy(b, pos, raw, raw.length - len, len);
@@ -98,7 +98,7 @@ public class CircularByteBuffer {
                 tmpCursor = ByteTools.bytesToLong(copy);
                 newBytes = (int) Math.min(len, tmpCursor - after);
 
-                logger.sprintf("Getting %d bytes from circular buffer", newBytes);
+                //logger.sprintf("Getting %d bytes from circular buffer", newBytes);
 
                 System.arraycopy(copy, copy.length - newBytes, b, off, newBytes);
 

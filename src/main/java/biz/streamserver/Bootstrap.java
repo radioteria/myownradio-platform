@@ -1,6 +1,6 @@
 package biz.streamserver;
 
-import biz.streamserver.core.Application;
+import biz.streamserver.server.Application;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 

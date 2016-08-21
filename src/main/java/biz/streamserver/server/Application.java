@@ -1,6 +1,5 @@
-package biz.streamserver.core;
+package biz.streamserver.server;
 
-import biz.streamserver.entities.Stream;
 import biz.streamserver.services.StreamService;
 import com.sun.net.httpserver.HttpServer;
 import org.apache.logging.log4j.LogManager;
@@ -10,10 +9,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
-import java.util.Optional;
 
 @Service
 public class Application
@@ -31,14 +30,22 @@ public class Application
     @PostConstruct
     private void setup() throws IOException
     {
-        logger.debug("Initializing HTTP server");
+        logger.debug("Initializing server");
         httpServer = HttpServer.create();
 
-        logger.debug("Starting listening on port {}", port);
-        httpServer.bind(new InetSocketAddress(port), 0);
+        logger.debug("Registering server shutdown hooks");
+        registerServerShutdownHooks();
 
-        logger.debug("Registering HTTP route handlers");
+        logger.debug("Registering route handlers");
         registerRoutes();
+
+        logger.debug("Binding server to listen on port {}", port);
+        httpServer.bind(new InetSocketAddress(port), 0);
+    }
+
+    private void registerServerShutdownHooks()
+    {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> httpServer.stop(0)));
     }
 
     private void registerRoutes()
@@ -49,18 +56,11 @@ public class Application
             printWriter.println("stream server is up");
             printWriter.close();
         });
-
-        httpServer.createContext("/test", httpExchange -> {
-            Optional<Stream> stream = streamService.findById(89L);
-            httpExchange.sendResponseHeaders(200, 0);
-            PrintWriter printWriter = new PrintWriter(httpExchange.getResponseBody());
-            printWriter.println(stream);
-            printWriter.close();
-        });
     }
 
     public void start()
     {
+        logger.debug("Starting server");
         httpServer.start();
     }
 }

@@ -69,8 +69,24 @@ public class RouteTest extends TestCase
                     this.put("articles/some-article", new HashMap<String, String>() {{
                         this.put("id", "some-article");
                     }});
+                    this.put("articles/other-article", new HashMap<String, String>() {{
+                        this.put("id", "other-article");
+                    }});
                 }},
-                new String[] { "/", "baz/bar", "foo/baz" }
+                new String[] { "/", "baz/bar", "foo/baz", "articles/something/deeper" }
+        );
+
+        routeTestWithParameters(
+                "articles/&id",
+                new HashMap<String, Map<String, String>>() {{
+                    this.put("articles/11", new HashMap<String, String>() {{
+                        this.put("id", "11");
+                    }});
+                    this.put("articles/24", new HashMap<String, String>() {{
+                        this.put("id", "24");
+                    }});
+                }},
+                new String[] { "/", "baz/bar", "foo/baz", "articles/some-article", "articles/22/deeper" }
         );
     }
 }

@@ -48,7 +48,7 @@ public class Route<T>
         List<String> parameterNames = new ArrayList<>();
 
         Matcher parameterMatcher = Pattern
-                .compile(":([a-zA-Z]+)")
+                .compile("(?::|&)([a-zA-Z]+)")
                 .matcher(path);
 
         while (parameterMatcher.find()) {

@@ -11,7 +11,7 @@ public enum Encoder {
         this.codecName = codecName;
     }
 
-    public String getCodecName() {
+    public String getEncoderName() {
         return codecName;
     }
 

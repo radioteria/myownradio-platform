@@ -1,6 +1,5 @@
 package biz.myownradio.ff;
 
-import biz.myownradio.exception.DecoderException;
 import biz.myownradio.flow.AudioFormats;
 
 import java.util.Arrays;
@@ -49,7 +48,7 @@ public class FFEncoderBuilder {
                 break;
             case MP3:
                 builder.addAll(Arrays.asList(
-                    "-acodec", format.getEncoder().getCodecName()
+                    "-acodec", format.getEncoder().getEncoderName()
                 ));
                 break;
         }

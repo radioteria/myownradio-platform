@@ -36,19 +36,14 @@ public class FFEncoderBuilder {
             "-vn",
             "-ar", "44100",
             "-ac", "2",
-            "-ab", Integer.toString(format.getBitrate())
+            "-ab", Integer.toString(format.getBitrate()),
+            "-acodec", format.getEncoder().getEncoderName()
         ));
 
         switch (format.getEncoder()) {
             case AAC:
                 builder.addAll(Arrays.asList(
-                    "-acodec", "libfdk_aac",
                     "-profile:a", "aac_he_v2"
-                ));
-                break;
-            case MP3:
-                builder.addAll(Arrays.asList(
-                    "-acodec", format.getEncoder().getEncoderName()
                 ));
                 break;
         }

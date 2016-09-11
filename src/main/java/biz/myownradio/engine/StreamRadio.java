@@ -9,6 +9,7 @@ import biz.myownradio.ff.FFEncoderBuilder;
 import biz.myownradio.flow.AbstractPlayer;
 import biz.myownradio.flow.TrackPlayer;
 import biz.myownradio.tools.MORLogger;
+import biz.myownradio.tools.MORSettings;
 import biz.myownradio.tools.ThreadTools;
 import biz.myownradio.tools.io.ThrottledOutputStream;
 import biz.myownradio.tools.io.ThroughOutputStream;
@@ -40,7 +41,7 @@ public class StreamRadio implements Runnable {
 
         try (
                 OutputStream flow = broadcast.getOutputStream();
-                OutputStream raw = new ThroughOutputStream(flow, decoder.generate());
+                OutputStream raw = new ThroughOutputStream(flow, decoder.getCommand());
                 OutputStream thr = new ThrottledOutputStream(raw, 176400, 5)
         ) {
             logger.println("---- FLOW START ----");
@@ -63,6 +64,7 @@ public class StreamRadio implements Runnable {
         AbstractPlayer trackPlayer;
 
         int preloadTime = 5000;
+        int jingleInterval = MORSettings.getIntegerNow("defaults.player.jingle.interval");
 
         logger.sprintf("Streamer preload time=%d", preloadTime);
 
@@ -85,7 +87,7 @@ public class StreamRadio implements Runnable {
                 try {
                     // Normally we initialize track player
                     trackPlayer = new TrackPlayer(broadcast, output, trackItem.getFileUrl(),
-                            (trackItem.getOrderIndex() % stream.getJingleInterval() == 0) && (trackItem.getTrackOffset() < 2000L));
+                            (trackItem.getOrderIndex() % jingleInterval == 0) && (trackItem.getTrackOffset() < 2000L));
 
                     broadcast.setTitle(trackItem.getTitle());
 

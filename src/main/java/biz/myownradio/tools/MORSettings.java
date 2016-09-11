@@ -8,6 +8,8 @@ import java.util.*;
  */
 public class MORSettings {
 
+    public static class SettingsException extends RuntimeException {}
+
     private static Properties properties = new Properties();
 
     static {
@@ -31,5 +33,21 @@ public class MORSettings {
 
     public static Optional<Integer> getInteger(String key) {
         return getString(key).map(Integer::parseInt);
+    }
+
+    public static Optional<Boolean> getBoolean(String key) {
+        return getString(key).map(Boolean::valueOf);
+    }
+
+    public static String getStringNow(String key) {
+        return getString(key).orElseThrow(SettingsException::new);
+    }
+
+    public static Integer getIntegerNow(String key) {
+        return getInteger(key).orElseThrow(SettingsException::new);
+    }
+
+    public static Boolean getBooleanNow(String key) {
+        return getBoolean(key).orElseThrow(SettingsException::new);
     }
 }

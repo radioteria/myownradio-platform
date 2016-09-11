@@ -2,7 +2,6 @@ package biz.myownradio.engine;
 
 import biz.myownradio.tools.JDBCPool;
 import biz.myownradio.tools.MORLogger;
-import biz.myownradio.engine.Notifier.Event;
 
 import java.sql.*;
 
@@ -12,6 +11,7 @@ import java.sql.*;
  * Statistical object
  */
 public class FlowListener {
+
     private int listener_id;
     private String client_ip;
     private String client_ua;
@@ -56,8 +56,6 @@ public class FlowListener {
 
             logger.sprintf("New listener obtained ID #%d", this.listener_id);
 
-            new Event("listener.new", this.stream_id, this.listener_id).queue("str");
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -74,8 +72,6 @@ public class FlowListener {
             connection.commit();
 
             logger.sprintf("Finishing listener #%d session", this.listener_id);
-
-            new Event("listener.gone", this.stream_id, this.listener_id).queue("str");
 
         }
     }

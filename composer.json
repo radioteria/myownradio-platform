@@ -13,6 +13,8 @@
     "mixpanel/mixpanel-php": "^2.6",
     "Twig/Twig": "^1.25",
     "james-heinrich/getid3": "^1.9",
-    "liqpay/liqpay": "dev-master"
+    "liqpay/liqpay": "dev-master",
+    "facebook/graph-sdk": "^5.3",
+    "facebook/php-sdk": "4.0.23"
   }
 }

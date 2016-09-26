@@ -67,7 +67,7 @@ class TracksModel implements Injectable, SingletonInterface {
 
         $request->getLanguage()->then(function ($language) use ($id3) {
             if (array_search($language, array('uk', 'ru')) !== false) {
-                $id3->encoding_id3v1 = "cp1251";
+                $id3->encoding_id3v1 = "CP1251";
             }
         });
 

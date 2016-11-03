@@ -1,5 +1,14 @@
 <?php
 
+/*
+|--------------------------------------------------------------------------
+| Myownradio Services
+|--------------------------------------------------------------------------
+|
+| Here is the configuration for services that myownradio api uses.
+|
+*/
+
 return [
 
     'facebook' => [

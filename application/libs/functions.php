@@ -12,7 +12,8 @@
  * @param $chars
  * @return string
  */
-function cp1251dec($chars) {
+function cp1251dec($chars)
+{
     $test = @iconv("UTF-8", "CP1252", $chars);
     if (is_null($test)) {
         return $chars;

@@ -5,7 +5,7 @@
 | Myownradio Services
 |--------------------------------------------------------------------------
 |
-| Here is the configuration for services that myownradio api uses.
+| Here is the configuration for services used by myownradio backend.
 |
 */
 

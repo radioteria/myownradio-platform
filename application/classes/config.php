@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: LRU
- * Date: 13.04.2015
- * Time: 13:57
- */
+
 return [
     "application_title" => "MyOwnRadio - your own free web radio station",
     "application_content" => "/var/apps/myownradio.biz/",

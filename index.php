@@ -4,36 +4,33 @@ use Facebook\FacebookSession;
 use Framework\Router;
 use Framework\Template;
 
-
-// Redirect from www.
-if (substr($_SERVER['HTTP_HOST'], 0, 4) == "www.") {
-    $redirect = "https://" . substr($_SERVER['HTTP_HOST'], 4) . $_SERVER['REQUEST_URI'];
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: $redirect");
-    die();
-}
-
-// Allow only https access
-if ((!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "") && substr($_SERVER['HTTP_HOST'], 0, 5) != "test.") {
-    $redirect = "https://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-    header("HTTP/1.1 301 Moved Permanently");
-    header("Location: $redirect");
-    die();
-}
-
 require_once 'vendor/autoload.php';
 
+// AntiShame Mode: On
+require_once 'application/init.php';
 require_once "application/startup.php";
+// AntiShame Mode: Off
+
 require_once "application/libs/functions.php";
 require_once "application/libs/acResizeImage.php";
 
-gc_enable();
+// Facebook setup
+FacebookSession::setDefaultApplication(
+    env('FACEBOOK_APP_ID'),
+    env('FACEBOOK_APP_SECRET')
+);
 
-FacebookSession::setDefaultApplication('731742683610572', 'f84af1cdddcc6ac06c6ebf606fb616c3');
+// Template engine setup
 Template::setTemplatePath("application/tmpl");
 
+// Env file
+if (file_exists(ENV_FILE)) {
+    $loader = new \josegonzalez\Dotenv\Loader(ENV_FILE);
+    $loader->parse();
+    $loader->toEnv();
+}
+
+// Routing setup and run
 $router = Router::getInstance();
 
 $router->route();
-
-

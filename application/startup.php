@@ -13,15 +13,3 @@ define("APP_ROOT", "application/classes/");
 define("CONTROLLERS_ROOT", "Framework/Handlers/");
 
 putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/home/app/bin");
-
-spl_autoload_register("loadClass");
-
-function loadClass($class_name) {
-    $filename = APP_ROOT . str_replace("\\", "/", $class_name) . '.php';
-    if (file_exists($filename)) {
-#	error_log($class_name);
-        require $filename;
-    }
-}
-
-

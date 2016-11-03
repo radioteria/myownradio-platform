@@ -4,9 +4,53 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "6815d86a0d22c9b0c88ecc814fc0cc36",
-    "content-hash": "3211d40d6fc057a9c1a3ad4b012b61ca",
+    "hash": "fadddbc3fab262803227b9ea6c57d647",
+    "content-hash": "742eb2eb52d6d46e5664daf6587146ff",
     "packages": [
+        {
+            "name": "buuum/s3",
+            "version": "v0.0.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/buuum/S3.git",
+                "reference": "6d6ab92e4a1ed01f4bfe421374a8930ad1a3bea8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/buuum/S3/zipball/6d6ab92e4a1ed01f4bfe421374a8930ad1a3bea8",
+                "reference": "6d6ab92e4a1ed01f4bfe421374a8930ad1a3bea8",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.5.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Buuum\\": "src/S3"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alfons Martinez",
+                    "email": "alfonsmartinezparra@gmail.com"
+                }
+            ],
+            "description": "A simple aws s3 class",
+            "homepage": "https://github.com/buuum/S3",
+            "keywords": [
+                "AWS S3",
+                "s3"
+            ],
+            "time": "2016-10-28 09:37:10"
+        },
         {
             "name": "facebook/php-sdk",
             "version": "4.0.23",
@@ -94,6 +138,58 @@
             "time": "2016-03-02 13:13:30"
         },
         {
+            "name": "josegonzalez/dotenv",
+            "version": "2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/josegonzalez/php-dotenv.git",
+                "reference": "eb9eb3beea37411d2f7b4960eed94fc72a592488"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/josegonzalez/php-dotenv/zipball/eb9eb3beea37411d2f7b4960eed94fc72a592488",
+                "reference": "eb9eb3beea37411d2f7b4960eed94fc72a592488",
+                "shasum": ""
+            },
+            "require": {
+                "m1/env": "2.*",
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "satooshi/php-coveralls": "1.*",
+                "squizlabs/php_codesniffer": "2.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "josegonzalez\\Dotenv": [
+                        "src",
+                        "tests"
+                    ]
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jose Diaz-Gonzalez",
+                    "email": "dotenv@josegonzalez.com",
+                    "homepage": "http://josediazgonzalez.com",
+                    "role": "Maintainer"
+                }
+            ],
+            "description": "dotenv file parsing for PHP",
+            "homepage": "https://github.com/josegonzalez/php-dotenv",
+            "keywords": [
+                "configuration",
+                "dotenv",
+                "php"
+            ],
+            "time": "2016-01-07 16:07:20"
+        },
+        {
             "name": "liqpay/liqpay",
             "version": "dev-master",
             "source": {
@@ -135,6 +231,64 @@
                 "pay"
             ],
             "time": "2016-06-04 07:55:03"
+        },
+        {
+            "name": "m1/env",
+            "version": "2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/m1/Env.git",
+                "reference": "d87eddd031f2aa5450fa04bb1325de8a489b3cd0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/m1/Env/zipball/d87eddd031f2aa5450fa04bb1325de8a489b3cd0",
+                "reference": "d87eddd031f2aa5450fa04bb1325de8a489b3cd0",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "4.*",
+                "scrutinizer/ocular": "~1.1",
+                "squizlabs/php_codesniffer": "^2.3"
+            },
+            "suggest": {
+                "josegonzalez/dotenv": "For loading of .env",
+                "m1/vars": "For loading of configs"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "M1\\Env\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Miles Croxford",
+                    "email": "hello@milescroxford.com",
+                    "homepage": "http://milescroxford.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Env is a lightweight library bringing .env file parser compatibility to PHP. In short - it enables you to read .env files with PHP.",
+            "homepage": "https://github.com/m1/Env",
+            "keywords": [
+                ".env",
+                "config",
+                "dotenv",
+                "env",
+                "loader",
+                "m1",
+                "parser",
+                "support"
+            ],
+            "time": "2016-10-06 19:31:28"
         },
         {
             "name": "mixpanel/mixpanel-php",

@@ -14,6 +14,16 @@
     "Twig/Twig": "^1.25",
     "james-heinrich/getid3": "^1.9",
     "liqpay/liqpay": "dev-master",
-    "facebook/php-sdk": "4.0.23"
+    "facebook/php-sdk": "4.0.23",
+    "josegonzalez/dotenv": "^2.0",
+    "buuum/s3": "^0.0.7"
+  },
+  "autoload": {
+    "files": [
+      "application/helper.php"
+    ],
+    "psr-4": {
+      "": "application/classes"
+    }
   }
 }

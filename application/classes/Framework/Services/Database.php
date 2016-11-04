@@ -21,41 +21,38 @@ class Database implements SingletonInterface, Injectable {
 
     /** @var PDO $pdo */
     private $pdo;
-    private $settings;
+    private $config;
 
     private static $cache = [];
 
-    public function __construct() {
-
-        $this->settings = Config::getInstance()->getSection('database')->getOrElse([
-            "db_login" => "root",
-            "db_password" => "",
-            "db_dsn" => "mysql:host=localhost;dbname=myownradio"
-        ]);
-
+    public function __construct()
+    {
+        $this->config = config("database.connections.mysql");
     }
 
     /**
      * @return $this
      * @throws ApplicationException
      */
-    public function connect() {
-
+    public function connect()
+    {
         try {
-            $this->pdo = new PDO($this->settings['db_dsn'],
-                $this->settings['db_login'],
-                $this->settings['db_password'], [
-                    PDO::ATTR_EMULATE_PREPARES => false,
-                    PDO::ATTR_PERSISTENT => true,
-                    PDO::ATTR_AUTOCOMMIT => true,
-		    PDO::MYSQL_ATTR_INIT_COMMAND => "set names 'utf8';"
-                ]);
+            $dsn = sprintf(
+                "%s:host=%s;dbname=%s",
+                $this->config["driver"],
+                $this->config["host"],
+                $this->config["database"]
+            );
+            $this->pdo = new PDO(
+                $dsn,
+                $this->config["username"],
+                $this->config["password"],
+                $this->config["attributes"]
+            );
         } catch (\PDOException $e) {
-            throw ApplicationException::of($e->getMessage(), $e);
+            throw ApplicationException::of($e->getMessage(), null, $e);
         }
-
         return $this;
-
     }
 
     /**

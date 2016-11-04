@@ -2,18 +2,20 @@
 
 return [
 
-    'default' => env('DB_CONNECTION', 'mysql'),
-
     'connections' => [
 
         'mysql' => [
-            'driver'    => 'mysql',
-            'host'      => env('DB_HOST', 'localhost'),
-            'database'  => env('DB_DATABASE', 'mor'),
-            'username'  => env('DB_USERNAME', 'root'),
-            'password'  => env('DB_PASSWORD', ''),
-            'charset'   => 'utf8',
-            'collation' => 'utf8_unicode_ci',
+            'driver'        => 'mysql',
+            'host'          => env('DB_HOST', 'localhost'),
+            'database'      => env('DB_DATABASE', 'mor'),
+            'username'      => env('DB_USERNAME', 'root'),
+            'password'      => env('DB_PASSWORD', ''),
+            'attributes'    => [
+                PDO::ATTR_EMULATE_PREPARES  => false,
+                PDO::ATTR_PERSISTENT        => true,
+                PDO::ATTR_AUTOCOMMIT        => true
+            ],
+            'on_start'      => ['SET NAMES utf8']
         ]
 
     ]

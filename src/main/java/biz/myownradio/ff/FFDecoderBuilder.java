@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class FFDecoderBuilder {
 
-    private String[] cmd;
+    final private String[] cmd;
 
     public FFDecoderBuilder(String filename, int offset, boolean playJingle) {
 
@@ -25,30 +25,30 @@ public class FFDecoderBuilder {
         df.setGroupingUsed(false);
 
         builder.addAll(Arrays.asList(
-            "-fflags", "nobuffer",
-            "-ss", df.format((float) offset / 1_000F),
-            "-i", filename
+                "-fflags", "fastseek",
+                "-ss", df.format((float) offset / 1_000F),
+                "-i", filename
         ));
 
         if (playJingle) {
             int jingleDelay = MORSettings.getIntegerNow("defaults.player.jingle.delay");
             builder.addAll(Arrays.asList(
-                "-i", MORSettings.getStringNow("defaults.player.jingle.url"),
-                "-filter_complex", buildComplexFilter(jingleDelay)
+                    "-i", MORSettings.getStringNow("defaults.player.jingle.url"),
+                    "-filter_complex", buildComplexFilter(jingleDelay)
             ));
         } else {
             builder.addAll(Arrays.asList(
-                "-filter", "afade=t=in:st=0:d=1"
+                    "-filter", "afade=t=in:st=0:d=1"
             ));
         }
 
         builder.addAll(Arrays.asList(
-            "-acodec", "pcm_s16le",
-            "-ar", "44100",
-            "-ac", "2",
-            "-f", "s16le",
-            "-strict", "-2",
-            "-"
+                "-acodec", "pcm_s16le",
+                "-ar", "44100",
+                "-ac", "2",
+                "-f", "s16le",
+                "-strict", "-2",
+                "-"
         ));
 
         this.cmd = builder.toArray(new String[0]);

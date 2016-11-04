@@ -31,7 +31,7 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
 
-        String encoderLogFile = MORSettings.getString("server.logdir").orElse("/tmp") +
+        String encoderLogFile = MORSettings.getString("server.log.dir").orElse("/tmp") +
                 "/encoder_" + Thread.currentThread().getName() + "_" + System.currentTimeMillis() +".log";
 
         pb.redirectError(new File(encoderLogFile));

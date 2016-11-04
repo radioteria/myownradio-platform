@@ -12,7 +12,7 @@ import java.util.Formatter;
  */
 public class MORLogger {
 
-    final private static String logFile = MORSettings.getString("server.logdir").orElse("/tmp") + "/stream-server.log";
+    final private static String logFile = MORSettings.getString("server.log.dir").orElse("/tmp") + "/stream-server.log";
     final private static PrintWriter pw;
 
     static {

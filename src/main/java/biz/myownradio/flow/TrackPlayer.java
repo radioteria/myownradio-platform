@@ -5,7 +5,6 @@ import biz.myownradio.exception.DecoderException;
 import biz.myownradio.ff.FFDecoderBuilder;
 import biz.myownradio.tools.MORLogger;
 import biz.myownradio.tools.MORSettings;
-import biz.myownradio.tools.io.PipeIO;
 
 import java.io.*;
 
@@ -46,7 +45,7 @@ public class TrackPlayer implements AbstractPlayer {
 
         String[] command = new FFDecoderBuilder(file, offset, jingled).getCommand();
 
-        String decoderLogFile = MORSettings.getString("server.logdir").orElse("/tmp") +
+        String decoderLogFile = MORSettings.getString("server.log.dir").orElse("/tmp") +
                 "/decoder_" + Thread.currentThread().getName() + "_" + System.currentTimeMillis() +".log";
 
         ProcessBuilder pb;
@@ -57,9 +56,13 @@ public class TrackPlayer implements AbstractPlayer {
         pb = new ProcessBuilder(command);
         pb.redirectError(new File(decoderLogFile));
 
+        logger.sprintf("Starting process: %s", pb);
+
         synchronized (lock) {
             process = pb.start();
         }
+
+        logger.sprintf("Process started: %s", process);
 
         try (
                 InputStream in = process.getInputStream();

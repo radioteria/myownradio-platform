@@ -1,10 +1,7 @@
 package biz.myownradio.engine.entity;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import biz.myownradio.tools.MORSettings;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -12,8 +9,6 @@ import java.sql.SQLException;
  * Created by Roman on 01.10.14.
  */
 public class Track {
-
-    private static final String FILE_SERVER_PATTERN = "http://%s/%s";
 
     private int track_id;
     private int user_id;
@@ -93,51 +88,16 @@ public class Track {
     }
 
     public String getFileUrl() {
-        return String.format(FILE_SERVER_PATTERN, fileServerHost, fileHash);
-    }
 
-    public String getPath() throws FileNotFoundException {
+        return String.format(
+                "https://s3.%s.amazonaws.com/%s/audio/%s/%s/%s",
+                MORSettings.getStringNow("aws.s3.region"),
+                MORSettings.getStringNow("aws.s3.bucket"),
+                fileHash.charAt(0),
+                fileHash.charAt(1),
+                fileHash
+        );
 
-        String link;
-        URL ff;
-
-        String template = "ftp://morstorage:3bWdNNa0v@myownradio.biz/content";
-
-        try {
-
-            link = String.format("%s/ui_%d/a_%03d_original.%s",
-                    template,
-                    this.getUserId(),
-                    this.getTrackId(),
-                    this.getExtension()
-            );
-            ff = new URL(link);
-
-            try (InputStream is = ff.openConnection().getInputStream()) {
-                    return link;
-            } catch (IOException e) {
-                /* NOP */
-            }
-
-            link = String.format("%s/ui_%d/lores_%03d.mp3",
-                    template,
-                    this.getUserId(),
-                    this.getTrackId()
-            );
-            ff = new URL(link);
-
-            try (InputStream is = ff.openConnection().getInputStream()) {
-                return link;
-            }
-
-        } catch (IOException e) {
-            throw new FileNotFoundException();
-        }
-
-    }
-
-    public InputStream openStream() throws FileNotFoundException {
-        return new FileInputStream(this.getPath());
     }
 
     public int getTrackOffset() {

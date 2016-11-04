@@ -28,8 +28,6 @@ public class FFEncoderBuilder {
         List<String> builder = Helper.getFFmpegPrefix();
 
         builder.addAll(Arrays.asList(
-//            "-hide_banner",
-//            "-loglevel", "quiet",
             "-acodec", "pcm_s16le",
             "-ar", "44100",
             "-ac", "2",

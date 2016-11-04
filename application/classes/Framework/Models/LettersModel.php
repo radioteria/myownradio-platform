@@ -11,7 +11,7 @@ namespace Framework\Models;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Services\Locale\L10n;
-use Framework\Services\Mailer;
+use Framework\Services\Letter;
 use Framework\Template;
 
 class LettersModel {
@@ -24,7 +24,7 @@ class LettersModel {
         $confirm = base64_encode(json_encode(['email' => $email, 'code' => $code]));
 
         $template = new Template("locale/{$i18n->getLocale()}.reg.request.mail.tmpl");
-        $mailer = new Mailer(REG_MAIL, REG_NAME);
+        $mailer = new Letter(REG_MAIL, REG_NAME);
 
         $template->addVariable("confirm", $confirm, false);
 
@@ -48,7 +48,7 @@ class LettersModel {
         $i18n = L10n::getInstance();
 
         $template = new Template("locale/{$i18n->getLocale()}.reg.complete.tmpl");
-        $mailer = new Mailer(REG_MAIL, REG_NAME);
+        $mailer = new Letter(REG_MAIL, REG_NAME);
 
         $mailer->addAddress($email);
         $mailer->setContentType("text/html");
@@ -74,7 +74,7 @@ class LettersModel {
         $code = base64_encode(json_encode(["login" => $user->getLogin(), "password" => $user->getPassword()]));
 
         $template = new Template("locale/{$i18n->getLocale()}.reset.password.tmpl");
-        $mailer = new Mailer(REG_MAIL, REG_NAME);
+        $mailer = new Letter(REG_MAIL, REG_NAME);
 
         $template->addVariable("name", $user->getDisplayName(), false);
         $template->addVariable("login", $user->getLogin(), false);

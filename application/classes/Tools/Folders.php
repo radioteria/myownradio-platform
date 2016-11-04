@@ -82,7 +82,7 @@ class Folders implements Injectable, SingletonInterface {
     }
 
     function genStreamUrl($id) {
-        return sprintf("http://myownradio.biz:7778/audio?s=%d", $id);
+        return sprintf("http://stream1.myownradio.biz:7778/audio?s=%d", $id);
     }
 
     function genStreamPageUrl($id) {

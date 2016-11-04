@@ -18,7 +18,7 @@ use Framework\Services\HttpRequest;
 use Framework\Services\HttpSession;
 use Framework\Services\InputValidator;
 use Framework\Services\Locale\I18n;
-use Framework\Services\Mailer;
+use Framework\Services\Letter;
 use Objects\User;
 use Tools\Common;
 use Tools\File;
@@ -177,11 +177,11 @@ class UsersModel implements SingletonInterface, Injectable {
         Common::createTemporaryImage($newImagePath);
 
         /* Special */
-        $notify = new Mailer("no-reply@myownradio.biz", "MyOwnRadio Service");
+        $notify = new Letter("no-reply@myownradio.biz", "MyOwnRadio Service");
         $notify->addAddress("roman@homefs.biz");
         $notify->setSubject("You have new user on MyOwnRadio service");
         $notify->setBody(sprintf("Hello! You have a new user '%s' (%s).", $login, $email));
-        $notify->queue();
+        $notify->send();
         /* End of special */
 
         LettersModel::sendRegistrationCompleted($newUser->getEmail());

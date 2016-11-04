@@ -22,6 +22,8 @@ if (file_exists(ENV_FILE)) {
     $loader->toEnv();
 }
 
+// Init session
+
 // Facebook setup
 FacebookSession::setDefaultApplication(
     env('FACEBOOK_APP_ID'),

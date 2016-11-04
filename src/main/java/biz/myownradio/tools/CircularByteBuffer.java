@@ -80,6 +80,7 @@ public class CircularByteBuffer {
 
                 synchronized (this) {
                     try {
+                        // todo: log this situation
                         wait(timeout);
                     } catch (InterruptedException cannotHappen) { /* NOP */ }
                 }

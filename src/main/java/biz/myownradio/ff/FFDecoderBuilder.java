@@ -51,7 +51,7 @@ public class FFDecoderBuilder {
             "-"
         ));
 
-        this.cmd = (String[]) builder.toArray();
+        this.cmd = builder.toArray(new String[0]);
 
     }
 

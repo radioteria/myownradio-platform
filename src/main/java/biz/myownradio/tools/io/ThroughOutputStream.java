@@ -1,6 +1,7 @@
 package biz.myownradio.tools.io;
 
 import biz.myownradio.tools.MORLogger;
+import biz.myownradio.tools.MORSettings;
 
 import java.io.*;
 
@@ -10,7 +11,6 @@ import java.io.*;
 public class ThroughOutputStream extends FilterOutputStream implements Closeable {
 
     protected InputStream in;
-    protected InputStream err;
     protected OutputStream os;
 
     protected OutputStream errOut;
@@ -31,9 +31,13 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
 
         ProcessBuilder pb = new ProcessBuilder(cmd);
 
+        String encoderLogFile = MORSettings.getString("server.logdir").orElse("/tmp") +
+                "/encoder_" + Thread.currentThread().getName() + "_" + System.currentTimeMillis() +".log";
+
+        pb.redirectError(new File(encoderLogFile));
+
         proc = pb.start();
 
-        this.err = proc.getErrorStream();
         this.os = proc.getOutputStream();
         this.in = proc.getInputStream();
 
@@ -46,15 +50,6 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
     private void checkInput() throws IOException {
         if (pipe.isThrowed()) {
             throw pipe.getException();
-        }
-    }
-
-    private void readError() throws IOException {
-        byte[] buffer = new byte[4096];
-        int len;
-        while (err.available() > 0) {
-            len = err.read(buffer, 0, Math.min(err.available(), buffer.length));
-            logger.println(new String(buffer, 0, len));
         }
     }
 
@@ -75,7 +70,6 @@ public class ThroughOutputStream extends FilterOutputStream implements Closeable
     public void write(byte[] b, int off, int len) throws IOException {
         checkInput();
         os.write(b, off, len);
-        readError();
     }
 
     @Override

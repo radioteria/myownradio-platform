@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class FFEncoderBuilder {
 
-    final private AudioFormats format;
+    private AudioFormats format;
 
     private String[] cmd;
 
@@ -19,13 +19,17 @@ public class FFEncoderBuilder {
         this.prepare();
     }
 
+    public String toString() {
+        return format.toString();
+    }
+
     private void prepare() {
 
         List<String> builder = Helper.getFFmpegPrefix();
 
         builder.addAll(Arrays.asList(
-            "-hide_banner",
-            "-loglevel", "quiet",
+//            "-hide_banner",
+//            "-loglevel", "quiet",
             "-acodec", "pcm_s16le",
             "-ar", "44100",
             "-ac", "2",
@@ -54,7 +58,7 @@ public class FFEncoderBuilder {
             "-"
         ));
 
-        cmd = (String[]) builder.toArray();
+        cmd = builder.toArray(new String[0]);
 
     }
 

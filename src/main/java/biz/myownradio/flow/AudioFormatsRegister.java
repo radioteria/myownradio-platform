@@ -15,13 +15,15 @@ public class AudioFormatsRegister {
         AudioFormats af;
 
         try {
+            logger.sprintf("Audio format string: %s", format);
             af = AudioFormats.valueOf(format);
             if (af.getLimitId() > limitId) {
                 throw new IllegalArgumentException("User has no permission to access stream in this quality: " + af.toString());
             }
+            logger.sprintf("Audio format: %s", af);
         } catch (IllegalArgumentException e) {
             af = AudioFormats.mp3_128k;
-            logger.exception(e);
+            logger.sprintf("Fallback audio format: %s", af);
         }
 
         return new FFEncoderBuilder(af);

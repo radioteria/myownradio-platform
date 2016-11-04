@@ -1,4 +1,4 @@
-IMAGE_ID=myownradio/ss-container
+IMAGE_ID=myownradio/stream-server
 CONTAINER_ID=streamserver
 
 install:
@@ -22,6 +22,9 @@ status:
 
 follow:
 	@ docker logs -f $(CONTAINER_ID)
+
+attach:
+	@ docker exec -it $(CONTAINER_ID) bash
 
 stop:
 	@ docker stop $(CONTAINER_ID) 2>&1 >/dev/null; \

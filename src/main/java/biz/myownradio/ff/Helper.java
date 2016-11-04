@@ -9,7 +9,7 @@ abstract class Helper {
 
     static List<String> getFFmpegPrefix() {
 
-        List<String> builder = new ArrayList<>();
+        List<String> builder = new ArrayList<String>();
 
         if (MORSettings.getBooleanNow("command.ffmpeg.remote")) {
             builder.add("ssh");

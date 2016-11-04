@@ -15,7 +15,7 @@ public class CircularByteBuffer {
     final private static MORLogger logger = new MORLogger(MORLogger.MessageKind.CONCURRENT_BUFFER);
 
     // Default read timeout is 5 seconds.
-    private static final long DEFAULT_TIMEOUT = 5_000L;
+    private static final long DEFAULT_TIMEOUT = 30_000L;
 
     private long timeout;
 

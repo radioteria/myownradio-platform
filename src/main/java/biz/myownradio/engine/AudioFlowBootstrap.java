@@ -39,7 +39,6 @@ public class AudioFlowBootstrap {
         Client client = new Client(exchange);
 
         if (streamObject.getAccess().equals("PRIVATE") && (client.getUserId() == null || streamObject.getOwner() != client.getUserId())) {
-            System.err.println("Forbidden");
             throw LHttpException.forbidden();
         }
 
@@ -88,6 +87,9 @@ public class AudioFlowBootstrap {
 
             listener.listen();
 
+        } catch (Exception e) {
+            logger.exception(e);
+            throw e;
         } finally {
             ClientCounter.unregisterClient(streamObject.getOwner());
         }

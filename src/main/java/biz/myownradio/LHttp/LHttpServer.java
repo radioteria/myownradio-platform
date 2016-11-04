@@ -28,7 +28,7 @@ public class LHttpServer {
     private int blockingQueue       = 1024;
     private int maximalEntitySize   = 8192;
 
-    private final long READ_REQUEST_TIMEOUT = 2_000L;
+    private final long READ_REQUEST_TIMEOUT = 30_000L;
 
     private ServerSocket serverSocket;
 

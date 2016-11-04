@@ -1,5 +1,7 @@
 FROM myownradio/ss-container
 
+EXPOSE 7778
+
 WORKDIR /opt/stream-server/build/
 
 COPY src src

@@ -56,6 +56,8 @@ class FSFile
                 'ACL'    => 'public-read'
             ]);
 
+            error_log($hash);
+
         } else {
             $object->setUseCount($object->getUseCount() + 1);
         }

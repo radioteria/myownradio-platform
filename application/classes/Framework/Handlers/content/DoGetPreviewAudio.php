@@ -51,9 +51,6 @@ class DoGetPreviewAudio implements Controller
 
             $program = config('services.ffmpeg.preview_command');
 
-//            $program = $config->getSetting("streaming", "track_preview")
-//                ->getOrElseThrow(ControllerException::of("No preview configured"));
-
             $hash = $track->getHash();
             $s3 = S3ServiceProvider::getInstance()->getS3Client();
 

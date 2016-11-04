@@ -40,7 +40,7 @@ class HttpFiles implements \ArrayAccess, SingletonInterface, Injectable
      */
     public function each(callable $callback)
     {
-        foreach ($_FILES as $file) {
+        foreach (array_values($_FILES) as $file) {
             call_user_func($callback, $file);
         }
     }

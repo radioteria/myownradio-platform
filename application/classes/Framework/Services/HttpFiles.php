@@ -13,22 +13,24 @@ use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-class HttpFiles implements \ArrayAccess, SingletonInterface, Injectable {
-
+class HttpFiles implements \ArrayAccess, SingletonInterface, Injectable
+{
     use Singleton;
 
     /**
      * @param $file
      * @return Optional
      */
-    public function getFile($file) {
+    public function getFile($file)
+    {
         return Optional::ofEmpty(@$_FILES[$file]);
     }
 
     /**
      * @return Optional
      */
-    public function getFirstFile() {
+    public function getFirstFile()
+    {
         $first = reset($_FILES);
         return Optional::ofDeceptive($first);
     }
@@ -36,17 +38,24 @@ class HttpFiles implements \ArrayAccess, SingletonInterface, Injectable {
     /**
      * @param callable $callback
      */
-    public function each(callable $callback) {
+    public function each(callable $callback)
+    {
         foreach ($_FILES as $file) {
             call_user_func($callback, $file);
         }
+    }
+
+    public function map(callable $callback)
+    {
+        return array_map($callback, $_FILES);
     }
 
     /**
      * @param $offset
      * @return Optional
      */
-    public function __get($offset) {
+    public function __get($offset)
+    {
         return $this->getFile($offset);
     }
 
@@ -54,7 +63,8 @@ class HttpFiles implements \ArrayAccess, SingletonInterface, Injectable {
      * @param mixed $offset
      * @return boolean
      */
-    public function offsetExists($offset) {
+    public function offsetExists($offset)
+    {
         return isset($_FILES[$offset]);
     }
 
@@ -62,7 +72,8 @@ class HttpFiles implements \ArrayAccess, SingletonInterface, Injectable {
      * @param mixed $offset
      * @return mixed
      */
-    public function offsetGet($offset) {
+    public function offsetGet($offset)
+    {
         $this->getFile($offset);
     }
 
@@ -72,8 +83,8 @@ class HttpFiles implements \ArrayAccess, SingletonInterface, Injectable {
      * @param mixed $value
      * @return void
      */
-    public function offsetSet($offset, $value) {
-
+    public function offsetSet($offset, $value)
+    {
     }
 
     /**
@@ -81,7 +92,7 @@ class HttpFiles implements \ArrayAccess, SingletonInterface, Injectable {
      * @param mixed $offset
      * @return void
      */
-    public function offsetUnset($offset) {
-
+    public function offsetUnset($offset)
+    {
     }
 }

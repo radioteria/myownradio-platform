@@ -9,8 +9,10 @@
 namespace Framework\Handlers\content;
 
 
+use app\Providers\S3ServiceProvider;
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
+use Framework\FileServer\FSFile;
 use Framework\Models\AuthUserModel;
 use Framework\Services\Config;
 use Framework\Services\HttpGet;
@@ -18,8 +20,10 @@ use Framework\View\Errors\View401Exception;
 use Framework\View\Errors\View404Exception;
 use Objects\Track;
 
-class DoGetPreviewAudio implements Controller {
-    public function doGet(HttpGet $get, AuthUserModel $user, Config $config) {
+class DoGetPreviewAudio implements Controller
+{
+    public function doGet(HttpGet $get, AuthUserModel $user)
+    {
         try {
             $id = $get->getRequired("id");
 
@@ -45,12 +49,19 @@ class DoGetPreviewAudio implements Controller {
             header("Content-Type: audio/mp3");
             set_time_limit(0);
 
-            $program = $config->getSetting("streaming", "track_preview")
-                ->getOrElseThrow(ControllerException::of("No preview configured"));
+            $program = config('services.ffmpeg.preview_command');
 
-            $process = sprintf($program, $track->getDuration() / 3000, escapeshellarg($track->getFileUrl()));
+//            $program = $config->getSetting("streaming", "track_preview")
+//                ->getOrElseThrow(ControllerException::of("No preview configured"));
 
-            $proc = popen($process, "r");
+            $hash = $track->getHash();
+            $s3 = S3ServiceProvider::getInstance()->getS3Client();
+
+            $url = $s3->getObjectUrl(config('services.s3.bucket'), FSFile::getPathByHash($hash));
+
+            $command = sprintf($program, $track->getDuration() / 3000, escapeshellarg($url));
+
+            $proc = popen($command, "r");
             while ($data = fread($proc, 4096)) {
                 echo $data;
                 flush();

@@ -1,21 +1,20 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Roman
- * Date: 30.03.15
- * Time: 11:59
- */
 
 namespace Framework\FileServer;
 
-
+use app\Providers\S3ServiceProvider;
 use Framework\Defaults;
 use Framework\FileServer\Exceptions\FileServerException;
 use Framework\FileServer\Exceptions\LocalFileNotFoundException;
 use Framework\Services\Locale\I18n;
 use Objects\FileServer\FileServerFile;
 
-class FSFile {
+class FSFile
+{
+    public static function getPathByHash($hash)
+    {
+        return $remoteFileName = sprintf('audio/%s/%s/%s', $hash[0], $hash[1], $hash);
+    }
 
     /**
      * @param $file_path
@@ -24,7 +23,8 @@ class FSFile {
      * @throws Exceptions\NoSpaceForUploadException
      * @return int Created file ID
      */
-    public static function registerLink($file_path, $hash = null) {
+    public static function registerLink($file_path, $hash = null)
+    {
 
         if (!file_exists($file_path)) {
             throw new LocalFileNotFoundException(I18n::tr("CMN_FILE_NOT_FOUND", ["name" => $file_path]));
@@ -39,19 +39,22 @@ class FSFile {
         $object = FileServerFile::getByFilter("HASH", [$hash])->getOrElseNull();
 
         if (is_null($object)) {
-
             $filesize = filesize($file_path);
-            $fs = FileServerFacade::allocate($filesize);
 
             $object = new FileServerFile();
             $object->setFileHash($hash);
             $object->setFileSize($filesize);
-            $object->setServerId($fs->getServerId());
+            $object->setServerId(-1);
             $object->setUseCount(1);
 
-            if (!$fs->isFileExists($hash)) {
-                $fs->uploadFile($file_path, $hash);
-            }
+            $s3 = S3ServiceProvider::getInstance()->getS3Client();
+
+            $s3->putObject([
+                'Bucket' => config('services.s3.bucket'),
+                'Key'    => self::getPathByHash($hash),
+                'Body'   => fopen($file_path, 'r'),
+                'ACL'    => 'public-read'
+            ]);
 
         } else {
             $object->setUseCount($object->getUseCount() + 1);
@@ -60,38 +63,43 @@ class FSFile {
         $object->save();
 
         return $object->getFileId();
-
     }
 
     /**
      * @param $file_id
      * @internal FileServerFile $object
      */
-    public static function deleteLink($file_id) {
-
+    public static function deleteLink($file_id)
+    {
         FileServerFile::getByID($file_id)->then(function (FileServerFile $file) {
             if ($file->getUseCount() > 0) {
                 $file->setUseCount($file->getUseCount() - 1);
                 $file->save();
             }
+            if ($file->getUseCount() < 1) {
+                $s3 = S3ServiceProvider::getInstance()->getS3Client();
+                $s3->deleteObject([
+                    'Bucket' => config('services.s3.bucket'),
+                    'Key'   => self::getPathByHash($file->getFileHash())
+                ]);
+                $file->delete();
+            }
         });
-
     }
 
     /**
      * @throws FileServerException
      */
-    public static function deleteUnused() {
+    public static function deleteUnused()
+    {
         $files = FileServerFile::getListByFilter("UNUSED");
         foreach ($files as $file) {
-            $fs = new FileServerFacade($file->getServerId());
             try {
-                $fs->delete($file->getFileHash());
+                S3::deleteObjectUrl(self::getPathByHash($file->getFileHash()));
                 $file->delete();
             } catch (FileServerException $exception) {
                 error_log($exception->getMessage());
             }
         }
     }
-
 }

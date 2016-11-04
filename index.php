@@ -33,12 +33,6 @@ FacebookSession::setDefaultApplication(
 // Template engine setup
 Template::setTemplatePath("application/tmpl");
 
-// Init s3 storage
-S3::setAuth(config('services.s3.access_key'), config('services.s3.secret_key'));
-S3::setBucket(config('services.s3.bucket'));
-S3::setAcl(S3::ACL_PUBLIC_READ);
-S3::setStorage(S3::STORAGE_CLASS_STANDARD);
-
 // Routing setup and run
 $router = Router::getInstance();
 $router->route();

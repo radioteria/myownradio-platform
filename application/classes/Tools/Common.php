@@ -9,7 +9,11 @@
 namespace Tools;
 
 
-class Common {
+use Framework\Exceptions\ApplicationException;
+use mikehaertl\shellcommand\Command;
+
+class Common
+{
 
     const GENERATED_ID_LENGTH = 8;
 
@@ -18,7 +22,8 @@ class Common {
      * @param $str
      * @return array|null
      */
-    public static function split($delimiter, $str) {
+    public static function split($delimiter, $str)
+    {
         if ($str === null) return null;
         return explode($delimiter, $str);
     }
@@ -28,7 +33,8 @@ class Common {
      * @param array $args
      * @return mixed
      */
-    private function quick_replace($pattern, array $args = null) {
+    private function quick_replace($pattern, array $args = null)
+    {
         return preg_replace_callback('~(%[a-z0-9\_]+%)~', function ($match) use ($args) {
             $key = trim($match[1], "%");
             if (isset($args[$key])) {
@@ -39,7 +45,8 @@ class Common {
         }, $pattern);
     }
 
-    public static function searchQueryFilter($text) {
+    public static function searchQueryFilter($text)
+    {
 
         $query = "";
         $stop = "\\+\\-\\>\\<\\(\\)\\~\\*\\\"\\@";
@@ -58,7 +65,8 @@ class Common {
 
     }
 
-    static function generateUniqueID($length = self::GENERATED_ID_LENGTH) {
+    static function generateUniqueID($length = self::GENERATED_ID_LENGTH)
+    {
 
         $idCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         $id = "";
@@ -71,7 +79,8 @@ class Common {
 
     }
 
-    static function pageExists($url) {
+    static function pageExists($url)
+    {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_TIMEOUT, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
@@ -91,7 +100,8 @@ class Common {
      * @param $str
      * @return mixed|string
      */
-    static function toAscii($str) {
+    static function toAscii($str)
+    {
         $clean = preg_replace("/[^a-zA-Z0-9\\/_|+ -]/", '', $str);
         $clean = strtolower(trim($clean, '-'));
         $clean = preg_replace("/[\\/_|+ -]+/", '-', $clean);
@@ -102,16 +112,18 @@ class Common {
      * @param $text
      * @return mixed
      */
-    static function toTransliteration($text) {
+    static function toTransliteration($text)
+    {
         $rus = array('А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё', 'Ж', 'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ч', 'Ш', 'Щ', 'Ъ', 'Ы', 'Ь', 'Э', 'Ю', 'Я', 'а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я');
         $lat = array('A', 'B', 'V', 'G', 'D', 'E', 'E', 'Gh', 'Z', 'I', 'Y', 'K', 'L', 'M', 'N', 'O', 'P', 'R', 'S', 'T', 'U', 'F', 'H', 'C', 'Ch', 'Sh', 'Sch', 'Y', 'Y', 'Y', 'E', 'Yu', 'Ya', 'a', 'b', 'v', 'g', 'd', 'e', 'e', 'gh', 'z', 'i', 'y', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'f', 'h', 'c', 'ch', 'sh', 'sch', 'y', 'y', 'y', 'e', 'yu', 'ya');
         return str_replace($rus, $lat, $text);
     }
 
-    static function generateColor($maxLevel) {
+    static function generateColor($maxLevel)
+    {
         $data = [];
         $max = 0;
-        for ($times = 3; $times --;) {
+        for ($times = 3; $times--;) {
             $value = rand(0, $maxLevel);
             $data[] = $value;
             if ($value > $max) {
@@ -128,7 +140,8 @@ class Common {
         return $color;
     }
 
-    static function createTemporaryImage($path = null, $w = 500, $h = 500) {
+    static function createTemporaryImage($path = null, $w = 500, $h = 500)
+    {
 
         $colors = ["28242D", "4C3746", "353952", "454853", "375044", "57564B", "433B46", "23441F", "5B1F3A"];
 
@@ -142,8 +155,8 @@ class Common {
 
         $image = imagecreatetruecolor($width, $height);
 
-        for ($y = 0; $y < $height; $y ++) {
-            for ($x = 0; $x < $width; $x ++) {
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
                 $a_r_level = hexdec(substr($a_color, 0, 2)) / $width * ($width - $x) / $height * ($height - $y);
                 $a_g_level = hexdec(substr($a_color, 2, 2)) / $width * ($width - $x) / $height * ($height - $y);
                 $a_b_level = hexdec(substr($a_color, 4, 2)) / $width * ($width - $x) / $height * ($height - $y);
@@ -192,23 +205,32 @@ class Common {
     /**
      * @param $filename
      * @return Optional
-     * @throws \Framework\Exceptions\ControllerException
+     * @throws ApplicationException
      */
-    static function getAudioDuration($filename) {
+    public static function getAudioDuration($filename)
+    {
+//        $fetcher = "mediainfo";
 
-        $fetcher = "mediainfo";
+        $command = new Command(['command' => 'mediainfo', 'useExec' => true]);
 
-        $fnQuote = escapeshellarg($filename);
+        $command->addArg('--Inform=', "General;%Duration%", true);
+        $command->addArg($filename, null, true);
 
-        $fetchCommand = $fetcher . "  --Inform=\"General;%Duration%\" " . $fnQuote;
+        if (!$command->execute()) {
+            throw ApplicationException::of('Could not execute command: ' . $command->getExecCommand());
+        }
 
-        exec($fetchCommand, $tagsData, $exit);
+//        $fnQuote = escapeshellarg($filename);
 
-        return Optional::ofNullable(isset($tagsData[0]) ? $tagsData[0] : null);
+//        $fetchCommand = $fetcher . "  --Inform=\"General;%Duration%\" " . $fnQuote;
 
+//        exec($fetchCommand, $tagsData, $exit);
+
+        return Optional::ofNullable($command->getOutput());
     }
 
-    static function cp1252dec($chars) {
+    static function cp1252dec($chars)
+    {
 
         $test = @iconv("UTF-8", "CP1252", $chars);
 

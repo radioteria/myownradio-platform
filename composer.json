@@ -16,14 +16,16 @@
     "liqpay/liqpay": "dev-master",
     "facebook/php-sdk": "4.0.23",
     "josegonzalez/dotenv": "^2.0",
-    "buuum/s3": "^0.0.7"
+    "mikehaertl/php-shellcommand": "^1.2",
+    "aws/aws-sdk-php": "^3.19"
   },
   "autoload": {
     "files": [
       "application/helper.php"
     ],
     "psr-4": {
-      "": "application/classes"
+      "": "application/classes",
+      "app\\": "app/"
     }
   },
   "require-dev": {

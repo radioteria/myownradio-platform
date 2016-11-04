@@ -57,9 +57,8 @@ class TracksModel implements Injectable, SingletonInterface {
      * @throws \Framework\Exceptions\ControllerException
      * @return Track
      */
-    public function upload(array $file, Optional $addToStream, $upNext = false, $skipCopies = false) {
-
-        $config = Config::getInstance();
+    public function upload(array $file, Optional $addToStream, $upNext = false, $skipCopies = false)
+    {
         $request = HttpRequest::getInstance();
 
         $id3 = new \getID3();
@@ -82,10 +81,10 @@ class TracksModel implements Injectable, SingletonInterface {
         $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
         $basename = pathinfo($file["name"], PATHINFO_FILENAME);
 
-        $maximalDuration = $config->getSetting('upload', 'maximal_length')->get();
-        $availableFormats = $config->getSetting('upload', 'supported_extensions')->get();
+        $maximalDuration = config('storage.audio.maximal_length');
+        $availableFormats = config('storage.audio.supported_formats');
 
-        if (!preg_match("~^({$availableFormats})$~i", $extension)) {
+        if (!preg_match("~^{$availableFormats}$~i", $extension)) {
             throw new ControllerException(I18n::tr("UPLOAD_FILE_UNSUPPORTED", [$extension]));
         }
 

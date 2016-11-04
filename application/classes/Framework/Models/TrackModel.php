@@ -165,13 +165,6 @@ class TrackModel extends Model implements SingletonInterface {
     /**
      * @return string
      */
-    public function getOriginalFile() {
-        return $this->object->getOriginalFile();
-    }
-
-    /**
-     * @return string
-     */
     public function getFileUrl() {
         /** @var FileServerFile $file */
         $file = FileServerFile::getByID($this->object->getFileId())

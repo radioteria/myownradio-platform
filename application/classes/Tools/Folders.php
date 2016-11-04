@@ -49,35 +49,24 @@ class Folders implements Injectable, SingletonInterface {
     }
 
     /* Dir generators */
-    function genStreamCoverPath($filename) {
-        if ($filename === null) return null;
-        return sprintf(self::MOR_DIR_STREAM_COVERS, self::MOR_HEAP_FOLDER, $filename);
+    public function genStreamCoverPath($filename)
+    {
+        if ($filename === null) {
+            return null;
+        }
+        return config('storage.images.covers_path') . DIRECTORY_SEPARATOR . $filename;
     }
 
     /**
      * @param $filename
      * @return null|string
      */
-    function genAvatarPath($filename) {
-        if ($filename === null) return null;
-        return sprintf(self::MOR_DIR_USER_AVATARS, self::MOR_HEAP_FOLDER, $filename);
-    }
-
-    /**
-     * @param Track $track
-     * @return string
-     */
-    function getRealTrackPath(Track $track) {
-        $original = sprintf("%s/a_%03d_original.%s",
-            $this->getUserContentFolder($track->getUserID()),
-            $track->getID(),
-            $track->getExtension()
-        );
-        $low = sprintf("%s/lores_%03d.mp3",
-            $this->getUserContentFolder($track->getUserID()),
-            $track->getID()
-        );
-        return file_exists($low) ? $low : $original;
+    public function genAvatarPath($filename)
+    {
+        if ($filename === null) {
+            return null;
+        }
+        return config('storage.images.avatars_path') . DIRECTORY_SEPARATOR . $filename;
     }
 
     /**

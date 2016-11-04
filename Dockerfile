@@ -1,10 +1,10 @@
 FROM myownradio/ss-container
 
-RUN mkdir -p /opt/stream-server/build
-
-COPY . /opt/stream-server/build/
-
 WORKDIR /opt/stream-server/build/
+
+COPY src src
+COPY pom.xml .
+COPY server.properties .
 
 RUN mvn package
 

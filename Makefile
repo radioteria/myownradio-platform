@@ -1,5 +1,5 @@
-IMAGE_ID=myownradio/stream-server
-CONTAINER_ID=streamserver
+IMAGE_ID="myownradio/stream-server"
+CONTAINER_ID="streamserver"
 
 install:
 	@ mkdir -p log; \
@@ -31,10 +31,10 @@ stop:
 	  docker rm $(CONTAINER_ID) 2>&1 >/dev/null; \
 	  echo ""
 
-pull:
-	git pull
+deploy:
+	@ docker push $(IMAGE_ID)
 
-deinstall: stop
+uninstall: stop
 	@ rm -rf log; \
 	  docker rmi --force $(IMAGE_ID) 2>&1 >/dev/null; \
 	  echo ""

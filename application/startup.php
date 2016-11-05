@@ -11,5 +11,3 @@ define("START_TIME", microtime(true));
 
 define("APP_ROOT", "application/classes/");
 define("CONTROLLERS_ROOT", "Framework/Handlers/");
-
-putenv("PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin:/home/app/bin");

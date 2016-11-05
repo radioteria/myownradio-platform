@@ -47,7 +47,7 @@ class HttpFiles implements \ArrayAccess, SingletonInterface, Injectable
 
     public function map(callable $callback)
     {
-        return array_map($callback, $_FILES);
+        return array_map($callback, array_values($_FILES));
     }
 
     /**

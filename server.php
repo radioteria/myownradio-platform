@@ -6,6 +6,6 @@ if ($uri !== '/' && file_exists("." . $uri)) {
     return false;
 }
 
-$_GET['route'] = $uri;
+$_GET['route'] = ltrim($uri, '/');
 
 require "index.php";

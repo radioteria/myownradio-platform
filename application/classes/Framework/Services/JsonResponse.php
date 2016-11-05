@@ -45,7 +45,7 @@ class JsonResponse implements Injectable, SingletonInterface {
 
         http_response_code($this->response);
 
-        header("Content-Type: application/json");
+        header("Content-Type: application/json; charset=utf-8");
 
         $printer = new JsonPrinter();
 

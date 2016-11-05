@@ -54,7 +54,9 @@ class DoGetPreviewAudio implements Controller
 
             $url = $s3->getObjectUrl(config('services.s3.bucket'), FSFile::getPathByHash($hash));
 
-            $command = sprintf($program, $track->getDuration() / 3000, escapeshellarg($url));
+            $urlHttp = str_replace('https', 'http', $url);
+
+            $command = sprintf($program, $track->getDuration() / 3000, escapeshellarg($urlHttp));
 
             $proc = popen($command, "r");
             while ($data = fread($proc, 4096)) {

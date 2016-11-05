@@ -33,6 +33,9 @@ FacebookSession::setDefaultApplication(
 // Template engine setup
 Template::setTemplatePath("application/tmpl");
 
+// Set timezone
+date_default_timezone_set(config('app.timezone'));
+
 // Routing setup and run
 $router = Router::getInstance();
 $router->route();

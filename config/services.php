@@ -25,7 +25,10 @@ return [
     ],
 
     'ffmpeg' => [
-        'preview_command' => 'ffmpeg -ss %f -i %s -filter \'afade=t=in:ss=0:d=2\' -vn -acodec libmp3lame -ac 2 -ar 44100 -ab 128k -f mp3 -'
-    ]
+        'preview_args' => '-ss %f -i %s -filter \'afade=t=in:ss=0:d=2\' -acodec libmp3lame -ac 2 -ab 128k -f mp3 -'
+    ],
+
+    'mediainfo_cmd' => env('MEDIAINFO_PATH', 'mediainfo'),
+    'ffmpeg_cmd'    => env('FFMPEG_PATH', 'ffmpeg'),
 
 ];

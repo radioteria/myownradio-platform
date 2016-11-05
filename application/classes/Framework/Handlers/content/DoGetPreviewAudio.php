@@ -8,13 +8,11 @@
 
 namespace Framework\Handlers\content;
 
-
 use app\Providers\S3ServiceProvider;
 use Framework\Controller;
 use Framework\Exceptions\ControllerException;
 use Framework\FileServer\FSFile;
 use Framework\Models\AuthUserModel;
-use Framework\Services\Config;
 use Framework\Services\HttpGet;
 use Framework\View\Errors\View401Exception;
 use Framework\View\Errors\View404Exception;
@@ -49,7 +47,7 @@ class DoGetPreviewAudio implements Controller
             header("Content-Type: audio/mp3");
             set_time_limit(0);
 
-            $program = config('services.ffmpeg.preview_command');
+            $program = config('services.ffmpeg_cmd') . ' ' . config('services.ffmpeg.preview_args');
 
             $hash = $track->getHash();
             $s3 = S3ServiceProvider::getInstance()->getS3Client();

@@ -209,9 +209,7 @@ class Common
      */
     public static function getAudioDuration($filename)
     {
-//        $fetcher = "mediainfo";
-
-        $command = new Command(['command' => 'mediainfo', 'useExec' => true]);
+        $command = new Command(['command' => config('mediainfo_cmd'), 'useExec' => true]);
 
         $command->addArg('--Inform=', "General;%Duration%", true);
         $command->addArg($filename, null, true);
@@ -219,12 +217,6 @@ class Common
         if (!$command->execute()) {
             throw ApplicationException::of('Could not execute command: ' . $command->getExecCommand());
         }
-
-//        $fnQuote = escapeshellarg($filename);
-
-//        $fetchCommand = $fetcher . "  --Inform=\"General;%Duration%\" " . $fnQuote;
-
-//        exec($fetchCommand, $tagsData, $exit);
 
         return Optional::ofNullable($command->getOutput());
     }

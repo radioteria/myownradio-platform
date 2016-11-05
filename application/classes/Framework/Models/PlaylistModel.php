@@ -417,7 +417,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     public static function notifyAllStreamers($streamID)
     {
-        $ch = curl_init("http://stream1.myownradio.biz:7778/notify?s=" . $streamID);
+        $ch = curl_init("http://stream1.myownradio.biz:7778/notify?token=notify_me&s=" . $streamID);
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_VERBOSE, true);

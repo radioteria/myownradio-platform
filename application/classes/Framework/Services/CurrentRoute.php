@@ -22,11 +22,10 @@ class CurrentRoute implements Injectable, SingletonInterface {
 
     public function __construct()
     {
-        $route = $_GET["route"] != '/' ? substr($_GET["route"], 1) : 'index';
+        $route = $_GET["route"] ?: 'index';
 
         $this->legacy = preg_replace('/(\.(html|php)$)|(\/$)/', '', $route);
 
-        error_log($this->legacy);
         $route_array = explode("/", $this->legacy);
         $count = count($route_array);
         $route_array[$count - 1] = "Do" . ucfirst($route_array[$count - 1]);

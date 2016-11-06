@@ -8,6 +8,9 @@
 
 namespace Framework\Services;
 
+use app\Helpers\Upload;
+use Framework\Exceptions\ApplicationException;
+use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
 use Tools\Optional;
 use Tools\Singleton;
@@ -47,7 +50,17 @@ class HttpFiles implements \ArrayAccess, SingletonInterface, Injectable
 
     public function map(callable $callback)
     {
-        return array_map($callback, array_values($_FILES));
+        $result = [];
+
+        foreach ($_FILES as $file) {
+            if ($file['error'] == UPLOAD_ERR_OK) {
+                $result[] = $callback($file);
+            }
+            $errorDescription = Upload::decodeUploadError($file['error']);
+            throw new ApplicationException('File upload error status: '. $errorDescription);
+        }
+
+        return $result;
     }
 
     /**

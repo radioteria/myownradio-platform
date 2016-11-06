@@ -80,6 +80,11 @@ class Router implements SingletonInterface, Injectable {
 
         $sub->addRoute("subscribe", "api\\v3\\DoAcquire");
 
+        $sub->addRoute("flow", function () {
+            $query = http_build_query($_GET);
+            header("Location: http://stream1.myownradio.biz:7778/audio?" . $query);
+        });
+
         // Default route
         $sub->defaultRoute(function (Router $router) {
             http_response_code(404);

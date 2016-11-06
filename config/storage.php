@@ -15,8 +15,9 @@ return [
     ],
 
     'audio'  => [
-        'maximal_length'    => 14400000,
-        'supported_formats' => 'mp3'
+        'track_duration_max'    => 14400000,
+        'track_file_size_max'   => 536870912,
+        'supported_formats'     => 'mp3',
     ]
 
 ];

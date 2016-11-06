@@ -81,7 +81,7 @@ class TracksModel implements Injectable, SingletonInterface {
         $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
         $basename = pathinfo($file["name"], PATHINFO_FILENAME);
 
-        $maximalDuration = config('storage.audio.maximal_length');
+        $maximalDuration = config('storage.audio.track_duration_max');
         $availableFormats = config('storage.audio.supported_formats');
 
         if (!preg_match("~^{$availableFormats}$~i", $extension)) {

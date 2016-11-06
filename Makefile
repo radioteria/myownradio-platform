@@ -1,9 +1,8 @@
 IMAGE_ID="myownradio/backend-service"
-
-test:
-	composer exec phpunit
+CONTAINER_ID="myownradio-backend-service"
 
 install:
+	mkdir -p storage/cache
 	mkdir -p storage/logs
 	mkdir -p storage/sessions
 	mkdir -p storage/images/avatars
@@ -11,5 +10,5 @@ install:
 	composer install
 	bower install
 
-build:
-	docker build -t $(IMAGE_ID) .
+serve:
+	php -S 127.0.0.1:6060 server.php

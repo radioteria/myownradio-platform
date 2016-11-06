@@ -56,7 +56,7 @@ public class FFEncoderBuilder {
             "-"
         ));
 
-        cmd = builder.toArray(new String[0]);
+        cmd = builder.toArray(new String[builder.size()]);
 
     }
 

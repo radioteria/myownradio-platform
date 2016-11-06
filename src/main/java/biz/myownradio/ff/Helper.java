@@ -11,7 +11,7 @@ abstract class Helper {
 
         List<String> builder = new ArrayList<String>();
 
-        if (MORSettings.getBooleanNow("command.ffmpeg.remote")) {
+        if (MORSettings.getBoolean("command.ffmpeg.remote").orElse(false)) {
             builder.add("ssh");
 
             builder.add("-l");

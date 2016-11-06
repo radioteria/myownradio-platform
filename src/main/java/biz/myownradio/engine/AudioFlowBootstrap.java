@@ -34,7 +34,11 @@ public class AudioFlowBootstrap {
     public AudioFlowBootstrap(LHttpProtocol exchange, int stream_id, FFEncoderBuilder encoder, boolean useIcyMetadata)
             throws SQLException, RadioException, IOException {
 
+        logger.println("Reading stream " + stream_id);
+
         this.streamObject = new Stream(stream_id);
+
+        logger.println("Stream: " + this.streamObject.getName());
 
         Client client = new Client(exchange);
 

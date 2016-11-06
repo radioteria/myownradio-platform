@@ -73,7 +73,8 @@ public class GetStreamAudioHandler implements LHttpHandler {
 
             radio.startStreamer();
 
-        } catch (SQLException | RadioException e) {
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

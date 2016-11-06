@@ -1,4 +1,4 @@
-FROM myownradio/ss-container
+FROM myownradio/streamer-image
 
 EXPOSE 7778
 

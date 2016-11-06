@@ -44,7 +44,7 @@ class FSFile
             $object = new FileServerFile();
             $object->setFileHash($hash);
             $object->setFileSize($filesize);
-            $object->setServerId(-1);
+            $object->setServerId(1);
             $object->setUseCount(1);
 
             $s3 = S3ServiceProvider::getInstance()->getS3Client();

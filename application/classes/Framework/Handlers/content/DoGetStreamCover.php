@@ -60,7 +60,6 @@ class DoGetStreamCover implements Controller {
                     mkdir($cache->dirname(), 0777, true);
                 }
 
-
                 $image = new \acResizeImage($path->path());
                 $image->cropSquare();
                 $image->resize($size);
@@ -68,8 +67,7 @@ class DoGetStreamCover implements Controller {
 
                 $image->output($path->extension(), 80);
 
-
-                //$image->save($cache->dirname() . "/", $cache->filename(), $path->extension(), true, 80);
+                $image->save($cache->dirname() . "/", $cache->filename(), $path->extension(), true, 80);
 
             }
 

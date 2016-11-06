@@ -34,9 +34,7 @@ public class MORLogger {
 
     public synchronized void println(String message) {
 
-        String date = new Date().toString();
-        String thread = Thread.currentThread().getName();
-        String out = String.format("[%s] [%s] [%s] %s", date, kind.toString(), thread, message);
+        String out = String.format("[%s] %s", kind.toString(), message);
 
         if (pw != null) {
             pw.println(out);

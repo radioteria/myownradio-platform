@@ -9,12 +9,12 @@ install:
 build:
 	docker build -t $(IMAGE_ID) .
 
-deploy: install build
+deploy:
 	docker push $(IMAGE_ID)
 
-serve: install build
+serve:
 	docker run --rm -it -p 7778:7778 $(IMAGE_ID)
 
-clean-deploy: clean deploy
+clean-deploy: clean install build deploy
 
-clean-build: clean build
+clean-build: clean install build

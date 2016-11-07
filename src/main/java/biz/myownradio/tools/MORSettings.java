@@ -48,8 +48,8 @@ public class MORSettings {
         String value = properties.getProperty(key);
 
         return OptionalAlternator.of(
-                () -> Optional.ofNullable(value),
-                () -> getEnv(key)
+                () -> getEnv(key),
+                () -> Optional.ofNullable(value)
         );
     }
 

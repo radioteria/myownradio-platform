@@ -2,13 +2,18 @@ package biz.myownradio.tools;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Roman on 08.10.14
  */
 public class MORSettings {
 
-    public static class SettingsException extends RuntimeException {}
+    private static class SettingsException extends RuntimeException {
+        SettingsException(String message) {
+            super(message);
+        }
+    }
 
     private static Properties properties = new Properties();
 
@@ -28,7 +33,11 @@ public class MORSettings {
 
     public static Optional<String> getString(String key) {
         String value = properties.getProperty(key);
-        return value == null ? Optional.empty() : Optional.of(value);
+        Optional<String> setting = Optional.ofNullable(value);
+        if (setting.isPresent()) {
+            return setting;
+        }
+        return getEnv(key);
     }
 
     public static Optional<Integer> getInteger(String key) {
@@ -40,14 +49,26 @@ public class MORSettings {
     }
 
     public static String getStringNow(String key) {
-        return getString(key).orElseThrow(SettingsException::new);
+        return getOrFail(getString(key), key);
     }
 
     public static Integer getIntegerNow(String key) {
-        return getInteger(key).orElseThrow(SettingsException::new);
+        return getOrFail(getInteger(key), key);
     }
 
     public static Boolean getBooleanNow(String key) {
-        return getBoolean(key).orElseThrow(SettingsException::new);
+        return getOrFail(getBoolean(key), key);
+    }
+
+    private static <T> T getOrFail(Optional<T> optional, String key) {
+        return optional.orElseThrow(() -> new SettingsException("Setting '" + key + "' does not exist"));
+    }
+
+    private static Optional<String> getEnv(String key) {
+        return Optional.ofNullable(System.getenv(keyToEnv(key)));
+    }
+
+    private static String keyToEnv(String key) {
+        return Arrays.stream(key.split("\\.")).map(String::toUpperCase).collect(Collectors.joining("_"));
     }
 }

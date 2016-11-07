@@ -69,6 +69,6 @@ public class MORSettings {
     }
 
     private static String keyToEnv(String key) {
-        return Arrays.stream(key.split("\\.")).map(String::toUpperCase).collect(Collectors.joining("_"));
+        return "MOR_" + Arrays.stream(key.split("\\.")).map(String::toUpperCase).collect(Collectors.joining("_"));
     }
 }

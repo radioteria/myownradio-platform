@@ -2,25 +2,19 @@ FROM myownradio/streamer-image
 
 EXPOSE 7778
 
-WORKDIR /opt/stream-server/build/
+WORKDIR /home/mor
 
-COPY src src
-COPY pom.xml .
+COPY target/stream-server.jar .
 COPY server.properties .
 
-RUN mvn package
+RUN chown -R mor:mor .
 
-WORKDIR /opt/stream-server/build/target/
+RUN mkdir /var/log/stream-server && chown -R mor:mor /var/log/stream-server
 
-RUN mv -v stream-server.jar ../../
+VOLUME ["/var/log/stream-server"]
 
-WORKDIR /opt/stream-server/
+ENV MOR_CONFIG_FILE=/home/mor/server.properties
 
-RUN rm -rf build && \
-    rm -rf ~/.m2/*
+CMD ["java", "-jar", "stream-server.jar"]
 
-COPY server.properties .
-
-ENV MOR_CONFIG_FILE=/opt/stream-server/server.properties
-
-ENTRYPOINT java -jar stream-server.jar
+USER mor

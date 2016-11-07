@@ -14,6 +14,7 @@ use Framework\Exceptions\UnauthorizedException;
 use Framework\FileServer\FileServerFacade;
 use Framework\FileServer\FSFile;
 use Framework\Services\Config;
+use Framework\Services\Database;
 use Framework\Services\Locale\I18n;
 use Objects\FileServer\FileServerFile;
 use Objects\Track;
@@ -199,12 +200,32 @@ class TrackModel extends Model implements SingletonInterface {
     /**
      * @return void
      */
-    public function delete() {
+    public function delete()
+    {
+        $db = Database::getInstance()->connect();
 
         error_log(sprintf("User #%d is deleting track %s", $this->getUserID(), $this->getFileName()));
         FSFile::deleteLink($this->object->getFileId());
+
+        $db->beginTransaction();
+
+        $db->justExecute("
+            UPDATE `r_static_user_vars`
+            SET
+                `tracks_count` = GREATEST(`tracks_count` - 1, 0),
+                `tracks_duration` = GREATEST(`tracks_duration` - :duration, 0),
+                `tracks_size` = GREATEST(`tracks_size` - :size, 0)
+            WHERE
+                `user_id` = :user_id
+        ", [
+            ":size" => $this->object->getFileSize(),
+            ":duration" => $this->object->getDuration(),
+            ":user_id" => $this->object->getUserID()
+        ]);
+
         $this->object->delete();
 
+        $db->commit();
     }
 
 }

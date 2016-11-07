@@ -8,6 +8,9 @@ import biz.myownradio.LHttp.ContextHandlers.GetRunStateHandler;
 import biz.myownradio.LHttp.ContextHandlers.GetStreamAudioHandler;
 import biz.myownradio.LHttp.ContextHandlers.SetStreamStateNotifyHandler;
 import biz.myownradio.LHttp.ContextObjects.LHttpContextString;
+import biz.myownradio.LHttp.LHttpException;
+import biz.myownradio.LHttp.LHttpHandler;
+import biz.myownradio.LHttp.LHttpProtocol;
 import biz.myownradio.LHttp.LHttpServer;
 import biz.myownradio.tools.MORLogger;
 import biz.myownradio.tools.MORSettings;
@@ -49,6 +52,12 @@ public class WebRadio {
         httpServer
                 .when(new LHttpContextString("/audio"))
                 .exec(new GetStreamAudioHandler());
+
+        httpServer
+                .when(new LHttpContextString("/error"))
+                .exec(exchange -> {
+                    throw LHttpException.serverError("Something wrong...");
+                });
 
     }
 

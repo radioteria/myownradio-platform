@@ -79,13 +79,14 @@ public class LHttpServer {
                                 request.getRequestPath());
                         routeRequest(request, outputStream);
                     } catch (LHttpException e) {
-                        logger.sprintf("Unable to route request. STATUS=%s", e.getStatus().getCode());
-                        PrintWriter printWriter = new PrintWriter(outputStream, true);
                         LHttpStatus st = e.getStatus();
+                        logger.sprintf("Unable to route request. STATUS=%s", st.getCode());
+                        PrintWriter printWriter = new PrintWriter(outputStream, true);
                         printWriter.printf("HTTP/1.1 %s\r\n", st.getResponse());
                         printWriter.println("Content-Type: text/html");
                         printWriter.println("");
                         printWriter.printf("<h1>%s</h1>", st.getResponse());
+                        printWriter.println(e.getMessage());
                     }
                 } catch (IOException hotClientDisconnection) {
                     logger.sprintf("Client IP=%s hardly disconnected", socket.getInetAddress().getHostAddress());

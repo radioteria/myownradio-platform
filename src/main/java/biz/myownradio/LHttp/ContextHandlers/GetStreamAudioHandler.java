@@ -76,6 +76,7 @@ public class GetStreamAudioHandler implements LHttpHandler {
 
         } catch (Exception e) {
             e.printStackTrace();
+            throw LHttpException.serverError(e.getMessage());
         }
 
     }

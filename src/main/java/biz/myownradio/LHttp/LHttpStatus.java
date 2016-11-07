@@ -9,6 +9,7 @@ public enum LHttpStatus {
     STATUS_403(403, "Forbidden"),
     STATUS_404(404, "Not Found"),
     STATUS_413(413, "Request Entity Too Large"),
+    STATUS_500(500, "Internal Server Error"),
     STATUS_501(501, "Not Implemented");
 
     final private int code;

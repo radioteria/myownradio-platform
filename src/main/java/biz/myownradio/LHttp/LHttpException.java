@@ -10,6 +10,10 @@ public class LHttpException extends RuntimeException {
         this.status = status;
     }
 
+    public LHttpException(LHttpStatus status, String message) {
+        super(message);
+    }
+
     public LHttpStatus getStatus() {
         return status;
     }
@@ -33,4 +37,13 @@ public class LHttpException extends RuntimeException {
     public static LHttpException forbidden() {
         return new LHttpException(LHttpStatus.STATUS_403);
     }
+
+    public static LHttpException serverError() {
+        return new LHttpException(LHttpStatus.STATUS_500);
+    }
+
+    public static LHttpException serverError(String message) {
+        return new LHttpException(LHttpStatus.STATUS_500, message);
+    }
+
 }

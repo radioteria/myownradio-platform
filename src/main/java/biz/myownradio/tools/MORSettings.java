@@ -2,7 +2,7 @@ package biz.myownradio.tools;
 
 import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 
 /**
  * Created by Roman on 08.10.14
@@ -12,6 +12,19 @@ public class MORSettings {
     private static class SettingsException extends RuntimeException {
         SettingsException(String message) {
             super(message);
+        }
+    }
+
+    private static class OptionalCombiner {
+        @SafeVarargs
+        static <T> Optional<T> combine(Supplier<Optional<T>>... suppliers) {
+            for (Supplier<Optional<T>> supplier : suppliers) {
+                Optional<T> value = supplier.get();
+                if (value.isPresent()) {
+                    return value;
+                }
+            }
+            return Optional.empty();
         }
     }
 
@@ -33,11 +46,11 @@ public class MORSettings {
 
     public static Optional<String> getString(String key) {
         String value = properties.getProperty(key);
-        Optional<String> setting = Optional.ofNullable(value);
-        if (setting.isPresent()) {
-            return setting;
-        }
-        return getEnv(key);
+
+        return OptionalCombiner.combine(
+                () -> Optional.ofNullable(value),
+                () -> getEnv(key)
+        );
     }
 
     public static Optional<Integer> getInteger(String key) {
@@ -69,6 +82,6 @@ public class MORSettings {
     }
 
     private static String keyToEnv(String key) {
-        return "MOR_" + Arrays.stream(key.split("\\.")).map(String::toUpperCase).collect(Collectors.joining("_"));
+        return "MOR_" + key.toUpperCase().replace(".", "_");
     }
 }

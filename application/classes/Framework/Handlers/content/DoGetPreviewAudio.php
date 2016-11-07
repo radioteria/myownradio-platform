@@ -69,7 +69,12 @@ class DoGetPreviewAudio implements Controller
                 echo $data;
                 flush();
             }
-            pclose($proc);
+
+            $status = pclose($proc);
+
+            if ($status != 0) {
+                throw new ApplicationException("Status({$status}) {$command}");
+            }
 
         } catch (ControllerException $exception) {
             echo $exception->getMyMessage();

@@ -1,0 +1,7 @@
+image: myownradio/streamer-image
+
+pipelines:
+  default:
+    - step:
+        script:
+          - mvn clean install

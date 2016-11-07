@@ -1,7 +1,0 @@
-image: myownradio/streamer-image
-
-pipelines:
-  default:
-    - step:
-        script:
-          - make clean-deploy

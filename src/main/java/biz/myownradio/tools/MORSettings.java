@@ -15,9 +15,9 @@ public class MORSettings {
         }
     }
 
-    private static class OptionalCombiner {
+    private static class OptionalAlternator {
         @SafeVarargs
-        static <T> Optional<T> combine(Supplier<Optional<T>>... suppliers) {
+        static <T> Optional<T> of(Supplier<Optional<T>>... suppliers) {
             for (Supplier<Optional<T>> supplier : suppliers) {
                 Optional<T> value = supplier.get();
                 if (value.isPresent()) {
@@ -47,7 +47,7 @@ public class MORSettings {
     public static Optional<String> getString(String key) {
         String value = properties.getProperty(key);
 
-        return OptionalCombiner.combine(
+        return OptionalAlternator.of(
                 () -> Optional.ofNullable(value),
                 () -> getEnv(key)
         );

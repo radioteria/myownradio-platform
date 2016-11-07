@@ -10,6 +10,7 @@ namespace Framework\Handlers\content;
 
 use app\Providers\S3ServiceProvider;
 use Framework\Controller;
+use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
 use Framework\FileServer\FSFile;
 use Framework\Models\AuthUserModel;
@@ -59,6 +60,11 @@ class DoGetPreviewAudio implements Controller
             $command = sprintf($program, $track->getDuration() / 3000, escapeshellarg($urlHttp));
 
             $proc = popen($command, "r");
+
+            if (!$proc) {
+                throw new ApplicationException("Could not start - {$command}");
+            }
+
             while ($data = fread($proc, 4096)) {
                 echo $data;
                 flush();

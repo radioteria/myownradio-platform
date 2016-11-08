@@ -106,41 +106,7 @@
                 </div>
             </div>
         </div>
-        <div class="schedule-container">
-            <div class="tracks-toggle" ng-click="scheduleShown = !scheduleShown">
-                <span ng-show="!scheduleShown" class="tracks-toggle-text-content">
-                    <i class="icon-chevron-down"></i>
-                    <translate>FR_SHOW</translate>
-                </span>
-                <span ng-show="scheduleShown" class="tracks-toggle-text-content">
-                    <i class="icon-chevron-up"></i>
-                    <translate>FR_HIDE</translate>
-                </span>
-                <span class="tracks-toggle-text-content">
-                    <translate>FR_RECENT_UPCOMING</translate>
-                </span>
-            </div>
-            <div ng-class="{open: scheduleShown}" class="tracks-list">
-                <div class="track-row" ng-class="{current: $index == schedule.source.current}" ng-repeat="track in schedule.destination.tracks">
-                    <div class="fixed-width">
-                        <div class="track-duration" ng-bind="track.duration | msToTime"></div>
-                        <div class="track-artist" ng-show="track.artist.length" ng-bind="track.artist"></div>
-                        <div class="track-offset" ng-bind="($index == schedule.destination.current) ? 'now' : ((track.time_offset - schedule.destination.position) | msToSmallTime)"></div>
-                        <div class="track-now">
-                            <i class="icon-volume-up"></i>
-                        </div>
-                        <div class="track-title">
-                            <span ng-bind="track.title"></span>
-                            <span class="track-edit-tools" ng-if="data.channel.uid == account.user.uid">
-                                <i class="icon-mode-edit" mor-tooltip="{{ tr('FR_EDIT_TRACK_INFO') }}" ng-click="trackAction.editTrack([track])"></i>
-                                <i class="icon-trash" mor-tooltip="{{ tr('FR_REMOVE_TRACK_FROM_STREAM') }}" ng-click="action.removeTrack(track)"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+     </div>
     <style ng-if="data.channel.cover_background">.timeline-track { background-color: {{ data.channel.cover_background }} !important; }</style>
     <div class="fixed-width">
         <div class="container-padding">

@@ -12,7 +12,7 @@ build:
 deploy:
 	docker push $(IMAGE_ID)
 
-serve:
+serve: clean install build
 	docker run --rm -it -p 7778:7778 $(IMAGE_ID)
 
 clean-deploy: clean install build deploy

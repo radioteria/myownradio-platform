@@ -8,72 +8,54 @@
 
 namespace Framework\Handlers\content;
 
-
+use app\Providers\S3;
 use Framework\Controller;
 use Framework\Services\HttpGet;
 use Framework\View\Errors\View404Exception;
-use Tools\File;
 use Tools\Folders;
 
-class DoGetStreamCover implements Controller {
-
-    public function doGet(HttpGet $get, Folders $folders) {
-
-
+class DoGetStreamCover implements Controller
+{
+    public function doGet(HttpGet $get, Folders $folders)
+    {
+        $s3 = S3::getInstance()->getS3Client();
         $fn = $get->getParameter("fn")->getOrElseThrow(new View404Exception());
 
         $size = $get->getParameter("size")->getOrElseNull();
 
-        $path = new File($folders->genStreamCoverPath($fn));
+        $path = 'covers/' . $fn;
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
 
-        if (!$path->exists()) {
+        if (!$s3->doesObjectExist(config('services.s3.bucket'), $path)) {
             throw new View404Exception();
         }
 
-
-        if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) >= $path->mtime()) {
-            header('HTTP/1.1 304 Not Modified');
-            die();
-        } else {
-            header("Last-Modified: " . gmdate("D, d M Y H:i:s", $path->mtime()) . " GMT");
-            header('Cache-Control: max-age=0');
-        }
-
-        header("Content-Type: " . $path->getContentType());
-        header(sprintf('Content-Disposition: filename="%s"', $path->filename()));
-
         if ($size === null) {
-
-            $path->show();
-
+            http_response_code(302);
+            header("Location: " . $s3->getObjectUrl(config('services.s3.bucket'), $path));
+            return;
         } else {
-
-            $cache = $folders->generateCacheFile($_GET, $path);
-
-            if ($cache->exists()) {
-
-                $cache->show();
-
-            } else {
-
-                if (!file_exists($cache->dirname())) {
-                    mkdir($cache->dirname(), 0777, true);
-                }
-
-                $image = new \acResizeImage($path->path());
+            $cachePath = $folders->generateCacheFile2($_GET, $extension);
+            if (!$s3->doesObjectExist(config('services.s3.bucket'), $cachePath)) {
+                $image = new \acResizeImage($s3->getObjectUrl(config('services.s3.bucket'), $path));
                 $image->cropSquare();
                 $image->resize($size);
                 $image->interlace();
 
-                $image->output($path->extension(), 80);
+                ob_start();
+                $image->output($extension, 80);
+                $imageData = ob_get_clean();
 
-                $image->save($cache->dirname() . "/", $cache->filename(), $path->extension(), true, 80);
-
+                $s3->putObject([
+                    'Bucket' => config('services.s3.bucket'),
+                    'Key'    => $cachePath,
+                    'Body'   => $imageData,
+                    'ACL'    => 'public-read'
+                ]);
             }
-
-
+            http_response_code(302);
+            header("Location: " . $s3->getObjectUrl(config('services.s3.bucket'), $cachePath));
+            return;
         }
-
     }
-
-} 
+}

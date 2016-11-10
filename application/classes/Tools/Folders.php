@@ -43,6 +43,25 @@ class Folders implements Injectable, SingletonInterface {
         ));
     }
 
+    /**
+     * @param mixed $data
+     * @param string $extension
+     * @return string
+     */
+    public function generateCacheFile2($data, $extension)
+    {
+        $data = serialize($data);
+        $md5 = md5($data);
+        return sprintf(
+            self::MOR_DIR_CACHE_LOCATION,
+            'cache',
+            $md5[0],
+            $md5[1],
+            $md5,
+            $extension
+        );
+    }
+
     /* Url generators */
     function genStreamCoverUrl($filename) {
         if ($filename === null) return null;

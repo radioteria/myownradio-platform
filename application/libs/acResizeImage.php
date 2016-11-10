@@ -19,8 +19,8 @@ class acResizeImage {
      * @param $file String    Путь к временному файлу
      */
     function __construct($file) {
-        if (@!file_exists($file)) exit("File does not exist");
-        if (!$this->setType($file)) exit("File is not an image");
+//        if (@!file_exists($file)) exit("File does not exist");
+        $this->setType($file);
         $this->openImage($file);
         $this->setSize();
     }
@@ -279,7 +279,7 @@ class acResizeImage {
      * @return boolean        TRUE, если файл является изображением. FALSE - в противном случае.
      */
     private function setType($file) {
-        $mime = mime_content_type($file);
+        $mime = $this->isUrl($file) ? $this->getUrlContentType($file) : mime_content_type($file);
         switch ($mime) {
             case 'image/jpeg':
                 $this->type = "jpg";
@@ -293,6 +293,22 @@ class acResizeImage {
             default:
                 return false;
         }
+    }
+
+    private function getUrlContentType($url)
+    {
+        $headers = get_headers($url);
+        foreach ($headers as $header) {
+            if (stripos($header, 'Content-Type') !== false) {
+                return trim(explode(':', $header)[1]);
+            }
+        }
+        return 'application/octet-stream';
+    }
+
+    private function isUrl($file)
+    {
+        return 'http' == substr($file, 0, 4);
     }
 
     /**

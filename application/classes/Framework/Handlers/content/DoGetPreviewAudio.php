@@ -8,7 +8,7 @@
 
 namespace Framework\Handlers\content;
 
-use app\Providers\S3ServiceProvider;
+use app\Providers\S3;
 use Framework\Controller;
 use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
@@ -51,7 +51,7 @@ class DoGetPreviewAudio implements Controller
             $program = config('services.ffmpeg_cmd') . ' ' . config('services.ffmpeg.preview_args');
 
             $hash = $track->getHash();
-            $s3 = S3ServiceProvider::getInstance()->getS3Client();
+            $s3 = S3::getInstance()->getS3Client();
 
             $url = $s3->getObjectUrl(config('services.s3.bucket'), FSFile::getPathByHash($hash));
 

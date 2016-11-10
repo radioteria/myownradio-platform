@@ -6,7 +6,7 @@ use Aws\Credentials\Credentials;
 use Aws\S3\S3Client;
 use Tools\Singleton;
 
-class S3ServiceProvider
+class S3
 {
     use Singleton;
 

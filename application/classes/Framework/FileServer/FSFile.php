@@ -2,7 +2,7 @@
 
 namespace Framework\FileServer;
 
-use app\Providers\S3ServiceProvider;
+use app\Providers\S3;
 use Framework\Defaults;
 use Framework\FileServer\Exceptions\FileServerException;
 use Framework\FileServer\Exceptions\LocalFileNotFoundException;
@@ -47,7 +47,7 @@ class FSFile
             $object->setServerId(1);
             $object->setUseCount(1);
 
-            $s3 = S3ServiceProvider::getInstance()->getS3Client();
+            $s3 = S3::getInstance()->getS3Client();
 
             $s3->putObject([
                 'Bucket' => config('services.s3.bucket'),
@@ -79,7 +79,7 @@ class FSFile
                 $file->save();
             }
             if ($file->getUseCount() < 1) {
-                $s3 = S3ServiceProvider::getInstance()->getS3Client();
+                $s3 = S3::getInstance()->getS3Client();
                 $s3->deleteObject([
                     'Bucket' => config('services.s3.bucket'),
                     'Key'   => self::getPathByHash($file->getFileHash())

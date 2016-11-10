@@ -10,6 +10,7 @@ namespace Framework\Models;
 
 
 use app\Providers\S3;
+use app\Services\ImageService;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\Database;
@@ -177,14 +178,11 @@ class StreamModel extends Model implements SingletonInterface {
     public function removeCover()
     {
         if (!is_null($this->stream->getCover())) {
-            $s3 = S3::getInstance()->getS3Client();
+            $s3 = S3::getInstance();
             $path = 'covers/' . $this->stream->getCover();
 
-            if ($s3->doesObjectExist(config('services.s3.bucket'), $path)) {
-                $s3->deleteObject([
-                    "Bucket" => config('services.s3.bucket'),
-                    "Key" => $path
-                ]);
+            if ($s3->doesObjectExist($path)) {
+                $s3->delete($path);
             }
 
             $this->stream->setCoverBackground(null);
@@ -195,7 +193,7 @@ class StreamModel extends Model implements SingletonInterface {
 
     public function changeCover($file)
     {
-        $s3 = S3::getInstance()->getS3Client();
+        $s3 = S3::getInstance();
 
         $validator = InputValidator::getInstance();
 
@@ -210,22 +208,18 @@ class StreamModel extends Model implements SingletonInterface {
         $newImageFile = sprintf("stream%05d_%s.%s", $this->key, $random, strtolower($extension));
         $newImagePath = 'covers/' . $newImageFile;
 
-        $s3->putObject([
-            "Bucket" => config('services.s3.bucket'),
-            "Key"    => $newImagePath,
-            'Body'   => file_get_contents($file["tmp_name"]),
-            'ACL'    => 'public-read'
-        ]);
 
-//        $gd = new \acResizeImage($newImagePath);
+        $s3->put($newImagePath, fopen($file["tmp_name"], 'r'), mimetype_from_extension($extension));
 
-//        $this->stream->setCoverBackground($gd->getImageBackgroundColor());
+        $url = $s3->url($newImagePath);
+
+        $this->stream->setCoverBackground((new ImageService())->getImageBackgroundColor($url));
         $this->stream->setCover($newImageFile);
         $this->stream->save();
 
         return [
-            "url" => $s3->getObjectUrl(config('services.s3.bucket'), $newImagePath),
-            "name" => $newImageFile
+            "url"   => $url,
+            "name"  => $newImageFile
         ];
     }
 
@@ -234,11 +228,7 @@ class StreamModel extends Model implements SingletonInterface {
         (new DeleteQuery("r_link"))->where("stream_id", $this->key)->update();
 
         if (!is_null($this->stream->getCover())) {
-            $s3 = S3::getInstance()->getS3Client();
-            $s3->deleteObject([
-                "Bucket"    => config('services.s3.bucket'),
-                "Key"       => 'covers/'. $this->stream->getCover()
-            ]);
+            S3::getInstance()->delete('covers/'. $this->stream->getCover());
         }
 
         $this->stream->delete();

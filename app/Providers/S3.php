@@ -28,7 +28,7 @@ class S3
             'credentials'       => $credentials
         ]);
 
-        $this->bucket = config('service.s3.bucket');
+        $this->bucket = config('services.s3.bucket');
     }
 
     /**
@@ -43,7 +43,7 @@ class S3
      * @param $key
      * @return bool
      */
-    public function doesObjectExists($key)
+    public function doesObjectExist($key)
     {
         return $this->getS3Client()->doesObjectExist($this->bucket, $key);
     }
@@ -51,14 +51,16 @@ class S3
     /**
      * @param $key
      * @param $body
+     * @param null|string $contentType
      */
-    public function put($key, $body)
+    public function put($key, $body, $contentType = null)
     {
         $this->getS3Client()->putObject([
-            'Bucket' => config('services.s3.bucket'),
-            'Key'    => $key,
-            'Body'   => $body,
-            'ACL'    => 'public-read'
+            'Bucket'       => $this->bucket,
+            'Key'          => $key,
+            'Body'         => $body,
+            'ACL'          => 'public-read',
+            'ContentType' => $contentType
         ]);
     }
 
@@ -69,5 +71,16 @@ class S3
     public function url($key)
     {
         return $this->getS3Client()->getObjectUrl($this->bucket, $key);
+    }
+
+    /**
+     * @param $key
+     */
+    public function delete($key)
+    {
+        $this->getS3Client()->deleteObject([
+            "Bucket"    => $this->bucket,
+            "Key"       => $key
+        ]);
     }
 }

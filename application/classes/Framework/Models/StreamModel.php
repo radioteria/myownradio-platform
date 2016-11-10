@@ -217,14 +217,14 @@ class StreamModel extends Model implements SingletonInterface {
             'ACL'    => 'public-read'
         ]);
 
-        $gd = new \acResizeImage($newImagePath);
+//        $gd = new \acResizeImage($newImagePath);
 
-        $this->stream->setCoverBackground($gd->getImageBackgroundColor());
+//        $this->stream->setCoverBackground($gd->getImageBackgroundColor());
         $this->stream->setCover($newImageFile);
         $this->stream->save();
 
         return [
-            "url" => $s3->getObjectUrl(config('services.s3.bucket'), $newImageFile),
+            "url" => $s3->getObjectUrl(config('services.s3.bucket'), $newImagePath),
             "name" => $newImageFile
         ];
     }

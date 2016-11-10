@@ -10,8 +10,14 @@ class S3
 {
     use Singleton;
 
+    /**
+     * @var S3Client
+     */
     private $s3Client;
 
+    /**
+     * @var mixed
+     */
     private $bucket;
 
     public function __construct()
@@ -46,6 +52,20 @@ class S3
     public function doesObjectExist($key)
     {
         return $this->getS3Client()->doesObjectExist($this->bucket, $key);
+    }
+
+    /**
+     * @param string $key
+     * @return mixed
+     */
+    public function get($key)
+    {
+        $result = $this->getS3Client()->getObject([
+            'Bucket'       => $this->bucket,
+            'Key'          => $key,
+        ]);
+
+        return $result['Body'];
     }
 
     /**

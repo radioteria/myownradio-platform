@@ -6,7 +6,7 @@
  * Time: 3:12 PM
  */
 
-namespace app\Services\FS;
+namespace app\Services\Storage;
 
 class MemoryStorage extends Storage
 {

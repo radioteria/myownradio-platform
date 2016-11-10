@@ -1,6 +1,6 @@
 <?php
 
-namespace app\Services\FS;
+namespace app\Services\Storage;
 
 use app\Providers\S3;
 

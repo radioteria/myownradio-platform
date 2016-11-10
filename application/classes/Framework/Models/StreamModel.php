@@ -9,6 +9,7 @@
 namespace Framework\Models;
 
 
+use app\Providers\S3;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Services\Database;
@@ -173,30 +174,28 @@ class StreamModel extends Model implements SingletonInterface {
 
     }
 
-    public function removeCover() {
-
-        $folders = Folders::getInstance();
-
+    public function removeCover()
+    {
         if (!is_null($this->stream->getCover())) {
+            $s3 = S3::getInstance()->getS3Client();
+            $path = 'covers/' . $this->stream->getCover();
 
-            $file = new File($folders->genStreamCoverPath($this->stream->getCover()));
-
-            if ($file->exists()) {
-                $file->delete();
+            if ($s3->doesObjectExist(config('services.s3.bucket'), $path)) {
+                $s3->deleteObject([
+                    "Bucket" => config('services.s3.bucket'),
+                    "Key" => $path
+                ]);
             }
 
             $this->stream->setCoverBackground(null);
             $this->stream->setCover(null);
             $this->stream->save();
-
-
         }
-
     }
 
-    public function changeCover($file) {
-
-        $folders = Folders::getInstance();
+    public function changeCover($file)
+    {
+        $s3 = S3::getInstance()->getS3Client();
 
         $validator = InputValidator::getInstance();
 
@@ -209,45 +208,40 @@ class StreamModel extends Model implements SingletonInterface {
         $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
 
         $newImageFile = sprintf("stream%05d_%s.%s", $this->key, $random, strtolower($extension));
-        $newImagePath = $folders->genStreamCoverPath($newImageFile);
+        $newImagePath = 'covers/' . $newImageFile;
 
-        $result = move_uploaded_file($file['tmp_name'], $newImagePath);
+        $s3->putObject([
+            "Bucket" => config('services.s3.bucket'),
+            "Key"    => $newImagePath,
+            'Body'   => file_get_contents($file["tmp_name"]),
+            'ACL'    => 'public-read'
+        ]);
 
-        if ($result !== false) {
+        $gd = new \acResizeImage($newImagePath);
 
-            $gd = new \acResizeImage($newImagePath);
+        $this->stream->setCoverBackground($gd->getImageBackgroundColor());
+        $this->stream->setCover($newImageFile);
+        $this->stream->save();
 
-            $this->stream->setCoverBackground($gd->getImageBackgroundColor());
-            $this->stream->setCover($newImageFile);
-            $this->stream->save();
-
-            return [
-                "url" => $folders->genStreamCoverUrl($newImageFile),
-                "name" => $newImageFile
-            ];
-
-        } else {
-
-            return null;
-
-        }
-
+        return [
+            "url" => $s3->getObjectUrl(config('services.s3.bucket'), $newImageFile),
+            "name" => $newImageFile
+        ];
     }
 
-    public function delete() {
-
+    public function delete()
+    {
         (new DeleteQuery("r_link"))->where("stream_id", $this->key)->update();
 
         if (!is_null($this->stream->getCover())) {
-            $folders = Folders::getInstance();
-            $file = new File($folders->genStreamCoverPath($this->stream->getCover()));
-            if ($file->exists()) {
-                $file->delete();
-            }
+            $s3 = S3::getInstance()->getS3Client();
+            $s3->deleteObject([
+                "Bucket"    => config('services.s3.bucket'),
+                "Key"       => 'covers/'. $this->stream->getCover()
+            ]);
         }
 
         $this->stream->delete();
-
     }
 
     public function moveStreamToOtherUser($streamId, UserModel $targetUser) {

@@ -69,8 +69,12 @@ class DoGetJavascriptModules implements Controller
             "public/js/libs/mortip.js"
         ];
 
+        $sources = array_map(function ($source) {
+            return BASE_DIR . '/' . $source;
+        }, $sources);
+
         $modification_time = 0;
-        foreach($sources as $source) {
+        foreach ($sources as $source) {
             if (filemtime($source) > $modification_time) {
                 $modification_time = filemtime($source);
             }

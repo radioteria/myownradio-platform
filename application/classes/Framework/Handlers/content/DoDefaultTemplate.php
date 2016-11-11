@@ -28,6 +28,7 @@ class DoDefaultTemplate extends ControllerImpl
                 $pageTitle = "";
         }
 
+
         $metadata = new Template("frontend/meta.default.tmpl");
         $metadata->putObject([
             "title" => $pageTitle . Defaults::SITE_TITLE,

@@ -8,18 +8,18 @@
 
 namespace Framework\Services\Locale;
 
-
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-class I18n {
-
+class I18n
+{
     private $lang = null,
             $data = null,
             $file_path = null;
 
-    function __construct($locale) {
-        $file_path = "application/i18n/{$locale}.json";
+    function __construct($locale)
+    {
+        $file_path = BASE_DIR . "/application/i18n/{$locale}.json";
         if (!file_exists($file_path)) {
             throw new LocaleException(sprintf("File '%s' not found", $file_path));
         }
@@ -28,7 +28,8 @@ class I18n {
         $this->data = json_decode(file_get_contents($file_path), true);
     }
 
-    public function getFileContent() {
+    public function getFileContent()
+    {
         return file_get_contents($this->file_path);
     }
 
@@ -37,7 +38,8 @@ class I18n {
      * @param array $args
      * @return mixed|string
      */
-    public function get($key, array $args = null) {
+    public function get($key, array $args = null)
+    {
         if (isset($this->data[$key])) {
             return $this->quick($this->data[$key], $args);
         } else {

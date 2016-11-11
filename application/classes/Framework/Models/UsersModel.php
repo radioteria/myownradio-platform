@@ -164,7 +164,7 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $newUser->save();
 
-        $this->createUserDirectory($newUser);
+//        $this->createUserDirectory($newUser);
 
         // Generate Stream Cover
         $random = Common::generateUniqueID();

@@ -1,0 +1,153 @@
+<div class="fixed-width">
+    <div id="page-contents">
+        <nav class="main" main-navigation=""></nav>
+        <div class="form-wrap full-width" ng-controller="TracksLibraryController">
+            <div class="stats">
+                <translate>FR_TRACKS</translate>
+                <b>{{ account.user.tracks_count }}</b>
+                |
+                <translate>FR_STATIONS</translate>
+                <b>{{ account.user.streams_count }}</b>
+            </div>
+            <h1 class="form-title">
+                <i class="icon-music"></i>
+                <translate filter="uppercase">FR_PROFILE_MY_TRACKS</translate>
+            </h1>
+            <div class="tracks-wrap">
+                <div class="dws-wrap">
+                    <div class="filter">
+                        <input type="text"
+                               cleanable="cleanable"
+                               id="filter"
+                               name="filter"
+                               ng-model="filter"
+                               autocomplete="off"
+                               placeholder="{{ tr('FR_TYPE_ARTIST_OR_TITLE') }}"
+                               ng-change-action="load(true)"
+                               ng-change-delay="350"
+                                />
+                    </div>
+                    <div class="controls select-persistent">
+                        <div class="button" ng-click="upload()" mor-tooltip="{{ tr('FR_UPLOAD_NEW_TRACKS') }}">
+                            <i class="icon-cloud-upload"></i>
+                            <translate>FR_UPLOAD</translate>
+                        </div>
+                    </div>
+                    <div class="spacer"></div>
+                </div>
+
+                <ul class="context-menu select-persistent fixed" id="track-menu">
+                    <li>
+                        <i class="icon-add"></i> <translate>FR_ADD_TO_STREAM</translate><span class="expand"></span>
+                        <ul class="context-menu drop-down right-side">
+                            <li class="hiddenOverflow relative" ng-repeat="stream in account.streams" ng-click="addToStream(stream)">
+                                <span class="grey right" ng-bind="stream.tracks_count"></span>
+                                <i class="icon-wifi-tethering"></i>
+                                <span class="ellipsis" ng-bind="stream.name"></span>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <i class="icon-create"></i> <translate>FR_CHANGE_COLOR</translate><span class="expand"></span>
+                        <ul class="context-menu drop-down right-side">
+                            <li ng-repeat="group in lib.groups" ng-click="changeGroup(group)">
+                                <i style="color:{{ group.color_code || 'none' }}" class="icon-circle"></i> {{ group.color_name }}
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="menu-item divider"></li>
+                    <li class="menu-item" ng-click="edit()">
+                        <i class="icon-mode-edit"></i>
+                        <translate>FR_EDIT_TRACK_INFO</translate>
+                    </li>
+                    <li class="menu-item divider"></li>
+                    <li ng-click="deleteSelected()">
+                        <i class="icon-delete"></i>
+                        <translate>FR_DELETE_TRACKS</translate>
+                    </li>
+                </ul>
+                <table class="tracks">
+                    <tbody>
+                    <tr style="background-color: #ffffff">
+                        <td>
+                            <span ng-show="sorting.row == 0">
+                                <i class="icon-chevron-down" ng-show="sorting.order == 0"></i>
+                                <i class="icon-chevron-up" ng-show="sorting.order == 1"></i>
+                            </span>
+                            <span ng-click="sorting.change(0)" mor-tooltip="{{ tr('FR_SORT_BY_DATE') }}">#</span>
+                        </td>
+                        <td></td>
+                        <td>
+                            <span ng-show="sorting.row == 1">
+                                <i class="icon-chevron-down" ng-show="sorting.order == 0"></i>
+                                <i class="icon-chevron-up" ng-show="sorting.order == 1"></i>
+                            </span>
+                            <span ng-click="sorting.change(1)" mor-tooltip="{{ tr('FR_SORT_BY_TITLE') }}">
+                                <translate>FR_SORT_TITLE</translate>
+                            </span>
+                        </td>
+                        <td>
+                            <span ng-show="sorting.row == 2">
+                                <i class="icon-chevron-down" ng-show="sorting.order == 0"></i>
+                                <i class="icon-chevron-up" ng-show="sorting.order == 1"></i>
+                            </span>
+                            <span ng-click="sorting.change(2)" mor-tooltip="{{ tr('FR_SORT_BY_ARTIST') }}">
+                                <translate>FR_SORT_ARTIST</translate>
+                            </span>
+                        </td>
+                        <td>
+                            <span ng-show="sorting.row == 3">
+                                <i class="icon-chevron-down" ng-show="sorting.order == 0"></i>
+                                <i class="icon-chevron-up" ng-show="sorting.order == 1"></i>
+                            </span>
+                            <span ng-click="sorting.change(3)" mor-tooltip="{{ tr('FR_SORT_BY_GENRE') }}">
+                                <translate>FR_SORT_GENRE</translate>
+                            </span>
+                        </td>
+                        <td>
+                            <span ng-show="sorting.row == 4">
+                                <i class="icon-chevron-down" ng-show="sorting.order == 0"></i>
+                                <i class="icon-chevron-up" ng-show="sorting.order == 1"></i>
+                            </span>
+                            <span ng-click="sorting.change(4)" mor-tooltip="{{ tr('FR_SORT_BY_TIME') }}">
+                                <translate>FR_SORT_TIME</translate>
+                            </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div style="height: 4px;"></div>
+                <div class="loading-placeholder" ng-show="tracksPending">
+                    <translate>FR_LOADING</translate>
+                </div>
+                <div class="empty-playlist" ng-show="!tracksPending && tracks.length == 0">
+                    <div class="inner">
+                        <h1>
+                            <translate filter="uppercase">FR_EMPTY</translate>
+                        </h1>
+                    </div>
+                </div>
+                <table class="tracks" onselectstart='return false;' unselectable='on'>
+                    <tbody infinite-scroll="load(false)"
+                           infinite-scroll-disabled="busy"
+                           infinite-scroll-distance="1"
+                           multiple-select=""
+                           ms-tick="test()"
+                           ms-source="tracks"
+                           ms-destination="target"
+                           context-menu=""
+                           data-target="track-menu">
+                        <tr ng-repeat="track in tracks">
+                            <td ng-class="'col' + track.color">{{$index + 1}}</td>
+                            <td><preview ng-model="track"></preview></td>
+                            <td mor-tooltip-url="/content/trackinfo/{{track.tid}}" ng-bind="track.title"></td>
+                            <td>{{track.artist}}</td>
+                            <td>{{track.genre}}</td>
+                            <td>{{track.duration | msToTime}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

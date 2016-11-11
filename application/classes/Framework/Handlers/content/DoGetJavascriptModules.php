@@ -8,64 +8,65 @@
 
 namespace Framework\Handlers\content;
 
-
 use Framework\Controller;
 use Tools\File;
 
-class DoGetJavascriptModules implements Controller {
-    public function doGet() {
+class DoGetJavascriptModules implements Controller
+{
+    public function doGet()
+    {
         $sources = [
-            "js/modules/ng-infinite-scroll.min.js",
-            "js/modules/angular-post-fix.js",
-            "js/modules/loading-bar.min.js",
-            "js/modules/ngDialog.min.js",
-            "js/modules/ng-context-menu.js",
-            "js/modules/angulartics.min.js",
-            "js/modules/angulartics-ga.min.js",
-            "js/modules/angular-seo.js",
-            "js/libs/sortable.js",
-            "js/libs/angular-touch.js",
+            "public/js/modules/ng-infinite-scroll.min.js",
+            "public/js/modules/angular-post-fix.js",
+            "public/js/modules/loading-bar.min.js",
+            "public/js/modules/ngDialog.min.js",
+            "public/js/modules/ng-context-menu.js",
+            "public/js/modules/angulartics.min.js",
+            "public/js/modules/angulartics-ga.min.js",
+            "public/js/modules/angular-seo.js",
+            "public/js/libs/sortable.js",
+            "public/js/libs/angular-touch.js",
 
-            "application/modules/main.ang.js",
-            "application/modules/filters.js",
-            "application/modules/context.js",
+            "public/js/mor-modules/main.ang.js",
+            "public/js/mor-modules/filters.js",
+            "public/js/mor-modules/context.js",
 
-            "application/modules/site.js",
-            "application/modules/tools/mor.tools.ang.js",
-            "application/modules/tools/mor.tools.defaults.ang.js",
-            "application/modules/tools/mor.tools.share.ang.js",
-            "application/modules/tools/mor.tools.stats.ang.js",
-            "application/modules/tools/mor.tools.image.ang.js",
+            "public/js/mor-modules/site.js",
+            "public/js/mor-modules/tools/mor.tools.ang.js",
+            "public/js/mor-modules/tools/mor.tools.defaults.ang.js",
+            "public/js/mor-modules/tools/mor.tools.share.ang.js",
+            "public/js/mor-modules/tools/mor.tools.stats.ang.js",
+            "public/js/mor-modules/tools/mor.tools.image.ang.js",
 
-            "application/modules/account.js",
-            "application/modules/player.js",
-            "application/modules/catalog.js",
-            "application/modules/search.js",
-            "application/modules/profile.js",
-            "application/modules/library.js",
-            "application/modules/audioinfo.js",
-            "application/modules/loader.js",
-            "application/modules/track-action.js",
-            "application/modules/popup.ang.js",
-            "application/modules/mor.stream.scheduler.js",
+            "public/js/mor-modules/account.js",
+            "public/js/mor-modules/player.js",
+            "public/js/mor-modules/catalog.js",
+            "public/js/mor-modules/search.js",
+            "public/js/mor-modules/profile.js",
+            "public/js/mor-modules/library.js",
+            "public/js/mor-modules/audioinfo.js",
+            "public/js/mor-modules/loader.js",
+            "public/js/mor-modules/track-action.js",
+            "public/js/mor-modules/popup.ang.js",
+            "public/js/mor-modules/mor.stream.scheduler.js",
 
-            "application/modules/api/api.core.js",
-            "application/modules/api/api.channels.js",
-            "application/modules/api/api.tracks.js",
-            "application/modules/api/api.bookmarks.js",
-            "application/modules/api/api.schedule.js",
-            "application/modules/api/api.events.js",
+            "public/js/mor-modules/api/api.core.js",
+            "public/js/mor-modules/api/api.channels.js",
+            "public/js/mor-modules/api/api.tracks.js",
+            "public/js/mor-modules/api/api.bookmarks.js",
+            "public/js/mor-modules/api/api.schedule.js",
+            "public/js/mor-modules/api/api.events.js",
 
-            "application/modules/filters/filter.object.js",
+            "public/js/mor-modules/filters/filter.object.js",
 
-            "application/modules/controllers/controllers.channels.js",
-            "application/modules/controllers/controllers.tracks.js",
+            "public/js/mor-modules/controllers/controllers.channels.js",
+            "public/js/mor-modules/controllers/controllers.tracks.js",
 
-            "application/modules/directives/directives.player.js",
+            "public/js/mor-modules/directives/directives.player.js",
 
-            "application/modules/ui/ui.hashtags.js",
+            "public/js/mor-modules/ui/ui.hashtags.js",
 
-            "js/libs/mortip.js"
+            "public/js/libs/mortip.js"
         ];
 
         $modification_time = 0;
@@ -94,4 +95,4 @@ class DoGetJavascriptModules implements Controller {
         }
 
     }
-} 
+}

@@ -1,22 +1,16 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Roman
- * Date: 26.03.15
- * Time: 13:43
- */
 
 namespace Framework\Handlers\content;
-
 
 use Framework\ControllerImpl;
 use Framework\Defaults;
 use Framework\Services\CurrentRoute;
 use Framework\Template;
 
-class DoDefaultTemplate extends ControllerImpl {
-    public function doGet(CurrentRoute $currentRoute) {
-
+class DoDefaultTemplate extends ControllerImpl
+{
+    public function doGet(CurrentRoute $currentRoute)
+    {
         $description = "Create your own free web radio station in a minutes";
         $keywords = "music, radio, create, radio station, web radio, listen, free, own";
 
@@ -41,12 +35,15 @@ class DoDefaultTemplate extends ControllerImpl {
             "keywords" => $keywords
         ]);
 
+        $environment = env('ENV', 'dev');
+        $scripts = new Template("frontend/scripts.{$environment}.tmpl");
+
         $template = new Template("frontend/index.tmpl");
         $template->putObject([
             "title" => $pageTitle . Defaults::SITE_TITLE,
-            "metadata" => $metadata->render()
+            "metadata" => $metadata->render(),
+            "scripts" => $scripts->render()
         ]);
         $template->display();
-
     }
-} 
+}

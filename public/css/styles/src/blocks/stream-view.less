@@ -1,0 +1,285 @@
+
+.stream-info {
+  background-color: #181e30;
+  border-bottom: 1px solid #171a2f;
+  border-top: 1px solid #171a2f;
+  color: #eeeeee;
+  position: relative;
+  margin-bottom: 24px;
+
+  a {
+    color: white;
+    font-weight: 600;
+  }
+
+  #controls {
+    padding: 32px;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+
+    .cover {
+      float: left;
+      width: 192px;
+      height: 192px;
+
+    }
+
+    .about {
+      font-weight: 200;
+      padding-left: 32px;
+      overflow: hidden;
+      .tools {
+        float: right;
+        background-color: rgba(0,0,0,0.5);
+        padding: 4px 2px;
+        border-radius: 4px;
+        opacity: 0.5;
+        transition: 0.2s opacity linear;
+        &:hover {
+          opacity: 1;
+        }
+        .icons {
+          position: relative;
+          i {
+            &:hover {
+              text-shadow: 0 0 4px rgba(255,255,255,0.5);
+            }
+            font-size: 24px;
+            vertical-align: top;
+            padding: 4px 4px;
+            &.icon-share-alt {
+              font-size: 22px;
+            }
+            &.shown {
+              background-color: #000000;
+              border-radius: 4px 4px 0 0;
+            }
+          }
+          & > li {
+            display: inline-block;
+          }
+          .settings-badge {
+            z-index: 2;
+            width: 210px;
+            position: absolute;
+            background-color: #000000;
+            right: 0;
+            border-radius: 4px 0 4px 4px;
+            padding: 8px;
+            h3 {
+              text-align: center;
+              margin-bottom: 8px;
+              font-weight: bold;
+            }
+            h4 {
+              float: left;
+              line-height: 24px;
+              vertical-align: middle;
+              &.format {
+                width: 48px;
+              }
+            }
+            .formats {
+              white-space: nowrap;
+              &>li {
+                box-sizing: border-box;
+                line-height: 24px;
+                font-size: 9pt;
+                display: inline-block;
+                width: 38px;
+                text-align: center;
+                vertical-align: middle;
+                &.current {
+                  background-color: #3a8599;
+                  border-radius: 4px;
+                  color: #ffffff;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .name {
+        font-size: 30pt;
+        font-family: "Myriad Pro Thin", sans-serif;
+        line-height: 100%;
+        padding-bottom: 4px;
+        height: 44px;
+      }
+
+      .owner {
+        padding-bottom: 12px;
+        .subaction {
+          a {
+            color: rgba(255,255,255,0.7);
+            &:hover {
+              color: #ffffff;
+            }
+          }
+        }
+      }
+
+      .stats {
+        i {
+          color: rgba(255,255,255,0.7);
+        }
+        span {
+          margin: 0 8px 0 4px;
+          font-weight: 600;
+          &:first-child {
+            margin-left: 0;
+          }
+        }
+      }
+
+      .stream-controls {
+        margin-top: 6px;
+        float: right;
+        i {
+          font-size: 20px;
+        }
+      }
+
+      .now-playing-frame {
+        padding-top: 12px;
+        .player {
+          position: relative;
+          .toggle {
+            float: left;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            margin-right: 12px;
+            font-size: 46pt;
+            line-height: 64px;
+            vertical-align: middle;
+            text-align: center;
+            cursor: pointer;
+
+            background: #f2f2f2;
+            background-image: -webkit-linear-gradient(top, #f2f2f2, #bfbfbf);
+            background-image: -moz-linear-gradient(top, #f2f2f2, #bfbfbf);
+            background-image: -ms-linear-gradient(top, #f2f2f2, #bfbfbf);
+            background-image: -o-linear-gradient(top, #f2f2f2, #bfbfbf);
+            background-image: linear-gradient(to bottom, #f2f2f2, #bfbfbf);
+            border: solid #c2c2c2 1px;
+            text-decoration: none;
+
+            color: #000000;
+            text-shadow: none;
+
+          }
+          .key {
+            padding-top: 2px;
+          }
+          .value {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: "Myriad Pro Thin", sans-serif;
+            font-size: 24pt;
+            &.artist {
+              color: @HEAD_LOGO_BACKGROUND_COLOR;
+            }
+            .fast-edit {
+              display: none;
+            }
+            .sub-edit {
+              font-size: 20px;
+              opacity: 0.5;
+              &:hover {
+                opacity: 1;
+              }
+            }
+          }
+        }
+
+      }
+    }
+  }
+  &:hover {
+    .fast-edit {
+      display: inline !important;
+    }
+  }
+}
+
+.schedule-container {
+  position: relative;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+  .tracks-toggle {
+    text-align: center;
+    .tracks-toggle-text-content {
+      text-transform: uppercase;
+    }
+  }
+  .tracks-list {
+    margin-top: 8px;
+    &:not(.open) {
+      display: none;
+    }
+    .track-row {
+      padding: 6px 4px;
+      .fixed-width {
+        overflow: hidden;
+        position: relative;
+        .track-title {
+          overflow: hidden;
+          position: relative;
+          .track-edit-tools {
+            padding-left: 6px;
+            i {
+              opacity: 0.4;
+              &:hover {
+                opacity: 1;
+                text-shadow: 0 0 4px rgba(255,255,255,0.4);
+              }
+            }
+          }
+        }
+        .track-artist {
+          float: right;
+          width: 45%;
+        }
+        .track-duration {
+          float: right;
+          width: 50px;
+          text-align: right;
+        }
+        .track-offset {
+          float: left;
+          width: 45px;
+          text-align: center;
+        }
+        .track-now {
+          float: left;
+          width: 32px;
+          text-align: center;
+          & > i {
+            visibility: hidden;
+          }
+        }
+      }
+      &:nth-child(even) {
+        background-color: rgba(255,255,255,0.1);
+      }
+      &:nth-child(odd) {
+        background-color: rgba(0,0,0,0.1);
+      }
+      &.current {
+        .track-now > i {
+          visibility: visible;
+
+        }
+      }
+    }
+  }
+}
+
+.container-padding {
+  padding: 8px 32px;
+  box-sizing: border-box;
+}
+

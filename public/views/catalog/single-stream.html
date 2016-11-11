@@ -1,0 +1,146 @@
+<div ng-init="scheduleShown=false;schedule={source:null,destination:null}" synchronize="data.channel" sync-key="sid">
+
+    <schedule ng-model="data.channel" on-interval="schedule.source"></schedule>
+    <sync source="schedule.source" destination="schedule.destination"></sync>
+
+    <div class="stream-info" mor-background-color="data.channel.cover_background">
+
+        <div class="bg-gradient" ng-if="data.channel.cover">
+            <div class="bg-image" d-background-image="{{ data.channel.cover | channelArtwork }}"></div>
+        </div>
+
+        <div class="fixed-width">
+            <div id="controls">
+                <div class="cover dark">
+                    <img fadein="" ng-if="data.channel.cover" ng-src="{{ data.channel.cover | channelArtwork }}?size=192">
+                </div>
+                <div class="about">
+                    <div class="tools">
+                        <ul class="icons">
+                            <li ng-if="data.channel.uid === account.user.uid">
+                                <a href="/profile/edit-stream/{{ data.channel.sid }}">
+                                    <i class="icon-mode-edit" mor-tooltip="{{ tr('FR_EDIT_CHANNEL_INFO') }}"></i>
+                                </a>
+                            </li>
+                            <li ng-if="data.channel.uid === account.user.uid">
+                                <a href="/profile/streams/{{ data.channel.sid }}">
+                                    <i class="icon-toc" mor-tooltip="{{ tr('FR_EDIT_CHANNEL_TRACKLIST') }}"></i>
+                                </a>
+                            </li>
+                            <li ng-if="data.channel.uid === account.user.uid" class="vertical-separator"></li>
+                            <li>
+                                <icon share-channel="data.channel"></icon>
+                            </li>
+                            <li ng-init="badgeShown=false" ng-click-outside="badgeShown=false">
+                                <i class="icon-settings" ng-class="{shown: badgeShown}" ng-click="badgeShown=!badgeShown" mor-tooltip="{{ tr('FR_SETTINGS') }}"></i>
+                                <div ng-show="badgeShown" class="settings-badge">
+                                    <h3>
+                                        <translate>FR_PLAYER_AUDIO_FORMAT</translate>
+                                    </h3>
+                                    <h4 class="format">aac+</h4>
+                                    <ul class="formats">
+                                        <li ng-repeat="f in defaults.formats.aac"
+                                            ng-class="{current: defaults.format == f.key}"
+                                            ng-click="setDefaultFormat(f.key)"
+                                            ng-bind="f.bitrate"></li>
+                                    </ul>
+                                    <div style="height: 4px"></div>
+                                    <h4 class="format">mp3</h4>
+                                    <ul class="formats">
+                                        <li ng-repeat="f in defaults.formats.mp3"
+                                            ng-class="{current: defaults.format == f.key}"
+                                            ng-click="setDefaultFormat(f.key)"
+                                            ng-bind="f.bitrate"></li>
+                                    </ul>
+                                    <div style="height: 4px"></div>
+                                    <h4 class="format">m3u</h4>
+                                    <ul class="formats">
+                                        <li>
+                                            <a target="_self" href="/content/m3u/{{ data.channel | channelKey }}.m3u">
+                                                <translate>FR_PLAYER_OPEN_EXTERNAL</translate>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- CHANNEL TITLE -->
+                    <div class="name">{{ data.channel.name | uppercase }}</div>
+                    <div class="owner">
+                        <i class="icon-user right-padded"></i>
+                        <a href="{{ data.owner | userProfileLink }}">{{ data.owner | userProfileName }}</a>
+                    </div>
+                    <!-- CHANNEL STATS -->
+                    <div class="stats">
+                        <span mor-tooltip="{{ pl('FR_COUNT_USERS_LISTENING', data.channel.listeners_count) }}">
+                            <i class="icon-hearing"></i>
+                            <span>{{ data.channel.listeners_count | number }}</span>
+                        </span>
+                        <span mor-tooltip="{{ pl('FR_STREAM_BOOKMARKED_TIMES', data.channel.bookmarks_count) }}">
+                            <i bookmark-icon="data.channel" class="icon-heart hoverable" ng-click="action.bookmark()"></i>
+                            <span>{{ data.channel.bookmarks_count | number }}</span>
+                        </span>
+                        <span mor-tooltip="{{ pl('FR_STREAM_PLAYED_TIMES', data.channel.playbacks) }}">
+                            <i class="icon-play-circle-fill"></i>
+                            <span>{{ data.channel.playbacks | number }}</span>
+                        </span>
+                    </div>
+                    <!-- PLAY BUTTON -->
+                    <div class="now-playing-frame" ng-if="data.channel">
+                        <div class="player">
+                            <div mor-tooltip="Play / Stop" class="toggle" ng-click="action.play()">
+                                <i play-icon="data.channel"></i>
+                            </div>
+                            <div ng-if="player.isPlaying && player.currentStream.sid == data.channel.sid">
+                                <div class="key overflow-hidden">
+                                    <div class="left">{{ player.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}</div>
+                                    <div class="left" like-track="player.nowPlaying"></div>
+                                </div>
+                                <div class="value">
+                                    {{ player.nowPlaying | trackCaption | uppercase }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+     </div>
+    <style ng-if="data.channel.cover_background">.timeline-track { background-color: {{ data.channel.cover_background }} !important; }</style>
+    <div class="fixed-width">
+        <div class="container-padding">
+            <div ng-if="!scheduleShown" class="timeline" time-line="schedule.source"></div>
+            <div class="hashtag-wrapper clearFix" ng-if="data.channel.hashtags">
+                <div class="taglist-wrapper left" tags-list="data.channel.hashtags"></div>
+            </div>
+            <div class="info" bind-html="data.channel.info | nl2br"></div>
+        </div>
+    </div>
+    <div class="fixed-width">
+        <div class="similar-streams-wrapper" ng-if="data.channels.items.length > 0">
+            <div class="title">
+                <translate filter="uppercase">FR_SIMILAR_CHANNELS</translate>
+            </div>
+            <ul class="similar-streams" np-refresh="stream">
+                <li ng-repeat="stream in data.channels.items" synchronize="stream" sync-key="sid">
+                    <div class="cover">
+                        <img fadein ng-if="stream.cover" ng-src="{{ stream.cover | channelArtwork }}?size=64">
+                        <play obj="stream"></play>
+                    </div>
+                    <div class="info">
+                        <div class="title">
+                            <a href="{{ stream | channelLink }}">{{ stream.name | uppercase }}</a>
+                        </div>
+                        <div class="now-playing">
+                            <i class="icon-music"></i>
+                            {{ stream.now_playing }}
+                        </div>
+                        <div ng-if="stream.hashtags" class="taglist-wrapper" tags-list="stream.hashtags"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+

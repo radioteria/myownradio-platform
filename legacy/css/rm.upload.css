@@ -50,7 +50,7 @@ div.rm_upload_frame {
     float: right;
     opacity: 0.5;
     cursor: pointer;
-    background: url(/public/images/iconCancel.png) no-repeat;
+    background: url(/images/iconCancel.png) no-repeat;
     width: 10px;
     height: 10px;
     margin-top: 6px;

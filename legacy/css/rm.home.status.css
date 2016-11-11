@@ -65,7 +65,7 @@
 .sort_filter > #filterReset {
     width: 21px;
     height: 21px;
-    background: #fff url("/public/images/iconClose.png") no-repeat center center;
+    background: #fff url("/images/iconClose.png") no-repeat center center;
     cursor: pointer;
     position: absolute;
     top: 0px;

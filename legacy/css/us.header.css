@@ -92,7 +92,7 @@ h1.page-head-logo-cell-text a:hover {
     display: none;
     position: absolute;
     border: none;
-    background: #ffffff url("/public/images/mor-icon-search.png") no-repeat center center;
+    background: #ffffff url("/images/mor-icon-search.png") no-repeat center center;
     width: 32px;
     height: 22px;
     right: 0px;

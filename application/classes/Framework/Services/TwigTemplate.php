@@ -8,7 +8,6 @@
 
 namespace Framework\Services;
 
-
 use Framework\Injector\Injectable;
 use Framework\Services\Locale\I18n;
 use Tools\Singleton;
@@ -22,7 +21,7 @@ class TwigTemplate implements Injectable, SingletonInterface {
 
     function __construct() {
 
-        $loader = new \Twig_Loader_Filesystem("application/tmpl");
+        $loader = new \Twig_Loader_Filesystem(BASE_DIR . "/application/tmpl");
 
         $this->twig = new \Twig_Environment($loader, [
             //"cache" => "application/cache"

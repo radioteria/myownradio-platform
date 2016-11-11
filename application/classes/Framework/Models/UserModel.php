@@ -2,6 +2,7 @@
 
 namespace Framework\Models;
 
+use app\Services\Storage\StorageFactory;
 use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
@@ -175,49 +176,48 @@ class UserModel extends Model implements SingletonInterface {
 
     }
 
-
-    public function removeAvatar() {
-
-        $folders = Folders::getInstance();
-
+    public function removeAvatar()
+    {
         if (!is_null($this->user->getAvatar())) {
-
-            $file = new File($folders->genAvatarPath($this->user->getAvatar()));
-
-            if ($file->exists()) {
-                $file->delete();
-            }
-
-            $this->user->setAvatar(null)->save();
-
+            $storage = StorageFactory::getStorage();
+            $path = 'avatars/' . $this->user->getAvatar();
+            $storage->delete($path);
+            $this->user->setAvatar(null);
+            $this->user->save();
         }
-
     }
 
-    public function changeAvatar($file) {
+    public function changeAvatar($file)
+    {
+        $storage = StorageFactory::getStorage();
 
-        $folders = Folders::getInstance();
         $validator = InputValidator::getInstance();
         $validator->validateImageMIME($file["tmp_name"]);
-        $random = Common::generateUniqueID();
-        $this->removeAvatar();
-        $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
-        $newImageFile = sprintf("avatar%05d_%s.%s", $this->userID, $random, strtolower($extension));
-        $newImagePath = $folders->genAvatarPath($newImageFile);
-        $result = move_uploaded_file($file['tmp_name'], $newImagePath);
-        if ($result !== false) {
-            $this->user->setAvatar($newImageFile)->save();
-            return $folders->genAvatarUrl($newImageFile);
-        } else {
-            return null;
-        }
 
+        $this->removeAvatar();
+
+        $random = Common::generateUniqueID();
+
+        $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
+
+        $newImageFile = sprintf("avatar%05d_%s.%s", $this->userID, $random, strtolower($extension));
+        $newImagePath = 'avatars/' . $newImageFile;
+
+        $storage->put($newImagePath, fopen($file["tmp_name"], 'r'), [
+            'ContentType' => mimetype_from_extension($extension)
+        ]);
+
+        $this->user->setAvatar($newImageFile);
+        $this->user->save();
+
+        return $storage->url($newImagePath);
     }
 
     /**
      * @return null|string
      */
-    public function getAvatarUrl() {
+    public function getAvatarUrl()
+    {
         return $this->user->getAvatarUrl();
     }
 
@@ -225,7 +225,8 @@ class UserModel extends Model implements SingletonInterface {
      * @param $password
      * @throws UnauthorizedException
      */
-    public function checkPassword($password) {
+    public function checkPassword($password)
+    {
         if (!password_verify($password, $this->user->getPassword())) {
             throw UnauthorizedException::wrongPassword();
         }

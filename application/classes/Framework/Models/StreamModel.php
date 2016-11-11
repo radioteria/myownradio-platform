@@ -185,7 +185,6 @@ class StreamModel extends Model implements SingletonInterface {
     public function changeCover($file)
     {
         $storage = StorageFactory::getStorage();
-//        $s3 = S3::getInstance();
 
         $validator = InputValidator::getInstance();
 

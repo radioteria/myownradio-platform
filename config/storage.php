@@ -2,16 +2,16 @@
 
 return [
 
-    'cache_dir'          => 'storage/cache',
+    'cache_dir'          => '../storage/cache',
 
     'session' => [
         'expire_seconds' => 2592000,
-        'save_path'      => 'storage/sessions'
+        'save_path'      => '../storage/sessions'
     ],
 
     'images' => [
-        'avatars_path'  => 'storage/images/avatars',
-        'covers_path'   => 'storage/images/covers'
+        'avatars_path'  => '../storage/images/avatars',
+        'covers_path'   => '../storage/images/covers'
     ],
 
     'audio'  => [

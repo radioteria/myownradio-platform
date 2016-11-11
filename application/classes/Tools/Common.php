@@ -9,6 +9,7 @@
 namespace Tools;
 
 
+use app\Services\Storage\StorageFactory;
 use Framework\Exceptions\ApplicationException;
 use mikehaertl\shellcommand\Command;
 
@@ -140,9 +141,14 @@ class Common
         return $color;
     }
 
-    static function createTemporaryImage($path = null, $w = 500, $h = 500)
+    /**
+     * @param null $path
+     * @param int $w
+     * @param int $h
+     */
+    public static function createTemporaryImage($path = null, $w = 500, $h = 500)
     {
-
+        $storage = StorageFactory::getStorage();
         $colors = ["28242D", "4C3746", "353952", "454853", "375044", "57564B", "433B46", "23441F", "5B1F3A"];
 
         $width = 64;
@@ -173,7 +179,6 @@ class Common
                 $d_g_level = hexdec(substr($d_color, 2, 2)) / $width * $x / $height * $y;
                 $d_b_level = hexdec(substr($d_color, 4, 2)) / $width * $x / $height * $y;
 
-
                 $color = imagecolorresolve(
                     $image,
                     $a_r_level + $b_r_level + $c_r_level + $d_r_level,
@@ -186,20 +191,41 @@ class Common
 
         $destination = imagecreatetruecolor($w, $h);
 
-        imagecopyresampled($destination, $image, 0, 0, 0, 0,
-            imagesx($destination), imagesy($destination), $width, $height);
-
+        imagecopyresampled(
+            $destination,
+            $image,
+            0,
+            0,
+            0,
+            0,
+            imagesx($destination),
+            imagesy($destination),
+            $width,
+            $height
+        );
 
         $overlay = imagecreatefrompng("images/logos/cover-overlay.png");
 
-        imagecopyresampled($destination, $overlay, 0, 0, 0, 0,
-            imagesx($destination), imagesy($destination), imagesx($overlay), imagesy($overlay));
+        imagecopyresampled(
+            $destination,
+            $overlay,
+            0,
+            0,
+            0,
+            0,
+            imagesx($destination),
+            imagesy($destination),
+            imagesx($overlay),
+            imagesy($overlay)
+        );
 
-        error_log("Save image: " . $path);
+        ob_start();
+        imagepng($destination);
+        $content = ob_get_clean();
 
-        imagepng($destination, $path);
+        $storage->put($path, $content, ['ContentType' => 'image/png']);
+
         imagedestroy($destination);
-
     }
 
     /**

@@ -9,70 +9,49 @@
 namespace Framework\Handlers\content;
 
 
+use app\Services\Storage\StorageFactory;
 use Framework\Controller;
 use Framework\Services\HttpGet;
 use Framework\View\Errors\View404Exception;
-use Tools\File;
 use Tools\Folders;
 
-class DoGetUserAvatar implements Controller {
-
-    public function doGet(HttpGet $get, Folders $folders) {
-
+class DoGetUserAvatar implements Controller
+{
+    public function doGet(HttpGet $get, Folders $folders)
+    {
+        $storage = StorageFactory::getStorage();
         $fn = $get->getParameter("fn")->getOrElseThrow(new View404Exception());
+
         $size = $get->getParameter("size")->getOrElseNull();
 
-        $path = new File($folders->genAvatarPath($fn));
+        $path = 'avatars/' . $fn;
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
 
-        if (! $path->exists()) {
+        if (!$storage->exists($path)) {
             throw new View404Exception();
         }
-
-        if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) >= $path->mtime()) {
-            header('HTTP/1.1 304 Not Modified');
-            die();
-        } else {
-            header("Last-Modified: " . gmdate("D, d M Y H:i:s", $path->mtime()) . " GMT");
-            header('Cache-Control: max-age=0');
-        }
-
-        if (!$path->exists()) {
-            throw new View404Exception();
-        }
-
-        header("Content-Type: " . $path->getContentType());
-        header(sprintf('Content-Disposition: filename="%s"', $path->filename()));
 
         if ($size === null) {
-
-            $path->show();
-
+            header("Location: " . $storage->url($path));
+            return;
         } else {
-
-
-            $cache = $folders->generateCacheFile($_GET, $path);
-
-            if ($cache->exists()) {
-
-                $cache->show();
-
-            } else {
-
-                if (!file_exists($cache->dirname())) {
-                    mkdir($cache->dirname(), 0777, true);
-                }
-
-                $image = new \acResizeImage($path->path());
+            $cachePath = $folders->generateCacheFile2($_GET, $extension);
+            if (!$storage->exists($cachePath)) {
+                $image = new \acResizeImage($storage->url($path));
                 $image->cropSquare();
                 $image->resize($size);
                 $image->interlace();
 
-                $image->output($path->extension(), 80);
-                $image->save($cache->dirname() . "/", $cache->filename(), $path->extension(), true, 80);
+                ob_start();
+                $image->output($extension, 80);
+                $imageData = ob_get_clean();
 
+                $storage->put($cachePath, $imageData, [
+                    'ContentType' => mimetype_from_extension($extension)
+                ]);
             }
+            header("Location: " . $storage->url($cachePath));
+            return;
         }
-
     }
-
-} 
+}

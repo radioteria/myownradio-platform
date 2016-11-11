@@ -45,7 +45,9 @@ class DoGetStreamCover implements Controller
                 $image->output($extension, 80);
                 $imageData = ob_get_clean();
 
-                $storage->put($cachePath, $imageData, mimetype_from_extension($extension));
+                $storage->put($cachePath, $imageData, [
+                    'ContentType' => mimetype_from_extension($extension)
+                ]);
             }
             header("Location: " . $storage->url($cachePath));
             return;

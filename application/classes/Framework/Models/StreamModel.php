@@ -201,7 +201,9 @@ class StreamModel extends Model implements SingletonInterface {
         $newImagePath = 'covers/' . $newImageFile;
 
 
-        $storage->put($newImagePath, fopen($file["tmp_name"], 'r'), mimetype_from_extension($extension));
+        $storage->put($newImagePath, fopen($file["tmp_name"], 'r'), [
+            'ContentType' => mimetype_from_extension($extension)
+        ]);
 
         $url = $storage->url($newImagePath);
 

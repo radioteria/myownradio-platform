@@ -49,7 +49,7 @@
                 info: "",
                 hashtags: "",
                 permalink: "",
-                category: 0,
+                category: 16,
                 access: "PUBLIC"
             };
 

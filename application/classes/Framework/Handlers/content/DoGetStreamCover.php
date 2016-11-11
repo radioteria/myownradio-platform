@@ -8,7 +8,7 @@
 
 namespace Framework\Handlers\content;
 
-use app\Providers\S3;
+use app\Services\Storage\StorageFactory;
 use Framework\Controller;
 use Framework\Services\HttpGet;
 use Framework\View\Errors\View404Exception;
@@ -18,7 +18,7 @@ class DoGetStreamCover implements Controller
 {
     public function doGet(HttpGet $get, Folders $folders)
     {
-        $s3 = S3::getInstance();
+        $storage = StorageFactory::getStorage();
         $fn = $get->getParameter("fn")->getOrElseThrow(new View404Exception());
 
         $size = $get->getParameter("size")->getOrElseNull();
@@ -26,17 +26,17 @@ class DoGetStreamCover implements Controller
         $path = 'covers/' . $fn;
         $extension = pathinfo($path, PATHINFO_EXTENSION);
 
-        if (!$s3->doesObjectExist($path)) {
+        if (!$storage->exists($path)) {
             throw new View404Exception();
         }
 
         if ($size === null) {
-            header("Location: " . $s3->url($path));
+            header("Location: " . $storage->url($path));
             return;
         } else {
             $cachePath = $folders->generateCacheFile2($_GET, $extension);
-            if (!$s3->doesObjectExist($cachePath)) {
-                $image = new \acResizeImage($s3->url($path));
+            if (!$storage->exists($cachePath)) {
+                $image = new \acResizeImage($storage->url($path));
                 $image->cropSquare();
                 $image->resize($size);
                 $image->interlace();
@@ -45,9 +45,9 @@ class DoGetStreamCover implements Controller
                 $image->output($extension, 80);
                 $imageData = ob_get_clean();
 
-                $s3->put($cachePath, $imageData, mimetype_from_extension($extension));
+                $storage->put($cachePath, $imageData, mimetype_from_extension($extension));
             }
-            header("Location: " . $s3->url($cachePath));
+            header("Location: " . $storage->url($cachePath));
             return;
         }
     }

@@ -2,22 +2,41 @@
 
 namespace app\Services\Storage;
 
-use app\Providers\S3;
+use Aws\Credentials\Credentials;
+use Aws\S3\S3Client;
 
 class S3Storage extends Storage
 {
     /**
-     * @var S3
+     * @var S3Client
      */
-    private $s3;
+    private $s3Client;
 
     /**
-     * @param S3 $s3
+     * @var mixed
      */
-    public function __construct(S3 $s3)
+    private $bucket;
+
+
+    public function __construct()
     {
-        $this->s3 = $s3;
-        parent::__construct([$this->s3, 'url']);
+        $credentials = new Credentials(
+            config('services.s3.access_key'),
+            config('services.s3.secret_key')
+        );
+
+        $this->s3Client = new S3Client([
+            'region'            => config('services.s3.region'),
+            'version'           => 'latest',
+            'signature_version' => config('service.s3.signature_version'),
+            'credentials'       => $credentials
+        ]);
+
+        $this->bucket = config('services.s3.bucket');
+
+        parent::__construct(function ($key) {
+            return $this->s3Client->getObjectUrl($this->bucket, $key);
+        });
     }
 
     /**
@@ -26,7 +45,12 @@ class S3Storage extends Storage
      */
     public function get($key)
     {
-        return $this->s3->get($key);
+        $result = $this->s3Client->getObject([
+            'Bucket'       => $this->bucket,
+            'Key'          => $key,
+        ]);
+
+        return $result['Body'];
     }
 
     /**
@@ -37,7 +61,14 @@ class S3Storage extends Storage
     public function put($key, $body, array $parameters = [])
     {
         $contentType = isset($parameters['ContentType']) ? $parameters['ContentType'] : null;
-        $this->s3->put($key, $body, $contentType);
+
+        $this->s3Client->putObject([
+            'Bucket'      => $this->bucket,
+            'Key'         => $key,
+            'Body'        => $body,
+            'ACL'         => 'public-read',
+            'ContentType' => $contentType
+        ]);
     }
 
     /**
@@ -45,14 +76,18 @@ class S3Storage extends Storage
      */
     public function delete($key)
     {
-        $this->s3->delete($key);
+        $this->s3Client->deleteObject([
+            "Bucket"    => $this->bucket,
+            "Key"       => $key
+        ]);
     }
 
     /**
      * @param string $key
+     * @return bool
      */
     public function exists($key)
     {
-        $this->s3->doesObjectExist($key);
+        return $this->s3Client->doesObjectExist($this->bucket, $key);
     }
 }

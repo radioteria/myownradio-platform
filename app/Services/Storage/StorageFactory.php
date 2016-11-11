@@ -2,8 +2,6 @@
 
 namespace app\Services\Storage;
 
-use app\Providers\S3;
-
 class StorageFactory
 {
     /**
@@ -11,6 +9,6 @@ class StorageFactory
      */
     public static function getStorage()
     {
-        return new S3Storage(S3::getInstance());
+        return new S3Storage();
     }
 }

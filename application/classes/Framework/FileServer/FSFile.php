@@ -2,7 +2,7 @@
 
 namespace Framework\FileServer;
 
-use app\Providers\S3;
+use app\Services\Storage\StorageFactory;
 use Framework\Defaults;
 use Framework\FileServer\Exceptions\FileServerException;
 use Framework\FileServer\Exceptions\LocalFileNotFoundException;
@@ -47,17 +47,9 @@ class FSFile
             $object->setServerId(1);
             $object->setUseCount(1);
 
-            $s3 = S3::getInstance()->getS3Client();
+            $storage = StorageFactory::getStorage();
 
-            $s3->putObject([
-                'Bucket' => config('services.s3.bucket'),
-                'Key'    => self::getPathByHash($hash),
-                'Body'   => fopen($file_path, 'r'),
-                'ACL'    => 'public-read'
-            ]);
-
-            error_log($hash);
-
+            $storage->put(self::getPathByHash($hash), fopen($file_path, 'r'));
         } else {
             $object->setUseCount($object->getUseCount() + 1);
         }
@@ -79,11 +71,8 @@ class FSFile
                 $file->save();
             }
             if ($file->getUseCount() < 1) {
-                $s3 = S3::getInstance()->getS3Client();
-                $s3->deleteObject([
-                    'Bucket' => config('services.s3.bucket'),
-                    'Key'   => self::getPathByHash($file->getFileHash())
-                ]);
+                $storage = StorageFactory::getStorage();
+                $storage->delete(self::getPathByHash($file->getFileHash()));
                 $file->delete();
             }
         });
@@ -97,8 +86,8 @@ class FSFile
         $files = FileServerFile::getListByFilter("UNUSED");
         foreach ($files as $file) {
             try {
-                S3::deleteObjectUrl(self::getPathByHash($file->getFileHash()));
-                $file->delete();
+                $storage = StorageFactory::getStorage();
+                $storage->delete(self::getPathByHash($file->getFileHash()));
             } catch (FileServerException $exception) {
                 error_log($exception->getMessage());
             }

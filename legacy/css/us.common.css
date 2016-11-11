@@ -117,7 +117,7 @@ body {
 
 
 .mor-logo {
-    background: url("/images/mor-logo.png") no-repeat center center;
+    background: url("/public/images/mor-logo.png") no-repeat center center;
     width: 32px;
     height: 32px;
     display: inline-block;

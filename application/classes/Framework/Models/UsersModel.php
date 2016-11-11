@@ -205,21 +205,6 @@ class UsersModel implements SingletonInterface, Injectable {
     }
 
     /**
-     * @param User $id
-     */
-    public function createUserDirectory(User $id) {
-
-        $path = new File(Folders::getInstance()->generateUserContentFolder($id));
-
-        error_log($path->path());
-
-        if (! $path->exists()) {
-            $path->createNewDirectory(NEW_DIR_RIGHTS, true);
-        }
-
-    }
-
-    /**
      * @param $code
      * @return mixed
      * @throws \Framework\Exceptions\ControllerException

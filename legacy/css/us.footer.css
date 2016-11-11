@@ -1,6 +1,6 @@
 .page-footer-background {
     width: 100%;
-    background: url("/images/bg.png") repeat center center;
+    background: url("/public/images/bg.png") repeat center center;
     position: absolute;
     bottom: 0px;
     z-index: 100;

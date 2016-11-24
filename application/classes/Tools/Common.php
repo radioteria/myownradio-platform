@@ -204,7 +204,7 @@ class Common
             $height
         );
 
-        $overlay = imagecreatefrompng(BASE_DIR . "/images/logos/cover-overlay.png");
+        $overlay = imagecreatefrompng(BASE_DIR . "/public/images/logos/cover-overlay.png");
 
         imagecopyresampled(
             $destination,

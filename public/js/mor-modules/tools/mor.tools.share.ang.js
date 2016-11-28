@@ -4,7 +4,7 @@
     tools.controller("StreamShareController", ["$scope", "$timeout", function ($scope, $timeout) {
 
         $scope.$watch("maxSize", function (width) {
-            $scope.code = '<iframe ng-src="https://myownradio.biz/widget/?stream_id=' + $scope.streamObject.sid +
+            $scope.code = '<iframe src="https://myownradio.biz/widget/?stream_id=' + $scope.streamObject.sid +
                 '" width="' + $scope.embed.maxSize + '" height="' + $scope.embed.maxSize + '"></iframe>';
         });
 

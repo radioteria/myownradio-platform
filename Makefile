@@ -1,6 +1,9 @@
 IMAGE_ID := "myownradio/backend-service"
-CONTAINER_ID := "myownradio-backend-service"
+CONTAINER_ID := "myownradio_service"
 BIN_DIR := $(shell npm bin)
+
+build:
+	docker build -t $(IMAGE_ID) .
 
 install:
 	mkdir -p storage/cache

@@ -1,2 +1,5 @@
 Dockerfile
 Makefile
+vendor
+build
+public/node_modules

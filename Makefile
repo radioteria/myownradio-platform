@@ -1,4 +1,4 @@
-IMAGE_ID := "myownradio/backend-service"
+IMAGE_ID := "docker push 205436866093.dkr.ecr.eu-central-1.amazonaws.com/myownradio:latest"
 BASE_IMAGE_ID := "myownradio/backend-image"
 CONTAINER_ID := "myownradio_service"
 

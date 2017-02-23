@@ -30,13 +30,7 @@ function callPrivateMethod($class, $method, array $args = [])
  */
 function logger($message)
 {
-    $path = config("app.log_file");
-
-    file_put_contents(
-        $path,
-        sprintf("%s %s\n", date("d-m-Y, H:i:s"), $message),
-        FILE_APPEND
-    );
+    fwrite(STDERR,  sprintf("%s %s\n", date("d-m-Y, H:i:s"), $message));
 }
 
 /**

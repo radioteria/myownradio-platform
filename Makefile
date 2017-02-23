@@ -1,18 +1,16 @@
 IMAGE_ID := "myownradio/backend-service"
+BASE_IMAGE_ID := "myownradio/backend-image"
 CONTAINER_ID := "myownradio_service"
-BIN_DIR := $(shell npm bin)
 
 build:
 	docker build -t $(IMAGE_ID) .
 
-install:
-	mkdir -p storage/cache
-	mkdir -p storage/logs
-	mkdir -p storage/sessions
-	composer install
-	npm install
-	$(BIN_DIR)/bower install
-	$(BIN_DIR)/gulp scripts
+run:
+	docker run --rm --env-file $(CURDIR)/.env --name $(CONTAINER_ID) -p 6060:6060 $(IMAGE_ID)
+
+debug:
+	docker run --rm -it --name $(CONTAINER_ID) -p 6060:6060 $(IMAGE_ID) bash
 
 serve:
-	php -S 127.0.0.1:6060 server.php
+	docker run --rm --name $(CONTAINER_ID) -p 6060:6060 -v $(CURDIR):/var/app $(BASE_IMAGE_ID)
+

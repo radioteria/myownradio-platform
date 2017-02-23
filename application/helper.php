@@ -55,7 +55,13 @@ function config($key, $default = null)
  */
 function env($key, $default = null)
 {
-    return array_key_exists($key, $_ENV) ? $_ENV[$key] : $default;
+    if (array_key_exists($key, $_ENV)) {
+        return $_ENV[$key];
+    }
+
+    $value = getenv($key);
+
+    return !is_bool($value) ? $value : $default;
 }
 
 /**

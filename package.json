@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {},
+  "scripts": {
+    "bower": "bower",
+    "gulp": "gulp"
+  },
   "devDependencies": {
     "bower": "^1.8.0",
     "gulp": "^3.9.1",

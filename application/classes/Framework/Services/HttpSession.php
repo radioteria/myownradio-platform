@@ -8,17 +8,25 @@ use Tools\Singleton;
 
 class HttpSession implements Injectable
 {
-
     use Singleton;
 
-    const SESSION_EXPIRE_FAST = 0;
-    const SESSION_EXPIRE_MONTH = 2592000;
+    private $started = false;
 
     public function __construct()
     {
-        session_save_path(config('storage.session.save_path'));
-        session_set_cookie_params(config('storage.session.expire_seconds'), null, null, false, true);
+        session_set_cookie_params(config('storage.session.expire_seconds'), '/', null, false, true);
+    }
+
+    private function startSession()
+    {
         session_start();
+    }
+
+    private function lazyStartSession() {
+        if (!$this->started) {
+            $this->startSession();
+            $this->started = true;
+        }
     }
 
     /**
@@ -27,6 +35,7 @@ class HttpSession implements Injectable
      */
     public function get($key)
     {
+        $this->lazyStartSession();
         return Optional::ofNullable(@$_SESSION[$key]);
     }
 
@@ -36,6 +45,7 @@ class HttpSession implements Injectable
      */
     public function set($key, $value)
     {
+        $this->lazyStartSession();
         $_SESSION[$key] = $value;
     }
 
@@ -44,6 +54,7 @@ class HttpSession implements Injectable
      */
     public function getSessionId()
     {
+        $this->lazyStartSession();
         return session_id();
     }
 
@@ -52,6 +63,7 @@ class HttpSession implements Injectable
      */
     public function destroy()
     {
+        $this->lazyStartSession();
         session_unset();
         session_destroy();
     }

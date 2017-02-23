@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "b28319a9f77252999841be9d5fff9232",
-    "content-hash": "a87ba83bcd1accee1ff9247f5d99e646",
+    "hash": "285dc6655b4a953f9f4e07d25f83223d",
+    "content-hash": "1b61bb7eaea71bf66fde8ea2c0b27204",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -464,12 +464,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/liqpay/sdk-php.git",
-                "reference": "08c2a2795204563edc89238d7158d670a9557e42"
+                "reference": "cf4ba676f43be1aa941645e349cfc13612506d52"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/liqpay/sdk-php/zipball/08c2a2795204563edc89238d7158d670a9557e42",
-                "reference": "08c2a2795204563edc89238d7158d670a9557e42",
+                "url": "https://api.github.com/repos/liqpay/sdk-php/zipball/cf4ba676f43be1aa941645e349cfc13612506d52",
+                "reference": "cf4ba676f43be1aa941645e349cfc13612506d52",
                 "shasum": ""
             },
             "require": {
@@ -499,7 +499,7 @@
                 "liqpay",
                 "pay"
             ],
-            "time": "2016-06-04 07:55:03"
+            "time": "2017-02-03 20:39:13"
         },
         {
             "name": "m1/env",
@@ -744,6 +744,67 @@
                 "response"
             ],
             "time": "2016-08-06 14:39:51"
+        },
+        {
+            "name": "sentry/sentry",
+            "version": "1.6.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/getsentry/sentry-php.git",
+                "reference": "5bee26136ab3fc166334cd972892bf71bd361558"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/getsentry/sentry-php/zipball/5bee26136ab3fc166334cd972892bf71bd361558",
+                "reference": "5bee26136ab3fc166334cd972892bf71bd361558",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "php": ">=5.2.4"
+            },
+            "conflict": {
+                "raven/raven": "*"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^1.8.0",
+                "monolog/monolog": "*",
+                "phpunit/phpunit": "^4.8 || ^5.0"
+            },
+            "suggest": {
+                "monolog/monolog": "Automatically capture Monolog events as breadcrumbs"
+            },
+            "bin": [
+                "bin/sentry"
+            ],
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.6.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Raven_": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "David Cramer",
+                    "email": "dcramer@gmail.com"
+                }
+            ],
+            "description": "A PHP client for Sentry (http://getsentry.com)",
+            "homepage": "http://getsentry.com",
+            "keywords": [
+                "log",
+                "logging"
+            ],
+            "time": "2017-02-03 07:32:53"
         },
         {
             "name": "twig/twig",

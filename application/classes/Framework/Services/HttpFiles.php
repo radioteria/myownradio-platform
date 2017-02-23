@@ -53,8 +53,10 @@ class HttpFiles implements \ArrayAccess, SingletonInterface, Injectable
         $result = [];
 
         foreach ($_FILES as $file) {
+            error_log($file['error']);
             if ($file['error'] == UPLOAD_ERR_OK) {
                 $result[] = $callback($file);
+                continue;
             }
             $errorDescription = Upload::decodeUploadError($file['error']);
             throw new ApplicationException('File upload error status: '. $errorDescription);

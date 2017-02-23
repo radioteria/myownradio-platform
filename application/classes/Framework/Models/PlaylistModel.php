@@ -134,8 +134,6 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
                         $nowPlaying->then(function (StreamTrack $track) use (&$uniqueID) {
 
-                            logger(sprintf("Now playing track with index = %d", $track->getTrackOrder()));
-
                             Database::doInConnection(function (Database $db) use (&$uniqueID, &$track) {
                                 $db->executeUpdate("SELECT move_track_channel(?, ?, ?)", [
                                     $this->key, $uniqueID, $track->getTrackOrder() + 1
@@ -393,10 +391,6 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
         Stream::getByID($this->key)
             ->then(function ($stream) use ($trackBean, $startFrom) {
-
-                logger("Restored: " . $trackBean->getFileName());
-                logger("Offset: " . number_format($startFrom / 1000));
-
                 /** @var Stream $stream */
                 $stream->setStartedFrom($trackBean->getTimeOffset() + $startFrom);
                 $stream->setStarted(System::time());

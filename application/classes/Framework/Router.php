@@ -82,7 +82,7 @@ class Router implements SingletonInterface, Injectable {
 
         $sub->addRoute("flow", function () {
             $query = http_build_query($_GET);
-            header("Location: http://stream1.myownradio.biz:7778/audio?" . $query);
+            header("Location: http://stream-server-cfbef922.d55da40e.svc.dockerapp.io:7778/audio?" . $query);
         });
 
         // Default route

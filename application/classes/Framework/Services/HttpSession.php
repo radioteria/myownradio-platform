@@ -17,7 +17,7 @@ class HttpSession implements Injectable
     public function __construct()
     {
         session_save_path(config('storage.session.save_path'));
-        session_set_cookie_params(config('storage.session.expire_seconds'), null, null, false, true);
+        session_set_cookie_params(config('storage.session.expire_seconds'), "/", null, false, false);
         session_start();
     }
 

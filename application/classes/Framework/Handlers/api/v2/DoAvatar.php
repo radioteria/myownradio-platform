@@ -19,8 +19,6 @@ class DoAvatar implements Controller {
 
     public function doPost(HttpFiles $file, AuthUserModel $user, JsonResponse $response) {
 
-        logger(print_r($_FILES, true));
-
         $image = $file->getFirstFile()
             ->getOrElseThrow(ControllerException::noImageAttached());
 

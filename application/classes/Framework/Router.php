@@ -85,6 +85,8 @@ class Router implements SingletonInterface, Injectable {
             header("Location: http://stream-server-cfbef922.d55da40e.svc.dockerapp.io:7778/audio?" . $query);
         });
 
+        $sub->addRoute("api/v0/stream/:stream_id/now", "api\\DoChannelNowPlaying");
+
         // Default route
         $sub->defaultRoute(function (Router $router) {
             http_response_code(404);

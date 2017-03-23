@@ -38,7 +38,7 @@ class AuthUserModel extends UserModel implements Injectable {
 //            )
 //        );
 
-        $token = HttpSession::getInstance()->get("TOKEN")->getOrElse($exception);
+        $token = HttpSession::getInstance()->get("TOKEN")->getOrElseThrow($exception);
 
         $session = Database::doInConnection(function (Database $db) use ($token, $exception) {
 

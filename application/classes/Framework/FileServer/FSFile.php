@@ -78,6 +78,12 @@ class FSFile
         });
     }
 
+    public static function getFileUrl(FileServerFile $file)
+    {
+        $storage = StorageFactory::getStorage();
+        return $storage->url(self::getPathByHash($file->getFileHash()));
+    }
+
     /**
      * @throws FileServerException
      */

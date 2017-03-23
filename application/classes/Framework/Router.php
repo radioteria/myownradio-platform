@@ -181,6 +181,8 @@ class Router implements SingletonInterface, Injectable {
         $response->setData($exception->getMyData());
         $response->setCode($exception->getMyStatus());
 
+        $response->setResponseCode($exception->getMyStatus());
+
     }
 
 

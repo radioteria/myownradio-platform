@@ -14,7 +14,7 @@ class ControllerException extends \Exception {
 
     private $myMessage = null;
     private $myData = [];
-    private $myHttpCode = 200;
+    private $myHttpCode = 500;
     private $myStatus = 0;
 
     function __construct($message = null, $data = null, $status = 0) {
@@ -48,19 +48,19 @@ class ControllerException extends \Exception {
     }
 
     public static function noStream($key) {
-        return new self(I18n::tr("CEX_NO_STREAM_FOUND", ["arg" => $key]));
+        return new self(I18n::tr("CEX_NO_STREAM_FOUND", ["id" => $key]), null, 404);
     }
 
     public static function noUser($id) {
-        return new self(I18n::tr("CEX_NO_USER_FOUND", ["id" => $id]));
+        return new self(I18n::tr("CEX_NO_USER_FOUND", ["id" => $id]), null, 404);
     }
 
     public static function noTrack($id) {
-        return new self(I18n::tr("CEX_NO_TRACK_FOUND", ["id" => $id]));
+        return new self(I18n::tr("CEX_NO_TRACK_FOUND", ["id" => $id]), null, 404);
     }
 
     public static function noAccountPlan($plan_id) {
-        return new self(I18n::tr("ERROR_NO_ACCOUNT_PLAN", ["id" => $plan_id]));
+        return new self(I18n::tr("ERROR_NO_ACCOUNT_PLAN", ["id" => $plan_id]), null, 404);
     }
 
 }

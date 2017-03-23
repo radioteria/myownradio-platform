@@ -90,4 +90,5 @@ class S3Storage extends Storage
     {
         return $this->s3Client->doesObjectExist($this->bucket, $key);
     }
+
 }

@@ -4,7 +4,7 @@ namespace app\Helpers;
 
 class Shell
 {
-    public static function locate($command): string
+    public static function locate($command)
     {
         exec("which " . escapeshellcmd($command), $response, $status);
 
@@ -15,7 +15,7 @@ class Shell
         throw new \InvalidArgumentException("Command '$command' does not exist.");
     }
 
-    public static function locateAndExecute($command, array $args = []): array
+    public static function locateAndExecute($command, array $args = [])
     {
         $fullPath = self::locate($command);
 

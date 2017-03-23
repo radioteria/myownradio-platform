@@ -1,10 +1,10 @@
 <?php
 
-function locateCommand(string $command): string {
+function locateCommand($command) {
     return \app\Helpers\Shell::locate($command);
 }
 
-function locateCommandAndExecute(string $command, array $args): array
+function locateCommandAndExecute($command, array $args)
 {
     return \app\Helpers\Shell::locateAndExecute($command, $args);
 }

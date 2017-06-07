@@ -4,10 +4,6 @@ MAINTAINER Roman Lakhtadyr <roman.lakhtadyr@gmail.com>
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Add user
-RUN groupadd -r app && \
-    useradd -m -r -g app -s /bin/bash app
-
 # Install utilities
 RUN apt-get update && \
     apt-get install -y apt-utils curl apt-transport-https git
@@ -32,12 +28,9 @@ RUN rm -f /etc/nginx/sites-enabled/* && \
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
 
-# Install application dependencies
-WORKDIR /usr/app
-COPY composer.json composer.lock ./
-RUN mkdir vendor && chown app:app vendor
-USER app
-RUN composer install
+# Install application
+COPY . /usr/app/
+RUN composer install --no-plugins --no-scripts --no-dev
 
 VOLUME /var/lib/php/sessions
 VOLUME /tmp

@@ -49,7 +49,6 @@ try {
 
     $router->route();
 } catch (\Exception $exception) {
-
     echo 'E500 ';
 
     echo $exception->getMessage();
@@ -57,5 +56,4 @@ try {
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
 
     $eventId = $ravenClient->captureException($exception);
-
 }

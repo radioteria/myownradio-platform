@@ -2,6 +2,7 @@ Dockerfile
 Makefile
 vendor
 build
-public/node_modules
+node_modules
 .env
 storage
+.cn

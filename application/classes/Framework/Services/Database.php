@@ -89,7 +89,7 @@ class Database implements SingletonInterface, Injectable
     }
 
     /**
-     * @param callable(Database) $callable
+     * @param callable $callable
      * @return mixed
      */
     public function doInTransaction(callable $callable)

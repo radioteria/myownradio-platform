@@ -60,10 +60,7 @@ class HttpSession implements Injectable
         return session_id();
     }
 
-    /**
-     * @return void;
-     */
-    public function destroy()
+    public function destroy(): void
     {
         $this->lazyStartSession();
         session_unset();

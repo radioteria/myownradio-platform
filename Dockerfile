@@ -7,11 +7,11 @@ ENV PHP_VERSION=7.1
 
 # Install utilities
 RUN apt-get update && \
-    apt-get install -y apt-utils curl apt-transport-https git
+    apt-get install -y curl apt-transport-https git
 
 # Install Node.js, web server and media applications
 RUN (curl -sL https://deb.nodesource.com/setup_8.x | bash) && \
-    apt-get install -y ffmpeg mediainfo nodejs build-essential nginx supervisor
+    apt-get install -y ffmpeg mediainfo nodejs nginx supervisor
 
 # Install latest PHP and Composer
 RUN (curl -sL https://packages.sury.org/php/apt.gpg | apt-key add -) && \
@@ -21,7 +21,8 @@ RUN (curl -sL https://packages.sury.org/php/apt.gpg | apt-key add -) && \
     mkdir -p /var/run/php && \
     (curl -sL https://getcomposer.org/installer | php -- --install-dir=bin --filename=composer) && \
     sed -i 's/^upload_max_filesize\s=.*/upload_max_filesize = 100M/' /etc/php/$PHP_VERSION/fpm/php.ini && \
-    sed -i 's/^post_max_size\s=.*/post_max_size = 100M/' /etc/php/$PHP_VERSION/fpm/php.ini
+    sed -i 's/^post_max_size\s=.*/post_max_size = 100M/' /etc/php/$PHP_VERSION/fpm/php.ini && \
+    sed -i 's/^variables_order\s=.*/variables_order = "EGPCS"/' /etc/php/$PHP_VERSION/fpm/php.ini
 
 COPY ./cn/supervisord.conf /etc/supervisor/supervisord.conf
 COPY ./cn/nginx-fpm.conf /etc/nginx/sites-available/nginx-fpm.conf

@@ -23,10 +23,10 @@ use Tools\Folders;
  * @do_FIND_SIMILAR sid != :id AND permalink != :id AND status = 1 AND MATCH(hashtags) AGAINST((SELECT hashtags FROM r_streams WHERE (sid = :id) OR (permalink = :id)))
  * @do_GET_BY_KEY (sid = :key) OR (permalink IS NOT NULL AND permalink = :key)
  */
-class Stream extends ActiveRecordObject implements ActiveRecord {
+class Stream extends ActiveRecordObject implements ActiveRecord
+{
 
-    protected
-        $sid,
+    protected $sid,
         $uid,
         $name,
         $permalink,
@@ -45,7 +45,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      * @param User $user
      * @return bool
      */
-    public function isAccessibleTo(User $user) {
+    public function isAccessibleTo(User $user)
+    {
         return $user->isSuperUser() || $user->getID() == $this->getUserID();
     }
 
@@ -53,7 +54,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      * @param $access
      * @return $this
      */
-    public function setAccess($access) {
+    public function setAccess($access)
+    {
         $this->access = $access;
         return $this;
     }
@@ -61,15 +63,17 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return string
      */
-    public function getAccess() {
+    public function getAccess()
+    {
         return $this->access;
     }
 
     /**
      * @param mixed $category
-     * @return $this;
+     * @return $this
      */
-    public function setCategory($category) {
+    public function setCategory($category)
+    {
         $this->category = $category;
         return $this;
     }
@@ -77,7 +81,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return int
      */
-    public function getCategory() {
+    public function getCategory()
+    {
         return intval($this->category);
     }
 
@@ -85,7 +90,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      * @param string $cover
      * @return $this
      */
-    public function setCover($cover) {
+    public function setCover($cover)
+    {
         $this->cover = $cover;
         return $this;
     }
@@ -93,7 +99,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return string
      */
-    public function getCover() {
+    public function getCover()
+    {
         return $this->cover;
     }
 
@@ -101,7 +108,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      * @param int $created
      * @return $this
      */
-    public function setCreated($created) {
+    public function setCreated($created)
+    {
         $this->created = $created;
         return $this;
     }
@@ -109,7 +117,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return int
      */
-    public function getCreated() {
+    public function getCreated()
+    {
         return intval($this->created);
     }
 
@@ -117,7 +126,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      * @param string $hashtags
      * @return $this
      */
-    public function setHashTags($hashtags) {
+    public function setHashTags($hashtags)
+    {
         $this->hashtags = $hashtags;
         return $this;
     }
@@ -125,14 +135,16 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return string
      */
-    public function getHashTags() {
+    public function getHashTags()
+    {
         return $this->hashtags;
     }
 
     /**
      * @return string[]
      */
-    public function getHashTagsArray() {
+    public function getHashTagsArray()
+    {
         return preg_split("~\\s*,\\s*~", $this->hashtags);
     }
 
@@ -140,7 +152,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      * @param string $info
      * @return $this
      */
-    public function setInfo($info) {
+    public function setInfo($info)
+    {
         $this->info = $info;
         return $this;
     }
@@ -148,7 +161,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return string
      */
-    public function getInfo() {
+    public function getInfo()
+    {
         return $this->info;
     }
 
@@ -156,7 +170,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      * @param string $name
      * @return $this
      */
-    public function setName($name) {
+    public function setName($name)
+    {
         $this->name = $name;
         return $this;
     }
@@ -164,7 +179,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return string
      */
-    public function getName() {
+    public function getName()
+    {
         return $this->name;
     }
 
@@ -172,7 +188,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      * @param string|null $permalink
      * @return $this
      */
-    public function setPermalink($permalink) {
+    public function setPermalink($permalink)
+    {
         $this->permalink = $permalink;
         return $this;
     }
@@ -180,14 +197,16 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return string|null
      */
-    public function getPermalink() {
+    public function getPermalink()
+    {
         return $this->permalink;
     }
 
     /**
      * @return int
      */
-    public function getID() {
+    public function getID()
+    {
         return intval($this->sid);
     }
 
@@ -195,7 +214,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      * @param int $started
      * @return $this
      */
-    public function setStarted($started) {
+    public function setStarted($started)
+    {
         $this->started = $started;
         return $this;
     }
@@ -203,7 +223,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return int
      */
-    public function getStarted() {
+    public function getStarted()
+    {
         return intval($this->started);
     }
 
@@ -211,7 +232,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      * @param int $started_from
      * @return $this
      */
-    public function setStartedFrom($started_from) {
+    public function setStartedFrom($started_from)
+    {
         $this->started_from = $started_from;
         return $this;
     }
@@ -219,7 +241,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return int
      */
-    public function getStartedFrom() {
+    public function getStartedFrom()
+    {
         return intval($this->started_from);
     }
 
@@ -227,7 +250,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      * @param int $status
      * @return $this
      */
-    public function setStatus($status) {
+    public function setStatus($status)
+    {
         $this->status = $status;
         return $this;
     }
@@ -235,14 +259,16 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return int
      */
-    public function getStatus() {
+    public function getStatus()
+    {
         return intval($this->status);
     }
 
     /**
      * @return int
      */
-    public function getUserID() {
+    public function getUserID()
+    {
         return $this->uid;
     }
 
@@ -250,7 +276,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      * @param $uid
      * @return $this
      */
-    public function setUserID($uid) {
+    public function setUserID($uid)
+    {
         $this->uid = $uid;
         return $this;
     }
@@ -258,7 +285,8 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return mixed
      */
-    public function getKey() {
+    public function getKey()
+    {
         return isset($this->permalink) ? $this->permalink : $this->sid;
     }
 
@@ -272,27 +300,29 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return null|string
      */
-    public function getCoverUrl() {
+    public function getCoverUrl()
+    {
         return Folders::getInstance()->genStreamCoverUrl($this->cover);
     }
 
-    public function getStreamUrl() {
+    public function getStreamUrl()
+    {
         return Folders::getInstance()->genStreamUrl($this->sid);
     }
 
     /**
      * @param mixed $cover_background
      */
-    public function setCoverBackground($cover_background) {
+    public function setCoverBackground($cover_background)
+    {
         $this->cover_background = $cover_background;
     }
 
     /**
      * @return mixed
      */
-    public function getCoverBackground() {
+    public function getCoverBackground()
+    {
         return $this->cover_background;
     }
-
-
-} 
+}

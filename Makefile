@@ -9,10 +9,10 @@ run:
 	docker run --rm --env-file "$(CURDIR)/.env" --name $(CONTAINER_ID) -p 6060:6060 $(IMAGE_ID)
 
 debug:
-	docker run --rm -it --name $(CONTAINER_ID) $(IMAGE_ID) bash
+	docker run --rm -it --env-file "$(CURDIR)/.env" --name $(CONTAINER_ID) $(IMAGE_ID) bash
 
 serve:
-	docker run --rm -it --name $(CONTAINER_ID) -p 6060:6060 -v "$(CURDIR)":/usr/app/ $(IMAGE_ID)
+	docker run --rm -it --env-file "$(CURDIR)/.env" --name $(CONTAINER_ID) -p 6060:6060 -v "$(CURDIR)":/usr/app/ $(IMAGE_ID)
 
 deploy:
 	docker push $(IMAGE_ID)

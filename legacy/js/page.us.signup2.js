@@ -1,1 +1,0 @@
-$(".page-user-form.complete").jsubmit("/static/registration-completed");

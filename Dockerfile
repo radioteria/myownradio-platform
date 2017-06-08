@@ -4,6 +4,7 @@ MAINTAINER Roman Lakhtadyr <roman.lakhtadyr@gmail.com>
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PHP_VERSION=7.1
+ENV PHP_ENV=production
 
 # Install utilities
 RUN apt-get update && \

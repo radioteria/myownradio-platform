@@ -9,11 +9,6 @@ return [
         'save_path'      => '/var/lib/php/sessions'
     ],
 
-    'images' => [
-        'avatars_path'  => '../storage/images/avatars',
-        'covers_path'   => '../storage/images/covers'
-    ],
-
     'audio'  => [
         'track_duration_max'    => 14400000,
         'track_file_size_max'   => 536870912,

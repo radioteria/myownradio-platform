@@ -6,8 +6,6 @@ return [
 
     'timezone'  => 'Europe/Kiev',
 
-    'log_file'  => 'storage/logs/api-server.log',
-
     'host'      => $_SERVER['HTTP_HOST']
 
 ];

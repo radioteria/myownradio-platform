@@ -28,7 +28,7 @@ return [
         'preview_args' => '-ss %f -i %s -filter \'afade=t=in:ss=0:d=2\' -acodec libmp3lame -vn -ac 2 -ab 128k -f mp3 -'
     ],
 
-    'mediainfo_cmd' => env('MEDIAINFO_PATH'),
-    'ffmpeg_cmd'    => env('FFMPEG_PATH'),
+    'mediainfo_cmd' => env('MEDIAINFO_PATH', 'mediainfo'),
+    'ffmpeg_cmd'    => env('FFMPEG_PATH', 'ffmpeg'),
 
 ];

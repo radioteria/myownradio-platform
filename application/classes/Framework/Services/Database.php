@@ -15,7 +15,8 @@ use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-class Database implements SingletonInterface, Injectable {
+class Database implements SingletonInterface, Injectable
+{
 
     use Singleton;
 
@@ -58,78 +59,80 @@ class Database implements SingletonInterface, Injectable {
     /**
      * @return $this
      */
-    public function disconnect() {
+    public function disconnect()
+    {
 
         $this->pdo = null;
 
         return $this;
-
     }
 
     /**
      * @param callable $callable
      * @return mixed
      */
-    public static function doInConnection(callable $callable) {
+    public static function doInConnection(callable $callable)
+    {
 
         if (self::hasInstance()) {
-
             $result = self::getInstance()->doInTransaction($callable);
-
         } else {
-
             $conn = self::getInstance();
             $conn->connect();
             $result = $conn->doInTransaction($callable);
             $conn->disconnect();
 
             self::killInstance();
-
         }
 
         return $result;
-
     }
 
     /**
      * @param callable(Database) $callable
      * @return mixed
      */
-    public function doInTransaction(callable $callable) {
+    public function doInTransaction(callable $callable)
+    {
 
         $result = call_user_func($callable, $this);
 
         return $result;
-
     }
 
     /**
      * @return DBQuery
      */
-    public function getDBQuery() {
+    public function getDBQuery()
+    {
         return DBQuery::getInstance();
     }
 
     /**
      * @return PDO
      */
-    public function getPDO() {
+    public function getPDO()
+    {
         return $this->pdo;
     }
 
-    public function beginTransaction() {
+    public function beginTransaction()
+    {
         $this->pdo->beginTransaction();
     }
 
-    public function commit() {
+    public function commit()
+    {
         return $this->pdo->commit();
     }
 
-    public function rollback() {
+    public function rollback()
+    {
         return $this->pdo->rollBack();
     }
 
-    public function finishTransaction() {
+    public function finishTransaction()
+    {
         return $this->pdo->rollBack();
     }
 
@@ -138,7 +141,8 @@ class Database implements SingletonInterface, Injectable {
      * @param array $params
      * @return string
      */
-    public function queryQuote($query, $params = []) {
+    public function queryQuote($query, $params = [])
+    {
 
         $position = 0;
 
@@ -153,17 +157,18 @@ class Database implements SingletonInterface, Injectable {
 
 
         return $arguments;
-
     }
 
-    public function executePool(DBQueryPool $pool) {
+    public function executePool(DBQueryPool $pool)
+    {
         /** @var DBQueryWrapper $wrapper */
         foreach ($pool as $wrapper) {
             $this->justExecute($wrapper->getQueryBody(), $wrapper->getQueryParams());
         }
     }
 
-    public static function executePoolInConnection(DBQueryPool $pool) {
+    public static function executePoolInConnection(DBQueryPool $pool)
+    {
         $connection = new self();
         $connection->connect();
         $connection->beginTransaction();
@@ -177,7 +182,8 @@ class Database implements SingletonInterface, Injectable {
      * @param $params
      * @return string
      */
-    private function createQueryString($query, $params = null) {
+    private function createQueryString($query, $params = null)
+    {
         if ($query instanceof QueryBuilder) {
             return $this->queryQuote(
                 $query->getQuery($this->pdo),
@@ -194,7 +200,8 @@ class Database implements SingletonInterface, Injectable {
      * @throws \Framework\Exceptions\DatabaseException
      * @return \PDOStatement
      */
-    private function createResource($query, $params = null, $cached = false) {
+    private function createResource($query, $params = null, $cached = false)
+    {
 
         $queryString = $this->createQueryString($query, $params);
 
@@ -211,10 +218,10 @@ class Database implements SingletonInterface, Injectable {
         }
 
         return $resource;
-
     }
 
-    private function createResourceFromString($queryString) {
+    private function createResourceFromString($queryString)
+    {
 
         $resource = $this->pdo->prepare($queryString);
 
@@ -229,7 +236,6 @@ class Database implements SingletonInterface, Injectable {
         }
 
         return $resource;
-
     }
 
     /**
@@ -240,13 +246,14 @@ class Database implements SingletonInterface, Injectable {
      * @param bool $cached
      * @return array
      */
-    public function fetchAll($query, array $params = null, $key = null, callable $callback = null, $cached = false) {
+    public function fetchAll($query, array $params = null, $key = null, callable $callback = null, $cached = false)
+    {
 
         $queryString = $this->createQueryString($query, $params);
 
-	error_log('Time');
-	error_log(\Tools\System::time());
-	error_log($queryString);
+        error_log('Time');
+        error_log(\Tools\System::time());
+        error_log($queryString);
 
         if ($cached == true && isset(self::$cache[$queryString])) {
             $db_result = self::$cache[$queryString];
@@ -262,7 +269,6 @@ class Database implements SingletonInterface, Injectable {
         $result = [];
 
         foreach ($db_result as $i => $row) {
-
             if (is_callable($callback)) {
                 $row = call_user_func_array($callback, [$row, $i]);
             }
@@ -274,11 +280,9 @@ class Database implements SingletonInterface, Injectable {
             } else {
                 $result[] = $row;
             }
-
         }
 
         return $result;
-
     }
 
     /**
@@ -286,7 +290,8 @@ class Database implements SingletonInterface, Injectable {
      * @param array $params
      * @param callable $callback
      */
-    public function eachRow($query, array $params = null, callable $callback) {
+    public function eachRow($query, array $params = null, callable $callback)
+    {
 
         $resource = $this->createResource($query, $params);
 
@@ -296,7 +301,6 @@ class Database implements SingletonInterface, Injectable {
         }
 
         $resource->closeCursor();
-
     }
 
     /**
@@ -306,7 +310,8 @@ class Database implements SingletonInterface, Injectable {
      * @return Optional
      * @throws ControllerException
      */
-    public function fetchOneRow($query, array $params = null, $callback = null) {
+    public function fetchOneRow($query, array $params = null, $callback = null)
+    {
 
         $resource = $this->createResource($query, $params);
 
@@ -317,7 +322,6 @@ class Database implements SingletonInterface, Injectable {
         }
 
         return Optional::ofDeceptive($row);
-
     }
 
     /**
@@ -327,7 +331,8 @@ class Database implements SingletonInterface, Injectable {
      * @return Optional
      * @throws ControllerException
      */
-    public function fetchOneColumn($query, array $params = null, $column = 0) {
+    public function fetchOneColumn($query, array $params = null, $column = 0)
+    {
 
         $resource = $this->createResource($query, $params);
 
@@ -338,7 +343,6 @@ class Database implements SingletonInterface, Injectable {
         }
 
         return Optional::ofDeceptive($row);
-
     }
 
     /**
@@ -349,14 +353,14 @@ class Database implements SingletonInterface, Injectable {
      * @return Optional
      * @throws ControllerException
      */
-    public function fetchOneObject($query, array $params = null, $class, array $args = []) {
+    public function fetchOneObject($query, array $params = null, $class, array $args = [])
+    {
 
         $resource = $this->createResource($query, $params);
 
         $object = $resource->fetchObject($class, $args);
 
         return Optional::ofDeceptive($object);
-
     }
 
     /**
@@ -367,14 +371,14 @@ class Database implements SingletonInterface, Injectable {
      * @return array
      * @throws ControllerException
      */
-    public function fetchAllObjects($query, array $params = null, $class, array $args = null) {
+    public function fetchAllObjects($query, array $params = null, $class, array $args = null)
+    {
 
         $resource = $this->createResource($query, $params);
 
         $objects = $resource->fetchAll(PDO::FETCH_CLASS, $class, $args);
 
         return $objects;
-
     }
 
     /**
@@ -383,14 +387,14 @@ class Database implements SingletonInterface, Injectable {
      * @return int
      * @throws ControllerException
      */
-    public function executeUpdate($query, array $params = null) {
+    public function executeUpdate($query, array $params = null)
+    {
 
         $resource = $this->createResource($query, $params);
 
         //error_log("SQL: " . $resource->queryString);
 
         return $resource->rowCount();
-
     }
 
     /**
@@ -399,28 +403,27 @@ class Database implements SingletonInterface, Injectable {
      * @return mixed
      * @throws ControllerException
      */
-    public function executeInsert($query, array $params = null) {
+    public function executeInsert($query, array $params = null)
+    {
 
         $this->createResource($query, $params);
 
         return $this->pdo->lastInsertId(null);
-
     }
 
     /**
      * @param string|QueryBuilder $query
      * @param array $params
      */
-    public function justExecute($query, array $params = null) {
+    public function justExecute($query, array $params = null)
+    {
 
         $this->createResource($query, $params)->closeCursor();
-
     }
 
-    public function quote($var) {
+    public function quote($var)
+    {
 
         return $this->pdo->quote($var, PDO::PARAM_STR);
-
     }
-
 }

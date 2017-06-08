@@ -6,7 +6,7 @@ return [
 
     'session' => [
         'expire_seconds' => 2592000,
-        'save_path'      => '../storage/sessions'
+        'save_path'      => '/var/lib/php/sessions'
     ],
 
     'images' => [

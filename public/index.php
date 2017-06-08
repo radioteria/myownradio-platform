@@ -53,6 +53,8 @@ try {
 
     echo $exception->getMessage();
 
+    echo $exception->getTraceAsString();
+
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
 
     $eventId = $ravenClient->captureException($exception);

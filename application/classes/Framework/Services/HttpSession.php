@@ -23,7 +23,8 @@ class HttpSession implements Injectable
         session_start();
     }
 
-    private function lazyStartSession() {
+    private function lazyStartSession()
+    {
         if (!$this->started) {
             $this->startSession();
             $this->started = true;

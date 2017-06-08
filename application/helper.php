@@ -65,6 +65,23 @@ function env($key, $default = null)
 }
 
 /**
+ * Hides all secrets from
+ */
+function secure(array $array): array
+{
+    $stopWords = ['password', 'key', 'token', 'secret'];
+    return array_reduce(array_keys($array), function ($acc, $key) use ($stopWords, $array) {
+        $words = explode('_', strtolower($key));
+        if (sizeof(array_intersect($words, $stopWords)) > 0) {
+            $acc[$key] = '<hidden>';
+        } else {
+            $acc[$key] = is_array($array[$key]) ? secure($array[$key]) : $array[$key];
+        }
+        return $acc;
+    }, []);
+}
+
+/**
  * Maps a file extensions to a mimetype.
  *
  * @param $extension string The file extension.

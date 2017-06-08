@@ -25,7 +25,7 @@ try {
     if (file_exists(ENV_FILE)) {
         $loader = new \josegonzalez\Dotenv\Loader(ENV_FILE);
         $loader->parse();
-        $loader->toEnv();
+        $loader->toEnv(true);
     }
 
     // Init sentry

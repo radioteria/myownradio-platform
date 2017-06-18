@@ -2,13 +2,20 @@
 
 namespace Framework\Services;
 
+use Exception;
+use \Firebase\JWT\JWT;
+
 use Framework\Injector\Injectable;
 use Tools\Optional;
 use Tools\Singleton;
 
+
 class HttpSession implements Injectable
 {
     use Singleton;
+
+    const SESSION_COOKIE_NAME = 'secure_session';
+    const SESSION_EXPIRE_SECONDS = 30 * 24 * 60 * 60; // 30 days
 
     private $modified = false;
     private $session = [];
@@ -21,11 +28,23 @@ class HttpSession implements Injectable
 
     private function readSession()
     {
-        $this->sessionId = $_COOKIE['secure_session_id'] ?? uniqid();
-        $session = array_key_exists('secure_session', $_COOKIE)
-            ? json_decode($_COOKIE['secure_session'], true)
-            : [];
-        $this->session = is_array($session) ? $session : [];
+        $key = config('jwt.key');
+
+        if (array_key_exists(self::SESSION_COOKIE_NAME, $_COOKIE)) {
+            try {
+                $decodedSessionData = JWT::decode(
+                    $_COOKIE[self::SESSION_COOKIE_NAME], $key, ['HS256']
+                );
+                $this->sessionId = $decodedSessionData->id ?? uniqid();
+                $this->session = (array) $decodedSessionData->data ?? [];
+                return;
+            } catch (Exception $exception) {
+                //
+            }
+        }
+
+        $this->sessionId = uniqid();
+        $this->session = [];
     }
 
     public function isModified()
@@ -35,9 +54,18 @@ class HttpSession implements Injectable
 
     public function sendToClient()
     {
-        $data = json_encode($this->session);
-        setcookie('secure_session', $data, 0, '/');
-        setcookie('secure_session_id', $this->sessionId, 0, '/');
+        $key = config('jwt.key');
+        $sessionData = [
+            'id' => $this->sessionId,
+            'data' => $this->session
+        ];
+
+        $encodedSessionData = JWT::encode($sessionData, $key, 'HS256');
+
+        setcookie(
+            self::SESSION_COOKIE_NAME, $encodedSessionData,
+            self::SESSION_EXPIRE_SECONDS + time(),'/'
+        );
     }
 
     /**

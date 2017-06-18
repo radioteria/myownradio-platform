@@ -100,22 +100,16 @@ class Router implements SingletonInterface, Injectable {
 
         try {
 
-            ob_start();
-
             if (!$this->findRoute()) {
                 $sub = SubRouter::getInstance();
                 $sub->goMatching($this->currentRoute->getLegacy());
             }
 
-            $content = ob_get_clean();
             $session = HttpSession::getInstance();
 
-            if ($session->isModified()) {
-                error_log('Session Modified!');
+            if ($session->isModified() && !headers_sent()) {
                 $session->sendToClient();
             }
-
-            echo $content;
 
         } catch (UnauthorizedException $e) {
 

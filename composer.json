@@ -19,7 +19,8 @@
     "mikehaertl/php-shellcommand": "^1.2",
     "aws/aws-sdk-php": "^3.19",
     "intervention/image": "^2.3",
-    "sentry/sentry": "^1.6"
+    "sentry/sentry": "^1.6",
+    "firebase/php-jwt": "^4.0"
   },
   "autoload": {
     "files": [

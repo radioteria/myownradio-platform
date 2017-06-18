@@ -6,7 +6,7 @@ build:
 	time docker build -t $(IMAGE_ID) .
 
 run:
-	docker run --rm --env-file "$(CURDIR)/.env" --name $(CONTAINER_ID) -p 6060:6060 $(IMAGE_ID)
+	docker run --rm --env-file "$(CURDIR)/.env" --name $(CONTAINER_ID) -p 80:6060 $(IMAGE_ID)
 
 debug:
 	docker run --rm -it --env-file "$(CURDIR)/.env" --name $(CONTAINER_ID) $(IMAGE_ID) bash

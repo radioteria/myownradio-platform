@@ -38,11 +38,11 @@ RUN (curl -sL https://packages.sury.org/php/apt.gpg | apt-key add -) && \
     (curl -sL https://getcomposer.org/installer | php -- --install-dir=bin --filename=composer) 
 
 # Patch configuration files
-RUN sed -i 's/^upload_max_filesize\s=.*/upload_max_filesize = ${MAX_UPLOAD_FILESIZE}M/' /etc/php/$PHP_VERSION/fpm/php.ini && \
-    sed -i 's/^post_max_size\s=.*/post_max_size = ${MAX_UPLOAD_FILESIZE}M/' /etc/php/$PHP_VERSION/fpm/php.ini && \
+RUN sed -i "s/^upload_max_filesize\s=.*/upload_max_filesize = ${MAX_UPLOAD_FILESIZE}M/" /etc/php/$PHP_VERSION/fpm/php.ini && \
+    sed -i "s/^post_max_size\s=.*/post_max_size = ${MAX_UPLOAD_FILESIZE}M/" /etc/php/$PHP_VERSION/fpm/php.ini && \
     sed -i 's/^variables_order\s=.*/variables_order = "EGPCS"/' /etc/php/$PHP_VERSION/fpm/php.ini && \
-    sed -i '/^;clear_env/s/^;//' /etc/php/$PHP_VERSION/fpm/pool.d/www.conf && \
-    echo 'client_max_body_size ${PHP_VERSION}m' > /etc/nginx/conf.d/nginx-upload.conf
+    sed -i "/^;clear_env/s/^;//" /etc/php/$PHP_VERSION/fpm/pool.d/www.conf && \
+    echo "client_max_body_size ${MAX_UPLOAD_FILESIZE}m;" > /etc/nginx/conf.d/nginx-upload.conf
 
 # Copy configuration files
 COPY ./cn/supervisord.conf /etc/supervisor/supervisord.conf
@@ -60,7 +60,6 @@ COPY . ./
 RUN composer install --no-plugins --no-scripts --no-dev
 WORKDIR /tmp
 
-VOLUME /var/lib/php/sessions
 VOLUME /tmp
 
-EXPOSE 6060
+EXPOSE 80

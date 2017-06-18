@@ -105,11 +105,7 @@ class Router implements SingletonInterface, Injectable {
                 $sub->goMatching($this->currentRoute->getLegacy());
             }
 
-            $session = HttpSession::getInstance();
-
-            if ($session->isModified() && !headers_sent()) {
-                $session->sendToClient();
-            }
+            HttpSession::getInstance()->sendIfModified();
 
         } catch (UnauthorizedException $e) {
 

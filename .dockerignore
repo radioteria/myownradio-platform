@@ -4,4 +4,3 @@ vendor
 build
 node_modules
 .env
-cn

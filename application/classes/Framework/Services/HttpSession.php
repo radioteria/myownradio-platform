@@ -47,6 +47,18 @@ class HttpSession implements Injectable
         $this->session = [];
     }
 
+    public function sendIfModified()
+    {
+        if ($this->isModified()) {
+            if (headers_sent()) {
+                error_log('Headers already sent but session was modified!');
+                return;
+            }
+
+            $this->sendToClient();
+        }
+    }
+
     public function isModified()
     {
         return $this->modified;

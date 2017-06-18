@@ -14,6 +14,7 @@ use Framework\Injector\Injectable;
 use Framework\Injector\Injector;
 use Framework\Services\CurrentRoute;
 use Framework\Services\HttpRequest;
+use Framework\Services\HttpSession;
 use Framework\Services\JsonResponse;
 use Framework\Services\SubRouter;
 use Framework\View\Errors\View500Exception;
@@ -99,11 +100,22 @@ class Router implements SingletonInterface, Injectable {
 
         try {
 
+            ob_start();
+
             if (!$this->findRoute()) {
                 $sub = SubRouter::getInstance();
                 $sub->goMatching($this->currentRoute->getLegacy());
             }
 
+            $content = ob_get_clean();
+            $session = HttpSession::getInstance();
+
+            if ($session->isModified()) {
+                error_log('Session Modified!');
+                $session->sendToClient();
+            }
+
+            echo $content;
 
         } catch (UnauthorizedException $e) {
 
@@ -184,6 +196,5 @@ class Router implements SingletonInterface, Injectable {
         $response->setResponseCode($exception->getMyStatus());
 
     }
-
 
 }

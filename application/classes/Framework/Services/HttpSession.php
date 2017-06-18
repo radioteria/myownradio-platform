@@ -10,25 +10,34 @@ class HttpSession implements Injectable
 {
     use Singleton;
 
-    private $started = false;
+    private $modified = false;
+    private $session = [];
+    private $sessionId = null;
 
     public function __construct()
     {
-        session_save_path(config('storage.session.save_path'));
-        session_set_cookie_params(config('storage.session.expire_seconds'), "/", null, false, false);
+        $this->readSession();
     }
 
-    private function startSession()
+    private function readSession()
     {
-        session_start();
+        $this->sessionId = $_COOKIE['secure_session_id'] ?? uniqid();
+        $session = array_key_exists('secure_session', $_COOKIE)
+            ? json_decode($_COOKIE['secure_session'], true)
+            : [];
+        $this->session = is_array($session) ? $session : [];
     }
 
-    private function lazyStartSession()
+    public function isModified()
     {
-        if (!$this->started) {
-            $this->startSession();
-            $this->started = true;
-        }
+        return $this->modified;
+    }
+
+    public function sendToClient()
+    {
+        $data = json_encode($this->session);
+        setcookie('secure_session', $data, 0, '/');
+        setcookie('secure_session_id', $this->sessionId, 0, '/');
     }
 
     /**
@@ -37,8 +46,9 @@ class HttpSession implements Injectable
      */
     public function get($key)
     {
-        $this->lazyStartSession();
-        return Optional::ofNullable(@$_SESSION[$key]);
+        return Optional::ofNullable(
+            $this->session[$key] ?? null
+        );
     }
 
     /**
@@ -47,8 +57,8 @@ class HttpSession implements Injectable
      */
     public function set($key, $value)
     {
-        $this->lazyStartSession();
-        $_SESSION[$key] = $value;
+        $this->modified = true;
+        $this->session[$key] = $value;
     }
 
     /**
@@ -56,14 +66,6 @@ class HttpSession implements Injectable
      */
     public function getSessionId()
     {
-        $this->lazyStartSession();
-        return session_id();
-    }
-
-    public function destroy(): void
-    {
-        $this->lazyStartSession();
-        session_unset();
-        session_destroy();
+        return $this->sessionId;
     }
 }

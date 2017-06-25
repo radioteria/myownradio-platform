@@ -56,10 +56,13 @@ CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
 
 # Install application
 WORKDIR /usr/app/
-COPY . ./
+COPY composer.json composer.lock ./
 RUN composer install --no-plugins --no-scripts --no-dev
-WORKDIR /tmp
 
+COPY . ./
 VOLUME /tmp
 
 EXPOSE 80
+
+ARG GIT_CURRENT_COMMIT="<unknown>"
+ENV GIT_CURRENT_COMMIT=${GIT_CURRENT_COMMIT}

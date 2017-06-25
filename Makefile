@@ -1,9 +1,10 @@
 IMAGE_ID := "myownradio/backend-core"
 CONTAINER_ID := "mor-backend-service"
 DB_CONTAINER_ID := "mor-dev-db"
+GIT_CURRENT_COMMIT := $(shell git rev-parse --verify HEAD)
 
 build:
-	time docker build -t $(IMAGE_ID) .
+	time docker build -t $(IMAGE_ID) --build-arg GIT_CURRENT_COMMIT=$(GIT_CURRENT_COMMIT) .
 
 run:
 	docker run --rm --env-file "$(CURDIR)/.env" --name $(CONTAINER_ID) -p 80:6060 $(IMAGE_ID)

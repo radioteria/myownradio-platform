@@ -18,7 +18,4 @@ serve:
 deploy:
 	git diff-index --quiet HEAD -- && docker push $(IMAGE_ID) || (echo 'You have uncommited changes.' && exit 1)
 
-start-dev-db:
-	docker run --name $(DB_CONTAINER_ID) -e MYSQL_ROOT_PASSWORD=SuXXG00D -d -p 3306:3306 --restart=always mysql:5.6
-
 .PHONY: build

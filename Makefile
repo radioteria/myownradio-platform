@@ -13,7 +13,7 @@ debug:
 	docker run --rm -it --env-file "$(CURDIR)/.env" --name $(CONTAINER_ID) $(IMAGE_ID) bash
 
 serve:
-	docker run --rm -it --env-file "$(CURDIR)/.env" --name $(CONTAINER_ID) -p 6060:6060 -v "$(CURDIR)":/usr/app/ $(IMAGE_ID)
+	docker run --rm -it --env-file "$(CURDIR)/.env" --name $(CONTAINER_ID) -p 80:6060 -v "$(CURDIR)":/usr/app/ $(IMAGE_ID)
 
 deploy:
 	git diff-index --quiet HEAD -- && docker push $(IMAGE_ID) || (echo 'You have uncommited changes.' && exit 1)

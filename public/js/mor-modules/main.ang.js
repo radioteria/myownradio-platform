@@ -357,7 +357,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
             $document.get(0).title = currentRoute.title || SITE_TITLE;
 
-            $mixpanel.track('Viewing page - ' + (currentRoute.title || SITE_TITLE));
+            $mixpanel.track('Page Loaded');
 
         });
 

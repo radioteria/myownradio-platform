@@ -309,7 +309,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
             /* Otherwise */
             $routeProvider.otherwise({
-                redirectTo: "/"
+                templateUrl: "/views/404.html"
             });
 
             $httpProvider.defaults.cache = false;

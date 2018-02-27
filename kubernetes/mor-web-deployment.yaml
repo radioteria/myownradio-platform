@@ -1,0 +1,87 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: mor-web-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: mor-web
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name: mor-web
+    spec:
+      containers:
+      - image: 'myownradio/backend-core:latest'
+        name: mor-web
+        livenessProbe:
+          httpGet: 
+            path: /
+            port: 80  
+          initialDelaySeconds: 90
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: / 
+            port: 80
+          initialDelaySeconds: 90
+          periodSeconds: 10
+        env:
+        - name: DB_DATABASE
+          value: "mor"
+        - name: DB_HOST
+          value: "db"
+        - name: DB_PASSWORD
+          value: "mor"
+        - name: DB_USERNAME
+          value: "mor"
+        - name: FACEBOOK_APP_ID
+          valueFrom:
+            secretKeyRef:
+              name: mor-creds
+              key: FACEBOOK_APP_ID
+          # value: "731742683610572"
+        - name: FACEBOOK_APP_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: mor-creds
+              key: FACEBOOK_APP_SECRET
+          # value: "f84af1cdddcc6ac06c6ebf606fb616c3"
+        - name: FFMPEG_PATH
+          value: "ffmpeg"
+        - name: MEDIAINFO_PATH
+          value: "mediainfo"
+        - name: JWT_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mor-creds
+              key: JWT_KEY
+          # value: "TbhX2QUfV7dfxOXILKlZWk6jF9OceHmvzzolIC0K"
+        - name: S3_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mor-creds
+              key: S3_ACCESS_KEY
+          # value: "AKIAJBSFTKGMHDMPRPZA"
+        - name: S3_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: mor-creds
+              key: S3_SECRET_KEY
+          # value: "/7lMDhRjIXEARlV6WE0CbqBrcATG8uf8Gsss41QV"
+        - name: STREAM_HOST
+          value: "http://stream.myownradio.biz"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mor-web
+spec:
+  ports:
+  - port: 80
+  selector:
+    name: mor-web
+  type: NodePort

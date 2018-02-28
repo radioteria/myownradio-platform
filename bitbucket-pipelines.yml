@@ -4,7 +4,7 @@ options:
 pipelines:
   tags:
     v*:
-      - step:
+     - step:
         deployment: production
         script:
           - export IMAGE_NAME=myownradio/backend-core:BITBUCKET_TAG

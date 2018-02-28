@@ -38,7 +38,7 @@
                             $rootScope.player.controls.stop();
                         }
 
-                        $rootScope.player.url = "/flow?s=" + $stream.sid + "&f=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);
+                        $rootScope.player.url = "/getchunk/" + $stream.permalink + "?format=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);
                         $rootScope.player.currentID = $stream.sid;
                         $rootScope.player.currentStream = $stream;
                         $rootScope.player.page = "/streams/" + $stream.key;

@@ -104,7 +104,6 @@
             $rootScope.$watch("player.nowPlaying.unique_id", function (newValue) {
                 if (newValue && $rootScope.player.isPlaying) {
                     Popup.message("<b>" + htmlEscape($filter("trackCaption")($rootScope.player.nowPlaying)) + "</b><br>" + htmlEscape($rootScope.player.currentStream.name), 5000);
-                    $rootScope.player.controls.play();
                 }
             });
 

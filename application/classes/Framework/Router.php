@@ -78,6 +78,7 @@ class Router implements SingletonInterface, Injectable {
         $sub->addRoute("content/audio/&id", "content\\DoGetPreviewAudio");
         $sub->addRoute("content/m3u/:stream_id.m3u", "content\\DoM3u");
         $sub->addRoute("content/trackinfo/&id", "content\\DoTrackExtraInfo");
+        $sub->addRoute("getchunk/:id", "content\\DoGetChunk");
 
         $sub->addRoute("subscribe", "api\\v3\\DoAcquire");
 

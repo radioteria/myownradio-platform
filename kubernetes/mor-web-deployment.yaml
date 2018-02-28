@@ -15,7 +15,7 @@ spec:
         name: mor-web
     spec:
       containers:
-      - image: 'myownradio/backend-core:latest'
+      - image: 'myownradio/backend-core:v0.1.0'
         name: mor-web
         livenessProbe:
           httpGet: 

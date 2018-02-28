@@ -28,7 +28,7 @@
                     reload: function () {
                         if ($rootScope.player.isPlaying === true) {
                             $rootScope.player.controls.stop();
-                            $rootScope.player.url = "/flow?s=" + $rootScope.player.currentStream.sid + "&f=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);
+                            $rootScope.player.url = "/getchunk/" + $rootScope.player.currentStream.permalink + "?format=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);
                             $rootScope.player.controls.play();
                         }
                     },
@@ -104,6 +104,7 @@
             $rootScope.$watch("player.nowPlaying.unique_id", function (newValue) {
                 if (newValue && $rootScope.player.isPlaying) {
                     Popup.message("<b>" + htmlEscape($filter("trackCaption")($rootScope.player.nowPlaying)) + "</b><br>" + htmlEscape($rootScope.player.currentStream.name), 5000);
+                    $rootScope.player.controls.play();
                 }
             });
 

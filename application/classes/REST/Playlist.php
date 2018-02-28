@@ -30,7 +30,7 @@ class Playlist implements SingletonInterface, Injectable {
     use Singleton;
 
     const NOW_PLAYING_TIME_RANGE = 1800000; // 15 minutes
-    const REAL_TIME_DELAY_MS = 10000;
+    const REAL_TIME_DELAY_MS = 0;
 
     /**
      * @param Optional $color

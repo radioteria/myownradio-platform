@@ -7,7 +7,22 @@ pipelines:
      - step:
         deployment: production
         script:
-          - export IMAGE_NAME=myownradio/backend-core:BITBUCKET_TAG
+          - export IMAGE_NAME=myownradio/backend-core:$BITBUCKET_TAG
+          - export CLUSTER_NAME=myownradio-production
+          - export KUBERNETES_HOST=https://104.198.53.128:8443
+          - export DEPLOY_USER=deploy
+          - export DEPLOY_CONTEXT=myownradio-context
           - docker build -t $IMAGE_NAME .
           - docker login --username $DOCKER_HUB_USERNAME --password $DOCKER_HUB_PASSWORD
           - docker push $IMAGE_NAME
+          # Download the necessary tools to deploy to kubernetes
+          - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+          - chmod +x ./kubectl
+          - sudo mv ./kubectl /usr/local/bin/kubectl
+          # Configure kubectl
+          - kubectl config set-cluster $CLUSTER_NAME --server=$KUBERNETES_HOST
+          - kubectl config set-credentials $DEPLOY_USER --username=$KUBERNETES_USERNAME --password=$KUBERNETES_PASSWORD
+          - kubectl config set-context $DEPLOY_CONTEXT --cluster=$CLUSTER_NAME --user=$DEPLOY_USER
+          - kubectl config use-context $DEPLOY_CONTEXT
+          # Update the deployment to use the new Docker image
+          - kubectl set image deployment/mor-web-deployment mor-web=$IMAGE_NAME

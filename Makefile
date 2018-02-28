@@ -7,9 +7,9 @@ develop:
 	docker-compose up
 
 build:
-	time docker build -t $(IMAGE_ID) --build-arg GIT_CURRENT_COMMIT=$(GIT_CURRENT_COMMIT) .
+	time docker build -t $(IMAGE_ID):${TAG} --build-arg GIT_CURRENT_COMMIT=$(GIT_CURRENT_COMMIT) .
 
 deploy:
-	git diff-index --quiet HEAD -- && docker push $(IMAGE_ID) || (echo 'You have uncommited changes.' && exit 1)
+	docker push $(IMAGE_ID):${TAG}
 
 .PHONY: build

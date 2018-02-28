@@ -127,7 +127,6 @@
                             });
                             this.on("ended", function () {
                                 if ($rootScope.player.isPlaying) {
-                                    $rootScope.player.isBuffering = true;
                                     $timeout(function () {
                                         realPlayer.play(url)
                                     }, 1000);

@@ -14,3 +14,4 @@ last-tag:
 	@git describe --abbrev=0 --tags
 
 .PHONY: build
+

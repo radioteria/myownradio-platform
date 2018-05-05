@@ -2,15 +2,14 @@ options:
   docker: true
 
 pipelines:
-  tags:
-    v*:
-     - step:
-        script:
-          - export IMAGE_NAME=myownradio/backend-core:$BITBUCKET_TAG
-          - docker build -t $IMAGE_NAME .
-          - docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
-          - docker push $IMAGE_NAME
-     - step:
-        deployment: production
-        script:
-          - ssh $DEPLOY_HOST -- docker service update --quiet --force --with-registry-auth --image=myownradio/backend-core:$BITBUCKET_TAG mor-prod_web
+  branches:
+    production:
+      - step:
+          script:
+            - docker build -t $DOCKER_IMAGE .
+            - docker login --username $DOCKER_USERNAME --password $DOCKER_PASSWORD
+            - docker push $DOCKER_IMAGE
+      - step:
+          deployment: production
+          script:
+            - ssh $DEPLOY_HOST -- docker service update --quiet --force --with-registry-auth --image=$DOCKER_IMAGE $DEPLOY_SERVICE

@@ -5,13 +5,16 @@
   "dependencies": {},
   "scripts": {
     "bower": "bower",
-    "gulp": "gulp"
+    "gulp": "gulp",
+    "build:parcel": "parcel build src/index.js --out-dir public/assets",
+    "build": "npm run build:parcel"
   },
   "devDependencies": {
     "bower": "^1.8.0",
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.0",
-    "gulp-minify": "^0.0.14"
+    "gulp-minify": "^0.0.14",
+    "parcel": "^1.8.1"
   },
   "eslintConfig": {}
 }

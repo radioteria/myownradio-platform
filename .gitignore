@@ -6,3 +6,5 @@ build/
 .env
 cache
 storage/*/
+public/assets/*
+.cache

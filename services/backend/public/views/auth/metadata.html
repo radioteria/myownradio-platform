@@ -1,0 +1,115 @@
+<div class="metadata-editor" ng-enter="save()">
+    <h1 class="form-title">
+        <i class="icon-mode-edit"></i>
+        <translate filter="uppercase">FR_METADATA_TITLE</translate>
+    </h1>
+    <div class="subinfo">
+        <span><translate>FR_FOR</translate> </span>
+        <span class="bold" ng-if="source.length > 1">{{ source.length }} <translate>FR_FOR_TRACKS</translate></span>
+        <span class="bold" ng-if="source.length == 1">{{ source[0].filename }}</span>
+    </div>
+    <table class="editor">
+        <tr>
+            <td>
+                <translate>FR_METADATA_TRACK_TITLE</translate>
+            </td>
+            <td>
+                <input type="checkbox" ng-model="metadata.save_title" />
+            </td>
+            <td>
+                <input ng-disabled="!metadata.save_title" type="text" ng-model="metadata.title" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <translate>FR_METADATA_TRACK_ARTIST</translate>
+            </td>
+            <td>
+                <input type="checkbox" ng-model="metadata.save_artist" />
+            </td>
+            <td>
+                <input ng-disabled="!metadata.save_artist" type="text" ng-model="metadata.artist" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <translate>FR_METADATA_TRACK_ALBUM</translate>
+            </td>
+            <td>
+                <input type="checkbox" ng-model="metadata.save_album" />
+            </td>
+            <td>
+                <input ng-disabled="!metadata.save_album" type="text" ng-model="metadata.album" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <translate>FR_METADATA_TR_NUMBER</translate>
+            </td>
+            <td>
+                <input type="checkbox" ng-model="metadata.save_track_number" />
+            </td>
+            <td>
+                <input ng-disabled="!metadata.save_track_number" type="text" ng-model="metadata.track_number" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <translate>FR_METADATA_TRACK_GENRE</translate>
+            </td>
+            <td>
+                <input type="checkbox" ng-model="metadata.save_genre" />
+            </td>
+            <td>
+                <input ng-disabled="!metadata.save_genre" type="text" mor-suggest="lib.genres" ng-model="metadata.genre" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <translate>FR_METADATA_TRACK_DATE</translate>
+            </td>
+            <td>
+                <input type="checkbox" ng-model="metadata.save_date" />
+            </td>
+            <td>
+                <input ng-disabled="!metadata.save_date" type="text" ng-model="metadata.date" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <translate>FR_METADATA_TRACK_BUY</translate>
+            </td>
+            <td>
+                <input type="checkbox" ng-model="metadata.save_buy" />
+            </td>
+            <td>
+                <input ng-disabled="!metadata.save_buy" type="text" ng-model="metadata.buy" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <translate>FR_METADATA_TRACK_ACCESS</translate>
+            </td>
+            <td>
+                <input type="checkbox" ng-model="metadata.save_can_be_shared" />
+            </td>
+            <td>
+                <select ng-disabled="!metadata.save_can_be_shared" ng-model="metadata.can_be_shared">
+                    <option value="0" html-bind="tr('FR_METADATA_ACCESS_PRIVATE')"></option>
+                    <option value="1" html-bind="tr('FR_METADATA_ACCESS_PUBLIC')"></option>
+                </select>
+                <div class="info-block" ng-visible="metadata.can_be_shared">
+                    <translate>FR_METADATA_ACCESS_HINT</translate>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <div class="controls">
+        <div class="button" ng-click="save()">
+            <translate>FR_SAVE</translate>
+        </div>
+        <div class="button" ng-click="closeThisDialog()">
+            <translate>FR_CLOSE</translate>
+        </div>
+    </div>
+</div>

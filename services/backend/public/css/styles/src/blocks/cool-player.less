@@ -1,0 +1,84 @@
+.player-container {
+  left: 0;
+  position: fixed;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  height: 40px;
+  bottom: -40px;
+  z-index: 100;
+  background-color: #181e30;
+  overflow: visible;
+  color: #ffffff;
+  transition: bottom linear 150ms;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.8);
+}
+
+.cool-player {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  position: relative;
+  a {
+    color: #ffffff;
+  }
+  i {
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  .radio-cover {
+    width: 40px;
+    .cover {
+      width: 40px;
+      height: 40px;
+      border-radius: 0;
+    }
+  }
+  .radio-title {
+    width: 250px;
+    vertical-align: middle;
+    padding: 0 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    .title {
+      vertical-align: middle;
+      font-family: "Myriad Pro Thin", sans-serif;
+      font-size: 16pt;
+    }
+  }
+  .social-buttons {
+    width: 128px;
+    vertical-align: middle;
+    text-align: center;
+    padding: 0 8px;
+    & > *:not(:first-child) {
+      margin-left: 12px;
+    }
+  }
+  .play-controls {
+    padding: 0 8px;
+    width: 32px;
+    vertical-align: middle;
+    text-align: center;
+  }
+  .track-title {
+    vertical-align: middle;
+    font-family: "Myriad Pro Thin", sans-serif;
+    font-size: 14pt;
+  }
+  .right-tools {
+    vertical-align: middle;
+    text-align: right;
+    padding-right: 16px;
+    width: 64px;
+  }
+}
+
+body.player-visible {
+  .player-container {
+    box-shadow: 0 0 10px #000;
+    bottom: 0;
+  }
+}

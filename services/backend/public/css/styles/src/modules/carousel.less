@@ -1,0 +1,47 @@
+.carousel {
+  position: fixed;
+  bottom: 0px;
+  margin-bottom: 96px;
+  width: 1000px;
+  line-height: 100%;
+
+
+  .carousel-container {
+    position: relative;
+    height: 200px;
+    .tiles {
+      overflow: hidden;
+      white-space: nowrap;
+      width: 100%;
+      .tile {
+        box-sizing: border-box;
+        white-space: normal;
+        display: inline-block;
+        vertical-align: middle;
+        width: 200px;
+        height: 200px;
+        .padded {
+          margin: 8px;
+          border-radius: 6px;
+          height: 184px;
+          display: block;
+          position: relative;
+          .cover {
+            width: 100%;
+            height: 100%;
+          }
+          .name {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            color: #ffffff;
+            margin: 8px;
+            padding: 0 4px;
+            font-size: 9pt;
+          }
+        }
+      }
+    }
+  }
+}

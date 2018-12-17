@@ -1,0 +1,62 @@
+//  Blocks Style
+
+@page-fixed-width: 1000px;
+
+.fixed-width (@width) {
+  position: relative;
+  width: @width;
+  left: 50%;
+  margin-left: -(@width / 2);
+}
+
+.fixed-width {
+  .fixed-width(@page-fixed-width);
+}
+
+.full-width {
+  width: auto;
+  margin-left: 0;
+  margin-right: 0;
+  left: 0;
+}
+
+/* Hashtag List CSS-sing */
+
+.taglist-wrapper {
+  font-size: 10pt;
+
+  .taglist {
+    overflow: hidden;
+    margin-bottom: 8px;
+    & > li {
+      float: left;
+      margin-right: 4px;
+      margin-bottom: 4px;
+      background-color: #9f9f9f;
+      transition: background-color 250ms linear;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 10px;
+      text-shadow: 1px 1px 1px #606060;
+
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      &:before {
+        content: '#';
+      }
+      a {
+        color: white;
+        text-shadow: 1px 1px 1px #606060;
+      }
+      &:hover {
+        background-color: lighten(#9f9f9f, 20%);
+      }
+    }
+  }
+}
+
+
+

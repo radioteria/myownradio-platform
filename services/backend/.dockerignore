@@ -1,0 +1,6 @@
+Dockerfile
+Makefile
+vendor
+build
+node_modules
+.env

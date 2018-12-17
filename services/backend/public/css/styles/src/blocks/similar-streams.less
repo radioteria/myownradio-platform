@@ -1,0 +1,80 @@
+.similar-streams-wrapper {
+  padding: 8px 32px;
+  overflow: hidden;
+
+  .title {
+    font-family: "Myriad Pro Thin";
+    font-size: 24pt;
+  }
+
+  .similar-streams {
+    overflow: hidden;
+    position: relative;
+    margin-top: 8px;
+
+    & > li {
+      float: left;
+      width: 50%;
+      overflow: hidden;
+      margin-bottom: 16px;
+      box-sizing: border-box;
+
+      play {
+        i {
+          font-size: 18pt;
+          line-height: 31px;
+        }
+      }
+
+      a {
+        color: #666666;
+      }
+
+      .cover {
+        width: 64px;
+        height: 64px;
+        float: left;
+        margin-right: 16px;
+
+      }
+
+      .info {
+        .title {
+          font-family: "Open Sans";
+          font-size: 14pt;
+          font-weight: 200;
+        }
+
+        .now-playing {
+          font-size: 8pt;
+          height: 18px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          color: @APP_TEXT_COLOR;
+          i {
+            padding-right: 2px;
+          }
+        }
+
+        .taglist {
+          font-size: 8pt;
+        }
+
+        .owner {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .description {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+
+
+    }
+  }
+}

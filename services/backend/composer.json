@@ -1,0 +1,38 @@
+{
+  "name": "radioteria/myownradio-api-server",
+  "description": "",
+  "minimum-stability": "beta",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Roman Gemini",
+      "email": "roman@homefs.biz"
+    }
+  ],
+  "require": {
+    "mixpanel/mixpanel-php": "^2.6",
+    "Twig/Twig": "^1.25",
+    "james-heinrich/getid3": "^1.9",
+    "liqpay/liqpay": "dev-master",
+    "facebook/php-sdk": "4.0.23",
+    "josegonzalez/dotenv": "^2.0",
+    "mikehaertl/php-shellcommand": "^1.2",
+    "aws/aws-sdk-php": "^3.19",
+    "intervention/image": "^2.3",
+    "sentry/sentry": "^1.6",
+    "firebase/php-jwt": "^4.0"
+  },
+  "autoload": {
+    "files": [
+      "application/helper.php",
+      "app/helper.php"
+    ],
+    "psr-4": {
+      "": "application/classes",
+      "app\\": "app/"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.6"
+  }
+}

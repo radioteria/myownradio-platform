@@ -1,0 +1,55 @@
+nav.main {
+  float: left;
+  width: 164px;
+  position: relative;
+  padding-left: 8px;
+  //margin-top: 34px;
+  top: 0;
+  left: 0;
+
+  a {
+    padding: 8px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  ul {
+    li {
+      border-radius: 4px 0 0 4px;
+
+      a:hover {
+        color: #009cff;
+      }
+      &.active {
+        border-left: 1px solid @HEAD_LOGO_BACKGROUND_COLOR;
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+      }
+
+      ul.sub-menu {
+        li {
+          border-radius: 0;
+          font-size: 8pt;
+          padding-left: 8px;
+          a {
+            padding: 4px 8px;
+          }
+          &.active {
+            border: none;
+            a {
+              color: #009cff;
+            }
+          }
+          &:last-child {
+            a {
+              padding-bottom: 8px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

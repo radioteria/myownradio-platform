@@ -1,5 +1,5 @@
 import ffmpeg = require('fluent-ffmpeg');
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { PassThrough } from 'stream';
 import { millisToSeconds } from '../app/utils/time-utils';
 
@@ -12,16 +12,33 @@ const FADEIN_FILTER = 'afade=t=in:st=0:d=1';
 
 const KILL_SIGNAL = 'SIGINT';
 
-const decode = (url: string, offset: number = 0): Observable<Buffer> => {
+const decode = (
+  url: string,
+  offset: number = 0,
+  pauseSubject: Subject<boolean>,
+): Observable<Buffer> => {
   return new Observable(observer => {
     let killed = false;
 
     const passThrough = new PassThrough();
 
-    passThrough
-      .on('error', err => (killed ? observer.complete() : observer.error(err)))
-      .on('data', data => observer.next(data))
-      .on('end', () => observer.complete());
+    const pauseSubscription = pauseSubject.subscribe(pause => {
+      pause ? passThrough.pause() : passThrough.resume();
+    });
+
+    const handleError = (err: Error) => {
+      pauseSubscription.unsubscribe();
+      killed ? observer.complete() : observer.error(err);
+    };
+
+    const handleEnd = () => {
+      pauseSubscription.unsubscribe();
+      observer.complete();
+    };
+
+    const handleData = (data: Buffer) => {
+      observer.next(data);
+    };
 
     const coder = ffmpeg()
       .audioCodec(AUDIO_CODEC)
@@ -32,7 +49,12 @@ const decode = (url: string, offset: number = 0): Observable<Buffer> => {
       .input(url)
       .seekInput(millisToSeconds(offset))
       .native()
-      .output(passThrough, { end: true });
+      .on('error', handleError)
+      .on('end', handleEnd);
+
+    passThrough.on('data', handleData);
+
+    coder.pipe(passThrough);
 
     return () => {
       if (!killed) {

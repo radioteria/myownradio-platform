@@ -12,7 +12,7 @@ const FADEIN_FILTER = 'afade=t=in:st=0:d=1';
 
 const KILL_SIGNAL = 'SIGINT';
 
-const decode = (
+const decodeMedia = (
   url: string,
   offset: number,
   pauseSubject: Subject<boolean>,
@@ -65,4 +65,4 @@ const decode = (
   });
 };
 
-export default decode;
+export default decodeMedia;

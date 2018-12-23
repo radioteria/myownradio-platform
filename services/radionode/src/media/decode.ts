@@ -14,7 +14,7 @@ const KILL_SIGNAL = 'SIGINT';
 
 const decode = (
   url: string,
-  offset: number = 0,
+  offset: number,
   pauseSubject: Subject<boolean>,
 ): Observable<Buffer> => {
   return new Observable(observer => {

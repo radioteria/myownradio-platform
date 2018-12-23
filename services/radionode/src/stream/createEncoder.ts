@@ -13,7 +13,7 @@ export const createEncoder = (input: Readable): Writable => {
     .audioChannels(constants.ENCODER_CHANNELS)
     .outputFormat(constants.ENCODER_OUTPUT_FORMAT)
     .audioFilter(constants.ENCODER_FILTER)
-    .on('error', error => output.emit('error', error));
+    .on('error', error => input.emit('error', error));
 
   encoder.pipe(output);
 

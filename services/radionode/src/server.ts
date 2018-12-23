@@ -6,6 +6,7 @@ import { MorBackendService } from './app/service/backend/impl/mor';
 import { PassThrough } from 'stream';
 import { createDecoder } from './stream/createDecoder';
 import { createEncoder } from './stream/createEncoder';
+import { createRepeatable } from './stream/createRepeatable';
 
 const morBackend = new MorBackendService();
 const container = new Container(morBackend);
@@ -30,11 +31,13 @@ router.get('/audio/:channelId', (ctx: Application.Context) => {
 router.get('/stream/:channelId', async (ctx: Application.Context) => {
   const { channelId } = ctx.params;
 
-  const { url, offset } = await morBackend.getNowPlaying(channelId);
-  const stream = createDecoder(url, offset);
-  const mpeg = createEncoder(stream);
+  const stream = createRepeatable(async () => {
+    console.log('Fetching new track');
+    const { url, offset } = await morBackend.getNowPlaying(channelId);
+    return createDecoder(url, offset);
+  });
 
-  ctx.body = mpeg;
+  ctx.body = createEncoder(stream);
 });
 
 app.use(router.routes());

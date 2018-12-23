@@ -1,5 +1,5 @@
 import { Readable, Writable, Transform, PassThrough } from 'stream';
-import { Consumer } from "./types";
+import { Consumer } from './types';
 
 const readAll = (readable: Readable, consumer: Consumer<any>, callback: Function) => {
   const consume = () => {
@@ -16,11 +16,11 @@ const readAll = (readable: Readable, consumer: Consumer<any>, callback: Function
 
 export const combine = (readable: Readable, writable: Writable): Transform => {
   return new Transform({
-    transform(chunk: Buffer, enc: string, callback: Function) {
+    transform(chunk: Buffer, enc: string, callback: () => void) {
       writable.write(chunk, enc);
       readAll(readable, data => this.push(data), callback);
     },
-    flush(callback: Function) {
+    flush(callback: () => void) {
       writable.end(undefined, undefined, callback);
     },
   });
@@ -33,11 +33,12 @@ export const createTransformWithConnectors = () => {
   return { input, output, transform };
 };
 
-export const wrap = (target: Writable): Writable => new Writable({
-  write(chunk: Buffer, enc: string, cb: Function): boolean {
-    return target.write(chunk, enc, cb);
-  },
-});
+export const wrap = (target: Writable): Writable =>
+  new Writable({
+    write(chunk: Buffer, enc: string, callback: () => void): boolean {
+      return target.write(chunk, enc, callback);
+    },
+  });
 
 export const pipeWithError = (src: Readable, dst: Writable) => {
   src.on('error', error => dst.emit('error', error));

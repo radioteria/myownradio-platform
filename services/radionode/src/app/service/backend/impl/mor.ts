@@ -1,28 +1,26 @@
-import { Client } from 'node-rest-client-promise';
+import axios from 'axios';
 
-import { BackendService, ClientSessionId, NowPlaying } from "../";
-
-const endpoint: string = 'http://myownradio.biz/api/v0/stream/${channelId}/now';
-
-// const endpoint: string = 'http://myownradio.biz/api/r/channel/${channelId}';
+import { BackendService, ClientSessionId, NowPlaying } from '../';
 
 export class MorBackendService implements BackendService {
-    private client = new Client();
+  private client = axios.create();
 
-    get name(): string {
-        return 'mor'
-    };
+  get name(): string {
+    return 'mor';
+  }
 
-    getNowPlaying(channelId: string): Promise<NowPlaying> {
-        return this.client.getPromise(endpoint, { path: { channelId } })
-            .then(({ data, response }) => <NowPlaying> data.data);
-    }
+  public async getNowPlaying(channelId: string): Promise<NowPlaying> {
+    const nowResponse = await this.client.get(
+      `http://myownradio.biz/api/v0/stream/${channelId}/now`,
+    );
+    return nowResponse.data.data;
+  }
 
-    createClientSession(channelId: string): Promise<ClientSessionId> {
-        return Promise.reject(new Error('Method not implemented.'));
-    }
+  public async createClientSession(channelId: string): Promise<ClientSessionId> {
+    throw new Error('Method not implemented.');
+  }
 
-    deleteClientSession(clientSessionId: ClientSessionId): Promise<void> {
-        return Promise.reject(new Error('Method not implemented.'));
-    }
+  public async deleteClientSession(clientSessionId: ClientSessionId): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 }

@@ -4,7 +4,7 @@ import { module } from '../utils/log-utils';
 import { decode, Decoder } from './decoder';
 import { wrap } from '../utils/stream-utils';
 
-import { BackendService, NowPlaying } from "../service/backend";
+import { BackendService, NowPlaying } from '../service/backend';
 
 export default class Stream extends PassThrough {
   backendService: BackendService;
@@ -17,12 +17,11 @@ export default class Stream extends PassThrough {
   constructor(backendService: BackendService, channelId: string) {
     super();
 
-    this.log('info', 'Initialized');
-
     this.channelId = channelId;
     this.backendService = backendService;
 
     this.play();
+    this.log('info', 'Initialized');
   }
 
   stop() {

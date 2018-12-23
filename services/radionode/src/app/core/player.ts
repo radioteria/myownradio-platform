@@ -1,11 +1,13 @@
 import * as EventEmitter from 'events';
-import * as express from 'express';
+import { Context } from 'koa';
 
 import { module } from '../utils/log-utils';
 import { createEncoder } from './encoder';
 import Stream from './stream';
 import Broadcast from './broadcast';
-import { BackendService } from "../service/backend";
+import { BackendService } from '../service/backend';
+import { Transform, Writable } from 'stream';
+import { createTransformWithConnectors } from '../utils/stream-utils';
 
 export default class Player extends EventEmitter {
   channelId: string;
@@ -20,8 +22,6 @@ export default class Player extends EventEmitter {
   constructor(backendService: BackendService, channelId: string) {
     super();
 
-    this.log('info', 'Initialized');
-
     this.channelId = channelId;
     this.stream = new Stream(backendService, channelId);
 
@@ -29,11 +29,12 @@ export default class Player extends EventEmitter {
 
     this.bindEventHandlers();
     this.connectStreamToBroadcast();
+
+    this.log('info', 'Initialized');
   }
 
-  addClient(output: express.Response) {
-    output.header('Content-Type', 'audio/mpeg');
-    this.broadcast.addClient(output);
+  addClient(client: Writable) {
+    this.broadcast.addClient(client);
   }
 
   countClients(): number {
@@ -54,7 +55,7 @@ export default class Player extends EventEmitter {
     this.stream.on('error', (error: any) => {
       this.log('error', error);
     });
-    this.stream.on('title', (title) => {
+    this.stream.on('title', title => {
       this.title = title;
     });
 

@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import { module } from '../utils/log-utils';
 import Player from './player';
 import Timer = NodeJS.Timer;
-import { BackendService } from "../service/backend";
+import { BackendService } from '../service/backend';
 
 const PLAYER_IDLE_TIMEOUT: number = 10000;
 
@@ -21,6 +21,7 @@ export default class Container {
   createOrGetPlayer(channelId: string): Player {
     if (!(channelId in this.players)) {
       this.log('info', 'Create player for channel "%s"', channelId);
+
       this.players[channelId] = this.createPlayer(channelId);
       this.bindPlayerEvents(this.players[channelId]);
     } else {
@@ -72,10 +73,7 @@ export default class Container {
   }
 
   countClients(): number {
-    return _.sumBy(
-      Object.values(this.players),
-      (p: Player) => p.countClients(),
-    );
+    return _.sumBy(Object.values(this.players), (p: Player) => p.countClients());
   }
 
   toString(): string {

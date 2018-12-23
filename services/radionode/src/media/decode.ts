@@ -1,5 +1,6 @@
 import ffmpeg = require('fluent-ffmpeg');
 import { Observable } from 'rxjs';
+import { PassThrough } from 'stream';
 import { millisToSeconds } from '../app/utils/time-utils';
 
 const DECODER_CHANNELS = 2;
@@ -15,6 +16,13 @@ const decode = (url: string, offset: number = 0): Observable<Buffer> => {
   return new Observable(observer => {
     let killed = false;
 
+    const passThrough = new PassThrough();
+
+    passThrough
+      .on('error', err => (killed ? observer.complete() : observer.error(err)))
+      .on('data', data => observer.next(data))
+      .on('end', () => observer.complete());
+
     const coder = ffmpeg()
       .audioCodec(AUDIO_CODEC)
       .audioChannels(DECODER_CHANNELS)
@@ -24,9 +32,7 @@ const decode = (url: string, offset: number = 0): Observable<Buffer> => {
       .input(url)
       .seekInput(millisToSeconds(offset))
       .native()
-      .on('error', err => (killed ? observer.complete() : observer.error(err)))
-      .on('data', data => observer.next(data))
-      .on('end', () => observer.complete());
+      .output(passThrough, { end: true });
 
     return () => {
       if (!killed) {

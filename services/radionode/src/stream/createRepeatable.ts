@@ -13,7 +13,7 @@ export const createRepeatable = (provide: () => Promise<Readable>): Readable => 
   };
 
   const handleError = (err: Error) => {
-    throw err;
+    output.emit('error', err);
   };
 
   const handleNext = () => {

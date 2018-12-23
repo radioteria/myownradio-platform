@@ -5,11 +5,11 @@ export const createRepeatable = (provide: () => Promise<Readable>): Readable => 
 
   const handleInput = (input: Readable) => {
     return input
-      .once('end', () => handleNext())
       .pipe(
         output,
         { end: false },
-      );
+      )
+      .once('end', () => handleNext());
   };
 
   const handleError = (err: Error) => {

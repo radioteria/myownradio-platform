@@ -32,8 +32,8 @@ router.get('/stream/:channelId', async (ctx: Application.Context) => {
   const { channelId } = ctx.params;
 
   const stream = createRepeatable(async () => {
-    console.log('Fetching new track');
-    const { url, offset } = await morBackend.getNowPlaying(channelId);
+    const { url, offset, title } = await morBackend.getNowPlaying(channelId);
+    console.log(`Now playing: ${title} (${offset})`);
     return createDecoder(url, offset);
   });
 

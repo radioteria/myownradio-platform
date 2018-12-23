@@ -1,11 +1,5 @@
-FROM peacefulbit/radio-node-env
+FROM node:11 as dev
 
-WORKDIR /app
+ENV NODE_ENV=development
 
-COPY . .
-
-RUN make install build
-
-CMD [ "yarn", "start" ]
-
-EXPOSE 6767
+RUN apt-get update && apt-get install -y libav-tools ffmpeg && apt-get autoremove -y && apt-get clean -y

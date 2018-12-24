@@ -21,12 +21,6 @@ export class ChannelContainer {
   private createChannelStream(channelId: string) {
     const mc = new Multicast();
 
-    const handleCreated = () => {};
-    const handleGone = () => {};
-
-    mc.on('created', handleCreated);
-    mc.on('gone', handleGone);
-
     const channelStream = encode(
       repeat(async () => {
         const { url, offset, title } = await this.apiService.getNowPlaying(channelId);

@@ -4,17 +4,17 @@ import { module } from '../utils/log-utils';
 import { decode, Decoder } from './decoder';
 import { wrap } from '../utils/stream-utils';
 
-import { BackendService, NowPlaying } from '../service/backend';
+import { IApiService, INowPlaying } from '../service/backend';
 
 export default class Stream extends PassThrough {
-  backendService: BackendService;
+  backendService: IApiService;
   channelId: string;
   decoder: Decoder;
   log = module(this);
 
   terminated: boolean = false;
 
-  constructor(backendService: BackendService, channelId: string) {
+  constructor(backendService: IApiService, channelId: string) {
     super();
 
     this.channelId = channelId;
@@ -43,7 +43,7 @@ export default class Stream extends PassThrough {
       .catch(err => process.nextTick(() => this.emit('error', err)));
   }
 
-  private playNow(now: NowPlaying) {
+  private playNow(now: INowPlaying) {
     this.log('info', 'Playing now "%s" from %d ms', now.title, now.offset);
     this.emit('title', now.title);
     this.decoder = decode(now.url, now.offset);
@@ -53,7 +53,7 @@ export default class Stream extends PassThrough {
       .pipe(wrap(this));
   }
 
-  private fetchNowPlaying(): Promise<NowPlaying> {
+  private fetchNowPlaying(): Promise<INowPlaying> {
     return this.backendService.getNowPlaying(this.channelId);
   }
 

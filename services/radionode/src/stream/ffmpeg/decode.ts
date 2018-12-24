@@ -1,9 +1,9 @@
 import ffmpeg = require('fluent-ffmpeg');
 import { PassThrough, Readable } from 'stream';
 import * as constants from './constants';
-import { millisToSeconds } from '../app/utils/time-utils';
+import { millisToSeconds } from '../../app/utils/time-utils';
 
-export const createDecoder = (url: string, offset: number): Readable => {
+export const decode = (url: string, offset: number): Readable => {
   const passThrough = new PassThrough();
 
   const decoder = ffmpeg()
@@ -17,7 +17,7 @@ export const createDecoder = (url: string, offset: number): Readable => {
     .native()
     .on('error', err => passThrough.emit('error', err));
 
-  passThrough.on('close', () => decoder.kill(constants.KILL_SIGNAL));
+  // passThrough.on('close', () => decoder.kill(constants.KILL_SIGNAL));
 
   decoder.pipe(passThrough);
 

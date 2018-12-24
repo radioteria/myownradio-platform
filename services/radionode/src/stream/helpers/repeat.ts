@@ -1,26 +1,26 @@
 import { Readable, PassThrough } from 'stream';
 
-export const createRepeatable = (provide: () => Promise<Readable>): Readable => {
+export const repeat = (provideReadable: () => Promise<Readable>): Readable => {
   const output = new PassThrough();
 
   const handleInput = (input: Readable) => {
     return input
+      .once('end', () => getNext())
       .pipe(
         output,
         { end: false },
-      )
-      .once('end', () => handleNext());
+      );
   };
 
   const handleError = (err: Error) => {
     output.emit('error', err);
   };
 
-  const handleNext = () => {
-    provide().then(handleInput, handleError);
+  const getNext = () => {
+    provideReadable().then(handleInput, handleError);
   };
 
-  handleNext();
+  getNext();
 
   return output;
 };

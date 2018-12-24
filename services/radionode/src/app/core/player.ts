@@ -5,7 +5,7 @@ import { module } from '../utils/log-utils';
 import { createEncoder } from './encoder';
 import Stream from './stream';
 import Broadcast from './broadcast';
-import { BackendService } from '../service/backend';
+import { IApiService } from '../service/backend';
 import { Transform, Writable } from 'stream';
 import { createTransformWithConnectors } from '../utils/stream-utils';
 
@@ -19,7 +19,7 @@ export default class Player extends EventEmitter {
 
   private startedAt = Date.now();
 
-  constructor(backendService: BackendService, channelId: string) {
+  constructor(backendService: IApiService, channelId: string) {
     super();
 
     this.channelId = channelId;

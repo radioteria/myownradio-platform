@@ -3,7 +3,7 @@ import { Readable, Writable, PassThrough } from 'stream';
 
 import * as constants from './constants';
 
-export const createEncoder = (input: Readable): Writable => {
+export const encode = (input: Readable): Writable => {
   const output = new PassThrough();
 
   const encoder = ffmpeg(input)
@@ -17,7 +17,7 @@ export const createEncoder = (input: Readable): Writable => {
 
   encoder.pipe(output);
 
-  output.on('close', () => encoder.kill(constants.KILL_SIGNAL));
+  // output.on('close', () => encoder.kill(constants.KILL_SIGNAL));
 
   return output;
 };

@@ -3,17 +3,17 @@ import * as _ from 'lodash';
 import { module } from '../utils/log-utils';
 import Player from './player';
 import Timer = NodeJS.Timer;
-import { BackendService } from '../service/backend';
+import { IApiService } from '../service/backend';
 
 const PLAYER_IDLE_TIMEOUT: number = 10000;
 
 export default class Container {
-  backendService: BackendService;
+  backendService: IApiService;
   players: { [key: string]: Player } = {};
   terminators: { [key: string]: Timer } = {};
   log = module(this);
 
-  constructor(backendService: BackendService) {
+  constructor(backendService: IApiService) {
     this.backendService = backendService;
     this.log('info', 'Initialized');
   }

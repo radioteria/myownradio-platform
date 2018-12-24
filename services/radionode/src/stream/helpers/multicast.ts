@@ -1,52 +1,72 @@
-import { Writable } from 'stream';
+import { Writable, PassThrough, Readable } from 'stream';
+import logger from '../../services/logger';
+
+interface IWritableState {
+  waitForDrain: boolean;
+}
 
 export class Multicast extends Writable {
-  private clients = [];
-  private draining = [];
+  private clientsMap = new Map<Writable, IWritableState>();
 
-  public _write(chunk: Buffer | string, enc: string, callback: () => void): boolean {
-    this.clients.forEach((c, i) => {
-      if (this.draining[i]) {
+  public _write(chunk: Buffer | string, enc: string, callback: (err?: Error) => void): boolean {
+    this.clientsMap.forEach((state, writable) => {
+      if (state.waitForDrain) {
         return;
       }
 
-      const ok = c.write(chunk, enc);
+      const ok = writable.write(chunk, enc);
 
       if (!ok) {
-        this.draining[i] = true;
+        state.waitForDrain = true;
       }
     });
-    callback();
+
+    process.nextTick(callback);
+
     return true;
   }
 
-  public add(client: Writable) {
-    client.on('close', () => this.removeClient(client));
-    client.on('error', () => this.removeClient(client));
-    client.on('drain', () => {
-      const clientIndex = this.clients.indexOf(client);
-      if (clientIndex > -1) {
-        this.draining[clientIndex] = false;
+  public create(): Readable {
+    const stream = new PassThrough();
+
+    const handleClose = () => removeClient();
+    const handleError = () => removeClient();
+    const handleDrain = () => {
+      if (!this.clientsMap.has(stream)) {
+        logger.warn(`Received "drain" event but client not found`);
+        return;
       }
-    });
+      this.clientsMap.get(stream).waitForDrain = false;
+      logger.verbose(`Received "drain" event`);
+    };
 
-    this.clients.push(client);
-  }
+    const removeClient = () => {
+      this.clientsMap.delete(stream);
 
-  public clear() {
-    this.clients.forEach(c => c.end());
-    this.clients = [];
-  }
+      stream.off('close', handleClose);
+      stream.off('error', handleError);
+      stream.off('drain', handleDrain);
 
-  public removeClient(client: Writable) {
-    const clientIndex = this.clients.indexOf(client);
-    if (clientIndex > -1) {
-      this.clients.splice(clientIndex, 1);
-    }
+      logger.verbose(`Client removed (left: ${this.count()})`);
+
+      this.emit('gone', stream);
+    };
+
+    stream.on('close', handleClose);
+    stream.on('error', handleError);
+    stream.on('drain', handleDrain);
+
+    this.clientsMap.set(stream, { waitForDrain: false });
+
+    logger.verbose(`New client added (amount: ${this.count()})`);
+
+    this.emit('created', stream);
+
+    return stream;
   }
 
   public count(): number {
-    return this.clients.length;
+    return this.clientsMap.size;
   }
 }
 

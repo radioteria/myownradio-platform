@@ -1,37 +1,4 @@
-import { Readable, Writable, Transform, PassThrough } from 'stream';
-import { Consumer } from './types';
-
-const readAll = (readable: Readable, consumer: Consumer<any>, callback: Function) => {
-  const consume = () => {
-    const data = readable.read();
-    if (data !== null) {
-      consumer(data);
-      consume();
-    } else {
-      callback();
-    }
-  };
-  consume();
-};
-
-export const combine = (readable: Readable, writable: Writable): Transform => {
-  return new Transform({
-    transform(chunk: Buffer, enc: string, callback: () => void) {
-      writable.write(chunk, enc);
-      readAll(readable, data => this.push(data), callback);
-    },
-    flush(callback: () => void) {
-      writable.end(undefined, undefined, callback);
-    },
-  });
-};
-
-export const createTransformWithConnectors = () => {
-  const input = new PassThrough();
-  const output = new PassThrough();
-  const transform = combine(output, input);
-  return { input, output, transform };
-};
+import { Readable, Writable } from 'stream';
 
 export const wrap = (target: Writable): Writable =>
   new Writable({
@@ -56,8 +23,6 @@ export const unpipeOnCloseOrError = (src: Readable, dst: Writable) => {
 
 export default {
   wrap,
-  combine,
   pipeWithError,
-  createTransformWithConnectors,
   unpipeOnCloseOrError,
 };

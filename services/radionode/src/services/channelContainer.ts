@@ -27,8 +27,8 @@ export class ChannelContainer {
 
     const channelStream = encode(
       repeat(async () => {
-        const withJingle = Math.random() > 0.7;
         const { url, offset, title } = await this.apiService.getNowPlaying(channelId);
+        const withJingle = offset < 1000 && Math.random() > 0.7;
         logger.info(`Now playing on ${channelId}: ${title} (${offset})`);
         return decode(url, offset, withJingle);
       }),

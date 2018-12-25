@@ -1,10 +1,12 @@
 import ffmpeg = require('fluent-ffmpeg');
 import { PassThrough, Readable } from 'stream';
 import * as constants from './constants';
-import { millisToSeconds } from '../../app/utils/time-utils';
 import logger from '../../services/logger';
+import config from '../../config';
 
-export const decode = (url: string, offset: number): Readable => {
+const millisToSeconds = (millis: number): number => millis / 1000;
+
+export const decode = (url: string, offset: number, withJingle: boolean = false): Readable => {
   const passThrough = new PassThrough();
 
   const decoder = ffmpeg()
@@ -12,10 +14,15 @@ export const decode = (url: string, offset: number): Readable => {
     .audioChannels(constants.DECODER_CHANNELS)
     .audioFrequency(constants.DECODER_FREQUENCY)
     .outputFormat(constants.DECODER_FORMAT)
-    .audioFilter(constants.FADEIN_FILTER)
     .input(url)
     .seekInput(millisToSeconds(offset))
     .native();
+
+  if (withJingle) {
+    decoder.input(config.jingleFilePath).complexFilter(constants.JINGLE_FILTER, []);
+  } else {
+    decoder.audioFilter(constants.FADEIN_FILTER);
+  }
 
   decoder.pipe(passThrough);
 

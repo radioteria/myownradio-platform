@@ -9,5 +9,7 @@ export const ENCODER_BITRATE = '256k';
 export const ENCODER_FILTER = 'compand=0 0:1 1:-90/-900 -70/-70 -21/-21 0/-15:0.01:12:0:0';
 
 export const FADEIN_FILTER = 'afade=t=in:st=0:d=1';
+export const JINGLE_FILTER =
+  '[0:a]afade=t=in:st=1:d=3[a1],[a1]amix=inputs=2:duration=first:dropout_transition=3';
 
 export const KILL_SIGNAL = 'SIGKILL';

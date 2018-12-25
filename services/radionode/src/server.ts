@@ -19,7 +19,7 @@ router.get('/stream/:channelId', async (ctx: Application.Context) => {
 
   ctx.set('Content-Type', 'audio/mpeg');
 
-  ctx.body = channelContainer.getMulticast(channelId).create();
+  ctx.body = channelContainer.getMulticast(channelId).createStream();
 });
 
 router.post('/restart/:channelId', async (ctx: Application.Context) => {

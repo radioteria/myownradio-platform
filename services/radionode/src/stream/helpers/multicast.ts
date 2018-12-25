@@ -28,7 +28,7 @@ export class Multicast extends Writable {
     return true;
   }
 
-  public create(): Readable {
+  public createStream(): Readable {
     this.updatedAt = new Date();
 
     const stream = new PassThrough();

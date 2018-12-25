@@ -4,10 +4,20 @@ import * as constants from './constants';
 import logger from '../../services/logger';
 import config from '../../config';
 
+export interface IProgress {
+  frames: null;
+  currentFps: null;
+  currentKbps: number;
+  targetSize: number;
+  timemark: string;
+  percent: number;
+}
+
 const millisToSeconds = (millis: number): number => millis / 1000;
 
 export const decode = (url: string, offset: number, withJingle: boolean = false): Readable => {
   const passThrough = new PassThrough();
+  const start = Date.now();
 
   const decoder = ffmpeg()
     .addOption(['-fflags fastseek'])
@@ -36,6 +46,12 @@ export const decode = (url: string, offset: number, withJingle: boolean = false)
 
   decoder.on('end', () => {
     logger.verbose(`Decoder finished`);
+  });
+
+  decoder.once('progress', (progress: IProgress) => {
+    const real = Date.now();
+    const delay = real - start;
+    logger.verbose(`Decoder started with delay: ${delay}ms`);
   });
 
   decoder.pipe(passThrough);

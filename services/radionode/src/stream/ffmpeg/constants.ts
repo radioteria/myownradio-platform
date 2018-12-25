@@ -10,4 +10,4 @@ export const ENCODER_FILTER = 'compand=0 0:1 1:-90/-900 -70/-70 -21/-21 0/-15:0.
 
 export const FADEIN_FILTER = 'afade=t=in:st=0:d=1';
 
-export const KILL_SIGNAL = 'SIGINT';
+export const KILL_SIGNAL = 'SIGKILL';

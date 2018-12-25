@@ -27,6 +27,7 @@ export class ChannelContainer {
         logger.info(`Now playing on ${channelId}: ${title} (${offset})`);
         return decode(url, offset);
       }),
+      true,
     );
 
     channelStream.pipe(mc);

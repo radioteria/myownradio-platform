@@ -2,6 +2,7 @@ import ffmpeg = require('fluent-ffmpeg');
 import { PassThrough, Readable } from 'stream';
 import * as constants from './constants';
 import { millisToSeconds } from '../../app/utils/time-utils';
+import logger from '../../services/logger';
 
 export const decode = (url: string, offset: number): Readable => {
   const passThrough = new PassThrough();
@@ -14,12 +15,22 @@ export const decode = (url: string, offset: number): Readable => {
     .audioFilter(constants.FADEIN_FILTER)
     .input(url)
     .seekInput(millisToSeconds(offset))
-    .native()
-    .on('error', err => passThrough.emit('error', err));
-
-  // passThrough.on('close', () => decoder.kill(constants.KILL_SIGNAL));
+    .native();
 
   decoder.pipe(passThrough);
+
+  decoder.on('error', err => {
+    logger.warn(`Decoder failed: ${err}`);
+    decoder.kill(constants.KILL_SIGNAL);
+  });
+
+  decoder.on('start', commandLine => {
+    logger.verbose(`Decoder started: ${commandLine}`);
+  });
+
+  decoder.on('end', () => {
+    logger.verbose(`Decoder finished`);
+  });
 
   return passThrough;
 };

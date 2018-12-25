@@ -2,8 +2,9 @@ import ffmpeg = require('fluent-ffmpeg');
 import { Readable, Writable, PassThrough } from 'stream';
 
 import * as constants from './constants';
+import logger from '../../services/logger';
 
-export const encode = (input: Readable): Writable => {
+export const encode = (input: Readable, closeInputOnError: boolean): Writable => {
   const output = new PassThrough();
 
   const encoder = ffmpeg(input)
@@ -12,12 +13,23 @@ export const encode = (input: Readable): Writable => {
     .audioBitrate(constants.ENCODER_BITRATE)
     .audioChannels(constants.ENCODER_CHANNELS)
     .outputFormat(constants.ENCODER_OUTPUT_FORMAT)
-    .audioFilter(constants.ENCODER_FILTER)
-    .on('error', error => input.emit('error', error));
+    .audioFilter(constants.ENCODER_FILTER);
 
   encoder.pipe(output);
 
-  // output.on('close', () => encoder.kill(constants.KILL_SIGNAL));
+  encoder.on('error', err => {
+    logger.warn(`Encoder failed: ${err}`);
+    closeInputOnError && input.destroy();
+    encoder.kill(constants.KILL_SIGNAL);
+  });
+
+  encoder.on('start', commandLine => {
+    logger.verbose(`Encoder started: ${commandLine}`);
+  });
+
+  encoder.on('end', () => {
+    logger.verbose(`Encoder finished`);
+  });
 
   return output;
 };

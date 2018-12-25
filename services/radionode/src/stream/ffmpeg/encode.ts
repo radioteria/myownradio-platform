@@ -19,7 +19,7 @@ export const encode = (input: Readable, closeInputOnError: boolean): Writable =>
 
   encoder.on('error', err => {
     logger.warn(`Encoder failed: ${err}`);
-    closeInputOnError && input.destroy();
+    closeInputOnError && input.destroy(err);
     encoder.kill(constants.KILL_SIGNAL);
   });
 

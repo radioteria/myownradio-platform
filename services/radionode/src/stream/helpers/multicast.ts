@@ -8,6 +8,8 @@ interface IWritableState {
 export class Multicast extends Writable {
   private clientsMap = new Map<Writable, IWritableState>();
 
+  private updatedAt = new Date();
+
   public _write(chunk: Buffer | string, enc: string, callback: (err?: Error) => void): boolean {
     this.clientsMap.forEach((state, writable) => {
       if (state.waitForDrain) {
@@ -27,6 +29,8 @@ export class Multicast extends Writable {
   }
 
   public create(): Readable {
+    this.updatedAt = new Date();
+
     const stream = new PassThrough();
 
     const handleClose = () => removeClient();
@@ -41,6 +45,8 @@ export class Multicast extends Writable {
     };
 
     const removeClient = () => {
+      this.updatedAt = new Date();
+
       this.clientsMap.delete(stream);
 
       stream.off('close', handleClose);
@@ -67,6 +73,10 @@ export class Multicast extends Writable {
 
   public count(): number {
     return this.clientsMap.size;
+  }
+
+  public getUpdatedAt() {
+    return this.updatedAt;
   }
 }
 

@@ -53,7 +53,7 @@ export class Multicast extends Writable {
       stream.off('error', handleError);
       stream.off('drain', handleDrain);
 
-      logger.verbose(`Client removed (left: ${this.count()})`);
+      logger.verbose(`Client removed (left: ${this.clientsCount()})`);
 
       this.emit('gone', stream);
     };
@@ -64,14 +64,14 @@ export class Multicast extends Writable {
 
     this.clientsMap.set(stream, { waitForDrain: false });
 
-    logger.verbose(`New client added (amount: ${this.count()})`);
+    logger.verbose(`New client added (amount: ${this.clientsCount()})`);
 
     this.emit('created', stream);
 
     return stream;
   }
 
-  public count(): number {
+  public clientsCount(): number {
     return this.clientsMap.size;
   }
 

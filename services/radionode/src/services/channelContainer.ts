@@ -5,6 +5,8 @@ import { repeat } from '../stream/helpers/repeat';
 import { decode } from '../stream/ffmpeg/decode';
 import logger from './logger';
 
+const UNUSED_CHANNEL_CHECK_INTERVAL = 30000;
+
 export class ChannelContainer {
   private channelStreamMap = new Map<string, Multicast>();
 
@@ -40,15 +42,18 @@ export class ChannelContainer {
   }
 
   private watchUnusedChannels() {
-    setInterval(() => this.checkUnusedChannels(), 30000);
+    setInterval(() => this.checkUnusedChannels(), UNUSED_CHANNEL_CHECK_INTERVAL);
   }
 
   private checkUnusedChannels() {
     logger.verbose(`Checking for unused channels...`);
     const now = new Date();
     this.channelStreamMap.forEach((multicast, channelId) => {
-      if (multicast.count() === 0 && now.getTime() - multicast.getUpdatedAt().getTime() > 30000) {
-        logger.verbose(`Deleting unised channel ${channelId}`);
+      if (
+        multicast.clientsCount() === 0 &&
+        now.getTime() - multicast.getUpdatedAt().getTime() > UNUSED_CHANNEL_CHECK_INTERVAL
+      ) {
+        logger.verbose(`Deleting unused channel ${channelId}`);
         this.channelStreamMap.delete(channelId);
         multicast.destroy(new Error(`No listeners`));
       }

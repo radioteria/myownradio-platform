@@ -1,5 +1,6 @@
 import Application = require('koa');
 import Router = require('koa-router');
+import { EventEmitter } from 'events';
 
 import { MorApiService } from './api/apiService';
 import { ChannelContainer } from './services/channelContainer';
@@ -8,8 +9,9 @@ const app = new Application();
 const port = process.env.PORT || 8080;
 const router = new Router();
 
+const restartEmitter = new EventEmitter();
 const apiService = new MorApiService();
-const channelContainer = new ChannelContainer(apiService);
+const channelContainer = new ChannelContainer(apiService, restartEmitter);
 
 router.get('/stream/:channelId', async (ctx: Application.Context) => {
   const { channelId } = ctx.params;
@@ -17,6 +19,14 @@ router.get('/stream/:channelId', async (ctx: Application.Context) => {
   ctx.set('Content-Type', 'audio/mpeg');
 
   ctx.body = channelContainer.getMulticast(channelId).create();
+});
+
+router.post('/restart/:channelId', async (ctx: Application.Context) => {
+  const { channelId } = ctx.params;
+
+  restartEmitter.emit('restart', channelId);
+
+  ctx.body = 'OK';
 });
 
 app.use(router.routes());

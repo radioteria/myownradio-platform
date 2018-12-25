@@ -1,16 +1,18 @@
+import { EventEmitter } from 'events';
 import { IApiService } from '../api/apiService';
 import { Multicast } from '../stream/helpers/multicast';
 import { encode } from '../stream/ffmpeg/encode';
 import { repeat } from '../stream/helpers/repeat';
 import { decode } from '../stream/ffmpeg/decode';
 import logger from './logger';
+import { restartable } from '../stream/helpers/restartable';
 
 const UNUSED_CHANNEL_CHECK_INTERVAL = 30000;
 
 export class ChannelContainer {
   private channelStreamMap = new Map<string, Multicast>();
 
-  constructor(private apiService: IApiService) {
+  constructor(private apiService: IApiService, private restartEmitter: EventEmitter) {
     this.watchUnusedChannels();
   }
 
@@ -30,7 +32,7 @@ export class ChannelContainer {
         const { url, offset, title } = await this.apiService.getNowPlaying(channelId);
         const withJingle = offset < 1000 && Math.random() > 0.7;
         logger.info(`Now playing on ${channelId}: ${title} (${offset})`);
-        return decode(url, offset, withJingle);
+        return restartable(decode(url, offset, withJingle), channelId, this.restartEmitter);
       }),
       true,
     );

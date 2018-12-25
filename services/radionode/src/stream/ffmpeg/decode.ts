@@ -10,6 +10,7 @@ export const decode = (url: string, offset: number, withJingle: boolean = false)
   const passThrough = new PassThrough();
 
   const decoder = ffmpeg()
+    .addOption(['-fflags fastseek'])
     .audioCodec(constants.DECODER_CODEC)
     .audioChannels(constants.DECODER_CHANNELS)
     .audioFrequency(constants.DECODER_FREQUENCY)
@@ -24,8 +25,6 @@ export const decode = (url: string, offset: number, withJingle: boolean = false)
     decoder.audioFilter(constants.FADEIN_FILTER);
   }
 
-  decoder.pipe(passThrough);
-
   decoder.on('error', err => {
     logger.warn(`Decoder failed: ${err}`);
     decoder.kill(constants.KILL_SIGNAL);
@@ -38,6 +37,8 @@ export const decode = (url: string, offset: number, withJingle: boolean = false)
   decoder.on('end', () => {
     logger.verbose(`Decoder finished`);
   });
+
+  decoder.pipe(passThrough);
 
   return passThrough;
 };

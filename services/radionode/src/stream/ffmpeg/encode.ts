@@ -15,8 +15,6 @@ export const encode = (input: Readable, closeInputOnError: boolean): Writable =>
     .outputFormat(constants.ENCODER_OUTPUT_FORMAT)
     .audioFilter(constants.ENCODER_FILTER);
 
-  encoder.pipe(output);
-
   encoder.on('error', err => {
     logger.warn(`Encoder failed: ${err}`);
     closeInputOnError && input.destroy(err);
@@ -30,6 +28,8 @@ export const encode = (input: Readable, closeInputOnError: boolean): Writable =>
   encoder.on('end', () => {
     logger.verbose(`Encoder finished`);
   });
+
+  encoder.pipe(output);
 
   return output;
 };

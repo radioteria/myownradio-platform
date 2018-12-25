@@ -15,7 +15,7 @@ export class MorApiService implements IApiService {
 
   public async getNowPlaying(channelId: string): Promise<INowPlaying> {
     const nowResponse = await this.client.get(
-      `http://myownradio.biz/api/v0/stream/${channelId}/now`,
+      `https://myownradio.biz/api/v0/stream/${channelId}/now`,
     );
     return nowResponse.data.data;
   }

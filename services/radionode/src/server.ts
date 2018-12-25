@@ -25,11 +25,7 @@ router.get('/stream/:channelId', async (ctx: Application.Context) => {
 router.post('/restart/:channelId', async (ctx: Application.Context) => {
   const { channelId } = ctx.params;
 
-  logger.verbose(
-    `Restart emitter for channel ${channelId} contains ${restartEmitter.listenerCount(
-      'restart',
-    )} listener(s)`,
-  );
+  logger.verbose(`Restart emitter contains ${restartEmitter.listenerCount('restart')} listener(s)`);
 
   restartEmitter.emit('restart', channelId);
 

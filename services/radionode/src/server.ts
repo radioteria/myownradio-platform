@@ -4,6 +4,7 @@ import { EventEmitter } from 'events';
 
 import { MorApiService } from './api/apiService';
 import { ChannelContainer } from './services/channelContainer';
+import logger from './services/logger';
 
 const app = new Application();
 const port = process.env.PORT || 8080;
@@ -23,6 +24,12 @@ router.get('/stream/:channelId', async (ctx: Application.Context) => {
 
 router.post('/restart/:channelId', async (ctx: Application.Context) => {
   const { channelId } = ctx.params;
+
+  logger.verbose(
+    `Restart emitter for channel ${channelId} contains ${restartEmitter.listenerCount(
+      'restart',
+    )} listener(s)`,
+  );
 
   restartEmitter.emit('restart', channelId);
 

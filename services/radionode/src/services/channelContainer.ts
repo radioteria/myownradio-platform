@@ -47,7 +47,6 @@ export class ChannelContainer {
   }
 
   private checkUnusedChannels() {
-    logger.verbose(`Checking for unused channels...`);
     const now = new Date();
     this.channelStreamMap.forEach((multicast, channelId) => {
       if (

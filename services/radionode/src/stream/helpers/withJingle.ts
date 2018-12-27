@@ -3,6 +3,8 @@ import { MixWithTransform } from './mixWithTransform';
 import config from '../../config';
 import { decode } from '../ffmpeg/decode';
 
+const BUFFER_SIZE = 32768 * 8;
+
 export const withJingle = (readable: Readable): Readable => {
   const master = new PassThrough();
   const slave = new PassThrough();
@@ -16,7 +18,7 @@ export const withJingle = (readable: Readable): Readable => {
     60000,
   );
 
-  readable.pipe(new MixWithTransform(slave, 32768)).pipe(master);
+  readable.pipe(new MixWithTransform(slave, BUFFER_SIZE)).pipe(master);
 
   master.on('error', err => {
     readable.destroy(err);

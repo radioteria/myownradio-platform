@@ -7,7 +7,7 @@ export const mixInt16LEBuffers = (first: Buffer, second: Buffer): Buffer => {
     const firstSample = first.readInt16LE(offset);
     const secondSample = second.readInt16LE(offset);
     const mixedSample = Math.floor((firstSample + secondSample) / 2);
-    mixedBuffer.writeInt16LE(offset, mixedSample);
+    mixedBuffer.writeInt16LE(mixedSample, offset);
   }
   return mixedBuffer;
 };

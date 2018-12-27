@@ -4,7 +4,7 @@ import { Readable, Writable, PassThrough } from 'stream';
 import * as constants from './constants';
 import logger from '../../services/logger';
 
-export const encode = (input: Readable, closeInputOnError: boolean): Writable => {
+export const encode = (input: Readable, closeInputOnError: boolean): Readable => {
   const output = new PassThrough();
 
   const encoder = ffmpeg(input)

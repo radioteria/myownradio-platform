@@ -27,19 +27,21 @@ export class ChannelContainer {
   private createChannelStream(channelId: string) {
     const mc = new Multicast();
 
-    const channelStream = encode(
-      repeat(async () => {
-        const { url, offset, title } = await this.apiService.getNowPlaying(channelId);
-        const withJingle = offset < 1000 && Math.random() > 0.7;
-        logger.info(`Now playing on ${channelId}: ${title} (${offset})`);
-        return restartable(decode(url, offset, withJingle), channelId, this.restartEmitter);
-      }),
-      true,
-    );
+    const radioStream = repeat(async () => {
+      const { url, offset, title } = await this.apiService.getNowPlaying(channelId);
+      const withJingle = offset < 1000 && Math.random() > 0.7;
+      logger.info(`Now playing on ${channelId}: ${title} (${offset})`);
+      return restartable(decode(url, offset, withJingle), channelId, this.restartEmitter);
+    });
+
+    const channelStream = encode(radioStream, true);
 
     channelStream.pipe(mc);
 
-    mc.on('error', err => channelStream.destroy(err));
+    mc.on('error', err => {
+      channelStream.destroy(err);
+      this.channelStreamMap.delete(channelId);
+    });
 
     this.channelStreamMap.set(channelId, mc);
   }
@@ -56,7 +58,6 @@ export class ChannelContainer {
         now.getTime() - multicast.getUpdatedAt().getTime() > UNUSED_CHANNEL_CHECK_INTERVAL
       ) {
         logger.verbose(`Deleting unused channel ${channelId}`);
-        this.channelStreamMap.delete(channelId);
         multicast.destroy(new Error(`No listeners`));
       }
     });

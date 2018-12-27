@@ -9,20 +9,20 @@ export const withJingle = (readable: Readable): Readable => {
   const master = new PassThrough();
   const slave = new PassThrough();
 
-  const timer = setInterval(
-    () =>
-      decode(config.jingleFilePath, 0).pipe(
-        slave,
-        { end: false },
-      ),
-    60000,
-  );
+  // const timer = setInterval(
+  //   () =>
+  //     decode(config.jingleFilePath, 0).pipe(
+  //       slave,
+  //       { end: false },
+  //     ),
+  //   60000,
+  // );
 
   readable.pipe(new MixWithTransform(slave, BUFFER_SIZE)).pipe(master);
 
   master.on('error', err => {
     readable.destroy(err);
-    clearInterval(timer);
+    // clearInterval(timer);
   });
 
   return master;

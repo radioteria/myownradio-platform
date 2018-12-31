@@ -1,15 +1,15 @@
-version: "3.5"
+version: '3.5'
 
 services:
   radionode:
     build:
       context: .
+      target: dev
     volumes:
       - .:/usr/app:cached
     working_dir: /usr/app
     command: npm run dev
     environment:
       - PORT=8080
-      - BACKEND=fake
     ports:
       - 8080:8080

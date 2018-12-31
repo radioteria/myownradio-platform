@@ -1,8 +1,8 @@
-version: '3.5'
+version: "3.5"
 
 services:
   db:
-    image: 'mysql:5.6'
+    image: "mysql:5.6"
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_DATABASE: "mor"
@@ -17,7 +17,7 @@ services:
         order: stop-first
 
   streamer:
-    image: 'myownradio/stream-server:latest'
+    image: "myownradio/stream-server:latest"
     environment:
       MOR_JDBC_LOGIN: "mor"
       MOR_JDBC_PASSWORD: "mor"
@@ -32,7 +32,7 @@ services:
         order: start-first
 
   web:
-    image: 'myownradio/backend-core:v2'
+    image: "myownradio/backend-core:v2"
     env_file:
       - web.env
     environment:
@@ -59,7 +59,6 @@ services:
       - "80:80"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-
 
 volumes:
   mysql-data:

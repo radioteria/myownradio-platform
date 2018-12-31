@@ -14,7 +14,7 @@ const restartEmitter = new EventEmitter();
 const apiService = new MorApiService();
 const channelContainer = new ChannelContainer(apiService, restartEmitter);
 
-router.get('/stream/:channelId', async (ctx: Application.Context) => {
+router.get('/listen/:channelId', async (ctx: Application.Context) => {
   const { channelId } = ctx.params;
 
   ctx.set('Content-Type', 'audio/mpeg');

@@ -4,6 +4,7 @@ import { PassThrough, Readable } from 'stream';
 import * as constants from './constants';
 import logger from '../../services/logger';
 import config from '../../config';
+import { hideUrlsInString } from '../helpers/string';
 
 export interface IProgress {
   frames: null;
@@ -43,7 +44,7 @@ export const decode = (url: string, offset: number, withJingle: boolean = false)
   });
 
   decoder.on('start', commandLine => {
-    logger.verbose(`Decoder started: ${commandLine}`);
+    logger.verbose(`Decoder started: ${hideUrlsInString(commandLine)}`);
   });
 
   decoder.on('end', () => {

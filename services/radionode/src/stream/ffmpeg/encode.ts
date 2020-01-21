@@ -4,6 +4,7 @@ import { Readable, Writable, PassThrough } from 'stream';
 
 import * as constants from './constants';
 import logger from '../../services/logger';
+import { hideUrlsInString } from '../helpers/string';
 
 export const encode = (input: Readable, closeInputOnError: boolean): Readable => {
   const output = new PassThrough();
@@ -24,7 +25,7 @@ export const encode = (input: Readable, closeInputOnError: boolean): Readable =>
   });
 
   encoder.on('start', commandLine => {
-    logger.verbose(`Encoder started: ${commandLine}`);
+    logger.verbose(`Encoder started: ${hideUrlsInString(commandLine)}`);
   });
 
   encoder.on('end', () => {

@@ -1,4 +1,5 @@
 import ffmpeg = require('fluent-ffmpeg');
+import ffmpegPath = require('ffmpeg-static');
 import { Readable, Writable, PassThrough } from 'stream';
 
 import * as constants from './constants';
@@ -8,6 +9,7 @@ export const encode = (input: Readable, closeInputOnError: boolean): Readable =>
   const output = new PassThrough();
 
   const encoder = ffmpeg(input)
+    .setFfmpegPath(ffmpegPath)
     .inputOptions([`-ac ${constants.DECODER_CHANNELS}`, `-ar ${constants.DECODER_FREQUENCY}`])
     .inputFormat(constants.DECODER_FORMAT)
     .audioBitrate(constants.ENCODER_BITRATE)

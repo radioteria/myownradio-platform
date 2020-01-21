@@ -1,4 +1,5 @@
 import ffmpeg = require('fluent-ffmpeg');
+import ffmpegPath = require('ffmpeg-static');
 import { PassThrough, Readable } from 'stream';
 import * as constants from './constants';
 import logger from '../../services/logger';
@@ -20,6 +21,7 @@ export const decode = (url: string, offset: number, withJingle: boolean = false)
   const start = Date.now();
 
   const decoder = ffmpeg()
+    .setFfmpegPath(ffmpegPath)
     .addOption(['-fflags fastseek'])
     .audioCodec(constants.DECODER_CODEC)
     .audioChannels(constants.DECODER_CHANNELS)

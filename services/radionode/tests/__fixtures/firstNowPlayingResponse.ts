@@ -1,4 +1,4 @@
-const firstMowPlayingResponse = {
+const firstNowPlayingResponse = {
   code: 1,
   message: 'OK',
   data: {
@@ -8,4 +8,4 @@ const firstMowPlayingResponse = {
   },
 };
 
-export default firstMowPlayingResponse;
+export default firstNowPlayingResponse;

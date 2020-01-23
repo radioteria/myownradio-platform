@@ -1,7 +1,0 @@
-{
-  "jest.showCoverageOnLoad": true,
-  "jest.autoEnable": true,
-  "jest.rootPath": "services/radionode",
-  "jest.runAllTestsFirst": true,
-  "jest.enableInlineErrorMessages": true
-}

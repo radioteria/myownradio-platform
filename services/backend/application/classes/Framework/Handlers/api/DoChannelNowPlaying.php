@@ -11,6 +11,7 @@ use Framework\Services\RouteParams;
 use Objects\FileServer\FileServerFile;
 use Objects\Track;
 use REST\Playlist;
+use REST\Streams;
 
 /**
  * Created by PhpStorm.
@@ -20,9 +21,10 @@ use REST\Playlist;
  */
 class DoChannelNowPlaying implements Controller
 {
-    public function doGet(RouteParams $params, Playlist $playlist, JsonResponse $response)
+    public function doGet(RouteParams $params, Playlist $playlist, Streams $streams, JsonResponse $response)
     {
         $stream_id = $params->getRequired("stream_id");
+        $stream = $streams->getOneStream($stream_id);
 
         $now_playing = $playlist->getNowPlaying($stream_id);
         $track = $now_playing['current'];
@@ -36,6 +38,7 @@ class DoChannelNowPlaying implements Controller
         $url = FSFile::getFileUrl($file);
 
         $response->setData([
+            "channel_title" => $stream['name'],
             "offset" => $track_position,
             "title" => $track["caption"],
             "url" => $url

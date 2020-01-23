@@ -24,7 +24,6 @@ export class IcyMetadataTransform extends Transform {
     buffer.writeInt8(size, 0);
     metadataTextBuffer.copy(buffer, 1, 0);
     this.metadataBuffer = buffer;
-    console.log(this.metadataBuffer.toString('utf-8'));
   }
 
   private clearMetadataBuffer() {

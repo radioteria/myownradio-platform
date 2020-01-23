@@ -15,11 +15,11 @@ export class MixWithTransform extends Transform {
   public _transform(chunk: Buffer, enc: string, callback: (err: Error, data: Buffer) => void) {
     const resultChunk = Buffer.alloc(chunk.length);
 
-    chunk.copy(resultChunk, 0, 0, chunk.length - 1);
+    chunk.copy(resultChunk, 0, 0, chunk.length);
 
     if (this.mixingBuffer.length > 0) {
       const mixedChunk = mixInt16LEBuffers(chunk, this.mixingBuffer);
-      mixedChunk.copy(resultChunk, 0, 0, mixedChunk.length - 1);
+      mixedChunk.copy(resultChunk, 0, 0, mixedChunk.length);
 
       this.mixingBuffer = this.mixingBuffer.slice(mixedChunk.length);
 

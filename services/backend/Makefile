@@ -1,5 +1,6 @@
-IMAGE_ID := "myownradio/backend-core"
+IMAGE_ID := "myownradio/myownradio-universe"
 GIT_CURRENT_COMMIT := $(shell git rev-parse --verify HEAD)
+TAG := "latest"
 
 develop:
 	@docker-compose up

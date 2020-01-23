@@ -4,10 +4,7 @@ import { EventEmitter } from 'events';
 
 import { MorApiService } from './api/apiService';
 import { ChannelContainer } from './services/channelContainer';
-import {
-  IcyMetadataTransform,
-  withMetadataTransform,
-} from './stream/metadata/icyMetadataTransform';
+import { withMetadataTransform } from './stream/metadata/icyMetadataTransform';
 import logger from './services/logger';
 import config from './config';
 

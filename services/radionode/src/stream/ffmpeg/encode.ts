@@ -1,6 +1,6 @@
 import ffmpeg = require('fluent-ffmpeg');
 import ffmpegPath = require('ffmpeg-static');
-import { Readable, Writable, PassThrough } from 'stream';
+import { Readable, PassThrough } from 'stream';
 
 import * as constants from './constants';
 import logger from '../../services/logger';

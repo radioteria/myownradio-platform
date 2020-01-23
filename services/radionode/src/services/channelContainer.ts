@@ -6,7 +6,6 @@ import { repeat } from '../stream/helpers/repeat';
 import { decode } from '../stream/ffmpeg/decode';
 import logger from './logger';
 import { restartable } from '../stream/helpers/restartable';
-import { withJingle } from '../stream/helpers/withJingle';
 
 const UNUSED_CHANNEL_CHECK_INTERVAL = 30000;
 
@@ -36,7 +35,7 @@ export class ChannelContainer {
       return restartable(decode(url, offset, withJingle), channelId, this.restartEmitter);
     });
 
-    const channelStream = encode(withJingle(radioStream), true);
+    const channelStream = encode(radioStream, true);
 
     channelStream.pipe(mc);
 

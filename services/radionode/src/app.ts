@@ -4,7 +4,12 @@ import { EventEmitter } from 'events';
 
 import { MorApiService } from './api/apiService';
 import { ChannelContainer } from './services/channelContainer';
+import {
+  IcyMetadataTransform,
+  withMetadataTransform,
+} from './stream/metadata/icyMetadataTransform';
 import logger from './services/logger';
+import config from './config';
 
 export default function createApp() {
   const app = new Application();
@@ -20,10 +25,21 @@ export default function createApp() {
 
   router.get('/listen/:channelId', async ctx => {
     const { channelId } = ctx.params;
+    const withIcyMetadata = ctx.get('icy-metadata') === '1';
+
+    const multicast = channelContainer.getMulticast(channelId);
+    const readable = multicast.createStream();
 
     ctx.set('Content-Type', 'audio/mpeg');
 
-    ctx.body = channelContainer.getMulticast(channelId).createStream();
+    if (withIcyMetadata) {
+      ctx.set('icy-metadata', '1');
+      ctx.set('icy-metaint', String(config.icyMetadataInterval));
+
+      ctx.body = withMetadataTransform(readable, multicast.metadataEmitter);
+    } else {
+      ctx.body = readable;
+    }
   });
 
   router.post('/restart/:channelId', async ctx => {

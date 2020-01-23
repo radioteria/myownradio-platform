@@ -1,4 +1,5 @@
 import { Writable, PassThrough, Readable } from 'stream';
+import { MetadataEmitter } from '../metadata/metadataEmitter';
 import logger from '../../services/logger';
 
 interface IWritableState {
@@ -9,6 +10,8 @@ export class Multicast extends Writable {
   private clientsMap = new Map<Writable, IWritableState>();
 
   private updatedAt = new Date();
+
+  readonly metadataEmitter = new MetadataEmitter();
 
   public _write(chunk: Buffer | string, enc: string, callback: (err?: Error) => void): boolean {
     this.clientsMap.forEach((state, writable) => {

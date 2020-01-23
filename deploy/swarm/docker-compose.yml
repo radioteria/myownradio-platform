@@ -32,7 +32,7 @@ services:
         order: start-first
 
   web:
-    image: "myownradio/backend-core:v2"
+    image: "myownradio/myownradio-universe:latest"
     env_file:
       - web.env
     environment:

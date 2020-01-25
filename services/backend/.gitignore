@@ -8,3 +8,4 @@ cache
 storage/*/
 public/assets/*
 .cache
+public/js/dist.min.js

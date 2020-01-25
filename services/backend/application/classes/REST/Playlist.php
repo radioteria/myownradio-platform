@@ -46,11 +46,11 @@ class Playlist implements SingletonInterface, Injectable {
 
         $query = $this->getTracksPrefix()->where("uid", $me->getID());
 
-        $availableOrders    = [0 => "DESC", 1 => "ASC"];
-        $availableRows      = [0 => "tid", 1 => "title", 2 => "artist", 3 => "genre", 4 => "duration"];
+        $availableOrders = [0 => "DESC", 1 => "ASC"];
+        $availableRows = [0 => "tid", 1 => "title", 2 => "artist", 3 => "genre", 4 => "duration"];
 
-        $safeRow            = isset($availableRows[$sortRow]) ? $sortRow : 0;
-        $safeOrder          = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
+        $safeRow = isset($availableRows[$sortRow]) ? $sortRow : 0;
+        $safeOrder = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
 
         if ($color->validate()) {
             $query->where("color", $color->get());
@@ -79,11 +79,11 @@ class Playlist implements SingletonInterface, Injectable {
 
         $query = $this->getTracksPrefix()->where("uid", $me->getID());
 
-        $availableOrders    = [0 => "DESC", 1 => "ASC"];
-        $availableRows      = [0 => "tid", 1 => "title", 2 => "artist", 3 => "genre", 4 => "duration"];
+        $availableOrders = [0 => "DESC", 1 => "ASC"];
+        $availableRows = [0 => "tid", 1 => "title", 2 => "artist", 3 => "genre", 4 => "duration"];
 
-        $safeRow            = isset($availableRows[$sortRow]) ? $sortRow : 0;
-        $safeOrder          = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
+        $safeRow = isset($availableRows[$sortRow]) ? $sortRow : 0;
+        $safeOrder = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
 
         if ($color->validate()) {
             $query->where("color", $color->get());
@@ -252,6 +252,63 @@ class Playlist implements SingletonInterface, Injectable {
 
     }
 
+    public function getNowPlayingAndNext($id) {
+
+        /** @var StreamStats $stream */
+
+        $stream = StreamStats::getByFilter("sid = :id OR permalink = :id", [":id" => $id])
+            ->getOrElseThrow(ControllerException::noStream($id));
+
+        if ($stream->getStatus() == 0) {
+            throw ControllerException::noStream($id);
+        }
+
+        if ($stream->getTracksDuration() == 0) {
+            throw ControllerException::of("Nothing playing");
+        }
+
+        $position = max(((System::time() - self::REAL_TIME_DELAY_MS) -
+                $stream->getStarted() +
+                $stream->getStartedFrom()) % $stream->getTracksDuration(), 0);
+
+
+        $query = $this->getStreamTracksPrefix();
+
+        $query->select("time_offset");
+
+        $query->where("time_offset + duration >= ?", [$position]);
+        $query->where("stream_id", $stream->getID());
+
+        $query->limit(2);
+
+        $tracks = $query->fetchAll();
+
+        if (count($tracks) === 0) {
+            throw new ControllerException(sprintf("Nothing playing on stream '%s'", $id));
+        }
+
+        if (count($tracks) === 1) {
+            list($track) = $query->fetchAll();
+            $new_query = $this->getStreamTracksPrefix();
+            $new_query->where("stream_id", $stream->getID());
+            $next_track = $new_query->fetchOneRow()->get();
+        } else {
+            list($track, $next_track) = $query->fetchAll();
+        }
+
+        $track["caption"] = $track["artist"] . " - " . $track["title"];
+        $next_track["caption"] = $next_track["artist"] . " - " . $next_track["title"];
+
+        return [
+            'time' => System::time(),
+            'position' => $position,
+            'current' => $track,
+            'next' => $next_track,
+            'listeners_count' => $stream->getListenersCount(),
+            'bookmarks_count' => $stream->getBookmarksCount()
+        ];
+    }
+
     public function getSchedule($id) {
 
         /** @var StreamStats $stream */
@@ -286,7 +343,7 @@ class Playlist implements SingletonInterface, Injectable {
                     $row["caption"] = $row["artist"] . " - " . $row["title"];
                 else
                     $row["caption"] = $row["title"];
-                $index ++;
+                $index++;
             }
 
 
@@ -304,4 +361,4 @@ class Playlist implements SingletonInterface, Injectable {
 
     }
 
-} 
+}

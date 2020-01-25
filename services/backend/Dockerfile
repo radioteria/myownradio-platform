@@ -1,15 +1,12 @@
-FROM myownradio/backend-runtime
+FROM myownradio/backend-image:latest
 
-MAINTAINER Roman Lakhtadyr <roman.lakhtadyr@gmail.com>
+WORKDIR /usr/app
 
-WORKDIR /usr/app/
-
-# Install application dependencies
 COPY composer.json composer.lock ./
 RUN composer install --no-plugins --no-scripts --no-dev
 
-# Install application
-COPY . ./
+COPY package.json package-lock.json ./
+RUN npm ci
 
-ARG GIT_CURRENT_COMMIT="<unknown>"
-ENV GIT_CURRENT_COMMIT=${GIT_CURRENT_COMMIT}
+COPY bower.json ./
+RUN npx bower install --allow-root

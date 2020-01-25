@@ -1,18 +1,11 @@
-IMAGE_ID := "myownradio/myownradio-universe"
-GIT_CURRENT_COMMIT := $(shell git rev-parse --verify HEAD)
-TAG := "latest"
+IMAGE_ID := myownradio/backend
+IMAGE_TAG := latest
 
 develop:
 	@docker-compose up
 
 build:
-	@time docker build -t $(IMAGE_ID):${TAG} --build-arg GIT_CURRENT_COMMIT=$(GIT_CURRENT_COMMIT) .
+	docker build -t $(IMAGE_ID):$(IMAGE_TAG) .
 
 deploy:
-	@docker push $(IMAGE_ID):${TAG}
-
-last-tag:
-	@git describe --abbrev=0 --tags
-
-.PHONY: build
-
+	@docker push $(IMAGE_ID):$(IMAGE_TAG)

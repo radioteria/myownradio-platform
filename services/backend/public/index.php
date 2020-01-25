@@ -48,7 +48,7 @@ try {
     $router = Router::getInstance();
 
     $router->route();
-} catch (\Exception $exception) {
+} catch (\Throwable $exception) {
     echo 'E500 ';
 
     echo $exception->getMessage();

@@ -10,3 +10,7 @@ RUN npm ci
 
 COPY bower.json ./
 RUN npx bower install --allow-root
+
+COPY . ./
+
+RUN npx gulp scripts

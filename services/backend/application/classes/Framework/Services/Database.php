@@ -39,9 +39,10 @@ class Database implements SingletonInterface, Injectable
     {
         try {
             $dsn = sprintf(
-                "%s:host=%s;dbname=%s",
+                "%s:host=%s;port=%s;dbname=%s",
                 $this->config["driver"],
                 $this->config["host"],
+                $this->config["port"],
                 $this->config["database"]
             );
             $this->pdo = new PDO(

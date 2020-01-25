@@ -10,12 +10,11 @@ namespace Framework\View\Errors;
 
 
 use Framework\Exceptions\ApplicationException;
-use Framework\Object;
-use Framework\Template;
+use Framework\ObjectTrait;
 
 class ViewException extends ApplicationException {
 
-    use Object;
+    use ObjectTrait;
 
     protected $code;
     protected $body;

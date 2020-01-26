@@ -1,9 +1,16 @@
 import axios from 'axios';
 
 export interface INowPlaying {
-  offset: number;
-  title: string;
-  url: string;
+  playlist_position;
+  current_track: {
+    offset: number;
+    title: string;
+    url: string;
+  };
+  next_track: {
+    title: string;
+    url: string;
+  };
 }
 
 export interface IApiService {
@@ -21,7 +28,7 @@ export class MorApiService implements IApiService {
     }
 
     const nowResponse = await this.client.get<IMyOwnRadioResponse>(
-      `https://myownradio.biz/api/v0/stream/${channelId}/now`,
+      `https://myownradio.biz/api/v1/stream/${channelId}/now`,
     );
 
     return nowResponse.data.data;

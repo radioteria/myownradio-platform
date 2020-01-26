@@ -32,7 +32,7 @@ export class ChannelContainer {
         playlist_position,
         current_track: { url, offset, title },
       } = await this.apiService.getNowPlaying(channelId);
-      const withJingle = (playlist_position - 1) % 3 === 0;
+      const withJingle =  offset < 2000 && (playlist_position - 1) % 3 === 0;
       logger.info(`Now playing on ${channelId}: ${title} (${offset})`);
       mc.metadataEmitter.changeTitle(title);
       return restartable(decode(url, offset, withJingle), channelId, this.restartEmitter);

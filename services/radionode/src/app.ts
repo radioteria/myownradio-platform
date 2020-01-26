@@ -22,6 +22,13 @@ export default function createApp() {
 
   router.get('/listen/:channelId', async ctx => {
     const { channelId } = ctx.params;
+
+    const channelInfo = await apiService.getInfo(channelId);
+
+    if (!channelInfo || channelInfo.status !== 1) {
+      return;
+    }
+
     const withIcyMetadata = ctx.get('icy-metadata') === '1';
 
     const multicast = channelContainer.getMulticast(channelId);
@@ -32,6 +39,7 @@ export default function createApp() {
     if (withIcyMetadata) {
       ctx.set('icy-metadata', '1');
       ctx.set('icy-metaint', String(config.icyMetadataInterval));
+      ctx.set('icy-name', channelInfo.name);
 
       ctx.body = withMetadataTransform(readable, multicast.metadataEmitter);
     } else {

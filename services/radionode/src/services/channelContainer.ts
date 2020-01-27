@@ -72,7 +72,7 @@ export class ChannelContainer {
       .then(
         ({ data }) => {
           data.pipe(toNull()).once('finish', () => {
-            logger.info('Next track preload finished');
+            logger.verbose('Next track preload finished');
           });
         },
         () => {},

@@ -43,12 +43,17 @@ class DoChannelNowPlayingV1 implements Controller
             "current_track" => [
                 "offset" => $track_position,
                 "title" => $track["caption"],
-                "url" => $current_track_url,
+                "url" => $this->replaceDomainWithCacheDomain($current_track_url),
             ],
             "next_track" => [
                 "title" => $next["caption"],
-                "url" => $next_track_url,
+                "url" => $this->replaceDomainWithCacheDomain($next_track_url),
             ]
         ]);
+    }
+
+    private function replaceDomainWithCacheDomain($url)
+    {
+        return str_replace("//s3.eu-central-1.amazonaws.com", '//cache.myownradio.biz', $url);
     }
 }

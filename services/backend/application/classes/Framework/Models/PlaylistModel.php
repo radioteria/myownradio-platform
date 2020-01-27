@@ -8,6 +8,7 @@
 
 namespace Framework\Models;
 
+use app\Helpers\Http;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\StreamControl;
@@ -31,7 +32,8 @@ use Tools\System;
  * Class PlaylistModel
  * @package Model
  */
-class PlaylistModel extends Model implements \Countable, SingletonInterface {
+class PlaylistModel extends Model implements \Countable, SingletonInterface
+{
 
     use Singleton, StreamControl;
 
@@ -44,7 +46,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     private $started_from;
     private $started;
 
-    public function __construct($id) {
+    public function __construct($id)
+    {
         parent::__construct();
         $this->user = AuthUserModel::getInstance();
         $this->key = $id;
@@ -52,10 +55,11 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     }
 
     /**
-     * @throws ControllerException
      * @return $this
+     * @throws ControllerException
      */
-    public function reload() {
+    public function reload()
+    {
 
         Database::doInConnection(function (Database $db) {
 
@@ -87,7 +91,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     /**
      * @return mixed
      */
-    public function getTrackInStream() {
+    public function getTrackInStream()
+    {
         return $this->tracks_count;
     }
 
@@ -96,7 +101,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      * @param bool $upNext
      * @return $this
      */
-    public function addTracks($tracks, $upNext = false) {
+    public function addTracks($tracks, $upNext = false)
+    {
 
         $this->doAtomic(function () use (&$tracks, &$upNext) {
 
@@ -118,7 +124,9 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                         /** @var Track $trackObject */
 
                         // Skip foreign tracks
-                        if ($trackObject->getUserID() != $this->user->getID()) return;
+                        if ($trackObject->getUserID() != $this->user->getID()) {
+                            return;
+                        }
 
                         $uniqueID = $this->generateUniqueID();
 
@@ -136,7 +144,9 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
                             Database::doInConnection(function (Database $db) use (&$uniqueID, &$track) {
                                 $db->executeUpdate("SELECT move_track_channel(?, ?, ?)", [
-                                    $this->key, $uniqueID, $track->getTrackOrder() + 1
+                                    $this->key,
+                                    $uniqueID,
+                                    $track->getTrackOrder() + 1
                                 ]);
                             });
 
@@ -162,7 +172,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      * @param callable $callable
      * @return $this
      */
-    private function doAtomic(callable $callable) {
+    private function doAtomic(callable $callable)
+    {
 
         $this->getPlayingTrack()->then(function (StreamTrack $track) use ($callable) {
 
@@ -186,7 +197,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      * @param int|null $time
      * @return Optional
      */
-    public function getPlayingTrack($time = null) {
+    public function getPlayingTrack($time = null)
+    {
 
         $position = $this->getStreamPosition($time)->getOrElseNull();
 
@@ -202,7 +214,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      * @param int|null $time
      * @return Optional
      */
-    public function getStreamPosition($time = null) {
+    public function getStreamPosition($time = null)
+    {
 
         if ($this->tracks_duration == 0) {
             return Optional::ofNullable(0);
@@ -226,7 +239,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      * @param $time
      * @return Optional
      */
-    public function getTrackByTime($time) {
+    public function getTrackByTime($time)
+    {
 
         if ($this->getStreamDuration() == 0) {
             return Optional::noValue();
@@ -244,7 +258,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     /**
      * @return mixed
      */
-    public function getStreamDuration() {
+    public function getStreamDuration()
+    {
         return $this->tracks_duration;
     }
 
@@ -253,7 +268,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      * @param array $args
      * @return Optional
      */
-    protected function _getPlaylistTrack($filter, array $args = null) {
+    protected function _getPlaylistTrack($filter, array $args = null)
+    {
 
         return Database::doInConnection(function (Database $db) use ($filter, $args) {
 
@@ -270,7 +286,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     /**
      * @return \Framework\Services\DB\Query\SelectQuery
      */
-    private function getTrackQueryPrefix() {
+    private function getTrackQueryPrefix()
+    {
 
         $query = DBQuery::getInstance()->selectFrom("r_tracks a")
             ->innerJoin("r_link b", "a.tid = b.track_id");
@@ -281,7 +298,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     }
 
-    public function generateUniqueID() {
+    public function generateUniqueID()
+    {
 
         return Database::doInConnection(function (Database $conn) {
 
@@ -300,7 +318,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      * @param $tracks
      * @return $this
      */
-    public function removeTracks($tracks) {
+    public function removeTracks($tracks)
+    {
 
         $this->doAtomic(function () use ($tracks) {
 
@@ -320,7 +339,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     /**
      * @return $this
      */
-    public function shuffleTracks() {
+    public function shuffleTracks()
+    {
 
         $this->doAtomic(function () {
 
@@ -334,7 +354,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     }
 
-    public function optimize() {
+    public function optimize()
+    {
 
         $this->doAtomic(function () {
 
@@ -351,7 +372,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      * @param $index
      * @return $this
      */
-    public function moveTrack($uniqueID, $index) {
+    public function moveTrack($uniqueID, $index)
+    {
 
         $this->doAtomic(function () use (&$uniqueID, &$index) {
 
@@ -369,7 +391,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      * @param $id
      * @return Optional
      */
-    public function getTrackByOrder($id) {
+    public function getTrackByOrder($id)
+    {
 
         return $this->_getPlaylistTrack("b.t_order = ? AND b.stream_id = ?", [$id, $this->key]);
 
@@ -378,7 +401,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     /**
      * @return int
      */
-    public function count() {
+    public function count()
+    {
         return intval($this->tracks_count);
     }
 
@@ -387,7 +411,8 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
      * @param int $startFrom
      * @param bool $notify
      */
-    protected function _setCurrentTrack(StreamTrack $trackBean, $startFrom = 0, $notify = true) {
+    protected function _setCurrentTrack(StreamTrack $trackBean, $startFrom = 0, $notify = true)
+    {
 
         Stream::getByID($this->key)
             ->then(function ($stream) use ($trackBean, $startFrom) {
@@ -405,34 +430,28 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     }
 
-    public function notifyStreamers() {
+    public function notifyStreamers()
+    {
         self::notifyAllStreamers($this->key);
     }
 
     public static function notifyAllStreamers($streamID)
     {
-        $ch = curl_init("http://stream1.myownradio.biz:7778/notify?token=notify_me&s=" . $streamID);
-
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_VERBOSE, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-        curl_exec($ch);
-        curl_close($ch);
-
+        Http::get("${_ENV['STREAM_HOST']}/notify?token=notify_me&s=${streamID}");
     }
 
     /**
      * @return Optional
+     * @throws ControllerException
      */
-    protected function _getRandomTrack() {
-
+    protected function _getRandomTrack()
+    {
         $query = $this->getTrackQueryPrefix();
         $query->orderBy("RAND()");
         $query->limit(1);
         $query->where("b.stream_id", $this->key);
 
         return $query->fetchObject($query, null, StreamTrack::className());
-
     }
 
 } 

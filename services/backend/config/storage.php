@@ -12,7 +12,7 @@ return [
     'audio'  => [
         'track_duration_max'    => 14400000,
         'track_file_size_max'   => 536870912,
-        'supported_formats'     => 'mp3',
+        'supported_formats'     => 'mp3|flac|aac|ogg|m4a|wav',
     ],
 
 ];

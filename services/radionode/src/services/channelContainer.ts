@@ -1,15 +1,18 @@
 import { EventEmitter } from 'events';
+import axios from 'axios';
+import logger from './logger';
 import { IApiService } from '../api/apiService';
 import { Multicast } from '../stream/helpers/multicast';
 import { encode } from '../stream/ffmpeg/encode';
 import { repeat } from '../stream/helpers/repeat';
 import { decode } from '../stream/ffmpeg/decode';
-import logger from './logger';
 import { restartable } from '../stream/helpers/restartable';
+import toNull from '../stream/helpers/toNull';
 
 const UNUSED_CHANNEL_CHECK_INTERVAL = 30000;
 
 export class ChannelContainer {
+  private client = axios.create();
   private channelStreamMap = new Map<string, Multicast>();
 
   constructor(private apiService: IApiService, private restartEmitter: EventEmitter) {
@@ -29,13 +32,24 @@ export class ChannelContainer {
 
     const radioStream = repeat(async () => {
       const {
-        playlist_position,
-        current_track: { url, offset, title },
+        playlist_position: playlistPosition,
+        current_track: currentTrack,
+        next_track: nextTrack,
       } = await this.apiService.getNowPlaying(channelId);
-      const withJingle =  offset < 2000 && (playlist_position - 1) % 3 === 0;
-      logger.info(`Now playing on ${channelId}: ${title} (${offset})`);
-      mc.metadataEmitter.changeTitle(title);
-      return restartable(decode(url, offset, withJingle), channelId, this.restartEmitter);
+
+      mc.metadataEmitter.changeTitle(currentTrack.title);
+
+      logger.info(`Now playing on ${channelId}: ${currentTrack.title} (${currentTrack.offset})`);
+
+      const shouldBeJingle = currentTrack.offset < 1000 && (playlistPosition - 1) % 4 === 0;
+
+      this.triggerNextTrackPreload(nextTrack.url);
+
+      return restartable(
+        decode(currentTrack.url, currentTrack.offset, shouldBeJingle),
+        channelId,
+        this.restartEmitter,
+      );
     });
 
     const channelStream = encode(radioStream, true);
@@ -48,6 +62,21 @@ export class ChannelContainer {
     });
 
     this.channelStreamMap.set(channelId, mc);
+  }
+
+  private triggerNextTrackPreload(url: string) {
+    this.client
+      .get(url, {
+        responseType: 'stream',
+      })
+      .then(
+        ({ data }) => {
+          data.pipe(toNull()).once('finish', () => {
+            logger.info('Next track preload finished');
+          });
+        },
+        () => {},
+      );
   }
 
   private watchUnusedChannels() {

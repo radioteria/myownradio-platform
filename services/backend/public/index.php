@@ -6,9 +6,6 @@ use Framework\Template;
 use function Sentry\captureException;
 use function Sentry\init;
 
-// Init sentry
-init(['dsn' => env('SENTRY_DSN')]);
-
 define('BASE_DIR', __DIR__ . '/..');
 
 $uri = urldecode(parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH));
@@ -16,6 +13,9 @@ $uri = urldecode(parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH));
 $_GET['route'] = ltrim($uri, '/');
 
 require_once BASE_DIR . '/vendor/autoload.php';
+
+// Init sentry
+init(['dsn' => env('SENTRY_DSN')]);
 
 // AntiShame Mode: On
 require_once BASE_DIR . '/application/init.php';

@@ -27,7 +27,8 @@
     "ext-iconv": "*",
     "ext-pdo": "*",
     "ext-gd": "*",
-    "twig/twig": "^3.0",
+    "ext-mysqli": "*",
+    "twig/twig": "^1.25",
     "guzzlehttp/guzzle": "^6.0",
     "sentry/sdk": "^2.1"
   },

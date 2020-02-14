@@ -3,7 +3,7 @@ const concat = require('gulp-concat');
 const minify = require('gulp-minify');
 
 gulp.task('scripts', function () {
-    gulp.src([
+    return gulp.src([
         'bower_components/jquery/dist/jquery.min.js',
         'bower_components/jquery-migrate/jquery-migrate.min.js',
         'bower_components/jquery-ui/jquery-ui.min.js',

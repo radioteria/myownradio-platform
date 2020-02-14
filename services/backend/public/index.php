@@ -3,6 +3,11 @@
 use Facebook\FacebookSession;
 use Framework\Router;
 use Framework\Template;
+use function Sentry\captureException;
+use function Sentry\init;
+
+// Init sentry
+init(['dsn' => env('SENTRY_DSN')]);
 
 define('BASE_DIR', __DIR__ . '/..');
 
@@ -27,10 +32,6 @@ try {
         $loader->parse();
         $loader->toEnv(true);
     }
-
-    // Init sentry
-    $ravenClient = new Raven_Client(env('SENTRY_DSN'));
-    $ravenClient->install();
 
     // Facebook setup
     FacebookSession::setDefaultApplication(
@@ -57,5 +58,5 @@ try {
 
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
 
-    $eventId = $ravenClient->captureException($exception);
+    captureException($exception);
 }

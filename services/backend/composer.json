@@ -11,7 +11,6 @@
   ],
   "require": {
     "mixpanel/mixpanel-php": "^2.6",
-    "Twig/Twig": "^1.25",
     "james-heinrich/getid3": "^1.9",
     "liqpay/liqpay": "dev-master",
     "facebook/php-sdk": "4.0.23",
@@ -19,7 +18,6 @@
     "mikehaertl/php-shellcommand": "^1.2",
     "aws/aws-sdk-php": "^3.19",
     "intervention/image": "^2.3",
-    "sentry/sentry": "^1.6",
     "firebase/php-jwt": "^4.0",
     "php": "^7.2",
     "ext-curl": "*",
@@ -28,7 +26,10 @@
     "ext-mbstring": "*",
     "ext-iconv": "*",
     "ext-pdo": "*",
-    "ext-gd": "*"
+    "ext-gd": "*",
+    "twig/twig": "^3.0",
+    "guzzlehttp/guzzle": "^6.0",
+    "sentry/sdk": "^2.1"
   },
   "autoload": {
     "files": [

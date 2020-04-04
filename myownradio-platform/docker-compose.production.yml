@@ -90,4 +90,4 @@ volumes:
 networks:
   global:
     external: true
-    name: global
+    name: global_default

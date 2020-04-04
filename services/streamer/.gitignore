@@ -9,6 +9,3 @@ com_crashlytics_export_strings.xml
 target
 dependency-reduced-pom.xml
 log/*
-
-# Don't add server.properties to repository!
-server.properties

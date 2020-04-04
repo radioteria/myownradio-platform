@@ -13,10 +13,11 @@ services:
     deploy:
       update_config:
         order: stop-first
+        failure_action: rollback
     logging:
       driver: logentries
       options:
-        logentries_token: 2f63fa44-fe14-40bd-80e6-c718a1e3db5f
+        logentries-token: 2f63fa44-fe14-40bd-80e6-c718a1e3db5f
         line-only: "true"
 
   streamer:
@@ -37,10 +38,11 @@ services:
     deploy:
       update_config:
         order: start-first
+        failure_action: rollback
     logging:
       driver: logentries
       options:
-        logentries_token: 7945ab99-6b07-4180-82bf-42bede430810
+        logentries-token: 7945ab99-6b07-4180-82bf-42bede430810
         line-only: "true"
 
   backend:
@@ -72,10 +74,11 @@ services:
     deploy:
       update_config:
         order: start-first
+        failure_action: rollback
     logging:
       driver: logentries
       options:
-        logentries_token: 434df9cb-904f-47a6-8b53-5fccc6392977
+        logentries-token: 434df9cb-904f-47a6-8b53-5fccc6392977
         line-only: "true"
 
 volumes:

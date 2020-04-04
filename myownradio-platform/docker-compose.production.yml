@@ -10,8 +10,6 @@ services:
       MYSQL_PASSWORD: "mor"
     volumes:
       - mysql-data:/var/lib/mysql
-    ports:
-      - 13306:3306
     deploy:
       update_config:
         order: stop-first
@@ -25,6 +23,9 @@ services:
       VIRTUAL_HOST: "stream.myownradio.biz"
       VIRTUAL_PORT: 7778
       VIRTUAL_NETWORK: 1
+    networks:
+      - default
+      - global
     depends_on:
       - db
     deploy:
@@ -50,6 +51,9 @@ services:
       VIRTUAL_PORT: 8080
       VIRTUAL_NETWORK: 1
       SENTRY_DSN: "https://2a74df546ce14acbb01fd71f1d00dfe7@sentry.io/2518976"
+    networks:
+      - default
+      - global
     depends_on:
       - db
       - streamer

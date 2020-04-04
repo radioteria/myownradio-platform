@@ -13,6 +13,11 @@ services:
     deploy:
       update_config:
         order: stop-first
+    logging:
+      driver: logentries
+      options:
+        logentries_token: 2f63fa44-fe14-40bd-80e6-c718a1e3db5f
+        line-only: "true"
 
   streamer:
     image: 'myownradio/stream-server:latest'
@@ -32,6 +37,11 @@ services:
     deploy:
       update_config:
         order: start-first
+    logging:
+      driver: logentries
+      options:
+        logentries_token: 7945ab99-6b07-4180-82bf-42bede430810
+        line-only: "true"
 
   backend:
     image: 'myownradio/backend:latest'
@@ -62,24 +72,11 @@ services:
     deploy:
       update_config:
         order: start-first
-
-#  proxy:
-#    image: pldin601/nginx-proxy-upload
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#    volumes:
-#      - /var/run/docker.sock:/tmp/docker.sock:ro
-#      - ./certs:/etc/nginx/certs:ro
-
-#  cacheserver:
-#    image: myownradio/cacheserver-image:latest
-#    volumes:
-#      - cache-data:/var/cache/nginx
-#    environment:
-#      VIRTUAL_HOST: "cache.myownradio.biz"
-#      VIRTUAL_PORT: 8080
-#      VIRTUAL_NETWORK: 1
+    logging:
+      driver: logentries
+      options:
+        logentries_token: 434df9cb-904f-47a6-8b53-5fccc6392977
+        line-only: "true"
 
 volumes:
   mysql-data:

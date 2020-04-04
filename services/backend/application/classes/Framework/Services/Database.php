@@ -252,10 +252,6 @@ class Database implements SingletonInterface, Injectable
 
         $queryString = $this->createQueryString($query, $params);
 
-        error_log('Time');
-        error_log(\Tools\System::time());
-        error_log($queryString);
-
         if ($cached == true && isset(self::$cache[$queryString])) {
             $db_result = self::$cache[$queryString];
         } else {

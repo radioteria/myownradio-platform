@@ -1,0 +1,89 @@
+version: '3.5'
+
+services:
+  db:
+    image: 'mysql:5.6'
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: "mor"
+      MYSQL_USER: "mor"
+      MYSQL_PASSWORD: "mor"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - 13306:3306
+    deploy:
+      update_config:
+        order: stop-first
+
+  streamer:
+    image: 'myownradio/stream-server:latest'
+    environment:
+      MOR_JDBC_LOGIN: "mor"
+      MOR_JDBC_PASSWORD: "mor"
+      MOR_JDBC_URL: "jdbc:mysql://db:3306/mor"
+      VIRTUAL_HOST: "stream.myownradio.biz"
+      VIRTUAL_PORT: 7778
+      VIRTUAL_NETWORK: 1
+    depends_on:
+      - db
+    deploy:
+      update_config:
+        order: start-first
+
+  backend:
+    image: 'myownradio/backend:latest'
+    environment:
+      DB_DATABASE: "mor"
+      DB_HOST: "db"
+      DB_PASSWORD: "mor"
+      DB_USERNAME: "mor"
+      FACEBOOK_APP_ID: "731742683610572"
+      FACEBOOK_APP_SECRET: "f84af1cdddcc6ac06c6ebf606fb616c3"
+      FFMPEG_PATH: "ffmpeg"
+      MEDIAINFO_PATH: "mediainfo"
+      JWT_KEY: "TbhX2QUfV7dfxOXILKlZWk6jF9OceHmvzzolIC0K"
+      S3_ACCESS_KEY: "AKIAJBSFTKGMHDMPRPZA"
+      S3_SECRET_KEY: "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"
+      STREAM_HOST: "https://stream.myownradio.biz"
+      VIRTUAL_HOST: "myownradio.biz"
+      VIRTUAL_PORT: 8080
+      VIRTUAL_NETWORK: 1
+      SENTRY_DSN: "https://2a74df546ce14acbb01fd71f1d00dfe7@sentry.io/2518976"
+    depends_on:
+      - db
+      - streamer
+    deploy:
+      update_config:
+        order: start-first
+
+#  proxy:
+#    image: pldin601/nginx-proxy-upload
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - /var/run/docker.sock:/tmp/docker.sock:ro
+#      - ./certs:/etc/nginx/certs:ro
+
+#  cacheserver:
+#    image: myownradio/cacheserver-image:latest
+#    volumes:
+#      - cache-data:/var/cache/nginx
+#    environment:
+#      VIRTUAL_HOST: "cache.myownradio.biz"
+#      VIRTUAL_PORT: 8080
+#      VIRTUAL_NETWORK: 1
+
+volumes:
+  mysql-data:
+    name: mysql-data
+    driver: local
+  cache-data:
+    name: cache-data
+    driver: local
+
+networks:
+  global:
+    external: true
+    name: global

@@ -23,7 +23,7 @@ services:
       VIRTUAL_HOST: "stream.myownradio.biz"
       VIRTUAL_PORT: 7778
       VIRTUAL_NETWORK: 1
-      LETSENCRYPT_HOST: "*.myownradio.biz"
+      LETSENCRYPT_HOST: "stream.myownradio.biz"
     networks:
       - default
       - global
@@ -51,7 +51,7 @@ services:
       VIRTUAL_HOST: "myownradio.biz"
       VIRTUAL_PORT: 8080
       VIRTUAL_NETWORK: 1
-      LETSENCRYPT_HOST: "*.myownradio.biz"
+      LETSENCRYPT_HOST: "myownradio.biz"
       SENTRY_DSN: "https://2a74df546ce14acbb01fd71f1d00dfe7@sentry.io/2518976"
     networks:
       - default

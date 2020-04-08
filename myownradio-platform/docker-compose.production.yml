@@ -35,6 +35,7 @@ services:
       - global
     depends_on:
       - db
+      - storage
     deploy:
       update_config:
         order: start-first
@@ -71,6 +72,7 @@ services:
     depends_on:
       - db
       - streamer
+      - storage
     deploy:
       update_config:
         order: start-first
@@ -82,7 +84,7 @@ services:
         line-only: "true"
 
   storage:
-    image: nginx
+    image: nginx:1.17
     volumes:
       - myownradio-storage:/usr/share/nginx/html
     networks:

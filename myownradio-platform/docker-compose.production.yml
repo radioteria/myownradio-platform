@@ -35,6 +35,7 @@ services:
       - global
     depends_on:
       - db
+      - storage
     deploy:
       update_config:
         order: start-first
@@ -71,6 +72,7 @@ services:
     depends_on:
       - db
       - streamer
+      - storage
     deploy:
       update_config:
         order: start-first
@@ -81,12 +83,32 @@ services:
         logentries-token: 434df9cb-904f-47a6-8b53-5fccc6392977
         line-only: "true"
 
+  storage:
+    image: nginx:1.17
+    volumes:
+      - myownradio-storage:/usr/share/nginx/html
+    networks:
+      - default
+      - global
+    deploy:
+      update_config:
+        order: start-first
+        failure_action: rollback
+    logging:
+      driver: logentries
+      options:
+        logentries-token: 416156c5-5f55-46ad-99a8-b1553fce229d
+        line-only: "true"
+
 volumes:
   mysql-data:
     name: mysql-data
     driver: local
   cache-data:
     name: cache-data
+    driver: local
+  myownradio-storage:
+    name: myownradio-storage
     driver: local
 
 networks:

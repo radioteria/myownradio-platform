@@ -85,6 +85,10 @@ services:
 
   storage:
     image: nginx:1.17
+    environment:
+      - VIRTUAL_HOST=fs.myownradio.biz
+      - VIRTUAL_PORT=80
+      - LETSENCRYPT_HOST=fs.myownradio.biz
     volumes:
       - myownradio-storage:/usr/share/nginx/html
     networks:

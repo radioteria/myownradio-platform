@@ -50,7 +50,7 @@ class LocalStorage extends Storage
         $fullPath = $this->getFullPath($key);
         $dirName = pathinfo($fullPath, PATHINFO_DIRNAME);
 
-        if ($dirName != '.') {
+        if ($dirName != '.' && !is_dir($dirName)) {
             mkdir($dirName, $this->directoryRights, true);
         }
 

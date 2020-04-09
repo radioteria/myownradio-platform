@@ -9,6 +9,8 @@ class StorageFactory
      */
     public static function getStorage()
     {
-        return new S3Storage();
+        return new LocalStorage(config('storage.local.dir'), function ($key) {
+            return sprintf("https://fs1.myownradio.biz/${key}");
+        });
     }
 }

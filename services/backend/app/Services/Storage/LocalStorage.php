@@ -43,6 +43,7 @@ class LocalStorage extends Storage
      * @param $key
      * @param $body
      * @param array $parameters
+     * @throws StorageException
      */
     public function put($key, $body, array $parameters = [])
     {
@@ -53,7 +54,11 @@ class LocalStorage extends Storage
             mkdir($dirName, $this->directoryRights, true);
         }
 
-        file_put_contents($fullPath, $body);
+        $result = file_put_contents($fullPath, $body);
+
+        if ($result === false) {
+            throw new StorageException('Error occurred during saving file');
+        }
     }
 
     /**

@@ -90,9 +90,7 @@ public class Track {
     public String getFileUrl() {
 
         return String.format(
-                "https://s3.%s.amazonaws.com/%s/audio/%s/%s/%s",
-                MORSettings.getStringNow("aws.s3.region"),
-                MORSettings.getStringNow("aws.s3.bucket"),
+                "https://fs1.myownradio.biz/audio/%s/%s/%s",
                 fileHash.charAt(0),
                 fileHash.charAt(1),
                 fileHash

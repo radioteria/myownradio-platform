@@ -15,4 +15,8 @@ return [
         'supported_formats'     => 'mp3|flac|aac|ogg|m4a|wav',
     ],
 
+    'local' => [
+        'dir'                   => $_ENV['BACKEND_STORAGE_LOCAL_DIR']
+    ]
+
 ];

@@ -66,9 +66,12 @@ services:
       VIRTUAL_NETWORK: 1
       LETSENCRYPT_HOST: "myownradio.biz"
       SENTRY_DSN: "https://2a74df546ce14acbb01fd71f1d00dfe7@sentry.io/2518976"
+      BACKEND_STORAGE_LOCAL_DIR: /app/storage
     networks:
       - default
       - global
+    volumes:
+      - myownradio-storage:/app/storage
     depends_on:
       - db
       - streamer

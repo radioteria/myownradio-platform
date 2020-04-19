@@ -107,15 +107,18 @@ class File {
             throw FileException::noAccess($this->file);
         }
 
+        $container = array();
+
         $fs = opendir($this->file);
         while ($file = readdir($fs)) {
             if ($file === "." || $file === "..") {
                 continue;
             }
-            yield new File($this->file . "/" . $file);
+            $container[] = new File($this->file . "/" . $file);
         }
         closedir($fs);
 
+        return $container;
     }
 
     public function createNewFile() {

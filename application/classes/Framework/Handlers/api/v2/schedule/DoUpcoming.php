@@ -11,11 +11,13 @@ namespace Framework\Handlers\api\v2\schedule;
 
 use API\REST\ChannelsCollection;
 use Framework\ControllerImpl;
+use Framework\Services\HttpGet;
+use Framework\Services\JsonResponse;
 use Tools\Common;
-use Tools\Optional\Option;
 
 class DoUpcoming extends ControllerImpl {
-    public function doGet(Option $channels, ChannelsCollection $collection) {
-        return $collection->getUpcomingChange(Common::split(",", $channels->orNull()));
+    public function doGet(HttpGet $get, JsonResponse $response, ChannelsCollection $collection) {
+        $channels = $get->getParameter("channels")->getOrElseNull();
+        $response->setData($collection->getUpcomingChange(Common::split(",", $channels)));
     }
 } 

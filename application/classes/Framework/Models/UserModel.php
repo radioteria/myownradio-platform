@@ -2,16 +2,14 @@
 
 namespace Framework\Models;
 
-use Business\Fields\Password;
-use Framework\Exceptions\AccessException;
 use Framework\Exceptions\ApplicationException;
-use Framework\Exceptions\Auth\IncorrectLoginException;
-use Framework\Exceptions\Auth\IncorrectPasswordException;
-use Framework\Exceptions\Auth\NoUserByLoginException;
+use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\Stats;
-use Framework\Services\DB\Query\DeleteQuery;
+use Framework\Services\Config;
 use Framework\Services\InputValidator;
 use Objects\AccountPlan;
+use Objects\Link;
 use Objects\Payment;
 use Objects\Stream;
 use Objects\Track;
@@ -47,16 +45,17 @@ class UserModel extends Model implements SingletonInterface {
 
             $id = func_get_arg(0);
 
-            $this->user = User::getByID($id)->getOrThrow(
-                AccessException::noUser($id)
-            );
+            $this->user = User::getByID($id)->getOrElseThrow(
+                new ControllerException(sprintf("User with id '%s' not exists", $id)));
 
         } elseif (func_num_args() == 1) {
 
             $key = func_get_arg(0);
 
             $this->user = User::getByFilter("FIND_BY_KEY_PARAMS", [":key" => $key])
-                ->getOrThrow(NoUserByLoginException::class, $key);
+                ->getOrElseThrow(
+                    new ControllerException(sprintf("User with login or email '%s' not exists", $key))
+                );
 
         } elseif (func_num_args() == 2) {
 
@@ -64,11 +63,11 @@ class UserModel extends Model implements SingletonInterface {
             $password = func_get_arg(1);
 
             $this->user = User::getByFilter("FIND_BY_CREDENTIALS", [":login" => $login, ":password" => $password])
-                ->getOrThrow(IncorrectLoginException::class);
+                ->getOrElseThrow(UnauthorizedException::wrongLogin());
 
         } else {
 
-            throw ApplicationException::of("Incorrect number of arguments");
+            throw new \Exception("Incorrect number of arguments");
 
         }
 
@@ -81,7 +80,7 @@ class UserModel extends Model implements SingletonInterface {
     public function loadAccountQuote() {
         $defaultPlan = AccountPlan::getByID(1)->get();
         /** @var Payment $actualPayment */
-        $actualPayment = Payment::getByFilter("ACTUAL", [$this->getID()])->orNull();
+        $actualPayment = Payment::getByFilter("ACTUAL", [$this->getID()])->getOrElseNull();
         if ($actualPayment === null) {
             $this->planExpires = time();
             $this->planObject = $defaultPlan;
@@ -108,7 +107,7 @@ class UserModel extends Model implements SingletonInterface {
     }
 
     public function getID() {
-        return $this->user->getId();
+        return $this->user->getID();
     }
 
     public function getLogin() {
@@ -120,7 +119,7 @@ class UserModel extends Model implements SingletonInterface {
     }
 
     public function getName() {
-        return empty($this->user->getName()) ? $this->user->getLogin() : $this->user->getName();
+        return $this->user->getName();
     }
 
     public function getPassword() {
@@ -129,19 +128,19 @@ class UserModel extends Model implements SingletonInterface {
 
     public function changePassword($newPassword, $oldPassword) {
 
-        $new = new Password($newPassword);
-        $old = new Password($oldPassword);
-
-        if (!$old->matches($this->user->getPassword())) {
-            throw new IncorrectPasswordException();
+        if (!password_verify($oldPassword, $this->user->getPassword())) {
+            throw UnauthorizedException::wrongPassword();
         }
 
-        $this->changePasswordNow($new);
+        $this->changePasswordNow($newPassword);
 
     }
 
-    public function changePasswordNow(Password $password) {
-        $this->user->setPassword($password->hash())->save();
+    public function changePasswordNow($password) {
+        $validator = InputValidator::getInstance();
+        $validator->validatePassword($password);
+        $crypt = password_hash($password, PASSWORD_DEFAULT);
+        $this->user->setPassword($crypt)->save();
     }
 
     /**
@@ -151,7 +150,7 @@ class UserModel extends Model implements SingletonInterface {
      */
     public function changeAccountPlan(AccountPlan $plan, $source, $data = "") {
         $payment = new Payment();
-        $payment->setUserId($this->user->getId());
+        $payment->setUserId($this->user->getID());
         $payment->setPlanId($plan->getPlanId());
         $payment->setPaymentSource($source);
         $payment->setPaymentComment($data);
@@ -161,7 +160,7 @@ class UserModel extends Model implements SingletonInterface {
 
     public function getDisplayName() {
 
-        return $this->getName() ?: $this->getLogin();
+        return empty($this->getName()) ? $this->getLogin() : $this->getName();
 
     }
 
@@ -175,6 +174,7 @@ class UserModel extends Model implements SingletonInterface {
         $this->user->save();
 
     }
+
 
     public function removeAvatar() {
 
@@ -199,7 +199,7 @@ class UserModel extends Model implements SingletonInterface {
         $folders = Folders::getInstance();
         $validator = InputValidator::getInstance();
         $validator->validateImageMIME($file["tmp_name"]);
-        $random = Common::generateUniqueId();
+        $random = Common::generateUniqueID();
         $this->removeAvatar();
         $extension = pathinfo($file["name"], PATHINFO_EXTENSION);
         $newImageFile = sprintf("avatar%05d_%s.%s", $this->userID, $random, strtolower($extension));
@@ -223,11 +223,11 @@ class UserModel extends Model implements SingletonInterface {
 
     /**
      * @param $password
-     * @throws AccessException
+     * @throws UnauthorizedException
      */
     public function checkPassword($password) {
         if (!password_verify($password, $this->user->getPassword())) {
-            throw new IncorrectPasswordException();
+            throw UnauthorizedException::wrongPassword();
         }
     }
 
@@ -237,37 +237,42 @@ class UserModel extends Model implements SingletonInterface {
      */
     public function delete() {
 
-        /** @var Stream[] $streams */
-        $streams = Stream::getListByFilter("uid", [$this->user->getId()]);
+        /* Delete user's streams */
+        $streams = Stream::getListByFilter("uid", [$this->user->getID()]);
 
         foreach ($streams as $stream) {
-            (new DeleteQuery("r_link"))
-                ->where("stream_id", $stream->getID())->update();
+            $links = Link::getListByFilter("stream_id", [$stream->getID()]);
+            foreach ($links as $link) {
+                $link->delete();
+            }
             $stream->delete();
         }
 
-        /** @var Track[] $tracks */
-        $tracks = Track::getListByFilter("uid", [$this->user->getId()])
-            ->wrap(TrackModel::className());
+        /* Delete user's tracks */
+        $tracks = Track::getListByFilter("uid", [$this->user->getID()]);
 
-        foreach ($tracks as $track) { $track->delete(); }
+        foreach ($tracks as $track) {
+            $model = new TrackModel($track->getID());
+            $model->delete();
+        }
 
+        /* Delete account object */
         $this->user->delete();
 
     }
 
-    /**
-     *
-     */
     public function touchLastLoginDate() {
         $this->user->setLastVisitDate(time())->save();
     }
 
-    /**
-     * @return mixed
-     */
     public function toRestFormat() {
         return Users::getInstance()->getUserByID($this->getID(), true);
     }
 
+    /**
+     * @return User
+     */
+    public function getUserObject() {
+        return $this->user;
+    }
 }

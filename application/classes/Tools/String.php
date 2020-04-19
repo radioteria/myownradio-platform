@@ -9,12 +9,7 @@
 namespace Tools;
 
 
-use Framework\Object;
-use Tools\Functional\Sequence;
-
 class String implements \Countable {
-
-    use Object;
 
     private $string;
 
@@ -102,10 +97,6 @@ class String implements \Countable {
             $result[] = new self($part);
         }
         return $result;
-    }
-
-    function explode() {
-        return new Sequence(str_split($this->string));
     }
 
     function splitRegexp($regexp) {

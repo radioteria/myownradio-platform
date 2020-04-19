@@ -233,7 +233,7 @@
             loginByFacebook: function (authResponse) {
                 var action = $http({
                     method: 'POST',
-                    url: "/api/v2/user/social/facebook",
+                    url: "/api/v2/user/fbLogin",
                     data: {
                         token: authResponse.accessToken
                     }

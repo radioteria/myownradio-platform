@@ -12,7 +12,6 @@ namespace Framework\Services;
 use Framework\Injector\Injectable;
 use Framework\Injector\Injector;
 use Framework\Router;
-use Framework\Services\Http\HttpRouteMap;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -77,7 +76,11 @@ class SubRouter implements SingletonInterface, Injectable {
                 array_shift($matches);
                 if (count($data["keys"]) == count($matches)) {
                     $result = array_combine($data["keys"], $matches);
-                    HttpRouteMap::getInstance()->setMapData($result);
+                    RouteParams::setData($result);
+                } else {
+                    error_log(json_encode($data["keys"]));
+                    error_log(json_encode($matches));
+                    error_log("");
                 }
                 if (is_string($data["action"])) {
                     Router::getInstance()->callRoute($data["action"]);

@@ -49,30 +49,4 @@ class Notifier implements SingletonInterface, Injectable {
         ]);
     }
 
-    /*
-        event classes: user_id, track_id, stream_id
-        user_id: info update, messages
-        track_id: track events
-        stream_id: stream_events
-    */
-
-    public function shout($keys, $kind, $data) {
-        $this->notify($keys, [
-            "kind" => $kind,
-            "event" => $data
-        ]);
-    }
-
-    /**
-     * @param array $args
-     * @return string
-     */
-    public static function serialize(array $args) {
-        $acc = [];
-        foreach ($args as $key => $value) {
-            $acc[] = $key . "_" . $value;
-        }
-        return implode(",", $acc);
-    }
-
 }

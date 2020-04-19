@@ -9,6 +9,7 @@
 namespace Framework\Services;
 
 use Framework\Injector\Injectable;
+use Framework\Injector\Injector;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -20,13 +21,13 @@ class CurrentRoute implements Injectable, SingletonInterface {
 
     function __construct() {
 
-        $httpGet = Http\HttpGet::getInstance();
+        $httpGet = HttpGet::getInstance();
 
-        $this->legacy = preg_replace('/(\.(html|php)$)|(\/$)/', '', $httpGet->get("route")->getOrElse("index"));
+        $this->legacy = preg_replace('/(\.(html|php)$)|(\/$)/', '', $httpGet->getParameter("route")->getOrElse("index"));
         $route_array = explode("/", $this->legacy);
         $count = count($route_array);
         $route_array[$count - 1] = "Do" . ucfirst($route_array[$count - 1]);
-        $this->route = str_replace("/", "\\", CONTROLLERS_ROOT . implode("/", $route_array));
+        $this->route = implode("/", $route_array);
 
     }
 

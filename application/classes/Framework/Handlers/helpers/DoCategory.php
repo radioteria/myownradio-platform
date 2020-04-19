@@ -11,25 +11,36 @@ namespace Framework\Handlers\helpers;
 
 use Framework\Controller;
 use Framework\Defaults;
+use Framework\Services\HttpGet;
 use Framework\Template;
-use Framework\View\Errors\View404Exception;
 use Objects\Category;
 
 class DoCategory implements Controller {
-    public function doGet($category) {
+    public function doGet(HttpGet $get) {
 
-        Category::getByFilter("key", [":key" => $category])
-            ->orThrow(View404Exception::class);
+        $param = $get->getParameter("category");
 
-        
+        $param->then(function ($category) {
+
+            Category::getByFilter("key", ["key:" => $category])->otherwise(function () {
+                http_response_code(404);
+            });
+
+        });
+
+        $param->otherwise(function () {
+            http_response_code(404);
+        });
+
+
         $description = "Create your own free web radio station in a minutes";
         $keywords = "music, radio, create, radio station, web radio, listen, free, own";
 
         $metadata = new Template("frontend/meta.default.tmpl");
         $metadata->putObject([
-            "title" => Defaults::SITE_TITLE,
-            "description" => $description,
-            "keywords" => $keywords
+            "title"         => Defaults::SITE_TITLE,
+            "description"   => $description,
+            "keywords"      => $keywords
         ]);
 
         $template = new Template("frontend/index.tmpl");

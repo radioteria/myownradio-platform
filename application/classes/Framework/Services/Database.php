@@ -6,12 +6,12 @@ use Framework\Exceptions\ApplicationException;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\DatabaseException;
 use Framework\Injector\Injectable;
-use Framework\Preferences;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\DBQueryPool;
+use Framework\Services\DB\DBQueryWrapper;
 use Framework\Services\DB\Query\QueryBuilder;
 use PDO;
-use Tools\Optional\Option;
+use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -27,7 +27,11 @@ class Database implements SingletonInterface, Injectable {
 
     public function __construct() {
 
-        $this->settings = Preferences::getSection("server");
+        $this->settings = Config::getInstance()->getSection('database')->getOrElse([
+            "db_login" => "root",
+            "db_password" => "",
+            "db_dsn" => "mysql:host=localhost;dbname=myownradio"
+        ]);
 
     }
 
@@ -38,12 +42,13 @@ class Database implements SingletonInterface, Injectable {
     public function connect() {
 
         try {
-            $this->pdo = new PDO($this->settings['db.dsn'],
-                $this->settings['db.login'],
-                $this->settings['db.password'], [
+            $this->pdo = new PDO($this->settings['db_dsn'],
+                $this->settings['db_login'],
+                $this->settings['db_password'], [
                     PDO::ATTR_EMULATE_PREPARES => false,
                     PDO::ATTR_PERSISTENT => true,
-                    PDO::ATTR_AUTOCOMMIT => true
+                    PDO::ATTR_AUTOCOMMIT => true,
+		    PDO::MYSQL_ATTR_INIT_COMMAND => "set names 'utf8';"
                 ]);
         } catch (\PDOException $e) {
             throw ApplicationException::of($e->getMessage(), $e);
@@ -242,6 +247,10 @@ class Database implements SingletonInterface, Injectable {
 
         $queryString = $this->createQueryString($query, $params);
 
+	error_log('Time');
+	error_log(\Tools\System::time());
+	error_log($queryString);
+
         if ($cached == true && isset(self::$cache[$queryString])) {
             $db_result = self::$cache[$queryString];
         } else {
@@ -297,7 +306,7 @@ class Database implements SingletonInterface, Injectable {
      * @param string $query
      * @param array $params
      * @param Callable $callback
-     * @return Option
+     * @return Optional
      * @throws ControllerException
      */
     public function fetchOneRow($query, array $params = null, $callback = null) {
@@ -310,7 +319,7 @@ class Database implements SingletonInterface, Injectable {
             $row = call_user_func($callback, $row);
         }
 
-        return $row === false ? Option::None() : Option::Some($row);
+        return Optional::ofDeceptive($row);
 
     }
 
@@ -318,7 +327,7 @@ class Database implements SingletonInterface, Injectable {
      * @param string $query
      * @param array $params
      * @param int $column
-     * @return Option
+     * @return Optional
      * @throws ControllerException
      */
     public function fetchOneColumn($query, array $params = null, $column = 0) {
@@ -331,7 +340,7 @@ class Database implements SingletonInterface, Injectable {
             $row = intval($row);
         }
 
-        return $row === false ? Option::None() : Option::Some($row);
+        return Optional::ofDeceptive($row);
 
     }
 
@@ -340,7 +349,7 @@ class Database implements SingletonInterface, Injectable {
      * @param array $params
      * @param string $class
      * @param array|null $args
-     * @return Option
+     * @return Optional
      * @throws ControllerException
      */
     public function fetchOneObject($query, array $params = null, $class, array $args = []) {
@@ -349,7 +358,7 @@ class Database implements SingletonInterface, Injectable {
 
         $object = $resource->fetchObject($class, $args);
 
-        return $object === false ? Option::None() : Option::Some($object);
+        return Optional::ofDeceptive($object);
 
     }
 
@@ -415,15 +424,6 @@ class Database implements SingletonInterface, Injectable {
 
         return $this->pdo->quote($var, PDO::PARAM_STR);
 
-    }
-
-    /**
-     * @param $queryPart
-     * @param null $array
-     * @return int
-     */
-    public function fetchRowCount($queryPart, $array = null) {
-        return $this->fetchOneColumn("SELECT COUNT(*) ". $queryPart, $array)->orZero();
     }
 
 }

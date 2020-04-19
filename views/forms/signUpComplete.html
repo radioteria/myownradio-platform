@@ -24,16 +24,16 @@
                                    name="login"
                                    ng-model="signup.login"
                                    ng-required="true"
-                                   ng-minlength="config.validate.user.login.min"
-                                   ng-maxlength="config.validate.user.login.max"
-                                   ng-pattern="config.validator.user.login.pattern"
+                                   ng-minlength="3"
+                                   ng-maxlength="32"
+                                   ng-pattern="/^[0-9a-z\\_]+$/"
                                    ensure-unique="login"
                                    autocomplete="off"
                                    ng-focus="true"
                                    autofocus="true"
                                     />
 
-                            <div class="validation" ng-show="signup_form.login.$focused && signup_form.login.$dirty">
+                            <div class="validation" ng-show="signup_form.login.$focused && !signup_form.login.$pristine">
                                 <div ng-if="signup_form.login.$error.required">
                                     <translate>FR_LOGIN_MUST_BE_FILLED</translate>
                                 </div>
@@ -60,14 +60,14 @@
                                    id="name"
                                    name="name"
                                    ng-model="signup.name"
-                                   ng-maxlength="config.validate.user.name.max"
+                                   ng-maxlength="32"
                                    ng-focus="true"
                                    autocomplete="off"
                                     />
 
                             <div class="validation" ng-show="signup_form.name.$focused && !signup_form.name.$pristine">
                                 <div ng-if="signup_form.name.$error.maxlength">
-                                    <translate args="[ 0, config.validate.user.name.max ]">VALIDATOR_USER_NAME_LENGTH</translate>
+                                    <translate args="[32]">VALIDATOR_USER_NAME_LENGTH</translate>
                                 </div>
                             </div>
                             <div class="padding"></div>
@@ -98,8 +98,8 @@
                                    name="password1"
                                    ng-model="signup.password"
                                    ng-required="true"
-                                   ng-minlength="config.validate.user.password.min"
-                                   ng-maxlength="config.validate.user.password.max"
+                                   ng-minlength="6"
+                                   ng-maxlength="32"
                                    ng-focus="true"
                                     />
 
@@ -108,7 +108,7 @@
                                     <translate>FR_PASSWORD_MUST_BE_FILLED</translate>
                                 </div>
                                 <div ng-if="signup_form.password1.$error.minlength || signup_form.password1.$error.maxlength">
-                                    <translate args="[ config.validate.user.password.min, config.validate.user.password.max ]">VALIDATOR_PASSWORD_LENGTH</translate>
+                                    <translate args="[6, 32]">VALIDATOR_PASSWORD_LENGTH</translate>
                                 </div>
                             </div>
                         </td>
@@ -120,13 +120,8 @@
                             </label>
                         </td>
                         <td>
-                            <input type="password"
-                                   id="password2"
-                                   name="password2"
-                                   ng-model="check"
-                                   compare-to="signup.password"
-                                   ng-required="true"
-                                   ng-focus="true" />
+                            <input type="password" id="password2" name="password2" ng-model="check" compare-to="signup.password"
+                                   ng-required="true" ng-focus="true" />
 
                             <div class="validation" ng-show="signup_form.password2.$focused && !signup_form.password2.$pristine">
                                 <div ng-if="signup_form.password2.$error.compareTo">

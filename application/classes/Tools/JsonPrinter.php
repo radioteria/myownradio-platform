@@ -16,7 +16,7 @@ class JsonPrinter implements SingletonInterface, Injectable {
     use Singleton;
 
     public function printJSON($data) {
-        if ($data instanceof \Iterator || (is_array($data) && $this->isIndexedArray($data))) {
+        if (is_array($data) && $this->isIndexedArray($data)) {
             echo '[';
             $i = 0;
             foreach ($data as &$item) {

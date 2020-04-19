@@ -12,44 +12,48 @@ namespace Framework\Handlers\api\v2;
 use Framework\Controller;
 use Framework\Models\AuthUserModel;
 use Framework\Models\UsersModel;
-use Framework\Services\Http\HttpPost;
-use Framework\Services\Http\HttpPut;
+use Framework\Services\HttpPost;
+use Framework\Services\HttpPut;
+use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
 use REST\Streams;
 use REST\Users;
-use Tools\Optional\Mapper;
 
 class DoSelf implements Controller {
 
-    public function doGet(JsonResponse $response, AuthUserModel $userModel, Streams $streams, Users $users) {
+    public function doGet(AuthUserModel $userModel, JsonResponse $response, Streams $streams, Users $users) {
 
-        return array(
-            'user' => $users->getUserByID($userModel->getID(), true),
-            'streams' => $streams->getByUser($userModel->getID()),
+        $response->setData([
+            'user'      => $users->getUserByID($userModel->getID(), true),
+            'streams'   => $streams->getByUser($userModel->getID()),
             'client_id' => $userModel->getClientId()
-        );
-
+        ]);
+        
     }
 
-    public function doPut(JsonResponse $response, HttpPut $put, UsersModel $users) {
+    public function doPut(HttpPut $put, UsersModel $users, JsonResponse $response) {
 
-        $login = $put->getOrError("login");
-        $password = $put->getOrError("password");
-        $remember = $put->get("remember")->map(Mapper::toBoolean())->orFalse();
+        $login = $put->getRequired("login");
+        $password = $put->getRequired("password");
+        $remember = boolval($put->getParameter("remember")->getOrElseFalse());
 
         $users->logout();
-        $users->authorizeByLoginPassword($login, $password, $remember);
+        $users->authorizeByLoginPassword($login, $password);
 
-        return AuthUserModel::getInstance()->getToken();
+        $token = AuthUserModel::getInstance()->getToken();
+        $response->setData($token);
 
     }
 
-    public function doPost(JsonResponse $response, HttpPost $post, AuthUserModel $user) {
+    public function doPost(HttpPost $post, AuthUserModel $user, JsonResponse $response, InputValidator $validator) {
 
-        $name = $post->get("name")->orEmpty();
-        $info = $post->get("info")->orEmpty();
-        $permalink = $post->get("permalink")->orNull();
-        $countryId = $post->get("country_id")->orNull();
+        $name       = $post->getRequired("name");
+        $info       = $post->getParameter("info")->getOrElseEmpty();
+        $permalink  = $post->getParameter("permalink")->getOrElseNull();
+        $countryId  = $post->getParameter("country_id")->getOrElseNull();
+
+        $validator->validateUserPermalink($permalink, $user->getID());
+        $validator->validateCountryID($countryId);
 
         $user->edit($name, $info, $permalink, $countryId);
 

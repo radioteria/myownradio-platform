@@ -10,23 +10,23 @@ namespace Framework\Handlers\api\v2\track;
 
 use Framework\Controller;
 use Framework\Models\TracksModel;
-use Framework\Services\Http\HttpFile;
-use Framework\Services\Http\HttpPost;
-use Tools\Optional\Mapper;
+use Framework\Services\HttpFiles;
+use Framework\Services\HttpPost;
+use Framework\Services\JsonResponse;
 
 class DoUpload implements Controller {
 
-    public function doPost(HttpFile $file, HttpPost $post, TracksModel $model) {
+    public function doPost(HttpFiles $file, HttpPost $post, TracksModel $model, JsonResponse $response) {
 
         ignore_user_abort(true);
 
-        $streamId = $post->get("stream_id");
-        $upNext = $post->get("up_next")->map(Mapper::toBoolean())->orFalse();
+        $streamID = $post->getParameter("stream_id");
+        $upNext = boolval($post->getParameter("up_next")->getOrElseFalse());
         $skipCopies = true;
 
         $uploaded = [];
 
-        $file->each(function ($file) use ($streamId, $model, $upNext, &$uploaded, &$skipCopies) {
+        $file->each(function ($file) use ($streamID, $model, $upNext, &$uploaded, &$skipCopies) {
             if (is_array($file["name"])) {
                 for ($i = 0; $i < count($file["name"]); $i++) {
                     $tmp = [
@@ -36,14 +36,16 @@ class DoUpload implements Controller {
                         "error" => $file["error"][$i],
                         "size" => $file["size"][$i]
                     ];
-                    $uploaded[] = $model->upload($tmp, $streamId, $upNext, $skipCopies);
+                    $uploaded[] = $model->upload($tmp, $streamID, $upNext, $skipCopies);
                 }
             } else {
-                $uploaded[] = $model->upload($file, $streamId, $upNext, $skipCopies);
+                $uploaded[] = $model->upload($file, $streamID, $upNext, $skipCopies);
             }
         });
 
-        return ["tracks" => $uploaded];
+        $response->setData([
+            "tracks" => $uploaded
+        ]);
 
     }
 

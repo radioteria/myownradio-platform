@@ -11,15 +11,17 @@ namespace Framework\Handlers\api\v3;
 
 use Framework\ControllerImpl;
 use Framework\Models\PaymentModel;
-use Framework\Services\Http\HttpPost;
+use Framework\Services\HttpPost;
 use Framework\View\Errors\View400Exception;
 use LiqPay;
 
 class DoPayment extends ControllerImpl {
     public function doPost(HttpPost $post) {
 
-        $data       = $post->get("data")->getOrThrow(View400Exception::class);
-        $signature  = $post->get("signature")->getOrThrow(View400Exception::class);
+        $data = $post->getParameter("data")
+            ->getOrElseThrow(View400Exception::getClass());
+        $signature = $post->getParameter("signature")
+            ->getOrElseThrow(View400Exception::getClass());
 
         // Check signature
         if (base64_encode(sha1(LiqPay::$private_key . $data . LiqPay::$private_key, 1)) !== $signature) {

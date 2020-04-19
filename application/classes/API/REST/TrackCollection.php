@@ -13,18 +13,16 @@ use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
+use Framework\Models\PlaylistModel;
+use Framework\Models\StreamModel;
+use Framework\Services\Database;
 use Framework\Services\DB\Query\SelectQuery;
-use Framework\Services\Locale\I18n;
+use Objects\Stream;
 use Objects\StreamStats;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 use Tools\System;
 
-/**
- * Class TrackCollection
- * @package API\REST
- * @localized 22.05.2015
- */
 class TrackCollection implements Injectable, SingletonInterface {
     use Singleton;
 
@@ -96,7 +94,7 @@ class TrackCollection implements Injectable, SingletonInterface {
         $query->select(":micro AS time");
         $query->select("MOD(:micro - (r_streams.started - r_streams.started_from), r_static_stream_vars.tracks_duration) AS position");
 
-        return $query->fetchOneRow()->getOrThrow(ControllerException::of("ERROR_NOTHING_PLAYING"));
+        return $query->fetchOneRow()->getOrElseThrow(ControllerException::of("NO_TRACK_PLAYING"));
 
     }
 
@@ -117,20 +115,10 @@ class TrackCollection implements Injectable, SingletonInterface {
 
     }
 
-    public function getPlayingOnAllChannels() {
-        
-        $query = $this->getSchedulePrefix();
-
-        $query->select("r_static_stream_vars.listeners_count");
-        $query->select("r_static_stream_vars.bookmarks_count");
-
-        return $query->fetchAll("sid");
-
-    }
-
     /**
      * @param int $offset
      * @param int $limit
+     * @internal UserModel $self
      * @return array
      */
     public function getTracksFromLibrary($offset = 0, $limit = self::TRACKS_PER_REQUEST_MAX) {
@@ -153,6 +141,7 @@ class TrackCollection implements Injectable, SingletonInterface {
      * @param $channel_id
      * @param int $offset
      * @param int $limit
+     * @internal UserModel $self
      * @return array
      */
     public function getTracksFromChannel($channel_id, $offset = 0, $limit = self::TRACKS_PER_REQUEST_MAX) {
@@ -202,7 +191,7 @@ class TrackCollection implements Injectable, SingletonInterface {
 
         $query->where("r_tracks.tid", $track_id);
 
-        return $query->fetchOneRow()->getOrThrow(ControllerException::noTrack($track_id));
+        return $query->fetchOneRow()->getOrElseThrow(ControllerException::noTrack($track_id));
 
     }
 
@@ -223,16 +212,17 @@ class TrackCollection implements Injectable, SingletonInterface {
 
         /** @var StreamStats $stream_object */
         $stream_object = StreamStats::getByID($stream_id)
-            ->getOrThrow(ControllerException::noStream($stream_id));
+            ->getOrElseThrow(ControllerException::noStream($stream_id));
 
         if ($stream_object->getTracksDuration() == 0 || $stream_object->getStatus() == 0) {
-            throw ControllerException::of(I18n::tr("ERROR_STREAM_NOTHING_PLAYING"));
+            throw new ControllerException("There is no tracks here");
         }
 
         $items = [];
 
         do {
             $left  = System::mod($left_range, $stream_object->getTracksDuration());
+            //$delta = $left_range - $left;
             $items = array_merge($items, $this->getTracksFromChannelByTimeRange($stream_id, $left, $length, $left_range - $left));
             if (count($items) == 0) {
                 return $items;

@@ -8,7 +8,6 @@
 
 namespace Objects;
 
-use Business\Validator\Entity\UserValidator;
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 use REST\Users;
@@ -23,23 +22,35 @@ use Tools\Folders;
  * @do_FIND_BY_KEY_PARAMS login = :key OR mail = :key
  * @do_FIND_BY_CREDENTIALS (login = :login) AND (password = :password)
  * @do_FIND_BY_KEY (uid = :key) OR (permalink = :key AND permalink IS NOT NULL)
- * @do_FIND_BY_EMAIL mail = ?
  */
 class User extends ActiveRecordObject implements ActiveRecord {
 
+//    const INACTIVE_USER_RIGHT = 0;
+//    const ACTIVE_USER_RIGHT = 1;
+//    const BANNED_USER_RIGHT = 2;
+//    const DELETED_USER_RIGHT = 3;
+    const SUPER_USER_RIGHT = 9;
+
     protected
-        $uid = null,
-        $mail = "",
-        $login = null,
-        $password = null,
-        $name = null,
-        $info = null,
-        $rights = null,
-        $registration_date = null,
-        $last_visit_date = null,
-        $permalink = null,
-        $avatar = null,
-        $country_id = null;
+        $uid                = null,
+        $mail               = "",
+        $login              = null,
+        $password           = null,
+        $name               = null,
+        $info               = null,
+        $rights             = null,
+        $registration_date  = null,
+        $last_visit_date    = null,
+        $permalink          = "",
+        $avatar             = null,
+        $country_id         = null;
+
+    /**
+     * @return bool
+     */
+    public function isSuperUser() {
+        return $this->getRights() == self::SUPER_USER_RIGHT;
+    }
 
     /**
      * @return mixed
@@ -114,7 +125,7 @@ class User extends ActiveRecordObject implements ActiveRecord {
     /**
      * @return mixed
      */
-    public function getId() {
+    public function getID() {
         return $this->uid;
     }
 
@@ -219,7 +230,7 @@ class User extends ActiveRecordObject implements ActiveRecord {
     }
 
     public function getKey() {
-        return $this->permalink ?: $this->uid;
+        return isset($this->permalink) ? $this->permalink : $this->uid;
     }
 
     public function getAvatarUrl() {
@@ -246,11 +257,7 @@ class User extends ActiveRecordObject implements ActiveRecord {
      * @return mixed
      */
     public function toRestFormat() {
-        return Users::getInstance()->getUserByID($this->getId());
-    }
-
-    public function beforeUpdate() {
-        UserValidator::validate($this);
+        return Users::getInstance()->getUserByID($this->getID());
     }
 
 }

@@ -8,8 +8,6 @@
 
 namespace Objects;
 
-use Business\Validator\Entity\StreamValidator;
-use Business\Validator\ValidatorException;
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 use Tools\Folders;
@@ -31,17 +29,25 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
         $sid,
         $uid,
         $name,
-        $permalink = null,
+        $permalink,
         $info,
         $status = 0,
-        $started = null,
-        $started_from = 0,
+        $started,
+        $started_from,
         $access = "PUBLIC",
         $category,
         $hashtags,
         $cover,
         $cover_background,
         $created;
+
+    /**
+     * @param User $user
+     * @return bool
+     */
+    public function isAccessibleTo(User $user) {
+        return $user->isSuperUser() || $user->getID() == $this->getUserID();
+    }
 
     /**
      * @param $access
@@ -257,15 +263,19 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
     }
 
     /**
+     * @return User
+     */
+//    public function getUser() {
+//        return User::getByID($this->getUserID())->get();
+//    }
+
+    /**
      * @return null|string
      */
     public function getCoverUrl() {
         return Folders::getInstance()->genStreamCoverUrl($this->cover);
     }
 
-    /**
-     * @return string
-     */
     public function getStreamUrl() {
         return Folders::getInstance()->genStreamUrl($this->sid);
     }
@@ -282,13 +292,6 @@ class Stream extends ActiveRecordObject implements ActiveRecord {
      */
     public function getCoverBackground() {
         return $this->cover_background;
-    }
-
-    /**
-     * @throws ValidatorException
-     */
-    function beforeUpdate() {
-        StreamValidator::validate($this);
     }
 
 

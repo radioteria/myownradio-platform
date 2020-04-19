@@ -7,7 +7,7 @@
  */
 return [
     "application_title" => "MyOwnRadio - your own free web radio station",
-    "application_content" => "/media/www/myownradio.biz/",
+    "application_content" => "/var/apps/myownradio.biz/",
     "api" => [
         "streams_per_request_max" => 50,
         "tracks_per_request_max" => 50
@@ -20,4 +20,3 @@ return [
         "track_preview_command" => "ffmpeg -v quiet -ss %time% -i %path% -filter 'afade=t=in:ss=0:d=2' -vn -acodec libmp3lame -ac 2 -ar 44100 -ab 128k -f mp3 -"
     ]
 ];
-

@@ -76,6 +76,7 @@
                         }
 
                         $rootScope.player.isBuffering = false;
+                        $rootScope.player.nowPlaying = null;
 
                     },
                     switch: function () {

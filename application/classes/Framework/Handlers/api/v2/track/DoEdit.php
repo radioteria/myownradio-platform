@@ -13,29 +13,28 @@ use Framework\Controller;
 use Framework\Models\AuthUserModel;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\UpdateQuery;
-use Framework\Services\Http\HttpPost;
+use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
-use Tools\Optional\Mapper;
 
 class DoEdit implements Controller {
     /** @var UpdateQuery $query */
     private $query;
-    public function doPost(HttpPost $post, JsonResponse $response, DBQuery $dbq,
-                           AuthUserModel $user, InputValidator $validator) {
+    public function doPost(HttpPost $post, JsonResponse $response, DBQuery $dbq, AuthUserModel $user,
+                           InputValidator $validator) {
 
-        $id         = $post->getOrError("track_id");
+        $id         = $post->getRequired("track_id");
 
-        $artist     = $post->get("artist");
-        $title      = $post->get("title");
-        $album      = $post->get("album");
-        $number     = $post->get("track_number");
-        $genre      = $post->get("genre");
-        $date       = $post->get("date");
-        $color      = $post->get("color_id");
-        $cue        = $post->get("cue");
-        $buy        = $post->get("buy");
-        $sharable   = $post->get("can_be_shared")->map(Mapper::toBoolean());
+        $artist     = $post->getParameter("artist");
+        $title      = $post->getParameter("title");
+        $album      = $post->getParameter("album");
+        $number     = $post->getParameter("track_number");
+        $genre      = $post->getParameter("genre");
+        $date       = $post->getParameter("date");
+        $color      = $post->getParameter("color_id");
+        $cue        = $post->getParameter("cue");
+        $buy        = $post->getParameter("buy");
+        $sharable   = $post->getParameter("can_be_shared");
 
         $validator->validateTracksList($id);
 
@@ -52,7 +51,7 @@ class DoEdit implements Controller {
         $color      ->then(function ($color)    { $this->query->set("color", $color); });
         $cue        ->then(function ($cue)      { $this->query->set("cue", $cue); });
         $buy        ->then(function ($buy)      { $this->query->set("buy", $buy); });
-        $sharable   ->then(function ($share)    { $this->query->set("can_be_shared", $share); });
+        $sharable   ->then(function ($share)    { $this->query->set("can_be_shared", (bool) $share); });
 
         $this->query->update();
 

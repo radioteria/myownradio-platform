@@ -5,7 +5,6 @@
  * Date: 20.12.14
  * Time: 10:07
  */
-use Tools\Optional\Option;
 
 /**
  * @param string $string
@@ -57,63 +56,4 @@ function underscoreToCamelCase($input) {
         $part = ucfirst($part);
     }
     return implode("", $parts);
-}
-
-/**
- * @param $array
- * @return Option
- */
-function array_first($array) {
-    $value = array_shift($array);
-    if ($value) {
-        return Option::Some($value);
-    }
-    return Option::None();
-}
-
-/**
- * @param $func
- * @param ...$arg1
- * @return callable
- */
-function partial($func, ...$arg1) {
-    return function(...$arg2) use (&$func, &$arg1) {
-        return $func(...$arg1, ...$arg2);
-    };
-}
-
-/**
- * @param $exp
- * @return mixed
- */
-function call_or_get($exp) {
-    return is_callable($exp) ? $exp() : $exp;
-}
-
-/**
- * @param ...$func
- * @return mixed|null
- */
-function any(...$func) {
-    foreach ($func as $f) {
-        $result = call_or_get($f);
-        if ($result !== null && $result !== false) {
-            return $result;
-        }
-    }
-    return null;
-}
-
-/**
- * @param ...$args
- * @return bool
- */
-function eq(...$args) {
-    $first = array_shift($args);
-    foreach ($args as $arg) {
-        if ($arg !== $first) {
-            return false;
-        }
-    }
-    return true;
 }

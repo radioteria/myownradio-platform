@@ -10,18 +10,21 @@ namespace Framework\Handlers\content;
 
 
 use Framework\Controller;
+use Framework\Services\HttpGet;
 use Framework\View\Errors\View404Exception;
 use Tools\File;
 use Tools\Folders;
-use Tools\Optional\Option;
 
 class DoGetUserAvatar implements Controller {
 
-    public function doGet($fn, Option $size, Folders $folders) {
+    public function doGet(HttpGet $get, Folders $folders) {
+
+        $fn = $get->getParameter("fn")->getOrElseThrow(new View404Exception());
+        $size = $get->getParameter("size")->getOrElseNull();
 
         $path = new File($folders->genAvatarPath($fn));
 
-        if (!$path->exists()) {
+        if (! $path->exists()) {
             throw new View404Exception();
         }
 
@@ -40,11 +43,12 @@ class DoGetUserAvatar implements Controller {
         header("Content-Type: " . $path->getContentType());
         header(sprintf('Content-Disposition: filename="%s"', $path->filename()));
 
-        if ($size->isEmpty()) {
+        if ($size === null) {
 
             $path->show();
 
         } else {
+
 
             $cache = $folders->generateCacheFile($_GET, $path);
 
@@ -60,7 +64,7 @@ class DoGetUserAvatar implements Controller {
 
                 $image = new \acResizeImage($path->path());
                 $image->cropSquare();
-                $image->resize($size->get());
+                $image->resize($size);
                 $image->interlace();
 
                 $image->output($path->extension(), 80);

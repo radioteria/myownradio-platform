@@ -9,7 +9,8 @@
 namespace Framework\Services\Locale;
 
 
-use Tools\Common;
+use Tools\Singleton;
+use Tools\SingletonInterface;
 
 class I18n {
 
@@ -38,7 +39,7 @@ class I18n {
      */
     public function get($key, array $args = null) {
         if (isset($this->data[$key])) {
-            return Common::deepTemplate($this->data[$key], $args);
+            return $this->quick($this->data[$key], $args);
         } else {
             return $key;
         }
@@ -58,6 +59,22 @@ class I18n {
      */
     public static function tr($key, array $args = null) {
         return L10n::getInstance()->get($key, $args);
+    }
+
+    /**
+     * @param string $pattern
+     * @param array $args
+     * @return mixed
+     */
+    private function quick($pattern, array $args = null) {
+        return preg_replace_callback('~(%[a-z0-9\_]+%)~', function ($match) use ($args) {
+            $key = trim($match[1], "%");
+            if (isset($args[$key])) {
+                return $args[$key];
+            } else {
+                return "";
+            }
+        }, $pattern);
     }
 
 }

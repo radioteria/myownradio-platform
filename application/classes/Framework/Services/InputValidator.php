@@ -50,7 +50,7 @@ class InputValidator implements Injectable {
         if (is_null($countryID)) return;
 
         Country::getByID($countryID)
-            ->getOrThrow(new ControllerException(I18n::tr("VALIDATOR_NO_COUNTRY", [$countryID])));
+            ->getOrElseThrow(new ControllerException(I18n::tr("VALIDATOR_NO_COUNTRY", [$countryID])));
     }
 
     /**
@@ -64,6 +64,22 @@ class InputValidator implements Injectable {
             throw new ControllerException(I18n::tr("VALIDATOR_PASSWORD_LENGTH", [
                 self::PASSWORD_MIN_LENGTH, self::PASSWORD_MAX_LENGTH
             ]));
+        }
+
+    }
+
+    /**
+     * @param string $email
+     * @throws ControllerException
+     */
+    public function validateEmail($email) {
+
+        if (!preg_match(self::EMAIL_REGEXP_PATTERN, $email)) {
+            throw new ControllerException(I18n::tr("VALIDATOR_EMAIL_FORMAT"));
+        }
+
+        if (count((new SelectQuery("r_users"))->where("mail", [$email]))) {
+            throw new ControllerException(I18n::tr("VALIDATOR_EMAIL_UNAVAILABLE"));
         }
 
     }
@@ -244,7 +260,7 @@ class InputValidator implements Injectable {
      */
     public function validateStreamCategory($category) {
 
-        Category::getByID($category)->getOrThrow(
+        Category::getByID($category)->justThrow(
             new ControllerException(I18n::tr("VALIDATOR_INVALID_CATEGORY", [$category]))
         );
 
@@ -276,7 +292,7 @@ class InputValidator implements Injectable {
 
     public function validateTrackColor($color) {
         Color::getByID($color)
-            ->getOrThrow(ControllerException::tr("VALIDATOR_TRACK_COLOR", [$color]));
+            ->justThrow(new ControllerException(I18n::tr("VALIDATOR_TRACK_COLOR", [$color])));
     }
 
 }

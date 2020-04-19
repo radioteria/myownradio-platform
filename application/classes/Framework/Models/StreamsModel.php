@@ -9,24 +9,19 @@
 namespace Framework\Models;
 
 
-use Framework\Events\ChannelFavPublisher;
 use Framework\Exceptions\ControllerException;
 use Framework\Injector\Injectable;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\InsertQuery;
+use Framework\Services\InputValidator;
 use Objects\Stream;
 use Tools\Common;
 use Tools\Folders;
-use Tools\Optional\Option;
+use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-/**
- * Class StreamsModel
- * @package Framework\Models
- * @localized 21.05.2015
- */
 class StreamsModel implements Injectable, SingletonInterface {
 
     use Singleton;
@@ -44,24 +39,20 @@ class StreamsModel implements Injectable, SingletonInterface {
     }
 
 
-    /**
-     * @param $name
-     * @param $info
-     * @param $hashtags
-     * @param $category
-     * @param Option $permalink
-     * @param $access
-     * @return int
-     * @throws \Framework\Exceptions\ControllerException
-     * todo: localize
-     */
-    public function create($name, $info, $hashtags, $category, Option $permalink, $access) {
+    public function create($name, $info, $hashtags, $category, Optional $permalink, $access) {
 
         if ($this->user->getCurrentPlan()->getStreamsMax() !== null &&
             $this->user->getStreamsCount() >= $this->user->getCurrentPlan()->getStreamsMax()) {
-            throw ControllerException::of(sprintf("You are already created %d streams of %d available. Please upgrade your account.",
+            throw ControllerException::of(sprintf("You are already created %d streams of %d available. Please upgrade account.",
                 $this->user->getStreamsCount(), $this->user->getCurrentPlan()->getStreamsMax()));
         }
+
+        $validator = InputValidator::getInstance();
+
+        // Validate parameters
+        $validator->validateStreamName($name);
+        $validator->validateStreamPermalink($permalink->getOrElseNull());
+        $validator->validateStreamAccess($access);
 
         $stream = new Stream();
         $stream->setUserID($this->user->getID());
@@ -81,7 +72,7 @@ class StreamsModel implements Injectable, SingletonInterface {
         }
 
         // Generate Stream Cover
-        $random = Common::generateUniqueId();
+        $random = Common::generateUniqueID();
         $newImageFile = sprintf("stream%05d_%s.%s", $stream->getID(), $random, "png");
         $newImagePath = Folders::getInstance()->genStreamCoverPath($newImageFile);
 
@@ -131,10 +122,6 @@ class StreamsModel implements Injectable, SingletonInterface {
                 "stream_id" => $stream->getID()
             ])
             ->update();
-
-        ChannelFavPublisher::getInstance()
-            ->publish($stream, AuthUserModel::getInstance());
-
     }
 
     public function deleteBookmark(Stream $stream) {

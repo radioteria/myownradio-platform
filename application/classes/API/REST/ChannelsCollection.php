@@ -9,14 +9,14 @@
 namespace API\REST;
 
 
+use Framework\Context;
 use Framework\Defaults;
-use Framework\Exceptions\AccessException;
 use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
+use Framework\Services\Database;
 use Framework\Services\DB\Query\SelectQuery;
-use Framework\Services\Locale\I18n;
-use Objects\Category;
 use Tools\Common;
 use Tools\Singleton;
 use Tools\SingletonInterface;
@@ -25,7 +25,6 @@ use Tools\System;
 /**
  * Class ChannelsCollection
  * @package API
- * @localized 22.05.2015
  */
 class ChannelsCollection implements Injectable, SingletonInterface {
 
@@ -35,6 +34,13 @@ class ChannelsCollection implements Injectable, SingletonInterface {
     const CHANNELS_SUGGESTION_MAX = 5;
     const CHANNELS_SIMILAR_MAX = 10;
     const CHANNEL_PUBLIC = "PUBLIC";
+
+    /** @var Context $context */
+    private $context;
+
+    function __construct() {
+        $this->context = Context::getInstance();
+    }
 
 
     /**
@@ -101,7 +107,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
 
         $query->where("((a.sid = :key) OR (a.permalink IS NOT NULL AND a.permalink = :key))", [":key" => $channel_id]);
 
-        return $query->fetchOneRow()->getOrThrow(ControllerException::noStream($channel_id));
+        return $query->fetchOneRow()->getOrElseThrow(ControllerException::noStream($channel_id));
 
     }
 
@@ -114,7 +120,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
             ->having("acc >= ?", [$rand])->fetchOneColumn()->get();
         $query->where("sid", $ch);
 
-        return $query->fetchOneRow()->getOrThrow(ControllerException::of(I18n::tr("ERROR_CATALOG_NO_STREAMS")));
+        return $query->fetchOneRow()->getOrElseThrow(ControllerException::of("No available channels found!"));
 
     }
 
@@ -189,6 +195,8 @@ class ChannelsCollection implements Injectable, SingletonInterface {
             $query->limit(min($limit, self::CHANNELS_PER_REQUEST_MAX));
         }
 
+        //$query->where("a.created")
+
         $query->orderBy("a.created DESC");
 
         return [
@@ -199,19 +207,18 @@ class ChannelsCollection implements Injectable, SingletonInterface {
     }
 
     /**
-     * @param Category $category
+     * @param int $category_id
      * @param int $offset
      * @param int $limit
      * @return array
-     * @throws ControllerException
      */
-    public function getChannelsListByCategory(Category $category, $offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
+    public function getChannelsListByCategory($category_id, $offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
 
         $query = $this->channelPrefix();
 
         $this->addNowPlaying($query);
 
-        $query->where("a.category", $category->getId());
+        $query->where("a.category", $category_id);
 
         if (is_numeric($offset) && $offset >= 0) {
             $query->offset($offset);
@@ -326,7 +333,7 @@ class ChannelsCollection implements Injectable, SingletonInterface {
     /**
      * @param int $offset
      * @param int $limit
-     * @throws AccessException
+     * @throws UnauthorizedException
      * @return array
      */
     public function getChannelsListBySelf($offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {

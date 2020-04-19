@@ -10,8 +10,8 @@ namespace REST;
 
 
 use Framework\Defaults;
-use Framework\Exceptions\Auth\NoUserByLoginException;
 use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Models\AuthUserModel;
 use Framework\Models\UserModel;
@@ -74,14 +74,14 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         }
 
         $stream = $queryStream->fetchOneRow()
-            ->getOrThrow(new ControllerException("Stream not found"));
+            ->getOrElseThrow(new ControllerException("Stream not found"));
 
         $this->processStreamRow($stream);
 
         $queryUser = $this->getUsersPrefix()->where('uid', $stream['uid']);
 
         $stream["owner"] = $queryUser->fetchOneRow()
-            ->getOrThrow(new ControllerException("Stream owner not found"));
+            ->getOrElseThrow(new ControllerException("Stream owner not found"));
 
         $this->processUserRow($stream["owner"]);
 
@@ -94,6 +94,8 @@ class Streams implements \Countable, Injectable, SingletonInterface {
      * @param int|null $category
      * @param int $offset
      * @param int $limit
+     * @internal param int $sortRow
+     * @internal param int $sortOrder
      * @return array
      */
     public function getStreamListFiltered($filter = null, $category = null, $offset = 0,
@@ -212,6 +214,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
     /**
      * @param UserModel $user
      * @param int $offset
+     * @internal param int $limit
      * @return array
      */
     public function getBookmarksByUser(UserModel $user, $offset = 0) {
@@ -243,12 +246,11 @@ class Streams implements \Countable, Injectable, SingletonInterface {
 
     public function getByUser($userKey) {
 
-        /** @var User $user */
         $user = User::getByFilter("FIND_BY_KEY", [ ":key" => $userKey ])
-            ->getOrThrow(NoUserByLoginException::class, $userKey);
+            ->getOrElseThrow(UnauthorizedException::noUserByLogin($userKey));
 
         $query = $this->getStreamsPrefix();
-        $query->where("a.uid", [ $user->getID() ]);
+        $query->where("a.uid", [$user->getID()]);
 
         $userId = AuthUserModel::getAuthorizedUserID();
 

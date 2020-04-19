@@ -16,7 +16,7 @@ use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordCollection;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 use Framework\Services\ORM\Exceptions\ORMException;
-use Tools\Optional\Option;
+use Tools\Optional;
 use Tools\Singleton;
 
 /**
@@ -57,18 +57,6 @@ class MicroORM extends FilterORM implements Injectable {
     }
 
     /**
-     * @param ActiveRecordObject $object
-     * @return mixed
-     */
-    public function getKeyOf(ActiveRecordObject $object) {
-        $reflection = new \ReflectionClass($object);
-        $beanConfig = $this->getBeanConfig($reflection);
-        $key = $reflection->getProperty($beanConfig["@key"]);
-        $key->setAccessible(true);
-        return $key->getValue($object);
-    }
-
-    /**
      * @param string $bean
      * @param array $data
      * @return object
@@ -92,7 +80,7 @@ class MicroORM extends FilterORM implements Injectable {
     /**
      * @param string $bean
      * @param int $id
-     * @return Option
+     * @return Optional
      */
     public function getObjectByID($bean, $id) {
 
@@ -108,7 +96,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param string $bean
      * @param string $filter
      * @param array $args
-     * @return Option
+     * @return Optional
      */
     public function getObjectByFilter($bean, $filter, array $args = null) {
 
@@ -151,7 +139,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param int|null $limit
      * @param int|null $offset
      * @param null $order
-     * @return ActiveRecordCollection
+     * @return Object[]
      */
     public function getListOfObjects($bean, $limit = null, $offset = null, $order = null) {
 
@@ -171,7 +159,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param int|null $offset
      * @param null $order
      * @internal param null $oder
-     * @return ActiveRecordCollection
+     * @return object
      */
     public function getFilteredListOfObjects($bean, $filter, array $filterArgs = null, $limit = null, $offset = null, $order = null) {
 
@@ -298,7 +286,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param \ReflectionClass $reflection
      * @param array $config
      * @param int $id
-     * @return Option
+     * @return Optional
      */
     private function _loadObject($reflection, array $config, $id) {
 
@@ -316,7 +304,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param array $config
      * @param $filter
      * @param array $args
-     * @return Option
+     * @return Optional
      */
     private function _getObjectByFilter($reflection, array $config, $filter, array $args = null) {
 
@@ -354,7 +342,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param int|null $limit
      * @param int|null $offset
      * @param null $order
-     * @return ActiveRecordCollection
+     * @return mixed
      */
     private function _loadObjects($reflection, $config, $filter = null, $filterArgs = null, $limit = null,
                                   $offset = null, $order = null) {
@@ -375,7 +363,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param SelectQuery $query
      * @param \ReflectionClass $reflection
      * @param $config
-     * @return Option
+     * @return Optional
      */
     protected function _getSingleObject(SelectQuery $query, \ReflectionClass $reflection, $config) {
 
@@ -383,13 +371,13 @@ class MicroORM extends FilterORM implements Injectable {
             $this->ORMCache[$config["@table"]] = [];
         }
 
-
         $query->limit(1);
 
-        $row = $query->fetchOneRow()->orNull();
+        $row = $query->fetchOneRow($query)
+            ->getOrElseNull();
 
         if ($row === null) {
-            return Option::None();
+            return Optional::noValue();
         }
 
         $this->ORMCache[$config["@table"]][$config["@key"]] = $row;
@@ -401,8 +389,7 @@ class MicroORM extends FilterORM implements Injectable {
             $prop->setValue($instance, @$row[$prop->getName()]);
         }
 
-
-        return Option::Some($instance);
+        return Optional::hasValue($instance);
 
     }
 
@@ -413,7 +400,7 @@ class MicroORM extends FilterORM implements Injectable {
      * @param null|int $limit
      * @param null|int $offset
      * @param null $order
-     * @return ActiveRecordCollection
+     * @return ActiveRecord[]
      */
     protected function _getListOfObjects(SelectQuery $query, \ReflectionClass $reflection, array $config, $limit = null,
                                          $offset = null, $order = null) {
@@ -432,7 +419,7 @@ class MicroORM extends FilterORM implements Injectable {
             $query->orderBy($order);
         }
 
-        $query->eachRow(function ($row) use (&$array) {
+        $query->eachRow(function ($row) use (&$array, &$config) {
 
             $array[] = $row;
 

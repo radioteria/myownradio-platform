@@ -9,13 +9,22 @@
 namespace Framework\Handlers\api\check;
 
 
-use Business\Test\TestFields;
 use Framework\ControllerImpl;
+use Framework\Preferences;
+use Framework\Services\DB\DBQuery;
+use Framework\Services\HttpPost;
+use Framework\Services\JsonResponse;
 
 class DoLogin extends ControllerImpl {
-    public function doPost($field, TestFields $test) {
+    public function doPost(HttpPost $post, JsonResponse $response, DBQuery $query, Preferences $preferences) {
+        $field = $post->getRequired("field");
 
-        return array("available" => !$test->testLogin($field));
+        if (array_search($field, $preferences->get("invalid", "login")->get()) !== false) {
+            $response->setData(["available" => false]);
+        } else {
+            $count = !boolval(count($query->selectFrom("r_users")->where("login", $field)));
+            $response->setData(["available" => $count]);
+        }
 
     }
 } 

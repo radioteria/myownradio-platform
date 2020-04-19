@@ -10,7 +10,7 @@ namespace Framework\Services;
 
 
 use Framework\Injector\Injectable;
-use Tools\Optional\Option;
+use Tools\Optional;
 use Tools\Singleton;
 
 class HttpSession implements Injectable {
@@ -27,10 +27,10 @@ class HttpSession implements Injectable {
 
     /**
      * @param $key
-     * @return Option
+     * @return Optional
      */
     public function get($key) {
-        return Option::ofNullable(@$_SESSION[$key]);
+        return Optional::ofNullable(@$_SESSION[$key]);
     }
 
     /**

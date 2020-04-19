@@ -9,17 +9,22 @@
 namespace Framework\Handlers\api\check;
 
 
-use Business\Test\TestFields;
 use Framework\ControllerImpl;
-use Tools\Optional\Option;
+use Framework\Exceptions\ControllerException;
+use Framework\Models\AuthUserModel;
+use Framework\Services\HttpPost;
+use Framework\Services\InputValidator;
+use Framework\Services\JsonResponse;
 
 class DoStreamPermalink extends ControllerImpl {
-    public function doPost($field, Option $context, /*AuthUserModel $user, */
-                           TestFields $test) {
-
-        $result = $test->testStreamPermalink($field);
-
-        return array("available" => $result === false || $result == $context->orNull());
-
+    public function doPost(HttpPost $post, InputValidator $validator, AuthUserModel $user, JsonResponse $response) {
+        $field = $post->getRequired("field");
+        $context = $post->getParameter("context")->getOrElseNull();
+        try {
+            $validator->validateStreamPermalink($field, $context);
+            $response->setData(["available" => true]);
+        } catch (ControllerException $ex) {
+            $response->setData(["available" => false]);
+        }
     }
 } 

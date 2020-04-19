@@ -9,15 +9,13 @@
 namespace Tools;
 
 
-use Tools\Optional\Option;
-
 class Common {
 
     const GENERATED_ID_LENGTH = 8;
 
     /**
      * @param $delimiter
-     * @param string|null $str
+     * @param $str
      * @return array|null
      */
     public static function split($delimiter, $str) {
@@ -30,35 +28,15 @@ class Common {
      * @param array $args
      * @return mixed
      */
-    public static function quickReplace($pattern, array $args = null) {
-        return preg_replace_callback('~%([a-z0-9\_\.]+)%~', function ($match) use ($args) {
-            $key = $match[1];
+    private function quick_replace($pattern, array $args = null) {
+        return preg_replace_callback('~(%[a-z0-9\_]+%)~', function ($match) use ($args) {
+            $key = trim($match[1], "%");
             if (isset($args[$key])) {
                 return $args[$key];
             } else {
                 return "";
             }
         }, $pattern);
-    }
-
-    /**
-     * @param string $template
-     * @param array $context
-     * @return string
-     */
-    public static function deepTemplate($template, array $context = null) {
-        return preg_replace_callback('~{{\s*([a-z0-9\_\.]+)\s*}}~', function ($match) use ($context) {
-            $path = explode(".", $match[1]);
-            $current = $context;
-            foreach ($path as $item) {
-                if (is_array($current) && array_key_exists($item, $current)) {
-                    $current = $current[$item];
-                } else {
-                    return "";
-                }
-            }
-            return $current;
-        }, $template);
     }
 
     public static function searchQueryFilter($text) {
@@ -80,7 +58,7 @@ class Common {
 
     }
 
-    static function generateUniqueId($length = self::GENERATED_ID_LENGTH) {
+    static function generateUniqueID($length = self::GENERATED_ID_LENGTH) {
 
         $idCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         $id = "";
@@ -213,12 +191,12 @@ class Common {
 
     /**
      * @param $filename
-     * @return Option
+     * @return Optional
      * @throws \Framework\Exceptions\ControllerException
      */
     static function getAudioDuration($filename) {
 
-        $fetcher = "/usr/local/bin/mediainfo";
+        $fetcher = "mediainfo";
 
         $fnQuote = escapeshellarg($filename);
 
@@ -226,7 +204,7 @@ class Common {
 
         exec($fetchCommand, $tagsData, $exit);
 
-        return Option::ofNullable(isset($tagsData[0]) ? $tagsData[0] : null);
+        return Optional::ofNullable(isset($tagsData[0]) ? $tagsData[0] : null);
 
     }
 
@@ -240,19 +218,6 @@ class Common {
             return $chars;
         }
 
-    }
-
-    /**
-     * @param $glue
-     * @param array $pieces
-     * @param callable $callback
-     * @return string
-     */
-    static function join($glue, array $pieces, callable $callback) {
-        foreach ($pieces as &$piece) {
-            $piece = $callback($piece);
-        }
-        return implode($glue, $pieces);
     }
 
 

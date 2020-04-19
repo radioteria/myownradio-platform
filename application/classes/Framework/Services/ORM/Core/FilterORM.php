@@ -9,12 +9,11 @@
 namespace Framework\Services\ORM\Core;
 
 
+use Framework\Exceptions\ORMException;
 use Framework\Services\DB\DBQuery;
 use Framework\Services\DB\Query\SelectQuery;
-use Framework\Services\ORM\Exceptions\ORMException;
 
 abstract class FilterORM {
-
     /**
      * @param array $config
      * @return SelectQuery

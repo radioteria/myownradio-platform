@@ -11,6 +11,7 @@ namespace Objects;
 
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
+use Framework\Services\ORM\Exceptions\ORMException;
 
 /**
  * Class Options

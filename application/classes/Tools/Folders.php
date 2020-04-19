@@ -12,8 +12,8 @@ class Folders implements Injectable, SingletonInterface {
 
     /* Common constants */
     const MOR_REST_DOMAIN = "//myownradio.biz";
-    const MOR_HEAP_FOLDER = "/media/www/myownradio.biz/heap";
-    const MOR_CONTENT_FOLDER = "/media/www/myownradio.biz/content";
+    const MOR_HEAP_FOLDER = "/var/apps/myownradio.biz/storage/legacy/heap";
+    const MOR_CONTENT_FOLDER = "/var/apps/myownradio.biz/storage/legacy/content";
 
     /* Specific constants: URL */
     const MOR_URL_STREAM_COVERS = "%s/content/streamcovers/%s";
@@ -89,7 +89,7 @@ class Folders implements Injectable, SingletonInterface {
     }
 
     function generateUserContentFolder(User $user) {
-        return sprintf("%s/ui_%d", self::MOR_CONTENT_FOLDER, $user->getId());
+        return sprintf("%s/ui_%d", self::MOR_CONTENT_FOLDER, $user->getID());
     }
 
     function genStreamUrl($id) {

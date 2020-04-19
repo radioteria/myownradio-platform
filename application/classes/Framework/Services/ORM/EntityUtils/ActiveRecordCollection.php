@@ -11,14 +11,14 @@ namespace Framework\Services\ORM\EntityUtils;
 
 use Framework\Services\ORM\Core\MicroORM;
 
-class ActiveRecordCollection implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSerializable {
+class ActiveRecordCollection implements \ArrayAccess, \Countable, \Iterator, \JsonSerializable {
 
     private $collection = [];
-    private $object = null;
-
+    private $objectName = null;
+    private $position = 0;
 
     function __construct($objectName) {
-        $this->object = $objectName;
+        $this->objectName = $objectName;
     }
 
     public function addMany(array $objects) {
@@ -33,7 +33,7 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \IteratorAggre
 
     public function offsetGet($offset) {
         return MicroORM::getInstance()
-            ->getObjectByData($this->object, $this->collection[$offset]);
+            ->getObjectByData($this->objectName, $this->collection[$offset]);
     }
 
     public function offsetSet($offset, $value) {
@@ -48,40 +48,32 @@ class ActiveRecordCollection implements \ArrayAccess, \Countable, \IteratorAggre
         return count($this->collection);
     }
 
-    public function getIterator() {
-        $orm = MicroORM::getInstance();
-        foreach ($this->collection as $item) {
-            yield $orm->getObjectByData($this->object, $item);
-        }
+    public function current() {
+        return $this->offsetGet($this->position);
+    }
+
+    public function next() {
+        $this->position++;
+    }
+
+    public function key() {
+        return $this->position;
+    }
+
+    public function valid() {
+        return isset($this->collection[$this->position]);
+    }
+
+    public function rewind() {
+        $this->position = 0;
     }
 
     public function jsonSerialize() {
         $data = [];
-        /** @var ActiveRecordObject[] $this */
         foreach ($this as $item) {
             $data[] = $item->jsonSerialize();
         }
         return $data;
-    }
-
-    /**
-     * @param $className
-     * @return \Generator
-     */
-    public function wrap($className) {
-        foreach ($this->collection as $item) {
-            yield new $className($item);
-        }
-    }
-
-    /**
-     * @return \Generator
-     */
-    public function getKeys() {
-        $orm = MicroORM::getInstance();
-        foreach ($this->collection as $item) {
-            yield $orm->getObjectByData($this->object, $item)->getKey();
-        }
     }
 
 }

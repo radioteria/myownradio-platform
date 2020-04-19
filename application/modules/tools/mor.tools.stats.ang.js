@@ -86,7 +86,7 @@
             }
             keys = path.split(".");
             accumulator = obj;
-            for (i = 0; i < keys.length; i += 1) {
+            for (i = 0; i < keys.length; i++) {
                 if (!angular.isObject(accumulator)) {
                     return "";
                 }
@@ -118,23 +118,24 @@
                     }
                     return obj;
                 } else if (angular.isString(input)) {
-                    return input.replace(/\{\{\s*([a-z0-9\\_\.]*)\s*\}\}/g, function (k1, k2) {
-                        return htmlEscape(grabObject(context, k2, count));
+                    return input.replace(/(%[a-z0-9\\_\\.]*%)/g, function (match) {
+                        var key = match.substr(1, match.length - 2);
+                        return htmlEscape(grabObject(context, key, count));
                     });
                 } else if (angular.isNumber(input)) {
                     return input;
                 } else {
-                    return "???";
+                    return "FR_UNKNOWN_OBJECT";
                 }
             },
             pluralize: function (when, count, context, offset) {
                 var key;
                 offset = offset || 0;
                 if (!angular.isObject(when)) {
-                    return "";
+                    throw new Error("'when' must be an object!");
                 }
                 if (!angular.isNumber(count)) {
-                    return "";
+                    throw new Error("'count' must be a number!");
                 }
                 for (key in when) if (when.hasOwnProperty(key)) {
                     if (angular.isNumber(count) && count == parseInt(key)) {

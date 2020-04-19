@@ -9,9 +9,15 @@
 namespace Framework\View\Errors;
 
 
+use Framework\Services\HttpRequest;
+use Framework\Services\TwigTemplate;
+
 class View404Exception extends ViewException {
 
-    function __construct($message = null) {
-        parent::__construct($message, 404);
+    function __construct() {
+        $this->code = 404;
+        $this->body = TwigTemplate::getInstance()->renderTemplate("error_404.tmpl", [
+            "uri" => HttpRequest::getInstance()->getRequestUri()
+        ]);
     }
 }

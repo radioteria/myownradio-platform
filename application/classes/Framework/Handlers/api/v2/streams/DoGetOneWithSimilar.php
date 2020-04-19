@@ -11,32 +11,36 @@ namespace Framework\Handlers\api\v2\streams;
 
 use Framework\Controller;
 use Framework\Services\DB\DBQuery;
+use Framework\Services\HttpGet;
+use Framework\Services\JsonResponse;
 use REST\Streams;
 
 class DoGetOneWithSimilar implements Controller {
 
-    public function doGet($stream_id, Streams $streams, DBQuery $dbq) {
+    public function doGet(HttpGet $get, JsonResponse $response, Streams $streams, DBQuery $dbq) {
 
-        $one = $streams->getOneStream($stream_id);
+        $id = $get->getRequired("stream_id");
+
+        $one = $streams->getOneStream($id);
 
         if (is_array($one)) {
-            $similar = $streams->getSimilarTo($stream_id);
+            $similar = $streams->getSimilarTo($id);
         } else {
             $similar = [];
         }
 
         if (is_array($one)) {
             $comments = $dbq->selectFrom("mor_comment")
-                ->where("comment_stream", $stream_id)->fetchAll();
+                ->where("comment_stream", $id)->fetchAll();
         } else {
             $comments = [];
         }
 
-        return [
-            "stream" => $one,
+        $response->setData([
+            "stream"  => $one,
             "similar" => $similar,
             "comments" => $comments
-        ];
+        ]);
 
     }
 

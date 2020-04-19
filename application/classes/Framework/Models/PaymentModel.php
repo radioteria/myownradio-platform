@@ -15,16 +15,11 @@ use LiqPay;
 use Objects\AccountPlan;
 use Objects\Payment;
 
-/**
- * Class PaymentModel
- * @package Framework\Models
- * @localized 21.05.2015
- */
 class PaymentModel {
     public static function confirmOrder($order_id, $data = null) {
         /** @var Payment $payment */
         $payment = Payment::getById($order_id)
-            ->getOrThrow(new View500Exception("Wrong order_id"));
+            ->getOrElseThrow(new View500Exception("Wrong order_id"));
         $payment->setSuccess(1);
         $payment->setPaymentComment($data);
         $payment->save();
@@ -42,7 +37,7 @@ class PaymentModel {
          */
         $user = AuthUserModel::getInstance();
         $plan = AccountPlan::getById($plan_id)
-            ->getOrThrow(ControllerException::noAccountPlan($plan_id));
+            ->getOrElseThrow(ControllerException::noAccountPlan($plan_id));
 
         $payment = new Payment();
         $payment->setExpires(time() + $plan->getPlanDuration());

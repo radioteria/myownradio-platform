@@ -13,15 +13,15 @@ use Framework\Controller;
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
 use Framework\Router;
-use Framework\Services\Http\HttpParameter;
+use Framework\Services\HttpGet;
 use Framework\Template;
 use Framework\View\Errors\View404Exception;
 use REST\Streams;
 
 class DoStream implements Controller {
-    public function doGet(HttpParameter $get, Streams $streams) {
+    public function doGet(HttpGet $get, Streams $streams) {
 
-        $id = $get->get("id")->getOrThrow(new View404Exception());
+        $id = $get->getParameter("id")->getOrElseThrow(new View404Exception());
 
         try {
 

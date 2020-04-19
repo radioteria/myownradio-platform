@@ -10,14 +10,19 @@ namespace Framework\Handlers\api\v2\stream;
 
 
 use Framework\Controller;
+use Framework\Exceptions\ControllerException;
+use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 use Framework\Services\Services;
 
 class DoRemoveCover implements Controller {
 
-    public function doPost($stream_id, Services $svc, JsonResponse $response) {
+    public function doPost(HttpPost $post, Services $svc, JsonResponse $response) {
 
-        $svc->getStream($stream_id)->removeCover();
+        $id = $post->getParameter("stream_id")
+            ->getOrElseThrow(ControllerException::noArgument("stream_id"));
+
+        $svc->getStream($id)->removeCover();
 
     }
 

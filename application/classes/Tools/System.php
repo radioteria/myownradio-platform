@@ -8,13 +8,13 @@ class System {
 
     public static function time() {
         if (self::$savedTime === null) {
-            self::$savedTime = intval(microtime(true) * 1000);
+            self::$savedTime = (int) (microtime(true) * 1000);
         }
         return self::$savedTime;
     }
 
     public static function realTime() {
-        return intval(microtime(true) * 1000);
+        return (int) (microtime(true) * 1000);
     }
 
     public static function mod($val1, $val2) {

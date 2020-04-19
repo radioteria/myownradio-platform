@@ -14,11 +14,6 @@ use Framework\Services\Locale\L10n;
 use Framework\Services\Mailer;
 use Framework\Template;
 
-/**
- * Class LettersModel
- * @package Framework\Models
- * @localized 21.05.2015
- */
 class LettersModel {
 
     public static function sendRegistrationLetter($email) {
@@ -37,6 +32,8 @@ class LettersModel {
         $mailer->setContentType("text/html");
         $mailer->setSubject($i18n->get("EMAIL_REG_TITLE"));
         $mailer->setBody($template->render());
+
+//        $mailer->queue();
 
         try {
             $mailer->send();
@@ -58,6 +55,8 @@ class LettersModel {
         $mailer->setSubject($i18n->get("EMAIL_REG_COMPLETED"));
         $mailer->setBody($template->render());
 
+//        $mailer->queue();
+//
         try {
             $mailer->send();
         } catch (\Exception $exception) {

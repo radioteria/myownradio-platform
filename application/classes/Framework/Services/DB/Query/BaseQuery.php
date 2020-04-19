@@ -11,7 +11,7 @@ namespace Framework\Services\DB\Query;
 
 use Framework\Services\Database;
 use PDO;
-use Tools\Optional\Option;
+use Tools\Optional;
 
 abstract class BaseQuery {
 
@@ -90,11 +90,10 @@ abstract class BaseQuery {
     /* Fetchers shortcuts */
 
     /**
-     * @return Option
+     * @return Optional
      */
     public function fetchOneRow() {
         return Database::doInConnection(function (Database $db) {
-            /** @var SelectQuery $query */
             $query = clone $this;
             $query->limit(1);
             return $db->fetchOneRow($query);
@@ -103,7 +102,7 @@ abstract class BaseQuery {
 
     /**
      * @param int $column
-     * @return Option
+     * @return Optional
      */
     public function fetchOneColumn($column = 0) {
         return Database::doInConnection(function (Database $db) use (&$column) {
@@ -128,7 +127,7 @@ abstract class BaseQuery {
     /**
      * @param $className
      * @param array $ctor_args
-     * @return Option
+     * @return Optional
      */
     public function fetchObject($className, array $ctor_args = []) {
         return Database::doInConnection(function (Database $db) use (&$className, &$ctor_args) {

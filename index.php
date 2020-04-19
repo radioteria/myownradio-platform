@@ -2,7 +2,6 @@
 
 use Facebook\FacebookSession;
 use Framework\Router;
-use Framework\Startup;
 use Framework\Template;
 
 // Redirect from www.
@@ -20,6 +19,7 @@ if ((!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == "") && substr($_SERVER['H
     header("Location: $redirect");
     die();
 }
+
 
 require_once "application/startup.php";
 require_once "application/libs/functions.php";

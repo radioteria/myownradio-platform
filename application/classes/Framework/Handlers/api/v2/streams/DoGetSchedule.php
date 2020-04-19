@@ -10,10 +10,13 @@ namespace Framework\Handlers\api\v2\streams;
 
 
 use Framework\Controller;
+use Framework\Services\HttpGet;
+use Framework\Services\JsonResponse;
 use REST\Playlist;
 
 class DoGetSchedule implements Controller {
-    public function doGet($stream_id, Playlist $playlist) {
-        return $playlist->getSchedule($stream_id);
+    public function doGet(HttpGet $get, Playlist $playlist, JsonResponse $response) {
+        $id = $get->getRequired("stream_id");
+        $response->setData($playlist->getSchedule($id));
     }
 } 

@@ -11,36 +11,21 @@ namespace Framework\Handlers\api\v2\channels;
 
 use API\REST\ChannelsCollection;
 use Framework\Controller;
-use Framework\Exceptions\ControllerException;
-use Framework\Services\Http\HttpGet;
+use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
-use Objects\Category;
-use Tools\Optional\Filter;
+use Framework\Services\Validators\CategoryValidator;
 
 class DoCategory implements Controller {
+    public function doGet(HttpGet $get, ChannelsCollection $collection, CategoryValidator $validator, JsonResponse $response) {
+        $category_name = $get->getRequired("category_name");
+        $offset = $get->getParameter("offset", FILTER_VALIDATE_INT)->getOrElse(0);
+        $limit = $get->getParameter("limit", FILTER_VALIDATE_INT)->getOrElse(ChannelsCollection::CHANNELS_PER_REQUEST_MAX);
 
-    public function doGet(JsonResponse $response, HttpGet $get, ChannelsCollection $collection) {
+        $category = $validator->validateChannelCategoryByPermalink($category_name);
 
-        $category_name  = $get->getOrError("category_name");
-
-        $offset         = $get->get("offset")
-                              ->filter(Filter::isNumber())
-                              ->orZero();
-
-        $limit          = $get->get("limit")
-                              ->filter(Filter::isNumber())
-                              ->getOrElse(ChannelsCollection::CHANNELS_PER_REQUEST_MAX);
-
-        /**
-         * @var Category $category
-         */
-        $category = Category::getByFilter("key", [":key" => $category_name])
-            ->getOrThrow(ControllerException::tr("VALIDATOR_INVALID_CATEGORY_NAME", [ $category_name ]));
-
-        return [
+        $response->setData([
             "category" => $category,
-            "channels" => $collection->getChannelsListByCategory($category, $offset, $limit)
-        ];
+            "channels" => $collection->getChannelsListByCategory($category["category_id"], $offset, $limit)
+        ]);
     }
-
 } 

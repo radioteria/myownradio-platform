@@ -9,6 +9,7 @@
 namespace Objects;
 
 use Framework\Exceptions\ControllerException;
+use Framework\FileServer\FileServerFacade;
 use Framework\Services\ORM\EntityUtils\ActiveRecord;
 use Framework\Services\ORM\EntityUtils\ActiveRecordObject;
 use Objects\FileServer\FileServerFile;
@@ -26,6 +27,14 @@ class Track extends ActiveRecordObject implements ActiveRecord {
         $duration, $filesize, $color = 0,
         $uploaded, $copy_of = null, $used_count = 0,
         $is_new = 1, $can_be_shared = 0;
+
+    /**
+     * @param User $user
+     * @return bool
+     */
+    public function isAccessibleTo(User $user) {
+        return $user->isSuperUser() || $user->getID() == $this->getUserID();
+    }
 
     /*
      * Bean Getters
@@ -238,7 +247,7 @@ class Track extends ActiveRecordObject implements ActiveRecord {
 
         /** @var FileServerFile $file */
         $file = FileServerFile::getByID($this->getFileId())
-            ->getOrThrow(new ControllerException(
+            ->getOrElseThrow(new ControllerException(
                 sprintf("Track \"%d\" is not uploaded to any file server", $this->getID())
             ));
         $server = $file->getServerObject();

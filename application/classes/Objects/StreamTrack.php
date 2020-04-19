@@ -10,7 +10,7 @@ namespace Objects;
 
 use Framework\Exceptions\ControllerException;
 use Framework\Services\DB\DBQuery;
-use Tools\Optional\Option;
+use Tools\Optional;
 use Tools\System;
 
 /**
@@ -31,10 +31,10 @@ class StreamTrack extends Track {
 
         /** @var StreamStats $stream */
         $stream = StreamStats::getByID($streamID)
-            ->getOrThrow(ControllerException::noStream($streamID));
+            ->getOrElseThrow(ControllerException::noStream($streamID));
 
         if ($stream->getStatus() == 0) {
-            return Option::None();
+            return Optional::noValue();
         }
 
         $streamPosition = (System::time() - $stream->getStarted() + $stream->getStartedFrom())
@@ -62,7 +62,7 @@ class StreamTrack extends Track {
 
     /**
      * @param $streamID
-     * @return Option
+     * @return \Tools\Optional
      */
     public static function getRandom($streamID) {
 

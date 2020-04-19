@@ -9,21 +9,18 @@
 namespace Framework\Models;
 
 
-use Framework\Exceptions\Auth\NoPermissionException;
 use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
 use Framework\FileServer\FileServerFacade;
 use Framework\FileServer\FSFile;
+use Framework\Services\Config;
 use Framework\Services\Locale\I18n;
 use Objects\FileServer\FileServerFile;
 use Objects\Track;
+use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-/**
- * Class TrackModel
- * @package Framework\Models
- * @localized 21.05.2015
- */
 class TrackModel extends Model implements SingletonInterface {
 
     use Singleton;
@@ -36,24 +33,13 @@ class TrackModel extends Model implements SingletonInterface {
     /** @var Track $object */
     protected $object;
 
-    /**
-     * @param int|Track $id
-     */
     public function __construct($id) {
 
         parent::__construct();
 
         $this->user = AuthUserModel::getInstance();
-
-        if ($id instanceof Track) {
-            $this->key = $id->getID();
-            $this->object = $id;
-        } else {
-            $this->key = $id;
-            $this->reload();
-        }
-
-        $this->checkAccess();
+        $this->key = $id;
+        $this->reload();
 
     }
 
@@ -64,14 +50,12 @@ class TrackModel extends Model implements SingletonInterface {
     public function reload() {
 
         $this->object = Track::getByID($this->key)
-            ->getOrThrow(ControllerException::noTrack($this->key));
+            ->getOrElseThrow(ControllerException::noTrack($this->key));
 
-    }
-
-    public function checkAccess() {
-        if ($this->object->getUserID() != $this->user->getID()) {
-            throw new NoPermissionException();
+        if (! $this->object->isAccessibleTo($this->user->getUserObject())) {
+            throw UnauthorizedException::noPermission();
         }
+
     }
 
     public function save() {
@@ -123,6 +107,13 @@ class TrackModel extends Model implements SingletonInterface {
     }
 
     /**
+     * @return string
+     */
+    public function getFileName() {
+        return $this->object->getFileName();
+    }
+
+    /**
      * @return int
      */
     public function getFileSize() {
@@ -160,6 +151,13 @@ class TrackModel extends Model implements SingletonInterface {
     /**
      * @return int
      */
+    public function getUserID() {
+        return $this->object->getUserID();
+    }
+
+    /**
+     * @return int
+     */
     public function getUploaded() {
         return $this->object->getUploaded();
     }
@@ -177,10 +175,26 @@ class TrackModel extends Model implements SingletonInterface {
     public function getFileUrl() {
         /** @var FileServerFile $file */
         $file = FileServerFile::getByID($this->object->getFileId())
-            ->getOrThrow(I18n::tr("ERROR_TRACK_NOT_AVAILABLE", [$this->object->getID()]));
+            ->getOrElseThrow(I18n::tr("CEX_TRACK_FILE_NULL", ["id" => $this->object->getID()]));
 
-        return FileServerFacade::getServerNameById($file->getServerId()) . $file->getFileHash();
+        return FileServerFacade::getServerNameById($file->getServerId()).$file->getFileHash();
     }
+
+/*    public function edit($artist, $title, $album, $trackNR, $genre, $date, $color) {
+
+        $artist ->then(function ($artist)   { $this->object->setArtist($artist); });
+        $title  ->then(function ($title)    { $this->object->setTitle($title); });
+        $album  ->then(function ($album)    { $this->object->setAlbum($album); });
+        $trackNR->then(function ($trackNR)  { $this->object->setTrackNumber($trackNR); });
+        $genre  ->then(function ($genre)    { $this->object->setGenre($genre); });
+        $date   ->then(function ($date)     { $this->object->setDate($date); });
+        $color  ->then(function ($color)    { $this->object->setColor($color); });
+
+        $this->object->save();
+
+        return $this;
+
+    }*/
 
     public function changeColor($color) {
 
@@ -198,20 +212,6 @@ class TrackModel extends Model implements SingletonInterface {
         FSFile::deleteLink($this->object->getFileId());
         $this->object->delete();
 
-    }
-
-    /**
-     * @return int
-     */
-    public function getUserID() {
-        return $this->object->getUserID();
-    }
-
-    /**
-     * @return string
-     */
-    public function getFileName() {
-        return $this->object->getFileName();
     }
 
 }

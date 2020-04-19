@@ -11,12 +11,12 @@ namespace Framework\Handlers\api\v2\schedule;
 
 use API\REST\TrackCollection;
 use Framework\Controller;
-use Framework\Services\Http\HttpGet;
-use Tools\Optional\Filter;
+use Framework\Services\HttpGet;
+use Framework\Services\JsonResponse;
 
 class DoOnSingleChannel implements Controller {
-    public function doGet(HttpGet $get, TrackCollection $trackCollection) {
-        $stream_id = $get->getFiltered("stream_id", Filter::isNumber());
-        return $trackCollection->getPlayingOnChannel($stream_id);
+    public function doGet(HttpGet $get, JsonResponse $response, TrackCollection $trackCollection) {
+        $stream_id = $get->getRequired("stream_id", FILTER_SANITIZE_NUMBER_INT);
+        $response->setData($trackCollection->getPlayingOnChannel($stream_id));
     }
 } 

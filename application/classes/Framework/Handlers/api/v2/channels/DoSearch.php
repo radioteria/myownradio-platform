@@ -11,20 +11,18 @@ namespace Framework\Handlers\api\v2\channels;
 
 use API\REST\ChannelsCollection;
 use Framework\Controller;
-use Framework\Services\Http\HttpGet;
-use Tools\Optional\Filter;
+use Framework\Services\HttpGet;
+use Framework\Services\JsonResponse;
 
 class DoSearch implements Controller {
-    public function doGet(HttpGet $get, ChannelsCollection $collection) {
-        $filter = $get->getOrError("query");
-        $offset = $get->get("offset")->filter(Filter::isNumber())
-                      ->orZero();
-        $limit  = $get->get("limit")->filter(Filter::isNumber())
-                      ->getOrElse(ChannelsCollection::CHANNELS_PER_REQUEST_MAX);
+    public function doGet(HttpGet $get, ChannelsCollection $collection, JsonResponse $response) {
+        $filter = $get->getRequired("query");
+        $offset = $get->getParameter("offset", FILTER_VALIDATE_INT)->getOrElse(0);
+        $limit = $get->getParameter("limit", FILTER_VALIDATE_INT)->getOrElse(ChannelsCollection::CHANNELS_PER_REQUEST_MAX);
 
-        return [
+        $response->setData([
             "query" => $filter,
             "channels" => $collection->getChannelsListBySearch($filter, $offset, $limit)
-        ];
+        ]);
     }
 } 

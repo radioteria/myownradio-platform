@@ -12,7 +12,8 @@ namespace Framework\Services\ORM\EntityUtils;
 use Framework\Services\ORM\Core\MicroORM;
 use Framework\Services\ORM\Exceptions\ORMException;
 use JsonSerializable;
-use Tools\Optional\Option;
+use Tools\Optional;
+use Tools\Singleton;
 
 abstract class ActiveRecordObject implements JsonSerializable {
 
@@ -32,13 +33,6 @@ abstract class ActiveRecordObject implements JsonSerializable {
             throw new ORMException(sprintf("No property '%s' in object '%s'", $prop, get_called_class()),
                 null, $exception);
         }
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getKey() {
-        return MicroORM::getInstance()->getKeyOf($this);
     }
 
     /**
@@ -65,20 +59,16 @@ abstract class ActiveRecordObject implements JsonSerializable {
 
     /**
      * @param int $id
-     * @return Option
-     * @throws ORMException
+     * @return Optional
      */
     public static function getByID($id) {
-        if (!$id) {
-            throw new ORMException("\$id not provided");
-        }
         return MicroORM::getInstance()->getObjectByID(get_called_class(), $id);
     }
 
     /**
      * @param string $filter
      * @param array $args
-     * @return Option
+     * @return Optional
      */
     public static function getByFilter($filter, array $args = null) {
         return MicroORM::getInstance()->getObjectByFilter(get_called_class(), $filter, $args);
@@ -88,7 +78,7 @@ abstract class ActiveRecordObject implements JsonSerializable {
      * @param null $limit
      * @param null $offset
      * @param null $order
-     * @return ActiveRecordCollection
+     * @return static[]
      */
     public static function getList($limit = null, $offset = null, $order = null) {
         return MicroORM::getInstance()->getListOfObjects(get_called_class(), $limit, $offset, $order);
@@ -100,13 +90,14 @@ abstract class ActiveRecordObject implements JsonSerializable {
      * @param null $limit
      * @param null $offset
      * @param null $order
-     * @return ActiveRecordCollection
+     * @return static[]
      */
     public static function getListByFilter($filter, array $args = null, $limit = null, $offset = null, $order = null) {
         return MicroORM::getInstance()->getFilteredListOfObjects(get_called_class(), $filter, $args, $limit, $offset, $order);
     }
 
     /**
+     * @internal param $reflection
      * @return $this
      */
     public function cloneObject() {
@@ -114,7 +105,7 @@ abstract class ActiveRecordObject implements JsonSerializable {
     }
 
     /**
-     * @return array
+     * @return array|mixed
      */
     public function jsonSerialize() {
         $data = [];
@@ -140,26 +131,19 @@ abstract class ActiveRecordObject implements JsonSerializable {
     }
 
     function beforeUpdate() {
-
+        return true;
     }
 
     function beforeDelete() {
-
+        return true;
     }
 
     function afterUpdate() {
-
+        return true;
     }
 
     function afterDelete() {
-
-    }
-
-    /**
-     * @return string
-     */
-    function __toString() {
-        return $this->className() . "(" . implode(",", array_values(get_object_vars($this))) . ")";
+        return true;
     }
 
 } 

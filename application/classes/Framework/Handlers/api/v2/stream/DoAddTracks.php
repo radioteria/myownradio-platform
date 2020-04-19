@@ -10,23 +10,23 @@ namespace Framework\Handlers\api\v2\stream;
 
 
 use Framework\Controller;
+use Framework\Exceptions\ControllerException;
 use Framework\Models\PlaylistModel;
-use Framework\Services\Http\HttpPost;
+use Framework\Services\HttpPost;
 use Framework\Services\InputValidator;
 use Framework\Services\JsonResponse;
-use Tools\Optional\Mapper;
+use Framework\Services\Notifier;
 
 class DoAddTracks implements Controller {
-    public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response) {
+    public function doPost(HttpPost $post, InputValidator $validator, JsonResponse $response, Notifier $notif1er) {
 
-        $streamId = $post->getOrError("stream_id");
-        $tracks = $post->getOrError("tracks");
-        $upNext = $post->get("up_next")
-            ->map(Mapper::toBoolean())->orFalse();
+        $id = $post->getRequired("stream_id");
+        $tracks = $post->getRequired("tracks");
+        $upNext = $post->getParameter("up_next", FILTER_VALIDATE_BOOLEAN)->getOrElseFalse();
 
         $validator->validateTracksList($tracks);
 
-        PlaylistModel::getInstance($streamId)->addTracks($tracks, $upNext);
+        PlaylistModel::getInstance($id)->addTracks($tracks, $upNext);
 
     }
 } 

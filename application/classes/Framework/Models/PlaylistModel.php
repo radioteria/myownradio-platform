@@ -8,18 +8,21 @@
 
 namespace Framework\Models;
 
-use Framework\Exceptions\Auth\NoPermissionException;
 use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\StreamControl;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
+use Framework\Services\DB\DBQueryPool;
 use Framework\Services\DB\Query\DeleteQuery;
+use Framework\Services\DB\Query\SelectQuery;
+use Framework\Services\DB\Query\UpdateQuery;
 use Objects\Link;
-use Objects\Stream;
 use Objects\StreamTrack;
+use Objects\Stream;
 use Objects\Track;
 use Tools\Common;
-use Tools\Optional\Option;
+use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 use Tools\System;
@@ -27,7 +30,6 @@ use Tools\System;
 /**
  * Class PlaylistModel
  * @package Model
- * @localized 21.05.2015
  */
 class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
@@ -63,10 +65,10 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
                 ->select("a.uid, a.started, a.started_from, a.status, b.tracks_count, b.tracks_duration");
 
             $stats = $db->fetchOneRow($query)
-                ->getOrThrow(ControllerException::noStream($this->key));
+                ->getOrElseThrow(ControllerException::noStream($this->key));
 
             if (intval($stats["uid"]) !== $this->user->getID()) {
-                throw new NoPermissionException();
+                throw UnauthorizedException::noPermission();
             }
 
             $this->tracks_count = intval($stats["tracks_count"]);
@@ -105,7 +107,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
             if ($upNext) {
                 $nowPlaying = $this->getPlayingTrack();
             } else {
-                $nowPlaying = Option::None();
+                $nowPlaying = Optional::noValue();
             }
 
             foreach ($tracksToAdd as $track) {
@@ -170,13 +172,13 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
             call_user_func($callable);
 
-            if (StreamTrack::getByID($track->getUniqueID())->nonEmpty()) {
+            if (StreamTrack::getByID($track->getUniqueID())->validate()) {
                 $this->scPlayByUniqueID($track->getUniqueID(), $trackPosition, false);
             } else {
                 $this->scPlayByOrderID($track->getTrackOrder());
             }
 
-        }, $callable);
+        })->orElseCall($callable);
 
         return $this;
 
@@ -184,14 +186,14 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     /**
      * @param int|null $time
-     * @return Option
+     * @return Optional
      */
     public function getPlayingTrack($time = null) {
 
-        $position = $this->getStreamPosition($time)->orNull();
+        $position = $this->getStreamPosition($time)->getOrElseNull();
 
         if (is_null($position)) {
-            return Option::None();
+            return Optional::noValue();
         }
 
         return $this->getTrackByTime($position);
@@ -200,16 +202,16 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     /**
      * @param int|null $time
-     * @return Option
+     * @return Optional
      */
     public function getStreamPosition($time = null) {
 
         if ($this->tracks_duration == 0) {
-            return Option::None();
+            return Optional::ofNullable(0);
         }
 
         if ($this->status == 0) {
-            return Option::None();
+            return Optional::ofNullable(null);
         }
 
         if (is_null($time)) {
@@ -218,18 +220,18 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
         $position = ($time - $this->started + $this->started_from) % $this->tracks_duration;
 
-        return Option::Some($position);
+        return Optional::ofNullable($position);
 
     }
 
     /**
      * @param $time
-     * @return Option
+     * @return Optional
      */
     public function getTrackByTime($time) {
 
         if ($this->getStreamDuration() == 0) {
-            return Option::None();
+            return Optional::noValue();
         }
 
         $mod = $time % $this->getStreamDuration();
@@ -251,7 +253,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     /**
      * @param string $filter
      * @param array $args
-     * @return Option
+     * @return Optional
      */
     protected function _getPlaylistTrack($filter, array $args = null) {
 
@@ -286,7 +288,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
         return Database::doInConnection(function (Database $conn) {
 
             do {
-                $generated = Common::generateUniqueId();
+                $generated = Common::generateUniqueID();
             } while ($conn->fetchOneColumn("SELECT COUNT(*) FROM r_link WHERE unique_id = ?", [$generated])->get());
 
             return $generated;
@@ -367,7 +369,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
 
     /**
      * @param $id
-     * @return Option
+     * @return Optional
      */
     public function getTrackByOrder($id) {
 
@@ -426,7 +428,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface {
     }
 
     /**
-     * @return Option
+     * @return Optional
      */
     protected function _getRandomTrack() {
 

@@ -9,20 +9,26 @@
 namespace Framework\Handlers\api\v2\user;
 
 
-use Business\Forms\LoginForm;
 use Framework\Controller;
-use Framework\Events\LoginSuccessfulPublisher;
+use Framework\Exceptions\ControllerException;
 use Framework\Models\UsersModel;
+use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
-use Tools\Optional\Mapper;
+use REST\Users;
 
 class DoLogin implements Controller {
 
-    public function doPost(JsonResponse $response, LoginForm $form, UsersModel $users) {
+    public function doPost(HttpPost $post, UsersModel $users, JsonResponse $response, Users $usersRest) {
 
-        $form ->wrap()
-              ->then(LoginSuccessfulPublisher::send())
-              ->then(Mapper::call($users, "authorizeByLoginForm"));
+        $login = $post->getParameter("login")->getOrElseThrow(ControllerException::noArgument("login"));
+        $password = $post->getParameter("password")->getOrElseThrow(ControllerException::noArgument("password"));
+        $remember = boolval($post->getParameter("remember")->getOrElseFalse());
+
+        $users->logout();
+
+        $userModel = $users->authorizeByLoginPassword($login, $password);
+
+        $response->setData($usersRest->getUserByID($userModel->getID(), true));
 
     }
 

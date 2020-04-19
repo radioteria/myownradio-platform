@@ -10,15 +10,16 @@ namespace Framework\Handlers\api\v2\users;
 
 
 use Framework\Controller;
-use Framework\Services\Http\HttpGet;
+use Framework\Services\HttpGet;
+use Framework\Services\JsonResponse;
 use REST\Users;
 
 class DoGetAll implements Controller {
-    public function doGet(HttpGet $get, Users $users) {
-        $offset = $get->get("offset")->orNull();
-        $limit = $get->get("limit")->orNull();
-        $filter = $get->get("filter")->orNull();
+    public function doGet(HttpGet $get, JsonResponse $response, Users $users) {
+        $offset = $get->getParameter("offset")->getOrElseNull();
+        $limit = $get->getParameter("limit")->getOrElseNull();
+        $filter = $get->getParameter("filter")->getOrElseNull();
 
-        return $users->getUsersList($filter, $limit, $offset);
+        $response->setData($users->getUsersList($filter, $limit, $offset));
     }
 } 

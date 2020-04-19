@@ -11,7 +11,7 @@ namespace Framework\Services;
 
 use Framework\Defaults;
 use Framework\Injector\Injectable;
-use Tools\Optional\Option;
+use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -42,19 +42,19 @@ class Redis implements SingletonInterface, Injectable {
 
     /**
      * @param string $key
-     * @return Option
+     * @return Optional
      */
     public function getObject($key) {
 
         if (!$this->redis->hExists(Defaults::REDIS_OBJECTS_KEY, $key)) {
-            return Option::None();
+            return Optional::noValue();
         }
 
         $raw = $this->redis->hGet(Defaults::REDIS_OBJECTS_KEY, $key);
 
         $this->digest[$key] = md5($raw);
 
-        return Option::Some(unserialize($raw));
+        return Optional::hasValue(unserialize($raw));
 
     }
 

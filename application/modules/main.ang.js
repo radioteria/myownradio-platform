@@ -165,7 +165,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
                 channelsData: ["$channels", "$route", "$location", function ($channels, $route, $location) {
                     var promise = $channels.getCategoryChannels($route.current.params.id);
                     promise.then(function (data) {
-                        $route.current.title = htmlEscape(data.category.name) + " on " + SITE_TITLE;
+                        $route.current.title = htmlEscape(data.category.category_name) + " on " + SITE_TITLE;
                     }, function () {
                         $location.url("/categories/");
                     });

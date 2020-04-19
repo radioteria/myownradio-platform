@@ -28,6 +28,7 @@ class Letter
     protected $to;
     protected $body;
     protected $ip;
+    protected $time;
     protected $status;
 
     /**
@@ -35,6 +36,13 @@ class Letter
      */
     public function getBody() {
         return $this->body;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFrom() {
+        return $this->from;
     }
 
     /**
@@ -68,15 +76,15 @@ class Letter
     /**
      * @return mixed
      */
-    public function getTo() {
-        return $this->to;
+    public function getTime() {
+        return $this->time;
     }
 
     /**
-     * @return string
+     * @return mixed
      */
-    public function getLetterHash() {
-        return md5($this->subject . $this->to . $this->body);
+    public function getTo() {
+        return $this->to;
     }
 
     /**
@@ -112,6 +120,13 @@ class Letter
      */
     public function setSubject($subject) {
         $this->subject = $subject;
+    }
+
+    /**
+     * @param mixed $time
+     */
+    public function setTime($time) {
+        $this->time = $time;
     }
 
     /**

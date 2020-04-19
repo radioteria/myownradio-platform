@@ -10,14 +10,15 @@ namespace Framework\Handlers\api\v2\streams;
 
 
 use Framework\Controller;
+use Framework\Services\HttpGet;
+use Framework\Services\JsonResponse;
 use REST\Streams;
 
 class DoGetSimilarTo implements Controller {
 
-    public function doGet($stream_id, Streams $streams) {
-
-        return $streams->getSimilarTo($stream_id);
-
+    public function doGet(HttpGet $get, JsonResponse $response, Streams $streams) {
+        $id = $get->getRequired("stream_id");
+        $response->setData($streams->getSimilarTo($id));
     }
 
 } 

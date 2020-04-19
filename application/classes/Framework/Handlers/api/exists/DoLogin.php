@@ -9,11 +9,18 @@
 namespace Framework\Handlers\api\exists;
 
 
-use Business\Test\TestFields;
 use Framework\ControllerImpl;
+use Framework\Services\DB\DBQuery;
+use Framework\Services\HttpPost;
+use Framework\Services\JsonResponse;
 
 class DoLogin extends ControllerImpl {
-    public function doPost($field, TestFields $test) {
-        return array("exists" => $test->testLogin($field));
+    public function doPost(HttpPost $post, DBQuery $query, JsonResponse $response) {
+        $field = $post->getRequired("field");
+        $response->setData([
+            "exists" => boolval(count($query
+                ->selectFrom("r_users")
+                ->where("login = :id OR mail = :id", [":id" => $field]))
+            )]);
     }
 } 

@@ -9,31 +9,23 @@
 namespace Framework\Models;
 
 
-use Business\Fields\Code;
-use Business\Fields\Password;
-use Business\Forms\LoginForm;
-use Business\Forms\SignUpCompleteForm;
-use Framework\Events\RegistrationSuccessfulPublisher;
-use Framework\Exceptions\Auth\IncorrectPasswordException;
-use Framework\Exceptions\Auth\NoUserByLoginException;
 use Framework\Exceptions\ControllerException;
+use Framework\Exceptions\UnauthorizedException;
 use Framework\Injector\Injectable;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
-use Framework\Services\DB\Query\InsertQuery;
 use Framework\Services\HttpRequest;
 use Framework\Services\HttpSession;
+use Framework\Services\InputValidator;
+use Framework\Services\Locale\I18n;
+use Framework\Services\Mailer;
 use Objects\User;
 use Tools\Common;
+use Tools\File;
 use Tools\Folders;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-/**
- * Class UsersModel
- * @package Framework\Models
- * @localized 21.05.2015
- */
 class UsersModel implements SingletonInterface, Injectable {
 
     use Singleton;
@@ -43,25 +35,22 @@ class UsersModel implements SingletonInterface, Injectable {
     /**
      * @param string $login
      * @param string $password
-     * @param bool $save
+     * @throws \Framework\Exceptions\UnauthorizedException
      * @return UserModel
-     * @throws IncorrectPasswordException
      */
-    public function authorizeByLoginPassword($login, $password, $save = false) {
+    public function authorizeByLoginPassword($login, $password) {
 
         $session = HttpSession::getInstance();
-
-        $pwd = new Password($password);
 
         // Try to find user specified by login or email
         $user = DBQuery::getInstance()
             ->selectFrom("r_users")
-            ->where("login = :key OR mail = :key", [":key" => $login])
+            ->where("login = :key OR mail = :key", [ ":key" => $login ])
             ->fetchOneRow()
-            ->getOrThrow(NoUserByLoginException::className(), $login);
+            ->getOrElseThrow(UnauthorizedException::noUserByLogin($login));
 
-        if (!$pwd->matches($user["password"])) {
-            throw new IncorrectPasswordException();
+        if (!password_verify($password, $user["password"])) {
+            throw UnauthorizedException::wrongPassword();
         }
 
         $token = self::createToken($user["uid"], $session->getSessionId());
@@ -69,34 +58,6 @@ class UsersModel implements SingletonInterface, Injectable {
         $session->set("TOKEN", $token);
 
         return UserModel::getInstance($user["uid"]);
-
-    }
-
-    /**
-     * @param LoginForm $form
-     * @throws IncorrectPasswordException | NoUserByLoginException
-     */
-    public function authorizeByLoginForm(LoginForm $form) {
-
-        $password = new Password($form->getPassword());
-
-        /**
-         * @var User $user
-         */
-        $user = User::getByFilter("login = :key OR mail = :key", [":key" => $form->getLogin()])
-            ->getOrThrow(NoUserByLoginException::class, $form->getLogin());
-
-        if (!$password->matches($user->getPassword())) {
-            throw new IncorrectPasswordException();
-        }
-
-        $session = HttpSession::getInstance();
-
-        self::logout();
-
-        $token = self::createToken($user->getId(), $session->getSessionId());
-
-        $session->set("TOKEN", $token);
 
     }
 
@@ -109,26 +70,24 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $token = Database::doInConnection(function (Database $db) use ($userId, $sessionId) {
 
-            $request = HttpRequest::getInstance();
-
-            $clientAddress      = $request->getRemoteAddress();
-            $clientUserAgent    = $request->getHttpUserAgent()->getOrElse("None");
+            $clientAddress = HttpRequest::getInstance()->getRemoteAddress();
+            $clientUserAgent = HttpRequest::getInstance()->getHttpUserAgent()->getOrElse("None");
 
             do $token = md5($userId . $clientAddress . rand(1, 1000000) . "tokenizer" . time());
-            while ($db->fetchRowCount("FROM r_sessions WHERE token = ?", [$token]) > 0);
+            while ($db->fetchOneColumn("SELECT COUNT(*) FROM r_sessions WHERE token = ?", [$token])->get() > 0);
 
-            $query = new InsertQuery("r_sessions");
+            $query = $db->getDBQuery()->into("r_sessions");
             $query->values("uid", $userId);
             $query->values("ip", $clientAddress);
             $query->values("token", $token);
             $query->values("permanent", 1);
-            $query->values("client_id", Common::generateUniqueId(self::CLIENT_ID_LENGTH));
+            $query->values("client_id", Common::generateUniqueID(self::CLIENT_ID_LENGTH));
             $query->values("authorized = NOW()");
             $query->values("http_user_agent", $clientUserAgent);
             $query->values("session_id", $sessionId);
             $query->values("expires = NOW() + INTERVAL 1 YEAR");
 
-            $db->executeUpdate($query);
+            $db->executeInsert($query);
 
             return $token;
 
@@ -143,7 +102,9 @@ class UsersModel implements SingletonInterface, Injectable {
      */
     public function logout() {
 
-        HttpSession::getInstance()->get("TOKEN")->then(function ($token) {
+        $session = HttpSession::getInstance();
+
+        $session->get("TOKEN")->then(function ($token) {
             DBQuery::getInstance()->deleteFrom("r_sessions", "token", $token)->update();
         });
 
@@ -159,7 +120,7 @@ class UsersModel implements SingletonInterface, Injectable {
 
         $user = Database::doInConnection(function (Database $db) use ($id) {
             return $db->fetchOneRow("SELECT * FROM r_users WHERE uid = ?", [$id])
-                ->getOrThrow(NoUserByLoginException::className(), $id);
+                ->getOrElseThrow(UnauthorizedException::noUserByLogin($id));
         });
 
         $token = self::createToken($user["uid"], $session->getSessionId());
@@ -171,38 +132,43 @@ class UsersModel implements SingletonInterface, Injectable {
     }
 
     /**
-     * @param SignUpCompleteForm $form
+     * @param $code
+     * @param $login
+     * @param $password
+     * @param $name
+     * @param $info
+     * @param $permalink
+     * @param $country
      * @return UserModel
-     * @throws ControllerException
-     * @internal param $code
-     * @internal param $login
-     * @internal param $password
-     * @internal param $name
-     * @internal param $info
-     * @internal param $permalink
-     * @internal param $country
      */
-    public function completeRegistration(SignUpCompleteForm $form) {
+    public function completeRegistration($code, $login, $password, $name, $info, $permalink, $country) {
 
-        $pwd = new Password($form->getPassword());
+        $validator = InputValidator::getInstance();
+
+        $email = self::parseRegistrationCode($code);
+        $crypt = password_hash($password, PASSWORD_DEFAULT);
+
+        $validator->validateUniqueUserEmail($email);
 
         $newUser = new User();
 
-        $newUser->setEmail($form->getEmail());
-        $newUser->setLogin($form->getLogin());
-        $newUser->setPassword($pwd->hash());
-        $newUser->setName($form->getName());
-        $newUser->setInfo($form->getInfo());
-        $newUser->setPermalink($form->getPermalink());
+        $newUser->setEmail($email);
+        $newUser->setLogin($login);
+        $newUser->setPassword($crypt);
+        $newUser->setName($name);
+        $newUser->setInfo($info);
+        $newUser->setPermalink($permalink);
         $newUser->setRights(1);
         $newUser->setRegistrationDate(time());
-        $newUser->setCountryId($form->getCountryId());
+        $newUser->setCountryId($country);
 
         $newUser->save();
 
+        $this->createUserDirectory($newUser);
+
         // Generate Stream Cover
-        $random = Common::generateUniqueId();
-        $newImageFile = sprintf("avatar%05d_%s.%s", $newUser->getId(), $random, "png");
+        $random = Common::generateUniqueID();
+        $newImageFile = sprintf("avatar%05d_%s.%s", $newUser->getID(), $random, "png");
         $newImagePath = Folders::getInstance()->genAvatarPath($newImageFile);
 
         $newUser->setAvatar($newImageFile);
@@ -210,26 +176,17 @@ class UsersModel implements SingletonInterface, Injectable {
 
         Common::createTemporaryImage($newImagePath);
 
-        // todo: fix this
-        RegistrationSuccessfulPublisher::getInstance()->publish($newUser);
+        /* Special */
+        $notify = new Mailer("no-reply@myownradio.biz", "MyOwnRadio Service");
+        $notify->addAddress("roman@homefs.biz");
+        $notify->setSubject("You have new user on MyOwnRadio service");
+        $notify->setBody(sprintf("Hello! You have a new user '%s' (%s).", $login, $email));
+        $notify->queue();
+        /* End of special */
 
         LettersModel::sendRegistrationCompleted($newUser->getEmail());
 
-        return new UserModel($newUser->getId());
-
-    }
-
-    /**
-     * @param $base64
-     * @return mixed
-     * @throws \Framework\Exceptions\ControllerException
-     */
-    public function parseRegistrationCode($base64) {
-
-        $code = new Code($base64);
-        $code->hasOrError("email", "code");
-
-        return $code;
+        return new UserModel($newUser->getID());
 
     }
 
@@ -240,39 +197,89 @@ class UsersModel implements SingletonInterface, Injectable {
     public function completePasswordReset($code, $password) {
 
         $credentials = self::parseResetPasswordCode($code);
-        $pwd = new Password($password);
 
-        $user = new UserModel($credentials->getLogin(), $credentials->getPassword());
+        $user = new UserModel($credentials["login"], $credentials["password"]);
 
-        $user->changePasswordNow($pwd);
+        $user->changePasswordNow($password);
 
     }
 
     /**
-     * @param $base64
-     * @return Code
+     * @param User $id
+     */
+    public function createUserDirectory(User $id) {
+
+        $path = new File(Folders::getInstance()->generateUserContentFolder($id));
+
+        error_log($path->path());
+
+        if (! $path->exists()) {
+            $path->createNewDirectory(NEW_DIR_RIGHTS, true);
+        }
+
+    }
+
+    /**
+     * @param $code
+     * @return mixed
      * @throws \Framework\Exceptions\ControllerException
      */
-    public function parseResetPasswordCode($base64) {
+    public function parseRegistrationCode($code) {
 
-        $code = new Code($base64);
+        $exception = new ControllerException(I18n::tr("CEX_CODE_INCORRECT"));
 
-        $code->hasOrError("login", "password");
+        $json = base64_decode($code);
 
-        Database::doInConnection(function (Database $db) use ($code) {
+        if ($json === false) {
+            throw $exception;
+        }
+
+        $decoded = json_decode($json, true);
+
+        if (is_null($decoded) || empty($decoded["email"]) || empty($decoded["code"])) {
+            throw $exception;
+        }
+
+        return $decoded["email"];
+
+    }
+
+    /**
+     * @param $code
+     * @return mixed
+     * @throws \Framework\Exceptions\ControllerException
+     */
+    public function parseResetPasswordCode($code) {
+
+        $exception = new ControllerException(I18n::tr("CEX_CODE_INCORRECT"));
+
+        $json = base64_decode($code);
+
+        if ($json === false) {
+            throw $exception;
+        }
+
+        $decoded = json_decode($json, true);
+
+        if (empty($decoded["login"]) || empty($decoded["password"])) {
+            throw $exception;
+        }
+
+        Database::doInConnection(function (Database $db) use ($decoded) {
 
             $query = $db->getDBQuery()->selectFrom("r_users");
-            $query->where("login", $code->getLogin());
-            $query->where("password", $code->getPassword());
+            $query->where("login", $decoded["login"]);
+            $query->where("password", $decoded["password"]);
             $query->select("*");
 
-            $db->fetchOneRow($query)->getOrThrow(
-                ControllerException::tr("ERROR_CODE_NOT_ACTUAL")
+            $db->fetchOneRow($query)->getOrElseThrow(
+                new ControllerException(I18n::tr("CEX_CODE_NOT_ACTUAL"))
             );
 
         });
 
-        return $code;
+
+        return $decoded;
 
     }
 

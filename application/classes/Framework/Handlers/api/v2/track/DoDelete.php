@@ -10,7 +10,9 @@ namespace Framework\Handlers\api\v2\track;
 
 
 use Framework\Controller;
+use Framework\Exceptions\ControllerException;
 use Framework\Models\TracksModel;
+use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
 
 /**
@@ -19,13 +21,16 @@ use Framework\Services\JsonResponse;
  */
 class DoDelete implements Controller {
 
-    public function doPost($track_id, TracksModel $model, JsonResponse $response) {
+    public function doPost(HttpPost $post, TracksModel $model, JsonResponse $response) {
 
-        // Delete tracks from streams if appears
-        $model->deleteFromStreams($track_id);
+        $id = $post->getParameter("track_id")
+            ->getOrElseThrow(ControllerException::noArgument("track_id"));
 
-        // Delete tracks from library
-        $model->delete($track_id);
+        // Delete tracks from streams if they appears
+        $model->deleteFromStreams($id);
+
+        // Delete tracks from service
+        $model->delete($id);
 
     }
 

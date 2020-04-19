@@ -1,55 +1,44 @@
 <ul class="context-menu select-persistent fixed" id="track-menu">
-    <li class="menu-item" ng-if="target.length == 1" ng-click="playFrom()">
-        <i class="icon-play-arrow"></i>
-        <translate>MENU_PLAY_FROM</translate>
-    </li>
+    <li class="menu-item" ng-if="target.length == 1" ng-click="playFrom()"><i class="icon-play-arrow"></i> Play form here</li>
+    <li class="menu-item" ng-click="edit()"><i class="icon-mode-edit"></i> Edit info</li>
     <li class="menu-item divider"></li>
-    <li class="menu-item" ng-click="edit()">
-        <i class="icon-mode-edit"></i>
-        <translate>MENU_EDIT_TRACK</translate>
-    </li>
     <li>
         <i class="icon-add"></i>
-        <translate>MENU_ADD_TO_STATION</translate>
+        <translate>FR_ADD_TO_STREAM</translate>
         <span class="expand"></span>
         <ul class="context-menu left-side drop-down">
             <li ng-repeat="stream in account.streams" ng-click="addToStream(stream)">
-                <span class="grey right" ng-bind="stream.tracks_count"></span>
+                <span class="grey right">{{stream.tracks_count}}</span>
                 <i class="icon-wifi-tethering"></i>
-                <span ng-bind="stream.name"></span>
+                {{ stream.name }}
             </li>
         </ul>
     </li>
     <li>
-        <i class="icon-add"></i>
-        <translate>MENU_MOVE_TO_STATION</translate>
-        <span class="expand"></span>
+        <i class="icon-add"></i> Move to stream <span class="expand"></span>
         <ul class="context-menu left-side drop-down">
             <li ng-repeat="stream in account.streams" ng-click="moveToStream(stream)">
-                <span class="grey right">{{ stream.tracks_count }}</span>
+                <span class="grey right">{{stream.tracks_count}}</span>
                 <i class="icon-wifi-tethering"></i>
-                <span ng-bind="stream.name"></span>
+                {{ stream.name }}
             </li>
         </ul>
     </li>
     <li>
-        <i class="icon-create"></i>
-        <translate>MENU_CHANGE_COLOR</translate>
-        <span class="expand"></span>
+        <i class="icon-create"></i> Change color <span class="expand"></span>
         <ul class="context-menu drop-down left-side" align-vertical="">
             <li ng-repeat="group in lib.groups" ng-click="changeGroup(group)">
-                <i style="color:{{ group.color_code || 'none' }}" class="icon-circle"></i>
-                <span ng-bind="group.color_name"></span>
+                <i style="color:{{ group.color_code || 'none' }}" class="icon-circle"></i> {{ group.color_name }}
             </li>
         </ul>
     </li>
     <li class="menu-item divider"></li>
     <li class="menu-item" ng-click="deleteSelected()">
         <i class="icon-cross"></i>
-        <translate data-args="{ name: stream.name }">MENU_REMOVE_FROM_STATION</translate>
+        <translate>FR_REMOVE_FROM_STREAM</translate>
     </li>
     <li class="menu-item" ng-click="deleteCompletelySelected()">
         <i class="icon-delete"></i>
-        <translate>MENU_REMOVE_FROM_LIBRARY</translate>
+        <translate>FR_DELETE_TRACKS</translate>
     </li>
 </ul>

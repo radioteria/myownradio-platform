@@ -62,7 +62,6 @@ class DoGetJavascriptModules implements Controller {
             "application/modules/controllers/controllers.tracks.js",
 
             "application/modules/directives/directives.player.js",
-            "application/modules/directives/directives.plan.js",
 
             "application/modules/ui/ui.hashtags.js",
 

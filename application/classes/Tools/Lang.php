@@ -10,10 +10,6 @@ namespace Tools;
 
 
 class Lang {
-    /**
-     * @param $mixed
-     * @return bool
-     */
     public static function isNull($mixed) {
         foreach (func_get_args() as $arg) {
             if (is_null($arg)) {
@@ -21,17 +17,5 @@ class Lang {
             }
         }
         return false;
-    }
-
-    /**
-     * @param \Generator $generator
-     * @return array
-     */
-    public static function generatorToArray(\Generator $generator) {
-        $array = [];
-        foreach($generator as &$item) {
-            $array[] = $item;
-        }
-        return $array;
     }
 } 

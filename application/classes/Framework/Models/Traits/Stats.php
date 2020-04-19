@@ -11,11 +11,6 @@ namespace Framework\Models\Traits;
 
 use Framework\Services\Database;
 
-/**
- * Class Stats
- * @package Framework\Models\Traits
- * @localized 21.05.2015
- */
 trait Stats {
     protected $tracks_count;
     protected $tracks_duration;

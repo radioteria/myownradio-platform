@@ -10,8 +10,7 @@ namespace Framework;
 
 
 use Framework\Injector\Injectable;
-use Tools\Common;
-use Tools\Optional\Option;
+use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -24,77 +23,20 @@ class Preferences implements Injectable, SingletonInterface {
         ]
     ];
 
-    private static $prefs = null;
-
-    public static function staticInit() {
-        if (self::$prefs === null) {
-            self::$prefs = parse_ini_file("application/settings.ini", true);
-        }
-    }
-
     /**
-     * @param string $section
-     * @param string $setting
-     * @param array $context
-     * @return mixed
+     * @param null $_
+     * @return Optional
      */
-    public static function getSetting($section, $setting, array $context = null) {
-        self::staticInit();
-        if ($context === null) {
-            return self::$prefs[$section][$setting];
-        }
-        return Common::quickReplace(self::$prefs[$section][$setting], $context);
-    }
-
-    /**
-     * @param $section
-     * @return mixed
-     */
-    public static function getSection($section) {
-        self::staticInit();
-        return self::$prefs[$section];
-    }
-
-    public static function json() {
-        self::staticInit();
-        $allowed = explode("|", self::getSetting("misc", "serialized.sections"));
-        $target = [];
-        foreach (self::$prefs as $section => $settings) {
-            if (array_search($section, $allowed) === false) {
-                continue;
-            }
-            $target[$section] = [];
-            foreach ($settings as $setting => $value) {
-                $path = explode(".", $setting);
-                $temp = &$target[$section];
-                foreach ($path as $index => $part) {
-                    if ($index + 1 == count($path)) {
-                        $temp[$part] = $value;
-                    } else {
-                        if (!isset($temp[$part])) {
-                            $temp[$part] = [];
-                        }
-                        $temp = &$temp[$part];
-                    }
-                }
-            }
-        }
-        return json_encode($target);
-    }
-
-    /**
-     * @return Option
-     */
-    public function get() {
+    public function get($_ = null) {
         $count = func_num_args();
         $accumulator = self::$config;
         for ($i = 0; $i < $count; $i++) {
             if (isset($accumulator[func_get_arg($i)])) {
                 $accumulator = $accumulator[func_get_arg($i)];
             } else {
-                return Option::None();
+                return Optional::noValue();
             }
         }
-        return Option::Some($accumulator);
+        return Optional::ofEmpty($accumulator);
     }
 } 

@@ -1,5 +1,4 @@
 version: '3.5'
-
 services:
   db:
     image: 'mysql:5.6'
@@ -87,12 +86,11 @@ volumes:
   mysql-data:
     name: mysql-data
     driver: local
-  cache-data:
-    name: cache-data
-    driver: local
   myownradio-storage:
     name: myownradio-storage
-    driver: local
+    driver: local-persist
+    driver_opts:
+      mountpoint: /mnt/volume0/volumes/myownradio-storage
 
 networks:
   global:

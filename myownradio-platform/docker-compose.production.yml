@@ -58,7 +58,7 @@ services:
       - default
       - global
     volumes:
-      - myownradio-storage:/app/storage
+      - myownradio-storage-persist:/app/storage
     depends_on:
       - db
       - streamer
@@ -74,7 +74,7 @@ services:
       - VIRTUAL_PORT=80
       - LETSENCRYPT_HOST=fs1.myownradio.biz
     volumes:
-      - myownradio-storage:/usr/share/nginx/html
+      - myownradio-storage-persist:/usr/share/nginx/html
     networks:
       - default
       - global
@@ -87,7 +87,7 @@ volumes:
     name: mysql-data
     driver: local
   myownradio-storage:
-    name: myownradio-storage
+    name: myownradio-storage-persist
     driver: local-persist
     driver_opts:
       mountpoint: /mnt/volume0/volumes/myownradio-storage

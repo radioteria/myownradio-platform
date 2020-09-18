@@ -419,4 +419,24 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         ];
     }
 
+    /**
+     * @param int $offset
+     * @param int $limit
+     * @return array
+     */
+    public function getRecentChannels($offset = 0, $limit = self::CHANNELS_PER_REQUEST_MAX) {
+
+        $query = $this->channelPrefix();
+
+        $this->addNowPlaying($query);
+
+        $query->offset($offset);
+        $query->limit($limit);
+
+        $query->orderBy("a.started DESC");
+
+        return [
+            "items" => $query->fetchAll()
+        ];
+    }
 } 

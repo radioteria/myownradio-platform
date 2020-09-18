@@ -275,7 +275,7 @@ class Streams implements \Countable, Injectable, SingletonInterface {
     public function getRecentlyUpdated($offset = 0, $limit = Defaults::DEFAULT_STREAMS_PER_REQUEST) {
         $query = $this->getStreamsPrefix();
 
-        // todo add updated_at field to database
+        $query->orderBy("a.started DESC");
 
         $query->offset($offset);
         $query->limit($limit);

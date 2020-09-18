@@ -234,6 +234,17 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             }
         }],
 
+        PATH_STREAMS_RECENT: ["/recent/", {
+            templateUrl: "/views/catalog/by-recent.html",
+            controller: 'ChannelListRecent',
+            title: "Recently updated radio stations on " + SITE_TITLE,
+            resolve: {
+                channelsData: ["$channels", function ($channels) {
+                    return $channels.getRecentChannels();
+                }]
+            }
+        }],
+
         PATH_STREAMS_BOOKMARKS: ["/bookmarks/", {
             templateUrl: "/views/catalog/by-bookmarks.html",
             controller: 'ChannelListBookmarks',

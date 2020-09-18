@@ -399,7 +399,9 @@
         "other" : "streams"
     },
 
-    "FR_CHANNELS_BY_CATEGORY_TITLE": {
+    "FR_CHANNELS_BY_CATEGORY_TITLE": "What's recently updated on <b>MyOwnRadio</b>",
+
+    "FR_CHANNELS_BY_RECENT_TITLE": {
         "1"     : "<b>1</b> radio station in category <b>%category_name%</b>",
         "other" : "<b>%%</b> radio stations in category <b>%category_name%</b>"
     },
@@ -443,7 +445,8 @@
     "FR_CATALOG_POPULAR_STATIONS"   : "Popular",
     "FR_CATALOG_MY_STATIONS"        : "My Stations",
     "FR_CATALOG_MY_BOOKMARKS"       : "My Bookmarks",
-    "FR_CATALOG_NEW_STATIONS"       : "New"
+    "FR_CATALOG_NEW_STATIONS"       : "New",
+    "FR_CATALOG_RECENT_STATIONS"    : "Recent"
 
 }
 

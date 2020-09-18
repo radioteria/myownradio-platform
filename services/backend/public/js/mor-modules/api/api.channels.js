@@ -79,7 +79,13 @@
                 return $api.get("/api/v2/channels/similar", $api.filter({
                     stream_id: channel
                 }));
-            }
+            },
+            getRecentChannels: function (offset, limit) {
+                return $api.get("/api/v2/channels/recent", $api.filter({
+                    offset: offset,
+                    limit: limit
+                }))
+            },
         }
     }]);
 

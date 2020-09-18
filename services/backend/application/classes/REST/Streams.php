@@ -280,7 +280,12 @@ class Streams implements \Countable, Injectable, SingletonInterface {
         $query->offset($offset);
         $query->limit($limit);
 
-        return$query->fetchAll(null);
+        $streams = $query->fetchAll(null, function ($row) {
+            $this->processStreamRow($row);
+            return $row;
+        });
+
+        return $streams;
     }
 
 

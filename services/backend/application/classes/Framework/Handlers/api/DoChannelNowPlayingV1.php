@@ -48,7 +48,8 @@ class DoChannelNowPlayingV1 implements Controller
             "next_track" => [
                 "title" => $next["caption"],
                 "url" => $this->replaceDomainWithCacheDomain($next_track_url),
-            ]
+            ],
+            "image_url" => $stream['cover_url']
         ]);
     }
 

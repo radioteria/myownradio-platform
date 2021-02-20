@@ -30,6 +30,9 @@ services:
       - db
       - storage
     deploy:
+      labels:
+        prometheus-job: "true"
+        prometheus-port: 8082
       update_config:
         order: start-first
         failure_action: rollback

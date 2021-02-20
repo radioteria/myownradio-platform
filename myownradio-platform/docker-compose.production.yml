@@ -31,7 +31,7 @@ services:
       - storage
     deploy:
       labels:
-        prometheus-job: "true"
+        prometheus-job: yes
         prometheus-port: 8082
       update_config:
         order: start-first

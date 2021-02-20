@@ -9,17 +9,19 @@ import biz.myownradio.LHttp.ContextHandlers.GetStreamAudioHandler;
 import biz.myownradio.LHttp.ContextHandlers.SetStreamStateNotifyHandler;
 import biz.myownradio.LHttp.ContextObjects.LHttpContextString;
 import biz.myownradio.LHttp.LHttpException;
-import biz.myownradio.LHttp.LHttpHandler;
-import biz.myownradio.LHttp.LHttpProtocol;
 import biz.myownradio.LHttp.LHttpServer;
 import biz.myownradio.tools.MORLogger;
 import biz.myownradio.tools.MORSettings;
+import io.prometheus.client.exporter.HTTPServer;
 
 import java.io.IOException;
 
 public class WebRadio {
 
     public static void main(String[] args) throws IOException, InterruptedException {
+        int metricsServerPort = MORSettings.getInteger("metrics.port").orElse(8082);
+
+        HTTPServer metricsServer = new HTTPServer(metricsServerPort);
 
         int listeningPort = MORSettings.getInteger("server.port").orElse(7778);
 

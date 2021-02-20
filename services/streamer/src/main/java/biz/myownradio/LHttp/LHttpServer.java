@@ -1,16 +1,14 @@
 package biz.myownradio.LHttp;
 
 import biz.myownradio.LHttp.ContextObjects.LHttpContextAbstract;
+import biz.myownradio.Metrics;
 import biz.myownradio.tools.DelayedAction;
 import biz.myownradio.tools.MORLogger;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -72,12 +70,16 @@ public class LHttpServer {
                         InputStream inputStream = socket.getInputStream();
                         OutputStream outputStream = socket.getOutputStream()
                 ) {
+                    LHttpRequest request = null;
                     try {
                         logger.println("New connection attempt. Reading request...");
-                        LHttpRequest request = readRequest(inputStream, socket);
+                        request = readRequest(inputStream, socket);
                         logger.sprintf("Client IP=%s, ROUTE=%s", socket.getInetAddress().getHostAddress(),
                                 request.getRequestPath());
                         routeRequest(request, outputStream);
+                        Metrics.httpRequests
+                                .labels(request.getRequestPath(), "200")
+                                .inc();
                     } catch (LHttpException e) {
                         LHttpStatus st = e.getStatus();
                         logger.sprintf("Unable to route request. STATUS=%s", st.getCode());
@@ -87,6 +89,11 @@ public class LHttpServer {
                         printWriter.println("");
                         printWriter.printf("<h1>%s</h1>", st.getResponse());
                         printWriter.println(e.getMessage());
+                        if (Objects.nonNull(request)) {
+                            Metrics.httpRequests
+                                    .labels(request.getRequestPath(), String.valueOf(e.getStatus().getCode()))
+                                    .inc();
+                        }
                     }
                 } catch (IOException hotClientDisconnection) {
                     logger.sprintf("Client IP=%s hardly disconnected", socket.getInetAddress().getHostAddress());
@@ -150,7 +157,7 @@ public class LHttpServer {
                 .stream()
                 .filter(handle -> handle.is(req.getRequestPath()))
                 .map(handle -> handlerMap.get(handle).getHandler())
-                .filter(action -> action != null)
+                .filter(Objects::nonNull)
                 .findFirst()
                 .orElseThrow(LHttpException::documentNotFound)
                 .handle(new LHttpProtocol(req, os));

@@ -21,7 +21,7 @@ use Objects\FileServer\FileServer;
 
 class FileServerFacade {
 
-    const FS_PATTERN = "http://fs%d.myownradio.biz/";
+    const FS_PATTERN = "https://fs%d.myownradio.biz/";
     const FS_RETRY_TIMES = 2;
 
     private $fs_id;

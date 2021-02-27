@@ -30,7 +30,7 @@ services:
         - prometheus-job=yes
         - prometheus-port=8082
         - traefik.enable=true
-        - traefik.http.routers.myownradio_streamer.entryPoints=web,websecure
+        - traefik.http.routers.myownradio_streamer.entryPoints=websecure
         - traefik.http.routers.myownradio_streamer.rule=Host(`stream.myownradio.biz`)
         - traefik.http.routers.myownradio_streamer.tls=true
         - traefik.http.routers.myownradio_streamer.tls.certresolver=resolver
@@ -70,7 +70,7 @@ services:
         failure_action: rollback
       labels:
         - traefik.enable=true
-        - traefik.http.routers.myownradio_backend.entryPoints=web,websecure
+        - traefik.http.routers.myownradio_backend.entryPoints=websecure
         - traefik.http.routers.myownradio_backend.rule=Host(`myownradio.biz`)
         - traefik.http.routers.myownradio_backend.tls=true
         - traefik.http.routers.myownradio_backend.tls.certresolver=resolver
@@ -88,7 +88,7 @@ services:
         failure_action: rollback
       labels:
         - traefik.enable=true
-        - traefik.http.routers.myownradio_storage.entryPoints=web,websecure
+        - traefik.http.routers.myownradio_storage.entryPoints=websecure
         - traefik.http.routers.myownradio_storage.rule=Host(`fs1.myownradio.biz`)
         - traefik.http.routers.myownradio_storage.tls=true
         - traefik.http.routers.myownradio_storage.tls.certresolver=resolver

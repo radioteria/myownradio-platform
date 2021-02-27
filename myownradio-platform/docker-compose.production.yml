@@ -32,7 +32,9 @@ services:
         - traefik.enable=true
         - traefik.http.routers.myownradio_streamer.entryPoints=web
         - traefik.http.routers.myownradio_streamer.rule=Host(`stream.myownradio.biz`)
-        - traefik.http.services.superorder_me_frontend.loadbalancer.server.port=7770
+        - traefik.http.routers.myownradio_streamer.tls=true
+        - traefik.http.routers.myownradio_streamer.tls.certresolver=resolver
+        - traefik.http.services.myownradio_streamer.loadbalancer.server.port=7778
       update_config:
         order: start-first
         failure_action: rollback
@@ -70,13 +72,11 @@ services:
         - traefik.enable=true
         - traefik.http.routers.myownradio_backend.entryPoints=web
         - traefik.http.routers.myownradio_backend.rule=Host(`myownradio.biz`)
+        - traefik.http.routers.myownradio_backend.tls=true
+        - traefik.http.routers.myownradio_backend.tls.certresolver=resolver
         - traefik.http.services.myownradio_backend.loadbalancer.server.port=8080
   storage:
     image: nginx:1.17
-    environment:
-      - VIRTUAL_HOST=fs1.myownradio.biz
-      - VIRTUAL_PORT=80
-      - LETSENCRYPT_HOST=fs1.myownradio.biz
     volumes:
       - myownradio-storage:/usr/share/nginx/html
     networks:
@@ -86,6 +86,13 @@ services:
       update_config:
         order: start-first
         failure_action: rollback
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.myownradio_storage.entryPoints=web
+        - traefik.http.routers.myownradio_storage.rule=Host(`fs1.myownradio.biz`)
+        - traefik.http.routers.myownradio_storage.tls=true
+        - traefik.http.routers.myownradio_storage.tls.certresolver=resolver
+        - traefik.http.services.myownradio_storage.loadbalancer.server.port=80
 volumes:
   mysql-data:
     name: mysql-data

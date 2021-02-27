@@ -19,10 +19,6 @@ services:
       MOR_JDBC_LOGIN: "mor"
       MOR_JDBC_PASSWORD: "mor"
       MOR_JDBC_URL: "jdbc:mysql://db:3306/mor"
-      VIRTUAL_HOST: "stream.myownradio.biz"
-      VIRTUAL_PORT: 7778
-      VIRTUAL_NETWORK: 1
-      LETSENCRYPT_HOST: "stream.myownradio.biz"
     networks:
       - default
       - global
@@ -31,8 +27,12 @@ services:
       - storage
     deploy:
       labels:
-        prometheus-job: yes
-        prometheus-port: 8082
+        - prometheus-job=yes
+        - prometheus-port=8082
+        - traefik.enable=true
+        - traefik.http.routers.myownradio_streamer.entryPoints=web
+        - traefik.http.routers.myownradio_streamer.rule=Host(`stream.myownradio.biz`)
+        - traefik.http.services.superorder_me_frontend.loadbalancer.server.port=7770
       update_config:
         order: start-first
         failure_action: rollback
@@ -51,10 +51,6 @@ services:
       S3_ACCESS_KEY: "AKIAJBSFTKGMHDMPRPZA"
       S3_SECRET_KEY: "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"
       STREAM_HOST: "https://stream.myownradio.biz"
-      VIRTUAL_HOST: "myownradio.biz"
-      VIRTUAL_PORT: 8080
-      VIRTUAL_NETWORK: 1
-      LETSENCRYPT_HOST: "myownradio.biz"
       SENTRY_DSN: "https://2a74df546ce14acbb01fd71f1d00dfe7@sentry.io/2518976"
       BACKEND_STORAGE_LOCAL_DIR: /app/storage
     networks:
@@ -70,6 +66,11 @@ services:
       update_config:
         order: start-first
         failure_action: rollback
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.myownradio_backend.entryPoints=web
+        - traefik.http.routers.myownradio_backend.rule=Host(`myownradio.biz`)
+        - traefik.http.services.myownradio_backend.loadbalancer.server.port=8080
   storage:
     image: nginx:1.17
     environment:

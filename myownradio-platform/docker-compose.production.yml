@@ -101,7 +101,7 @@ volumes:
     name: myownradio-persist
     driver: local-persist
     driver_opts:
-      mountpoint: /mnt/volume0/volumes/myownradio-storage
+      mountpoint: /data/volumes/myownradio-storage
 
 networks:
   global:

@@ -59,7 +59,7 @@ services:
       - default
       - global
     volumes:
-      - myownradio-storage:/app/storage
+      - /data/volumes/myownradio-storage:/app/storage
     depends_on:
       - db
       - streamer
@@ -78,7 +78,7 @@ services:
   storage:
     image: nginx:1.17
     volumes:
-      - myownradio-storage:/usr/share/nginx/html
+      - /data/volumes/myownradio-storage:/usr/share/nginx/html
     networks:
       - default
       - global
@@ -97,11 +97,6 @@ volumes:
   mysql-data:
     name: mysql-data
     driver: local
-  myownradio-storage:
-    name: myownradio-persist
-    driver: local-persist
-    driver_opts:
-      mountpoint: /data/volumes/myownradio-storage
 
 networks:
   global:

@@ -62,3 +62,8 @@ typings/
 
 # exports files
 exports
+
+# IDEA files
+.idea
+
+target

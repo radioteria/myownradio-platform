@@ -21,7 +21,7 @@ services:
       MOR_JDBC_URL: "jdbc:mysql://db:3306/mor"
       VIRTUAL_HOST: "stream.myownradio.biz"
       LETSENCRYPT_HOST: "stream.myownradio.biz"
-      VIRTUAL_PORT: "8080"
+      VIRTUAL_PORT: "7778"
     networks:
       - default
       - global

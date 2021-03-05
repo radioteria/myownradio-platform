@@ -19,6 +19,9 @@ services:
       MOR_JDBC_LOGIN: "mor"
       MOR_JDBC_PASSWORD: "mor"
       MOR_JDBC_URL: "jdbc:mysql://db:3306/mor"
+      VIRTUAL_HOST: "stream.myownradio.biz"
+      LETSENCRYPT_HOST: "stream.myownradio.biz"
+      VIRTUAL_PORT: "8080"
     networks:
       - default
       - global
@@ -55,6 +58,9 @@ services:
       STREAM_HOST: "https://stream.myownradio.biz"
       SENTRY_DSN: "https://2a74df546ce14acbb01fd71f1d00dfe7@sentry.io/2518976"
       BACKEND_STORAGE_LOCAL_DIR: /app/storage
+      VIRTUAL_HOST: "myownradio.biz"
+      LETSENCRYPT_HOST: "myownradio.biz"
+      VIRTUAL_PORT: "8080"
     networks:
       - default
       - global
@@ -77,6 +83,10 @@ services:
         - traefik.http.services.myownradio_backend.loadbalancer.server.port=8080
   storage:
     image: nginx:1.17
+    environment:
+      VIRTUAL_HOST: "fs1.myownradio.biz"
+      LETSENCRYPT_HOST: "fs1.myownradio.biz"
+      VIRTUAL_PORT: "80"
     volumes:
       - /data/volumes/myownradio-storage:/usr/share/nginx/html
     networks:

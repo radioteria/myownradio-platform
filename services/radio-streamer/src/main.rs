@@ -29,7 +29,7 @@ async fn main() -> Result<()> {
         .build()
         .filter_level(config.log_level);
     let safe_drain = Mutex::new(drain).map(slog::Fuse);
-    let logger = Logger::root(safe_drain, o!("version" => VERSION));
+    let logger = Arc::new(Logger::root(safe_drain, o!("version" => VERSION)));
 
     let mor_backend_client = Arc::new(MorBackendClient::new(&config.mor_backend_url, &logger));
     let audio_decoder = Arc::new(AudioDecoder::new(
@@ -40,12 +40,16 @@ async fn main() -> Result<()> {
 
     info!(logger, "Starting application...");
 
-    let server = HttpServer::new(move || {
-        App::new()
-            .data(Arc::clone(&config))
-            .data(Arc::clone(&mor_backend_client))
-            .data(Arc::clone(&audio_decoder))
-            .service(listen_by_channel_id)
+    let server = HttpServer::new({
+        let logger = logger.clone();
+        move || {
+            App::new()
+                .data(Arc::clone(&config))
+                .data(Arc::clone(&mor_backend_client))
+                .data(Arc::clone(&audio_decoder))
+                .data(Arc::clone(&logger))
+                .service(listen_by_channel_id)
+        }
     })
     .bind(bind_address)?;
 

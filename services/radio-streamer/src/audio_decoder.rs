@@ -91,7 +91,7 @@ impl AudioDecoder {
                                 .send(Ok(Bytes::copy_from_slice(&input_buffer[..read_bytes])))
                                 .await
                             {
-                                error!(logger, "Unable to send bytes to sender"; "error" => ?error);
+                                error!(logger, "Unable to send bytes to Sender"; "error" => ?error);
                                 break;
                             }
                         }
@@ -101,7 +101,7 @@ impl AudioDecoder {
                                 .send(Err(io::Error::new(ErrorKind::BrokenPipe, error)))
                                 .await
                             {
-                                error!(logger, "Unable to send error to sender"; "error" => ?error);
+                                error!(logger, "Unable to send error to Sender"; "error" => ?error);
                             }
                             break;
                         }

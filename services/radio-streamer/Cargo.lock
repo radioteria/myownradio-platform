@@ -1415,6 +1415,7 @@ dependencies = [
  "cargo-watch",
  "envy",
  "futures",
+ "futures-lite",
  "serde",
  "serde_json",
  "slog",

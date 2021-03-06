@@ -13,6 +13,7 @@ slog-json = "2.3.0"
 slog = "2.7.0"
 envy = "0.4.2"
 futures = "0.3.13"
+futures-lite = "1.11.3"
 actix-rt = "2.1.0"
 cargo-watch = "7.5.0"
 serde = { version = "1.0.123", features = ["derive"] }

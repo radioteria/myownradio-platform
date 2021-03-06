@@ -55,7 +55,7 @@ pub async fn listen_by_channel_id(
                 while let Some(r) = dec_receiver.next().await {
                     if let Err(error) = enc_sender.send(r).await {
                         error!(logger, "Unable to pipe bytes"; "error" => ?error);
-                        break;
+                        return;
                     }
                 }
             }
@@ -64,5 +64,6 @@ pub async fn listen_by_channel_id(
 
     HttpResponse::Ok()
         .content_type("audio/mp3")
+        .force_close()
         .streaming(enc_receiver)
 }

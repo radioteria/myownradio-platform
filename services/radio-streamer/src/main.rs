@@ -34,16 +34,19 @@ async fn main() -> Result<()> {
     let safe_drain = Mutex::new(drain).map(slog::Fuse);
     let logger = Arc::new(Logger::root(safe_drain, o!("version" => VERSION)));
 
-    let mor_backend_client = Arc::new(MorBackendClient::new(&config.mor_backend_url, &logger));
+    let mor_backend_client = Arc::new(MorBackendClient::new(
+        &config.mor_backend_url,
+        &logger.new(o!("scope" => "MorBackendClient")),
+    ));
     let audio_decoder = Arc::new(AudioDecoder::new(
         &config.path_to_ffmpeg,
         &config.path_to_ffprobe,
-        &logger,
+        &logger.new(o!("scope" => "AudioDecoder")),
     ));
     let audio_encoder = Arc::new(AudioEncoder::new(
         &config.path_to_ffmpeg,
         &config.path_to_ffprobe,
-        &logger,
+        &logger.new(o!("scope" => "AudioEncoder")),
     ));
 
     info!(logger, "Starting application...");

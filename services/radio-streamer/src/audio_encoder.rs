@@ -1,9 +1,11 @@
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
-use futures::channel::mpsc;
-use futures::{io, AsyncReadExt, AsyncWriteExt, SinkExt, StreamExt};
+use futures::channel::{mpsc, oneshot};
+use futures::{io, AsyncReadExt, AsyncWrite, AsyncWriteExt, SinkExt, StreamExt};
+use futures_lite::FutureExt;
 use slog::{error, Logger};
 use std::io::ErrorKind;
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub enum AudioEncoderError {
@@ -39,7 +41,7 @@ impl AudioEncoder {
         let (stdin_sender, stdin_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
         let (stdout_sender, stdout_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
 
-        let child = match Command::new(&self.path_to_ffmpeg)
+        let process = match Command::new(&self.path_to_ffmpeg)
             .args(&[
                 "-acodec",
                 "pcm_s16le",
@@ -80,7 +82,7 @@ impl AudioEncoder {
             }
         };
 
-        let mut stdout = match child.stdout {
+        let mut stdout = match process.stdout {
             Some(stdout) => stdout,
             None => {
                 error!(self.logger, "Stdout is not available");
@@ -88,7 +90,7 @@ impl AudioEncoder {
             }
         };
 
-        let mut stdin = match child.stdin {
+        let stdin = match process.stdin {
             Some(stdin) => stdin,
             None => {
                 error!(self.logger, "Stdin is not available");
@@ -96,12 +98,16 @@ impl AudioEncoder {
             }
         };
 
+        let (term_signal, term_handler) = oneshot::channel::<()>();
+
         // Read raw audio data and send to the encoder
         actix_rt::spawn({
             let mut stdin_receiver = stdin_receiver;
+            let mut stdin = stdin;
+
             let logger = self.logger.clone();
 
-            async move {
+            let pipe = async move {
                 while let Some(r) = stdin_receiver.next().await {
                     match r {
                         Ok(bytes) => {
@@ -113,13 +119,20 @@ impl AudioEncoder {
                         }
                     };
                 }
-            }
+            };
+
+            let abort = async move {
+                term_handler.await;
+            };
+
+            abort.or(pipe)
         });
 
-        // Read encoded audio data from encoder and send to stdout_sender
+        // Read encoded audio data from encoder and send to stdout_sender.
         actix_rt::spawn({
             let mut stdout_sender = stdout_sender;
             let mut input_buffer = vec![0u8; 4096];
+
             let logger = self.logger.clone();
 
             async move {
@@ -133,7 +146,7 @@ impl AudioEncoder {
                                 .send(Ok(Bytes::copy_from_slice(&input_buffer[..read_bytes])))
                                 .await
                             {
-                                error!(logger, "Unable to send bytes to sender"; "error" => ?error);
+                                error!(logger, "Unable to send bytes to Sender"; "error" => ?error);
                                 break;
                             }
                         }
@@ -143,12 +156,14 @@ impl AudioEncoder {
                                 .send(Err(io::Error::new(ErrorKind::BrokenPipe, error)))
                                 .await
                             {
-                                error!(logger, "Unable to send error to sender"; "error" => ?error);
+                                error!(logger, "Unable to send error to Sender"; "error" => ?error);
                             }
                             break;
                         }
                     }
                 }
+
+                let r = term_signal.send(());
             }
         });
 

@@ -41,6 +41,7 @@ pub enum MorBackendClientError {
     UnexpectedStatusCode,
     ResponseReadError,
     ResponseParseError,
+    UnexpectedResponse,
 }
 
 impl MorBackendClient {
@@ -84,7 +85,18 @@ impl MorBackendClient {
         };
 
         match serde_json::from_slice::<NowPlayingResponse>(&bytes) {
-            Ok(now_playing_response) => Ok(now_playing_response.data),
+            Ok(NowPlayingResponse {
+                code,
+                message,
+                data,
+            }) if (code == 1 && message == "OK") => Ok(data),
+            Ok(NowPlayingResponse { code, message, .. }) => {
+                error!(
+                    self.logger,
+                    "Response has unexpected code or message"; "response" => ?bytes
+                );
+                Err(MorBackendClientError::UnexpectedResponse)
+            }
             Err(error) => {
                 error!(self.logger, "Unable to parse response"; "error" => ?error);
                 Err(MorBackendClientError::ResponseParseError)

@@ -1,51 +1,47 @@
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
-use envy::Error;
 use futures::channel::mpsc;
-use futures::{io, AsyncReadExt, SinkExt};
+use futures::{io, AsyncReadExt, AsyncWriteExt, SinkExt, StreamExt};
 use slog::{error, Logger};
 use std::io::ErrorKind;
 
 #[derive(Debug)]
-pub enum AudioDecoderError {
+pub enum AudioEncoderError {
     ProcessError,
-    NoStdout,
+    StdoutUnavailable,
+    StdinUnavailable,
 }
 
-pub struct AudioDecoder {
+pub struct AudioEncoder {
     path_to_ffmpeg: String,
     path_to_ffprobe: String,
     logger: Logger,
 }
 
-impl AudioDecoder {
+impl AudioEncoder {
     pub fn new(path_to_ffmpeg: &str, path_to_ffprobe: &str, logger: &Logger) -> Self {
-        AudioDecoder {
+        AudioEncoder {
             path_to_ffmpeg: path_to_ffmpeg.to_string(),
             path_to_ffprobe: path_to_ffprobe.to_string(),
             logger: logger.clone(),
         }
     }
 
-    pub fn decode_audio_file(
+    pub fn make_encoder(
         &self,
-        url: &str,
-        offset: &u32,
-    ) -> Result<mpsc::Receiver<Result<Bytes, io::Error>>, AudioDecoderError> {
-        let (sender, receiver) = mpsc::channel(4);
+    ) -> Result<
+        (
+            mpsc::Sender<Result<Bytes, io::Error>>,
+            mpsc::Receiver<Result<Bytes, io::Error>>,
+        ),
+        AudioEncoderError,
+    > {
+        let (stdin_sender, stdin_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
+        let (stdout_sender, stdout_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
 
         let child = match Command::new(&self.path_to_ffmpeg)
             .args(&[
-                "-re",
-                "-fflags",
-                "fastseek",
-                "-ss",
-                format!("{:.4}", offset / 1000).as_str(),
-                "-i",
-                &url,
-                "-filter",
-                "afade=t=in:st=0:d=1",
-                "-codec:a",
+                "-acodec",
                 "pcm_s16le",
                 "-ar",
                 "44100",
@@ -53,17 +49,34 @@ impl AudioDecoder {
                 "2",
                 "-f",
                 "s16le",
+                "-i",
+                "-",
+                "-af",
+                "compand=0 0:1 1:-90/-900 -70/-70 -21/-21 0/-15:0.01:12:0:0",
+                "-map_metadata",
+                "-1",
+                "-vn",
+                "-ar",
+                "44100",
+                "-ac",
+                "2",
+                "-b:a",
+                "256k",
+                "-codec:a",
+                "libmp3lame",
+                "-f",
+                "mp3",
                 "-",
             ])
+            .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
-            .stdin(Stdio::null())
             .spawn()
         {
             Ok(process) => process,
             Err(error) => {
                 error!(self.logger, "Unable to start process"; "error" => ?error);
-                return Err(AudioDecoderError::ProcessError);
+                return Err(AudioEncoderError::ProcessError);
             }
         };
 
@@ -71,12 +84,41 @@ impl AudioDecoder {
             Some(stdout) => stdout,
             None => {
                 error!(self.logger, "Stdout is not available");
-                return Err(AudioDecoderError::NoStdout);
+                return Err(AudioEncoderError::StdoutUnavailable);
             }
         };
 
+        let mut stdin = match child.stdin {
+            Some(stdin) => stdin,
+            None => {
+                error!(self.logger, "Stdin is not available");
+                return Err(AudioEncoderError::StdinUnavailable);
+            }
+        };
+
+        // Read raw audio data and send to the encoder
         actix_rt::spawn({
-            let mut sender = sender;
+            let mut stdin_receiver = stdin_receiver;
+            let logger = self.logger.clone();
+
+            async move {
+                while let Some(r) = stdin_receiver.next().await {
+                    match r {
+                        Ok(bytes) => {
+                            stdin.write(&bytes[..]).await.unwrap();
+                        }
+                        Err(error) => {
+                            error!(logger, "Unable to read bytes from stdin_receiver"; "error" => ?error);
+                            break;
+                        }
+                    };
+                }
+            }
+        });
+
+        // Read encoded audio data from encoder and send to stdout_sender
+        actix_rt::spawn({
+            let mut stdout_sender = stdout_sender;
             let mut input_buffer = vec![0u8; 4096];
             let logger = self.logger.clone();
 
@@ -87,7 +129,7 @@ impl AudioDecoder {
                             if read_bytes == 0 {
                                 break;
                             }
-                            if let Err(error) = sender
+                            if let Err(error) = stdout_sender
                                 .send(Ok(Bytes::copy_from_slice(&input_buffer[..read_bytes])))
                                 .await
                             {
@@ -97,7 +139,7 @@ impl AudioDecoder {
                         }
                         Err(error) => {
                             error!(logger, "Error occurred on reading stdout"; "error" => ?error);
-                            if let Err(error) = sender
+                            if let Err(error) = stdout_sender
                                 .send(Err(io::Error::new(ErrorKind::BrokenPipe, error)))
                                 .await
                             {
@@ -110,6 +152,6 @@ impl AudioDecoder {
             }
         });
 
-        Ok(receiver)
+        Ok((stdin_sender, stdout_receiver))
     }
 }

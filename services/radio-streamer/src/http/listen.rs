@@ -37,7 +37,7 @@ pub async fn listen_by_channel_id(
                     }
                     Err(_) => {
                         // error!(logger, "Unable to get now playing"; "error" => &error);
-                        break;
+                        return;
                     }
                 };
 
@@ -48,7 +48,7 @@ pub async fn listen_by_channel_id(
                     Ok(receiver) => receiver,
                     Err(error) => {
                         error!(logger, "Unable to decode audio file"; "error" => ?error);
-                        break;
+                        return;
                     }
                 };
 

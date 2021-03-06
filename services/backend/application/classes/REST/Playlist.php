@@ -252,7 +252,13 @@ class Playlist implements SingletonInterface, Injectable {
 
     }
 
-    public function getNowPlayingAndNext($id) {
+    /**
+     * @param int $id
+     * @return array
+     * @throws ControllerException
+     */
+    public function getNowPlayingAndNext(int $id): array
+    {
 
         /** @var StreamStats $stream */
 

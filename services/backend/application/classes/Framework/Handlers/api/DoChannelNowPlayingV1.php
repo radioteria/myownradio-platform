@@ -22,7 +22,6 @@ class DoChannelNowPlayingV1 implements Controller
     public function doGet(RouteParams $params, Playlist $playlist, Streams $streams, JsonResponse $response)
     {
         $stream_id = $params->getRequired("stream_id");
-        $stream = $streams->getOneStream($stream_id);
 
         $now_playing = $playlist->getNowPlayingAndNext($stream_id);
         $track = $now_playing['current'];
@@ -39,22 +38,17 @@ class DoChannelNowPlayingV1 implements Controller
         $next_track_url = FSFile::getFileUrl($next_track_file);
 
         $response->setData([
+            "time" => $now_playing["time"],
             "playlist_position" => $track["t_order"],
             "current_track" => [
                 "offset" => $track_position,
                 "title" => $track["caption"],
-                "url" => $this->replaceDomainWithCacheDomain($current_track_url),
+                "url" => $current_track_url,
             ],
             "next_track" => [
                 "title" => $next["caption"],
-                "url" => $this->replaceDomainWithCacheDomain($next_track_url),
+                "url" => $next_track_url,
             ],
-            "image_url" => $stream['cover_url']
         ]);
-    }
-
-    private function replaceDomainWithCacheDomain($url)
-    {
-        return str_replace("//s3.eu-central-1.amazonaws.com", '//cache.myownradio.biz', $url);
     }
 }

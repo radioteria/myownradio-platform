@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 mod config;
 mod http;
+mod mor_backend_client;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 

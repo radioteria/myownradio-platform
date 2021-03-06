@@ -1,4 +1,4 @@
-use actix_web::client::{Client, SendRequestError};
+use actix_web::client::Client;
 use actix_web::http::StatusCode;
 use serde::{Deserialize, Serialize};
 use slog::{error, Logger};

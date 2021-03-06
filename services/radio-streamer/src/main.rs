@@ -1,13 +1,11 @@
 use crate::config::Config;
 use crate::http::listen::listen_by_channel_id;
 use crate::mor_backend_client::MorBackendClient;
-use actix_web::web::Data;
 use actix_web::{App, HttpServer};
-use slog::{info, o, Drain, Fuse, Logger};
+use slog::{info, o, Drain, Logger};
 use slog_json::Json;
 use std::io;
 use std::io::Result;
-use std::ops::Deref;
 use std::sync::{Arc, Mutex};
 
 mod config;
@@ -19,6 +17,7 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 #[actix_rt::main]
 async fn main() -> Result<()> {
     let config = Arc::new(Config::from_env());
+    let bind_address = &config.bind_address.clone();
 
     let drain = Json::new(io::stderr())
         .add_default_keys()
@@ -30,20 +29,17 @@ async fn main() -> Result<()> {
 
     let mor_backend_client = Arc::new(MorBackendClient::new(&config.mor_backend_url, &logger));
 
-    let bind_address = &config.bind_address.clone();
+    info!(logger, "Starting application...");
 
-    info!(logger, "Starting server...");
-
-    HttpServer::new(move || {
+    let server = HttpServer::new(move || {
         App::new()
             .data(Arc::clone(&config))
             .data(Arc::clone(&mor_backend_client))
             .service(listen_by_channel_id)
     })
-    .bind(bind_address)?
-    .run()
-    .await
-    .map(|_| {
-        info!(logger, "Server is started");
-    })
+    .bind(bind_address)?;
+
+    info!(logger, "Application started");
+
+    server.run().await
 }

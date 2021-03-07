@@ -1,8 +1,8 @@
-use crate::helpers::io::send_from_stdout;
+use crate::helpers::io::{read_to_stdin, send_from_stdout};
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
 use futures::channel::{mpsc, oneshot};
-use futures::{io, AsyncWriteExt, StreamExt};
+use futures::io;
 use futures_lite::FutureExt;
 use slog::{debug, error, Logger};
 
@@ -35,8 +35,8 @@ impl AudioEncoder {
         ),
         AudioEncoderError,
     > {
-        let (stdin_sender, stdin_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
-        let (stdout_sender, stdout_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
+        let (input_sender, input_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
+        let (output_sender, output_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
 
         debug!(self.logger, "Spawning audio encoder process...");
 
@@ -103,26 +103,10 @@ impl AudioEncoder {
 
         // Read raw audio data and send to the encoder
         actix_rt::spawn({
-            let mut stdin_receiver = stdin_receiver;
-            let mut stdin = stdin;
-
             let logger = self.logger.clone();
 
             let pipe = async move {
-                while let Some(r) = stdin_receiver.next().await {
-                    match r {
-                        Ok(bytes) => {
-                            if let Err(error) = stdin.write(&bytes[..]).await {
-                                error!(logger, "Unable to send bytes to stdin"; "error" => ?error);
-                                break;
-                            }
-                        }
-                        Err(error) => {
-                            error!(logger, "Unable to read bytes from stdin_receiver"; "error" => ?error);
-                            break;
-                        }
-                    };
-                }
+                read_to_stdin(input_receiver, stdin, logger).await;
             };
 
             let abort = async move {
@@ -137,11 +121,11 @@ impl AudioEncoder {
             let logger = self.logger.clone();
 
             async move {
-                send_from_stdout(stdout, stdout_sender, logger).await;
+                send_from_stdout(stdout, output_sender, logger).await;
                 let _ = term_signal.send(());
             }
         });
 
-        Ok((stdin_sender, stdout_receiver))
+        Ok((input_sender, output_receiver))
     }
 }

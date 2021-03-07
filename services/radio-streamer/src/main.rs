@@ -9,7 +9,9 @@ use slog_json::Json;
 use crate::audio_decoder::AudioDecoder;
 use crate::audio_encoder::AudioEncoder;
 use crate::config::Config;
-use crate::http::listen::listen_by_channel_id;
+use crate::http::metrics::get_metrics;
+use crate::http::streaming::listen_by_channel_id;
+use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
 
 mod audio_decoder;
@@ -17,6 +19,7 @@ mod audio_encoder;
 mod config;
 mod helpers;
 mod http;
+mod metrics;
 mod mor_backend_client;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -46,6 +49,7 @@ async fn main() -> Result<()> {
         &config.path_to_ffmpeg,
         &logger.new(o!("scope" => "AudioEncoder")),
     ));
+    let metrics = Arc::new(Metrics::new());
 
     info!(logger, "Starting application...");
 
@@ -58,7 +62,9 @@ async fn main() -> Result<()> {
                 .data(Arc::clone(&audio_decoder))
                 .data(Arc::clone(&audio_encoder))
                 .data(Arc::clone(&logger))
+                .data(Arc::clone(&metrics))
                 .service(listen_by_channel_id)
+                .service(get_metrics)
         }
     })
     .bind(bind_address)?;

@@ -18,3 +18,4 @@ actix-rt = "2.1.0"
 cargo-watch = "7.5.0"
 serde = { version = "1.0.123", features = ["derive"] }
 async-process = "1.0.2"
+prometheus = { version = "0.12.0", features = ["process"] }

@@ -1,5 +1,6 @@
 use crate::audio_decoder::AudioDecoder;
 use crate::audio_encoder::AudioEncoder;
+use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
 use actix_web::web::Data;
 use actix_web::{get, web, HttpResponse, Responder};
@@ -14,6 +15,7 @@ pub async fn listen_by_channel_id(
     audio_decoder: Data<Arc<AudioDecoder>>,
     audio_encoder: Data<Arc<AudioEncoder>>,
     logger: Data<Arc<Logger>>,
+    metrics: Data<Arc<Metrics>>,
 ) -> impl Responder {
     let (enc_sender, enc_receiver) = match audio_encoder.make_encoder() {
         Ok(ok) => ok,
@@ -28,7 +30,9 @@ pub async fn listen_by_channel_id(
         let logger = logger.clone();
 
         async move {
-            loop {
+            metrics.inc_streaming_in_progress();
+
+            'outer: loop {
                 let now_playing = match mor_backend_client.get_now_playing(&channel_id).await {
                     Ok(now_playing) => {
                         debug!(logger, "Now playing: {:?}", &now_playing);
@@ -36,7 +40,7 @@ pub async fn listen_by_channel_id(
                     }
                     Err(_) => {
                         // error!(logger, "Unable to get now playing"; "error" => &error);
-                        return;
+                        break;
                     }
                 };
 
@@ -47,17 +51,19 @@ pub async fn listen_by_channel_id(
                     Ok(receiver) => receiver,
                     Err(error) => {
                         error!(logger, "Unable to decode audio file"; "error" => ?error);
-                        return;
+                        break;
                     }
                 };
 
                 while let Some(r) = dec_receiver.next().await {
                     if let Err(error) = enc_sender.send(r).await {
                         error!(logger, "Unable to pipe bytes"; "error" => ?error);
-                        return;
+                        break 'outer;
                     }
                 }
             }
+
+            metrics.dec_streaming_in_progress();
         }
     });
 

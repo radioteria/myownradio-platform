@@ -28,4 +28,7 @@ USER nobody:nogroup
 
 COPY --from=0 /code/radio-streamer /radio-streamer
 
+COPY --from=mwader/static-ffmpeg:4.3.2 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.3.2 /ffprobe /usr/local/bin/
+
 CMD ["/radio-streamer"]

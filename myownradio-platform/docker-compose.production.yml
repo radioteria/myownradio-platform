@@ -41,6 +41,28 @@ services:
       update_config:
         order: start-first
         failure_action: rollback
+  radio-streamer:
+    image: 'myownradio/radio-streamer:latest'
+    environment:
+      - MOR_BACKEND_URL=http://backend
+    networks:
+      - default
+      - global
+    depends_on:
+      - backend
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.myownradio_rstreamer.entryPoints=web,websecure
+        - traefik.http.routers.myownradio_rstreamer.rule=Host(`myownradio.biz`) && PathPrefix(`/r/`)
+        - traefik.http.routers.myownradio_rstreamer.tls=true
+        - traefik.http.routers.myownradio_rstreamer.tls.certresolver=resolver
+        - traefik.http.routers.myownradio_rstreamer.middlewares=stripprefix_myownradio_rstreamer
+        - traefik.http.services.myownradio_rstreamer.loadbalancer.server.port=8080
+        - traefik.http.middlewares.stripprefix_myownradio_rstreamer.stripprefix.prefixes=/r
+      update_config:
+        order: start-first
+        failure_action: rollback
   backend:
     image: 'myownradio/backend:latest'
     environment:

@@ -34,11 +34,26 @@ jobs:
           repository: myownradio/stream-server
           tags: latest
           path: services/streamer
+  build-radio-streamer:
+    name: Build Radio Streamer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Build
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: myownradio/radio-streamer
+          tags: latest
+          path: services/radui-streamer
 
   deploy:
     needs:
       - build-backend
       - build-streamer
+      - build-radio-streamer
     name: Deploy to Production
     runs-on: ubuntu-latest
     steps:

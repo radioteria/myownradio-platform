@@ -1,11 +1,10 @@
+use crate::helpers::io::send_from_stdout;
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
 use futures::channel::{mpsc, oneshot};
-use futures::{io, AsyncReadExt, AsyncWrite, AsyncWriteExt, SinkExt, StreamExt};
+use futures::{io, AsyncWriteExt, StreamExt};
 use futures_lite::FutureExt;
-use slog::{error, Logger};
-use std::io::ErrorKind;
-use std::sync::Arc;
+use slog::{debug, error, Logger};
 
 #[derive(Debug)]
 pub enum AudioEncoderError {
@@ -16,15 +15,13 @@ pub enum AudioEncoderError {
 
 pub struct AudioEncoder {
     path_to_ffmpeg: String,
-    path_to_ffprobe: String,
     logger: Logger,
 }
 
 impl AudioEncoder {
-    pub fn new(path_to_ffmpeg: &str, path_to_ffprobe: &str, logger: &Logger) -> Self {
+    pub fn new(path_to_ffmpeg: &str, logger: &Logger) -> Self {
         AudioEncoder {
             path_to_ffmpeg: path_to_ffmpeg.to_string(),
-            path_to_ffprobe: path_to_ffprobe.to_string(),
             logger: logger.clone(),
         }
     }
@@ -40,6 +37,8 @@ impl AudioEncoder {
     > {
         let (stdin_sender, stdin_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
         let (stdout_sender, stdout_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
+
+        debug!(self.logger, "Spawning audio encoder process...");
 
         let process = match Command::new(&self.path_to_ffmpeg)
             .args(&[
@@ -82,7 +81,9 @@ impl AudioEncoder {
             }
         };
 
-        let mut stdout = match process.stdout {
+        debug!(self.logger, "Audio encoder spawned");
+
+        let stdout = match process.stdout {
             Some(stdout) => stdout,
             None => {
                 error!(self.logger, "Stdout is not available");
@@ -111,7 +112,10 @@ impl AudioEncoder {
                 while let Some(r) = stdin_receiver.next().await {
                     match r {
                         Ok(bytes) => {
-                            stdin.write(&bytes[..]).await.unwrap();
+                            if let Err(error) = stdin.write(&bytes[..]).await {
+                                error!(logger, "Unable to send bytes to stdin"; "error" => ?error);
+                                break;
+                            }
                         }
                         Err(error) => {
                             error!(logger, "Unable to read bytes from stdin_receiver"; "error" => ?error);
@@ -122,7 +126,7 @@ impl AudioEncoder {
             };
 
             let abort = async move {
-                term_handler.await;
+                let _ = term_handler.await;
             };
 
             abort.or(pipe)
@@ -130,40 +134,11 @@ impl AudioEncoder {
 
         // Read encoded audio data from encoder and send to stdout_sender.
         actix_rt::spawn({
-            let mut stdout_sender = stdout_sender;
-            let mut input_buffer = vec![0u8; 4096];
-
             let logger = self.logger.clone();
 
             async move {
-                loop {
-                    match stdout.read(&mut input_buffer).await {
-                        Ok(read_bytes) => {
-                            if read_bytes == 0 {
-                                break;
-                            }
-                            if let Err(error) = stdout_sender
-                                .send(Ok(Bytes::copy_from_slice(&input_buffer[..read_bytes])))
-                                .await
-                            {
-                                error!(logger, "Unable to send bytes to Sender"; "error" => ?error);
-                                break;
-                            }
-                        }
-                        Err(error) => {
-                            error!(logger, "Error occurred on reading stdout"; "error" => ?error);
-                            if let Err(error) = stdout_sender
-                                .send(Err(io::Error::new(ErrorKind::BrokenPipe, error)))
-                                .await
-                            {
-                                error!(logger, "Unable to send error to Sender"; "error" => ?error);
-                            }
-                            break;
-                        }
-                    }
-                }
-
-                let r = term_signal.send(());
+                send_from_stdout(stdout, stdout_sender, logger).await;
+                let _ = term_signal.send(());
             }
         });
 

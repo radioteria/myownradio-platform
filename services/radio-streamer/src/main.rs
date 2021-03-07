@@ -15,9 +15,9 @@ use crate::mor_backend_client::MorBackendClient;
 mod audio_decoder;
 mod audio_encoder;
 mod config;
+mod helpers;
 mod http;
 mod mor_backend_client;
-mod utils;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -40,12 +40,10 @@ async fn main() -> Result<()> {
     ));
     let audio_decoder = Arc::new(AudioDecoder::new(
         &config.path_to_ffmpeg,
-        &config.path_to_ffprobe,
         &logger.new(o!("scope" => "AudioDecoder")),
     ));
     let audio_encoder = Arc::new(AudioEncoder::new(
         &config.path_to_ffmpeg,
-        &config.path_to_ffprobe,
         &logger.new(o!("scope" => "AudioEncoder")),
     ));
 

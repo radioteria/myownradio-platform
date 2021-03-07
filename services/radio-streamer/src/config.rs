@@ -1,6 +1,6 @@
+use crate::helpers::system::which;
 use serde::Deserialize;
 use slog::Level;
-use std::process::{Command, Output};
 
 #[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
 #[serde(field_identifier, remote = "Level", untagged)]
@@ -22,23 +22,21 @@ fn default_log_level() -> Level {
 }
 
 fn default_path_to_ffprobe() -> String {
-    let Output { stdout, status, .. } = Command::new("which").args(&["ffprobe"]).output().unwrap();
-
-    if !status.success() {
-        panic!("Unable to locate ffprobe")
+    match which("ffprobe") {
+        Some(path) => path,
+        None => {
+            panic!("Unable to locate ffprobe");
+        }
     }
-
-    String::from_utf8(stdout).unwrap().trim().to_string()
 }
 
 fn default_path_to_ffmpeg() -> String {
-    let Output { stdout, status, .. } = Command::new("which").args(&["ffmpeg"]).output().unwrap();
-
-    if !status.success() {
-        panic!("Unable to locate ffprobe")
+    match which("ffmpeg") {
+        Some(path) => path,
+        None => {
+            panic!("Unable to locate ffprobe");
+        }
     }
-
-    String::from_utf8(stdout).unwrap().trim().to_string()
 }
 
 #[derive(Clone, Debug, Deserialize)]

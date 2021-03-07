@@ -1,7 +1,6 @@
 use crate::audio_decoder::AudioDecoder;
 use crate::audio_encoder::AudioEncoder;
 use crate::mor_backend_client::MorBackendClient;
-use crate::utils::pipe;
 use actix_web::web::Data;
 use actix_web::{get, web, HttpResponse, Responder};
 use futures::{SinkExt, StreamExt};

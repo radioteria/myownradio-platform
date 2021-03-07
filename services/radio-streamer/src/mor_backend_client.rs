@@ -90,7 +90,7 @@ impl MorBackendClient {
                 message,
                 data,
             }) if (code == 1 && message == "OK") => Ok(data),
-            Ok(NowPlayingResponse { code, message, .. }) => {
+            Ok(NowPlayingResponse { .. }) => {
                 error!(
                     self.logger,
                     "Response has unexpected code or message"; "response" => ?bytes

@@ -47,7 +47,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: myownradio/radio-streamer
           tags: latest
-          path: services/radui-streamer
+          path: services/radio-streamer
 
   deploy:
     needs:

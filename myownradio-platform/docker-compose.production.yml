@@ -45,7 +45,7 @@ services:
     image: 'myownradio/radio-streamer:latest'
     environment:
       - BIND_ADDRESS=0.0.0.0:8080
-      - MOR_BACKEND_URL=http://backend
+      - MOR_BACKEND_URL=http://backend:8080
     networks:
       - default
       - global

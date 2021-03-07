@@ -53,8 +53,8 @@ services:
       - backend
     deploy:
       labels:
-        - prometheus-job=yes
-        - prometheus-port=8080
+        - prometheus-job="radio-streamer"
+        - prometheus-port="8080"
         - traefik.enable=true
         - traefik.http.routers.myownradio_rstreamer.entryPoints=web,websecure
         - traefik.http.routers.myownradio_rstreamer.rule=Host(`myownradio.biz`) && PathPrefix(`/r/`)

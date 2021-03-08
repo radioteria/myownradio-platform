@@ -17,12 +17,13 @@ impl AudioFormat {
             "mp3_192k" => Some(AudioFormat::MP3_192k),
             "mp3_256k" => Some(AudioFormat::MP3_256k),
             "mp3_320k" => Some(AudioFormat::MP3_320k),
-            // @todo Unblock after build ffmpeg with libfdk_aac codec
-            // "aacplus_24k" => Some(AudioFormat::AacPlus24k),
-            // "aacplus_32k" => Some(AudioFormat::AacPlus32k),
-            // "aacplus_64k" => Some(AudioFormat::AacPlus64k),
-            // "aacplus_96k" => Some(AudioFormat::AacPlus96k),
-            // "aacplus_128k" => Some(AudioFormat::AacPlus128k),
+
+            "aacplus_24k" => Some(AudioFormat::AacPlus24k),
+            "aacplus_32k" => Some(AudioFormat::AacPlus32k),
+            "aacplus_64k" => Some(AudioFormat::AacPlus64k),
+            "aacplus_96k" => Some(AudioFormat::AacPlus96k),
+            "aacplus_128k" => Some(AudioFormat::AacPlus128k),
+
             _ => None,
         }
     }

@@ -13,6 +13,9 @@ services:
       update_config:
         order: stop-first
         failure_action: rollback
+      resources:
+        limits:
+          memory: 1024M
   streamer:
     image: 'myownradio/stream-server:latest'
     environment:
@@ -41,6 +44,9 @@ services:
       update_config:
         order: start-first
         failure_action: rollback
+      resources:
+        limits:
+          memory: 256M
   radio-streamer:
     image: 'myownradio/radio-streamer:latest'
     environment:
@@ -66,6 +72,9 @@ services:
       update_config:
         order: start-first
         failure_action: rollback
+      resources:
+        limits:
+          memory: 128M
   backend:
     image: 'myownradio/backend:latest'
     environment:
@@ -106,6 +115,9 @@ services:
         - traefik.http.routers.myownradio_backend.tls=true
         - traefik.http.routers.myownradio_backend.tls.certresolver=resolver
         - traefik.http.services.myownradio_backend.loadbalancer.server.port=8080
+      resources:
+        limits:
+          memory: 256M
   storage:
     image: nginx:1.17
     environment:
@@ -128,6 +140,9 @@ services:
         - traefik.http.routers.myownradio_storage.tls=true
         - traefik.http.routers.myownradio_storage.tls.certresolver=resolver
         - traefik.http.services.myownradio_storage.loadbalancer.server.port=80
+      resources:
+        limits:
+          memory: 128M
 volumes:
   mysql-data:
     name: mysql-data

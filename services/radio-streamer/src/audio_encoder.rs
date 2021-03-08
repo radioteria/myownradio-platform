@@ -1,3 +1,4 @@
+use crate::audio_formats::AudioFormat;
 use crate::helpers::io::{read_to_stdin, send_from_stdout};
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
@@ -28,6 +29,7 @@ impl AudioEncoder {
 
     pub fn make_encoder(
         &self,
+        format: &AudioFormat,
     ) -> Result<
         (
             mpsc::Sender<Result<Bytes, io::Error>>,
@@ -62,11 +64,11 @@ impl AudioEncoder {
                 "-ac",
                 "2",
                 "-b:a",
-                "256k",
+                &format!("{}k", format.bitrate()),
                 "-codec:a",
-                "libmp3lame",
+                &format.codec(),
                 "-f",
-                "mp3",
+                &format.format(),
                 "-",
             ])
             .stdin(Stdio::piped())

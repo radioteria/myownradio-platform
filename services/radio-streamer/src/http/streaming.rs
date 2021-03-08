@@ -1,23 +1,36 @@
 use crate::audio_decoder::AudioDecoder;
 use crate::audio_encoder::AudioEncoder;
+use crate::audio_formats::AudioFormat;
 use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
-use actix_web::web::Data;
+use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpResponse, Responder};
 use futures::{SinkExt, StreamExt};
+use serde::Deserialize;
 use slog::{debug, error, Logger};
 use std::sync::Arc;
+
+#[derive(Deserialize, Clone)]
+pub struct ListenQueryParams {
+    f: Option<String>,
+}
 
 #[get("/listen/{channel_id}")]
 pub async fn listen_by_channel_id(
     channel_id: web::Path<u32>,
+    query_params: Query<ListenQueryParams>,
     mor_backend_client: Data<Arc<MorBackendClient>>,
     audio_decoder: Data<Arc<AudioDecoder>>,
     audio_encoder: Data<Arc<AudioEncoder>>,
     logger: Data<Arc<Logger>>,
     metrics: Data<Arc<Metrics>>,
 ) -> impl Responder {
-    let (enc_sender, enc_receiver) = match audio_encoder.make_encoder() {
+    let format_param = query_params.f.clone();
+    let format = format_param
+        .and_then(|f| AudioFormat::from_string(&f))
+        .unwrap_or(AudioFormat::MP3_128k);
+
+    let (enc_sender, enc_receiver) = match audio_encoder.make_encoder(&format) {
         Ok(ok) => ok,
         Err(error) => {
             error!(logger, "Unable to start audio encoder"; "error" => ?error);
@@ -68,7 +81,7 @@ pub async fn listen_by_channel_id(
     });
 
     HttpResponse::Ok()
-        .content_type("audio/mp3")
+        .content_type(format.content_type())
         .force_close()
         .streaming(enc_receiver)
 }

@@ -16,6 +16,7 @@ use crate::mor_backend_client::MorBackendClient;
 
 mod audio_decoder;
 mod audio_encoder;
+mod audio_formats;
 mod config;
 mod helpers;
 mod http;

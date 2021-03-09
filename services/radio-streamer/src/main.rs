@@ -20,6 +20,7 @@ mod audio_formats;
 mod config;
 mod helpers;
 mod http;
+mod icy_metadata;
 mod metrics;
 mod mor_backend_client;
 

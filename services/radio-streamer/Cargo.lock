@@ -420,6 +420,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "63396b8a4b9de3f4fdfb320ab6080762242f66a8ef174c49d8e19b674db4cdbe"
 
 [[package]]
+name = "bytebuffer"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e822a21389d388828152aeae8bb43049196b09076e2a138f53351d8cf6576cf3"
+dependencies = [
+ "byteorder 0.3.13",
+]
+
+[[package]]
+name = "byteorder"
+version = "0.3.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "29b2aa490a8f546381308d68fc79e6bd753cd3ad839f7a7172897f1feedfa175"
+
+[[package]]
 name = "byteorder"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1415,7 +1430,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab8809e0c18450a2db0f236d2a44ec0b4c1412d0eb936233579f0990faa5d5cd"
 dependencies = [
  "bitflags",
- "byteorder",
+ "byteorder 1.4.2",
  "flate2",
  "hex",
  "lazy_static 1.4.0",
@@ -1461,6 +1476,7 @@ dependencies = [
  "actix-rt",
  "actix-web",
  "async-process",
+ "bytebuffer",
  "cargo-watch",
  "envy",
  "futures",

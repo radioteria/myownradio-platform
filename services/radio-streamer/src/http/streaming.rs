@@ -1,14 +1,20 @@
 use crate::audio_decoder::AudioDecoder;
 use crate::audio_encoder::AudioEncoder;
 use crate::audio_formats::AudioFormat;
+use crate::icy_metadata::IcyMetadataMuxer;
 use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
 use actix_web::web::{Data, Query};
-use actix_web::{get, web, HttpResponse, Responder};
-use futures::{SinkExt, StreamExt};
+use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
+use futures::channel::mpsc::channel;
+use futures::{SinkExt, StreamExt, TryStreamExt};
 use serde::Deserialize;
-use slog::{debug, error, Logger};
+use slog::{debug, error, o, Logger};
+use std::ops::Deref;
+use std::sync;
 use std::sync::Arc;
+
+const ICY_METADATA_INTERVAL: usize = 4096;
 
 #[derive(Deserialize, Clone)]
 pub struct ListenQueryParams {
@@ -17,6 +23,7 @@ pub struct ListenQueryParams {
 
 #[get("/listen/{channel_id}")]
 pub async fn listen_by_channel_id(
+    request: HttpRequest,
     channel_id: web::Path<u32>,
     query_params: Query<ListenQueryParams>,
     mor_backend_client: Data<Arc<MorBackendClient>>,
@@ -37,6 +44,15 @@ pub async fn listen_by_channel_id(
             return HttpResponse::InternalServerError().finish();
         }
     };
+
+    let is_icy_enabled = request
+        .headers()
+        .get("icy-metadata")
+        .filter(|v| v.to_str().unwrap() == "1")
+        .is_some();
+
+    let (title_sender, title_receiver) = sync::mpsc::sync_channel(1);
+    let icy_metadata_muxer = IcyMetadataMuxer::new(ICY_METADATA_INTERVAL, title_receiver);
 
     actix_rt::spawn({
         let mut enc_sender = enc_sender;
@@ -68,6 +84,8 @@ pub async fn listen_by_channel_id(
                     }
                 };
 
+                title_sender.send(now_playing.current_track.title);
+
                 while let Some(r) = dec_receiver.next().await {
                     if let Err(error) = enc_sender.send(r).await {
                         error!(logger, "Unable to pipe bytes"; "error" => ?error);
@@ -80,8 +98,18 @@ pub async fn listen_by_channel_id(
         }
     });
 
-    HttpResponse::Ok()
-        .content_type(format.content_type())
-        .force_close()
-        .streaming(enc_receiver)
+    let mut response = HttpResponse::Ok();
+
+    response.content_type(format.content_type());
+    response.force_close();
+
+    if is_icy_enabled {
+        response.insert_header(("icy-metadata", "1"));
+        response.insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)));
+    }
+
+    response.streaming({
+        let mut icy_metadata_muxer = icy_metadata_muxer;
+        enc_receiver.map(move |r| r.map(|bytes| icy_metadata_muxer.handle_source_bytes(bytes)))
+    })
 }

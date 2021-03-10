@@ -1,68 +1,70 @@
 use actix_web::web::Bytes;
 use bytebuffer::ByteBuffer;
-use futures::channel::mpsc::{SendError, Sender};
-use futures::{io, SinkExt};
-use std::io::Write;
+use futures::channel::mpsc::{Receiver, SendError};
+use futures::{io, SinkExt, Stream, StreamExt};
+use slog::{debug, Logger};
+use std::convert::TryInto;
+use std::sync;
 
-pub struct IcyMetadata {
-    icy_interval: usize,
-    remaining: usize,
-    title: Option<String>,
-    target: Sender<Result<Bytes, io::Error>>,
+const ICY_META_SIZE_MULTIPLIER: usize = 16;
+
+pub struct IcyMetadataMuxer {
+    chunk_interval: usize,
+    chunk_remaining: usize,
+    title_receiver: sync::mpsc::Receiver<String>,
 }
 
-impl IcyMetadata {
-    pub fn new(icy_interval: usize, target: Sender<Result<Bytes, io::Error>>) -> Self {
-        let remaining = icy_interval;
-        let title = None;
+impl IcyMetadataMuxer {
+    pub fn new(chunk_interval: usize, title_receiver: sync::mpsc::Receiver<String>) -> Self {
+        let chunk_remaining = chunk_interval;
 
-        IcyMetadata {
-            icy_interval,
-            title,
-            remaining,
-            target,
+        IcyMetadataMuxer {
+            chunk_interval,
+            chunk_remaining,
+            title_receiver,
         }
     }
 
-    pub async fn send(&mut self, item: Result<Bytes, io::Error>) -> Result<(), SendError> {
-        match item {
-            Ok(bytes) => {
-                if self.remaining > bytes.len() {
-                    self.remaining -= bytes.len();
-                    return self.target.send(Ok(bytes)).await;
-                }
+    pub fn handle_source_bytes(&mut self, bytes: Bytes) -> Bytes {
+        let bytes_len = bytes.len();
 
-                self.target.send(Ok(bytes.slice(0..self.remaining))).await?;
-                self.target.send(Ok(self.get_metadata_chunk()[..])).await?;
-                self.target.send(Ok(bytes.slice(self.remaining..))).await?;
-
-                self.remaining = self.icy_interval - (bytes.len() - self.remaining);
-
-                Ok(())
-            }
-            Err(error) => self.target.send(Err(error)).await,
+        if self.chunk_remaining > bytes_len {
+            self.chunk_remaining -= bytes_len;
+            return bytes;
         }
+
+        let slices = [
+            bytes.slice(0..self.chunk_remaining),
+            Bytes::from(self.make_metadata_chunk()),
+            bytes.slice(self.chunk_remaining..),
+        ];
+
+        self.chunk_remaining = self.chunk_interval - (bytes_len - self.chunk_remaining);
+
+        Bytes::from(slices.concat())
     }
 
-    pub fn update_title(&mut self, new_title: &str) {
-        self.title = Some(new_title.to_string())
-    }
-
-    fn get_metadata_chunk(&mut self) -> ByteBuffer {
+    fn make_metadata_chunk(&self) -> Vec<u8> {
         let mut buffer = ByteBuffer::new();
-        match &self.title {
-            Some(title) => {
-                let actual_title_size = title.len();
-                let size = title.len() as u8 / 16;
-                let alloc_title_size = size * 16;
-                let size_byte_value = 1 + size;
-                buffer.write_u8(size_byte_value);
-                buffer.write(title.as_bytes());
-                buffer.write(&[0, alloc_title_size - actual_title_size]);
-                self.title = None;
+
+        match self.title_receiver.try_recv() {
+            Ok(title) => {
+                let metadata = format!("StreamTitle='{}';", title);
+                let metadata_len = metadata.len();
+                let size_byte =
+                    (metadata_len as f32 / ICY_META_SIZE_MULTIPLIER as f32).ceil() as usize;
+
+                let mut text_buffer = ByteBuffer::from_bytes(metadata.as_bytes());
+                text_buffer.resize(size_byte * ICY_META_SIZE_MULTIPLIER);
+
+                buffer.write_u8(size_byte as u8);
+                buffer.write_bytes(&text_buffer.to_bytes());
             }
-            None => buffer.write_u8(0),
+            _ => {
+                buffer.write_u8(0u8);
+            }
         }
-        buffer
+
+        buffer.to_bytes()
     }
 }

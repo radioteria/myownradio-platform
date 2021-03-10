@@ -6,11 +6,9 @@ use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
-use futures::channel::mpsc::channel;
-use futures::{SinkExt, StreamExt, TryStreamExt};
+use futures::{SinkExt, StreamExt};
 use serde::Deserialize;
-use slog::{debug, error, o, Logger};
-use std::ops::Deref;
+use slog::{debug, error, Logger};
 use std::sync;
 use std::sync::Arc;
 
@@ -52,7 +50,8 @@ pub async fn listen_by_channel_id(
         .is_some();
 
     let (title_sender, title_receiver) = sync::mpsc::sync_channel(1);
-    let icy_metadata_muxer = IcyMetadataMuxer::new(ICY_METADATA_INTERVAL, title_receiver);
+
+    debug!(logger, "Spawn radio channel player"; "channel" => ?channel_id, "icy-enabled" => ?is_icy_enabled);
 
     actix_rt::spawn({
         let mut enc_sender = enc_sender;
@@ -84,7 +83,12 @@ pub async fn listen_by_channel_id(
                     }
                 };
 
-                title_sender.send(now_playing.current_track.title);
+                if let Err(error) = title_sender.send(now_playing.current_track.title) {
+                    if is_icy_enabled {
+                        error!(logger, "Unable to send track title"; "error" => ?error);
+                        break;
+                    }
+                }
 
                 while let Some(r) = dec_receiver.next().await {
                     if let Err(error) = enc_sender.send(r).await {
@@ -100,16 +104,20 @@ pub async fn listen_by_channel_id(
 
     let mut response = HttpResponse::Ok();
 
-    response.content_type(format.content_type());
-    response.force_close();
+    response.content_type(format.content_type()).force_close();
 
     if is_icy_enabled {
-        response.insert_header(("icy-metadata", "1"));
-        response.insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)));
-    }
+        response
+            .insert_header(("icy-metadata", "1"))
+            .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)));
 
-    response.streaming({
-        let mut icy_metadata_muxer = icy_metadata_muxer;
-        enc_receiver.map(move |r| r.map(|bytes| icy_metadata_muxer.handle_source_bytes(bytes)))
-    })
+        let icy_metadata_muxer = IcyMetadataMuxer::new(ICY_METADATA_INTERVAL, title_receiver);
+
+        response.streaming({
+            let mut icy_metadata_muxer = icy_metadata_muxer;
+            enc_receiver.map(move |r| r.map(|bytes| icy_metadata_muxer.handle_source_bytes(bytes)))
+        })
+    } else {
+        response.streaming(enc_receiver)
+    }
 }

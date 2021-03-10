@@ -1,9 +1,5 @@
 use actix_web::web::Bytes;
 use bytebuffer::ByteBuffer;
-use futures::channel::mpsc::{Receiver, SendError};
-use futures::{io, SinkExt, Stream, StreamExt};
-use slog::{debug, Logger};
-use std::convert::TryInto;
 use std::sync;
 
 const ICY_META_SIZE_MULTIPLIER: usize = 16;

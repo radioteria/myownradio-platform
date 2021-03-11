@@ -41,7 +41,7 @@ pub struct ChannelInfo {
 pub struct ChannelInfoResponse {
     pub code: u8,
     pub message: String,
-    pub data: ChannelInfo,
+    pub data: Option<ChannelInfo>,
 }
 
 pub struct MorBackendClient {
@@ -56,6 +56,7 @@ pub enum MorBackendClientError {
     ResponseReadError,
     ResponseParseError,
     UnexpectedResponse,
+    ChannelNotFound,
 }
 
 impl MorBackendClient {
@@ -84,6 +85,7 @@ impl MorBackendClient {
 
         let body = match response.status() {
             StatusCode::OK => response.body().await,
+            StatusCode::NOT_FOUND => return Err(MorBackendClientError::ChannelNotFound),
             status_code => {
                 error!(self.logger, "Unexpected status code"; "status_code" => ?status_code);
                 return Err(MorBackendClientError::UnexpectedStatusCode);
@@ -157,7 +159,14 @@ impl MorBackendClient {
             Ok(ChannelInfoResponse {
                 code,
                 message,
-                data,
+                data: None,
+            }) if (code == 0 && message == "Stream not found") => {
+                return Err(MorBackendClientError::ChannelNotFound);
+            }
+            Ok(ChannelInfoResponse {
+                code,
+                message,
+                data: Some(data),
             }) if (code == 1 && message == "OK") => Ok(data),
             Ok(ChannelInfoResponse { .. }) => {
                 error!(

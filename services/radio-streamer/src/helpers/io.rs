@@ -1,11 +1,15 @@
 use actix_web::web::Bytes;
 use async_process::{ChildStdin, ChildStdout};
-use futures::channel::mpsc::{Receiver, SendError, Sender};
+use futures::channel::mpsc::{channel, Receiver, SendError, Sender};
 use futures::io::{Error, ErrorKind};
 use futures::{AsyncReadExt, AsyncWriteExt, SinkExt, StreamExt};
 use slog::{debug, error, Logger};
+use std::cmp::max;
+use std::time::{Duration, Instant};
 
 const BUFFER_SIZE: usize = 4096;
+
+const THROTTLE_DURATION_MS: Duration = Duration::from_millis(50);
 
 pub async fn send_from_stdout<'a>(
     stdout: &'a mut ChildStdout,
@@ -72,4 +76,41 @@ pub async fn pipe_channel<'a>(
         sender.send(result).await?;
     }
     Ok(())
+}
+
+pub async fn throttled_channel(
+    bytes_per_second: usize,
+    prefetch_size: usize,
+) -> (Sender<Result<Bytes, Error>>, Receiver<Result<Bytes, Error>>) {
+    let bytes_per_second = bytes_per_second as isize;
+    let prefetch_size = prefetch_size as isize;
+
+    let (input_tx, input_rx) = channel::<Result<Bytes, Error>>(0);
+    let (output_tx, output_rx) = channel::<Result<Bytes, Error>>(0);
+
+    actix_rt::spawn({
+        let mut input_rx = input_rx;
+        let mut output_tx = output_tx;
+
+        let start = Instant::now();
+
+        async move {
+            let mut bytes_transferred = -prefetch_size * bytes_per_second;
+
+            while let Some(Ok(r)) = input_rx.next().await {
+                bytes_transferred += r.len() as isize;
+
+                let actual_bytes_per_second =
+                    bytes_transferred / max(start.elapsed().as_secs() as isize, 1isize);
+
+                if actual_bytes_per_second > bytes_per_second {
+                    actix_rt::time::sleep(THROTTLE_DURATION_MS).await;
+                }
+
+                let _ = output_tx.send(Ok(r)).await;
+            }
+        }
+    });
+
+    (input_tx, output_rx)
 }

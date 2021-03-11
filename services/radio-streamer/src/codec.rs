@@ -84,9 +84,10 @@ impl AudioCodecService {
         };
 
         actix_rt::spawn({
-            let logger = self.logger.clone();
             let mut stdout = stdout;
             let mut sender = sender;
+
+            let logger = self.logger.clone();
 
             async move {
                 send_from_stdout(&mut stdout, &mut sender, logger).await;
@@ -106,8 +107,8 @@ impl AudioCodecService {
         ),
         AudioCodecError,
     > {
-        let (input_sender, input_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
-        let (output_sender, output_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
+        let (input_sender, input_receiver) = mpsc::channel(4);
+        let (output_sender, output_receiver) = mpsc::channel(4);
 
         debug!(self.logger, "Spawning audio encoder process...");
 

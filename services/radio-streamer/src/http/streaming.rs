@@ -1,11 +1,12 @@
 use crate::audio_formats::AudioFormat;
 use crate::codec::AudioCodecService;
+use crate::helpers::io::pipe_channel;
 use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
-use futures::{SinkExt, StreamExt};
+use futures::StreamExt;
 use serde::Deserialize;
 use slog::{debug, error, Logger};
 use std::sync;
@@ -100,11 +101,9 @@ pub async fn listen_by_channel_id(
                     }
                 }
 
-                while let Some(r) = dec_receiver.next().await {
-                    if let Err(error) = enc_sender.send(r).await {
-                        error!(logger, "Unable to pipe bytes"; "error" => ?error);
-                        break 'outer;
-                    }
+                if let Err(error) = pipe_channel(&mut dec_receiver, &mut enc_sender).await {
+                    error!(logger, "Unable to pipe bytes"; "error" => ?error);
+                    break 'outer;
                 }
             }
 

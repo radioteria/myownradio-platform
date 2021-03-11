@@ -85,9 +85,11 @@ impl AudioCodecService {
 
         actix_rt::spawn({
             let logger = self.logger.clone();
+            let mut stdout = stdout;
+            let mut sender = sender;
 
             async move {
-                send_from_stdout(stdout, sender, logger).await;
+                send_from_stdout(&mut stdout, &mut sender, logger).await;
             }
         });
 
@@ -171,10 +173,13 @@ impl AudioCodecService {
         let (term_signal, term_handler) = oneshot::channel::<()>();
 
         actix_rt::spawn({
+            let mut input_receiver = input_receiver;
+            let mut stdin = stdin;
+
             let logger = self.logger.clone();
 
             let pipe = async move {
-                read_to_stdin(input_receiver, stdin, logger).await;
+                read_to_stdin(&mut input_receiver, &mut stdin, logger).await;
             };
 
             let abort = async move {
@@ -185,10 +190,13 @@ impl AudioCodecService {
         });
 
         actix_rt::spawn({
+            let mut stdout = stdout;
+            let mut output_sender = output_sender;
+
             let logger = self.logger.clone();
 
             async move {
-                send_from_stdout(stdout, output_sender, logger).await;
+                send_from_stdout(&mut stdout, &mut output_sender, logger).await;
                 let _ = term_signal.send(());
             }
         });

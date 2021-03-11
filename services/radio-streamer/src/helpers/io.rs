@@ -1,15 +1,15 @@
 use actix_web::web::Bytes;
 use async_process::{ChildStdin, ChildStdout};
-use futures::channel::mpsc::{Receiver, Sender};
+use futures::channel::mpsc::{Receiver, SendError, Sender};
 use futures::io::{Error, ErrorKind};
 use futures::{AsyncReadExt, AsyncWriteExt, SinkExt, StreamExt};
 use slog::{debug, error, Logger};
 
 const BUFFER_SIZE: usize = 4096;
 
-pub async fn send_from_stdout(
-    mut stdout: ChildStdout,
-    mut sender: Sender<Result<Bytes, Error>>,
+pub async fn send_from_stdout<'a>(
+    stdout: &'a mut ChildStdout,
+    sender: &'a mut Sender<Result<Bytes, Error>>,
     logger: Logger,
 ) {
     let mut input_buffer = vec![0u8; BUFFER_SIZE];
@@ -43,9 +43,9 @@ pub async fn send_from_stdout(
     }
 }
 
-pub async fn read_to_stdin(
-    mut receiver: Receiver<Result<Bytes, Error>>,
-    mut stdin: ChildStdin,
+pub async fn read_to_stdin<'a>(
+    receiver: &'a mut Receiver<Result<Bytes, Error>>,
+    stdin: &'a mut ChildStdin,
     logger: Logger,
 ) {
     while let Some(r) = receiver.next().await {
@@ -62,4 +62,14 @@ pub async fn read_to_stdin(
             }
         };
     }
+}
+
+pub async fn pipe_channel<'a>(
+    receiver: &'a mut Receiver<Result<Bytes, Error>>,
+    sender: &'a mut Sender<Result<Bytes, Error>>,
+) -> Result<(), SendError> {
+    while let Some(result) = receiver.next().await {
+        sender.send(result).await?;
+    }
+    Ok(())
 }

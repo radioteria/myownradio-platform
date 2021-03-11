@@ -53,11 +53,11 @@ async fn main() -> Result<()> {
         let logger = logger.clone();
         move || {
             App::new()
-                .app_data(config.clone())
-                .app_data(mor_backend_client.clone())
-                .app_data(logger.clone())
-                .app_data(metrics.clone())
-                .app_data(audio_codec_service.clone())
+                .data(config.clone())
+                .data(mor_backend_client.clone())
+                .data(logger.clone())
+                .data(metrics.clone())
+                .data(audio_codec_service.clone())
                 .service(listen_by_channel_id)
                 .service(get_metrics)
         }

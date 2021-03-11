@@ -28,6 +28,17 @@ pub async fn listen_by_channel_id(
     logger: Data<Arc<Logger>>,
     metrics: Data<Arc<Metrics>>,
 ) -> impl Responder {
+    let channel_info = match mor_backend_client.get_channel_info(&channel_id).await {
+        Ok(channel_info) if channel_info.status == 0 => {
+            return HttpResponse::NotFound().finish();
+        }
+        Ok(channel_info) => channel_info,
+        Err(error) => {
+            error!(logger, "Unable to get channel info"; "error" => ?error);
+            return HttpResponse::ServiceUnavailable().finish();
+        }
+    };
+
     let format_param = query_params.f.clone();
     let format = format_param
         .and_then(|f| AudioFormat::from_string(&f))
@@ -62,8 +73,8 @@ pub async fn listen_by_channel_id(
                         debug!(logger, "Now playing: {:?}", &now_playing);
                         now_playing
                     }
-                    Err(_) => {
-                        // error!(logger, "Unable to get now playing"; "error" => &error);
+                    Err(error) => {
+                        error!(logger, "Unable to get now playing"; "error" => ?error);
                         break;
                     }
                 };
@@ -105,7 +116,8 @@ pub async fn listen_by_channel_id(
     if is_icy_enabled {
         response
             .insert_header(("icy-metadata", "1"))
-            .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)));
+            .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)))
+            .insert_header(("icy-name", format!("{}", &channel_info.name)));
 
         let icy_metadata_muxer = IcyMetadataMuxer::new(ICY_METADATA_INTERVAL, title_receiver);
 

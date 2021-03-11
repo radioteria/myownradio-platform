@@ -1,6 +1,6 @@
 use crate::audio_formats::AudioFormat;
 use crate::codec::AudioCodecService;
-use crate::icy_metadata::IcyMetadataMuxer;
+use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
 use actix_web::web::{Data, Query};
@@ -10,8 +10,6 @@ use serde::Deserialize;
 use slog::{debug, error, Logger};
 use std::sync;
 use std::sync::Arc;
-
-const ICY_METADATA_INTERVAL: usize = 4096;
 
 #[derive(Deserialize, Clone)]
 pub struct ListenQueryParams {
@@ -120,7 +118,7 @@ pub async fn listen_by_channel_id(
             .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)))
             .insert_header(("icy-name", format!("{}", &channel_info.name)));
 
-        let icy_metadata_muxer = IcyMetadataMuxer::new(ICY_METADATA_INTERVAL, metadata_receiver);
+        let icy_metadata_muxer = IcyMetadataMuxer::new(metadata_receiver);
 
         response.streaming({
             let mut icy_metadata_muxer = icy_metadata_muxer;

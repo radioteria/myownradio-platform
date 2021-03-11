@@ -6,17 +6,15 @@ use actix_web::{App, HttpServer};
 use slog::{info, o, Drain, Logger};
 use slog_json::Json;
 
-use crate::audio_decoder::AudioDecoder;
-use crate::audio_encoder::AudioEncoder;
+use crate::codec::AudioCodecService;
 use crate::config::Config;
 use crate::http::metrics::get_metrics;
 use crate::http::streaming::listen_by_channel_id;
 use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
 
-mod audio_decoder;
-mod audio_encoder;
 mod audio_formats;
+mod codec;
 mod config;
 mod helpers;
 mod http;
@@ -43,13 +41,9 @@ async fn main() -> Result<()> {
         &config.mor_backend_url,
         &logger.new(o!("scope" => "MorBackendClient")),
     ));
-    let audio_decoder = Arc::new(AudioDecoder::new(
+    let audio_codec_service = Arc::new(AudioCodecService::new(
         &config.path_to_ffmpeg,
-        &logger.new(o!("scope" => "AudioDecoder")),
-    ));
-    let audio_encoder = Arc::new(AudioEncoder::new(
-        &config.path_to_ffmpeg,
-        &logger.new(o!("scope" => "AudioEncoder")),
+        &logger.new(o!("scope" => "AudioCodecService")),
     ));
     let metrics = Arc::new(Metrics::new());
 
@@ -59,12 +53,11 @@ async fn main() -> Result<()> {
         let logger = logger.clone();
         move || {
             App::new()
-                .data(Arc::clone(&config))
-                .data(Arc::clone(&mor_backend_client))
-                .data(Arc::clone(&audio_decoder))
-                .data(Arc::clone(&audio_encoder))
-                .data(Arc::clone(&logger))
-                .data(Arc::clone(&metrics))
+                .app_data(config.clone())
+                .app_data(mor_backend_client.clone())
+                .app_data(logger.clone())
+                .app_data(metrics.clone())
+                .app_data(audio_codec_service.clone())
                 .service(listen_by_channel_id)
                 .service(get_metrics)
         }

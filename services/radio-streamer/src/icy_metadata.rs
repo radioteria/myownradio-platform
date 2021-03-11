@@ -21,7 +21,7 @@ impl IcyMetadataMuxer {
         }
     }
 
-    pub fn handle_source_bytes(&mut self, bytes: Bytes) -> Bytes {
+    pub fn handle_bytes(&mut self, bytes: Bytes) -> Bytes {
         let bytes_len = bytes.len();
 
         if self.bytes_remaining > bytes_len {

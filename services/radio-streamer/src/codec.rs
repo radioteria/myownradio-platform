@@ -8,26 +8,93 @@ use futures_lite::FutureExt;
 use slog::{debug, error, Logger};
 
 #[derive(Debug)]
-pub enum AudioEncoderError {
+pub enum AudioCodecError {
     ProcessError,
     StdoutUnavailable,
     StdinUnavailable,
 }
 
-pub struct AudioEncoder {
+pub struct AudioCodecService {
     path_to_ffmpeg: String,
     logger: Logger,
 }
 
-impl AudioEncoder {
+impl AudioCodecService {
     pub fn new(path_to_ffmpeg: &str, logger: &Logger) -> Self {
-        AudioEncoder {
+        AudioCodecService {
             path_to_ffmpeg: path_to_ffmpeg.to_string(),
             logger: logger.clone(),
         }
     }
 
-    pub fn make_encoder(
+    // TODO Whitelist supported formats.
+    pub fn spawn_audio_decoder(
+        &self,
+        url: &str,
+        offset: &u32,
+    ) -> Result<mpsc::Receiver<Result<Bytes, io::Error>>, AudioCodecError> {
+        let (sender, receiver) = mpsc::channel(4);
+
+        debug!(self.logger, "Spawning audio decoder...");
+
+        let offset = format!("{:.4}", offset / 1000);
+
+        let child = match Command::new(&self.path_to_ffmpeg)
+            .args(&[
+                "-re",
+                "-fflags",
+                "fastseek",
+                "-ss",
+                &offset,
+                "-i",
+                &url,
+                "-vn",
+                "-filter",
+                "afade=t=in:st=0:d=1",
+                "-codec:a",
+                "pcm_s16le",
+                "-ar",
+                "44100",
+                "-ac",
+                "2",
+                "-f",
+                "s16le",
+                "-",
+            ])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .stdin(Stdio::null())
+            .spawn()
+        {
+            Ok(process) => process,
+            Err(error) => {
+                error!(self.logger, "Unable to start process"; "error" => ?error);
+                return Err(AudioCodecError::ProcessError);
+            }
+        };
+
+        debug!(self.logger, "Audio decoder spawned");
+
+        let stdout = match child.stdout {
+            Some(stdout) => stdout,
+            None => {
+                error!(self.logger, "Stdout is not available");
+                return Err(AudioCodecError::StdoutUnavailable);
+            }
+        };
+
+        actix_rt::spawn({
+            let logger = self.logger.clone();
+
+            async move {
+                send_from_stdout(stdout, sender, logger).await;
+            }
+        });
+
+        Ok(receiver)
+    }
+
+    pub fn spawn_audio_encoder(
         &self,
         format: &AudioFormat,
     ) -> Result<
@@ -35,7 +102,7 @@ impl AudioEncoder {
             mpsc::Sender<Result<Bytes, io::Error>>,
             mpsc::Receiver<Result<Bytes, io::Error>>,
         ),
-        AudioEncoderError,
+        AudioCodecError,
     > {
         let (input_sender, input_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
         let (output_sender, output_receiver) = mpsc::channel::<Result<Bytes, io::Error>>(4);
@@ -79,7 +146,7 @@ impl AudioEncoder {
             Ok(process) => process,
             Err(error) => {
                 error!(self.logger, "Unable to start process"; "error" => ?error);
-                return Err(AudioEncoderError::ProcessError);
+                return Err(AudioCodecError::ProcessError);
             }
         };
 
@@ -89,7 +156,7 @@ impl AudioEncoder {
             Some(stdout) => stdout,
             None => {
                 error!(self.logger, "Stdout is not available");
-                return Err(AudioEncoderError::StdoutUnavailable);
+                return Err(AudioCodecError::StdoutUnavailable);
             }
         };
 
@@ -97,13 +164,12 @@ impl AudioEncoder {
             Some(stdin) => stdin,
             None => {
                 error!(self.logger, "Stdin is not available");
-                return Err(AudioEncoderError::StdinUnavailable);
+                return Err(AudioCodecError::StdinUnavailable);
             }
         };
 
         let (term_signal, term_handler) = oneshot::channel::<()>();
 
-        // Read raw audio data and send to the encoder
         actix_rt::spawn({
             let logger = self.logger.clone();
 
@@ -118,7 +184,6 @@ impl AudioEncoder {
             abort.or(pipe)
         });
 
-        // Read encoded audio data from encoder and send to stdout_sender.
         actix_rt::spawn({
             let logger = self.logger.clone();
 

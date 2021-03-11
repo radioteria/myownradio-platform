@@ -1,6 +1,5 @@
-use crate::audio_decoder::AudioDecoder;
-use crate::audio_encoder::AudioEncoder;
 use crate::audio_formats::AudioFormat;
+use crate::codec::AudioCodecService;
 use crate::icy_metadata::IcyMetadataMuxer;
 use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
@@ -25,8 +24,7 @@ pub async fn listen_by_channel_id(
     channel_id: web::Path<u32>,
     query_params: Query<ListenQueryParams>,
     mor_backend_client: Data<Arc<MorBackendClient>>,
-    audio_decoder: Data<Arc<AudioDecoder>>,
-    audio_encoder: Data<Arc<AudioEncoder>>,
+    audio_codec_service: Data<Arc<AudioCodecService>>,
     logger: Data<Arc<Logger>>,
     metrics: Data<Arc<Metrics>>,
 ) -> impl Responder {
@@ -35,7 +33,7 @@ pub async fn listen_by_channel_id(
         .and_then(|f| AudioFormat::from_string(&f))
         .unwrap_or(AudioFormat::MP3_128k);
 
-    let (enc_sender, enc_receiver) = match audio_encoder.make_encoder(&format) {
+    let (enc_sender, enc_receiver) = match audio_codec_service.spawn_audio_encoder(&format) {
         Ok(ok) => ok,
         Err(error) => {
             error!(logger, "Unable to start audio encoder"; "error" => ?error);
@@ -50,8 +48,6 @@ pub async fn listen_by_channel_id(
         .is_some();
 
     let (title_sender, title_receiver) = sync::mpsc::sync_channel(1);
-
-    debug!(logger, "Spawn radio channel player"; "channel" => ?channel_id, "icy-enabled" => ?is_icy_enabled);
 
     actix_rt::spawn({
         let mut enc_sender = enc_sender;
@@ -72,7 +68,7 @@ pub async fn listen_by_channel_id(
                     }
                 };
 
-                let mut dec_receiver = match audio_decoder.decode_audio_file(
+                let mut dec_receiver = match audio_codec_service.spawn_audio_decoder(
                     &now_playing.current_track.url,
                     &now_playing.current_track.offset,
                 ) {
@@ -115,7 +111,7 @@ pub async fn listen_by_channel_id(
 
         response.streaming({
             let mut icy_metadata_muxer = icy_metadata_muxer;
-            enc_receiver.map(move |r| r.map(|bytes| icy_metadata_muxer.handle_source_bytes(bytes)))
+            enc_receiver.map(move |r| r.map(|bytes| icy_metadata_muxer.handle_bytes(bytes)))
         })
     } else {
         response.streaming(enc_receiver)

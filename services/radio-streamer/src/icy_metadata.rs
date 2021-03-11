@@ -5,18 +5,18 @@ use std::sync;
 const ICY_META_SIZE_MULTIPLIER: usize = 16;
 
 pub struct IcyMetadataMuxer {
-    chunk_interval: usize,
-    chunk_remaining: usize,
+    interval: usize,
+    bytes_remaining: usize,
     title_receiver: sync::mpsc::Receiver<String>,
 }
 
 impl IcyMetadataMuxer {
-    pub fn new(chunk_interval: usize, title_receiver: sync::mpsc::Receiver<String>) -> Self {
-        let chunk_remaining = chunk_interval;
+    pub fn new(interval: usize, title_receiver: sync::mpsc::Receiver<String>) -> Self {
+        let bytes_remaining = interval;
 
         IcyMetadataMuxer {
-            chunk_interval,
-            chunk_remaining,
+            interval,
+            bytes_remaining,
             title_receiver,
         }
     }
@@ -24,18 +24,18 @@ impl IcyMetadataMuxer {
     pub fn handle_source_bytes(&mut self, bytes: Bytes) -> Bytes {
         let bytes_len = bytes.len();
 
-        if self.chunk_remaining > bytes_len {
-            self.chunk_remaining -= bytes_len;
+        if self.bytes_remaining > bytes_len {
+            self.bytes_remaining -= bytes_len;
             return bytes;
         }
 
         let slices = [
-            bytes.slice(0..self.chunk_remaining),
+            bytes.slice(0..self.bytes_remaining),
             Bytes::from(self.make_metadata_chunk()),
-            bytes.slice(self.chunk_remaining..),
+            bytes.slice(self.bytes_remaining..),
         ];
 
-        self.chunk_remaining = self.chunk_interval - (bytes_len - self.chunk_remaining);
+        self.bytes_remaining = self.interval - (bytes_len - self.bytes_remaining);
 
         Bytes::from(slices.concat())
     }

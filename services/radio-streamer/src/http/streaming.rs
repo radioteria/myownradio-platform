@@ -6,7 +6,7 @@ use crate::metrics::Metrics;
 use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
-use futures::StreamExt;
+use futures::TryStreamExt;
 use serde::Deserialize;
 use slog::{debug, error, Logger};
 use std::sync;
@@ -125,7 +125,7 @@ pub async fn listen_by_channel_id(
 
         response.streaming({
             let mut icy_metadata_muxer = icy_metadata_muxer;
-            enc_receiver.map(move |r| r.map(|bytes| icy_metadata_muxer.handle_bytes(bytes)))
+            enc_receiver.map_ok(move |bytes| icy_metadata_muxer.handle_bytes(bytes))
         })
     } else {
         response.streaming(enc_receiver)

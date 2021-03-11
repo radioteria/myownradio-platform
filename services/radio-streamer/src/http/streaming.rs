@@ -58,7 +58,7 @@ pub async fn listen_by_channel_id(
         .filter(|v| v.to_str().unwrap() == "1")
         .is_some();
 
-    let (title_sender, title_receiver) = sync::mpsc::sync_channel(1);
+    let (metadata_sender, metadata_receiver) = sync::mpsc::sync_channel(1);
 
     actix_rt::spawn({
         let mut enc_sender = enc_sender;
@@ -90,7 +90,8 @@ pub async fn listen_by_channel_id(
                     }
                 };
 
-                if let Err(error) = title_sender.send(now_playing.current_track.title) {
+                let metadata = format!("StreamTitle='{}';", &now_playing.current_track.title);
+                if let Err(error) = metadata_sender.send(metadata.into_bytes()) {
                     if is_icy_enabled {
                         error!(logger, "Unable to send track title"; "error" => ?error);
                         break;
@@ -119,7 +120,7 @@ pub async fn listen_by_channel_id(
             .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)))
             .insert_header(("icy-name", format!("{}", &channel_info.name)));
 
-        let icy_metadata_muxer = IcyMetadataMuxer::new(ICY_METADATA_INTERVAL, title_receiver);
+        let icy_metadata_muxer = IcyMetadataMuxer::new(ICY_METADATA_INTERVAL, metadata_receiver);
 
         response.streaming({
             let mut icy_metadata_muxer = icy_metadata_muxer;

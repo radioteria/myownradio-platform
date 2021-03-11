@@ -30,18 +30,18 @@ impl IcyMetadataMuxer {
             return bytes;
         }
 
-        let slices = [
-            bytes.slice(0..self.bytes_remaining),
-            Bytes::from(self.make_metadata_chunk()),
-            bytes.slice(self.bytes_remaining..),
-        ];
+        let mut buffer = ByteBuffer::new();
+
+        buffer.write_bytes(&bytes[0..self.bytes_remaining]);
+        buffer.write_bytes(&self.make_metadata_bytes());
+        buffer.write_bytes(&bytes[self.bytes_remaining..]);
 
         self.bytes_remaining = ICY_METADATA_INTERVAL - (bytes_len - self.bytes_remaining);
 
-        Bytes::from(slices.concat())
+        Bytes::from(buffer.to_bytes())
     }
 
-    fn make_metadata_chunk(&self) -> Vec<u8> {
+    fn make_metadata_bytes(&self) -> Vec<u8> {
         let mut buffer = ByteBuffer::new();
 
         match self.metadata_receiver.try_recv() {

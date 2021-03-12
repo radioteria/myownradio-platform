@@ -13,8 +13,8 @@ use std::sync;
 use std::sync::Arc;
 use std::time::Duration;
 
-const PREFETCH_AUDIO: Duration = Duration::from_secs(2);
-const NATIVE_SAMPLE_SPEED: usize = 176400;
+const PREFETCH_AUDIO: Duration = Duration::from_secs(3);
+const DECODED_AUDIO_BYTES_PER_SECOND: usize = 176400;
 
 #[derive(Deserialize, Clone)]
 pub struct ListenQueryParams {
@@ -43,11 +43,18 @@ pub async fn listen_by_channel_id(
     };
 
     let format_param = query_params.f.clone();
+
     let format = format_param
         .and_then(|f| AudioFormat::from_string(&f))
         .unwrap_or(AudioFormat::MP3_128k);
 
-    let (enc_sender, enc_receiver) = match audio_codec_service.spawn_audio_encoder(&format) {
+    let is_icy_enabled = request
+        .headers()
+        .get("icy-metadata")
+        .filter(|v| v.to_str().unwrap() == "1")
+        .is_some();
+
+    let (mut enc_sender, enc_receiver) = match audio_codec_service.spawn_audio_encoder(&format) {
         Ok(ok) => ok,
         Err(error) => {
             error!(logger, "Unable to start audio encoder"; "error" => ?error);
@@ -55,25 +62,14 @@ pub async fn listen_by_channel_id(
         }
     };
 
-    let (thr_sender, thr_receiver) = throttled_channel(
-        NATIVE_SAMPLE_SPEED,
-        NATIVE_SAMPLE_SPEED * PREFETCH_AUDIO.as_secs() as usize,
+    let (thr_sender, mut thr_receiver) = throttled_channel(
+        DECODED_AUDIO_BYTES_PER_SECOND,
+        DECODED_AUDIO_BYTES_PER_SECOND * PREFETCH_AUDIO.as_secs() as usize,
     );
 
-    actix_rt::spawn({
-        let mut thr_receiver = thr_receiver;
-        let mut enc_sender = enc_sender;
-
-        async move {
-            let _ = pipe_channel(&mut thr_receiver, &mut enc_sender).await;
-        }
+    actix_rt::spawn(async move {
+        let _ = pipe_channel(&mut thr_receiver, &mut enc_sender).await;
     });
-
-    let is_icy_enabled = request
-        .headers()
-        .get("icy-metadata")
-        .filter(|v| v.to_str().unwrap() == "1")
-        .is_some();
 
     let (metadata_sender, metadata_receiver) = sync::mpsc::sync_channel(1);
 
@@ -85,7 +81,7 @@ pub async fn listen_by_channel_id(
         async move {
             metrics.inc_streaming_in_progress();
 
-            'outer: loop {
+            loop {
                 let now_playing = match mor_backend_client.get_now_playing(&channel_id).await {
                     Ok(now_playing) => {
                         debug!(logger, "Now playing: {:?}", &now_playing);
@@ -122,7 +118,7 @@ pub async fn listen_by_channel_id(
 
                 if let Err(error) = pipe_channel(&mut dec_receiver, &mut thr_sender).await {
                     error!(logger, "Unable to pipe bytes"; "error" => ?error);
-                    break 'outer;
+                    break;
                 }
             }
 

@@ -9,7 +9,6 @@ use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use futures::TryStreamExt;
 use serde::Deserialize;
 use slog::{debug, error, Logger};
-use std::cmp::max;
 use std::sync;
 use std::sync::Arc;
 use std::time::Duration;
@@ -102,13 +101,15 @@ pub async fn listen_by_channel_id(
                     }
                 };
 
-                let mut dec_receiver = match audio_codec_service.spawn_audio_decoder(
-                    &now_playing.current_track.url,
-                    &max(
-                        now_playing.current_track.offset - PREFETCH_AUDIO.as_millis() as u32,
-                        0u32,
-                    ),
-                ) {
+                let offset = now_playing
+                    .current_track
+                    .offset
+                    .checked_sub(PREFETCH_AUDIO.as_millis() as u32)
+                    .unwrap_or(0);
+
+                let mut dec_receiver = match audio_codec_service
+                    .spawn_audio_decoder(&now_playing.current_track.url, &offset)
+                {
                     Ok(receiver) => receiver,
                     Err(error) => {
                         error!(logger, "Unable to decode audio file"; "error" => ?error);

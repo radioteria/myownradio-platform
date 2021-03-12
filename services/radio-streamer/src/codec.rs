@@ -33,7 +33,7 @@ impl AudioCodecService {
         url: &str,
         offset: &u32,
     ) -> Result<mpsc::Receiver<Result<Bytes, io::Error>>, AudioCodecError> {
-        let (sender, receiver) = mpsc::channel(4);
+        let (sender, receiver) = mpsc::channel(0);
 
         debug!(self.logger, "Spawning audio decoder...");
 
@@ -107,8 +107,8 @@ impl AudioCodecService {
         ),
         AudioCodecError,
     > {
-        let (input_sender, input_receiver) = mpsc::channel(4);
-        let (output_sender, output_receiver) = mpsc::channel(4);
+        let (input_sender, input_receiver) = mpsc::channel(0);
+        let (output_sender, output_receiver) = mpsc::channel(0);
 
         debug!(self.logger, "Spawning audio encoder process...");
 

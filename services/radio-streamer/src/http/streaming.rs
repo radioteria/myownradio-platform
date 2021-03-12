@@ -101,15 +101,10 @@ pub async fn listen_by_channel_id(
                     }
                 };
 
-                let offset = now_playing
-                    .current_track
-                    .offset
-                    .checked_sub(PREFETCH_AUDIO.as_millis() as u32)
-                    .unwrap_or(0);
-
-                let mut dec_receiver = match audio_codec_service
-                    .spawn_audio_decoder(&now_playing.current_track.url, &offset)
-                {
+                let mut dec_receiver = match audio_codec_service.spawn_audio_decoder(
+                    &now_playing.current_track.url,
+                    &now_playing.current_track.offset,
+                ) {
                     Ok(receiver) => receiver,
                     Err(error) => {
                         error!(logger, "Unable to decode audio file"; "error" => ?error);

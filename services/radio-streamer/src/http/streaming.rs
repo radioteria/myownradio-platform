@@ -9,8 +9,13 @@ use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use futures::TryStreamExt;
 use serde::Deserialize;
 use slog::{debug, error, Logger};
+use std::cmp::max;
 use std::sync;
 use std::sync::Arc;
+use std::time::Duration;
+
+const PREFETCH_AUDIO: Duration = Duration::from_secs(2);
+const NATIVE_SAMPLE_SPEED: usize = 176400;
 
 #[derive(Deserialize, Clone)]
 pub struct ListenQueryParams {
@@ -51,7 +56,10 @@ pub async fn listen_by_channel_id(
         }
     };
 
-    let (thr_sender, thr_receiver) = throttled_channel(176400, 176400 * 2);
+    let (thr_sender, thr_receiver) = throttled_channel(
+        NATIVE_SAMPLE_SPEED,
+        NATIVE_SAMPLE_SPEED * PREFETCH_AUDIO.as_secs() as usize,
+    );
 
     actix_rt::spawn({
         let mut thr_receiver = thr_receiver;
@@ -96,7 +104,10 @@ pub async fn listen_by_channel_id(
 
                 let mut dec_receiver = match audio_codec_service.spawn_audio_decoder(
                     &now_playing.current_track.url,
-                    &now_playing.current_track.offset,
+                    &max(
+                        now_playing.current_track.offset - PREFETCH_AUDIO.as_millis() as u32,
+                        0u32,
+                    ),
                 ) {
                     Ok(receiver) => receiver,
                     Err(error) => {

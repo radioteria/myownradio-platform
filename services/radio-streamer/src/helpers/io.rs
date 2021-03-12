@@ -78,7 +78,7 @@ pub async fn pipe_channel<'a>(
     Ok(())
 }
 
-pub async fn throttled_channel(
+pub fn throttled_channel(
     bytes_per_second: usize,
     prefetch_size: usize,
 ) -> (Sender<Result<Bytes, Error>>, Receiver<Result<Bytes, Error>>) {
@@ -95,7 +95,7 @@ pub async fn throttled_channel(
         let start = Instant::now();
 
         async move {
-            let mut bytes_transferred = -prefetch_size * bytes_per_second;
+            let mut bytes_transferred = -prefetch_size;
 
             while let Some(Ok(r)) = input_rx.next().await {
                 bytes_transferred += r.len() as isize;

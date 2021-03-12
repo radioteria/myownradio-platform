@@ -1,6 +1,6 @@
 use crate::audio_formats::AudioFormat;
 use crate::codec::AudioCodecService;
-use crate::helpers::io::pipe_channel;
+use crate::helpers::io::{pipe_channel, throttled_channel};
 use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
@@ -51,6 +51,17 @@ pub async fn listen_by_channel_id(
         }
     };
 
+    let (thr_sender, thr_receiver) = throttled_channel(176400, 176400 * 2);
+
+    actix_rt::spawn({
+        let mut thr_receiver = thr_receiver;
+        let mut enc_sender = enc_sender;
+
+        async move {
+            let _ = pipe_channel(&mut thr_receiver, &mut enc_sender).await;
+        }
+    });
+
     let is_icy_enabled = request
         .headers()
         .get("icy-metadata")
@@ -60,7 +71,8 @@ pub async fn listen_by_channel_id(
     let (metadata_sender, metadata_receiver) = sync::mpsc::sync_channel(1);
 
     actix_rt::spawn({
-        let mut enc_sender = enc_sender;
+        let mut thr_sender = thr_sender;
+
         let logger = logger.clone();
 
         async move {
@@ -101,7 +113,7 @@ pub async fn listen_by_channel_id(
                     }
                 }
 
-                if let Err(error) = pipe_channel(&mut dec_receiver, &mut enc_sender).await {
+                if let Err(error) = pipe_channel(&mut dec_receiver, &mut thr_sender).await {
                     error!(logger, "Unable to pipe bytes"; "error" => ?error);
                     break 'outer;
                 }

@@ -138,7 +138,9 @@ pub fn throttled_channel(
                     actix_rt::time::sleep(THROTTLE_DURATION_MS).await;
                 }
 
-                let _ = output_tx.send(Ok(r)).await;
+                if let Err(_) = output_tx.send(Ok(r)).await {
+                    break;
+                }
             }
         }
     });

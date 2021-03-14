@@ -81,7 +81,7 @@ pub async fn listen_by_channel_id(
         .filter(|v| v.to_str().unwrap() == "1")
         .is_some();
 
-    let (mut enc_sender, enc_receiver) = match audio_codec_service.spawn_audio_encoder(&format) {
+    let (enc_sender, enc_receiver) = match audio_codec_service.spawn_audio_encoder(&format) {
         Ok(ok) => ok,
         Err(error) => {
             error!(logger, "Unable to start audio encoder"; "error" => ?error);
@@ -89,13 +89,18 @@ pub async fn listen_by_channel_id(
         }
     };
 
-    let (thr_sender, mut thr_receiver) = throttled_channel(
+    let (thr_sender, thr_receiver) = throttled_channel(
         DECODED_AUDIO_BYTES_PER_SECOND,
         DECODED_AUDIO_BYTES_PER_SECOND * PREFETCH_AUDIO.as_secs() as usize,
     );
 
-    actix_rt::spawn(async move {
-        let _ = pipe_channel(&mut thr_receiver, &mut enc_sender).await;
+    actix_rt::spawn({
+        let mut thr_receiver = thr_receiver;
+        let mut enc_sender = enc_sender;
+
+        async move {
+            let _ = pipe_channel(&mut thr_receiver, &mut enc_sender).await;
+        }
     });
 
     let (metadata_sender, metadata_receiver) = sync::mpsc::sync_channel(1);
@@ -145,24 +150,28 @@ pub async fn listen_by_channel_id(
 
                 let (restart_signal_tx, mut restart_signal_rx) = oneshot::channel();
 
-                let uuid = restart_registry
-                    .lock()
-                    .unwrap()
-                    .register_restart_sender(&channel_id, restart_signal_tx);
+                let uuid = {
+                    restart_registry
+                        .lock()
+                        .unwrap()
+                        .register_restart_sender(&channel_id, restart_signal_tx)
+                };
 
-                let future = pipe_channel_with_cancel(
+                let result = pipe_channel_with_cancel(
                     &mut dec_receiver,
                     &mut thr_sender,
                     &mut restart_signal_rx,
                 )
                 .await;
 
-                restart_registry
-                    .lock()
-                    .unwrap()
-                    .unregister_restart_sender(&channel_id, uuid);
+                {
+                    restart_registry
+                        .lock()
+                        .unwrap()
+                        .unregister_restart_sender(&channel_id, uuid);
+                }
 
-                if let Err(error) = future {
+                if let Err(error) = result {
                     error!(logger, "Unable to pipe bytes"; "error" => ?error);
 
                     break;

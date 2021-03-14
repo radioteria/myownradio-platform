@@ -69,7 +69,7 @@ impl MorBackendClient {
 
     pub async fn get_now_playing(
         &self,
-        channel_id: &u32,
+        channel_id: &usize,
     ) -> Result<NowPlaying, MorBackendClientError> {
         let client = Client::default();
 
@@ -122,7 +122,7 @@ impl MorBackendClient {
 
     pub async fn get_channel_info(
         &self,
-        channel_id: &u32,
+        channel_id: &usize,
     ) -> Result<ChannelInfo, MorBackendClientError> {
         let client = Client::default();
 

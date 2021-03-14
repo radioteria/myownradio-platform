@@ -14,7 +14,7 @@ pub enum LogLevel {
 }
 
 fn default_bind_address() -> String {
-    "127.0.0.1:8080".to_string()
+    "0.0.0.0:8080".to_string()
 }
 
 fn default_log_level() -> Level {
@@ -51,6 +51,7 @@ pub struct Config {
     pub log_level: Level,
     // Required environment variables
     pub mor_backend_url: String,
+    pub stream_mutation_token: String,
 }
 
 impl Config {

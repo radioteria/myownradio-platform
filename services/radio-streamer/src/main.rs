@@ -1,3 +1,13 @@
+mod audio_formats;
+mod codec;
+mod config;
+mod helpers;
+mod http;
+mod icy_metadata;
+mod metrics;
+mod mor_backend_client;
+mod restart_registry;
+
 use std::io;
 use std::io::Result;
 use std::sync::{Arc, Mutex};
@@ -9,18 +19,10 @@ use slog_json::Json;
 use crate::codec::AudioCodecService;
 use crate::config::Config;
 use crate::http::metrics::get_metrics;
-use crate::http::streaming::listen_by_channel_id;
+use crate::http::streaming::{listen_by_channel_id, restart_by_channel_id};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
-
-mod audio_formats;
-mod codec;
-mod config;
-mod helpers;
-mod http;
-mod icy_metadata;
-mod metrics;
-mod mor_backend_client;
+use crate::restart_registry::RestartRegistry;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -46,6 +48,9 @@ async fn main() -> Result<()> {
         &logger.new(o!("scope" => "AudioCodecService")),
     ));
     let metrics = Arc::new(Metrics::new());
+    let restart_registry = Arc::new(Mutex::new(RestartRegistry::new(
+        logger.new(o!("scope" => "RestartRegistry")),
+    )));
 
     info!(logger, "Starting application...");
 
@@ -58,7 +63,9 @@ async fn main() -> Result<()> {
                 .data(logger.clone())
                 .data(metrics.clone())
                 .data(audio_codec_service.clone())
+                .data(restart_registry.clone())
                 .service(listen_by_channel_id)
+                .service(restart_by_channel_id)
                 .service(get_metrics)
         }
     })

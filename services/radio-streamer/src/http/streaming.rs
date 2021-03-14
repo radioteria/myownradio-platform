@@ -1,20 +1,46 @@
 use crate::audio_formats::AudioFormat;
 use crate::codec::AudioCodecService;
-use crate::helpers::io::{pipe_channel, throttled_channel};
+use crate::config::Config;
+use crate::helpers::io::{pipe_channel, pipe_channel_with_cancel, throttled_channel};
 use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
+use crate::restart_registry::RestartRegistry;
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
+use futures::channel::oneshot;
 use futures::TryStreamExt;
 use serde::Deserialize;
 use slog::{debug, error, Logger};
 use std::sync;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 const PREFETCH_AUDIO: Duration = Duration::from_secs(3);
 const DECODED_AUDIO_BYTES_PER_SECOND: usize = 176400;
+
+#[get("/restart/{channel_id}")]
+pub async fn restart_by_channel_id(
+    request: HttpRequest,
+    channel_id: web::Path<usize>,
+    restart_registry: Data<Arc<Mutex<RestartRegistry>>>,
+    config: Data<Arc<Config>>,
+) -> impl Responder {
+    let actual_token = match request.headers().get("token").map(|v| v.to_str()) {
+        Some(Ok(token)) => token,
+        _ => {
+            return HttpResponse::Unauthorized().finish();
+        }
+    };
+
+    if actual_token != config.stream_mutation_token {
+        return HttpResponse::Unauthorized().finish();
+    }
+
+    restart_registry.lock().unwrap().restart(&channel_id);
+
+    HttpResponse::Ok().finish()
+}
 
 #[derive(Deserialize, Clone)]
 pub struct ListenQueryParams {
@@ -24,12 +50,13 @@ pub struct ListenQueryParams {
 #[get("/listen/{channel_id}")]
 pub async fn listen_by_channel_id(
     request: HttpRequest,
-    channel_id: web::Path<u32>,
+    channel_id: web::Path<usize>,
     query_params: Query<ListenQueryParams>,
     mor_backend_client: Data<Arc<MorBackendClient>>,
     audio_codec_service: Data<Arc<AudioCodecService>>,
     logger: Data<Arc<Logger>>,
     metrics: Data<Arc<Metrics>>,
+    restart_registry: Data<Arc<Mutex<RestartRegistry>>>,
 ) -> impl Responder {
     let channel_info = match mor_backend_client.get_channel_info(&channel_id).await {
         Ok(channel_info) => channel_info,
@@ -116,8 +143,28 @@ pub async fn listen_by_channel_id(
                     }
                 }
 
-                if let Err(error) = pipe_channel(&mut dec_receiver, &mut thr_sender).await {
+                let (restart_signal_tx, mut restart_signal_rx) = oneshot::channel();
+
+                let uuid = restart_registry
+                    .lock()
+                    .unwrap()
+                    .register_restart_sender(&channel_id, restart_signal_tx);
+
+                let future = pipe_channel_with_cancel(
+                    &mut dec_receiver,
+                    &mut thr_sender,
+                    &mut restart_signal_rx,
+                )
+                .await;
+
+                restart_registry
+                    .lock()
+                    .unwrap()
+                    .unregister_restart_sender(&channel_id, uuid);
+
+                if let Err(error) = future {
                     error!(logger, "Unable to pipe bytes"; "error" => ?error);
+
                     break;
                 }
             }

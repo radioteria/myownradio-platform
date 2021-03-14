@@ -1,8 +1,11 @@
 use actix_web::web::Bytes;
 use async_process::{ChildStdin, ChildStdout};
 use futures::channel::mpsc::{channel, Receiver, SendError, Sender};
+use futures::channel::oneshot;
+use futures::channel::oneshot::Canceled;
 use futures::io::{Error, ErrorKind};
-use futures::{AsyncReadExt, AsyncWriteExt, SinkExt, StreamExt};
+use futures::{AsyncReadExt, AsyncWriteExt, SinkExt, StreamExt, TryFutureExt};
+use futures_lite::FutureExt;
 use slog::{debug, error, Logger};
 use std::cmp::max;
 use std::time::{Duration, Instant};
@@ -76,6 +79,32 @@ pub async fn pipe_channel<'a>(
         sender.send(result).await?;
     }
     Ok(())
+}
+
+#[derive(Debug)]
+pub enum PipeChannelError {
+    SendError(SendError),
+    CancelError(Canceled),
+}
+
+pub async fn pipe_channel_with_cancel<'a>(
+    receiver: &'a mut Receiver<Result<Bytes, Error>>,
+    sender: &'a mut Sender<Result<Bytes, Error>>,
+    cancel_receiver: &'a mut oneshot::Receiver<()>,
+) -> Result<(), PipeChannelError> {
+    let pipe_future = async {
+        pipe_channel(receiver, sender)
+            .map_err(|err| PipeChannelError::SendError(err))
+            .await
+    };
+
+    let cancel_future = async {
+        cancel_receiver
+            .await
+            .map_err(|canceled| PipeChannelError::CancelError(canceled))
+    };
+
+    pipe_future.or(cancel_future).await
 }
 
 pub fn throttled_channel(

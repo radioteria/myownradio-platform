@@ -114,6 +114,13 @@ pub async fn listen_by_channel_id(
             metrics.inc_streaming_in_progress();
 
             loop {
+                let uuid = {
+                    restart_registry
+                        .lock()
+                        .unwrap()
+                        .register_restart_sender(&channel_id, restart_signal_tx)
+                };
+
                 let now_playing = match mor_backend_client.get_now_playing(&channel_id).await {
                     Ok(now_playing) => {
                         debug!(logger, "Now playing: {:?}", &now_playing);
@@ -149,13 +156,6 @@ pub async fn listen_by_channel_id(
                 }
 
                 let (restart_signal_tx, mut restart_signal_rx) = oneshot::channel();
-
-                let uuid = {
-                    restart_registry
-                        .lock()
-                        .unwrap()
-                        .register_restart_sender(&channel_id, restart_signal_tx)
-                };
 
                 let result = pipe_channel_with_cancel(
                     &mut dec_receiver,

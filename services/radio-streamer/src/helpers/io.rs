@@ -1,8 +1,7 @@
 use actix_web::web::Bytes;
 use async_process::{ChildStdin, ChildStdout};
-use futures::channel::mpsc::{channel, Receiver, SendError, Sender};
+use futures::channel::mpsc;
 use futures::channel::oneshot;
-use futures::channel::oneshot::Canceled;
 use futures::io::{Error, ErrorKind};
 use futures::{AsyncReadExt, AsyncWriteExt, SinkExt, StreamExt, TryFutureExt};
 use futures_lite::FutureExt;
@@ -16,7 +15,7 @@ const THROTTLE_DURATION_MS: Duration = Duration::from_millis(50);
 
 pub async fn send_from_stdout<'a>(
     stdout: &'a mut ChildStdout,
-    sender: &'a mut Sender<Result<Bytes, Error>>,
+    sender: &'a mut mpsc::Sender<Result<Bytes, Error>>,
     logger: Logger,
 ) {
     let mut input_buffer = vec![0u8; BUFFER_SIZE];
@@ -51,7 +50,7 @@ pub async fn send_from_stdout<'a>(
 }
 
 pub async fn read_to_stdin<'a>(
-    receiver: &'a mut Receiver<Result<Bytes, Error>>,
+    receiver: &'a mut mpsc::Receiver<Result<Bytes, Error>>,
     stdin: &'a mut ChildStdin,
     logger: Logger,
 ) {
@@ -72,9 +71,9 @@ pub async fn read_to_stdin<'a>(
 }
 
 pub async fn pipe_channel<'a>(
-    receiver: &'a mut Receiver<Result<Bytes, Error>>,
-    sender: &'a mut Sender<Result<Bytes, Error>>,
-) -> Result<(), SendError> {
+    receiver: &'a mut mpsc::Receiver<Result<Bytes, Error>>,
+    sender: &'a mut mpsc::Sender<Result<Bytes, Error>>,
+) -> Result<(), mpsc::SendError> {
     while let Some(result) = receiver.next().await {
         sender.send(result).await?;
     }
@@ -83,13 +82,13 @@ pub async fn pipe_channel<'a>(
 
 #[derive(Debug)]
 pub enum PipeChannelError {
-    SendError(SendError),
-    CancelError(Canceled),
+    SendError(mpsc::SendError),
+    CancelError(oneshot::Canceled),
 }
 
 pub async fn pipe_channel_with_cancel<'a>(
-    receiver: &'a mut Receiver<Result<Bytes, Error>>,
-    sender: &'a mut Sender<Result<Bytes, Error>>,
+    receiver: &'a mut mpsc::Receiver<Result<Bytes, Error>>,
+    sender: &'a mut mpsc::Sender<Result<Bytes, Error>>,
     cancel_receiver: &'a mut oneshot::Receiver<()>,
 ) -> Result<(), PipeChannelError> {
     let pipe_future = async {
@@ -110,12 +109,15 @@ pub async fn pipe_channel_with_cancel<'a>(
 pub fn throttled_channel(
     bytes_per_second: usize,
     prefetch_size: usize,
-) -> (Sender<Result<Bytes, Error>>, Receiver<Result<Bytes, Error>>) {
+) -> (
+    mpsc::Sender<Result<Bytes, Error>>,
+    mpsc::Receiver<Result<Bytes, Error>>,
+) {
     let bytes_per_second = bytes_per_second as isize;
     let prefetch_size = prefetch_size as isize;
 
-    let (input_tx, input_rx) = channel::<Result<Bytes, Error>>(0);
-    let (output_tx, output_rx) = channel::<Result<Bytes, Error>>(0);
+    let (input_tx, input_rx) = mpsc::channel::<Result<Bytes, Error>>(0);
+    let (output_tx, output_rx) = mpsc::channel::<Result<Bytes, Error>>(0);
 
     actix_rt::spawn({
         let mut input_rx = input_rx;

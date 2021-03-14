@@ -114,6 +114,8 @@ pub async fn listen_by_channel_id(
             metrics.inc_streaming_in_progress();
 
             loop {
+                let (restart_signal_tx, mut restart_signal_rx) = oneshot::channel();
+
                 let uuid = {
                     restart_registry
                         .lock()
@@ -154,8 +156,6 @@ pub async fn listen_by_channel_id(
                         break;
                     }
                 }
-
-                let (restart_signal_tx, mut restart_signal_rx) = oneshot::channel();
 
                 let result = pipe_channel_with_cancel(
                     &mut dec_receiver,

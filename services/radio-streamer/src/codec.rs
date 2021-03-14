@@ -31,13 +31,20 @@ impl AudioCodecService {
     pub fn spawn_audio_decoder(
         &self,
         url: &str,
-        offset: &u32,
+        offset: &usize,
     ) -> Result<mpsc::Receiver<Result<Bytes, io::Error>>, AudioCodecError> {
         let (sender, receiver) = mpsc::channel(0);
 
         debug!(self.logger, "Spawning audio decoder...");
 
-        let offset = format!("{:.4}", offset / 1000);
+        let offset = {
+            let offset_seconds = match offset.clone() {
+                o if o < 1000 => 0.0,
+                o => o as f32 / 1000.0,
+            };
+
+            format!("{:.4}", offset_seconds)
+        };
 
         let child = match Command::new(&self.path_to_ffmpeg)
             .args(&[

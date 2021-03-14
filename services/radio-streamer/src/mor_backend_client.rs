@@ -5,7 +5,7 @@ use slog::{error, Logger};
 
 #[derive(Deserialize, Debug, Serialize)]
 pub struct CurrentTrack {
-    pub offset: u32,
+    pub offset: usize,
     pub title: String,
     pub url: String,
 }
@@ -18,8 +18,8 @@ pub struct NextTrack {
 
 #[derive(Deserialize, Debug)]
 pub struct NowPlaying {
-    pub time: f32,
-    pub playlist_position: u32,
+    pub time: usize,
+    pub playlist_position: usize,
     pub current_track: CurrentTrack,
     pub next_track: NextTrack,
 }

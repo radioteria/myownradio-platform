@@ -48,9 +48,9 @@ async fn main() -> Result<()> {
         &logger.new(o!("scope" => "AudioCodecService")),
     ));
     let metrics = Arc::new(Metrics::new());
-    let restart_registry = Arc::new(Mutex::new(RestartRegistry::new(
+    let restart_registry = Arc::new(RestartRegistry::new(
         logger.new(o!("scope" => "RestartRegistry")),
-    )));
+    ));
 
     info!(logger, "Starting application...");
 

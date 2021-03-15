@@ -13,7 +13,7 @@ use futures::TryStreamExt;
 use serde::Deserialize;
 use slog::{debug, error, Logger};
 use std::sync;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::time::Duration;
 
 const PREFETCH_AUDIO: Duration = Duration::from_secs(3);
@@ -23,7 +23,7 @@ const DECODED_AUDIO_BYTES_PER_SECOND: usize = 176400;
 pub async fn restart_by_channel_id(
     request: HttpRequest,
     channel_id: web::Path<usize>,
-    restart_registry: Data<Arc<Mutex<RestartRegistry>>>,
+    restart_registry: Data<Arc<RestartRegistry>>,
     config: Data<Arc<Config>>,
 ) -> impl Responder {
     let actual_token = match request.headers().get("token").map(|v| v.to_str()) {
@@ -37,7 +37,7 @@ pub async fn restart_by_channel_id(
         return HttpResponse::Unauthorized().finish();
     }
 
-    restart_registry.lock().unwrap().restart(&channel_id);
+    restart_registry.restart(&channel_id);
 
     HttpResponse::Ok().finish()
 }
@@ -56,7 +56,7 @@ pub async fn listen_by_channel_id(
     audio_codec_service: Data<Arc<AudioCodecService>>,
     logger: Data<Arc<Logger>>,
     metrics: Data<Arc<Metrics>>,
-    restart_registry: Data<Arc<Mutex<RestartRegistry>>>,
+    restart_registry: Data<Arc<RestartRegistry>>,
 ) -> impl Responder {
     let channel_info = match mor_backend_client.get_channel_info(&channel_id).await {
         Ok(channel_info) => channel_info,
@@ -150,12 +150,7 @@ pub async fn listen_by_channel_id(
                     }
                 }
 
-                let uuid = {
-                    restart_registry
-                        .lock()
-                        .unwrap()
-                        .register_restart_sender(&channel_id, restart_signal_tx)
-                };
+                let uuid = restart_registry.register_restart_sender(&channel_id, restart_signal_tx);
 
                 let result = pipe_channel_with_cancel(
                     &mut dec_receiver,
@@ -164,12 +159,7 @@ pub async fn listen_by_channel_id(
                 )
                 .await;
 
-                {
-                    restart_registry
-                        .lock()
-                        .unwrap()
-                        .unregister_restart_sender(&channel_id, uuid);
-                }
+                restart_registry.unregister_restart_sender(&channel_id, uuid);
 
                 if let Err(error) = result {
                     error!(logger, "Unable to pipe bytes"; "error" => ?error);

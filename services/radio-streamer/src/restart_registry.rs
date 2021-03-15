@@ -1,25 +1,28 @@
-use futures::channel::oneshot::Sender;
+use futures::channel::oneshot;
 use slog::{debug, warn, Logger};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 
 pub struct RestartRegistry {
-    senders: HashMap<usize, HashMap<Uuid, Sender<()>>>,
+    senders: Arc<Mutex<HashMap<usize, HashMap<Uuid, oneshot::Sender<()>>>>>,
     logger: Logger,
 }
 
 impl RestartRegistry {
     pub fn new(logger: Logger) -> Self {
-        let senders = HashMap::default();
+        let senders = Arc::new(Mutex::new(HashMap::default()));
 
         RestartRegistry { senders, logger }
     }
 
-    pub fn register_restart_sender(&mut self, channel_id: &usize, sender: Sender<()>) -> Uuid {
+    pub fn register_restart_sender(&self, channel_id: &usize, sender: oneshot::Sender<()>) -> Uuid {
         let uuid = Uuid::new_v4();
 
-        let map = match self.senders.entry(channel_id.clone()) {
+        let mut mtx = self.senders.lock().unwrap();
+
+        let map = match mtx.entry(channel_id.clone()) {
             Entry::Occupied(e) => e.into_mut(),
             Entry::Vacant(e) => e.insert(HashMap::new()),
         };
@@ -37,8 +40,8 @@ impl RestartRegistry {
         uuid
     }
 
-    pub fn unregister_restart_sender(&mut self, channel_id: &usize, uuid: Uuid) {
-        if let Entry::Occupied(entry) = self.senders.entry(channel_id.clone()) {
+    pub fn unregister_restart_sender(&self, channel_id: &usize, uuid: Uuid) {
+        if let Entry::Occupied(entry) = self.senders.lock().unwrap().entry(channel_id.clone()) {
             let entry = entry.into_mut();
 
             debug!(
@@ -52,8 +55,8 @@ impl RestartRegistry {
         }
     }
 
-    pub fn restart(&mut self, channel_id: &usize) {
-        match self.senders.remove(channel_id) {
+    pub fn restart(&self, channel_id: &usize) {
+        match self.senders.lock().unwrap().remove(channel_id) {
             Some(map) => {
                 map.into_iter().for_each(|(_, sender)| {
                     let _ = sender.send(());

@@ -3,7 +3,7 @@ use async_process::{ChildStdin, ChildStdout};
 use futures::channel::mpsc;
 use futures::channel::oneshot;
 use futures::io::{Error, ErrorKind};
-use futures::{AsyncReadExt, AsyncWriteExt, SinkExt, StreamExt, TryFutureExt};
+use futures::{AsyncReadExt, AsyncWriteExt, SinkExt, StreamExt};
 use futures_lite::FutureExt;
 use slog::{debug, error, Logger};
 use std::cmp::max;
@@ -93,8 +93,8 @@ pub async fn pipe_channel_with_cancel<'a>(
 ) -> Result<(), PipeChannelError> {
     let pipe_future = async {
         pipe_channel(receiver, sender)
-            .map_err(|err| PipeChannelError::SendError(err))
             .await
+            .map_err(|err| PipeChannelError::SendError(err))
     };
 
     let cancel_future = async {

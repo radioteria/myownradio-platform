@@ -12,7 +12,7 @@ pub struct RestartRegistry {
 
 impl RestartRegistry {
     pub fn new(logger: Logger) -> Self {
-        let senders = Arc::new(Mutex::new(HashMap::default()));
+        let senders = Arc::default();
 
         RestartRegistry { senders, logger }
     }

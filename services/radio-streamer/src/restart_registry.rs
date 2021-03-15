@@ -56,14 +56,10 @@ impl RestartRegistry {
     }
 
     pub fn restart(&self, channel_id: &usize) {
-        match self.senders.lock().unwrap().remove(channel_id) {
-            Some(map) => {
-                map.into_iter().for_each(|(_, sender)| {
-                    let _ = sender.send(());
-                });
-            }
-            None => {
-                // Nothing
+        if let Some(senders_map) = self.senders.lock().unwrap().remove(channel_id) {
+            let senders: Vec<_> = senders_map.into_iter().map(|(_, sender)| sender).collect();
+            for sender in senders {
+                let _ = sender.send(());
             }
         }
     }

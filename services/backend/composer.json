@@ -30,7 +30,8 @@
     "ext-mysqli": "*",
     "twig/twig": "^1.25",
     "guzzlehttp/guzzle": "^6.0",
-    "sentry/sdk": "^2.1"
+    "sentry/sdk": "^2.1",
+    "monolog/monolog": "2.2.0"
   },
   "autoload": {
     "files": [

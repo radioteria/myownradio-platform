@@ -131,6 +131,7 @@ impl AudioCodecService {
                 "s16le",
                 "-i",
                 "-",
+                // TODO Replace with apply of pre-computed audio peak level.
                 "-af",
                 "compand=0 0:1 1:-90/-900 -70/-70 -21/-21 0/-15:0.01:12:0:0",
                 "-map_metadata",

@@ -22,7 +22,7 @@ impl RestartRegistry {
 
         let mut mtx = self.senders.lock().unwrap();
 
-        let map = match mtx.entry(channel_id.clone()) {
+        let map = match mtx.entry(*channel_id) {
             Entry::Occupied(e) => e.into_mut(),
             Entry::Vacant(e) => e.insert(HashMap::new()),
         };
@@ -41,7 +41,7 @@ impl RestartRegistry {
     }
 
     pub fn unregister_restart_sender(&self, channel_id: &usize, uuid: Uuid) {
-        if let Entry::Occupied(entry) = self.senders.lock().unwrap().entry(channel_id.clone()) {
+        if let Entry::Occupied(entry) = self.senders.lock().unwrap().entry(*channel_id) {
             let entry = entry.into_mut();
 
             debug!(

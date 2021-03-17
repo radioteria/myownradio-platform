@@ -164,6 +164,23 @@ class Optional implements \JsonSerializable {
     }
 
     /**
+     * @param Optional $other
+     * @return Optional
+     */
+    public function zip(Optional $other): Optional {
+        if ($this->validate() && $other->validate()) {
+            return Optional::hasValue([$this->get(), $other->get()]);
+        }
+        if ($this->validate()) {
+            return Optional::hasValue([$this->get()]);
+        }
+        if ($other->validate()) {
+            return Optional::hasValue([$other->get()]);
+        }
+        return Optional::hasValue([]);
+    }
+
+    /**
      * @return boolean
      */
     private function test() {

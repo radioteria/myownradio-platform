@@ -20,9 +20,10 @@ class RadioStreamerService implements Injectable, SingletonInterface
     private Client $client;
     private Logger $logger;
 
-    public function __construct(Config $config, Logger $logger)
+    public function __construct()
     {
-        $this->config = $config;
+        $this->config = Config::getInstance();
+        $this->logger = Logger::getInstance();
         $this->client = new Client();
     }
 
@@ -45,12 +46,20 @@ class RadioStreamerService implements Injectable, SingletonInterface
 
     public function getRadioChannelStreamUrl(int $channelId, Optional $audioFormat, Optional $clientId): string
     {
+        $f = $audioFormat->map(function ($format) {
+            return "format=${format}";
+        });
+        $c = $clientId->map(function ($clientId) {
+            return "client_id=${clientId}";
+        });
+
+        $queryParameters = implode("&", $f->zip($c)->getOrElse([]));
+
         return sprintf(
-            "%s/listen/%d?format=%s&client_id=%s",
+            "%s/listen/%d?%s",
             $this->config->getRadioStreamerEndpoint(),
             $channelId,
-            $audioFormat->getOrElseEmpty(),
-            $clientId->getOrElseEmpty()
+            $queryParameters
         );
     }
 }

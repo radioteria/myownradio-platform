@@ -43,14 +43,14 @@ class RadioStreamerService implements Injectable, SingletonInterface
         }
     }
 
-    public function getRadioChannelStreamUrl(int $channelId, string $audioFormat, Optional $clientId): string
+    public function getRadioChannelStreamUrl(int $channelId, Optional $audioFormat, Optional $clientId): string
     {
-        return $clientId->fold(function ($clientId) use (&$channelId, &$audioFormat) {
-            return sprintf("%s/listen/%d?format=%s&client_id=%s", $this->config->getRadioStreamerEndpoint(), $channelId,
-                $audioFormat, $clientId);
-        }, function () use (&$channelId, &$audioFormat) {
-            return sprintf("%s/listen/%d?format=%s", $this->config->getRadioStreamerEndpoint(), $channelId,
-                $audioFormat);
-        });
+        return sprintf(
+            "%s/listen/%d?format=%s&client_id=%s",
+            $this->config->getRadioStreamerEndpoint(),
+            $channelId,
+            $audioFormat->getOrElseEmpty(),
+            $clientId->getOrElseEmpty()
+        );
     }
 }

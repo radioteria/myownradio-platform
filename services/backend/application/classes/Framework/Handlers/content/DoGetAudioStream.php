@@ -12,7 +12,7 @@ class DoGetAudioStream implements Controller
 {
     public function doGet(HttpGet $httpGet, RadioStreamerService $radioStreamerService) {
         $channelId = $httpGet->getRequired('s');
-        $format = $httpGet->getRequired('f');
+        $format = $httpGet->getParameter('f');
         $clientId = $httpGet->getParameter('client_id');
 
         $url = $radioStreamerService->getRadioChannelStreamUrl($channelId, $format, $clientId);

@@ -142,6 +142,28 @@ class Optional implements \JsonSerializable {
     }
 
     /**
+     * @param callable $mapFn
+     * @return Optional
+     */
+    public function map(callable $mapFn): self {
+        if ($this->test()) {
+            return static::hasValue($mapFn($this->value));
+        }
+        return $this;
+    }
+
+    /**
+     * @param callable $mapFn
+     * @return Optional
+     */
+    public function flatMap(callable $mapFn): self {
+        if ($this->test()) {
+            return $mapFn($this->value);
+        }
+        return $this;
+    }
+
+    /**
      * @return boolean
      */
     private function test() {

@@ -14,7 +14,7 @@ trait Singleton
      * @return static
      * @throws ReflectionException
      */
-    public static function getInstance(): Singleton
+    public static function getInstance()/*: static @todo requires php 8.0*/
     {
         $calledClass = get_called_class();
         $calledArgs = func_get_args();
@@ -39,7 +39,8 @@ trait Singleton
         unset(self::$_instance[$hash]);
     }
 
-    public function saveAsInstance(): void {
+    public function saveAsInstance(): void
+    {
         $hash = serialize([]);
         self::$_instance[$hash] = $this;
     }

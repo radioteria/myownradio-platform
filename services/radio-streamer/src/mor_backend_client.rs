@@ -70,10 +70,16 @@ impl MorBackendClient {
     pub async fn get_now_playing(
         &self,
         channel_id: &usize,
+        client_id: Option<String>,
     ) -> Result<NowPlaying, MorBackendClientError> {
         let client = Client::default();
 
-        let url = format!("{}/api/v1/stream/{}/now", &self.mor_backend_url, channel_id);
+        let url = format!(
+            "{}/api/v1/stream/{}/now?client_id={}",
+            &self.mor_backend_url,
+            channel_id,
+            &client_id.unwrap_or_default()
+        );
 
         let mut response = match client.get(url).send().await {
             Ok(response) => response,
@@ -123,12 +129,15 @@ impl MorBackendClient {
     pub async fn get_channel_info(
         &self,
         channel_id: &usize,
+        client_id: Option<String>,
     ) -> Result<ChannelInfo, MorBackendClientError> {
         let client = Client::default();
 
         let url = format!(
-            "{}/api/v0/stream/{}/info",
-            &self.mor_backend_url, channel_id
+            "{}/api/v0/stream/{}/info?client_id={}",
+            &self.mor_backend_url,
+            channel_id,
+            client_id.unwrap_or_default()
         );
 
         let mut response = match client.get(url).send().await {

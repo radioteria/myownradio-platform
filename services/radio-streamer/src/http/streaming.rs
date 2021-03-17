@@ -46,7 +46,8 @@ pub async fn restart_by_channel_id(
 
 #[derive(Deserialize, Clone)]
 pub struct ListenQueryParams {
-    f: Option<String>,
+    format: Option<String>,
+    client_id: Option<String>,
 }
 
 #[get("/listen/{channel_id}")]
@@ -60,7 +61,12 @@ pub async fn listen_by_channel_id(
     metrics: Data<Arc<Metrics>>,
     restart_registry: Data<Arc<RestartRegistry>>,
 ) -> impl Responder {
-    let channel_info = match mor_backend_client.get_channel_info(&channel_id).await {
+    let client_id = query_params.client_id.clone();
+
+    let channel_info = match mor_backend_client
+        .get_channel_info(&channel_id, client_id.clone())
+        .await
+    {
         Ok(channel_info) => channel_info,
         Err(MorBackendClientError::ChannelNotFound) => {
             return HttpResponse::NotFound().finish();
@@ -71,11 +77,11 @@ pub async fn listen_by_channel_id(
         }
     };
 
-    let format_param = query_params.f.clone();
+    let format_param = query_params.format.clone();
 
     let format = format_param
         .and_then(|f| AudioFormat::from_string(&f))
-        .unwrap_or(AudioFormat::MP3_128k);
+        .unwrap_or(AudioFormat::MP3_192k);
 
     let is_icy_enabled = request
         .headers()
@@ -103,6 +109,7 @@ pub async fn listen_by_channel_id(
     actix_rt::spawn({
         let mut thr_sender = thr_sender;
 
+        let client_id = client_id.clone();
         let logger = logger.clone();
 
         async move {
@@ -111,7 +118,10 @@ pub async fn listen_by_channel_id(
             loop {
                 let (restart_signal_tx, mut restart_signal_rx) = oneshot::channel();
 
-                let now_playing = match mor_backend_client.get_now_playing(&channel_id).await {
+                let now_playing = match mor_backend_client
+                    .get_now_playing(&channel_id, client_id.clone())
+                    .await
+                {
                     Ok(now_playing) => {
                         debug!(logger, "Now playing: {:?}", &now_playing);
                         now_playing

@@ -52,6 +52,7 @@ services:
     environment:
       - BIND_ADDRESS=0.0.0.0:8080
       - MOR_BACKEND_URL=http://backend:8080
+      - STREAM_MUTATION_TOKEN=2a74df546ce14acbb01fd71f1d00dfe7
     networks:
       - default
       - global
@@ -95,6 +96,8 @@ services:
       VIRTUAL_HOST: "myownradio.biz"
       LETSENCRYPT_HOST: "myownradio.biz"
       VIRTUAL_PORT: "8080"
+      RADIO_STREAMER_ENDPOINT: "https://myownradio.biz/r"
+      RADIO_STREAMER_TOKEN: "2a74df546ce14acbb01fd71f1d00dfe7"
     networks:
       - default
       - global

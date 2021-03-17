@@ -80,6 +80,20 @@ pub async fn pipe_channel<'a>(
     Ok(())
 }
 
+pub fn spawn_pipe_channel(
+    receiver: mpsc::Receiver<Result<Bytes, Error>>,
+    sender: mpsc::Sender<Result<Bytes, Error>>,
+) {
+    actix_rt::spawn({
+        let mut receiver = receiver;
+        let mut sender = sender;
+
+        async move {
+            let _ = pipe_channel(&mut receiver, &mut sender).await;
+        }
+    });
+}
+
 #[derive(Debug)]
 pub enum PipeChannelError {
     SendError(mpsc::SendError),

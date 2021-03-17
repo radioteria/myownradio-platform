@@ -1,20 +1,22 @@
-use crate::audio_formats::AudioFormat;
-use crate::codec::AudioCodecService;
-use crate::config::Config;
-use crate::helpers::io::{pipe_channel, pipe_channel_with_cancel, throttled_channel};
-use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
-use crate::metrics::Metrics;
-use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
-use crate::restart_registry::RestartRegistry;
+use std::sync;
+use std::sync::Arc;
+use std::time::Duration;
+
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use futures::channel::oneshot;
 use futures::TryStreamExt;
 use serde::Deserialize;
 use slog::{debug, error, Logger};
-use std::sync;
-use std::sync::Arc;
-use std::time::Duration;
+
+use crate::audio_formats::AudioFormat;
+use crate::codec::AudioCodecService;
+use crate::config::Config;
+use crate::helpers::io::{pipe_channel_with_cancel, spawn_pipe_channel, throttled_channel};
+use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
+use crate::metrics::Metrics;
+use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
+use crate::restart_registry::RestartRegistry;
 
 const PREFETCH_AUDIO: Duration = Duration::from_secs(3);
 const DECODED_AUDIO_BYTES_PER_SECOND: usize = 176400;
@@ -94,14 +96,7 @@ pub async fn listen_by_channel_id(
         DECODED_AUDIO_BYTES_PER_SECOND * PREFETCH_AUDIO.as_secs() as usize,
     );
 
-    actix_rt::spawn({
-        let mut thr_receiver = thr_receiver;
-        let mut enc_sender = enc_sender;
-
-        async move {
-            let _ = pipe_channel(&mut thr_receiver, &mut enc_sender).await;
-        }
-    });
+    spawn_pipe_channel(thr_receiver, enc_sender);
 
     let (metadata_sender, metadata_receiver) = sync::mpsc::sync_channel(1);
 

@@ -19,7 +19,7 @@
     "aws/aws-sdk-php": "^3.19",
     "intervention/image": "^2.3",
     "firebase/php-jwt": "^4.0",
-    "php": "^7.2",
+    "php": "^7.4",
     "ext-curl": "*",
     "ext-fileinfo": "*",
     "ext-json": "*",

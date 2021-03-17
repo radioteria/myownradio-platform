@@ -1,16 +1,3 @@
 version: "3.5"
 
 services:
-  proxy:
-    build:
-      context: ./services/nginx
-    ports:
-      - 8080:8080
-    depends_on:
-      - radionode
-    expose:
-      - 8080
-
-  radionode:
-    build:
-      context: ./services/radionode

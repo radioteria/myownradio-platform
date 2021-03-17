@@ -9,18 +9,17 @@
 namespace Framework\Models;
 
 use app\Helpers\Http;
+use app\Logger;
+use app\Services\RadioStreamerService;
 use Framework\Exceptions\ControllerException;
 use Framework\Exceptions\UnauthorizedException;
 use Framework\Models\Traits\StreamControl;
 use Framework\Services\Database;
 use Framework\Services\DB\DBQuery;
-use Framework\Services\DB\DBQueryPool;
 use Framework\Services\DB\Query\DeleteQuery;
-use Framework\Services\DB\Query\SelectQuery;
-use Framework\Services\DB\Query\UpdateQuery;
 use Objects\Link;
-use Objects\StreamTrack;
 use Objects\Stream;
+use Objects\StreamTrack;
 use Objects\Track;
 use Tools\Common;
 use Tools\Optional;
@@ -336,6 +335,19 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface
 
     }
 
+    public function optimize()
+    {
+
+        $this->doAtomic(function () {
+
+            Database::doInConnection(function (Database $db) {
+                $db->executeUpdate("CALL optimize_channel(?)", [$this->key]);
+            });
+
+        });
+
+    }
+
     /**
      * @return $this
      */
@@ -351,19 +363,6 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface
         });
 
         return $this;
-
-    }
-
-    public function optimize()
-    {
-
-        $this->doAtomic(function () {
-
-            Database::doInConnection(function (Database $db) {
-                $db->executeUpdate("CALL optimize_channel(?)", [$this->key]);
-            });
-
-        });
 
     }
 
@@ -413,7 +412,6 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface
      */
     protected function _setCurrentTrack(StreamTrack $trackBean, $startFrom = 0, $notify = true)
     {
-
         Stream::getByID($this->key)
             ->then(function ($stream) use ($trackBean, $startFrom) {
                 /** @var Stream $stream */
@@ -435,9 +433,29 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface
         self::notifyAllStreamers($this->key);
     }
 
-    public static function notifyAllStreamers($streamID)
+    public static function notifyAllStreamers($channelId)
     {
-        Http::get("${_ENV['STREAM_HOST']}/notify?token=notify_me&s=${streamID}");
+        try {
+            RadioStreamerService::getInstance()->restartRadioChannel($channelId);
+        } catch (\Exception $exception) {
+            try {
+                $logger = Logger::getInstance();
+                $logger->error("Unable to restart radio channel", ["exception" => $exception]);
+            } catch (\ReflectionException $exception) {
+                // NOP
+            }
+        }
+
+        try {
+            Http::get("${_ENV['STREAM_HOST']}/notify?token=notify_me&s=${$channelId}");
+        } catch (\Exception $exception) {
+            try {
+                $logger = Logger::getInstance();
+                $logger->error("Unable to notify streamer", ["exception" => $exception]);
+            } catch (\ReflectionException $exception) {
+                // NOP
+            }
+        }
     }
 
     /**

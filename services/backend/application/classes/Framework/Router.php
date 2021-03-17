@@ -72,6 +72,7 @@ class Router implements SingletonInterface, Injectable {
         $sub->addRoute("streams/:id", "helpers\\DoStream");
         $sub->addRoute("user/:id", "helpers\\DoUser");
         $sub->addRoute("search/:query", "helpers\\DoSearch");
+        $sub->addRoute("subscribe", "api\\v3\\DoAcquire");
 
         $sub->addRoute("content/streamcovers/:fn", "content\\DoGetStreamCover");
         $sub->addRoute("content/avatars/:fn", "content\\DoGetUserAvatar");
@@ -80,13 +81,12 @@ class Router implements SingletonInterface, Injectable {
         $sub->addRoute("content/trackinfo/&id", "content\\DoTrackExtraInfo");
         $sub->addRoute("getchunk/:id", "content\\DoGetChunk");
 
-        $sub->addRoute("subscribe", "api\\v3\\DoAcquire");
-
         $sub->addRoute("flow", function () {
             $query = http_build_query($_GET);
             $stream_host = env('STREAM_HOST', '');
             header("Location: ${stream_host}/audio?" . $query);
         });
+        $sub->addRoute("flow2", "content\\DoGetAudioStream");
 
         $sub->addRoute("api/v0/stream/:stream_id/now", "api\\DoChannelNowPlaying");
         $sub->addRoute("api/v1/stream/:stream_id/now", "api\\DoChannelNowPlayingV1");

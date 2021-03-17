@@ -8,6 +8,7 @@ use app\Config;
 use app\Logger;
 use Framework\Injector\Injectable;
 use GuzzleHttp\Client;
+use Tools\Optional;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
@@ -42,8 +43,14 @@ class RadioStreamerService implements Injectable, SingletonInterface
         }
     }
 
-    public function getRadioChannelStreamUrl(int $channelId, string $audioFormat): string
+    public function getRadioChannelStreamUrl(int $channelId, string $audioFormat, Optional $clientId): string
     {
-        return sprintf("%s/listen/%d?f=%s", $this->config->getRadioStreamerEndpoint(), $channelId, $audioFormat);
+        return $clientId->fold(function ($clientId) use (&$channelId, &$audioFormat) {
+            return sprintf("%s/listen/%d?format=%s&client_id=%s", $this->config->getRadioStreamerEndpoint(), $channelId,
+                $audioFormat, $clientId);
+        }, function () use (&$channelId, &$audioFormat) {
+            return sprintf("%s/listen/%d?format=%s", $this->config->getRadioStreamerEndpoint(), $channelId,
+                $audioFormat);
+        });
     }
 }

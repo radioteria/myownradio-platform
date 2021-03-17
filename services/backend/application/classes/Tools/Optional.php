@@ -130,6 +130,18 @@ class Optional implements \JsonSerializable {
     }
 
     /**
+     * @param callable $onSome
+     * @param callable $onNone
+     * @return mixed
+     */
+    public function fold(callable $onSome, callable $onNone) {
+        if ($this->test()) {
+            return $onSome($this->value);
+        }
+        return $onNone();
+    }
+
+    /**
      * @return boolean
      */
     private function test() {

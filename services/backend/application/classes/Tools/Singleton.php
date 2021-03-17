@@ -38,4 +38,9 @@ trait Singleton
         $hash = serialize(func_get_args());
         unset(self::$_instance[$hash]);
     }
+
+    public function saveInstance(): void {
+        $hash = serialize([]);
+        self::$_instance[$hash] = $this;
+    }
 }

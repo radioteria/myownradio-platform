@@ -25,6 +25,7 @@ require_once BASE_DIR . '/application/startup.php';
 require_once BASE_DIR . "/application/libs/functions.php";
 require_once BASE_DIR . "/application/libs/acResizeImage.php";
 
+
 try {
     // Load env file
     if (file_exists(ENV_FILE)) {
@@ -33,10 +34,14 @@ try {
         $loader->toEnv(true);
     }
 
+    // Init Config 2.0
+    $config = \app\Config::fromEnv();
+    $config->saveInstance();
+
     // Facebook setup
     FacebookSession::setDefaultApplication(
-        env('FACEBOOK_APP_ID'),
-        env('FACEBOOK_APP_SECRET')
+        $config->getFacebookAppId(),
+        $config->getFacebookAppSecret(),
     );
 
     // Template engine setup

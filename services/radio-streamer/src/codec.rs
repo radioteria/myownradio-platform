@@ -1,11 +1,12 @@
-use crate::audio_formats::AudioFormat;
-use crate::helpers::io::{read_to_stdin, send_from_stdout};
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
 use futures::channel::{mpsc, oneshot};
 use futures::io;
 use futures_lite::FutureExt;
 use slog::{debug, error, Logger};
+
+use crate::audio_formats::AudioFormat;
+use crate::helpers::io::{read_to_stdin, send_from_stdout};
 
 #[derive(Debug)]
 pub enum AudioCodecError {
@@ -37,11 +38,8 @@ impl AudioCodecService {
 
         debug!(self.logger, "Spawning audio decoder...");
 
-        let offset = {
-            let offset_seconds = match offset.clone() {
-                o if o < 1000 => 0.0,
-                o => o as f32 / 1000.0,
-            };
+        let offset_string = {
+            let offset_seconds = *offset as f32 / 1000.0;
 
             format!("{:.4}", offset_seconds)
         };
@@ -52,7 +50,7 @@ impl AudioCodecService {
                 "-fflags",
                 "fastseek",
                 "-ss",
-                &offset,
+                &offset_string,
                 "-i",
                 &url,
                 "-vn",

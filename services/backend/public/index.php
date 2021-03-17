@@ -3,6 +3,8 @@
 use Facebook\FacebookSession;
 use Framework\Router;
 use Framework\Template;
+use josegonzalez\Dotenv\Loader;
+use app\Config;
 use function Sentry\captureException;
 use function Sentry\init;
 
@@ -27,16 +29,16 @@ require_once BASE_DIR . "/application/libs/acResizeImage.php";
 
 
 try {
-    // Load env file
+    // Load .env file
     if (file_exists(ENV_FILE)) {
-        $loader = new \josegonzalez\Dotenv\Loader(ENV_FILE);
+        $loader = new Loader(ENV_FILE);
         $loader->parse();
         $loader->toEnv(true);
     }
 
     // Init Config 2.0
-    $config = \app\Config::fromEnv();
-    $config->saveInstance();
+    $config = Config::fromEnv();
+    $config->saveAsInstance();
 
     // Facebook setup
     FacebookSession::setDefaultApplication(

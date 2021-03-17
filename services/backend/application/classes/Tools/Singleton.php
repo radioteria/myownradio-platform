@@ -39,7 +39,7 @@ trait Singleton
         unset(self::$_instance[$hash]);
     }
 
-    public function saveInstance(): void {
+    public function saveAsInstance(): void {
         $hash = serialize([]);
         self::$_instance[$hash] = $this;
     }

@@ -141,7 +141,7 @@ pub async fn listen_by_channel_id(
                 if is_first_track {
                     is_first_track = false;
                 } else {
-                    metrics.inc_track_start_lateness(&now_playing.current_track.offset);
+                    metrics.set_track_start_lateness(&now_playing.current_track.offset);
                 }
 
                 let mut dec_receiver = match audio_codec_service.spawn_audio_decoder(

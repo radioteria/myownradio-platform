@@ -1,10 +1,11 @@
 use crate::VERSION;
-use prometheus::{Encoder, Gauge, Opts, Registry, TextEncoder};
+use prometheus::{CounterVec, Encoder, Gauge, Opts, Registry, TextEncoder};
 use std::collections::HashMap;
 
 #[derive(Clone)]
 pub struct Metrics {
     streaming_in_progress: Gauge,
+    track_start_lateness: CounterVec,
     prometheus_registry: Registry,
 }
 
@@ -14,6 +15,12 @@ impl Metrics {
             "streaming_in_progress",
             "Number of streaming currently in progress",
         ))
+        .unwrap();
+
+        let track_start_lateness = CounterVec::new(
+            Opts::new("track_start_lateness", "How late is the next track"),
+            &["delay"],
+        )
         .unwrap();
 
         let prometheus_registry = Registry::new_custom(
@@ -38,9 +45,13 @@ impl Metrics {
         prometheus_registry
             .register(Box::new(streaming_in_progress.clone()))
             .unwrap();
+        prometheus_registry
+            .register(Box::new(track_start_lateness.clone()))
+            .unwrap();
 
         Self {
             streaming_in_progress,
+            track_start_lateness,
             prometheus_registry,
         }
     }
@@ -51,6 +62,12 @@ impl Metrics {
 
     pub fn dec_streaming_in_progress(&self) {
         self.streaming_in_progress.dec()
+    }
+
+    pub fn inc_track_start_lateness(&self, delay: &usize) {
+        self.track_start_lateness
+            .with_label_values(&[&format!("{}", delay)])
+            .inc();
     }
 
     pub fn gather(&self) -> Vec<u8> {

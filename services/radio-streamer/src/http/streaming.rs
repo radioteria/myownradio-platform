@@ -115,6 +115,8 @@ pub async fn listen_by_channel_id(
         async move {
             metrics.inc_streaming_in_progress();
 
+            let mut is_first_track = true;
+
             loop {
                 let (restart_signal_tx, mut restart_signal_rx) = oneshot::channel();
 
@@ -135,6 +137,12 @@ pub async fn listen_by_channel_id(
                         break;
                     }
                 };
+
+                if is_first_track {
+                    is_first_track = false;
+                } else {
+                    metrics.inc_track_start_lateness(&now_playing.current_track.offset);
+                }
 
                 let mut dec_receiver = match audio_codec_service.spawn_audio_decoder(
                     &now_playing.current_track.url,

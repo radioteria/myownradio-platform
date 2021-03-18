@@ -51,8 +51,8 @@ pub async fn send_from_stdout<'a>(
                     break;
                 }
             },
-            Err(elapsed) => {
-                error!(logger, "Timeout occurred on reading from stdout"; "elapsed" => ?elapsed);
+            Err(_) => {
+                error!(logger, "Timeout occurred on reading from stdout");
                 if let Err(error) = sender.send(Err(Error::from(ErrorKind::TimedOut))).await {
                     error!(logger, "Unable to send timeout error to sender"; "error" => ?error);
                 }

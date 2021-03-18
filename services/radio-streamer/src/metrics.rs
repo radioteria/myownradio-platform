@@ -24,7 +24,7 @@ impl Metrics {
         .unwrap();
 
         let prometheus_registry = Registry::new_custom(
-            Some("radio_streamer".to_string()),
+            Some("myownradio_radio_streamer".to_string()),
             Some({
                 let mut labels = HashMap::new();
                 labels.insert("server_version".to_string(), VERSION.to_string());

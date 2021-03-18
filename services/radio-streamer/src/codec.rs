@@ -6,7 +6,7 @@ use futures_lite::FutureExt;
 use slog::{debug, error, Logger};
 
 use crate::audio_formats::AudioFormat;
-use crate::helpers::io::{read_to_stdin, send_from_stdout};
+use crate::helpers::io::{send_from_stdout, write_to_stdin};
 
 #[derive(Debug)]
 pub enum AudioCodecError {
@@ -46,7 +46,6 @@ impl AudioCodecService {
 
         let child = match Command::new(&self.path_to_ffmpeg)
             .args(&[
-                // "-re",
                 "-fflags",
                 "fastseek",
                 "-ss",
@@ -186,7 +185,7 @@ impl AudioCodecService {
             let logger = self.logger.clone();
 
             let pipe = async move {
-                read_to_stdin(&mut input_receiver, &mut stdin, logger).await;
+                write_to_stdin(&mut input_receiver, &mut stdin, logger).await;
             };
 
             let abort = async move {

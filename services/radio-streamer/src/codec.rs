@@ -140,11 +140,11 @@ impl AudioCodecService {
                 "-ac",
                 "2",
                 "-b:a",
-                &format!("{}k", format.bitrate()),
+                &format!("{}k", format.bitrate),
                 "-codec:a",
-                &format.codec(),
+                &format.codec,
                 "-f",
-                &format.format(),
+                &format.format,
                 "-",
             ])
             .stdin(Stdio::piped())

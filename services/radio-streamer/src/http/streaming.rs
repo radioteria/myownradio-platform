@@ -9,7 +9,7 @@ use futures::TryStreamExt;
 use serde::Deserialize;
 use slog::{debug, error, Logger};
 
-use crate::audio_formats::AudioFormat;
+use crate::audio_formats::AudioFormats;
 use crate::codec::AudioCodecService;
 use crate::config::Config;
 use crate::helpers::io::{pipe_channel_with_cancel, spawn_pipe_channel, throttled_channel};
@@ -80,8 +80,8 @@ pub async fn listen_by_channel_id(
     let format_param = query_params.format.clone();
 
     let format = format_param
-        .and_then(|f| AudioFormat::from_string(&f))
-        .unwrap_or(AudioFormat::MP3_192k);
+        .and_then(|f| AudioFormats::from_string(&f))
+        .unwrap_or(AudioFormats::MP3_192K);
 
     let is_icy_enabled = request
         .headers()
@@ -187,7 +187,7 @@ pub async fn listen_by_channel_id(
 
     let mut response = HttpResponse::Ok();
 
-    response.content_type(format.content_type()).force_close();
+    response.content_type(format.content_type).force_close();
 
     if is_icy_enabled {
         response

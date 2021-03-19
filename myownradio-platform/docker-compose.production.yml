@@ -53,6 +53,7 @@ services:
       - BIND_ADDRESS=0.0.0.0:8080
       - MOR_BACKEND_URL=http://backend:8080
       - STREAM_MUTATION_TOKEN=2a74df546ce14acbb01fd71f1d00dfe7
+      - LOG_LEVEL=Debug
     networks:
       - default
       - global

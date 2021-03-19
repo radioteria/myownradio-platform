@@ -7,6 +7,7 @@ mod icy_metadata;
 mod metrics;
 mod mor_backend_client;
 mod restart_registry;
+mod stream;
 
 use std::io;
 use std::io::Result;

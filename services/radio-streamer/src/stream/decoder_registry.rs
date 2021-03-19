@@ -17,4 +17,12 @@ pub(crate) struct DecoderRegistry {
     decoders: Arc<Mutex<HashMap<DecoderKey, DecoderEntry>>>,
 }
 
-impl DecoderEntry {}
+impl DecoderRegistry {
+    pub async fn get_or_create_decoder(&self, channel_id: usize) -> DecoderEntry {
+        unimplemented!()
+    }
+
+    pub async fn create_decoder(&self, channel_id: usize) -> DecoderEntry {
+        unimplemented!()
+    }
+}

@@ -2,6 +2,7 @@ use actix_web::client::Client;
 use actix_web::http::StatusCode;
 use serde::{Deserialize, Serialize};
 use slog::{error, Logger};
+use std::time::Duration;
 
 #[derive(Deserialize, Debug, Serialize)]
 pub struct CurrentTrack {
@@ -81,7 +82,7 @@ impl MorBackendClient {
             &client_id.unwrap_or_default()
         );
 
-        let mut response = match client.get(url).send().await {
+        let mut response = match client.get(url).timeout(Duration::from_secs(5)).send().await {
             Ok(response) => response,
             Err(error) => {
                 error!(self.logger, "Unable to send request"; "error" => ?error);
@@ -140,7 +141,7 @@ impl MorBackendClient {
             client_id.unwrap_or_default()
         );
 
-        let mut response = match client.get(url).send().await {
+        let mut response = match client.get(url).timeout(Duration::from_secs(5)).send().await {
             Ok(response) => response,
             Err(error) => {
                 error!(self.logger, "Unable to send request"; "error" => ?error);

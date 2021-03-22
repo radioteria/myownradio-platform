@@ -7,5 +7,6 @@ use std::sync::Arc;
 pub async fn get_metrics(metrics: Data<Arc<Metrics>>) -> impl Responder {
     HttpResponse::Ok()
         .content_type("text/plain")
+        .force_close()
         .body(metrics.gather())
 }

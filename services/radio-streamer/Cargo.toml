@@ -1,8 +1,11 @@
 [package]
 name = "radio-streamer"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Roman Lakhtadyr <roman.lakhtadyr@gmail.com>"]
 edition = "2018"
+
+[profile.release]
+debug = true
 
 [dependencies]
 actix-web = { version = "4.0.0-beta.3", features=["rustls"] }

@@ -13,6 +13,7 @@ const BUFFER_SIZE: usize = 4096;
 
 const THROTTLE_DURATION_MS: Duration = Duration::from_millis(50);
 const READ_FROM_STDOUT_TIMEOUT: Duration = Duration::from_secs(10);
+const SENDER_SEND_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub async fn send_from_stdout<'a>(
     stdout: &'a mut ChildStdout,
@@ -23,7 +24,6 @@ pub async fn send_from_stdout<'a>(
 
     loop {
         let read_fut = stdout.read(&mut input_buffer);
-
         match actix_rt::time::timeout(READ_FROM_STDOUT_TIMEOUT, read_fut).await {
             Ok(read_result) => match read_result {
                 Ok(read_bytes) => {
@@ -32,29 +32,47 @@ pub async fn send_from_stdout<'a>(
                         break;
                     }
 
-                    if let Err(error) = sender
-                        .send(Ok(Bytes::copy_from_slice(&input_buffer[..read_bytes])))
-                        .await
-                    {
-                        error!(logger, "Unable to send bytes to sender"; "error" => ?error);
-                        break;
+                    let send_fut =
+                        sender.send(Ok(Bytes::copy_from_slice(&input_buffer[..read_bytes])));
+                    match actix_rt::time::timeout(SENDER_SEND_TIMEOUT, send_fut).await {
+                        Ok(Err(error)) => {
+                            error!(logger, "Unable to send bytes to sender"; "error" => ?error);
+                            break;
+                        }
+                        Err(_) => {
+                            error!(logger, "Unable to send bytes to sender: timeout");
+                            break;
+                        }
+                        Ok(_) => {}
                     }
                 }
                 Err(error) => {
                     error!(logger, "Error occurred on reading from stdout"; "error" => ?error);
-                    if let Err(error) = sender
-                        .send(Err(Error::new(ErrorKind::Interrupted, error)))
-                        .await
-                    {
-                        error!(logger, "Unable to send error to sender"; "error" => ?error);
+                    let send_fut = sender.send(Err(Error::new(ErrorKind::Interrupted, error)));
+                    match actix_rt::time::timeout(SENDER_SEND_TIMEOUT, send_fut).await {
+                        Ok(Err(error)) => {
+                            error!(logger, "Unable to send error to sender"; "error" => ?error);
+                        }
+                        Err(_) => {
+                            error!(logger, "Unable to send error to sender: timeout");
+                        }
+                        Ok(_) => {}
                     }
+
                     break;
                 }
             },
             Err(_) => {
                 error!(logger, "Timeout occurred on reading from stdout");
-                if let Err(error) = sender.send(Err(Error::from(ErrorKind::TimedOut))).await {
-                    error!(logger, "Unable to send timeout error to sender"; "error" => ?error);
+                let send_fut = sender.send(Err(Error::from(ErrorKind::TimedOut)));
+                match actix_rt::time::timeout(SENDER_SEND_TIMEOUT, send_fut).await {
+                    Ok(Err(error)) => {
+                        error!(logger, "Unable to send timeout error to sender"; "error" => ?error);
+                    }
+                    Err(_) => {
+                        error!(logger, "Unable to send timeout to sender: timeout");
+                    }
+                    Ok(_) => {}
                 }
                 break;
             }

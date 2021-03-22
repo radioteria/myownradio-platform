@@ -18,7 +18,7 @@ fn default_bind_address() -> String {
 }
 
 fn default_log_level() -> Level {
-    Level::Error
+    Level::Warning
 }
 
 fn default_path_to_ffprobe() -> String {

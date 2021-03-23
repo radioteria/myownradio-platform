@@ -62,4 +62,12 @@ class RadioStreamerService implements Injectable, SingletonInterface
             $queryParameters
         );
     }
+
+    // @todo
+    private function getEndpoints(): array
+    {
+        return array_map(function ($record) {
+            return $record['ip'];
+        }, dns_get_record($this->config->getRadioStreamerEndpoint(), DNS_A));
+    }
 }

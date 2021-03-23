@@ -191,9 +191,9 @@ pub async fn listen_by_channel_id(
 
     if is_icy_enabled {
         response
-            .insert_header(("icy-metadata", "1"))
-            .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)))
-            .insert_header(("icy-name", format!("{}", &channel_info.name)));
+            .set_header("icy-metadata", "1")
+            .set_header("icy-metaint", format!("{}", ICY_METADATA_INTERVAL))
+            .set_header("icy-name", format!("{}", &channel_info.name));
 
         let icy_metadata_muxer = IcyMetadataMuxer::new(metadata_receiver);
 

@@ -1,5 +1,5 @@
-use actix_web::client::Client;
 use actix_web::http::StatusCode;
+use awc::Client;
 use serde::{Deserialize, Serialize};
 use slog::{error, Logger};
 use std::time::Duration;

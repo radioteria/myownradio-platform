@@ -103,7 +103,7 @@ pub async fn listen_by_channel_id(
 
     spawn_pipe_channel(thr_receiver, enc_sender);
 
-    let (metadata_sender, metadata_receiver) = mpsc::channel(1);
+    let (metadata_sender, metadata_receiver) = mpsc::unbounded();
 
     actix_rt::spawn({
         let mut thr_sender = thr_sender;

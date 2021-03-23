@@ -9,11 +9,11 @@ const METADATA_SIZE_MULTIPLIER: usize = 16;
 
 pub struct IcyMetadataMuxer {
     bytes_remaining: usize,
-    metadata_receiver: mpsc::Receiver<Vec<u8>>,
+    metadata_receiver: mpsc::UnboundedReceiver<Vec<u8>>,
 }
 
 impl IcyMetadataMuxer {
-    pub fn new(metadata_receiver: mpsc::Receiver<Vec<u8>>) -> Self {
+    pub fn new(metadata_receiver: mpsc::UnboundedReceiver<Vec<u8>>) -> Self {
         let bytes_remaining = ICY_METADATA_INTERVAL;
 
         IcyMetadataMuxer {

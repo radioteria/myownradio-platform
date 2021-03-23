@@ -38,7 +38,7 @@ pub async fn restart_by_channel_id(
         return HttpResponse::Unauthorized().finish();
     }
 
-    restart_registry.restart(&channel_id);
+    restart_registry.restart(&channel_id).await;
 
     HttpResponse::Ok().finish()
 }
@@ -163,7 +163,9 @@ pub async fn listen_by_channel_id(
                     }
                 }
 
-                let uuid = restart_registry.register_restart_sender(&channel_id, restart_signal_tx);
+                let uuid = restart_registry
+                    .register_restart_sender(&channel_id, restart_signal_tx)
+                    .await;
 
                 let result = pipe_channel_with_cancel(
                     &mut dec_receiver,
@@ -172,7 +174,9 @@ pub async fn listen_by_channel_id(
                 )
                 .await;
 
-                restart_registry.unregister_restart_sender(&channel_id, uuid);
+                restart_registry
+                    .unregister_restart_sender(&channel_id, uuid)
+                    .await;
 
                 if let Err(error) = result {
                     error!(logger, "Unable to pipe bytes"; "error" => ?error);

@@ -1,11 +1,10 @@
-use std::sync;
 use std::sync::Arc;
 use std::time::Duration;
 
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
-use futures::channel::oneshot;
-use futures::TryStreamExt;
+use futures::channel::{mpsc, oneshot};
+use futures::{SinkExt, TryStreamExt};
 use serde::Deserialize;
 use slog::{debug, error, Logger};
 
@@ -104,10 +103,11 @@ pub async fn listen_by_channel_id(
 
     spawn_pipe_channel(thr_receiver, enc_sender);
 
-    let (metadata_sender, metadata_receiver) = sync::mpsc::sync_channel(1);
+    let (metadata_sender, metadata_receiver) = mpsc::channel(1);
 
     actix_rt::spawn({
         let mut thr_sender = thr_sender;
+        let mut metadata_sender = metadata_sender;
 
         let client_id = client_id.clone();
         let logger = logger.clone();
@@ -156,7 +156,7 @@ pub async fn listen_by_channel_id(
                 };
 
                 let metadata = format!("StreamTitle='{}';", &now_playing.current_track.title);
-                if let Err(error) = metadata_sender.send(metadata.into_bytes()) {
+                if let Err(error) = metadata_sender.send(metadata.into_bytes()).await {
                     if is_icy_enabled {
                         error!(logger, "Unable to send track title"; "error" => ?error);
                         break;
@@ -191,9 +191,9 @@ pub async fn listen_by_channel_id(
 
     if is_icy_enabled {
         response
-            .set_header("icy-metadata", "1")
-            .set_header("icy-metaint", format!("{}", ICY_METADATA_INTERVAL))
-            .set_header("icy-name", format!("{}", &channel_info.name));
+            .insert_header(("icy-metadata", "1"))
+            .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)))
+            .insert_header(("icy-name", format!("{}", &channel_info.name)));
 
         let icy_metadata_muxer = IcyMetadataMuxer::new(metadata_receiver);
 

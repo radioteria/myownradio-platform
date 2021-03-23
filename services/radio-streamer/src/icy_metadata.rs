@@ -1,7 +1,7 @@
 use crate::helpers::math::div_ceil;
 use actix_web::web::Bytes;
 use bytebuffer::ByteBuffer;
-use std::sync;
+use futures::channel::mpsc;
 
 pub const ICY_METADATA_INTERVAL: usize = 8192;
 
@@ -9,11 +9,11 @@ const METADATA_SIZE_MULTIPLIER: usize = 16;
 
 pub struct IcyMetadataMuxer {
     bytes_remaining: usize,
-    metadata_receiver: sync::mpsc::Receiver<Vec<u8>>,
+    metadata_receiver: mpsc::Receiver<Vec<u8>>,
 }
 
 impl IcyMetadataMuxer {
-    pub fn new(metadata_receiver: sync::mpsc::Receiver<Vec<u8>>) -> Self {
+    pub fn new(metadata_receiver: mpsc::Receiver<Vec<u8>>) -> Self {
         let bytes_remaining = ICY_METADATA_INTERVAL;
 
         IcyMetadataMuxer {
@@ -41,18 +41,18 @@ impl IcyMetadataMuxer {
         Bytes::from(buffer.to_bytes())
     }
 
-    fn make_metadata_bytes(&self) -> Vec<u8> {
+    fn make_metadata_bytes(&mut self) -> Vec<u8> {
         let mut buffer = ByteBuffer::new();
 
-        match self.metadata_receiver.try_recv() {
-            Ok(metadata) => {
+        match self.metadata_receiver.try_next() {
+            Ok(Some(metadata)) => {
                 let size_byte_value = div_ceil(metadata.len(), METADATA_SIZE_MULTIPLIER);
 
                 buffer.resize(1 + size_byte_value * METADATA_SIZE_MULTIPLIER);
                 buffer.write_u8(size_byte_value as u8);
                 buffer.write_bytes(&metadata);
             }
-            _ => {
+            Ok(None) | Err(_) => {
                 buffer.write_u8(0u8);
             }
         }

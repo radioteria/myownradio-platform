@@ -46,8 +46,6 @@ impl AudioCodecService {
 
         let child = match Command::new(&self.path_to_ffmpeg)
             .args(&[
-                "-fflags",
-                "fastseek",
                 "-ss",
                 &offset_string,
                 "-i",

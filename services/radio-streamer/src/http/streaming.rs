@@ -16,6 +16,7 @@ use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use crate::restart_registry::RestartRegistry;
+use futures::lock::Mutex;
 
 const PREFETCH_AUDIO: Duration = Duration::from_secs(3);
 const DECODED_AUDIO_BYTES_PER_SECOND: usize = 176400;
@@ -117,6 +118,9 @@ pub async fn listen_by_channel_id(
 
             let mut is_first_track = true;
 
+            let next_track_receiver: Arc<Mutex<Option<mpsc::Receiver<_>>>> =
+                Arc::new(Mutex::new(None));
+
             loop {
                 let (restart_signal_tx, mut restart_signal_rx) = oneshot::channel();
 
@@ -154,6 +158,24 @@ pub async fn listen_by_channel_id(
                         break;
                     }
                 };
+
+                actix_rt::spawn({
+                    let logger = logger.clone();
+                    let next_track_url = now_playing.next_track.url.clone();
+                    let next_track_receiver = next_track_receiver.clone();
+                    let audio_codec_service = audio_codec_service.clone();
+
+                    async move {
+                        match audio_codec_service.spawn_audio_decoder(&next_track_url, &0) {
+                            Ok(receiver) => {
+                                next_track_receiver.lock().await.replace(receiver);
+                            }
+                            Err(error) => {
+                                error!(logger, "Unable to decode next audio file"; "error" => ?error);
+                            }
+                        };
+                    }
+                });
 
                 let metadata = format!("StreamTitle='{}';", &now_playing.current_track.title);
                 if let Err(error) = metadata_sender.send(metadata.into_bytes()).await {

@@ -148,14 +148,19 @@ pub async fn listen_by_channel_id(
                     metrics.set_track_start_lateness(&now_playing.current_track.offset);
                 }
 
-                let mut dec_receiver = match audio_codec_service.spawn_audio_decoder(
-                    &now_playing.current_track.url,
-                    &now_playing.current_track.offset,
-                ) {
-                    Ok(receiver) => receiver,
-                    Err(error) => {
-                        error!(logger, "Unable to decode audio file"; "error" => ?error);
-                        break;
+                let mut dec_receiver = match next_track_receiver.lock().await.take() {
+                    Some(receiver) if now_playing.current_track.offset < 1000 => receiver,
+                    _ => {
+                        match audio_codec_service.spawn_audio_decoder(
+                            &now_playing.current_track.url,
+                            &now_playing.current_track.offset,
+                        ) {
+                            Ok(receiver) => receiver,
+                            Err(error) => {
+                                error!(logger, "Unable to decode audio file"; "error" => ?error);
+                                break;
+                            }
+                        }
                     }
                 };
 

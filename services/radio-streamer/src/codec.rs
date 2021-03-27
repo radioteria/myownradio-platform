@@ -8,7 +8,7 @@ use futures::io;
 use futures_lite::FutureExt;
 use slog::{debug, error, Logger};
 
-const DECODER_BUFFER_SIZE: usize = 50;
+const DECODER_BUFFER_SIZE: usize = 0;
 
 #[derive(Debug)]
 pub enum AudioCodecError {

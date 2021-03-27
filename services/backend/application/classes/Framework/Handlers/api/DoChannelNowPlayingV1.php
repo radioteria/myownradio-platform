@@ -44,10 +44,12 @@ class DoChannelNowPlayingV1 implements Controller
                 "offset" => $track_position,
                 "title" => $track["caption"],
                 "url" => $current_track_url,
+                "duration" => $track['duration']
             ],
             "next_track" => [
                 "title" => $next["caption"],
                 "url" => $next_track_url,
+                "duration" => $next['duration']
             ],
         ]);
     }

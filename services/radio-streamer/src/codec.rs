@@ -65,8 +65,11 @@ impl AudioCodecService {
             "-",
         ];
 
+        // TODO Do this better.
         if *offset == 0 {
+            // Remove filter
             args.splice(5..7, vec![]);
+            // Remove -ss parameter
             args.splice(0..2, vec![]);
         }
 

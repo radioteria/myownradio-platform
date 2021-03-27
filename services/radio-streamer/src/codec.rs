@@ -1,3 +1,6 @@
+use crate::audio_formats::AudioFormat;
+use crate::helpers::io::{send_from_stdout, write_to_stdin};
+
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
 use futures::channel::{mpsc, oneshot};
@@ -5,8 +8,7 @@ use futures::io;
 use futures_lite::FutureExt;
 use slog::{debug, error, Logger};
 
-use crate::audio_formats::AudioFormat;
-use crate::helpers::io::{send_from_stdout, write_to_stdin};
+const DECODER_BUFFER_SIZE: usize = 50;
 
 #[derive(Debug)]
 pub enum AudioCodecError {
@@ -34,7 +36,7 @@ impl AudioCodecService {
         url: &str,
         offset: &usize,
     ) -> Result<mpsc::Receiver<Result<Bytes, io::Error>>, AudioCodecError> {
-        let (sender, receiver) = mpsc::channel(0);
+        let (sender, receiver) = mpsc::channel(DECODER_BUFFER_SIZE);
 
         debug!(self.logger, "Spawning audio decoder...");
 
@@ -44,25 +46,32 @@ impl AudioCodecService {
             format!("{:.4}", offset_seconds)
         };
 
+        let mut args = vec![
+            "-ss",
+            &offset_string,
+            "-i",
+            &url,
+            "-vn",
+            "-filter",
+            "afade=t=in:st=0:d=1",
+            "-codec:a",
+            "pcm_s16le",
+            "-ar",
+            "44100",
+            "-ac",
+            "2",
+            "-f",
+            "s16le",
+            "-",
+        ];
+
+        if *offset == 0 {
+            args.splice(5..7, vec![]);
+            args.splice(0..2, vec![]);
+        }
+
         let child = match Command::new(&self.path_to_ffmpeg)
-            .args(&[
-                "-ss",
-                &offset_string,
-                "-i",
-                &url,
-                "-vn",
-                "-filter",
-                "afade=t=in:st=0:d=1",
-                "-codec:a",
-                "pcm_s16le",
-                "-ar",
-                "44100",
-                "-ac",
-                "2",
-                "-f",
-                "s16le",
-                "-",
-            ])
+            .args(args)
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
             .stdin(Stdio::null())

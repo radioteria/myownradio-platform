@@ -9,12 +9,14 @@ pub struct CurrentTrack {
     pub offset: usize,
     pub title: String,
     pub url: String,
+    pub duration: usize,
 }
 
 #[derive(Deserialize, Debug, Serialize)]
 pub struct NextTrack {
     pub title: String,
     pub url: String,
+    pub duration: usize,
 }
 
 #[derive(Deserialize, Debug)]

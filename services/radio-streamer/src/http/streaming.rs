@@ -1,13 +1,3 @@
-use std::sync::Arc;
-use std::time::Duration;
-
-use actix_web::web::{Data, Query};
-use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
-use futures::channel::{mpsc, oneshot};
-use futures::{SinkExt, TryStreamExt};
-use serde::Deserialize;
-use slog::{debug, error, Logger};
-
 use crate::audio_formats::AudioFormats;
 use crate::codec::AudioCodecService;
 use crate::config::Config;
@@ -16,7 +6,18 @@ use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use crate::restart_registry::RestartRegistry;
+
+use actix_rt::time::Instant;
+use actix_web::web::{Data, Query};
+use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
+use futures::channel::{mpsc, oneshot};
 use futures::lock::Mutex;
+use futures::{SinkExt, TryStreamExt};
+use futures_lite::FutureExt;
+use serde::Deserialize;
+use slog::{debug, error, Logger};
+use std::sync::Arc;
+use std::time::Duration;
 
 const PREFETCH_AUDIO: Duration = Duration::from_secs(3);
 const DECODED_AUDIO_BYTES_PER_SECOND: usize = 176400;

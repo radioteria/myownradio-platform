@@ -149,7 +149,7 @@ services:
           memory: 128M
   backend-staging:
     image: 'myownradio/backend:latest'
-    command: 'php -S 0.0.0.0:8080 -t public'
+    command: 'php -d variables_order=EGPCS -S 0.0.0.0:8080 -t public server.php'
     environment:
       DB_DATABASE: "mor"
       DB_HOST: "db"
@@ -183,11 +183,11 @@ services:
         failure_action: rollback
       labels:
         - traefik.enable=true
-        - traefik.http.routers.myownradio_backend.entryPoints=web,websecure
-        - traefik.http.routers.myownradio_backend.rule=Host(`staging.myownradio.biz`)
-        - traefik.http.routers.myownradio_backend.tls=true
-        - traefik.http.routers.myownradio_backend.tls.certresolver=resolver
-        - traefik.http.services.myownradio_backend.loadbalancer.server.port=8080
+        - traefik.http.routers.myownradio_staging_backend.entryPoints=web,websecure
+        - traefik.http.routers.myownradio_staging_backend.rule=Host(`staging.myownradio.biz`)
+        - traefik.http.routers.myownradio_staging_backend.tls=true
+        - traefik.http.routers.myownradio_staging_backend.tls.certresolver=resolver
+        - traefik.http.services.myownradio_staging_backend.loadbalancer.server.port=8080
       resources:
         limits:
           memory: 256M
@@ -205,20 +205,12 @@ services:
       - staging-backend-app:/usr/app
     ports:
       - 2222:2222
-    deploy:
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.myownradio_backend.entryPoints=web,websecure
-        - traefik.http.routers.myownradio_backend.rule=Host(`staging-backend-ssh.myownradio.biz`)
-        - traefik.http.routers.myownradio_backend.tls=true
-        - traefik.http.routers.myownradio_backend.tls.certresolver=resolver
-        - traefik.http.services.myownradio_backend.loadbalancer.server.port=2222
 
 volumes:
   mysql-data:
     name: mysql-data
     driver: local
-  backend-staging-code:
+  staging-backend-app:
     name: staging-backend-app
     driver: local
 

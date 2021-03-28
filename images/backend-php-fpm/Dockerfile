@@ -5,7 +5,7 @@ MAINTAINER Roman Lakhtadyr <roman.lakhtadyr@gmail.com>
 ARG MAX_UPLOAD_FILESIZE=256
 ENV MAX_UPLOAD_FILESIZE=${MAX_UPLOAD_FILESIZE}
 
-RUN apk add curl-dev libpng-dev oniguruma-dev
+RUN apk add curl-dev libpng-dev oniguruma-dev mediainfo
 
 RUN docker-php-ext-install curl fileinfo json iconv gd pdo pdo_mysql mbstring
 

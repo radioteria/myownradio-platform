@@ -191,6 +191,28 @@ services:
       resources:
         limits:
           memory: 256M
+  staging-backend-ssh-server:
+    image: ghcr.io/linuxserver/openssh-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Kiev
+      - SUDO_ACCESS=false
+      - PASSWORD_ACCESS=true
+      - USER_PASSWORD=staging-for-myownradio
+      - USER_NAME=gdg
+    volumes:
+      - staging-backend-app:/usr/app
+    ports:
+      - 2222:2222
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.myownradio_backend.entryPoints=web,websecure
+        - traefik.http.routers.myownradio_backend.rule=Host(`staging-backend-ssh.myownradio.biz`)
+        - traefik.http.routers.myownradio_backend.tls=true
+        - traefik.http.routers.myownradio_backend.tls.certresolver=resolver
+        - traefik.http.services.myownradio_backend.loadbalancer.server.port=2222
 
 volumes:
   mysql-data:

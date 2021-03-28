@@ -16,37 +16,6 @@ services:
       resources:
         limits:
           memory: 1024M
-  streamer:
-    image: 'myownradio/stream-server:latest'
-    environment:
-      MOR_JDBC_LOGIN: "mor"
-      MOR_JDBC_PASSWORD: "mor"
-      MOR_JDBC_URL: "jdbc:mysql://db:3306/mor"
-      VIRTUAL_HOST: "stream.myownradio.biz"
-      LETSENCRYPT_HOST: "stream.myownradio.biz"
-      VIRTUAL_PORT: "7778"
-    networks:
-      - default
-      - global
-    depends_on:
-      - db
-      - storage
-    deploy:
-      labels:
-        - prometheus-job=yes
-        - prometheus-port=8082
-        - traefik.enable=true
-        - traefik.http.routers.myownradio_streamer.entryPoints=web,websecure
-        - traefik.http.routers.myownradio_streamer.rule=Host(`stream.myownradio.biz`)
-        - traefik.http.routers.myownradio_streamer.tls=true
-        - traefik.http.routers.myownradio_streamer.tls.certresolver=resolver
-        - traefik.http.services.myownradio_streamer.loadbalancer.server.port=7778
-      update_config:
-        order: start-first
-        failure_action: rollback
-      resources:
-        limits:
-          memory: 256M
   radio-streamer:
     image: 'myownradio/radio-streamer:latest'
     environment:
@@ -91,7 +60,6 @@ services:
       JWT_KEY: "TbhX2QUfV7dfxOXILKlZWk6jF9OceHmvzzolIC0K"
       S3_ACCESS_KEY: "AKIAJBSFTKGMHDMPRPZA"
       S3_SECRET_KEY: "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"
-      STREAM_HOST: "https://stream.myownradio.biz"
       SENTRY_DSN: "https://2a74df546ce14acbb01fd71f1d00dfe7@sentry.io/2518976"
       BACKEND_STORAGE_LOCAL_DIR: /app/storage
       VIRTUAL_HOST: "myownradio.biz"
@@ -162,7 +130,6 @@ services:
       JWT_KEY: "TbhX2QUfV7dfxOXILKlZWk6jF9OceHmvzzolIC0K"
       S3_ACCESS_KEY: "AKIAJBSFTKGMHDMPRPZA"
       S3_SECRET_KEY: "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"
-      STREAM_HOST: "https://stream.myownradio.biz"
       SENTRY_DSN: "https://2a74df546ce14acbb01fd71f1d00dfe7@sentry.io/2518976"
       BACKEND_STORAGE_LOCAL_DIR: /app/storage
       RADIO_STREAMER_ENDPOINT: "https://myownradio.biz/r"

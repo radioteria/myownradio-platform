@@ -20,7 +20,7 @@ use slog_json::Json;
 use crate::codec::AudioCodecService;
 use crate::config::Config;
 use crate::http::metrics::get_metrics;
-use crate::http::streaming::{listen_by_channel_id, restart_by_channel_id};
+use crate::http::streaming::{get_active_streams, listen_by_channel_id, restart_by_channel_id};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
 use crate::restart_registry::RestartRegistry;
@@ -67,6 +67,7 @@ async fn main() -> Result<()> {
                 .data(restart_registry.clone())
                 .service(listen_by_channel_id)
                 .service(restart_by_channel_id)
+                .service(get_active_streams)
                 .service(get_metrics)
         }
     })

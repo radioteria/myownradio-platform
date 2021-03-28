@@ -46,7 +46,9 @@ impl RestartRegistry {
     }
 
     pub async fn unregister_restart_sender(&self, channel_id: &usize, uuid: Uuid) {
-        if let Entry::Occupied(entry) = self.senders.lock().await.entry(*channel_id) {
+        let mut senders_map = self.senders.lock().await;
+
+        if let Entry::Occupied(entry) = senders_map.entry(*channel_id) {
             let entry = entry.into_mut();
 
             debug!(
@@ -56,6 +58,10 @@ impl RestartRegistry {
 
             if let None = entry.remove(&uuid) {
                 warn!(self.logger, "Sender with associated Uuid did not exist"; "uuid" => ?uuid);
+            }
+
+            if entry.len() == 0 {
+                let _ = senders_map.remove(channel_id);
             }
         }
     }
@@ -67,5 +73,9 @@ impl RestartRegistry {
                 let _ = sender.send(());
             }
         }
+    }
+
+    pub async fn get_channels(&self) -> Vec<usize> {
+        self.senders.lock().await.keys().map(|c| *c).collect()
     }
 }

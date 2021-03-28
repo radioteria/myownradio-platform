@@ -20,6 +20,13 @@ use crate::restart_registry::RestartRegistry;
 const PREFETCH_AUDIO: Duration = Duration::from_secs(3);
 const DECODED_AUDIO_BYTES_PER_SECOND: usize = 176400;
 
+#[get("/streams")]
+pub async fn get_active_streams(restart_registry: Data<Arc<RestartRegistry>>) -> impl Responder {
+    let channels = restart_registry.get_channels().await;
+
+    HttpResponse::Ok().json(channels)
+}
+
 #[get("/restart/{channel_id}")]
 pub async fn restart_by_channel_id(
     request: HttpRequest,

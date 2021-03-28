@@ -11,10 +11,10 @@ class Logger extends Monolog\Logger implements Injectable, SingletonInterface
 {
     use Singleton;
 
-    protected function __construct()
+    public function __construct()
     {
         parent::__construct("backend");
 
-        $this->pushHandler(new Monolog\Handler\ErrorLogHandler());
+        $this->pushHandler(new Monolog\Handler\BrowserConsoleHandler());
     }
 }

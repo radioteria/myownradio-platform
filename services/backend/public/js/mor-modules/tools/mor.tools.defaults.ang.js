@@ -34,7 +34,8 @@
                         ],
                         mp3: [
                             { key: "mp3_128k", bitrate: "128K" },
-                            { key: "mp3_256k", bitrate: "256K" }
+                            { key: "mp3_256k", bitrate: "256K" },
+                            { key: "mp3_320k", bitrate: "320K" }
                         ]
                     }
                 }

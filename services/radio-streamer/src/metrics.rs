@@ -1,12 +1,16 @@
 use crate::VERSION;
-use prometheus::{Encoder, Gauge, Opts, Registry, TextEncoder};
+use actix_web::http::{Method, StatusCode};
+use prometheus::{Encoder, Gauge, HistogramVec, IntCounterVec, Opts, Registry, TextEncoder};
 use std::collections::HashMap;
+use std::time::Duration;
 
 #[derive(Clone)]
 pub struct Metrics {
     streaming_in_progress: Gauge,
     track_start_lateness: Gauge,
     prometheus_registry: Registry,
+    http_requests_total: IntCounterVec,
+    http_requests_duration_seconds: HistogramVec,
 }
 
 impl Metrics {
@@ -21,6 +25,22 @@ impl Metrics {
             "track_start_lateness",
             "How late is the next track",
         ))
+        .unwrap();
+
+        let http_requests_total = IntCounterVec::new(
+            Opts::new("http_requests_total", "Total number of HTTP requests"),
+            &["endpoint", "method", "status"],
+        )
+        .unwrap();
+
+        let http_requests_duration_seconds = HistogramVec::new(
+            Opts::new(
+                "http_requests_duration_seconds",
+                "HTTP request duration in seconds for all requests",
+            )
+            .into(),
+            &["endpoint", "method", "status"],
+        )
         .unwrap();
 
         let prometheus_registry = Registry::new_custom(
@@ -48,11 +68,19 @@ impl Metrics {
         prometheus_registry
             .register(Box::new(track_start_lateness.clone()))
             .unwrap();
+        prometheus_registry
+            .register(Box::new(http_requests_total.clone()))
+            .unwrap();
+        prometheus_registry
+            .register(Box::new(http_requests_duration_seconds.clone()))
+            .unwrap();
 
         Self {
             streaming_in_progress,
             track_start_lateness,
             prometheus_registry,
+            http_requests_total,
+            http_requests_duration_seconds,
         }
     }
 
@@ -62,6 +90,25 @@ impl Metrics {
 
     pub fn dec_streaming_in_progress(&self) {
         self.streaming_in_progress.dec()
+    }
+
+    pub fn update_http_request_total(
+        &self,
+        path: &str,
+        method: &Method,
+        status: StatusCode,
+        duration: Duration,
+    ) {
+        let method = method.to_string();
+        let status = status.as_u16().to_string();
+
+        self.http_requests_duration_seconds
+            .with_label_values(&[&path, &method, &status])
+            .observe(duration.as_secs_f64());
+
+        self.http_requests_total
+            .with_label_values(&[&path, &method, &status])
+            .inc();
     }
 
     pub fn set_track_start_lateness(&self, delay: &usize) {

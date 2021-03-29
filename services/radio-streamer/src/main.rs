@@ -1,3 +1,20 @@
+use actix_web::dev::Service;
+use actix_web::{App, HttpServer};
+use slog::{info, o, Drain, Logger};
+use slog_json::Json;
+use std::io;
+use std::io::Result;
+use std::sync::{Arc, Mutex};
+use std::time::Instant;
+
+use crate::codec::AudioCodecService;
+use crate::config::Config;
+use crate::http::metrics::get_metrics;
+use crate::http::streaming::{get_active_streams, listen_by_channel_id, restart_by_channel_id};
+use crate::metrics::Metrics;
+use crate::mor_backend_client::MorBackendClient;
+use crate::restart_registry::RestartRegistry;
+
 mod audio_formats;
 mod codec;
 mod config;
@@ -8,22 +25,6 @@ mod metrics;
 mod mor_backend_client;
 mod restart_registry;
 mod stream;
-
-use std::io;
-use std::io::Result;
-use std::sync::{Arc, Mutex};
-
-use actix_web::{App, HttpServer};
-use slog::{info, o, Drain, Logger};
-use slog_json::Json;
-
-use crate::codec::AudioCodecService;
-use crate::config::Config;
-use crate::http::metrics::get_metrics;
-use crate::http::streaming::{get_active_streams, listen_by_channel_id, restart_by_channel_id};
-use crate::metrics::Metrics;
-use crate::mor_backend_client::MorBackendClient;
-use crate::restart_registry::RestartRegistry;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -59,6 +60,37 @@ async fn main() -> Result<()> {
         let logger = logger.clone();
         move || {
             App::new()
+                .wrap_fn({
+                    let metrics = metrics.clone();
+
+                    move |req, srv| {
+                        let instant = Instant::now();
+                        let fut = srv.call(req);
+                        let metrics = metrics.clone();
+
+                        async move {
+                            let result = fut.await?;
+
+                            let status = result.response().status();
+                            let method = result.request().method().clone();
+                            let path = result
+                                .request()
+                                .match_pattern()
+                                .unwrap_or_else(|| result.request().path().to_string());
+
+                            if path != "/metrics" {
+                                metrics.update_http_request_total(
+                                    &path,
+                                    &method,
+                                    status,
+                                    instant.elapsed(),
+                                );
+                            }
+
+                            Ok(result)
+                        }
+                    }
+                })
                 .data(config.clone())
                 .data(mor_backend_client.clone())
                 .data(logger.clone())

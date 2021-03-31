@@ -16,37 +16,6 @@ services:
       resources:
         limits:
           memory: 1024M
-  streamer:
-    image: 'myownradio/stream-server:latest'
-    environment:
-      MOR_JDBC_LOGIN: "mor"
-      MOR_JDBC_PASSWORD: "mor"
-      MOR_JDBC_URL: "jdbc:mysql://db:3306/mor"
-      VIRTUAL_HOST: "stream.myownradio.biz"
-      LETSENCRYPT_HOST: "stream.myownradio.biz"
-      VIRTUAL_PORT: "7778"
-    networks:
-      - default
-      - global
-    depends_on:
-      - db
-      - storage
-    deploy:
-      labels:
-        - prometheus-job=yes
-        - prometheus-port=8082
-        - traefik.enable=true
-        - traefik.http.routers.myownradio_streamer.entryPoints=web,websecure
-        - traefik.http.routers.myownradio_streamer.rule=Host(`stream.myownradio.biz`)
-        - traefik.http.routers.myownradio_streamer.tls=true
-        - traefik.http.routers.myownradio_streamer.tls.certresolver=resolver
-        - traefik.http.services.myownradio_streamer.loadbalancer.server.port=7778
-      update_config:
-        order: start-first
-        failure_action: rollback
-      resources:
-        limits:
-          memory: 256M
   radio-streamer:
     image: 'myownradio/radio-streamer:latest'
     environment:
@@ -91,7 +60,6 @@ services:
       JWT_KEY: "TbhX2QUfV7dfxOXILKlZWk6jF9OceHmvzzolIC0K"
       S3_ACCESS_KEY: "AKIAJBSFTKGMHDMPRPZA"
       S3_SECRET_KEY: "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"
-      STREAM_HOST: "https://stream.myownradio.biz"
       SENTRY_DSN: "https://2a74df546ce14acbb01fd71f1d00dfe7@sentry.io/2518976"
       BACKEND_STORAGE_LOCAL_DIR: /app/storage
       VIRTUAL_HOST: "myownradio.biz"
@@ -147,9 +115,70 @@ services:
       resources:
         limits:
           memory: 128M
+  backend-staging:
+    image: 'myownradio/backend:latest'
+    command: 'php -d variables_order=EGPCS -S 0.0.0.0:8080 -t public server.php'
+    environment:
+      DB_DATABASE: "mor"
+      DB_HOST: "db"
+      DB_PASSWORD: "mor"
+      DB_USERNAME: "mor"
+      FACEBOOK_APP_ID: "731742683610572"
+      FACEBOOK_APP_SECRET: "f84af1cdddcc6ac06c6ebf606fb616c3"
+      FFMPEG_PATH: "ffmpeg"
+      MEDIAINFO_PATH: "mediainfo"
+      JWT_KEY: "TbhX2QUfV7dfxOXILKlZWk6jF9OceHmvzzolIC0K"
+      S3_ACCESS_KEY: "AKIAJBSFTKGMHDMPRPZA"
+      S3_SECRET_KEY: "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"
+      SENTRY_DSN: "https://2a74df546ce14acbb01fd71f1d00dfe7@sentry.io/2518976"
+      BACKEND_STORAGE_LOCAL_DIR: /app/storage
+      RADIO_STREAMER_ENDPOINT: "https://myownradio.biz/r"
+      RADIO_STREAMER_TOKEN: "2a74df546ce14acbb01fd71f1d00dfe7"
+    networks:
+      - default
+      - global
+    volumes:
+      - /data/volumes/myownradio-storage:/app/storage
+      - staging-backend-app:/usr/app
+    depends_on:
+      - db
+      - streamer
+      - storage
+    deploy:
+      update_config:
+        order: start-first
+        failure_action: rollback
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.myownradio_staging_backend.entryPoints=web,websecure
+        - traefik.http.routers.myownradio_staging_backend.rule=Host(`staging.myownradio.biz`)
+        - traefik.http.routers.myownradio_staging_backend.tls=true
+        - traefik.http.routers.myownradio_staging_backend.tls.certresolver=resolver
+        - traefik.http.services.myownradio_staging_backend.loadbalancer.server.port=8080
+      resources:
+        limits:
+          memory: 256M
+  staging-backend-ssh-server:
+    image: ghcr.io/linuxserver/openssh-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Kiev
+      - SUDO_ACCESS=false
+      - PASSWORD_ACCESS=true
+      - USER_PASSWORD=staging-for-myownradio
+      - USER_NAME=gdg
+    volumes:
+      - staging-backend-app:/usr/app
+    ports:
+      - 2222:2222
+
 volumes:
   mysql-data:
     name: mysql-data
+    driver: local
+  staging-backend-app:
+    name: staging-backend-app
     driver: local
 
 networks:

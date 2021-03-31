@@ -10,13 +10,14 @@ use Framework\Services\HttpGet;
 
 class DoGetAudioStream implements Controller
 {
-    public function doGet(HttpGet $httpGet, RadioStreamerService $radioStreamerService) {
+    public function doGet(HttpGet $httpGet, RadioStreamerService $radioStreamerService)
+    {
         $channelId = $httpGet->getRequired('s');
         $format = $httpGet->getParameter('f');
         $clientId = $httpGet->getParameter('client_id');
 
         $url = $radioStreamerService->getRadioChannelStreamUrl($channelId, $format, $clientId);
 
-        header("Location: ${$url}");
+        header("Location: ${url}");
     }
 }

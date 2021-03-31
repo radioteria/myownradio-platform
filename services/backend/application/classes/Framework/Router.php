@@ -24,7 +24,8 @@ use ReflectionClass;
 use Tools\Singleton;
 use Tools\SingletonInterface;
 
-class Router implements SingletonInterface, Injectable {
+class Router implements SingletonInterface, Injectable
+{
 
     use Singleton;
 
@@ -32,7 +33,8 @@ class Router implements SingletonInterface, Injectable {
     private $currentRoute;
 
 
-    function __construct() {
+    function __construct()
+    {
 
         $route = CurrentRoute::getInstance();
         $this->currentRoute = $route;
@@ -41,7 +43,8 @@ class Router implements SingletonInterface, Injectable {
 
     }
 
-    private function registerSubRoutes() {
+    private function registerSubRoutes()
+    {
 
         $sub = SubRouter::getInstance();
 
@@ -80,13 +83,7 @@ class Router implements SingletonInterface, Injectable {
         $sub->addRoute("content/m3u/:stream_id.m3u", "content\\DoM3u");
         $sub->addRoute("content/trackinfo/&id", "content\\DoTrackExtraInfo");
         $sub->addRoute("getchunk/:id", "content\\DoGetChunk");
-
-        $sub->addRoute("flow", function () {
-            $query = http_build_query($_GET);
-            $stream_host = env('STREAM_HOST', '');
-            header("Location: ${stream_host}/audio?" . $query);
-        });
-        $sub->addRoute("flow2", "content\\DoGetAudioStream");
+        $sub->addRoute("flow", "content\\DoGetAudioStream");
 
         $sub->addRoute("api/v0/stream/:stream_id/now", "api\\DoChannelNowPlaying");
         $sub->addRoute("api/v1/stream/:stream_id/now", "api\\DoChannelNowPlayingV1");
@@ -100,7 +97,40 @@ class Router implements SingletonInterface, Injectable {
 
     }
 
-    public function route() {
+    public function callRoute($className)
+    {
+
+
+        $request = HttpRequest::getInstance();
+        $method = "do" . ucfirst(strtolower($request->getMethod()));
+        $class = str_replace("/", "\\", CONTROLLERS_ROOT . $className);
+
+        // Reflect controller class
+        if (!class_exists($class, true)) {
+            return false;
+        }
+
+        $reflection = new ReflectionClass($class);
+
+        // Check for valid reflector
+        if (!$reflection->implementsInterface("Framework\\Controller")) {
+            throw new View500Exception("Controller must implement Framework\\Controller interface");
+        }
+
+        $classInstance = $reflection->newInstance();
+
+        if (!method_exists($classInstance, $method)) {
+            throw new View501Exception();
+        }
+
+        Injector::getInstance()->call([$classInstance, $method]);
+
+        return true;
+
+    }
+
+    public function route()
+    {
 
         try {
 
@@ -137,49 +167,15 @@ class Router implements SingletonInterface, Injectable {
 
     }
 
-    private function findRoute() {
+    private function findRoute()
+    {
 
         return $this->callRoute($this->currentRoute->getRoute());
 
     }
 
-    public function callRoute($className) {
-
-
-        $request = HttpRequest::getInstance();
-        $method = "do" . ucfirst(strtolower($request->getMethod()));
-        $class = str_replace("/", "\\", CONTROLLERS_ROOT . $className);
-
-        // Reflect controller class
-        if (!class_exists($class, true)) {
-            return false;
-        }
-
-        $reflection = new \ReflectionClass($class);
-
-        // Check for valid reflector
-        if (!$reflection->implementsInterface("Framework\\Controller")) {
-            throw new View500Exception("Controller must implement Framework\\Controller interface");
-        }
-
-        $classInstance = $reflection->newInstance();
-
-        try {
-
-            Injector::getInstance()->call([$classInstance, $method]);
-
-
-        } catch (\ReflectionException $e) {
-
-            throw new View501Exception();
-
-        }
-
-        return true;
-
-    }
-
-    private function exceptionRouter(ControllerException $exception) {
+    private function exceptionRouter(ControllerException $exception)
+    {
 
         $response = JsonResponse::getInstance();
 

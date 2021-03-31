@@ -26,6 +26,7 @@
                 },
                 controls: {
                     reload: function () {
+                        const $stream = $rootScope.player.currentStream;
                         if ($rootScope.player.isPlaying === true) {
                             $rootScope.player.controls.stop();
                             $rootScope.player.url = "/flow?s=" + $stream.sid + "&f=" + $rootScope.defaults.format + "&client_id=" + htmlEscape($rootScope.account.client_id);

@@ -445,17 +445,6 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface
                 // NOP
             }
         }
-
-        try {
-            Http::get("${_ENV['STREAM_HOST']}/notify?token=notify_me&s=${$channelId}");
-        } catch (\Exception $exception) {
-            try {
-                $logger = Logger::getInstance();
-                $logger->error("Unable to notify streamer", ["exception" => $exception]);
-            } catch (\ReflectionException $exception) {
-                // NOP
-            }
-        }
     }
 
     /**

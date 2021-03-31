@@ -1,3 +1,23 @@
 version: "3.5"
 
 services:
+  db:
+    build:
+      context: ./images/mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: "mor"
+      MYSQL_USER: "mor"
+      MYSQL_PASSWORD: "mor"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - myownradio-dev
+
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  myownradio-dev:
+    name: myownradio-dev

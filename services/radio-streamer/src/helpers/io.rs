@@ -1,7 +1,6 @@
 use actix_web::web::Bytes;
 use async_process::{ChildStdin, ChildStdout};
-use futures::channel::mpsc;
-use futures::channel::oneshot;
+use futures::channel::{mpsc, oneshot};
 use futures::io::{Error, ErrorKind};
 use futures::{AsyncReadExt, AsyncWriteExt, SinkExt, StreamExt};
 use futures_lite::FutureExt;
@@ -37,10 +36,9 @@ pub async fn send_from_stdout<'a>(
                 };
             }
             Err(error) => {
-                error!(logger, "Timeout occurred on reading from stdout");
-                let send_fut = sender.send(Err(Error::from(ErrorKind::TimedOut)));
-                if let Err(error) = sender.send(Err(Error::from(ErrorKind::TimedOut))).await {
-                    error!(logger, "Unable to send timeout error to sender"; "error" => ?error);
+                error!(logger, "Error occurred on reading from stdout");
+                if let Err(error) = sender.send(Err(Error::from(ErrorKind::BrokenPipe))).await {
+                    error!(logger, "Unable to send error to sender"; "error" => ?error);
                 }
                 break;
             }

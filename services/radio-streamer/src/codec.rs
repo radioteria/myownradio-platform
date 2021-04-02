@@ -6,13 +6,14 @@ use futures_lite::FutureExt;
 use slog::{debug, error, Logger};
 
 use crate::audio_formats::AudioFormat;
-use crate::helpers::io::{send_from_stdout, write_to_stdin};
+use crate::helpers::io::{read_from_stderr, send_from_stdout, write_to_stdin};
 
 #[derive(Debug)]
 pub enum AudioCodecError {
     ProcessError,
     StdoutUnavailable,
     StdinUnavailable,
+    StderrUnavailable,
 }
 
 pub struct AudioCodecService {
@@ -46,6 +47,10 @@ impl AudioCodecService {
 
         let child = match Command::new(&self.path_to_ffmpeg)
             .args(&[
+                "-v",
+                "quiet",
+                "-stats",
+                "-hide_banner",
                 "-ss",
                 &offset_string,
                 "-i",
@@ -64,7 +69,7 @@ impl AudioCodecService {
                 "-",
             ])
             .stdout(Stdio::piped())
-            .stderr(Stdio::null())
+            .stderr(Stdio::piped())
             .stdin(Stdio::null())
             .spawn()
         {
@@ -84,6 +89,28 @@ impl AudioCodecService {
                 return Err(AudioCodecError::StdoutUnavailable);
             }
         };
+
+        let stderr = match child.stderr {
+            Some(stderr) => stderr,
+            None => {
+                error!(self.logger, "Stderr is not available");
+                return Err(AudioCodecError::StderrUnavailable);
+            }
+        };
+
+        actix_rt::spawn({
+            let mut stderr = stderr;
+
+            let logger = self.logger.clone();
+
+            async move {
+                let mut buffer = vec![0u8; 4096];
+
+                while let Some(r) = read_from_stderr(&mut stderr, &mut buffer, &logger).await {
+                    debug!(logger, "{:?}", r);
+                }
+            }
+        });
 
         actix_rt::spawn({
             let mut stdout = stdout;

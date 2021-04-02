@@ -1,5 +1,5 @@
 use actix_web::web::Bytes;
-use async_process::{ChildStdin, ChildStdout};
+use async_process::{ChildStderr, ChildStdin, ChildStdout};
 use futures::channel::{mpsc, oneshot};
 use futures::io::{Error, ErrorKind};
 use futures::{AsyncReadExt, AsyncWriteExt, SinkExt, StreamExt};
@@ -11,6 +11,26 @@ use std::time::{Duration, Instant};
 const BUFFER_SIZE: usize = 4096;
 
 const THROTTLE_DURATION_MS: Duration = Duration::from_millis(50);
+
+pub async fn read_from_stderr<'a>(
+    stderr: &'a mut ChildStderr,
+    read_buffer: &'a mut Vec<u8>,
+    logger: &Logger,
+) -> Option<Result<Bytes, Error>> {
+    match stderr.read(read_buffer).await {
+        Ok(read_bytes) => {
+            if read_bytes == 0 {
+                return None;
+            }
+
+            Some(Ok(Bytes::copy_from_slice(&read_buffer[..read_bytes])))
+        }
+        Err(error) => {
+            error!(logger, "Error occurred on reading from stderr"; "error" => ?error);
+            Some(Err(Error::from(ErrorKind::BrokenPipe)))
+        }
+    }
+}
 
 pub async fn send_from_stdout<'a>(
     stdout: &'a mut ChildStdout,

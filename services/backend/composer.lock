@@ -4019,8 +4019,7 @@
         "ext-mbstring": "*",
         "ext-iconv": "*",
         "ext-pdo": "*",
-        "ext-gd": "*",
-        "ext-mysqli": "*"
+        "ext-gd": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "1.1.0"

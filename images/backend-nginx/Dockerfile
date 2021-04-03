@@ -1,8 +1,20 @@
-FROM nginx:stable-alpine
+FROM node:15
 
-ARG MAX_UPLOAD_FILESIZE=256
-ENV MAX_UPLOAD_FILESIZE=${MAX_UPLOAD_FILESIZE}
+WORKDIR /code
 
-COPY default.conf.template /etc/nginx/templates/
+COPY package.json package-lock.json ./
+RUN npm ci
 
-EXPOSE 8080
+COPY bower.json ./
+RUN npx bower install --allow-root
+
+COPY . ./
+
+RUN npm run build
+
+
+FROM myownradio/backend-nginx-base:1.0.1
+
+WORKDIR /code
+
+COPY --from=0 /code /code

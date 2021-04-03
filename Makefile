@@ -30,3 +30,11 @@ run-database-migration:
 			--env MYSQL_USER=mor \
 			--env MYSQL_PASSWORD=mor \
 			myownradio-migration
+
+build-backend-images:
+	docker build -t pldin601/myownradio-backend-nginx:latest --file images/backend-nginx/Dockerfile services/backend/
+	docker build -t pldin601/myownradio-backend-php:latest --file images/backend-php/Dockerfile services/backend/
+
+push-backend-images:
+	docker push pldin601/myownradio-backend-nginx:latest
+	docker push pldin601/myownradio-backend-php:latest

@@ -1,12 +1,14 @@
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
 use futures::channel::{mpsc, oneshot};
-use futures::io;
+use futures::{io, SinkExt, StreamExt};
 use futures_lite::FutureExt;
 use slog::{debug, error, Logger};
 
 use crate::audio_formats::AudioFormat;
-use crate::helpers::io::{read_from_stderr, send_from_stdout, write_to_stdin};
+use crate::helpers::io::{read_from_stdout, write_to_stdin};
+
+const BUFFER_SIZE: usize = 4096;
 
 #[derive(Debug)]
 pub enum AudioCodecError {
@@ -96,7 +98,13 @@ impl AudioCodecService {
             let logger = self.logger.clone();
 
             async move {
-                send_from_stdout(&mut stdout, &mut sender, logger).await;
+                let mut buffer = vec![0u8; BUFFER_SIZE];
+                while let Some(result) = read_from_stdout(&mut stdout, &mut buffer).await {
+                    if let Err(error) = sender.send(result).await {
+                        error!(logger, "Unable to send data to sender from decoder"; "error" => ?error);
+                        break;
+                    };
+                }
             }
         });
 
@@ -190,7 +198,20 @@ impl AudioCodecService {
             let logger = self.logger.clone();
 
             let pipe = async move {
-                write_to_stdin(&mut input_receiver, &mut stdin, logger).await;
+                while let Some(result) = input_receiver.next().await {
+                    match result {
+                        Ok(bytes) => {
+                            if let Err(error) = write_to_stdin(&mut stdin, bytes).await {
+                                error!(logger, "Unable to write bytes to stdin"; "error" => ?error);
+                                break;
+                            }
+                        }
+                        Err(error) => {
+                            error!(logger, "Unable to read bytes from receiver"; "error" => ?error);
+                            break;
+                        }
+                    };
+                }
             };
 
             let abort = async move {
@@ -207,7 +228,13 @@ impl AudioCodecService {
             let logger = self.logger.clone();
 
             async move {
-                send_from_stdout(&mut stdout, &mut output_sender, logger).await;
+                let mut buffer = vec![0u8; BUFFER_SIZE];
+                while let Some(result) = read_from_stdout(&mut stdout, &mut buffer).await {
+                    if let Err(error) = output_sender.send(result).await {
+                        error!(logger, "Unable to send data to sender from encoder"; "error" => ?error);
+                        break;
+                    };
+                }
                 let _ = term_signal.send(());
             }
         });

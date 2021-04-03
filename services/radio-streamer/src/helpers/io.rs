@@ -1,23 +1,20 @@
 use actix_web::web::Bytes;
-use async_process::{ChildStderr, ChildStdin, ChildStdout};
+use async_process::{ChildStdin, ChildStdout};
 use futures::channel::{mpsc, oneshot};
 use futures::io::{Error, ErrorKind};
 use futures::{AsyncReadExt, AsyncWriteExt, SinkExt, StreamExt};
 use futures_lite::FutureExt;
-use slog::{debug, error, Logger};
+use slog::{error, Logger};
 use std::cmp::max;
 use std::time::{Duration, Instant};
 
-const BUFFER_SIZE: usize = 4096;
-
 const THROTTLE_DURATION_MS: Duration = Duration::from_millis(50);
 
-pub async fn read_from_stderr<'a>(
-    stderr: &'a mut ChildStderr,
+pub async fn read_from_stdout<'a>(
+    stdout: &'a mut ChildStdout,
     read_buffer: &'a mut Vec<u8>,
-    logger: &Logger,
 ) -> Option<Result<Bytes, Error>> {
-    match stderr.read(read_buffer).await {
+    match stdout.read(read_buffer).await {
         Ok(read_bytes) => {
             if read_bytes == 0 {
                 return None;
@@ -25,65 +22,14 @@ pub async fn read_from_stderr<'a>(
 
             Some(Ok(Bytes::copy_from_slice(&read_buffer[..read_bytes])))
         }
-        Err(error) => {
-            error!(logger, "Error occurred on reading from stderr"; "error" => ?error);
-            Some(Err(Error::from(ErrorKind::BrokenPipe)))
-        }
+        Err(error) => Some(Err(Error::from(error))),
     }
 }
 
-pub async fn send_from_stdout<'a>(
-    stdout: &'a mut ChildStdout,
-    sender: &'a mut mpsc::Sender<Result<Bytes, Error>>,
-    logger: Logger,
-) {
-    let mut input_buffer = vec![0u8; BUFFER_SIZE];
-
-    loop {
-        match stdout.read(&mut input_buffer).await {
-            Ok(read_bytes) => {
-                if read_bytes == 0 {
-                    debug!(logger, "Reached the end of the stdout stream");
-                    break;
-                }
-
-                if let Err(error) = sender
-                    .send(Ok(Bytes::copy_from_slice(&input_buffer[..read_bytes])))
-                    .await
-                {
-                    error!(logger, "Unable to send bytes to sender"; "error" => ?error);
-                    break;
-                };
-            }
-            Err(error) => {
-                error!(logger, "Error occurred on reading from stdout");
-                if let Err(error) = sender.send(Err(Error::from(ErrorKind::BrokenPipe))).await {
-                    error!(logger, "Unable to send error to sender"; "error" => ?error);
-                }
-                break;
-            }
-        }
-    }
-}
-
-pub async fn write_to_stdin<'a>(
-    receiver: &'a mut mpsc::Receiver<Result<Bytes, Error>>,
-    stdin: &'a mut ChildStdin,
-    logger: Logger,
-) {
-    while let Some(r) = receiver.next().await {
-        match r {
-            Ok(bytes) => {
-                if let Err(error) = stdin.write(&bytes[..]).await {
-                    error!(logger, "Unable to write bytes to stdin"; "error" => ?error);
-                    break;
-                }
-            }
-            Err(error) => {
-                error!(logger, "Unable to read bytes from receiver"; "error" => ?error);
-                break;
-            }
-        };
+pub async fn write_to_stdin(stdin: &mut ChildStdin, bytes: Bytes) -> Result<(), Error> {
+    match stdin.write(&bytes[..]).await {
+        Ok(_) => Ok(()),
+        Err(error) => Err(error),
     }
 }
 

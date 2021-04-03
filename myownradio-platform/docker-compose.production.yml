@@ -46,8 +46,29 @@ services:
       resources:
         limits:
           memory: 128M
-  backend:
-    image: 'myownradio/backend:latest'
+  backend-nginx:
+    image: pldin601/myownradio-backend-nginx:latest
+    networks:
+      - default
+      - global
+    depends_on:
+      - backend-php-fpm
+    deploy:
+      update_config:
+        order: start-first
+        failure_action: rollback
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.myownradio_backend.entryPoints=web,websecure
+        - traefik.http.routers.myownradio_backend.rule=Host(`myownradio.biz`)
+        - traefik.http.routers.myownradio_backend.tls=true
+        - traefik.http.routers.myownradio_backend.tls.certresolver=resolver
+        - traefik.http.services.myownradio_backend.loadbalancer.server.port=8080
+      resources:
+        limits:
+          memory: 128M
+  backend-php-fpm:
+    image: pldin601/myownradio-backend-php:latest
     environment:
       DB_DATABASE: "mor"
       DB_HOST: "db"
@@ -67,9 +88,6 @@ services:
       VIRTUAL_PORT: "8080"
       RADIO_STREAMER_ENDPOINT: "https://myownradio.biz/r"
       RADIO_STREAMER_TOKEN: "2a74df546ce14acbb01fd71f1d00dfe7"
-    networks:
-      - default
-      - global
     volumes:
       - /data/volumes/myownradio-storage:/app/storage
     depends_on:
@@ -80,13 +98,6 @@ services:
       update_config:
         order: start-first
         failure_action: rollback
-      labels:
-        - traefik.enable=true
-        - traefik.http.routers.myownradio_backend.entryPoints=web,websecure
-        - traefik.http.routers.myownradio_backend.rule=Host(`myownradio.biz`)
-        - traefik.http.routers.myownradio_backend.tls=true
-        - traefik.http.routers.myownradio_backend.tls.certresolver=resolver
-        - traefik.http.services.myownradio_backend.loadbalancer.server.port=8080
       resources:
         limits:
           memory: 256M

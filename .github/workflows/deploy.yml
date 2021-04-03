@@ -6,22 +6,58 @@ on:
       - master
 
 jobs:
-  build-backend:
-    name: Build Backend
+  build-backend-nginx:
+    name: Build backend-nginx
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@master
-      - name: Build
-        uses: docker/build-push-action@v1
+      - name: Login
+        uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: myownradio/backend
-          tags: latest
+      - name: Setup
+        uses: docker/setup-buildx-action@v1
+        id: builder
+      - name: Build
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.builder.outputs.name }}
+          file: images/backend-nginx/Dockerfile
           path: services/backend
+          push: true
+          tags: |
+            pldin601/myownradio-backend-nginx:latest
+            pldin601/myownradio-backend-nginx:${{ github.sha }}
+
+  build-backend-php:
+    name: Build backend-php
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Login
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Setup
+        uses: docker/setup-buildx-action@v1
+        id: builder
+      - name: Build
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.builder.outputs.name }}
+          file: images/backend-php/Dockerfile
+          path: services/backend
+          push: true
+          tags: |
+            pldin601/myownradio-backend-nginx:latest
+            pldin601/myownradio-backend-nginx:${{ github.sha }}
+
   build-radio-streamer:
-    name: Build Radio Streamer
+    name: Build radio-streamer
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -37,7 +73,8 @@ jobs:
 
   deploy:
     needs:
-      - build-backend
+      - build-backend-nginx
+      - build-backend-php
       - build-radio-streamer
     name: Deploy to Production
     runs-on: ubuntu-latest

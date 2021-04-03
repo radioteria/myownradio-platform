@@ -49,7 +49,6 @@ impl AudioCodecService {
             .args(&[
                 "-v",
                 "quiet",
-                "-stats",
                 "-hide_banner",
                 "-ss",
                 &offset_string,
@@ -69,7 +68,7 @@ impl AudioCodecService {
                 "-",
             ])
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
+            .stderr(Stdio::null())
             .stdin(Stdio::null())
             .spawn()
         {
@@ -89,28 +88,6 @@ impl AudioCodecService {
                 return Err(AudioCodecError::StdoutUnavailable);
             }
         };
-
-        let stderr = match child.stderr {
-            Some(stderr) => stderr,
-            None => {
-                error!(self.logger, "Stderr is not available");
-                return Err(AudioCodecError::StderrUnavailable);
-            }
-        };
-
-        actix_rt::spawn({
-            let mut stderr = stderr;
-
-            let logger = self.logger.clone();
-
-            async move {
-                let mut buffer = vec![0u8; 4096];
-
-                while let Some(r) = read_from_stderr(&mut stderr, &mut buffer, &logger).await {
-                    debug!(logger, "{:?}", r);
-                }
-            }
-        });
 
         actix_rt::spawn({
             let mut stdout = stdout;
@@ -143,6 +120,9 @@ impl AudioCodecService {
 
         let process = match Command::new(&self.path_to_ffmpeg)
             .args(&[
+                "-v",
+                "quiet",
+                "-hide_banner",
                 "-acodec",
                 "pcm_s16le",
                 "-ar",

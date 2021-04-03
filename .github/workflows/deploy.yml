@@ -25,7 +25,7 @@ jobs:
         with:
           builder: ${{ steps.builder.outputs.name }}
           file: images/backend-nginx/Dockerfile
-          path: services/backend
+          context: services/backend
           push: true
           tags: |
             pldin601/myownradio-backend-nginx:latest
@@ -50,7 +50,7 @@ jobs:
         with:
           builder: ${{ steps.builder.outputs.name }}
           file: images/backend-php/Dockerfile
-          path: services/backend
+          context: services/backend
           push: true
           tags: |
             pldin601/myownradio-backend-nginx:latest

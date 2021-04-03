@@ -25,7 +25,8 @@ use Tools\Singleton;
 use Tools\SingletonInterface;
 use Tools\System;
 
-class Playlist implements SingletonInterface, Injectable {
+class Playlist implements SingletonInterface, Injectable
+{
 
     use Singleton;
 
@@ -40,7 +41,8 @@ class Playlist implements SingletonInterface, Injectable {
      * @param int $sortOrder
      * @return array
      */
-    public function getAllTracks(Optional $color, Optional $filter, Optional $offset, $sortRow = 0, $sortOrder = 0) {
+    public function getAllTracks(Optional $color, Optional $filter, Optional $offset, $sortRow = 0, $sortOrder = 0)
+    {
 
         $me = AuthUserModel::getInstance();
 
@@ -58,7 +60,8 @@ class Playlist implements SingletonInterface, Injectable {
 
         if ($filter->validate()) {
             $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
-                Common::searchQueryFilter($filter->get())]);
+                Common::searchQueryFilter($filter->get())
+            ]);
         }
 
         if ($offset->validate()) {
@@ -73,41 +76,19 @@ class Playlist implements SingletonInterface, Injectable {
 
     }
 
-    public function getUnusedTracks(Optional $color, Optional $filter, Optional $offset, $sortRow = 0, $sortOrder = 0) {
-
-        $me = AuthUserModel::getInstance();
-
-        $query = $this->getTracksPrefix()->where("uid", $me->getID());
-
-        $availableOrders = [0 => "DESC", 1 => "ASC"];
-        $availableRows = [0 => "tid", 1 => "title", 2 => "artist", 3 => "genre", 4 => "duration"];
-
-        $safeRow = isset($availableRows[$sortRow]) ? $sortRow : 0;
-        $safeOrder = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
-
-        if ($color->validate()) {
-            $query->where("color", $color->get());
-        }
-
-        if ($filter->validate()) {
-            $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
-                Common::searchQueryFilter($filter->get())]);
-        }
-
-        if ($offset->validate()) {
-            $query->offset($offset->get());
-        }
-
-        $query->where("used_count", 0);
-        $query->limit(Defaults::DEFAULT_TRACKS_PER_REQUEST);
-
-        $query->orderBy(sprintf("%s %s", $availableRows[$safeRow], $availableOrders[$safeOrder]));
-
-        $this->printResults($query);
-
+    /**
+     * @return SelectQuery
+     */
+    private function getTracksPrefix()
+    {
+        $query = DBQuery::getInstance()->selectFrom("r_tracks");
+        $query->select("tid", "filename", "artist", "title", "duration",
+            "color", "genre", "track_number", "album", "date", "cue", "is_new", "buy", "can_be_shared");
+        return $query;
     }
 
-    private function printResults(SelectQuery $query) {
+    private function printResults(SelectQuery $query)
+    {
 
         $printer = JsonPrinter::getInstance()->successPrefix();
         $printer->brPrintKey("data");
@@ -128,7 +109,44 @@ class Playlist implements SingletonInterface, Injectable {
 
     }
 
-    public function getOneTrack($trackID) {
+    public function getUnusedTracks(Optional $color, Optional $filter, Optional $offset, $sortRow = 0, $sortOrder = 0)
+    {
+
+        $me = AuthUserModel::getInstance();
+
+        $query = $this->getTracksPrefix()->where("uid", $me->getID());
+
+        $availableOrders = [0 => "DESC", 1 => "ASC"];
+        $availableRows = [0 => "tid", 1 => "title", 2 => "artist", 3 => "genre", 4 => "duration"];
+
+        $safeRow = isset($availableRows[$sortRow]) ? $sortRow : 0;
+        $safeOrder = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
+
+        if ($color->validate()) {
+            $query->where("color", $color->get());
+        }
+
+        if ($filter->validate()) {
+            $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
+                Common::searchQueryFilter($filter->get())
+            ]);
+        }
+
+        if ($offset->validate()) {
+            $query->offset($offset->get());
+        }
+
+        $query->where("used_count", 0);
+        $query->limit(Defaults::DEFAULT_TRACKS_PER_REQUEST);
+
+        $query->orderBy(sprintf("%s %s", $availableRows[$safeRow], $availableOrders[$safeOrder]));
+
+        $this->printResults($query);
+
+    }
+
+    public function getOneTrack($trackID)
+    {
 
         $me = AuthUserModel::getInstance();
 
@@ -140,33 +158,14 @@ class Playlist implements SingletonInterface, Injectable {
     }
 
     /**
-     * @return \Framework\Services\DB\Query\SelectQuery
-     */
-    private function getStreamTracksPrefix() {
-        $query = DBQuery::getInstance()->selectFrom("mor_stream_tracklist_view");
-        $query->select("tid", "filename", "artist", "title", "duration", "color",
-            "genre", "unique_id", "t_order", "track_number", "album", "date", "cue", "is_new", "buy", "can_be_shared");
-        return $query;
-    }
-
-    /**
-     * @return \Framework\Services\DB\Query\SelectQuery
-     */
-    private function getTracksPrefix() {
-        $query = DBQuery::getInstance()->selectFrom("r_tracks");
-        $query->select("tid", "filename", "artist", "title", "duration",
-            "color", "genre", "track_number", "album", "date", "cue", "is_new", "buy", "can_be_shared");
-        return $query;
-    }
-
-    /**
      * @param StreamModel $stream
      * @param Optional $color
      * @param Optional $filter
      * @param Optional $offset
      * @return array
      */
-    public function getTracksByStream(StreamModel $stream, Optional $color, Optional $filter, Optional $offset) {
+    public function getTracksByStream(StreamModel $stream, Optional $color, Optional $filter, Optional $offset)
+    {
 
         $printer = JsonPrinter::getInstance()->successPrefix();
 
@@ -181,7 +180,8 @@ class Playlist implements SingletonInterface, Injectable {
 
         if ($filter->validate()) {
             $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
-                Common::searchQueryFilter($filter->get())]);
+                Common::searchQueryFilter($filter->get())
+            ]);
         }
 
         if ($offset->validate()) {
@@ -210,7 +210,19 @@ class Playlist implements SingletonInterface, Injectable {
 
     }
 
-    public function getNowPlaying($id) {
+    /**
+     * @return SelectQuery
+     */
+    private function getStreamTracksPrefix()
+    {
+        $query = DBQuery::getInstance()->selectFrom("mor_stream_tracklist_view");
+        $query->select("tid", "filename", "artist", "title", "duration", "color",
+            "genre", "unique_id", "t_order", "track_number", "album", "date", "cue", "is_new", "buy", "can_be_shared");
+        return $query;
+    }
+
+    public function getNowPlaying($id)
+    {
 
         /** @var StreamStats $stream */
 
@@ -238,7 +250,8 @@ class Playlist implements SingletonInterface, Injectable {
         $query->where("time_offset <= ?", [$position]);
         $query->where("stream_id", $stream->getID());
 
-        $track = $query->fetchOneRow()->getOrElseThrow(new ControllerException(sprintf("Nothing playing on stream '%s'", $id)));
+        $track = $query->fetchOneRow()->getOrElseThrow(new ControllerException(sprintf("Nothing playing on stream '%s'",
+            $id)));
 
         $track["caption"] = $track["artist"] . " - " . $track["title"];
 
@@ -257,9 +270,8 @@ class Playlist implements SingletonInterface, Injectable {
      * @return array
      * @throws ControllerException
      */
-    public function getNowPlayingAndNext(int $id): array
+    public function getNowPlayingAndNext(int $id, int $prefetch_millis): array
     {
-
         /** @var StreamStats $stream */
 
         $stream = StreamStats::getByFilter("sid = :id OR permalink = :id", [":id" => $id])
@@ -273,7 +285,7 @@ class Playlist implements SingletonInterface, Injectable {
             throw ControllerException::of("Nothing playing");
         }
 
-        $position = max(((System::time() - self::REAL_TIME_DELAY_MS) -
+        $position = max(((System::time() - (self::REAL_TIME_DELAY_MS + $prefetch_millis)) -
                 $stream->getStarted() +
                 $stream->getStartedFrom()) % $stream->getTracksDuration(), 0);
 
@@ -315,7 +327,8 @@ class Playlist implements SingletonInterface, Injectable {
         ];
     }
 
-    public function getSchedule($id) {
+    public function getSchedule($id)
+    {
 
         /** @var StreamStats $stream */
         $stream = StreamStats::getByFilter("sid = :id OR permalink = :id", [":id" => $id])
@@ -345,10 +358,11 @@ class Playlist implements SingletonInterface, Injectable {
                 if ($row["time_offset"] <= $position && $row["time_offset"] + $row["duration"] >= $position) {
                     $currentID = $index;
                 }
-                if (!empty($row["artist"]))
+                if (!empty($row["artist"])) {
                     $row["caption"] = $row["artist"] . " - " . $row["title"];
-                else
+                } else {
                     $row["caption"] = $row["title"];
+                }
                 $index++;
             }
 

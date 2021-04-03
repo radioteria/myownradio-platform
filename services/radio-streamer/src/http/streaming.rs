@@ -17,7 +17,7 @@ use crate::metrics::Metrics;
 use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use crate::restart_registry::RestartRegistry;
 
-const PREFETCH_AUDIO: Duration = Duration::from_secs(3);
+const TIME_PREFETCH: Duration = Duration::from_secs(3);
 const DECODED_AUDIO_BYTES_PER_SECOND: usize = 176400;
 
 #[get("/streams")]
@@ -105,7 +105,7 @@ pub async fn listen_by_channel_id(
 
     let (thr_sender, thr_receiver) = throttled_channel(
         DECODED_AUDIO_BYTES_PER_SECOND,
-        DECODED_AUDIO_BYTES_PER_SECOND * PREFETCH_AUDIO.as_secs() as usize,
+        DECODED_AUDIO_BYTES_PER_SECOND * TIME_PREFETCH.as_secs() as usize,
     );
 
     spawn_pipe_channel(thr_receiver, enc_sender);
@@ -128,7 +128,7 @@ pub async fn listen_by_channel_id(
                 let (restart_signal_tx, mut restart_signal_rx) = oneshot::channel();
 
                 let now_playing = match mor_backend_client
-                    .get_now_playing(&channel_id, client_id.clone())
+                    .get_now_playing(&channel_id, client_id.clone(), &TIME_PREFETCH)
                     .await
                 {
                     Ok(now_playing) => {

@@ -4,6 +4,7 @@ namespace Framework\Handlers\api;
 
 use Framework\Controller;
 use Framework\FileServer\FSFile;
+use Framework\Services\HttpGet;
 use Framework\Services\JsonResponse;
 use Framework\Services\RouteParams;
 use Objects\FileServer\FileServerFile;
@@ -19,11 +20,12 @@ use REST\Streams;
  */
 class DoChannelNowPlayingV1 implements Controller
 {
-    public function doGet(RouteParams $params, Playlist $playlist, Streams $streams, JsonResponse $response)
+    public function doGet(RouteParams $params, HttpGet $get, Playlist $playlist, Streams $streams, JsonResponse $response)
     {
         $stream_id = $params->getRequired("stream_id");
+        $prefetch_millis = $get->getParameter("prefetch_millis")->getOrElse(0);
 
-        $now_playing = $playlist->getNowPlayingAndNext($stream_id);
+        $now_playing = $playlist->getNowPlayingAndNext($stream_id, $prefetch_millis);
         $track = $now_playing['current'];
         $next = $now_playing['next'];
 

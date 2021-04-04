@@ -1,5 +1,7 @@
 (function () {
 
+    const MODPLUG_AUDIO_FORMATS = '.mod,.xm,.s3m,.stm,.it';
+
     var lib = angular.module("Library", ["Site"]);
 
     lib.run(["$rootScope", "TrackAction", function ($scope, TrackAction) {
@@ -368,11 +370,11 @@
             $scope.browse = function () {
                 var selector = $("<input>");
                 selector.attr("type", "file");
-                selector.attr("accept", "audio/*");
+                selector.attr("accept", `audio/*,${MODPLUG_AUDIO_FORMATS}`);
                 selector.attr("multiple", "multiple");
                 selector.attr("name", "file");
                 selector.on("change", function () {
-                    if (this.files.length == 0) return;
+                    if (this.files.length === 0) return;
                     var that = this;
                     $scope.$applyAsync(function () {
                         for (var i = 0; i < that.files.length; i++) if (that.files[i].size <= Of.megabytes(512)) {

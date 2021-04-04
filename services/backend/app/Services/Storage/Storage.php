@@ -22,7 +22,7 @@ abstract class Storage implements StorageInterface
      * @return mixed
      * @throws StorageException
      */
-    public function url($key)
+    public function url(string $key)
     {
         if (is_null($this->urlMapper)) {
             throw new StorageException("Url mapper not configured");

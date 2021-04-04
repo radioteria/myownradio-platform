@@ -11,19 +11,25 @@ use Objects\FileServer\FileServerFile;
 
 class FSFile
 {
-    public static function getPathByHash($hash)
+    public static function getPathByHash(string $hash): string
     {
         return $remoteFileName = sprintf('audio/%s/%s/%s', $hash[0], $hash[1], $hash);
     }
 
+    public static function makeKeyWithExtension(string $hash, string $extension): string
+    {
+        return $remoteFileName = sprintf('audio/%s/%s/%s.%s', $hash[0], $hash[1], $hash, $extension);
+    }
+
     /**
      * @param $file_path
+     * @param string $extension
      * @param string|null $hash
      * @throws Exceptions\LocalFileNotFoundException
      * @throws Exceptions\NoSpaceForUploadException
      * @return int Created file ID
      */
-    public static function registerLink($file_path, $hash = null)
+    public static function registerLink($file_path, string $extension, $hash = null)
     {
 
         if (!file_exists($file_path)) {
@@ -44,12 +50,13 @@ class FSFile
             $object = new FileServerFile();
             $object->setFileHash($hash);
             $object->setFileSize($filesize);
+            $object->setFileExtension($extension);
             $object->setServerId(1);
             $object->setUseCount(1);
 
             $storage = StorageFactory::getStorage();
 
-            $storage->put(self::getPathByHash($hash), fopen($file_path, 'r'));
+            $storage->put(self::makeKeyWithExtension($hash, $extension), fopen($file_path, 'r'));
         } else {
             $object->setUseCount($object->getUseCount() + 1);
         }
@@ -72,7 +79,7 @@ class FSFile
             }
             if ($file->getUseCount() < 1) {
                 $storage = StorageFactory::getStorage();
-                $storage->delete(self::getPathByHash($file->getFileHash()));
+                $storage->delete(self::makeKeyWithExtension($file->getFileHash(), $file->getFileExtension()));
                 $file->delete();
             }
         });
@@ -81,7 +88,7 @@ class FSFile
     public static function getFileUrl(FileServerFile $file)
     {
         $storage = StorageFactory::getStorage();
-        return $storage->url(self::getPathByHash($file->getFileHash()));
+        return $storage->url(self::makeKeyWithExtension($file->getFileHash(), $file->getFileExtension()));
     }
 
     /**

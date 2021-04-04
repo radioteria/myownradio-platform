@@ -198,3 +198,23 @@ function mimetype_from_extension($extension)
         ? $mimetypes[$extension]
         : null;
 }
+
+function array_some(array $array, callable $fn): bool
+{
+    foreach ($array as $value) {
+        if ($fn($value)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function array_all(array $array, callable $fn): bool
+{
+    foreach ($array as $value) {
+        if (!$fn($value)) {
+            return false;
+        }
+    }
+    return true;
+}

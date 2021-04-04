@@ -7,23 +7,23 @@ class LocalStorage extends Storage
     /**
      * @var string
      */
-    private $root;
+    private string $root;
 
     /**
      * @var string
      */
-    private $separator = '/';
+    private string $separator = '/';
 
     /**
      * @var int
      */
-    private $directoryRights = 0777;
+    private int $directoryRights = 0777;
 
     /**
      * @param string $rootDir
      * @param callable|null $urlMapper
      */
-    public function __construct($rootDir, callable $urlMapper = null)
+    public function __construct(string $rootDir, callable $urlMapper = null)
     {
         $this->root = $rootDir;
         parent::__construct($urlMapper);
@@ -34,9 +34,26 @@ class LocalStorage extends Storage
      * @return string
      * @throws StorageException
      */
-    public function get($key)
+    public function get(string $key): string
     {
-        return file_get_contents($key);
+        $fullPath = $this->getFullPath($key);
+
+        $results = glob($fullPath);
+
+        if (count($results) === 0) {
+            throw new StorageException("File with key \"$key\" does not exist");
+        }
+
+        return file_get_contents($results[0]);
+    }
+
+    /**
+     * @param $key
+     * @return mixed
+     */
+    private function getFullPath($key): string
+    {
+        return $this->root . $this->separator . $key;
     }
 
     /**
@@ -45,7 +62,7 @@ class LocalStorage extends Storage
      * @param array $parameters
      * @throws StorageException
      */
-    public function put($key, $body, array $parameters = [])
+    public function put(string $key, $body, array $parameters = [])
     {
         $fullPath = $this->getFullPath($key);
         $dirName = pathinfo($fullPath, PATHINFO_DIRNAME);
@@ -63,31 +80,25 @@ class LocalStorage extends Storage
 
     /**
      * @param string $key
+     * @throws StorageException
      */
-    public function delete($key)
+    public function delete(string $key)
     {
         $fullPath = $this->getFullPath($key);
 
-        unlink($fullPath);
+        if (!unlink($fullPath)) {
+            throw new StorageException('Error occurred during deleting file');
+        }
     }
 
     /**
      * @param string $key
      * @return bool
      */
-    public function exists($key)
+    public function exists(string $key): bool
     {
         $fullPath = $this->getFullPath($key);
 
         return file_exists($fullPath);
-    }
-
-    /**
-     * @param $key
-     * @return mixed
-     */
-    private function getFullPath($key)
-    {
-        return $this->root . $this->separator . $key;
     }
 }

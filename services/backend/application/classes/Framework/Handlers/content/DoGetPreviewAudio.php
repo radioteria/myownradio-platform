@@ -53,11 +53,9 @@ class DoGetPreviewAudio implements Controller
             $hash = $track->getHash();
             $storage = StorageFactory::getStorage();
 
-            $url = $storage->url(FSFile::getPathByHash($hash));
+            $url = $storage->url(FSFile::makeKeyWithExtension($hash, $track->getExtension()));
 
-            $urlHttp = str_replace('https', 'http', $url);
-
-            $command = sprintf($program, $track->getDuration() / 3000, escapeshellarg($urlHttp));
+            $command = sprintf($program, $track->getDuration() / 3000, escapeshellarg($url));
 
             $proc = popen($command, "r");
 

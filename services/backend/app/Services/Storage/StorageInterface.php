@@ -4,13 +4,13 @@ namespace app\Services\Storage;
 
 interface StorageInterface
 {
-    public function get($key);
+    public function get(string $key);
 
-    public function put($key, $body, array $parameters = []);
+    public function put(string $key, $body, array $parameters = []);
 
-    public function delete($key);
+    public function delete(string $key);
 
-    public function url($key);
+    public function url(string $key);
 
-    public function exists($key);
+    public function exists(string $key);
 }

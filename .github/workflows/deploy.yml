@@ -53,8 +53,8 @@ jobs:
           context: services/backend
           push: true
           tags: |
-            pldin601/myownradio-backend-nginx:latest
-            pldin601/myownradio-backend-nginx:${{ github.sha }}
+            pldin601/myownradio-backend-php:latest
+            pldin601/myownradio-backend-php:${{ github.sha }}
 
   build-radio-streamer:
     name: Build radio-streamer

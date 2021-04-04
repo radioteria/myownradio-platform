@@ -1,4 +1,4 @@
-FROM myownradio/backend-php-base:1.0.0
+FROM myownradio/backend-php-base:1.1.0
 
 USER 0:0
 

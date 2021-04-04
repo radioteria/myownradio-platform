@@ -1,3 +1,4 @@
+# bump version here
 FROM myownradio/backend-php-base:1.1.0
 
 USER 0:0
@@ -12,6 +13,7 @@ RUN composer install --no-plugins --no-scripts --no-dev
 
 COPY . ./
 
-FROM myownradio/backend-php-base:1.0.0
+# bump version here
+FROM myownradio/backend-php-base:1.1.0
 
 COPY --from=0 /code /code

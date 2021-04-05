@@ -12,6 +12,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@master
+      - name: Setup Variables
+        id: vars
+        run: |
+          echo "::set-output name=date::$(date +'%y.%m')"
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
       - name: Login
         uses: docker/login-action@v1
         with:
@@ -28,8 +33,8 @@ jobs:
           context: services/backend
           push: true
           tags: |
+            pldin601/myownradio-backend-nginx:${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
             pldin601/myownradio-backend-nginx:latest
-            pldin601/myownradio-backend-nginx:${{ github.sha }}
 
   build-backend-php:
     name: Build backend-php
@@ -37,6 +42,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@master
+      - name: Setup Variables
+        id: vars
+        run: |
+          echo "::set-output name=date::$(date +'%y.%m')"
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
       - name: Login
         uses: docker/login-action@v1
         with:
@@ -53,8 +63,8 @@ jobs:
           context: services/backend
           push: true
           tags: |
+            pldin601/myownradio-backend-php:${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
             pldin601/myownradio-backend-php:latest
-            pldin601/myownradio-backend-php:${{ github.sha }}
 
   build-radio-streamer:
     name: Build radio-streamer
@@ -62,29 +72,44 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@master
-      - name: Build
-        uses: docker/build-push-action@v1
+      - name: Setup Variables
+        id: vars
+        run: |
+          echo "::set-output name=date::$(date +'%y.%m')"
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+      - name: Login
+        uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: myownradio/radio-streamer
-          tags: latest
-          path: services/radio-streamer
-
-  deploy:
-    needs:
-      - build-backend-nginx
-      - build-backend-php
-      - build-radio-streamer
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@master
-      - name: Push stack to production
-        uses: pldin601/docker-swarm-deploy-action@master
+      - name: Setup
+        uses: docker/setup-buildx-action@v1
+        id: builder
+      - name: Build
+        uses: docker/build-push-action@v2
         with:
-          remote_host: ssh://${{ secrets.SSH_USER }}@${{ secrets.SSH_IP_ADDRESS }}
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
-          args: stack deploy --with-registry-auth --prune --resolve-image=always --compose-file myownradio-platform/docker-compose.production.yml myownradio
+          builder: ${{ steps.builder.outputs.name }}
+          file: services/radio-streamer/Dockerfile
+          context: services/radio-streamer
+          push: true
+          tags: |
+            pldin601/myownradio-radio-streamer:${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
+            pldin601/myownradio-radio-streamer:latest
+
+#  deploy:
+#    needs:
+#      - build-backend-nginx
+#      - build-backend-php
+#      - build-radio-streamer
+#    name: Deploy to Production
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@master
+#      - name: Push stack to production
+#        uses: pldin601/docker-swarm-deploy-action@master
+#        with:
+#          remote_host: ssh://${{ secrets.SSH_USER }}@${{ secrets.SSH_IP_ADDRESS }}
+#          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+#          args: stack deploy --with-registry-auth --prune --resolve-image=always --compose-file myownradio-platform/docker-compose.production.yml myownradio

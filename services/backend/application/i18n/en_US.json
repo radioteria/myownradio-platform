@@ -330,7 +330,7 @@
         "Has not violate any copyright laws.",
         "Has not exceed <b>100 MB</b>.",
         "Has good quality with high bitrate (<b>256 kbit/s or greater</b>)",
-        "Is in one of this formats: <b>mp3</b>, <b>flac</b>, <b>ogg</b>, <b>m4a</b>, <b>ape</b>, <b>aac</b>.",
+        "Is in one of this formats: <b>mp3</b>, <b>flac</b>, <b>ogg</b>, <b>m4a</b>, <b>ape</b>, <b>aac</b>, <b>mod</b>, <b>xm</b>, <b>s3m</b>, <b>stm</b>, <b>it</b>.",
         "Is not shorter than <b>15 seconds</b> and not longer than <b>240 minutes</b>."
     ],
 

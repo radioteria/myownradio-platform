@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'images/**'
+      - 'services/**'
+      - 'migrations/**'
 
 jobs:
   build-backend-nginx:
@@ -95,21 +99,3 @@ jobs:
           tags: |
             pldin601/myownradio-radio-streamer:${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
             pldin601/myownradio-radio-streamer:latest
-
-#  deploy:
-#    needs:
-#      - build-backend-nginx
-#      - build-backend-php
-#      - build-radio-streamer
-#    name: Deploy to Production
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@master
-#      - name: Push stack to production
-#        uses: pldin601/docker-swarm-deploy-action@master
-#        with:
-#          remote_host: ssh://${{ secrets.SSH_USER }}@${{ secrets.SSH_IP_ADDRESS }}
-#          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-#          ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
-#          args: stack deploy --with-registry-auth --prune --resolve-image=always --compose-file myownradio-platform/docker-compose.production.yml myownradio

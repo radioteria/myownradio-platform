@@ -86,7 +86,7 @@
                            ms-destination="target"
                            ui-sortable="sortableOptions"
                            ng-model="tracks">
-                    <tr class="item" ng-repeat="track in tracks" ng-class="{now: track.unique_id === now.unique_id, new: track.is_new}">
+                    <tr class="item" ng-repeat="track in tracks track by track.tid" ng-class="{now: track.unique_id === now.unique_id, new: track.is_new}">
                         <td ng-class="'col' + track.color" ng-switch on="track.unique_id == now.unique_id"
                             class="only-first-element">
                             <i ng-switch-when="true" class="icon-volume-up blink-opacity" mor-tooltip="Now on air"></i>

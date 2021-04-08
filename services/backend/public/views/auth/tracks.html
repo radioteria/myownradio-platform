@@ -137,7 +137,7 @@
                            ms-destination="target"
                            context-menu=""
                            data-target="track-menu">
-                        <tr ng-repeat="track in tracks">
+                        <tr ng-repeat="track in tracks track by track.tid">
                             <td ng-class="'col' + track.color">{{$index + 1}}</td>
                             <td><preview ng-model="track"></preview></td>
                             <td mor-tooltip-url="/content/trackinfo/{{track.tid}}" ng-bind="track.title"></td>

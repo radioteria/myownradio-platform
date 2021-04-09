@@ -43,6 +43,7 @@ services:
       update_config:
         order: start-first
         failure_action: rollback
+      replicas: 5
       resources:
         limits:
           memory: 128M

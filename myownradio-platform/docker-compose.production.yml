@@ -44,6 +44,7 @@ services:
         order: start-first
         failure_action: rollback
       replicas: 5
+      endpoint_mode: dnsrr
       resources:
         limits:
           memory: 128M

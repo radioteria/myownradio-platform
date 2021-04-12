@@ -228,25 +228,6 @@ class Common
         imagedestroy($destination);
     }
 
-    /**
-     * @param $filename
-     * @return Optional
-     * @throws ApplicationException
-     */
-    public static function getAudioDuration($filename)
-    {
-        $command = new Command(['command' => config('services.mediainfo_cmd'), 'useExec' => true]);
-
-        $command->addArg('--Inform=', "General;%Duration%", true);
-        $command->addArg($filename, null, true);
-
-        if (!$command->execute()) {
-            throw ApplicationException::of('Could not execute command: ' . $command->getExecCommand());
-        }
-
-        return Optional::ofNullable($command->getOutput());
-    }
-
     static function cp1252dec($chars)
     {
 

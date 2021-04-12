@@ -1,10 +1,7 @@
-# bump version here
-FROM myownradio/backend-php-base:1.1.0
+# TODO bump the base image version in ALL stages
+FROM myownradio/backend-php-base:2.0.0
 
 USER 0:0
-
-RUN curl -sS https://getcomposer.org/download/1.10.21/composer.phar --output /usr/local/bin/composer && \
-    chmod +x /usr/local/bin/composer
 
 WORKDIR /code
 
@@ -13,7 +10,7 @@ RUN composer install --no-plugins --no-scripts --no-dev
 
 COPY . ./
 
-# bump version here
-FROM myownradio/backend-php-base:1.1.0
+# TODO bump version here
+FROM myownradio/backend-php-base:2.0.0
 
 COPY --from=0 /code /code

@@ -1,4 +1,4 @@
-name: Deploy to Production
+name: Build Images
 
 on:
   push:
@@ -10,17 +10,25 @@ on:
       - 'migrations/**'
 
 jobs:
-  build-backend-nginx:
-    name: Build backend-nginx
+  release_version:
+    name: Compose release version
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@master
       - name: Setup Variables
         id: vars
         run: |
           echo "::set-output name=date::$(date +'%y.%m')"
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+    outputs:
+      version: ${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
+
+  build-backend-nginx:
+    needs: [release_version]
+    name: Build backend-nginx:${{ needs.release_version.outputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
       - name: Login
         uses: docker/login-action@v1
         with:
@@ -37,20 +45,16 @@ jobs:
           context: services/backend
           push: true
           tags: |
-            pldin601/myownradio-backend-nginx:${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
+            pldin601/myownradio-backend-nginx:${{ needs.release_version.outputs.version }}
             pldin601/myownradio-backend-nginx:latest
 
   build-backend-php:
-    name: Build backend-php
+    needs: [release_version]
+    name: Build backend-php:${{ needs.release_version.outputs.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@master
-      - name: Setup Variables
-        id: vars
-        run: |
-          echo "::set-output name=date::$(date +'%y.%m')"
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
       - name: Login
         uses: docker/login-action@v1
         with:
@@ -67,20 +71,16 @@ jobs:
           context: services/backend
           push: true
           tags: |
-            pldin601/myownradio-backend-php:${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
+            pldin601/myownradio-backend-php:${{ needs.release_version.outputs.version }}
             pldin601/myownradio-backend-php:latest
 
   build-radio-streamer:
-    name: Build radio-streamer
+    needs: [release_version]
+    name: Build radio-streamer:${{ needs.release_version.outputs.version }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@master
-      - name: Setup Variables
-        id: vars
-        run: |
-          echo "::set-output name=date::$(date +'%y.%m')"
-          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
       - name: Login
         uses: docker/login-action@v1
         with:
@@ -97,5 +97,5 @@ jobs:
           context: services/radio-streamer
           push: true
           tags: |
-            pldin601/myownradio-radio-streamer:${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
+            pldin601/myownradio-radio-streamer:${{ needs.release_version.outputs.version }}
             pldin601/myownradio-radio-streamer:latest

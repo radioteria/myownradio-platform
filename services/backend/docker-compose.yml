@@ -17,7 +17,7 @@ services:
     ports:
       - 6060:80
     environment:
-      DUMMY: 0
+      DUMMY: 1
       DB_DATABASE: mor
       DB_HOST: db
       DB_PASSWORD: mor

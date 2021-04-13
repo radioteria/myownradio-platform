@@ -9,7 +9,7 @@ export default (env: Record<string, string> = {}): webpack.Configuration => {
   return {
     entry: {
       vendors: ['react', 'react-dom'],
-      Index: './src/Index/index.tsx',
+      app: './src/index.ts',
     },
     mode: 'development',
     output: {

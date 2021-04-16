@@ -162,11 +162,13 @@ pub async fn listen_by_channel_id(
                     }
                 };
 
-                let metadata = format!("StreamTitle='{}';", &now_playing.current_track.title);
-                if let Err(error) = metadata_sender.send(metadata.into_bytes()).await {
-                    if is_icy_enabled {
-                        error!(logger, "Unable to send track title"; "error" => ?error);
-                        break;
+                if is_icy_enabled {
+                    let metadata = format!("StreamTitle='{}';", &now_playing.current_track.title);
+                    if let Err(error) = metadata_sender.send(metadata.into_bytes()).await {
+                        if is_icy_enabled {
+                            error!(logger, "Unable to send track title"; "error" => ?error);
+                            break;
+                        }
                     }
                 }
 

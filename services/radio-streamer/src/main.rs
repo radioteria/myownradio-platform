@@ -1,20 +1,3 @@
-use actix_web::dev::Service;
-use actix_web::{App, HttpServer};
-use slog::{info, o, Drain, Logger};
-use slog_json::Json;
-use std::io;
-use std::io::Result;
-use std::sync::{Arc, Mutex};
-use std::time::Instant;
-
-use crate::codec::AudioCodecService;
-use crate::config::Config;
-use crate::http::metrics::get_metrics;
-use crate::http::streaming::{get_active_streams, listen_by_channel_id, restart_by_channel_id};
-use crate::metrics::Metrics;
-use crate::mor_backend_client::MorBackendClient;
-use crate::restart_registry::RestartRegistry;
-
 mod audio_formats;
 mod codec;
 mod config;
@@ -26,10 +9,33 @@ mod mor_backend_client;
 mod restart_registry;
 mod stream;
 
+use crate::codec::AudioCodecService;
+use crate::config::Config;
+use crate::http::metrics::get_metrics;
+use crate::http::streaming::{get_active_streams, listen_by_channel_id, restart_by_channel_id};
+use crate::metrics::Metrics;
+use crate::mor_backend_client::MorBackendClient;
+use crate::restart_registry::RestartRegistry;
+
+use actix_rt::signal::unix;
+use actix_rt::signal::unix::SignalKind;
+use actix_web::dev::Service;
+use actix_web::{App, HttpServer};
+use futures_lite::FutureExt;
+use slog::{info, o, Drain, Logger};
+use slog_json::Json;
+use std::io::Result;
+use std::sync::{Arc, Mutex};
+use std::time::Instant;
+use std::{io, process};
+
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[actix_rt::main]
 async fn main() -> Result<()> {
+    let mut interrupt = unix::signal(SignalKind::interrupt())?;
+    let mut terminate = unix::signal(SignalKind::terminate())?;
+
     let config = Arc::new(Config::from_env());
     let bind_address = &config.bind_address.clone();
 
@@ -103,9 +109,19 @@ async fn main() -> Result<()> {
                 .service(get_metrics)
         }
     })
-    .bind(bind_address)?;
+    .disable_signals()
+    .bind(bind_address)?
+    .run();
 
     info!(logger, "Application started");
 
-    server.run().await
+    let _ = interrupt.recv().or(terminate.recv()).await;
+
+    info!(logger, "Received stop signal");
+
+    server.stop(true).await;
+
+    info!(logger, "Server stopped");
+
+    Ok(())
 }

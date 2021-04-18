@@ -1,0 +1,24 @@
+name: Trigger radio-streamer images build
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'services/radio-streamer/**'
+
+jobs:
+  main:
+    name: Trigger radio-streamer images build
+    runs-on: ubuntu-latest
+  - name: Trigger
+    uses: peter-evans/repository-dispatch@v1
+    with:
+      token: ${{ secrets.REPO_ACCESS_TOKEN }}
+      event-type: build-image
+      client-payload: |
+        {
+          "image_name": "pldin601/myownradio-radio-streamer",
+          "dockerfile": "services/radio-streamer/Dockerfile",
+          "context": "services/radio-streamer"
+        }

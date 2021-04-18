@@ -75,29 +75,3 @@ jobs:
           tags: |
             pldin601/myownradio-backend-php:${{ needs.release_version.outputs.version }}
             pldin601/myownradio-backend-php:latest
-
-  build-radio-streamer:
-    needs: [release_version]
-    name: Build radio-streamer:${{ needs.release_version.outputs.version }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@master
-      - name: Login
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Setup
-        uses: docker/setup-buildx-action@v1
-        id: builder
-      - name: Build
-        uses: docker/build-push-action@v2
-        with:
-          builder: ${{ steps.builder.outputs.name }}
-          file: services/radio-streamer/Dockerfile
-          context: services/radio-streamer
-          push: true
-          tags: |
-            pldin601/myownradio-radio-streamer:${{ needs.release_version.outputs.version }}
-            pldin601/myownradio-radio-streamer:latest

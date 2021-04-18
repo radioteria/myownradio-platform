@@ -1,6 +1,6 @@
 {
   "name": "backend-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "scripts": {
     "build": "run-s build:*",
@@ -11,14 +11,14 @@
   "dependencies": {
     "bower": "^1.8.0",
     "classnames": "^2.3.1",
+    "fp-ts": "^2.9.5",
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.0",
     "gulp-minify": "^3.1.0",
+    "io-ts": "^2.2.15",
     "natives": "^1.1.6",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "fp-ts": "^2.9.5",
-    "io-ts": "^2.2.15"
+    "react-dom": "^17.0.2"
   },
   "eslintConfig": {},
   "devDependencies": {

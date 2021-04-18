@@ -1,4 +1,4 @@
-name: Trigger radio-streamer images build
+name: Trigger radio-streamer build
 
 on:
   push:
@@ -9,10 +9,10 @@ on:
 
 jobs:
   main:
-    name: Trigger radio-streamer images build
+    name: Main
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger
+      - name: Trigger build
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}

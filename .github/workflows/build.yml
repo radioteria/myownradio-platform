@@ -1,4 +1,4 @@
-name: Build
+name: Build Image
 
 on:
   repository_dispatch:
@@ -6,8 +6,8 @@ on:
       - build-image
 
 jobs:
-  release_version:
-    name: Get release version
+  get_build:
+    name: Get current build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -18,17 +18,17 @@ jobs:
           echo "::set-output name=date::$(date +'%y.%m')"
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
     outputs:
-      version: ${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
+      build_id: ${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
 
   main:
-    needs: [release_version]
-    name: Build ${{ github.event.client_payload.image_name }}:${{ needs.release_version.outputs.version }}
+    needs: [get_build]
+    name: Build ${{ github.event.client_payload.image_name }}:${{ needs.get_build.outputs.build_id }}
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: ${{ github.event.client_payload.image_name }}
       DOCKERFILE: ${{ github.event.client_payload.dockerfile }}
       CONTEXT: ${{ github.event.client_payload.context }}
-      VERSION: ${{ needs.release_version.outputs.version }}
+      BUILD_ID: ${{ needs.get_build.outputs.build_id }}
     steps:
       - name: Checkout
         uses: actions/checkout@master
@@ -48,5 +48,5 @@ jobs:
           context: ${{ env.CONTEXT }}
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ needs.release_version.outputs.version }}
+            ${{ env.IMAGE_NAME }}:${{ env.BUILD_ID }}
             ${{ env.IMAGE_NAME }}:latest

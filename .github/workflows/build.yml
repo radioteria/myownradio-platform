@@ -22,7 +22,7 @@ jobs:
 
   main:
     needs: [release_version]
-    name: Build ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+    name: Build ${{ github.event.client_payload.image_name }}:${{ needs.release_version.outputs.version }}
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: ${{ github.event.client_payload.image_name }}

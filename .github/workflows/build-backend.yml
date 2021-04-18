@@ -1,0 +1,36 @@
+name: Trigger radio-streamer build
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'services/backend/**'
+
+jobs:
+  main:
+    name: Main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger "pldin601/myownradio-backend-nginx" build
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: build-image
+          client-payload: |
+            {
+              "image_name": "pldin601/myownradio-backend-nginx",
+              "dockerfile": "images/backend-nginx/Dockerfile",
+              "context": "services/backend"
+            }
+      - name: Trigger "pldin601/myownradio-backend-php" build
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: build-image
+          client-payload: |
+            {
+              "image_name": "pldin601/myownradio-backend-php",
+              "dockerfile": "images/backend-php/Dockerfile",
+              "context": "services/backend"
+            }

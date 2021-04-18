@@ -47,7 +47,7 @@ impl AudioCodecService {
             format!("{:.4}", offset_seconds)
         };
 
-        let child = match Command::new(&self.path_to_ffmpeg)
+        let mut process = match Command::new(&self.path_to_ffmpeg)
             .args(&[
                 "-v",
                 "quiet",
@@ -83,7 +83,9 @@ impl AudioCodecService {
 
         debug!(self.logger, "Audio decoder spawned");
 
-        let stdout = match child.stdout {
+        let status = process.status();
+
+        let stdout = match process.stdout {
             Some(stdout) => stdout,
             None => {
                 error!(self.logger, "Stdout is not available");
@@ -104,6 +106,10 @@ impl AudioCodecService {
                         error!(logger, "Unable to send data to sender from decoder"; "error" => ?error);
                         break;
                     };
+                }
+
+                if let Ok(exit_status) = status.await {
+                    debug!(logger, "End of stream"; "exit_code" => exit_status.code());
                 }
             }
         });
@@ -126,7 +132,7 @@ impl AudioCodecService {
 
         debug!(self.logger, "Spawning audio encoder process...");
 
-        let process = match Command::new(&self.path_to_ffmpeg)
+        let mut process = match Command::new(&self.path_to_ffmpeg)
             .args(&[
                 "-v",
                 "quiet",

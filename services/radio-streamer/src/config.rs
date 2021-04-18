@@ -21,6 +21,10 @@ fn default_log_level() -> Level {
     Level::Warning
 }
 
+fn default_shutdown_timeout() -> u64 {
+    10u64
+}
+
 fn default_path_to_ffprobe() -> String {
     match which("ffprobe") {
         Some(path) => path,
@@ -49,6 +53,8 @@ pub struct Config {
     pub path_to_ffprobe: String,
     #[serde(with = "LogLevel", default = "default_log_level")]
     pub log_level: Level,
+    #[serde(default = "default_shutdown_timeout")]
+    pub shutdown_timeout: u64,
     // Required environment variables
     pub mor_backend_url: String,
     pub stream_mutation_token: String,

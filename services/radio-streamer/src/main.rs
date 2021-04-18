@@ -18,7 +18,6 @@ use crate::mor_backend_client::MorBackendClient;
 use crate::restart_registry::RestartRegistry;
 
 use actix_rt::signal::unix;
-use actix_rt::signal::unix::SignalKind;
 use actix_web::dev::Service;
 use actix_web::{App, HttpServer};
 use futures_lite::FutureExt;
@@ -33,11 +32,11 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[actix_rt::main]
 async fn main() -> Result<()> {
-    let mut interrupt = unix::signal(SignalKind::interrupt())?;
-    let mut terminate = unix::signal(SignalKind::terminate())?;
+    let mut user_defined1 = unix::signal(unix::SignalKind::user_defined1())?;
 
     let config = Arc::new(Config::from_env());
     let bind_address = &config.bind_address.clone();
+    let shutdown_timeout = config.shutdown_timeout.clone();
 
     let drain = Json::new(io::stderr())
         .add_default_keys()
@@ -107,19 +106,19 @@ async fn main() -> Result<()> {
                 .service(get_metrics)
         }
     })
-    .disable_signals()
+    .shutdown_timeout(shutdown_timeout)
     .bind(bind_address)?
     .run();
 
     info!(logger, "Application started");
 
-    let _ = interrupt.recv().or(terminate.recv()).await;
+    user_defined1.recv().await;
 
-    info!(logger, "Received stop signal");
+    info!(logger, "Received USR1 signal");
 
     server.stop(true).await;
 
-    info!(logger, "Server stopped");
+    info!(logger, "Server gracefully stopped");
 
     Ok(())
 }

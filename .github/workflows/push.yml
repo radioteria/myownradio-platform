@@ -5,6 +5,7 @@ on:
     branches:
       - master
     paths:
+      - '!services/radio-streamer/**'
       - 'images/**'
       - 'services/**'
       - 'migrations/**'

@@ -22,12 +22,13 @@ jobs:
 
   main:
     needs: [release_version]
-    name: Build
+    name: Build ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: ${{ github.event.client_payload.image_name }}
       DOCKERFILE: ${{ github.event.client_payload.dockerfile }}
       CONTEXT: ${{ github.event.client_payload.context }}
+      VERSION: ${{ needs.release_version.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@master

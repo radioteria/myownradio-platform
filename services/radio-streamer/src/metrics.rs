@@ -20,12 +20,6 @@ impl Metrics {
         ))
         .unwrap();
 
-        let track_start_lateness = Gauge::with_opts(Opts::new(
-            "track_start_lateness",
-            "How late is the next track",
-        ))
-        .unwrap();
-
         let http_requests_total = IntCounterVec::new(
             Opts::new("http_requests_total", "Total number of HTTP requests"),
             &["endpoint", "method", "status"],

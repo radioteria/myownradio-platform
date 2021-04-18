@@ -79,19 +79,17 @@ async fn main() -> Result<()> {
 
                             let status = result.response().status();
                             let method = result.request().method().clone();
-                            let path = result
-                                .request()
-                                .match_pattern()
-                                .unwrap_or_else(|| result.request().path().to_string());
+                            let path = result.request().match_pattern();
 
-                            if path != "/metrics" {
-                                metrics.update_http_request_total(
+                            match path.as_ref().map(String::as_str) {
+                                Some("/metrics") | None => (),
+                                Some(path) => metrics.update_http_request_total(
                                     &path,
                                     &method,
                                     status,
                                     instant.elapsed(),
-                                );
-                            }
+                                ),
+                            };
 
                             Ok(result)
                         }

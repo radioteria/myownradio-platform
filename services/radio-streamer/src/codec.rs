@@ -69,7 +69,6 @@ impl AudioCodecService {
                 "s16le",
                 "-",
             ])
-            .kill_on_drop(true)
             .stdout(Stdio::piped())
             .stderr(Stdio::null())
             .stdin(Stdio::null())
@@ -160,7 +159,6 @@ impl AudioCodecService {
                 &format.format,
                 "-",
             ])
-            .kill_on_drop(true)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null())

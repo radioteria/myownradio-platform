@@ -7,7 +7,6 @@ use std::time::Duration;
 #[derive(Clone)]
 pub struct Metrics {
     streaming_in_progress: Gauge,
-    track_start_lateness: Gauge,
     prometheus_registry: Registry,
     http_requests_total: IntCounterVec,
     http_requests_duration_seconds: HistogramVec,
@@ -66,9 +65,6 @@ impl Metrics {
             .register(Box::new(streaming_in_progress.clone()))
             .unwrap();
         prometheus_registry
-            .register(Box::new(track_start_lateness.clone()))
-            .unwrap();
-        prometheus_registry
             .register(Box::new(http_requests_total.clone()))
             .unwrap();
         prometheus_registry
@@ -77,7 +73,6 @@ impl Metrics {
 
         Self {
             streaming_in_progress,
-            track_start_lateness,
             prometheus_registry,
             http_requests_total,
             http_requests_duration_seconds,
@@ -109,10 +104,6 @@ impl Metrics {
         self.http_requests_total
             .with_label_values(&[&path, &method, &status])
             .inc();
-    }
-
-    pub fn set_track_start_lateness(&self, delay: &usize) {
-        self.track_start_lateness.set(delay.clone() as f64);
     }
 
     pub fn gather(&self) -> Vec<u8> {

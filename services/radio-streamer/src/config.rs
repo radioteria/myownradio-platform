@@ -22,7 +22,7 @@ fn default_log_level() -> Level {
 }
 
 fn default_shutdown_timeout() -> u64 {
-    10u64
+    30u64
 }
 
 fn default_path_to_ffprobe() -> String {

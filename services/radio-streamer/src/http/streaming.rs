@@ -148,12 +148,22 @@ pub async fn listen_by_channel_id(
                     }
                 };
 
+                let current_track = now_playing.current_track;
+                let next_track = now_playing.next_track;
+
                 let mut dec_receiver = match next_track_receiver.lock().await.take() {
-                    Some(receiver) if now_playing.current_track.offset < 1000 => receiver,
-                    _ => match audio_codec_service.spawn_audio_decoder(
-                        &now_playing.current_track.url,
-                        &now_playing.current_track.offset,
-                    ) {
+                    Some(receiver) if current_track.offset < 1000 => {
+                        debug!(logger, "Use pre-spawned decoder: small delay");
+                        receiver
+                    }
+                    Some(receiver) if (current_track.duration - current_track.offset) < 1000 => {
+                        debug!(logger, "Use pre-spawned decoder: small ahead");
+                        receiver
+                    }
+
+                    _ => match audio_codec_service
+                        .spawn_audio_decoder(&current_track.url, &current_track.offset)
+                    {
                         Ok(receiver) => receiver,
                         Err(error) => {
                             error!(logger, "Unable to decode audio file"; "error" => ?error);
@@ -164,7 +174,7 @@ pub async fn listen_by_channel_id(
 
                 actix_rt::spawn({
                     let logger = logger.clone();
-                    let next_track_url = now_playing.next_track.url.clone();
+                    let next_track_url = next_track.url.clone();
                     let next_track_receiver = next_track_receiver.clone();
                     let audio_codec_service = audio_codec_service.clone();
 
@@ -181,7 +191,7 @@ pub async fn listen_by_channel_id(
                 });
 
                 if is_icy_enabled {
-                    let metadata = format!("StreamTitle='{}';", &now_playing.current_track.title);
+                    let metadata = format!("StreamTitle='{}';", &current_track.title);
                     if let Err(error) = metadata_sender.send(metadata.into_bytes()).await {
                         if is_icy_enabled {
                             error!(logger, "Unable to send track title"; "error" => ?error);

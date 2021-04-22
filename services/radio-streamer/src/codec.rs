@@ -6,9 +6,13 @@ use futures_lite::FutureExt;
 use slog::{debug, error, Logger};
 
 use crate::audio_formats::AudioFormat;
+use crate::constants::RAW_AUDIO_STEREO_BYTE_RATE;
 use crate::helpers::io::{read_from_stdout, write_to_stdin};
 
-const BUFFER_SIZE: usize = 4096;
+const STDIO_BUFFER_SIZE: usize = 4096;
+
+// Should be enough for 5 seconds of audio.
+const DECODER_CHANNEL_BUFFER: usize = 5 * (RAW_AUDIO_STEREO_BYTE_RATE / STDIO_BUFFER_SIZE);
 
 #[derive(Debug)]
 pub enum AudioCodecError {
@@ -37,7 +41,7 @@ impl AudioCodecService {
         url: &str,
         offset: &usize,
     ) -> Result<mpsc::Receiver<Result<Bytes, io::Error>>, AudioCodecError> {
-        let (sender, receiver) = mpsc::channel(0);
+        let (sender, receiver) = mpsc::channel(DECODER_CHANNEL_BUFFER);
 
         debug!(self.logger, "Spawning audio decoder...");
 
@@ -81,7 +85,7 @@ impl AudioCodecService {
             }
         };
 
-        debug!(self.logger, "Audio decoder spawned");
+        debug!(self.logger, "Audio decoder spawned"; "url" => url, "offset" => offset);
 
         let status = process.status();
 
@@ -100,7 +104,7 @@ impl AudioCodecService {
             let logger = self.logger.clone();
 
             async move {
-                let mut buffer = vec![0u8; BUFFER_SIZE];
+                let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
                 while let Some(result) = read_from_stdout(&mut stdout, &mut buffer).await {
                     if let Err(error) = sender.send(result).await {
                         error!(logger, "Unable to send data to sender from decoder"; "error" => ?error);
@@ -234,7 +238,7 @@ impl AudioCodecService {
             let logger = self.logger.clone();
 
             async move {
-                let mut buffer = vec![0u8; BUFFER_SIZE];
+                let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
                 while let Some(result) = read_from_stdout(&mut stdout, &mut buffer).await {
                     if let Err(error) = output_sender.send(result).await {
                         error!(logger, "Unable to send data to sender from encoder"; "error" => ?error);

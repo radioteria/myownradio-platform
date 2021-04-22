@@ -11,6 +11,7 @@ use slog::{debug, error, Logger};
 use crate::audio_formats::AudioFormats;
 use crate::codec::AudioCodecService;
 use crate::config::Config;
+use crate::constants::RAW_AUDIO_STEREO_BYTE_RATE;
 use crate::helpers::io::{pipe_channel_with_cancel, spawn_pipe_channel, throttled_channel};
 use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::metrics::Metrics;
@@ -20,7 +21,6 @@ use futures::lock::Mutex;
 use futures_lite::StreamExt;
 
 const TIME_PREFETCH: Duration = Duration::from_secs(3);
-const DECODED_AUDIO_BYTES_PER_SECOND: usize = 176400;
 
 #[get("/streams")]
 pub async fn get_active_streams(restart_registry: Data<Arc<RestartRegistry>>) -> impl Responder {
@@ -106,8 +106,8 @@ pub async fn listen_by_channel_id(
     };
 
     let (thr_sender, thr_receiver) = throttled_channel(
-        DECODED_AUDIO_BYTES_PER_SECOND,
-        DECODED_AUDIO_BYTES_PER_SECOND * TIME_PREFETCH.as_secs() as usize,
+        RAW_AUDIO_STEREO_BYTE_RATE,
+        RAW_AUDIO_STEREO_BYTE_RATE * TIME_PREFETCH.as_secs() as usize,
     );
 
     spawn_pipe_channel(thr_receiver, enc_sender);

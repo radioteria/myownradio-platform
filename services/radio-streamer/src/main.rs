@@ -1,6 +1,7 @@
 mod audio_formats;
 mod codec;
 mod config;
+mod constants;
 mod helpers;
 mod http;
 mod icy_metadata;

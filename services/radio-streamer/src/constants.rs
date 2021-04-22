@@ -1,0 +1,1 @@
+pub const RAW_AUDIO_STEREO_BYTE_RATE: usize = 176400;

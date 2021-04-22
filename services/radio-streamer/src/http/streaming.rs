@@ -11,16 +11,15 @@ use slog::{debug, error, Logger};
 use crate::audio_formats::AudioFormats;
 use crate::codec::AudioCodecService;
 use crate::config::Config;
-use crate::constants::RAW_AUDIO_STEREO_BYTE_RATE;
+use crate::constants::{PREFETCH_TIME, RAW_AUDIO_STEREO_BYTE_RATE};
 use crate::helpers::io::{pipe_channel_with_cancel, spawn_pipe_channel, throttled_channel};
 use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use crate::restart_registry::RestartRegistry;
+use actix_rt::time::Instant;
 use futures::lock::Mutex;
 use futures_lite::StreamExt;
-
-const TIME_PREFETCH: Duration = Duration::from_secs(3);
 
 #[get("/streams")]
 pub async fn get_active_streams(restart_registry: Data<Arc<RestartRegistry>>) -> impl Responder {
@@ -107,7 +106,7 @@ pub async fn listen_by_channel_id(
 
     let (thr_sender, thr_receiver) = throttled_channel(
         RAW_AUDIO_STEREO_BYTE_RATE,
-        RAW_AUDIO_STEREO_BYTE_RATE * TIME_PREFETCH.as_secs() as usize,
+        RAW_AUDIO_STEREO_BYTE_RATE * PREFETCH_TIME.as_secs() as usize,
     );
 
     spawn_pipe_channel(thr_receiver, enc_sender);
@@ -131,7 +130,7 @@ pub async fn listen_by_channel_id(
                 let (restart_signal_tx, mut restart_signal_rx) = oneshot::channel();
 
                 let now_playing = match mor_backend_client
-                    .get_now_playing(&channel_id, client_id.clone(), &TIME_PREFETCH)
+                    .get_now_playing(&channel_id, client_id.clone(), &PREFETCH_TIME)
                     .await
                 {
                     Ok(now_playing) => {
@@ -150,17 +149,15 @@ pub async fn listen_by_channel_id(
 
                 let current_track = now_playing.current_track;
                 let next_track = now_playing.next_track;
+                let current_track_left = current_track.duration - current_track.offset;
+                let should_finish_at =
+                    Instant::now() + Duration::from_millis(current_track_left as u64);
 
                 let mut dec_receiver = match next_track_receiver.lock().await.take() {
                     Some(receiver) if current_track.offset < 1000 => {
-                        debug!(logger, "Use pre-spawned decoder: small delay");
+                        debug!(logger, "Use pre-spawned decoder");
                         receiver
                     }
-                    Some(receiver) if (current_track.duration - current_track.offset) < 1000 => {
-                        debug!(logger, "Use pre-spawned decoder: small ahead");
-                        receiver
-                    }
-
                     _ => match audio_codec_service
                         .spawn_audio_decoder(&current_track.url, &current_track.offset)
                     {
@@ -210,6 +207,9 @@ pub async fn listen_by_channel_id(
                     &mut restart_signal_rx,
                 )
                 .await;
+
+                debug!(logger, "Sleep if necessary...");
+                actix_rt::time::sleep_until(should_finish_at).await;
 
                 restart_registry
                     .unregister_restart_sender(&channel_id, uuid)

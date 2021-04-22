@@ -85,7 +85,7 @@ impl AudioCodecService {
             }
         };
 
-        debug!(self.logger, "Audio decoder spawned");
+        debug!(self.logger, "Audio decoder spawned"; "url" => url, "offset" => offset);
 
         let status = process.status();
 

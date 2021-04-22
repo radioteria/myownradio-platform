@@ -16,6 +16,8 @@ use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use crate::restart_registry::RestartRegistry;
+use futures::lock::Mutex;
+use futures_lite::StreamExt;
 
 const TIME_PREFETCH: Duration = Duration::from_secs(3);
 const DECODED_AUDIO_BYTES_PER_SECOND: usize = 176400;
@@ -122,6 +124,9 @@ pub async fn listen_by_channel_id(
         async move {
             metrics.inc_streaming_in_progress();
 
+            let next_track_receiver: Arc<Mutex<Option<mpsc::Receiver<_>>>> =
+                Arc::new(Mutex::new(None));
+
             loop {
                 let (restart_signal_tx, mut restart_signal_rx) = oneshot::channel();
 
@@ -143,16 +148,37 @@ pub async fn listen_by_channel_id(
                     }
                 };
 
-                let mut dec_receiver = match audio_codec_service.spawn_audio_decoder(
-                    &now_playing.current_track.url,
-                    &now_playing.current_track.offset,
-                ) {
-                    Ok(receiver) => receiver,
-                    Err(error) => {
-                        error!(logger, "Unable to decode audio file"; "error" => ?error);
-                        break;
-                    }
+                let mut dec_receiver = match next_track_receiver.lock().await.take() {
+                    Some(receiver) if now_playing.current_track.offset < 1000 => receiver,
+                    _ => match audio_codec_service.spawn_audio_decoder(
+                        &now_playing.current_track.url,
+                        &now_playing.current_track.offset,
+                    ) {
+                        Ok(receiver) => receiver,
+                        Err(error) => {
+                            error!(logger, "Unable to decode audio file"; "error" => ?error);
+                            break;
+                        }
+                    },
                 };
+
+                actix_rt::spawn({
+                    let logger = logger.clone();
+                    let next_track_url = now_playing.next_track.url.clone();
+                    let next_track_receiver = next_track_receiver.clone();
+                    let audio_codec_service = audio_codec_service.clone();
+
+                    async move {
+                        match audio_codec_service.spawn_audio_decoder(&next_track_url, &0) {
+                            Ok(receiver) => {
+                                next_track_receiver.lock().await.replace(receiver);
+                            }
+                            Err(error) => {
+                                error!(logger, "Unable to decode next audio file"; "error" => ?error);
+                            }
+                        };
+                    }
+                });
 
                 if is_icy_enabled {
                     let metadata = format!("StreamTitle='{}';", &now_playing.current_track.title);

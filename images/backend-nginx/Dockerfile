@@ -13,7 +13,7 @@ COPY . ./
 RUN npm run build
 
 
-FROM myownradio/backend-nginx-base:1.0.1
+FROM myownradio/backend-nginx-base:1.0.2
 
 WORKDIR /code
 

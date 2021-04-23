@@ -1,6 +1,6 @@
 [package]
 name = "radio-streamer"
-version = "0.1.16"
+version = "0.1.17"
 authors = ["Roman Lakhtadyr <roman.lakhtadyr@gmail.com>"]
 edition = "2018"
 
@@ -9,7 +9,6 @@ actix-rt = "2.1.0"
 awc = "3.0.0-beta.3"
 serde_json = "1.0.60"
 slog-json = "2.3.0"
-slog = "2.7.0"
 envy = "0.4.2"
 futures = "0.3.13"
 futures-lite = "1.11.3"
@@ -18,9 +17,13 @@ async-process = "1.0.2"
 bytebuffer = "0.2.1"
 serde_millis = "0.1.1"
 
+[dependencies.slog]
+version = "2.7.0"
+features = ["max_level_debug", "release_max_level_debug"]
+
 [dependencies.actix-web]
 version = "4.0.0-beta.4"
-features=["rustls"]
+features = ["rustls"]
 
 [dependencies.uuid]
 version = "0.8.2"

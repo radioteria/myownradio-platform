@@ -208,17 +208,19 @@ pub async fn listen_by_channel_id(
                 )
                 .await;
 
-                debug!(logger, "Sleep if necessary...");
-                actix_rt::time::sleep_until(should_finish_at).await;
-
                 restart_registry
                     .unregister_restart_sender(&channel_id, uuid)
                     .await;
 
-                if let Err(error) = result {
-                    error!(logger, "Unable to pipe bytes"; "error" => ?error);
-
-                    break;
+                match result {
+                    Ok(()) => {
+                        debug!(logger, "Sleep if necessary...");
+                        actix_rt::time::sleep_until(should_finish_at).await;
+                    }
+                    Err(error) => {
+                        error!(logger, "Unable to pipe bytes"; "error" => ?error);
+                        break;
+                    }
                 }
             }
 

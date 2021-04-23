@@ -33,6 +33,8 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[actix_rt::main]
 async fn main() -> Result<()> {
+    let mut terminate = unix::signal(unix::SignalKind::terminate())?;
+    let mut interrupt = unix::signal(unix::SignalKind::interrupt())?;
     let mut user_defined1 = unix::signal(unix::SignalKind::user_defined1())?;
 
     let config = Arc::new(Config::from_env());
@@ -113,13 +115,17 @@ async fn main() -> Result<()> {
 
     info!(logger, "Application started");
 
-    user_defined1.recv().await;
+    interrupt
+        .recv()
+        .or(terminate.recv())
+        .or(user_defined1.recv())
+        .await;
 
-    info!(logger, "Received USR1 signal");
+    info!(logger, "Received signal");
 
     server.stop(true).await;
 
-    info!(logger, "Server gracefully stopped");
+    info!(logger, "Server stopped");
 
     Ok(())
 }

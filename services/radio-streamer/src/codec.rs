@@ -107,6 +107,8 @@ impl AudioCodecService {
                     };
                 }
 
+                drop(stdout);
+
                 if let Ok(exit_status) = status.await {
                     debug!(logger, "End of stream"; "exit_code" => exit_status.code());
                 }

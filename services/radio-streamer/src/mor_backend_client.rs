@@ -1,27 +1,32 @@
+extern crate serde_millis;
 use actix_web::http::StatusCode;
 use awc::Client;
 use serde::{Deserialize, Serialize};
 use slog::{error, Logger};
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 #[derive(Deserialize, Debug, Serialize)]
 pub struct CurrentTrack {
-    pub offset: usize,
+    #[serde(with = "serde_millis")]
+    pub offset: Duration,
     pub title: String,
     pub url: String,
-    pub duration: usize,
+    #[serde(with = "serde_millis")]
+    pub duration: Duration,
 }
 
 #[derive(Deserialize, Debug, Serialize)]
 pub struct NextTrack {
     pub title: String,
     pub url: String,
-    pub duration: usize,
+    #[serde(with = "serde_millis")]
+    pub duration: Duration,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct NowPlaying {
-    pub time: usize,
+    #[serde(with = "serde_millis")]
+    pub time: SystemTime,
     pub playlist_position: usize,
     pub current_track: CurrentTrack,
     pub next_track: NextTrack,

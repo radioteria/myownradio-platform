@@ -11,7 +11,9 @@ use slog::{debug, error, Logger};
 use crate::audio_formats::AudioFormats;
 use crate::codec::AudioCodecService;
 use crate::config::Config;
-use crate::constants::{PREFETCH_TIME, RAW_AUDIO_STEREO_BYTE_RATE};
+use crate::constants::{
+    ALLOWED_DELAY_FOR_PRE_SPAWNED_DECODER, PREFETCH_TIME, RAW_AUDIO_STEREO_BYTE_RATE,
+};
 use crate::helpers::io::{pipe_channel_with_cancel, spawn_pipe_channel, throttled_channel};
 use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::metrics::Metrics;
@@ -150,11 +152,12 @@ pub async fn listen_by_channel_id(
                 let current_track = now_playing.current_track;
                 let next_track = now_playing.next_track;
                 let current_track_left = current_track.duration - current_track.offset;
-                let should_finish_at =
-                    Instant::now() + Duration::from_millis(current_track_left as u64);
+                let should_finish_at = Instant::now() + current_track_left;
 
                 let mut dec_receiver = match next_track_receiver.lock().await.take() {
-                    Some(receiver) if current_track.offset < 1000 => {
+                    Some(receiver)
+                        if current_track.offset < ALLOWED_DELAY_FOR_PRE_SPAWNED_DECODER =>
+                    {
                         debug!(logger, "Use pre-spawned decoder");
                         receiver
                     }
@@ -176,7 +179,9 @@ pub async fn listen_by_channel_id(
                     let audio_codec_service = audio_codec_service.clone();
 
                     async move {
-                        match audio_codec_service.spawn_audio_decoder(&next_track_url, &0) {
+                        match audio_codec_service
+                            .spawn_audio_decoder(&next_track_url, &Duration::default())
+                        {
                             Ok(receiver) => {
                                 next_track_receiver.lock().await.replace(receiver);
                             }

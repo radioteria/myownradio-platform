@@ -9,20 +9,22 @@ use std::cmp::max;
 use std::time::{Duration, Instant};
 
 const THROTTLE_DURATION_MS: Duration = Duration::from_millis(50);
+const READ_FROM_STDOUT_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub async fn read_from_stdout<'a>(
     stdout: &'a mut ChildStdout,
     read_buffer: &'a mut Vec<u8>,
 ) -> Option<Result<Bytes, Error>> {
-    match stdout.read(read_buffer).await {
-        Ok(read_bytes) => {
+    match actix_rt::time::timeout(READ_FROM_STDOUT_TIMEOUT, stdout.read(read_buffer)).await {
+        Ok(Ok(read_bytes)) => {
             if read_bytes == 0 {
                 return None;
             }
 
             Some(Ok(Bytes::copy_from_slice(&read_buffer[..read_bytes])))
         }
-        Err(error) => Some(Err(Error::from(error))),
+        Ok(Err(error)) => Some(Err(Error::from(error))),
+        Err(_) => Some(Err(Error::from(ErrorKind::TimedOut))),
     }
 }
 

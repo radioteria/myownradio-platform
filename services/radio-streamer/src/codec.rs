@@ -8,6 +8,7 @@ use slog::{debug, error, Logger};
 use crate::audio_formats::AudioFormat;
 use crate::constants::RAW_AUDIO_STEREO_BYTE_RATE;
 use crate::helpers::io::{read_from_stdout, write_to_stdin};
+use std::time::Duration;
 
 const STDIO_BUFFER_SIZE: usize = 4096;
 
@@ -39,17 +40,11 @@ impl AudioCodecService {
     pub fn spawn_audio_decoder(
         &self,
         url: &str,
-        offset: &usize,
+        offset: &Duration,
     ) -> Result<mpsc::Receiver<Result<Bytes, io::Error>>, AudioCodecError> {
         let (sender, receiver) = mpsc::channel(DECODER_CHANNEL_BUFFER);
 
         debug!(self.logger, "Spawning audio decoder...");
-
-        let offset_string = {
-            let offset_seconds = *offset as f32 / 1000.0;
-
-            format!("{:.4}", offset_seconds)
-        };
 
         let mut process = match Command::new(&self.path_to_ffmpeg)
             .args(&[
@@ -57,7 +52,7 @@ impl AudioCodecService {
                 "quiet",
                 "-hide_banner",
                 "-ss",
-                &offset_string,
+                &format!("{:.4}", offset.as_secs()),
                 "-i",
                 &url,
                 "-vn",
@@ -85,7 +80,7 @@ impl AudioCodecService {
             }
         };
 
-        debug!(self.logger, "Audio decoder spawned"; "url" => url, "offset" => offset);
+        debug!(self.logger, "Audio decoder spawned"; "url" => url, "offset" => ?offset);
 
         let status = process.status();
 

@@ -6,6 +6,8 @@ use std::time::Duration;
 
 #[derive(Clone)]
 pub struct Metrics {
+    spawned_decoder_processes: Gauge,
+    spawned_encoder_processes: Gauge,
     streaming_in_progress: Gauge,
     prometheus_registry: Registry,
     http_requests_total: IntCounterVec,
@@ -14,6 +16,18 @@ pub struct Metrics {
 
 impl Metrics {
     pub fn new() -> Self {
+        let spawned_decoder_processes = Gauge::with_opts(Opts::new(
+            "spawned_decoder_processes",
+            "Number of spawned decoder processes",
+        ))
+        .unwrap();
+
+        let spawned_encoder_processes = Gauge::with_opts(Opts::new(
+            "spawned_encoder_processes",
+            "Number of spawned encoder processes",
+        ))
+        .unwrap();
+
         let streaming_in_progress = Gauge::with_opts(Opts::new(
             "streaming_in_progress",
             "Number of streaming currently in progress",
@@ -56,6 +70,12 @@ impl Metrics {
         }
 
         prometheus_registry
+            .register(Box::new(spawned_decoder_processes.clone()))
+            .unwrap();
+        prometheus_registry
+            .register(Box::new(spawned_encoder_processes.clone()))
+            .unwrap();
+        prometheus_registry
             .register(Box::new(streaming_in_progress.clone()))
             .unwrap();
         prometheus_registry
@@ -66,11 +86,29 @@ impl Metrics {
             .unwrap();
 
         Self {
+            spawned_decoder_processes,
+            spawned_encoder_processes,
             streaming_in_progress,
             prometheus_registry,
             http_requests_total,
             http_requests_duration_seconds,
         }
+    }
+
+    pub fn inc_spawned_decoder_processes(&self) {
+        self.spawned_decoder_processes.inc()
+    }
+
+    pub fn dec_spawned_decoder_processes(&self) {
+        self.spawned_decoder_processes.dec()
+    }
+
+    pub fn inc_spawned_encoder_processes(&self) {
+        self.spawned_encoder_processes.inc()
+    }
+
+    pub fn dec_spawned_encoder_processes(&self) {
+        self.spawned_encoder_processes.dec()
     }
 
     pub fn inc_streaming_in_progress(&self) {

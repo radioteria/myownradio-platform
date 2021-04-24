@@ -8,6 +8,8 @@ use slog::{debug, error, Logger};
 use crate::audio_formats::AudioFormat;
 use crate::constants::RAW_AUDIO_STEREO_BYTE_RATE;
 use crate::helpers::io::{read_from_stdout, write_to_stdin};
+use crate::metrics::Metrics;
+use std::sync::Arc;
 use std::time::Duration;
 
 const STDIO_BUFFER_SIZE: usize = 4096;
@@ -26,13 +28,15 @@ pub enum AudioCodecError {
 pub struct AudioCodecService {
     path_to_ffmpeg: String,
     logger: Logger,
+    metrics: Arc<Metrics>,
 }
 
 impl AudioCodecService {
-    pub fn new(path_to_ffmpeg: &str, logger: &Logger) -> Self {
+    pub fn new(path_to_ffmpeg: &str, logger: Logger, metrics: Arc<Metrics>) -> Self {
         AudioCodecService {
-            path_to_ffmpeg: path_to_ffmpeg.to_string(),
-            logger: logger.clone(),
+            path_to_ffmpeg: path_to_ffmpeg.to_owned(),
+            logger,
+            metrics,
         }
     }
 
@@ -93,24 +97,31 @@ impl AudioCodecService {
         };
 
         actix_rt::spawn({
-            let mut stdout = stdout;
             let mut sender = sender;
 
+            let stdout = stdout;
             let logger = self.logger.clone();
+            let metrics = self.metrics.clone();
 
             async move {
-                let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
-                while let Some(result) = read_from_stdout(&mut stdout, &mut buffer).await {
-                    if let Err(error) = sender.send(result).await {
-                        error!(logger, "Unable to send data to sender from decoder"; "error" => ?error);
-                        break;
-                    };
+                metrics.inc_spawned_decoder_processes();
+
+                {
+                    let mut stdout = stdout;
+                    let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
+
+                    while let Some(result) = read_from_stdout(&mut stdout, &mut buffer).await {
+                        if let Err(error) = sender.send(result).await {
+                            error!(logger, "Unable to send data to sender from decoder"; "error" => ?error);
+                            break;
+                        };
+                    }
                 }
 
-                drop(stdout);
+                metrics.dec_spawned_decoder_processes();
 
                 if let Ok(exit_status) = status.await {
-                    debug!(logger, "End of stream"; "exit_code" => exit_status.code());
+                    debug!(logger, "Audio decoder exited"; "exit_code" => exit_status.code());
                 }
             }
         });
@@ -233,8 +244,10 @@ impl AudioCodecService {
             let mut output_sender = output_sender;
 
             let logger = self.logger.clone();
+            let metrics = self.metrics.clone();
 
             async move {
+                metrics.inc_spawned_encoder_processes();
                 let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
                 while let Some(result) = read_from_stdout(&mut stdout, &mut buffer).await {
                     if let Err(error) = output_sender.send(result).await {
@@ -242,6 +255,7 @@ impl AudioCodecService {
                         break;
                     };
                 }
+                metrics.dec_spawned_encoder_processes();
                 let _ = term_signal.send(());
             }
         });

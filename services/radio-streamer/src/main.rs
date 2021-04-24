@@ -53,11 +53,12 @@ async fn main() -> Result<()> {
         &config.mor_backend_url,
         &logger.new(o!("scope" => "MorBackendClient")),
     ));
+    let metrics = Arc::new(Metrics::new());
     let audio_codec_service = Arc::new(AudioCodecService::new(
         &config.path_to_ffmpeg,
-        &logger.new(o!("scope" => "AudioCodecService")),
+        logger.new(o!("scope" => "AudioCodecService")),
+        metrics.clone(),
     ));
-    let metrics = Arc::new(Metrics::new());
     let restart_registry = Arc::new(RestartRegistry::new(
         logger.new(o!("scope" => "RestartRegistry")),
     ));

@@ -21,7 +21,6 @@ use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use crate::restart_registry::RestartRegistry;
 use actix_rt::time::Instant;
 use futures::lock::Mutex;
-use futures_lite::StreamExt;
 
 #[get("/streams")]
 pub async fn get_active_streams(restart_registry: Data<Arc<RestartRegistry>>) -> impl Responder {
@@ -122,15 +121,13 @@ pub async fn listen_by_channel_id(
         let client_id = client_id.clone();
         let logger = logger.clone();
 
+        let mut track_a: Arc<Mutex<_>> = Arc::new(Mutex::new(None));
+        let mut track_b: Arc<Mutex<_>> = Arc::new(Mutex::new(None));
+
         async move {
             metrics.inc_streaming_in_progress();
 
-            let next_track_receiver: Arc<Mutex<Option<mpsc::Receiver<_>>>> =
-                Arc::new(Mutex::new(None));
-
             loop {
-                let (restart_signal_tx, mut restart_signal_rx) = oneshot::channel();
-
                 let now_playing = match mor_backend_client
                     .get_now_playing(&channel_id, client_id.clone(), &PREFETCH_TIME)
                     .await
@@ -149,48 +146,45 @@ pub async fn listen_by_channel_id(
                     }
                 };
 
+                let (restart_signal_tx, mut restart_signal_rx) = oneshot::channel();
+
                 let current_track = now_playing.current_track;
                 let next_track = now_playing.next_track;
+
                 let current_track_left = current_track.duration - current_track.offset;
                 let should_finish_at = Instant::now() + current_track_left;
 
-                let mut dec_receiver = match next_track_receiver.lock().await.take() {
-                    Some(receiver)
-                        if current_track.offset < ALLOWED_DELAY_FOR_PRE_SPAWNED_DECODER =>
-                    {
-                        debug!(logger, "Use pre-spawned decoder");
-                        receiver
-                    }
-                    _ => match audio_codec_service
-                        .spawn_audio_decoder(&current_track.url, &current_track.offset)
-                    {
-                        Ok(receiver) => receiver,
-                        Err(error) => {
-                            error!(logger, "Unable to decode audio file"; "error" => ?error);
-                            break;
-                        }
-                    },
-                };
-
-                actix_rt::spawn({
-                    let logger = logger.clone();
-                    let next_track_url = next_track.url.clone();
-                    let next_track_receiver = next_track_receiver.clone();
-                    let audio_codec_service = audio_codec_service.clone();
-
-                    async move {
-                        match audio_codec_service
-                            .spawn_audio_decoder(&next_track_url, &Duration::default())
+                {
+                    let mut track_a_guard = track_a.lock().await;
+                    match track_b.lock().await.take() {
+                        Some(receiver)
+                            if current_track.offset < ALLOWED_DELAY_FOR_PRE_SPAWNED_DECODER =>
                         {
-                            Ok(receiver) => {
-                                next_track_receiver.lock().await.replace(receiver);
+                            track_a_guard.replace(receiver);
+                        }
+                        _ => {
+                            match audio_codec_service
+                                .spawn_audio_decoder(&current_track.url, &current_track.offset)
+                            {
+                                Ok(receiver) => {
+                                    track_a_guard.replace(receiver);
+                                }
+                                Err(error) => {}
                             }
-                            Err(error) => {
-                                error!(logger, "Unable to decode next audio file"; "error" => ?error);
-                            }
-                        };
+                        }
                     }
-                });
+                }
+
+                match audio_codec_service.spawn_audio_decoder(&next_track.url, &Duration::default())
+                {
+                    Ok(receiver) => {
+                        track_b.lock().await.replace(receiver);
+                    }
+                    Err(error) => {
+                        error!(logger, "Unable to spawn next track decoder"; "error" => ?error);
+                        break;
+                    }
+                }
 
                 if is_icy_enabled {
                     let metadata = format!("StreamTitle='{}';", &current_track.title);
@@ -206,8 +200,14 @@ pub async fn listen_by_channel_id(
                     .register_restart_sender(&channel_id, restart_signal_tx)
                     .await;
 
+                let mut track_receiver = track_a
+                    .lock()
+                    .await
+                    .take()
+                    .expect("Unable to take track receiver");
+
                 let result = pipe_channel_with_cancel(
-                    &mut dec_receiver,
+                    &mut track_receiver,
                     &mut thr_sender,
                     &mut restart_signal_rx,
                 )

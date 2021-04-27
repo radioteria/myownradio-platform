@@ -1,12 +1,14 @@
+use actix_rt::time::Instant;
 use actix_web::web::Bytes;
 use async_process::{ChildStdin, ChildStdout};
+use futures::channel::oneshot::Canceled;
 use futures::channel::{mpsc, oneshot};
 use futures::io::{Error, ErrorKind};
 use futures::{AsyncReadExt, AsyncWriteExt, SinkExt, StreamExt};
 use futures_lite::FutureExt;
 use slog::{error, Logger};
 use std::cmp::max;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 const THROTTLE_DURATION_MS: Duration = Duration::from_millis(50);
 const READ_FROM_STDOUT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -81,6 +83,19 @@ pub async fn pipe_channel_with_cancel<'a>(
             .await
             .map_err(|canceled| PipeChannelError::CancelError(canceled))
     };
+
+    pipe_future.or(cancel_future).await
+}
+
+pub async fn sleep_until_deadline(
+    deadline: Instant,
+    cancel_receiver: &mut oneshot::Receiver<()>,
+) -> Result<(), Canceled> {
+    let pipe_future = async {
+        actix_rt::time::sleep_until(deadline).await;
+    };
+
+    let cancel_future = async { cancel_receiver.await };
 
     pipe_future.or(cancel_future).await
 }

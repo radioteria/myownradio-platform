@@ -6,21 +6,25 @@ use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, TryStreamExt};
 use serde::Deserialize;
-use slog::{debug, error, Logger};
+use slog::{debug, error, warn, Logger};
 
 use crate::audio_formats::AudioFormats;
 use crate::codec::AudioCodecService;
 use crate::config::Config;
 use crate::constants::{
-    ALLOWED_DELAY_FOR_PRE_SPAWNED_DECODER, PREFETCH_TIME, RAW_AUDIO_STEREO_BYTE_RATE,
+    ALLOWED_DELAY_FOR_PRE_SPAWNED_RECEIVER, PREFETCH_TIME, RAW_AUDIO_STEREO_BYTE_RATE,
 };
-use crate::helpers::io::{pipe_channel_with_cancel, spawn_pipe_channel, throttled_channel};
+use crate::helpers::io::{
+    pipe_channel_with_cancel, sleep_until_deadline, spawn_pipe_channel, throttled_channel,
+    PipeChannelError,
+};
 use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use crate::restart_registry::RestartRegistry;
 use actix_rt::time::Instant;
 use futures::lock::Mutex;
+use futures_lite::StreamExt;
 
 #[get("/streams")]
 pub async fn get_active_streams(restart_registry: Data<Arc<RestartRegistry>>) -> impl Responder {
@@ -124,6 +128,8 @@ pub async fn listen_by_channel_id(
         let mut track_a: Arc<Mutex<_>> = Arc::new(Mutex::new(None));
         let mut track_b: Arc<Mutex<_>> = Arc::new(Mutex::new(None));
 
+        let mut pre_spawned_receiver: Arc<Mutex<_>> = Arc::new(Mutex::new(None));
+
         async move {
             metrics.inc_streaming_in_progress();
 
@@ -154,31 +160,29 @@ pub async fn listen_by_channel_id(
                 let current_track_left = current_track.duration - current_track.offset;
                 let should_finish_at = Instant::now() + current_track_left;
 
-                {
-                    let mut track_a_guard = track_a.lock().await;
-                    match track_b.lock().await.take() {
-                        Some(receiver)
-                            if current_track.offset < ALLOWED_DELAY_FOR_PRE_SPAWNED_DECODER =>
+                let current_track_receiver = match pre_spawned_receiver.lock().await.take() {
+                    Some(receiver)
+                        if current_track.offset < ALLOWED_DELAY_FOR_PRE_SPAWNED_RECEIVER =>
+                    {
+                        receiver
+                    }
+                    _ => {
+                        match audio_codec_service
+                            .spawn_audio_decoder(&current_track.url, &current_track.offset)
                         {
-                            track_a_guard.replace(receiver);
-                        }
-                        _ => {
-                            match audio_codec_service
-                                .spawn_audio_decoder(&current_track.url, &current_track.offset)
-                            {
-                                Ok(receiver) => {
-                                    track_a_guard.replace(receiver);
-                                }
-                                Err(error) => {}
+                            Ok(receiver) => receiver,
+                            Err(error) => {
+                                error!(logger, "Unable to spawn current track decoder"; "error" => ?error);
+                                break;
                             }
                         }
                     }
-                }
+                };
 
                 match audio_codec_service.spawn_audio_decoder(&next_track.url, &Duration::default())
                 {
                     Ok(receiver) => {
-                        track_b.lock().await.replace(receiver);
+                        pre_spawned_receiver.lock().await.replace(receiver);
                     }
                     Err(error) => {
                         error!(logger, "Unable to spawn next track decoder"; "error" => ?error);
@@ -213,16 +217,27 @@ pub async fn listen_by_channel_id(
                 )
                 .await;
 
+                if result.is_ok() {
+                    debug!(logger, "Sleep if necessary...");
+
+                    if let Err(error) =
+                        sleep_until_deadline(should_finish_at, &mut restart_signal_rx).await
+                    {
+                        warn!(logger, "Sleep cancelled");
+                    }
+                }
+
                 restart_registry
                     .unregister_restart_sender(&channel_id, uuid)
                     .await;
 
                 match result {
-                    Ok(()) => {
-                        debug!(logger, "Sleep if necessary...");
-                        actix_rt::time::sleep_until(should_finish_at).await;
+                    Ok(_) => (),
+                    Err(PipeChannelError::CancelError(_)) => {
+                        debug!(logger, "Received restart signal...");
+                        pre_spawned_receiver.lock().await.clear();
                     }
-                    Err(error) => {
+                    Err(PipeChannelError::SendError(error)) => {
                         error!(logger, "Unable to pipe bytes"; "error" => ?error);
                         break;
                     }

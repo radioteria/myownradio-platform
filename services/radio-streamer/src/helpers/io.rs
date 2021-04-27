@@ -91,13 +91,9 @@ pub async fn sleep_until_deadline(
     deadline: Instant,
     cancel_receiver: &mut oneshot::Receiver<()>,
 ) -> Result<(), Canceled> {
-    let pipe_future = async {
-        actix_rt::time::sleep_until(deadline).await;
-    };
+    let pipe_future = async { Ok(actix_rt::time::sleep_until(deadline).await) };
 
-    let cancel_future = async { cancel_receiver.await };
-
-    pipe_future.or(cancel_future).await
+    pipe_future.or(cancel_receiver).await
 }
 
 pub fn throttled_channel(

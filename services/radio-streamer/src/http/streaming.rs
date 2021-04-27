@@ -125,9 +125,6 @@ pub async fn listen_by_channel_id(
         let client_id = client_id.clone();
         let logger = logger.clone();
 
-        let mut track_a: Arc<Mutex<_>> = Arc::new(Mutex::new(None));
-        let mut track_b: Arc<Mutex<_>> = Arc::new(Mutex::new(None));
-
         let mut pre_spawned_receiver: Arc<Mutex<_>> = Arc::new(Mutex::new(None));
 
         async move {
@@ -160,7 +157,7 @@ pub async fn listen_by_channel_id(
                 let current_track_left = current_track.duration - current_track.offset;
                 let should_finish_at = Instant::now() + current_track_left;
 
-                let current_track_receiver = match pre_spawned_receiver.lock().await.take() {
+                let mut current_track_receiver = match pre_spawned_receiver.lock().await.take() {
                     Some(receiver)
                         if current_track.offset < ALLOWED_DELAY_FOR_PRE_SPAWNED_RECEIVER =>
                     {
@@ -204,14 +201,8 @@ pub async fn listen_by_channel_id(
                     .register_restart_sender(&channel_id, restart_signal_tx)
                     .await;
 
-                let mut track_receiver = track_a
-                    .lock()
-                    .await
-                    .take()
-                    .expect("Unable to take track receiver");
-
                 let result = pipe_channel_with_cancel(
-                    &mut track_receiver,
+                    &mut current_track_receiver,
                     &mut thr_sender,
                     &mut restart_signal_rx,
                 )
@@ -235,7 +226,7 @@ pub async fn listen_by_channel_id(
                     Ok(_) => (),
                     Err(PipeChannelError::CancelError(_)) => {
                         debug!(logger, "Received restart signal...");
-                        pre_spawned_receiver.lock().await.clear();
+                        pre_spawned_receiver.lock().await.take();
                     }
                     Err(PipeChannelError::SendError(error)) => {
                         error!(logger, "Unable to pipe bytes"; "error" => ?error);

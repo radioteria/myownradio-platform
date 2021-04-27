@@ -89,6 +89,8 @@ class Router implements SingletonInterface, Injectable
         $sub->addRoute("api/v1/stream/:stream_id/now", "api\\DoChannelNowPlayingV1");
         $sub->addRoute("api/v0/stream/:stream_id/info", "api\\DoChannelInfo");
 
+        $sub->addRoute("api/v1/scheduler/&stream_id/trackAt/&time", "api\\scheduler\\DoTrackAt");
+
         // Default route
         $sub->defaultRoute(function (Router $router) {
             http_response_code(404);

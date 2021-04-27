@@ -327,6 +327,62 @@ class Playlist implements SingletonInterface, Injectable
         ];
     }
 
+    public function getTrackAtTime(int $stream_id, int $time): array
+    {
+        /** @var StreamStats $stream */
+
+        $stream = StreamStats::getByFilter("sid = :id OR permalink = :id", [":id" => $stream_id])
+            ->getOrElseThrow(ControllerException::noStream($stream_id));
+
+        if ($stream->getStatus() == 0) {
+            throw ControllerException::noStream($stream_id);
+        }
+
+        if ($stream->getTracksDuration() == 0) {
+            throw ControllerException::of("Nothing playing");
+        }
+
+        $position = max(($time -
+                $stream->getStarted() +
+                $stream->getStartedFrom()) % $stream->getTracksDuration(), 0);
+
+        $query = $this->getStreamTracksPrefix();
+
+        $query->select("time_offset");
+
+        $query->where("time_offset + duration >= ?", [$position]);
+        $query->where("stream_id", $stream->getID());
+
+        $query->limit(2);
+
+        $tracks = $query->fetchAll();
+
+        if (count($tracks) === 0) {
+            throw new ControllerException(sprintf("Nothing playing on stream '%s'", $id));
+        }
+
+        if (count($tracks) === 1) {
+            list($track) = $query->fetchAll();
+            $new_query = $this->getStreamTracksPrefix();
+            $new_query->where("stream_id", $stream->getID());
+            $next_track = $new_query->fetchOneRow()->get();
+        } else {
+            list($track, $next_track) = $query->fetchAll();
+        }
+
+        $track["caption"] = $track["artist"] . " - " . $track["title"];
+        $next_track["caption"] = $next_track["artist"] . " - " . $next_track["title"];
+
+        return [
+            'time' => System::time(),
+            'position' => $position,
+            'current' => $track,
+            'next' => $next_track,
+            'listeners_count' => $stream->getListenersCount(),
+            'bookmarks_count' => $stream->getBookmarksCount()
+        ];
+    }
+
     public function getSchedule($id)
     {
 

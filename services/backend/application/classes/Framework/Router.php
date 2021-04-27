@@ -26,167 +26,144 @@ use Tools\SingletonInterface;
 
 class Router implements SingletonInterface, Injectable
 {
+  use Singleton;
 
-    use Singleton;
+  /** @var CurrentRoute $currentRoute */
+  private $currentRoute;
 
-    /** @var CurrentRoute $currentRoute */
-    private $currentRoute;
+  function __construct()
+  {
+    $route = CurrentRoute::getInstance();
+    $this->currentRoute = $route;
 
+    $this->registerSubRoutes();
+  }
 
-    function __construct()
-    {
+  private function registerSubRoutes()
+  {
+    $sub = SubRouter::getInstance();
 
-        $route = CurrentRoute::getInstance();
-        $this->currentRoute = $route;
+    /* Public side routes register */
+    $sub->addRoute('content/application.modules.js', 'content\\DoGetJavascriptModules');
 
-        $this->registerSubRoutes();
+    /* Dashboard redirect */
+    $sub->addRouteRegExp("~^profile(\\/.+)*$~", 'content\\DoDashboard');
 
+    $sub->addRoutes(
+      [
+        'index',
+        'streams',
+        'bookmarks',
+        'login',
+        'recover',
+        'recover/:code',
+        'tag/:tag',
+        'signup',
+        'signup/:code',
+        'static/registrationLetterSent',
+        'static/registrationCompleted',
+        'static/resetLetterSent',
+        'static/resetPasswordCompleted',
+        'categories',
+      ],
+      'content\\DoDefaultTemplate'
+    );
+
+    $sub->addRoute('category/:category', 'helpers\\DoCategory');
+    $sub->addRoute('streams/:id', 'helpers\\DoStream');
+    $sub->addRoute('user/:id', 'helpers\\DoUser');
+    $sub->addRoute('search/:query', 'helpers\\DoSearch');
+    $sub->addRoute('subscribe', "api\\v3\\DoAcquire");
+
+    $sub->addRoute('content/streamcovers/:fn', 'content\\DoGetStreamCover');
+    $sub->addRoute('content/avatars/:fn', 'content\\DoGetUserAvatar');
+    $sub->addRoute('content/audio/&id', 'content\\DoGetPreviewAudio');
+    $sub->addRoute('content/m3u/:stream_id.m3u', 'content\\DoM3u');
+    $sub->addRoute('content/trackinfo/&id', 'content\\DoTrackExtraInfo');
+    $sub->addRoute('getchunk/:id', 'content\\DoGetChunk');
+    $sub->addRoute('flow', 'content\\DoGetAudioStream');
+
+    $sub->addRoute('api/v0/stream/:stream_id/now', 'api\\DoChannelNowPlaying');
+    $sub->addRoute('api/v1/stream/:stream_id/now', 'api\\DoChannelNowPlayingV1');
+    $sub->addRoute('api/v0/stream/:stream_id/info', 'api\\DoChannelInfo');
+
+    // @todo Move to external scheduler service
+    $sub->addRoute('api/v1/stream/:stream_id/current-track/&time', 'api\\statical\\DoCurrentTrack');
+
+    // Default route
+    $sub->defaultRoute(function (Router $router) {
+      http_response_code(404);
+      $router->callRoute('content\\DoDefaultTemplate');
+    });
+  }
+
+  public function callRoute($className)
+  {
+    $request = HttpRequest::getInstance();
+    $method = 'do' . ucfirst(strtolower($request->getMethod()));
+    $class = str_replace('/', '\\', CONTROLLERS_ROOT . $className);
+
+    // Reflect controller class
+    if (!class_exists($class, true)) {
+      return false;
     }
 
-    private function registerSubRoutes()
-    {
+    $reflection = new ReflectionClass($class);
 
+    // Check for valid reflector
+    if (!$reflection->implementsInterface('Framework\\Controller')) {
+      throw new View500Exception('Controller must implement Framework\\Controller interface');
+    }
+
+    $classInstance = $reflection->newInstance();
+
+    if (!method_exists($classInstance, $method)) {
+      throw new View501Exception();
+    }
+
+    Injector::getInstance()->call([$classInstance, $method]);
+
+    return true;
+  }
+
+  public function route()
+  {
+    try {
+      if (!$this->findRoute()) {
         $sub = SubRouter::getInstance();
+        $sub->goMatching($this->currentRoute->getLegacy());
+      }
 
-        /* Public side routes register */
-        $sub->addRoute("content/application.modules.js", "content\\DoGetJavascriptModules");
-
-        /* Dashboard redirect */
-        $sub->addRouteRegExp("~^profile(\\/.+)*$~", "content\\DoDashboard");
-
-        $sub->addRoutes([
-            "index",
-            "streams",
-            "bookmarks",
-            "login",
-            "recover",
-            "recover/:code",
-            "tag/:tag",
-            "signup",
-            "signup/:code",
-            "static/registrationLetterSent",
-            "static/registrationCompleted",
-            "static/resetLetterSent",
-            "static/resetPasswordCompleted",
-            "categories"
-        ], "content\\DoDefaultTemplate");
-
-        $sub->addRoute("category/:category", "helpers\\DoCategory");
-        $sub->addRoute("streams/:id", "helpers\\DoStream");
-        $sub->addRoute("user/:id", "helpers\\DoUser");
-        $sub->addRoute("search/:query", "helpers\\DoSearch");
-        $sub->addRoute("subscribe", "api\\v3\\DoAcquire");
-
-        $sub->addRoute("content/streamcovers/:fn", "content\\DoGetStreamCover");
-        $sub->addRoute("content/avatars/:fn", "content\\DoGetUserAvatar");
-        $sub->addRoute("content/audio/&id", "content\\DoGetPreviewAudio");
-        $sub->addRoute("content/m3u/:stream_id.m3u", "content\\DoM3u");
-        $sub->addRoute("content/trackinfo/&id", "content\\DoTrackExtraInfo");
-        $sub->addRoute("getchunk/:id", "content\\DoGetChunk");
-        $sub->addRoute("flow", "content\\DoGetAudioStream");
-
-        $sub->addRoute("api/v0/stream/:stream_id/now", "api\\DoChannelNowPlaying");
-        $sub->addRoute("api/v1/stream/:stream_id/now", "api\\DoChannelNowPlayingV1");
-        $sub->addRoute("api/v0/stream/:stream_id/info", "api\\DoChannelInfo");
-
-        $sub->addRoute("api/v1/scheduler/&stream_id/trackAt/&time", "api\\scheduler\\DoTrackAt");
-
-        // Default route
-        $sub->defaultRoute(function (Router $router) {
-            http_response_code(404);
-            $router->callRoute("content\\DoDefaultTemplate");
-        });
-
+      HttpSession::getInstance()->sendIfModified();
+    } catch (UnauthorizedException $e) {
+      $this->exceptionRouter($e);
+    } catch (ControllerException $e) {
+      $this->exceptionRouter($e);
+    } catch (ViewException $exception) {
+      $exception->render();
+      return;
     }
 
-    public function callRoute($className)
-    {
+    if (JsonResponse::hasInstance()) {
+      $response = JsonResponse::getInstance();
 
-
-        $request = HttpRequest::getInstance();
-        $method = "do" . ucfirst(strtolower($request->getMethod()));
-        $class = str_replace("/", "\\", CONTROLLERS_ROOT . $className);
-
-        // Reflect controller class
-        if (!class_exists($class, true)) {
-            return false;
-        }
-
-        $reflection = new ReflectionClass($class);
-
-        // Check for valid reflector
-        if (!$reflection->implementsInterface("Framework\\Controller")) {
-            throw new View500Exception("Controller must implement Framework\\Controller interface");
-        }
-
-        $classInstance = $reflection->newInstance();
-
-        if (!method_exists($classInstance, $method)) {
-            throw new View501Exception();
-        }
-
-        Injector::getInstance()->call([$classInstance, $method]);
-
-        return true;
-
+      callPrivateMethod($response, 'write');
     }
+  }
 
-    public function route()
-    {
+  private function findRoute()
+  {
+    return $this->callRoute($this->currentRoute->getRoute());
+  }
 
-        try {
+  private function exceptionRouter(ControllerException $exception)
+  {
+    $response = JsonResponse::getInstance();
 
-            if (!$this->findRoute()) {
-                $sub = SubRouter::getInstance();
-                $sub->goMatching($this->currentRoute->getLegacy());
-            }
+    $response->setMessage($exception->getMyMessage());
+    $response->setData($exception->getMyData());
+    $response->setCode($exception->getMyStatus());
 
-            HttpSession::getInstance()->sendIfModified();
-
-        } catch (UnauthorizedException $e) {
-
-            $this->exceptionRouter($e);
-
-        } catch (ControllerException $e) {
-
-            $this->exceptionRouter($e);
-
-        } catch (ViewException $exception) {
-
-            $exception->render();
-            return;
-
-        }
-
-        if (JsonResponse::hasInstance()) {
-
-            $response = JsonResponse::getInstance();
-
-            callPrivateMethod($response, "write");
-
-        }
-
-
-    }
-
-    private function findRoute()
-    {
-
-        return $this->callRoute($this->currentRoute->getRoute());
-
-    }
-
-    private function exceptionRouter(ControllerException $exception)
-    {
-
-        $response = JsonResponse::getInstance();
-
-        $response->setMessage($exception->getMyMessage());
-        $response->setData($exception->getMyData());
-        $response->setCode($exception->getMyStatus());
-
-        $response->setResponseCode($exception->getMyStatus());
-
-    }
-
+    $response->setResponseCode($exception->getMyStatus());
+  }
 }

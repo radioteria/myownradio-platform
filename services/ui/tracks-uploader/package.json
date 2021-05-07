@@ -11,7 +11,7 @@
     "build": "webpack --mode production ./src/index.ts"
   },
   "devDependencies": {
-    "@myownradio/io-contracts": "file:../contracts",
+    "@myownradio/ui-sdk": "file:../sdk",
     "@types/webpack": "^5.28.0",
     "@typescript-eslint/eslint-plugin": "^4.22.1",
     "@typescript-eslint/parser": "^4.22.1",

@@ -1,6 +1,6 @@
-import { UIModule } from '@myownradio/io-contracts'
+import { UIModule } from '@myownradio/ui-sdk'
 
-export class TracksUploader implements UIModule {
+export default class TracksUploader implements UIModule {
   public async mount(_: HTMLElement): Promise<void> {
     // @todo
   }
@@ -8,12 +8,4 @@ export class TracksUploader implements UIModule {
   public async unmount(_: HTMLElement): Promise<void> {
     // @todo
   }
-
-  public test(): string {
-    return 'World'
-  }
 }
-
-const t = new TracksUploader()
-
-console.log(`Hello, ${t.test()}!`)

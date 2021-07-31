@@ -24,7 +24,6 @@ use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use crate::restart_registry::RestartRegistry;
 use actix_rt::time::Instant;
 use futures::lock::Mutex;
-use futures_lite::StreamExt;
 
 #[get("/streams")]
 pub async fn get_active_streams(restart_registry: Data<Arc<RestartRegistry>>) -> impl Responder {

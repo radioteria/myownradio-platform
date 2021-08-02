@@ -28,15 +28,15 @@ pub struct ChannelPlayerFactory {
     backend_client: Arc<MorBackendClient>,
     audio_codec_service: Arc<AudioCodecService>,
     metrics: Arc<Metrics>,
-    logger: Arc<Logger>,
+    logger: Logger,
 }
 
 impl ChannelPlayerFactory {
-    pub fn create(
+    pub fn new(
         backend_client: Arc<MorBackendClient>,
         audio_codec_service: Arc<AudioCodecService>,
         metrics: Arc<Metrics>,
-        logger: Arc<Logger>,
+        logger: Logger,
     ) -> Self {
         ChannelPlayerFactory {
             backend_client,

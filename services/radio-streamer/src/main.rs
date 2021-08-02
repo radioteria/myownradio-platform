@@ -18,6 +18,7 @@ use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
 use crate::restart_registry::RestartRegistry;
 
+use crate::stream::channel_player_factory::ChannelPlayerFactory;
 use actix_rt::signal::unix;
 use actix_web::dev::Service;
 use actix_web::{App, HttpServer};
@@ -62,6 +63,12 @@ async fn main() -> Result<()> {
     let restart_registry = Arc::new(RestartRegistry::new(
         logger.new(o!("scope" => "RestartRegistry")),
     ));
+    let channel_player_factory = Arc::new(ChannelPlayerFactory::new(
+        mor_backend_client.clone(),
+        audio_codec_service.clone(),
+        metrics.clone(),
+        logger.new(o!("scope" => "ChannelPlayerFactory")),
+    ));
 
     info!(logger, "Starting application...");
 
@@ -104,6 +111,7 @@ async fn main() -> Result<()> {
                 .data(metrics.clone())
                 .data(audio_codec_service.clone())
                 .data(restart_registry.clone())
+                .data(channel_player_factory.clone())
                 .service(listen_by_channel_id)
                 .service(restart_by_channel_id)
                 .service(get_active_streams)

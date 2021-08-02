@@ -1,2 +1,2 @@
-mod channel_player_factory;
-mod channel_player_registry;
+pub mod channel_player_factory;
+pub mod channel_player_registry;

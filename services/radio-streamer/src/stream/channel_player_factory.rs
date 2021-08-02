@@ -24,15 +24,33 @@ pub struct ChannelPlayer {
     restart_sender: Arc<Mutex<Option<oneshot::Sender<()>>>>,
 }
 
-impl ChannelPlayer {
-    fn create(
-        channel_id: usize,
-        client_id: Option<String>,
+pub struct ChannelPlayerFactory {
+    backend_client: Arc<MorBackendClient>,
+    audio_codec_service: Arc<AudioCodecService>,
+    metrics: Arc<Metrics>,
+    logger: Arc<Logger>,
+}
+
+impl ChannelPlayerFactory {
+    pub fn create(
         backend_client: Arc<MorBackendClient>,
         audio_codec_service: Arc<AudioCodecService>,
         metrics: Arc<Metrics>,
         logger: Arc<Logger>,
     ) -> Self {
+        ChannelPlayerFactory {
+            backend_client,
+            audio_codec_service,
+            metrics,
+            logger,
+        }
+    }
+
+    pub fn create_channel_player(
+        &self,
+        channel_id: usize,
+        client_id: Option<String>,
+    ) -> ChannelPlayer {
         let (audio_sender, audio_receiver) = async_broadcast::broadcast(1);
         let (title_sender, title_receiver) = async_broadcast::broadcast(1);
 
@@ -45,7 +63,7 @@ impl ChannelPlayer {
         );
 
         actix_rt::spawn({
-            let logger = logger.clone();
+            let logger = self.logger.clone();
             let audio_sender = audio_sender.clone();
 
             let mut thr_receiver = thr_receiver;
@@ -61,8 +79,11 @@ impl ChannelPlayer {
         });
 
         actix_rt::spawn({
-            let logger = logger.clone();
+            let logger = self.logger.clone();
+            let metrics = self.metrics.clone();
             let restart_sender = restart_sender.clone();
+            let backend_client = self.backend_client.clone();
+            let audio_codec_service = self.audio_codec_service.clone();
 
             async move {
                 metrics.inc_streaming_in_progress();
@@ -72,10 +93,7 @@ impl ChannelPlayer {
                         .get_now_playing(&channel_id, client_id.clone(), &PREFETCH_TIME)
                         .await
                     {
-                        Ok(now_playing) => {
-                            debug!(logger, "Now playing: {:?}", &now_playing);
-                            now_playing
-                        }
+                        Ok(now_playing) => now_playing,
                         Err(MorBackendClientError::ChannelNotFound) => {
                             // Channel was deleted when streaming. Nothing special.
                             break;
@@ -136,8 +154,6 @@ impl ChannelPlayer {
                         error!(logger, "Unable to send track title"; "error" => ?error);
                     }
 
-                    // TODO Copy bytes from decoder to ChannelPlayer with throttle
-
                     let result = pipe_channel_with_cancel(
                         &mut current_track_receiver,
                         &mut thr_sender,
@@ -177,10 +193,12 @@ impl ChannelPlayer {
             restart_sender,
         }
     }
+}
 
+impl ChannelPlayer {
     pub async fn restart(&self) {
         if let Some(sender) = self.restart_sender.lock().await.take() {
-            sender.send(());
+            let _ = sender.send(());
         }
     }
 }

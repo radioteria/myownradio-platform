@@ -1,2 +1,2 @@
-mod decoder_registry;
-mod channel_player;
+mod channel_player_factory;
+mod channel_player_registry;

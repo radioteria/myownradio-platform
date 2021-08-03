@@ -35,4 +35,8 @@ impl ChannelPlayerRegistry {
     pub fn unregister_channel_player(&self, channel_key: &ChannelKey) {
         let _ = self.channels.lock().unwrap().remove(channel_key);
     }
+
+    pub fn get_channel_player(&self, channel_key: &ChannelKey) -> Option<Arc<ChannelPlayer>> {
+        self.channels.lock().unwrap().get(channel_key).cloned()
+    }
 }

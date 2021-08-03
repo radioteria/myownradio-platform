@@ -148,7 +148,7 @@ impl ChannelPlayerFactory {
                         }
                     }
 
-                    let title = format!("StreamTitle='{}';", &current_track.title);
+                    let title = current_track.title.clone();
 
                     if let Err(error) = title_sender.broadcast(title).await {
                         error!(logger, "Unable to send track title"; "error" => ?error);

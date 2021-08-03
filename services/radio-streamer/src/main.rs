@@ -1,4 +1,5 @@
 mod audio_formats;
+mod channel;
 mod codec;
 mod config;
 mod constants;
@@ -8,7 +9,6 @@ mod icy_metadata;
 mod metrics;
 mod mor_backend_client;
 mod restart_registry;
-mod stream;
 
 use crate::codec::AudioCodecService;
 use crate::config::Config;
@@ -18,7 +18,7 @@ use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
 use crate::restart_registry::RestartRegistry;
 
-use crate::stream::channel_player_factory::ChannelPlayerFactory;
+use crate::channel::channel_player_factory::ChannelPlayerFactory;
 use actix_rt::signal::unix;
 use actix_web::dev::Service;
 use actix_web::{App, HttpServer};

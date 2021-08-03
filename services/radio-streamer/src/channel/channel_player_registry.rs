@@ -1,7 +1,7 @@
+use crate::channel::channel_player_factory::ChannelPlayer;
 use crate::codec::AudioCodecService;
 use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
-use crate::stream::channel_player_factory::ChannelPlayer;
 use slog::Logger;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};

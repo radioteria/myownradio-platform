@@ -9,6 +9,7 @@ use serde::Deserialize;
 use slog::{debug, error, warn, Logger};
 
 use crate::audio_formats::AudioFormats;
+use crate::channel::channel_player_factory::ChannelPlayerFactory;
 use crate::codec::AudioCodecService;
 use crate::config::Config;
 use crate::constants::{
@@ -22,7 +23,6 @@ use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use crate::restart_registry::RestartRegistry;
-use crate::stream::channel_player_factory::ChannelPlayerFactory;
 use actix_rt::time::Instant;
 use futures::lock::Mutex;
 use futures_lite::StreamExt;

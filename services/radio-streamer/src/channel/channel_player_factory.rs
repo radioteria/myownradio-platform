@@ -8,7 +8,6 @@ use slog::{debug, error, warn, Logger};
 use std::sync::Arc;
 use std::time::Duration;
 
-use crate::codec::AudioCodecService;
 use crate::constants::{
     ALLOWED_DELAY_FOR_PRE_SPAWNED_RECEIVER, PREFETCH_TIME, RAW_AUDIO_STEREO_BYTE_RATE,
 };
@@ -17,6 +16,7 @@ use crate::helpers::io::{
 };
 use crate::metrics::Metrics;
 use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
+use crate::transcoder::TranscoderService;
 
 pub struct ChannelPlayer {
     pub audio_receiver: async_broadcast::Receiver<Bytes>,
@@ -26,7 +26,7 @@ pub struct ChannelPlayer {
 
 pub struct ChannelPlayerFactory {
     backend_client: Arc<MorBackendClient>,
-    audio_codec_service: Arc<AudioCodecService>,
+    transcoder: Arc<TranscoderService>,
     metrics: Arc<Metrics>,
     logger: Logger,
 }
@@ -34,13 +34,13 @@ pub struct ChannelPlayerFactory {
 impl ChannelPlayerFactory {
     pub fn new(
         backend_client: Arc<MorBackendClient>,
-        audio_codec_service: Arc<AudioCodecService>,
+        audio_codec_service: Arc<TranscoderService>,
         metrics: Arc<Metrics>,
         logger: Logger,
     ) -> Self {
         ChannelPlayerFactory {
             backend_client,
-            audio_codec_service,
+            transcoder: audio_codec_service,
             metrics,
             logger,
         }
@@ -83,7 +83,7 @@ impl ChannelPlayerFactory {
             let metrics = self.metrics.clone();
             let restart_sender = restart_sender.clone();
             let backend_client = self.backend_client.clone();
-            let audio_codec_service = self.audio_codec_service.clone();
+            let audio_codec_service = self.transcoder.clone();
 
             async move {
                 metrics.inc_streaming_in_progress();
@@ -125,7 +125,7 @@ impl ChannelPlayerFactory {
 
                         _ => {
                             match audio_codec_service
-                                .spawn_audio_decoder(&current_track.url, &current_track.offset)
+                                .decoder(&current_track.url, &current_track.offset)
                             {
                                 Ok(receiver) => receiver,
                                 Err(error) => {
@@ -136,9 +136,7 @@ impl ChannelPlayerFactory {
                         }
                     };
 
-                    match audio_codec_service
-                        .spawn_audio_decoder(&next_track.url, &Duration::default())
-                    {
+                    match audio_codec_service.decoder(&next_track.url, &Duration::default()) {
                         Ok(receiver) => {
                             pre_spawned_receiver.lock().await.replace(receiver);
                         }

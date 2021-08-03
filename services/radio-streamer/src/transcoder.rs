@@ -18,37 +18,37 @@ const STDIO_BUFFER_SIZE: usize = 4096;
 const DECODER_CHANNEL_BUFFER: usize = 5 * (RAW_AUDIO_STEREO_BYTE_RATE / STDIO_BUFFER_SIZE);
 
 #[derive(Debug)]
-pub enum AudioCodecError {
+pub enum TranscoderError {
     ProcessError,
     StdoutUnavailable,
     StdinUnavailable,
     StderrUnavailable,
 }
 
-pub struct AudioCodecService {
+pub struct TranscoderService {
     path_to_ffmpeg: String,
     logger: Logger,
     metrics: Arc<Metrics>,
 }
 
-impl AudioCodecService {
+impl TranscoderService {
     pub fn new(path_to_ffmpeg: &str, logger: Logger, metrics: Arc<Metrics>) -> Self {
-        AudioCodecService {
-            path_to_ffmpeg: path_to_ffmpeg.to_owned(),
+        let path_to_ffmpeg = path_to_ffmpeg.to_owned();
+
+        TranscoderService {
+            path_to_ffmpeg,
             logger,
             metrics,
         }
     }
 
     // TODO Whitelist supported formats.
-    pub fn spawn_audio_decoder(
+    pub fn decoder(
         &self,
         url: &str,
         offset: &Duration,
-    ) -> Result<mpsc::Receiver<Result<Bytes, io::Error>>, AudioCodecError> {
+    ) -> Result<mpsc::Receiver<Result<Bytes, io::Error>>, TranscoderError> {
         let (sender, receiver) = mpsc::channel(DECODER_CHANNEL_BUFFER);
-
-        debug!(self.logger, "Spawning audio decoder...");
 
         let mut process = match Command::new(&self.path_to_ffmpeg)
             .args(&[
@@ -79,20 +79,21 @@ impl AudioCodecService {
         {
             Ok(process) => process,
             Err(error) => {
-                error!(self.logger, "Unable to start process"; "error" => ?error);
-                return Err(AudioCodecError::ProcessError);
+                error!(self.logger, "Unable to start decoder process: error occurred"; "error" => ?error);
+                return Err(TranscoderError::ProcessError);
             }
         };
-
-        debug!(self.logger, "Audio decoder spawned"; "url" => url, "offset" => ?offset);
 
         let status = process.status();
 
         let stdout = match process.stdout {
             Some(stdout) => stdout,
             None => {
-                error!(self.logger, "Stdout is not available");
-                return Err(AudioCodecError::StdoutUnavailable);
+                error!(
+                    self.logger,
+                    "Unable to start decoder process: stdout is not available"
+                );
+                return Err(TranscoderError::StdoutUnavailable);
             }
         };
 
@@ -112,7 +113,7 @@ impl AudioCodecService {
 
                     while let Some(result) = read_from_stdout(&mut stdout, &mut buffer).await {
                         if let Err(error) = sender.send(result).await {
-                            error!(logger, "Unable to send data to sender from decoder"; "error" => ?error);
+                            error!(logger, "Unable to send data from decoder: I/O error"; "error" => ?error);
                             break;
                         };
                     }
@@ -121,7 +122,7 @@ impl AudioCodecService {
                 metrics.dec_spawned_decoder_processes();
 
                 if let Ok(exit_status) = status.await {
-                    debug!(logger, "Audio decoder exited"; "exit_code" => exit_status.code());
+                    debug!(logger, "Audio decoder closed"; "exit_code" => exit_status.code());
                 }
             }
         });
@@ -129,7 +130,7 @@ impl AudioCodecService {
         Ok(receiver)
     }
 
-    pub fn spawn_audio_encoder(
+    pub fn encoder(
         &self,
         format: &AudioFormat,
     ) -> Result<
@@ -137,12 +138,10 @@ impl AudioCodecService {
             mpsc::Sender<Result<Bytes, io::Error>>,
             mpsc::Receiver<Result<Bytes, io::Error>>,
         ),
-        AudioCodecError,
+        TranscoderError,
     > {
         let (input_sender, input_receiver) = mpsc::channel(0);
         let (output_sender, output_receiver) = mpsc::channel(0);
-
-        debug!(self.logger, "Spawning audio encoder process...");
 
         let mut process = match Command::new(&self.path_to_ffmpeg)
             .args(&[
@@ -184,26 +183,30 @@ impl AudioCodecService {
         {
             Ok(process) => process,
             Err(error) => {
-                error!(self.logger, "Unable to start process"; "error" => ?error);
-                return Err(AudioCodecError::ProcessError);
+                error!(self.logger, "Unable to start encoder process: error occurred"; "error" => ?error);
+                return Err(TranscoderError::ProcessError);
             }
         };
-
-        debug!(self.logger, "Audio encoder spawned");
 
         let stdout = match process.stdout {
             Some(stdout) => stdout,
             None => {
-                error!(self.logger, "Stdout is not available");
-                return Err(AudioCodecError::StdoutUnavailable);
+                error!(
+                    self.logger,
+                    "Unable to start encoder process: stdout is not available"
+                );
+                return Err(TranscoderError::StdoutUnavailable);
             }
         };
 
         let stdin = match process.stdin {
             Some(stdin) => stdin,
             None => {
-                error!(self.logger, "Stdin is not available");
-                return Err(AudioCodecError::StdinUnavailable);
+                error!(
+                    self.logger,
+                    "Unable to start encoder process: stdin is not available"
+                );
+                return Err(TranscoderError::StdinUnavailable);
             }
         };
 
@@ -220,12 +223,12 @@ impl AudioCodecService {
                     match result {
                         Ok(bytes) => {
                             if let Err(error) = write_to_stdin(&mut stdin, bytes).await {
-                                error!(logger, "Unable to write bytes to stdin"; "error" => ?error);
+                                error!(logger, "Unable to write data to encoder: error occurred"; "error" => ?error);
                                 break;
                             }
                         }
                         Err(error) => {
-                            error!(logger, "Unable to read bytes from receiver"; "error" => ?error);
+                            error!(logger, "Unable to write data to encoder: source not available"; "error" => ?error);
                             break;
                         }
                     };
@@ -248,14 +251,17 @@ impl AudioCodecService {
 
             async move {
                 metrics.inc_spawned_encoder_processes();
+
                 let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
                 while let Some(result) = read_from_stdout(&mut stdout, &mut buffer).await {
                     if let Err(error) = output_sender.send(result).await {
-                        error!(logger, "Unable to send data to sender from encoder"; "error" => ?error);
+                        error!(logger, "Unable to send data from encoder: I/O error"; "error" => ?error);
                         break;
                     };
                 }
+
                 metrics.dec_spawned_encoder_processes();
+
                 let _ = term_signal.send(());
             }
         });

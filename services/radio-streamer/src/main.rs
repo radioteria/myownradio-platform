@@ -1,6 +1,5 @@
 mod audio_formats;
 mod channel;
-mod codec;
 mod config;
 mod constants;
 mod helpers;
@@ -9,14 +8,15 @@ mod icy_metadata;
 mod metrics;
 mod mor_backend_client;
 mod restart_registry;
+mod transcoder;
 
-use crate::codec::AudioCodecService;
 use crate::config::Config;
 use crate::http::metrics::get_metrics;
 use crate::http::streaming::{get_active_streams, listen_by_channel_id, restart_by_channel_id};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::MorBackendClient;
 use crate::restart_registry::RestartRegistry;
+use crate::transcoder::TranscoderService;
 
 use crate::channel::channel_player_factory::ChannelPlayerFactory;
 use actix_rt::signal::unix;
@@ -55,7 +55,7 @@ async fn main() -> Result<()> {
         &logger.new(o!("scope" => "MorBackendClient")),
     ));
     let metrics = Arc::new(Metrics::new());
-    let audio_codec_service = Arc::new(AudioCodecService::new(
+    let audio_codec_service = Arc::new(TranscoderService::new(
         &config.path_to_ffmpeg,
         logger.new(o!("scope" => "AudioCodecService")),
         metrics.clone(),

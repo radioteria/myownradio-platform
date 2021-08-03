@@ -10,7 +10,6 @@ use slog::{debug, error, warn, Logger};
 
 use crate::audio_formats::AudioFormats;
 use crate::channel::channel_player_factory::ChannelPlayerFactory;
-use crate::codec::AudioCodecService;
 use crate::config::Config;
 use crate::constants::{
     ALLOWED_DELAY_FOR_PRE_SPAWNED_RECEIVER, PREFETCH_TIME, RAW_AUDIO_STEREO_BYTE_RATE,
@@ -23,6 +22,7 @@ use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::metrics::Metrics;
 use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use crate::restart_registry::RestartRegistry;
+use crate::transcoder::TranscoderService;
 use actix_rt::time::Instant;
 use futures::lock::Mutex;
 use futures_lite::StreamExt;
@@ -69,7 +69,7 @@ pub async fn listen_by_channel_id(
     channel_id: web::Path<usize>,
     query_params: Query<ListenQueryParams>,
     mor_backend_client: Data<Arc<MorBackendClient>>,
-    audio_codec_service: Data<Arc<AudioCodecService>>,
+    transcoder: Data<Arc<TranscoderService>>,
     logger: Data<Arc<Logger>>,
     metrics: Data<Arc<Metrics>>,
     restart_registry: Data<Arc<RestartRegistry>>,
@@ -103,7 +103,7 @@ pub async fn listen_by_channel_id(
         .filter(|v| v.to_str().unwrap() == "1")
         .is_some();
 
-    let (enc_sender, enc_receiver) = match audio_codec_service.spawn_audio_encoder(&format) {
+    let (enc_sender, enc_receiver) = match transcoder.encoder(&format) {
         Ok(ok) => ok,
         Err(error) => {
             error!(logger, "Unable to start audio encoder"; "error" => ?error);

@@ -19,6 +19,7 @@ use crate::restart_registry::RestartRegistry;
 use crate::transcoder::TranscoderService;
 
 use crate::channel::channel_player_factory::ChannelPlayerFactory;
+use crate::channel::channel_player_registry::ChannelPlayerRegistry;
 use actix_rt::signal::unix;
 use actix_web::dev::Service;
 use actix_web::{App, HttpServer};
@@ -69,6 +70,7 @@ async fn main() -> Result<()> {
         metrics.clone(),
         logger.new(o!("scope" => "ChannelPlayerFactory")),
     ));
+    let channel_player_registry = Arc::new(ChannelPlayerRegistry::new());
 
     info!(logger, "Starting application...");
 
@@ -112,6 +114,7 @@ async fn main() -> Result<()> {
                 .data(audio_codec_service.clone())
                 .data(restart_registry.clone())
                 .data(channel_player_factory.clone())
+                .data(channel_player_registry.clone())
                 .service(listen_by_channel_id)
                 .service(restart_by_channel_id)
                 .service(get_active_streams)

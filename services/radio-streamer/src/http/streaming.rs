@@ -10,6 +10,7 @@ use slog::{debug, error, warn, Logger};
 
 use crate::audio_formats::AudioFormats;
 use crate::channel::channel_player_factory::ChannelPlayerFactory;
+use crate::channel::channel_player_registry::{ChannelKey, ChannelPlayerRegistry};
 use crate::config::Config;
 use crate::constants::{
     ALLOWED_DELAY_FOR_PRE_SPAWNED_RECEIVER, PREFETCH_TIME, RAW_AUDIO_STEREO_BYTE_RATE,
@@ -74,6 +75,7 @@ pub async fn listen_by_channel_id(
     metrics: Data<Arc<Metrics>>,
     restart_registry: Data<Arc<RestartRegistry>>,
     channel_player_factory: Data<Arc<ChannelPlayerFactory>>,
+    channel_player_registry: Data<Arc<ChannelPlayerRegistry>>,
 ) -> impl Responder {
     let client_id = query_params.client_id.clone();
 
@@ -113,13 +115,29 @@ pub async fn listen_by_channel_id(
 
     let (metadata_sender, metadata_receiver) = mpsc::unbounded();
 
-    let channel_player =
-        channel_player_factory.create_channel_player(*channel_id, client_id.clone());
+    let channel_player = {
+        let channel_key = ChannelKey(*channel_id, client_id.clone());
+
+        match channel_player_registry.get_channel_player(&channel_key) {
+            Some(channel_player) => channel_player,
+            None => {
+                let channel_player =
+                    channel_player_factory.create_channel_player(*channel_id, client_id.clone());
+
+                let channel_player = Arc::new(channel_player);
+
+                channel_player_registry
+                    .register_channel_player(channel_key.clone(), channel_player.clone());
+
+                channel_player
+            }
+        }
+    };
 
     // Pipe audio data to encoder
     actix_rt::spawn({
         let mut enc_sender = enc_sender;
-        let mut audio_receiver = channel_player.audio_receiver;
+        let mut audio_receiver = channel_player.audio_receiver.clone();
 
         let logger = logger.clone();
 
@@ -136,7 +154,7 @@ pub async fn listen_by_channel_id(
     if is_icy_enabled {
         actix_rt::spawn({
             let mut metadata_sender = metadata_sender;
-            let mut title_receiver = channel_player.title_receiver;
+            let mut title_receiver = channel_player.title_receiver.clone();
 
             let logger = logger.clone();
 

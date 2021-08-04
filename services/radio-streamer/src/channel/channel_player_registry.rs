@@ -6,16 +6,16 @@ use slog::Logger;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, Weak};
 
-#[derive(Hash, Eq, PartialEq)]
-pub struct ChannelKey(usize, Option<String>);
+#[derive(Hash, Eq, PartialEq, Clone, Debug)]
+pub struct ChannelKey(pub usize, pub Option<String>);
 
 pub struct ChannelPlayerRegistry {
     channels: Mutex<HashMap<ChannelKey, Weak<ChannelPlayer>>>,
 }
 
 impl ChannelPlayerRegistry {
-    pub fn create() -> Self {
-        let channels = Default::default();
+    pub fn new() -> Self {
+        let channels = Mutex::default();
 
         ChannelPlayerRegistry { channels }
     }
@@ -26,7 +26,6 @@ impl ChannelPlayerRegistry {
         channel_player: Arc<ChannelPlayer>,
     ) {
         let weak = Arc::downgrade(&channel_player);
-
         let _ = self.channels.lock().unwrap().insert(channel_key, weak);
     }
 

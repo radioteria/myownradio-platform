@@ -8,6 +8,7 @@ use slog::{debug, error, warn, Logger};
 use std::sync::Arc;
 use std::time::Duration;
 
+use crate::backend_client::{BackendClient, MorBackendClientError};
 use crate::constants::{
     ALLOWED_DELAY_FOR_PRE_SPAWNED_RECEIVER, PREFETCH_TIME, RAW_AUDIO_STEREO_BYTE_RATE,
 };
@@ -15,17 +16,24 @@ use crate::helpers::io::{
     pipe_channel_with_cancel, sleep_until_deadline, throttled_channel, PipeChannelError,
 };
 use crate::metrics::Metrics;
-use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use crate::transcoder::TranscoderService;
 
 pub struct ChannelPlayer {
-    pub audio_receiver: async_broadcast::Receiver<Bytes>,
-    pub title_receiver: async_broadcast::Receiver<String>,
+    pub audio_receiver: async_broadcast::InactiveReceiver<Bytes>,
+    pub title_receiver: async_broadcast::InactiveReceiver<String>,
     restart_sender: Arc<Mutex<Option<oneshot::Sender<()>>>>,
 }
 
+impl ChannelPlayer {
+    pub async fn restart(&self) {
+        if let Some(sender) = self.restart_sender.lock().await.take() {
+            let _ = sender.send(());
+        }
+    }
+}
+
 pub struct ChannelPlayerFactory {
-    backend_client: Arc<MorBackendClient>,
+    backend_client: Arc<BackendClient>,
     transcoder: Arc<TranscoderService>,
     metrics: Arc<Metrics>,
     logger: Logger,
@@ -33,7 +41,7 @@ pub struct ChannelPlayerFactory {
 
 impl ChannelPlayerFactory {
     pub fn new(
-        backend_client: Arc<MorBackendClient>,
+        backend_client: Arc<BackendClient>,
         audio_codec_service: Arc<TranscoderService>,
         metrics: Arc<Metrics>,
         logger: Logger,
@@ -166,7 +174,7 @@ impl ChannelPlayerFactory {
                                 &mut restart_receiver_internal,
                             );
 
-                            if let Err(error) = sleep_fut.await {
+                            if let Err(_) = sleep_fut.await {
                                 warn!(logger, "Sleep cancelled");
                             }
                         }
@@ -185,18 +193,13 @@ impl ChannelPlayerFactory {
             }
         });
 
+        let audio_receiver = audio_receiver.deactivate();
+        let title_receiver = title_receiver.deactivate();
+
         ChannelPlayer {
             audio_receiver,
             title_receiver,
             restart_sender,
-        }
-    }
-}
-
-impl ChannelPlayer {
-    pub async fn restart(&self) {
-        if let Some(sender) = self.restart_sender.lock().await.take() {
-            let _ = sender.send(());
         }
     }
 }

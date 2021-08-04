@@ -1,4 +1,5 @@
 mod audio_formats;
+mod backend_client;
 mod channel;
 mod config;
 mod constants;
@@ -6,29 +7,26 @@ mod helpers;
 mod http;
 mod icy_metadata;
 mod metrics;
-mod mor_backend_client;
-mod restart_registry;
 mod transcoder;
 
+use crate::backend_client::BackendClient;
+use crate::channel::channel_player_factory::ChannelPlayerFactory;
+use crate::channel::channel_player_registry::ChannelPlayerRegistry;
 use crate::config::Config;
 use crate::http::metrics::get_metrics;
 use crate::http::streaming::{get_active_streams, listen_by_channel_id, restart_by_channel_id};
 use crate::metrics::Metrics;
-use crate::mor_backend_client::MorBackendClient;
-use crate::restart_registry::RestartRegistry;
 use crate::transcoder::TranscoderService;
-
-use crate::channel::channel_player_factory::ChannelPlayerFactory;
 use actix_rt::signal::unix;
 use actix_web::dev::Service;
 use actix_web::{App, HttpServer};
 use futures_lite::FutureExt;
 use slog::{info, o, Drain, Logger};
 use slog_json::Json;
+use std::io;
 use std::io::Result;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
-use std::{io, process};
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -50,25 +48,23 @@ async fn main() -> Result<()> {
     let safe_drain = Mutex::new(drain).map(slog::Fuse);
     let logger = Arc::new(Logger::root(safe_drain, o!("version" => VERSION)));
 
-    let mor_backend_client = Arc::new(MorBackendClient::new(
+    let backend_client = Arc::new(BackendClient::new(
         &config.mor_backend_url,
-        &logger.new(o!("scope" => "MorBackendClient")),
+        &logger.new(o!("scope" => "BackendClient")),
     ));
     let metrics = Arc::new(Metrics::new());
-    let audio_codec_service = Arc::new(TranscoderService::new(
+    let transcoder = Arc::new(TranscoderService::new(
         &config.path_to_ffmpeg,
-        logger.new(o!("scope" => "AudioCodecService")),
+        logger.new(o!("scope" => "TranscoderService")),
         metrics.clone(),
     ));
-    let restart_registry = Arc::new(RestartRegistry::new(
-        logger.new(o!("scope" => "RestartRegistry")),
-    ));
     let channel_player_factory = Arc::new(ChannelPlayerFactory::new(
-        mor_backend_client.clone(),
-        audio_codec_service.clone(),
+        backend_client.clone(),
+        transcoder.clone(),
         metrics.clone(),
         logger.new(o!("scope" => "ChannelPlayerFactory")),
     ));
+    let channel_player_registry = Arc::new(ChannelPlayerRegistry::new());
 
     info!(logger, "Starting application...");
 
@@ -106,12 +102,12 @@ async fn main() -> Result<()> {
                     }
                 })
                 .data(config.clone())
-                .data(mor_backend_client.clone())
+                .data(backend_client.clone())
                 .data(logger.clone())
                 .data(metrics.clone())
-                .data(audio_codec_service.clone())
-                .data(restart_registry.clone())
+                .data(transcoder.clone())
                 .data(channel_player_factory.clone())
+                .data(channel_player_registry.clone())
                 .service(listen_by_channel_id)
                 .service(restart_by_channel_id)
                 .service(get_active_streams)

@@ -22,7 +22,6 @@ pub enum TranscoderError {
     ProcessError,
     StdoutUnavailable,
     StdinUnavailable,
-    StderrUnavailable,
 }
 
 pub struct TranscoderService {
@@ -143,7 +142,7 @@ impl TranscoderService {
         let (input_sender, input_receiver) = mpsc::channel(0);
         let (output_sender, output_receiver) = mpsc::channel(0);
 
-        let mut process = match Command::new(&self.path_to_ffmpeg)
+        let process = match Command::new(&self.path_to_ffmpeg)
             .args(&[
                 "-v",
                 "quiet",

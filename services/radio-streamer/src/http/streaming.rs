@@ -123,11 +123,10 @@ pub async fn listen_by_channel_id(
             None => {
                 let channel_player =
                     channel_player_factory.create_channel_player(*channel_id, client_id.clone());
-
                 let channel_player = Arc::new(channel_player);
 
                 channel_player_registry
-                    .register_channel_player(channel_key.clone(), channel_player.clone());
+                    .register_channel_player(channel_key, Arc::downgrade(&channel_player));
 
                 channel_player
             }
@@ -136,10 +135,11 @@ pub async fn listen_by_channel_id(
 
     // Pipe audio data to encoder
     actix_rt::spawn({
-        let mut enc_sender = enc_sender;
-        let mut audio_receiver = channel_player.audio_receiver.clone();
-
+        let channel_player = Arc::clone(&channel_player);
         let logger = logger.clone();
+
+        let mut enc_sender = enc_sender;
+        let mut audio_receiver = channel_player.audio_receiver.activate_cloned();
 
         async move {
             while let Some(bytes) = audio_receiver.next().await {
@@ -148,15 +148,18 @@ pub async fn listen_by_channel_id(
                     break;
                 }
             }
+
+            drop(channel_player);
         }
     });
 
     if is_icy_enabled {
         actix_rt::spawn({
-            let mut metadata_sender = metadata_sender;
-            let mut title_receiver = channel_player.title_receiver.clone();
-
+            let channel_player = Arc::clone(&channel_player);
             let logger = logger.clone();
+
+            let mut metadata_sender = metadata_sender;
+            let mut title_receiver = channel_player.title_receiver.activate_cloned();
 
             async move {
                 while let Some(title) = title_receiver.next().await {
@@ -168,6 +171,8 @@ pub async fn listen_by_channel_id(
                         }
                     }
                 }
+
+                drop(channel_player);
             }
         });
     }

@@ -23,10 +23,13 @@ impl ChannelPlayerRegistry {
     pub fn register_channel_player(
         &self,
         channel_key: ChannelKey,
-        channel_player: Arc<ChannelPlayer>,
+        channel_player: Weak<ChannelPlayer>,
     ) {
-        let weak = Arc::downgrade(&channel_player);
-        let _ = self.channels.lock().unwrap().insert(channel_key, weak);
+        let _ = self
+            .channels
+            .lock()
+            .unwrap()
+            .insert(channel_key, channel_player);
     }
 
     pub fn unregister_channel_player(&self, channel_key: &ChannelKey) {

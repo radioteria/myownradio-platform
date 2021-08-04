@@ -19,8 +19,8 @@ use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
 use crate::transcoder::TranscoderService;
 
 pub struct ChannelPlayer {
-    pub audio_receiver: async_broadcast::Receiver<Bytes>,
-    pub title_receiver: async_broadcast::Receiver<String>,
+    pub audio_receiver: async_broadcast::InactiveReceiver<Bytes>,
+    pub title_receiver: async_broadcast::InactiveReceiver<String>,
     restart_sender: Arc<Mutex<Option<oneshot::Sender<()>>>>,
 }
 
@@ -192,6 +192,9 @@ impl ChannelPlayerFactory {
                 metrics.dec_streaming_in_progress();
             }
         });
+
+        let audio_receiver = audio_receiver.deactivate();
+        let title_receiver = title_receiver.deactivate();
 
         ChannelPlayer {
             audio_receiver,

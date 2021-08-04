@@ -24,6 +24,14 @@ pub struct ChannelPlayer {
     restart_sender: Arc<Mutex<Option<oneshot::Sender<()>>>>,
 }
 
+impl ChannelPlayer {
+    pub async fn restart(&self) {
+        if let Some(sender) = self.restart_sender.lock().await.take() {
+            let _ = sender.send(());
+        }
+    }
+}
+
 pub struct ChannelPlayerFactory {
     backend_client: Arc<MorBackendClient>,
     transcoder: Arc<TranscoderService>,
@@ -189,14 +197,6 @@ impl ChannelPlayerFactory {
             audio_receiver,
             title_receiver,
             restart_sender,
-        }
-    }
-}
-
-impl ChannelPlayer {
-    pub async fn restart(&self) {
-        if let Some(sender) = self.restart_sender.lock().await.take() {
-            let _ = sender.send(());
         }
     }
 }

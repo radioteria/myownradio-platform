@@ -4,18 +4,18 @@ use crate::mor_backend_client::MorBackendClient;
 use crate::transcoder::TranscoderService;
 use slog::Logger;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, Weak};
 
 #[derive(Hash, Eq, PartialEq)]
 pub struct ChannelKey(usize, Option<String>);
 
 pub struct ChannelPlayerRegistry {
-    channels: Mutex<HashMap<ChannelKey, Arc<ChannelPlayer>>>,
+    channels: Mutex<HashMap<ChannelKey, Weak<ChannelPlayer>>>,
 }
 
 impl ChannelPlayerRegistry {
     pub fn create() -> Self {
-        let channels = Mutex::<HashMap<ChannelKey, Arc<ChannelPlayer>>>::default();
+        let channels = Default::default();
 
         ChannelPlayerRegistry { channels }
     }
@@ -25,11 +25,9 @@ impl ChannelPlayerRegistry {
         channel_key: ChannelKey,
         channel_player: Arc<ChannelPlayer>,
     ) {
-        let _ = self
-            .channels
-            .lock()
-            .unwrap()
-            .insert(channel_key, channel_player.clone());
+        let weak = Arc::downgrade(&channel_player);
+
+        let _ = self.channels.lock().unwrap().insert(channel_key, weak);
     }
 
     pub fn unregister_channel_player(&self, channel_key: &ChannelKey) {
@@ -37,6 +35,10 @@ impl ChannelPlayerRegistry {
     }
 
     pub fn get_channel_player(&self, channel_key: &ChannelKey) -> Option<Arc<ChannelPlayer>> {
-        self.channels.lock().unwrap().get(channel_key).cloned()
+        self.channels
+            .lock()
+            .unwrap()
+            .get(channel_key)
+            .and_then(|weak| weak.upgrade())
     }
 }

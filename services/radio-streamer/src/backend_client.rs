@@ -52,7 +52,7 @@ pub struct ChannelInfoResponse {
     pub data: Option<ChannelInfo>,
 }
 
-pub struct MorBackendClient {
+pub struct BackendClient {
     logger: Logger,
     mor_backend_url: String,
 }
@@ -67,7 +67,7 @@ pub enum MorBackendClientError {
     ChannelNotFound,
 }
 
-impl MorBackendClient {
+impl BackendClient {
     pub fn new(mor_backend_url: &str, logger: &Logger) -> Self {
         Self {
             logger: logger.clone(),

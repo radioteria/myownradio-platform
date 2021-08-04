@@ -1,8 +1,4 @@
 use crate::channel::channel_player_factory::ChannelPlayer;
-use crate::metrics::Metrics;
-use crate::mor_backend_client::MorBackendClient;
-use crate::transcoder::TranscoderService;
-use slog::Logger;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, Weak};
 
@@ -32,15 +28,31 @@ impl ChannelPlayerRegistry {
             .insert(channel_key, channel_player);
     }
 
-    pub fn unregister_channel_player(&self, channel_key: &ChannelKey) {
-        let _ = self.channels.lock().unwrap().remove(channel_key);
-    }
-
     pub fn get_channel_player(&self, channel_key: &ChannelKey) -> Option<Arc<ChannelPlayer>> {
         self.channels
             .lock()
             .unwrap()
             .get(channel_key)
             .and_then(|weak| weak.upgrade())
+    }
+
+    pub fn get_channel_players_by_id(&self, channel_id: &usize) -> Vec<Arc<ChannelPlayer>> {
+        self.channels
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|(ChannelKey(key_channel_id, _), _)| *key_channel_id == *channel_id)
+            .flat_map(|(_, weak)| weak.upgrade())
+            .collect()
+    }
+
+    pub fn get_all_channel_players(&self) -> Vec<usize> {
+        self.channels
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|(_, weak)| weak.upgrade().is_some())
+            .map(|(ChannelKey(key_channel_id, _), _)| *key_channel_id)
+            .collect()
     }
 }

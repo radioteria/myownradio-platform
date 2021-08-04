@@ -1,36 +1,23 @@
-use std::sync::Arc;
-use std::time::Duration;
-
-use actix_web::web::{Bytes, Data, Query};
-use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
-use futures::channel::{mpsc, oneshot};
-use futures::{SinkExt, TryStreamExt};
-use serde::Deserialize;
-use slog::{debug, error, warn, Logger};
-
 use crate::audio_formats::AudioFormats;
+use crate::backend_client::{BackendClient, MorBackendClientError};
 use crate::channel::channel_player_factory::ChannelPlayerFactory;
 use crate::channel::channel_player_registry::{ChannelKey, ChannelPlayerRegistry};
 use crate::config::Config;
-use crate::constants::{
-    ALLOWED_DELAY_FOR_PRE_SPAWNED_RECEIVER, PREFETCH_TIME, RAW_AUDIO_STEREO_BYTE_RATE,
-};
-use crate::helpers::io::{
-    pipe_channel_with_cancel, sleep_until_deadline, spawn_pipe_channel, throttled_channel,
-    PipeChannelError,
-};
 use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
-use crate::metrics::Metrics;
-use crate::mor_backend_client::{MorBackendClient, MorBackendClientError};
-use crate::restart_registry::RestartRegistry;
 use crate::transcoder::TranscoderService;
-use actix_rt::time::Instant;
-use futures::lock::Mutex;
-use futures_lite::StreamExt;
+use actix_web::web::{Data, Query};
+use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
+use futures::channel::mpsc;
+use futures::{SinkExt, StreamExt, TryStreamExt};
+use serde::Deserialize;
+use slog::{error, Logger};
+use std::sync::Arc;
 
 #[get("/streams")]
-pub async fn get_active_streams(restart_registry: Data<Arc<RestartRegistry>>) -> impl Responder {
-    let channels = restart_registry.get_channels().await;
+pub async fn get_active_streams(
+    channel_player_registry: Data<Arc<ChannelPlayerRegistry>>,
+) -> impl Responder {
+    let channels = channel_player_registry.get_all_channel_players();
 
     HttpResponse::Ok().json(channels)
 }
@@ -39,8 +26,8 @@ pub async fn get_active_streams(restart_registry: Data<Arc<RestartRegistry>>) ->
 pub async fn restart_by_channel_id(
     request: HttpRequest,
     channel_id: web::Path<usize>,
-    restart_registry: Data<Arc<RestartRegistry>>,
     config: Data<Arc<Config>>,
+    channel_player_registry: Data<Arc<ChannelPlayerRegistry>>,
 ) -> impl Responder {
     let actual_token = match request.headers().get("token").map(|v| v.to_str()) {
         Some(Ok(token)) => token,
@@ -53,7 +40,9 @@ pub async fn restart_by_channel_id(
         return HttpResponse::Unauthorized().finish();
     }
 
-    restart_registry.restart(&channel_id).await;
+    for channel_player in channel_player_registry.get_channel_players_by_id(&channel_id) {
+        channel_player.restart().await;
+    }
 
     HttpResponse::Ok().finish()
 }
@@ -69,17 +58,15 @@ pub async fn listen_by_channel_id(
     request: HttpRequest,
     channel_id: web::Path<usize>,
     query_params: Query<ListenQueryParams>,
-    mor_backend_client: Data<Arc<MorBackendClient>>,
+    backend_client: Data<Arc<BackendClient>>,
     transcoder: Data<Arc<TranscoderService>>,
     logger: Data<Arc<Logger>>,
-    metrics: Data<Arc<Metrics>>,
-    restart_registry: Data<Arc<RestartRegistry>>,
     channel_player_factory: Data<Arc<ChannelPlayerFactory>>,
     channel_player_registry: Data<Arc<ChannelPlayerRegistry>>,
 ) -> impl Responder {
     let client_id = query_params.client_id.clone();
 
-    let channel_info = match mor_backend_client
+    let channel_info = match backend_client
         .get_channel_info(&channel_id, client_id.clone())
         .await
     {
@@ -112,8 +99,6 @@ pub async fn listen_by_channel_id(
             return HttpResponse::InternalServerError().finish();
         }
     };
-
-    let (metadata_sender, metadata_receiver) = mpsc::unbounded();
 
     let channel_player = {
         let channel_key = ChannelKey(*channel_id, client_id.clone());
@@ -153,47 +138,48 @@ pub async fn listen_by_channel_id(
         }
     });
 
-    if is_icy_enabled {
-        actix_rt::spawn({
-            let channel_player = Arc::clone(&channel_player);
-            let logger = logger.clone();
+    {
+        let mut response = HttpResponse::Ok();
 
-            let mut metadata_sender = metadata_sender;
-            let mut title_receiver = channel_player.title_receiver.activate_cloned();
+        response.content_type(format.content_type).force_close();
 
-            async move {
-                while let Some(title) = title_receiver.next().await {
-                    let metadata = format!("StreamTitle='{}';", &title);
-                    if let Err(error) = metadata_sender.send(metadata.into_bytes()).await {
-                        if is_icy_enabled {
-                            error!(logger, "Unable to send metadata to client"; "error" => ?error);
-                            break;
+        if is_icy_enabled {
+            let (metadata_sender, metadata_receiver) = mpsc::unbounded();
+
+            let mut icy_metadata_muxer = IcyMetadataMuxer::new(metadata_receiver);
+
+            actix_rt::spawn({
+                let channel_player = Arc::clone(&channel_player);
+                let logger = logger.clone();
+
+                let mut metadata_sender = metadata_sender;
+                let mut title_receiver = channel_player.title_receiver.activate_cloned();
+
+                async move {
+                    while let Some(title) = title_receiver.next().await {
+                        let metadata = format!("StreamTitle='{}';", &title);
+                        if let Err(error) = metadata_sender.send(metadata.into_bytes()).await {
+                            if is_icy_enabled {
+                                error!(logger, "Unable to send metadata to client"; "error" => ?error);
+                                break;
+                            }
                         }
                     }
+
+                    drop(channel_player);
                 }
+            });
 
-                drop(channel_player);
-            }
-        });
-    }
+            response
+                .insert_header(("icy-metadata", "1"))
+                .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)))
+                .insert_header(("icy-name", format!("{}", &channel_info.name)));
 
-    let mut response = HttpResponse::Ok();
-
-    response.content_type(format.content_type).force_close();
-
-    if is_icy_enabled {
-        response
-            .insert_header(("icy-metadata", "1"))
-            .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)))
-            .insert_header(("icy-name", format!("{}", &channel_info.name)));
-
-        let icy_metadata_muxer = IcyMetadataMuxer::new(metadata_receiver);
-
-        response.streaming({
-            let mut icy_metadata_muxer = icy_metadata_muxer;
-            enc_receiver.map_ok(move |bytes| icy_metadata_muxer.handle_bytes(bytes))
-        })
-    } else {
-        response.streaming(enc_receiver)
+            response.streaming({
+                enc_receiver.map_ok(move |bytes| icy_metadata_muxer.handle_bytes(bytes))
+            })
+        } else {
+            response.streaming(enc_receiver)
+        }
     }
 }

@@ -42,13 +42,13 @@ pub struct ChannelPlayerFactory {
 impl ChannelPlayerFactory {
     pub fn new(
         backend_client: Arc<BackendClient>,
-        audio_codec_service: Arc<TranscoderService>,
+        transcoder: Arc<TranscoderService>,
         metrics: Arc<Metrics>,
         logger: Logger,
     ) -> Self {
         ChannelPlayerFactory {
             backend_client,
-            transcoder: audio_codec_service,
+            transcoder,
             metrics,
             logger,
         }
@@ -79,7 +79,7 @@ impl ChannelPlayerFactory {
             async move {
                 while let Some(Ok(bytes)) = thr_receiver.next().await {
                     if let Err(error) = audio_sender.broadcast(bytes).await {
-                        error!(logger, "Unable to broadcast audio data"; "error" => ?error);
+                        debug!(logger, "Audio broadcast completed: channel is closed");
                         break;
                     }
                 }
@@ -137,7 +137,7 @@ impl ChannelPlayerFactory {
                             {
                                 Ok(receiver) => receiver,
                                 Err(error) => {
-                                    error!(logger, "Unable to spawn current track decoder"; "error" => ?error);
+                                    error!(logger, "Unable to spawn track decoder"; "error" => ?error);
                                     break;
                                 }
                             }
@@ -149,16 +149,13 @@ impl ChannelPlayerFactory {
                             pre_spawned_receiver.lock().await.replace(receiver);
                         }
                         Err(error) => {
-                            error!(logger, "Unable to spawn next track decoder"; "error" => ?error);
+                            error!(logger, "Unable to spawn track decoder"; "error" => ?error);
                             break;
                         }
                     }
 
                     let title = current_track.title.clone();
-
-                    if let Err(error) = title_sender.broadcast(title).await {
-                        error!(logger, "Unable to send track title"; "error" => ?error);
-                    }
+                    let _ = title_sender.broadcast(title).await;
 
                     let result = pipe_channel_with_cancel(
                         &mut current_track_receiver,

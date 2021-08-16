@@ -154,7 +154,7 @@ impl ChannelPlayerFactory {
                     }
 
                     let title = current_track.title.clone();
-                    let _ = title_sender.broadcast(title).await;
+                    let _ = title_sender.try_broadcast(title).await;
 
                     let result = pipe_channel_with_cancel(
                         &mut current_track_receiver,

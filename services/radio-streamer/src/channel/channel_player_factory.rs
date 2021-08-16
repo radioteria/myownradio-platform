@@ -72,7 +72,6 @@ impl ChannelPlayerFactory {
 
         actix_rt::spawn({
             let logger = self.logger.clone();
-            let audio_sender = audio_sender.clone();
 
             let mut thr_receiver = thr_receiver;
 

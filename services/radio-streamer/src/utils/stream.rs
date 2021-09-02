@@ -3,6 +3,9 @@ use actix_web::web::Bytes;
 use futures::channel::mpsc;
 use futures::{SinkExt, StreamExt};
 use std::cmp::max;
+use std::time::Duration;
+
+const THROTTLE_DURATION_MS: Duration = Duration::from_millis(50);
 
 pub fn throttled_audio_data(
     bytes_per_second: usize,
@@ -12,7 +15,7 @@ pub fn throttled_audio_data(
     let bytes_per_second = bytes_per_second as isize;
     let prefetch_size = prefetch_size as isize;
 
-    let (in_sender, in_receiver) = mpsc::channel(0);
+    let (in_sender, in_receiver) = mpsc::channel::<Bytes>(0);
     let (out_sender, out_receiver) = mpsc::channel(0);
 
     actix_rt::spawn({
@@ -25,7 +28,7 @@ pub fn throttled_audio_data(
             let mut bytes_transferred = -prefetch_size;
 
             while let Some(bytes) = in_receiver.next().await {
-                bytes_transferred += r.len() as isize;
+                bytes_transferred += bytes.len() as isize;
 
                 let start = start.elapsed().as_secs() as isize;
                 let actual_bytes_per_second = bytes_transferred / max(start, 1isize);

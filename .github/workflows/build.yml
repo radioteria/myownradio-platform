@@ -37,6 +37,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: QEMU
+        uses: docker/setup-qemu-action@v1
       - name: setup
         uses: docker/setup-buildx-action@v1
         id: builder
@@ -50,6 +52,9 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:${{ env.BUILD_ID }}
             ${{ env.IMAGE_NAME }}:latest
+          platforms: |
+            linux/amd64
+            linux/arm64
       - name: comment
         uses: peter-evans/commit-comment@v1
         with:

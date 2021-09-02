@@ -1488,7 +1488,7 @@ dependencies = [
 
 [[package]]
 name = "radio-streamer"
-version = "0.1.23"
+version = "0.1.24"
 dependencies = [
  "actix-rt",
  "actix-web",

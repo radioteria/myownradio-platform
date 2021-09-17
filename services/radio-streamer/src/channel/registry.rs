@@ -1,4 +1,4 @@
-use crate::channel::channel_player_factory::ChannelPlayer;
+use crate::channel::factory::ChannelPlayer;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, Weak};
 
@@ -16,11 +16,7 @@ impl ChannelPlayerRegistry {
         ChannelPlayerRegistry { channels }
     }
 
-    pub fn register_channel_player(
-        &self,
-        channel_key: ChannelKey,
-        channel_player: Weak<ChannelPlayer>,
-    ) {
+    pub fn register(&self, channel_key: ChannelKey, channel_player: Weak<ChannelPlayer>) {
         let _ = self
             .channels
             .lock()
@@ -28,7 +24,7 @@ impl ChannelPlayerRegistry {
             .insert(channel_key, channel_player);
     }
 
-    pub fn get_channel_player(&self, channel_key: &ChannelKey) -> Option<Arc<ChannelPlayer>> {
+    pub fn get(&self, channel_key: &ChannelKey) -> Option<Arc<ChannelPlayer>> {
         self.channels
             .lock()
             .unwrap()
@@ -36,7 +32,7 @@ impl ChannelPlayerRegistry {
             .and_then(|weak| weak.upgrade())
     }
 
-    pub fn get_channel_players_by_id(&self, channel_id: &usize) -> Vec<Arc<ChannelPlayer>> {
+    pub fn get_by_id(&self, channel_id: &usize) -> Vec<Arc<ChannelPlayer>> {
         self.channels
             .lock()
             .unwrap()
@@ -46,7 +42,7 @@ impl ChannelPlayerRegistry {
             .collect()
     }
 
-    pub fn get_all_channel_players(&self) -> Vec<usize> {
+    pub fn get_channel_ids(&self) -> Vec<usize> {
         self.channels
             .lock()
             .unwrap()

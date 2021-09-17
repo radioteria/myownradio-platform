@@ -1,7 +1,7 @@
 use crate::audio_formats::AudioFormats;
 use crate::backend_client::{BackendClient, MorBackendClientError};
-use crate::channel::channel_player_factory::ChannelPlayerFactory;
-use crate::channel::channel_player_registry::{ChannelKey, ChannelPlayerRegistry};
+use crate::channel::factory::ChannelPlayerFactory;
+use crate::channel::registry::{ChannelKey, ChannelPlayerRegistry};
 use crate::config::Config;
 use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
 use crate::transcoder::TranscoderService;
@@ -17,7 +17,7 @@ use std::sync::Arc;
 pub async fn get_active_streams(
     channel_player_registry: Data<Arc<ChannelPlayerRegistry>>,
 ) -> impl Responder {
-    let channels = channel_player_registry.get_all_channel_players();
+    let channels = channel_player_registry.get_channel_ids();
 
     HttpResponse::Ok().json(channels)
 }
@@ -40,7 +40,7 @@ pub async fn restart_by_channel_id(
         return HttpResponse::Unauthorized().finish();
     }
 
-    for channel_player in channel_player_registry.get_channel_players_by_id(&channel_id) {
+    for channel_player in channel_player_registry.get_by_id(&channel_id) {
         channel_player.restart().await;
     }
 
@@ -103,15 +103,13 @@ pub async fn listen_by_channel_id(
     let channel_player = {
         let channel_key = ChannelKey(*channel_id, client_id.clone());
 
-        match channel_player_registry.get_channel_player(&channel_key) {
+        match channel_player_registry.get(&channel_key) {
             Some(channel_player) => channel_player,
             None => {
-                let channel_player =
-                    channel_player_factory.create_channel_player(*channel_id, client_id.clone());
+                let channel_player = channel_player_factory.create(*channel_id, client_id.clone());
                 let channel_player = Arc::new(channel_player);
 
-                channel_player_registry
-                    .register_channel_player(channel_key, Arc::downgrade(&channel_player));
+                channel_player_registry.register(channel_key, Arc::downgrade(&channel_player));
 
                 channel_player
             }

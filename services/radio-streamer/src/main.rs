@@ -11,8 +11,8 @@ mod transcoder;
 mod utils;
 
 use crate::backend_client::BackendClient;
-use crate::channel::channel_player_factory::ChannelPlayerFactory;
-use crate::channel::channel_player_registry::ChannelPlayerRegistry;
+use crate::channel::factory::ChannelPlayerFactory;
+use crate::channel::registry::ChannelPlayerRegistry;
 use crate::config::Config;
 use crate::http::metrics::get_metrics;
 use crate::http::streaming::{get_active_streams, listen_by_channel_id, restart_by_channel_id};

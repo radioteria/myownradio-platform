@@ -54,11 +54,7 @@ impl ChannelPlayerFactory {
         }
     }
 
-    pub fn create_channel_player(
-        &self,
-        channel_id: usize,
-        client_id: Option<String>,
-    ) -> ChannelPlayer {
+    pub fn create(&self, channel_id: usize, client_id: Option<String>) -> ChannelPlayer {
         let (audio_sender, audio_receiver) = async_broadcast::broadcast(1);
         let (title_sender, title_receiver) = async_broadcast::broadcast(1);
 

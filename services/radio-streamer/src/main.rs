@@ -9,6 +9,7 @@ mod icy_metadata;
 mod metrics;
 mod transcoder;
 mod utils;
+mod stream;
 
 use crate::backend_client::BackendClient;
 use crate::channel::factory::ChannelPlayerFactory;

@@ -8,7 +8,11 @@ use slog::{error, trace, Logger};
 use std::time::Duration;
 
 const STDIO_BUFFER_SIZE: usize = 4096;
-const BYTES_PER_SECOND: usize = 176_400;
+
+const SAMPLING_FREQUENCY: usize = 48_000;
+const BYTES_PER_SAMPLE: usize = 2;
+const AUDIO_CHANNELS: usize = 2;
+const BYTES_PER_SECOND: usize = SAMPLING_FREQUENCY * BYTES_PER_SAMPLE * AUDIO_CHANNELS;
 
 #[derive(Debug)]
 pub(crate) enum TranscoderError {
@@ -39,11 +43,11 @@ pub(crate) fn make_ffmpeg_decoder(
             "-codec:a",
             "pcm_s16le",
             "-ar",
-            "48000",
+            SAMPLING_FREQUENCY.to_string(),
             "-ac",
-            "2",
+            AUDIO_CHANNELS.to_string(),
             "-f",
-            "s16le",
+            "s16le", // BYTES_PER_SAMPLE = 2
             "-",
         ])
         .stdout(Stdio::piped())

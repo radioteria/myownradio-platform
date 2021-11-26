@@ -4,7 +4,7 @@ use crate::stream::types::TimedBytes;
 use async_process::{Command, Stdio};
 use futures::channel::mpsc;
 use futures::SinkExt;
-use slog::{error, trace, Logger};
+use slog::{debug, error, Logger};
 use std::time::Duration;
 
 const STDIO_BUFFER_SIZE: usize = 4096;
@@ -18,7 +18,6 @@ const BYTES_PER_SECOND: usize = SAMPLING_FREQUENCY * BYTES_PER_SAMPLE * AUDIO_CH
 pub(crate) enum TranscoderError {
     ProcessError,
     StdoutUnavailable,
-    StdinUnavailable,
 }
 
 pub(crate) fn make_ffmpeg_decoder(
@@ -43,9 +42,9 @@ pub(crate) fn make_ffmpeg_decoder(
             "-codec:a",
             "pcm_s16le",
             "-ar",
-            SAMPLING_FREQUENCY.to_string(),
+            &SAMPLING_FREQUENCY.to_string(),
             "-ac",
-            AUDIO_CHANNELS.to_string(),
+            &AUDIO_CHANNELS.to_string(),
             "-f",
             "s16le", // BYTES_PER_SAMPLE = 2
             "-",
@@ -57,7 +56,7 @@ pub(crate) fn make_ffmpeg_decoder(
     {
         Ok(process) => process,
         Err(error) => {
-            error!(self.logger, "Unable to spawn the decoder process"; "error" => ?error);
+            error!(logger, "Unable to spawn the decoder process"; "error" => ?error);
             return Err(TranscoderError::ProcessError);
         }
     };
@@ -87,7 +86,8 @@ pub(crate) fn make_ffmpeg_decoder(
                 let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
 
                 while let Some(Ok(bytes)) = read_from_stdout(&mut stdout, &mut buffer).await {
-                    let decoding_time_seconds = (bytes_sent as f64 / BYTES_PER_SECOND as f64);
+                    let bytes_len = bytes.len();
+                    let decoding_time_seconds = bytes_sent as f64 / BYTES_PER_SECOND as f64;
                     let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
                     let timed_bytes = TimedBytes(bytes, decoding_time);
 
@@ -96,7 +96,7 @@ pub(crate) fn make_ffmpeg_decoder(
                         break;
                     };
 
-                    bytes_sent += bytes.len();
+                    bytes_sent += bytes_len;
                 }
             }
 

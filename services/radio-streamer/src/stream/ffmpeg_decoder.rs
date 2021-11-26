@@ -1,6 +1,7 @@
 use crate::helpers::io::read_from_stdout;
 use crate::metrics::Metrics;
-use crate::stream::types::TimedBytes;
+use crate::stream::constants::{AUDIO_BYTES_PER_SECOND, AUDIO_CHANNELS, AUDIO_SAMPLING_FREQUENCY};
+use crate::stream::types::TimedBuffer;
 use async_process::{Command, Stdio};
 use futures::channel::mpsc;
 use futures::SinkExt;
@@ -9,13 +10,8 @@ use std::time::Duration;
 
 const STDIO_BUFFER_SIZE: usize = 4096;
 
-const SAMPLING_FREQUENCY: usize = 48_000;
-const BYTES_PER_SAMPLE: usize = 2;
-const AUDIO_CHANNELS: usize = 2;
-const BYTES_PER_SECOND: usize = SAMPLING_FREQUENCY * BYTES_PER_SAMPLE * AUDIO_CHANNELS;
-
 #[derive(Debug)]
-pub(crate) enum TranscoderError {
+pub(crate) enum DecoderError {
     ProcessError,
     StdoutUnavailable,
 }
@@ -26,8 +22,8 @@ pub(crate) fn make_ffmpeg_decoder(
     path_to_ffmpeg: &str,
     logger: &Logger,
     metrics: &Metrics,
-) -> Result<mpsc::Receiver<TimedBytes>, TranscoderError> {
-    let (mut tx, rx) = mpsc::channel::<TimedBytes>(0);
+) -> Result<mpsc::Receiver<TimedBuffer>, DecoderError> {
+    let (mut tx, rx) = mpsc::channel::<TimedBuffer>(0);
 
     let mut process = match Command::new(&path_to_ffmpeg)
         .args(&[
@@ -42,7 +38,7 @@ pub(crate) fn make_ffmpeg_decoder(
             "-codec:a",
             "pcm_s16le",
             "-ar",
-            &SAMPLING_FREQUENCY.to_string(),
+            &AUDIO_SAMPLING_FREQUENCY.to_string(),
             "-ac",
             &AUDIO_CHANNELS.to_string(),
             "-f",
@@ -57,7 +53,7 @@ pub(crate) fn make_ffmpeg_decoder(
         Ok(process) => process,
         Err(error) => {
             error!(logger, "Unable to spawn the decoder process"; "error" => ?error);
-            return Err(TranscoderError::ProcessError);
+            return Err(DecoderError::ProcessError);
         }
     };
 
@@ -67,7 +63,7 @@ pub(crate) fn make_ffmpeg_decoder(
         Some(stdout) => stdout,
         None => {
             error!(logger, "Unable to start decoder: stdout is not available");
-            return Err(TranscoderError::StdoutUnavailable);
+            return Err(DecoderError::StdoutUnavailable);
         }
     };
 
@@ -87,9 +83,9 @@ pub(crate) fn make_ffmpeg_decoder(
 
                 while let Some(Ok(bytes)) = read_from_stdout(&mut stdout, &mut buffer).await {
                     let bytes_len = bytes.len();
-                    let decoding_time_seconds = bytes_sent as f64 / BYTES_PER_SECOND as f64;
+                    let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
                     let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
-                    let timed_bytes = TimedBytes(bytes, decoding_time);
+                    let timed_bytes = TimedBuffer(bytes, decoding_time);
 
                     if let Err(error) = tx.send(timed_bytes).await {
                         error!(logger, "Unable to send data from decoder"; "error" => ?error);

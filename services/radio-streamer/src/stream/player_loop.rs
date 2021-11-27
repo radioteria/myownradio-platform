@@ -22,6 +22,7 @@ pub(crate) enum PlayerLoopError {
 
 #[derive(Debug)]
 pub(crate) enum PlayerLoopEvent {
+    ChannelName(String),
     TimedBuffer(TimedBuffer),
     TitleChange(String),
     RestartSender(oneshot::Sender<()>),
@@ -35,10 +36,11 @@ pub(crate) async fn make_player_loop(
     logger: &Logger,
     metrics: &Metrics,
 ) -> Result<mpsc::Receiver<PlayerLoopEvent>, PlayerLoopError> {
-    let logger = logger.clone();
     let client_id = client_id.clone();
     let channel_id = channel_id.clone();
     let path_to_ffmpeg = path_to_ffmpeg.to_owned();
+
+    let logger = logger.clone();
     let metrics = metrics.clone();
 
     let (tx, rx) = mpsc::channel(0);
@@ -67,6 +69,17 @@ pub(crate) async fn make_player_loop(
         let mut tx = tx;
 
         async move {
+            if let Err(error) = tx
+                .send(PlayerLoopEvent::ChannelName(channel_info.name))
+                .await
+            {
+                debug!(
+                    logger,
+                    "Stopping player loop: channel closed on sending channel name"
+                );
+                return;
+            }
+
             loop {
                 let now_playing = match backend_client
                     .get_now_playing(&channel_id, client_id.clone(), &Duration::from_secs(0))

@@ -35,7 +35,7 @@ pub(crate) fn make_ffmpeg_decoder(
             "quiet",
             "-hide_banner",
             "-ss",
-            &format!("{:.4}", offset.as_secs()),
+            &format!("{:.4}", offset.as_secs_f32()),
             "-i",
             &source_url,
             "-vn",
@@ -74,7 +74,6 @@ pub(crate) fn make_ffmpeg_decoder(
     };
 
     actix_rt::spawn({
-        let stdout = stdout;
         let logger = logger.clone();
         let metrics = metrics.clone();
 
@@ -100,6 +99,8 @@ pub(crate) fn make_ffmpeg_decoder(
 
                 bytes_sent += bytes_len;
             }
+
+            drop(stdout);
 
             if let Ok(exit_status) = status.await {
                 debug!(decoder_logger, "Process exit"; "exit_code" => exit_status.code());

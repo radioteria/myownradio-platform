@@ -8,6 +8,7 @@ use std::time::Duration;
 pub struct Metrics {
     spawned_decoder_processes: Gauge,
     spawned_encoder_processes: Gauge,
+    player_loops_active: Gauge,
     streaming_in_progress: Gauge,
     prometheus_registry: Registry,
     http_requests_total: IntCounterVec,
@@ -25,6 +26,12 @@ impl Metrics {
         let spawned_encoder_processes = Gauge::with_opts(Opts::new(
             "spawned_encoder_processes",
             "Number of spawned encoder processes",
+        ))
+        .unwrap();
+
+        let player_loops_active = Gauge::with_opts(Opts::new(
+            "player_loops_active",
+            "Number of started player loops",
         ))
         .unwrap();
 
@@ -76,6 +83,9 @@ impl Metrics {
             .register(Box::new(spawned_encoder_processes.clone()))
             .unwrap();
         prometheus_registry
+            .register(Box::new(player_loops_active.clone()))
+            .unwrap();
+        prometheus_registry
             .register(Box::new(streaming_in_progress.clone()))
             .unwrap();
         prometheus_registry
@@ -88,6 +98,7 @@ impl Metrics {
         Self {
             spawned_decoder_processes,
             spawned_encoder_processes,
+            player_loops_active,
             streaming_in_progress,
             prometheus_registry,
             http_requests_total,
@@ -109,6 +120,14 @@ impl Metrics {
 
     pub fn dec_spawned_encoder_processes(&self) {
         self.spawned_encoder_processes.dec()
+    }
+
+    pub fn inc_player_loops_active(&self) {
+        self.player_loops_active.inc()
+    }
+
+    pub fn dec_player_loops_active(&self) {
+        self.player_loops_active.dec()
     }
 
     pub fn inc_streaming_in_progress(&self) {

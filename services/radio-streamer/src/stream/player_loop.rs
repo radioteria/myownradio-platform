@@ -69,6 +69,10 @@ pub(crate) async fn make_player_loop(
         let mut tx = tx;
 
         async move {
+            metrics.inc_player_loops_active();
+
+            defer!(metrics.dec_player_loops_active());
+
             if let Err(error) = tx
                 .send(PlayerLoopEvent::ChannelName(channel_info.name))
                 .await

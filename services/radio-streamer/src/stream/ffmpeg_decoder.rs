@@ -7,6 +7,7 @@ use crate::stream::types::TimedBuffer;
 use async_process::{Command, Stdio};
 use futures::channel::mpsc;
 use futures::SinkExt;
+use scopeguard::defer;
 use slog::{debug, error, o, Logger};
 use std::time::Duration;
 
@@ -82,25 +83,23 @@ pub(crate) fn make_ffmpeg_decoder(
         async move {
             metrics.inc_spawned_decoder_processes();
 
-            {
-                let mut stdout = stdout;
-                let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
+            defer!(metrics.dec_spawned_decoder_processes());
 
-                while let Some(Ok(bytes)) = read_from_stdout(&mut stdout, &mut buffer).await {
-                    let bytes_len = bytes.len();
-                    let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
-                    let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
-                    let timed_bytes = TimedBuffer(bytes, decoding_time);
+            let mut stdout = stdout;
+            let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
 
-                    if let Err(error) = tx.send(timed_bytes).await {
-                        break;
-                    };
+            while let Some(Ok(bytes)) = read_from_stdout(&mut stdout, &mut buffer).await {
+                let bytes_len = bytes.len();
+                let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
+                let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
+                let timed_bytes = TimedBuffer(bytes, decoding_time);
 
-                    bytes_sent += bytes_len;
-                }
+                if let Err(error) = tx.send(timed_bytes).await {
+                    break;
+                };
+
+                bytes_sent += bytes_len;
             }
-
-            metrics.dec_spawned_decoder_processes();
 
             if let Ok(exit_status) = status.await {
                 debug!(decoder_logger, "Process exit"; "exit_code" => exit_status.code());

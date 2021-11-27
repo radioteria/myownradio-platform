@@ -1,9 +1,13 @@
 use crate::backend_client::{BackendClient, MorBackendClientError};
+use crate::helpers::io::sleep_until_deadline;
+use crate::metrics::Metrics;
 use crate::stream::ffmpeg_decoder::{make_ffmpeg_decoder, DecoderError};
 use crate::stream::types::TimedBuffer;
-use futures::channel::mpsc;
+use actix_rt::time::Instant;
+use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use slog::{debug, error, Logger};
+use std::ops::Deref;
 use std::sync::Mutex;
 use std::time::Duration;
 
@@ -20,6 +24,7 @@ pub(crate) enum PlayerLoopError {
 pub(crate) enum PlayerLoopEvent {
     TimedBuffer(TimedBuffer),
     TitleChange(String),
+    RestartSender(oneshot::Sender<()>),
 }
 
 pub(crate) async fn make_player_loop(
@@ -28,9 +33,13 @@ pub(crate) async fn make_player_loop(
     path_to_ffmpeg: &str,
     backend_client: &BackendClient,
     logger: &Logger,
+    metrics: &Metrics,
 ) -> Result<mpsc::Receiver<PlayerLoopEvent>, PlayerLoopError> {
     let logger = logger.clone();
     let client_id = client_id.clone();
+    let channel_id = channel_id.clone();
+    let path_to_ffmpeg = path_to_ffmpeg.to_owned();
+    let metrics = metrics.clone();
 
     let (tx, rx) = mpsc::channel(0);
 
@@ -49,8 +58,11 @@ pub(crate) async fn make_player_loop(
     };
 
     actix_rt::spawn({
+        let backend_client = backend_client.clone();
         let logger = logger.clone();
+
         let stored_next_track_decoder: Mutex<Option<_>> = Mutex::default();
+        let base_time = Instant::now();
 
         let mut tx = tx;
 
@@ -70,6 +82,7 @@ pub(crate) async fn make_player_loop(
                         break;
                     }
                 };
+                let time = Instant::now();
 
                 let mut track_decoder = match stored_next_track_decoder
                     .lock()
@@ -82,9 +95,9 @@ pub(crate) async fn make_player_loop(
                     _ => match make_ffmpeg_decoder(
                         &now_playing.current_track.url,
                         &now_playing.current_track.offset,
-                        path_to_ffmpeg,
-                        &backend_client,
+                        &path_to_ffmpeg,
                         &logger,
+                        &metrics,
                     ) {
                         Ok(track_decoder) => track_decoder,
                         Err(error) => {
@@ -97,9 +110,9 @@ pub(crate) async fn make_player_loop(
                 let next_track_decoder = match make_ffmpeg_decoder(
                     &now_playing.next_track.url,
                     &Duration::from_secs(0),
-                    path_to_ffmpeg,
-                    &backend_client,
+                    &path_to_ffmpeg,
                     &logger,
+                    &metrics,
                 ) {
                     Ok(next_track_decoder) => next_track_decoder,
                     Err(error) => {
@@ -116,11 +129,50 @@ pub(crate) async fn make_player_loop(
                 let title = now_playing.current_track.title.clone();
 
                 if let Err(error) = tx.send(PlayerLoopEvent::TitleChange(title)).await {
-                    debug!(logger, "Stopping player loop: channel closed");
+                    debug!(
+                        logger,
+                        "Stopping player loop: channel closed on sending title change"
+                    );
+                    return;
                 }
 
-                while let Some(buffer) = track_decoder.next().await {
-                    // TODO
+                let (restart_tx, mut restart_rx) = oneshot::channel::<()>();
+
+                if let Err(error) = tx.send(PlayerLoopEvent::RestartSender(restart_tx)).await {
+                    debug!(
+                        logger,
+                        "Stopping player loop: channel closed on sending restart sender"
+                    );
+                    return;
+                }
+
+                let time_offset = time - base_time;
+
+                while let Some(TimedBuffer(bytes, bytes_offset)) = track_decoder.next().await {
+                    let deadline = time + bytes_offset;
+
+                    if let Err(error) = sleep_until_deadline(deadline, &mut restart_rx).await {
+                        debug!(logger, "Sleep cancelled");
+                    }
+
+                    if let Ok(Some(())) = restart_rx.try_recv() {
+                        debug!(logger, "Exit current track loop on restart signal");
+                        break;
+                    }
+
+                    if let Err(error) = tx
+                        .send(PlayerLoopEvent::TimedBuffer(TimedBuffer(
+                            bytes,
+                            time_offset + bytes_offset,
+                        )))
+                        .await
+                    {
+                        debug!(
+                            logger,
+                            "Stopping player loop: channel closed on sending buffer"
+                        );
+                        return;
+                    }
                 }
             }
         }

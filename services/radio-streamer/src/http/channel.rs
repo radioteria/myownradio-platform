@@ -1,12 +1,15 @@
 use crate::backend_client::BackendClient;
 use crate::config::Config;
 use crate::metrics::Metrics;
-use crate::stream::player_loop::{make_player_loop, PlayerLoopError};
-use actix_web::web::{Data, Query};
+use crate::stream::player_loop::{make_player_loop, PlayerLoopError, PlayerLoopEvent};
+use crate::stream::types::TimedBuffer;
+use actix_web::web::{Bytes, Data, Query};
 use actix_web::{get, web, HttpResponse, Responder};
+use futures::channel::mpsc;
+use futures::{io, SinkExt, StreamExt};
 use serde::Deserialize;
-use slog::{error, Logger};
-use std::sync::Arc;
+use slog::{debug, error, Logger};
+use std::sync::{Arc, Mutex};
 
 #[derive(Deserialize, Clone)]
 pub struct ListenQueryParams {
@@ -23,7 +26,7 @@ pub(crate) async fn test_channel_playback(
     metrics: Data<Arc<Metrics>>,
     config: Data<Arc<Config>>,
 ) -> impl Responder {
-    let player_loop_events = match make_player_loop(
+    let mut player_loop_events = match make_player_loop(
         &channel_id,
         &query_params.client_id,
         &config.path_to_ffmpeg,
@@ -44,5 +47,42 @@ pub(crate) async fn test_channel_playback(
         }
     };
 
-    HttpResponse::Ok().finish()
+    let (bytes_tx, bytes_rx) = mpsc::channel::<Result<_, io::Error>>(0);
+    let restart_sender = Mutex::new(Option::None);
+
+    actix_rt::spawn({
+        let mut bytes_tx = bytes_tx.clone();
+
+        async move {
+            while let Some(event) = player_loop_events.next().await {
+                match event {
+                    PlayerLoopEvent::TimedBuffer(TimedBuffer(bytes, _)) => {
+                        if let Err(error) = bytes_tx.send(Ok(bytes)).await {
+                            break;
+                        }
+                    }
+                    PlayerLoopEvent::ChannelName(name) => {
+                        debug!(logger, "Received channel name"; "name" => name);
+                    }
+                    PlayerLoopEvent::NewTitle(title) => {
+                        debug!(logger, "Received new title"; "title" => title);
+                    }
+                    PlayerLoopEvent::RestartSender(sender) => {
+                        debug!(logger, "Received restart sender");
+                        let _ = restart_sender.lock().unwrap().replace(sender);
+                    }
+                }
+            }
+
+            drop(restart_sender);
+        }
+    });
+
+    let mut response = HttpResponse::Ok();
+
+    response
+        .content_type("audio/l16;rate=48000;channels=2;endianness=little-endian")
+        .force_close();
+
+    response.streaming(bytes_rx)
 }

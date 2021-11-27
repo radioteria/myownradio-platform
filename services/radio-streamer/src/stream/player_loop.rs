@@ -7,7 +7,6 @@ use actix_rt::time::Instant;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use slog::{debug, error, Logger};
-use std::ops::Deref;
 use std::sync::Mutex;
 use std::time::Duration;
 
@@ -24,7 +23,7 @@ pub(crate) enum PlayerLoopError {
 pub(crate) enum PlayerLoopEvent {
     ChannelName(String),
     TimedBuffer(TimedBuffer),
-    TitleChange(String),
+    NewTitle(String),
     RestartSender(oneshot::Sender<()>),
 }
 
@@ -141,7 +140,7 @@ pub(crate) async fn make_player_loop(
 
                 let title = now_playing.current_track.title.clone();
 
-                if let Err(error) = tx.send(PlayerLoopEvent::TitleChange(title)).await {
+                if let Err(error) = tx.send(PlayerLoopEvent::NewTitle(title)).await {
                     debug!(
                         logger,
                         "Stopping player loop: channel closed on sending title change"

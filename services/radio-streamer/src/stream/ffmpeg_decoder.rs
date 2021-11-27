@@ -93,7 +93,6 @@ pub(crate) fn make_ffmpeg_decoder(
                     let timed_bytes = TimedBuffer(bytes, decoding_time);
 
                     if let Err(error) = tx.send(timed_bytes).await {
-                        error!(logger, "Unable to send data from decoder"; "error" => ?error);
                         break;
                     };
 

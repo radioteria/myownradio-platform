@@ -6,7 +6,8 @@ use crate::stream::types::TimedBuffer;
 use actix_rt::time::Instant;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
-use slog::{debug, error, Logger};
+use scopeguard::defer;
+use slog::{debug, error, info, Logger};
 use std::sync::Mutex;
 use std::time::Duration;
 
@@ -78,6 +79,10 @@ pub(crate) async fn make_player_loop(
                 );
                 return;
             }
+
+            info!(logger, "Started player loop"; "channel_id" => &channel_id);
+
+            defer!(info!(logger, "Stopped player loop"; "channel_id" => &channel_id););
 
             loop {
                 let now_playing = match backend_client

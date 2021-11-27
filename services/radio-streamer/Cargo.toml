@@ -17,6 +17,7 @@ async-process = "1.0.2"
 bytebuffer = "0.2.1"
 serde_millis = "0.1.1"
 async-broadcast = "0.3.3"
+scopeguard = "1.1.0"
 
 [dependencies.slog]
 version = "2.7.0"

@@ -7,7 +7,7 @@ use crate::stream::types::TimedBuffer;
 use async_process::{Command, Stdio};
 use futures::channel::mpsc;
 use futures::SinkExt;
-use slog::{debug, error, Logger};
+use slog::{debug, error, o, Logger};
 use std::time::Duration;
 
 const STDIO_BUFFER_SIZE: usize = 4096;
@@ -26,6 +26,7 @@ pub(crate) fn make_ffmpeg_decoder(
     metrics: &Metrics,
 ) -> Result<mpsc::Receiver<TimedBuffer>, DecoderError> {
     let (mut tx, rx) = mpsc::channel::<TimedBuffer>(0);
+    let decoder_logger = logger.new(o!("kind" => "ffmpeg_decoder"));
 
     let mut process = match Command::new(&path_to_ffmpeg)
         .args(&[
@@ -58,6 +59,8 @@ pub(crate) fn make_ffmpeg_decoder(
             return Err(DecoderError::ProcessError);
         }
     };
+
+    debug!(decoder_logger, "Process spawn"; "source_url" => source_url, "offset" => ?offset);
 
     let status = process.status();
 
@@ -101,7 +104,7 @@ pub(crate) fn make_ffmpeg_decoder(
             metrics.dec_spawned_decoder_processes();
 
             if let Ok(exit_status) = status.await {
-                debug!(logger, "Decoder process exited"; "exit_code" => exit_status.code());
+                debug!(decoder_logger, "Process exit"; "exit_code" => exit_status.code());
             }
         }
     });

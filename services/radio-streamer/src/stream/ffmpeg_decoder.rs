@@ -1,6 +1,8 @@
 use crate::helpers::io::read_from_stdout;
 use crate::metrics::Metrics;
-use crate::stream::constants::{AUDIO_BYTES_PER_SECOND, AUDIO_CHANNELS, AUDIO_SAMPLING_FREQUENCY};
+use crate::stream::constants::{
+    AUDIO_BYTES_PER_SECOND, AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY,
+};
 use crate::stream::types::TimedBuffer;
 use async_process::{Command, Stdio};
 use futures::channel::mpsc;
@@ -40,7 +42,7 @@ pub(crate) fn make_ffmpeg_decoder(
             "-ar",
             &AUDIO_SAMPLING_FREQUENCY.to_string(),
             "-ac",
-            &AUDIO_CHANNELS.to_string(),
+            &AUDIO_CHANNELS_NUMBER.to_string(),
             "-f",
             "s16le", // BYTES_PER_SAMPLE = 2
             "-",

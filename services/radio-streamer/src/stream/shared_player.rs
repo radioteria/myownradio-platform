@@ -1,9 +1,10 @@
+use core::ptr;
 use futures::channel::mpsc;
-use futures::StreamExt;
+use futures::{SinkExt, StreamExt};
 use slog::Logger;
 use std::collections::HashSet;
 use std::io::Read;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 
 pub(crate) const SHARED_PLAYER_EMPTY_TIMEOUT: Duration = Duration::from_secs(30);
@@ -15,7 +16,7 @@ pub(crate) enum SharedPlayerError {}
 pub(crate) enum SharedPlayerEvent {}
 
 pub(crate) struct SharedPlayer {
-    txs: Arc<RwLock<HashSet<mpsc::Sender<SharedPlayerEvent>>>>,
+    txs: Arc<Mutex<Vec<mpsc::Sender<SharedPlayerEvent>>>>,
     current_channel_title: Arc<RwLock<Option<String>>>,
     current_track_title: Arc<RwLock<Option<String>>>,
 }
@@ -23,7 +24,7 @@ pub(crate) struct SharedPlayer {
 impl SharedPlayer {
     pub fn create(logger: &Logger) -> Result<Self, SharedPlayerError> {
         let (tx, mut rx) = mpsc::channel::<SharedPlayerEvent>(0);
-        let txs: Arc<RwLock<HashSet<mpsc::Sender<_>>>> = Arc::default();
+        let txs: Arc<Mutex<Vec<mpsc::Sender<_>>>> = Arc::default();
         let current_channel_title = Arc::default();
         let current_track_title = Arc::default();
 
@@ -33,23 +34,19 @@ impl SharedPlayer {
 
             async move {
                 while let Some(event) = rx.next().await {
-                    let mut disconnected_txs = HashSet::new();
+                    let mut has_disconnected_senders = false;
 
-                    for mut tx in txs.read().unwrap().iter() {
-                        if let Err(error) = tx.try_send(event.clone()) {
-                            if error.is_full() {
-                                // Buffer is full: skip sending message
-                            } else if error.is_disconnected() {
-                                // Disconnected: remove client
-                                disconnected_txs.insert(tx)
-                            }
+                    for tx in txs.lock().expect("Unable to acquire lock").iter_mut() {
+                        if let Err(_) = tx.send(event.clone()).await {
+                            debug!(logger, "Unable to send event: channel closed");
+                            has_disconnected_senders = true;
                         }
                     }
 
-                    let mut txs = txs.write().unwrap();
-
-                    for tx in disconnected_txs.into_iter() {
-                        txs.remove(tx);
+                    if has_disconnected_senders {
+                        txs.lock()
+                            .expect("Unable to acquire lock")
+                            .retain(|s| !s.is_closed());
                     }
                 }
             }
@@ -60,5 +57,13 @@ impl SharedPlayer {
             current_channel_title,
             current_track_title,
         })
+    }
+
+    pub fn connect(&self) -> mpsc::Receiver<SharedPlayerEvent> {
+        let (tx, rx) = mpsc::channel(0);
+
+        self.txs.lock().unwrap().push(tx);
+
+        rx
     }
 }

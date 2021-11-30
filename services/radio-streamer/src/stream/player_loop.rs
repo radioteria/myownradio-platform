@@ -21,10 +21,10 @@ pub(crate) enum PlayerLoopError {
 }
 
 #[derive(Debug)]
-pub(crate) enum PlayerLoopEvent {
-    ChannelName(String),
+pub(crate) enum PlayerLoopMessage {
+    ChannelTitle(String),
     TimedBuffer(TimedBuffer),
-    NewTitle(String),
+    TrackTitle(String),
     RestartSender(oneshot::Sender<()>),
 }
 
@@ -35,7 +35,7 @@ pub(crate) async fn make_player_loop(
     backend_client: &BackendClient,
     logger: &Logger,
     metrics: &Metrics,
-) -> Result<mpsc::Receiver<PlayerLoopEvent>, PlayerLoopError> {
+) -> Result<mpsc::Receiver<PlayerLoopMessage>, PlayerLoopError> {
     let client_id = client_id.clone();
     let channel_id = channel_id.clone();
     let path_to_ffmpeg = path_to_ffmpeg.to_owned();
@@ -74,7 +74,7 @@ pub(crate) async fn make_player_loop(
             defer!(metrics.dec_player_loops_active());
 
             if let Err(error) = tx
-                .send(PlayerLoopEvent::ChannelName(channel_info.name))
+                .send(PlayerLoopMessage::ChannelTitle(channel_info.name))
                 .await
             {
                 debug!(
@@ -149,7 +149,7 @@ pub(crate) async fn make_player_loop(
 
                 let title = now_playing.current_track.title.clone();
 
-                if let Err(error) = tx.send(PlayerLoopEvent::NewTitle(title)).await {
+                if let Err(error) = tx.send(PlayerLoopMessage::TrackTitle(title)).await {
                     debug!(
                         logger,
                         "Stopping player loop: channel closed on sending title change"
@@ -159,7 +159,7 @@ pub(crate) async fn make_player_loop(
 
                 let (restart_tx, mut restart_rx) = oneshot::channel::<()>();
 
-                if let Err(error) = tx.send(PlayerLoopEvent::RestartSender(restart_tx)).await {
+                if let Err(error) = tx.send(PlayerLoopMessage::RestartSender(restart_tx)).await {
                     debug!(
                         logger,
                         "Stopping player loop: channel closed on sending restart sender"
@@ -182,7 +182,7 @@ pub(crate) async fn make_player_loop(
                     }
 
                     if let Err(error) = tx
-                        .send(PlayerLoopEvent::TimedBuffer(TimedBuffer(
+                        .send(PlayerLoopMessage::TimedBuffer(TimedBuffer(
                             bytes,
                             time_offset + bytes_offset,
                         )))

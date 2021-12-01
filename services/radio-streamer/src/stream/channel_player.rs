@@ -74,22 +74,19 @@ impl ChannelPlayer {
 struct Inner {
     logger: Logger,
     senders: Arc<Mutex<Vec<mpsc::Sender<ChannelPlayerMessage>>>>,
-    current_channel_title: Arc<RwLock<Option<String>>>,
-    current_track_title: Arc<RwLock<Option<String>>>,
-    restart_sender: Arc<Mutex<Option<oneshot::Sender<()>>>>,
-    handle: Arc<Mutex<Option<JoinHandle<()>>>>,
+    current_channel_title: RwLock<Option<String>>,
+    current_track_title: RwLock<Option<String>>,
+    restart_sender: Mutex<Option<oneshot::Sender<()>>>,
+    handle: Mutex<Option<JoinHandle<()>>>,
 }
 
 impl Drop for Inner {
     fn drop(&mut self) {
-        debug!(self.logger, "1");
         if let Some(handle) = self.handle.lock().unwrap().take() {
-            debug!(self.logger, "2");
             handle.abort();
-            debug!(self.logger, "3");
         }
 
-        debug!(self.logger, "Shared player has been destroyed");
+        debug!(self.logger, "Channel player has been destroyed");
     }
 }
 
@@ -103,26 +100,30 @@ impl Inner {
         metrics: &Metrics,
     ) -> Result<Arc<Self>, ChannelPlayerError> {
         let senders: Arc<Mutex<Vec<mpsc::Sender<_>>>> = Arc::default();
-        let restart_sender: Arc<Mutex<Option<_>>> = Arc::default();
-        let current_channel_title: Arc<RwLock<Option<String>>> = Arc::default();
-        let current_track_title: Arc<RwLock<Option<String>>> = Arc::default();
-        let handle: Arc<Mutex<Option<_>>> = Arc::default();
+        let restart_sender: Mutex<Option<_>> = Mutex::default();
+        let current_channel_title: RwLock<Option<String>> = RwLock::default();
+        let current_track_title: RwLock<Option<String>> = RwLock::default();
+        let handle: Mutex<Option<_>> = Mutex::default();
 
         let logger = logger.new(o!("channel_id" => *channel_id));
 
-        let mut player_loop_messages = match make_player_loop(
-            channel_id,
-            client_id,
-            path_to_ffmpeg,
-            backend_client,
-            &logger.new(o!("service" => "player_loop")),
-            metrics,
-        )
-        .await
-        {
-            Ok(player_loop_events) => player_loop_events,
-            Err(error) => {
-                return Err(ChannelPlayerError::PlayerLoopError(error));
+        let mut player_loop_messages = {
+            let player_loop_logger = logger.new(o!("service" => "player_loop"));
+
+            match make_player_loop(
+                channel_id,
+                client_id,
+                path_to_ffmpeg,
+                backend_client,
+                &player_loop_logger,
+                metrics,
+            )
+            .await
+            {
+                Ok(player_loop_events) => player_loop_events,
+                Err(error) => {
+                    return Err(ChannelPlayerError::PlayerLoopError(error));
+                }
             }
         };
 
@@ -187,20 +188,23 @@ impl Inner {
 
     async fn send_all(&self, event: ChannelPlayerMessage) {
         let logger = self.logger.clone();
-        let txs = self.senders.clone();
 
         let mut has_disconnected_senders = false;
 
-        for tx in txs.lock().unwrap().iter_mut() {
-            if let Err(_) = tx.send(event.clone()).await {
-                debug!(logger, "Unable to send event: channel closed");
+        for sender in self.senders.lock().unwrap().iter_mut() {
+            if let Err(_) = sender.send(event.clone()).await {
+                debug!(logger, "Unable to send message: channel closed");
                 has_disconnected_senders = true;
             }
         }
 
         if has_disconnected_senders {
             debug!(logger, "Performing retain");
-            txs.lock().unwrap().retain(|s| !s.is_closed());
+
+            self.senders
+                .lock()
+                .unwrap()
+                .retain(|sender| !sender.is_closed());
         }
 
         // TODO If no active receivers left, lets start the player shutdown timeout.

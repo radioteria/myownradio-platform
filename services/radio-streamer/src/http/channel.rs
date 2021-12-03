@@ -34,6 +34,7 @@ pub(crate) async fn test_channel_playback(
         &backend_client,
         &logger,
         &metrics,
+        || (),
     )
     .await
     {

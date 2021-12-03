@@ -29,14 +29,18 @@ pub(crate) struct ChannelPlayer {
 }
 
 impl ChannelPlayer {
-    pub async fn create(
+    pub async fn create<F>(
         channel_id: &usize,
         client_id: &Option<String>,
         path_to_ffmpeg: &str,
         backend_client: &BackendClient,
         logger: &Logger,
         metrics: &Metrics,
-    ) -> Result<Self, ChannelPlayerError> {
+        on_all_receivers_disconnected: F,
+    ) -> Result<Self, ChannelPlayerError>
+    where
+        F: Fn() -> () + 'static,
+    {
         let inner = Inner::create(
             channel_id,
             client_id,
@@ -44,6 +48,7 @@ impl ChannelPlayer {
             backend_client,
             logger,
             metrics,
+            on_all_receivers_disconnected,
         )
         .await?;
 
@@ -57,7 +62,9 @@ impl ChannelPlayer {
             let senders = self.inner.senders.clone();
 
             async move {
-                senders.lock().unwrap().push(tx);
+                let mut senders = senders.lock().unwrap();
+
+                senders.push(tx);
             }
         });
 
@@ -69,6 +76,14 @@ impl ChannelPlayer {
             let _ = sender.send(());
         }
     }
+
+    pub fn get_channel_title(&self) -> Option<String> {
+        self.inner.current_channel_title.read().unwrap().clone()
+    }
+
+    pub fn get_track_title(&self) -> Option<String> {
+        self.inner.current_track_title.read().unwrap().clone()
+    }
 }
 
 struct Inner {
@@ -78,6 +93,7 @@ struct Inner {
     current_track_title: RwLock<Option<String>>,
     restart_sender: Mutex<Option<oneshot::Sender<()>>>,
     handle: Mutex<Option<JoinHandle<()>>>,
+    on_all_receivers_disconnected: Box<dyn Fn() -> ()>,
 }
 
 impl Drop for Inner {
@@ -91,14 +107,18 @@ impl Drop for Inner {
 }
 
 impl Inner {
-    pub async fn create(
+    pub async fn create<F>(
         channel_id: &usize,
         client_id: &Option<String>,
         path_to_ffmpeg: &str,
         backend_client: &BackendClient,
         logger: &Logger,
         metrics: &Metrics,
-    ) -> Result<Arc<Self>, ChannelPlayerError> {
+        on_all_receivers_disconnected: F,
+    ) -> Result<Arc<Self>, ChannelPlayerError>
+    where
+        F: Fn() -> () + 'static,
+    {
         let senders: Arc<Mutex<Vec<mpsc::Sender<_>>>> = Arc::default();
         let restart_sender: Mutex<Option<_>> = Mutex::default();
         let current_channel_title: RwLock<Option<String>> = RwLock::default();
@@ -134,6 +154,7 @@ impl Inner {
             current_channel_title,
             current_track_title,
             handle,
+            on_all_receivers_disconnected: Box::new(on_all_receivers_disconnected),
         });
 
         let handle = actix_rt::spawn({
@@ -201,12 +222,13 @@ impl Inner {
         if has_disconnected_senders {
             debug!(logger, "Performing retain");
 
-            self.senders
-                .lock()
-                .unwrap()
-                .retain(|sender| !sender.is_closed());
-        }
+            let mut senders = self.senders.lock().unwrap();
 
-        // TODO If no active receivers left, lets start the player shutdown timeout.
+            senders.retain(|sender| !sender.is_closed());
+
+            if senders.len() == 0 {
+                (self.on_all_receivers_disconnected)();
+            }
+        }
     }
 }

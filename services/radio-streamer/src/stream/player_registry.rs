@@ -1,7 +1,6 @@
-use crate::stream::channel_player::{ChannelPlayer, ChannelPlayerError, ChannelPlayerMessage};
+use crate::stream::channel_player::{ChannelPlayer, ChannelPlayerError};
 use crate::stream::player_loop::PlayerLoopError;
 use crate::{BackendClient, Metrics};
-use futures::channel::mpsc;
 use slog::{debug, Logger};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -43,7 +42,7 @@ impl PlayerRegistry {
         }
     }
 
-    pub async fn get_channel_player(
+    pub async fn get_player(
         &self,
         channel_id: &usize,
         client_id: &Option<String>,

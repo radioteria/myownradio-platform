@@ -28,7 +28,7 @@ pub(crate) async fn test_channel_playback(
     player_registry: Data<PlayerRegistry>,
 ) -> impl Responder {
     let channel_player = match player_registry
-        .get_channel_player(&channel_id, &query_params.client_id)
+        .get_player(&channel_id, &query_params.client_id)
         .await
     {
         Ok(channel_player) => channel_player,

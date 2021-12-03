@@ -19,6 +19,7 @@ use crate::http::channel::test_channel_playback;
 use crate::http::metrics::get_metrics;
 use crate::http::streaming::{get_active_streams, listen_by_channel_id, restart_by_channel_id};
 use crate::metrics::Metrics;
+use crate::stream::player_registry::PlayerRegistry;
 use crate::transcoder::TranscoderService;
 use actix_rt::signal::unix;
 use actix_web::dev::Service;
@@ -69,6 +70,13 @@ async fn main() -> Result<()> {
     ));
     let channel_player_registry = Arc::new(ChannelPlayerRegistry::new());
 
+    let player_registry = PlayerRegistry::new(
+        config.path_to_ffmpeg.clone(),
+        backend_client.clone(),
+        logger.new(o!("service" => "ChannelPlayer")),
+        metrics.clone(),
+    );
+
     info!(logger, "Starting application...");
 
     let server = HttpServer::new({
@@ -111,6 +119,7 @@ async fn main() -> Result<()> {
                 .data(transcoder.clone())
                 .data(channel_player_factory.clone())
                 .data(channel_player_registry.clone())
+                .data(player_registry.clone())
                 .service(listen_by_channel_id)
                 .service(restart_by_channel_id)
                 .service(get_active_streams)

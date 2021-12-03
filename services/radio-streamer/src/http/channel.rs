@@ -3,7 +3,9 @@ use crate::config::Config;
 use crate::metrics::Metrics;
 use crate::stream::channel_player::{ChannelPlayer, ChannelPlayerError, ChannelPlayerMessage};
 use crate::stream::player_loop::PlayerLoopError;
+use crate::stream::player_registry::PlayerRegistryError;
 use crate::stream::types::TimedBuffer;
+use crate::PlayerRegistry;
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpResponse, Responder};
 use futures::channel::mpsc;
@@ -22,33 +24,22 @@ pub struct ListenQueryParams {
 pub(crate) async fn test_channel_playback(
     channel_id: web::Path<usize>,
     query_params: Query<ListenQueryParams>,
-    backend_client: Data<Arc<BackendClient>>,
     logger: Data<Arc<Logger>>,
-    metrics: Data<Arc<Metrics>>,
-    config: Data<Arc<Config>>,
+    player_registry: Data<PlayerRegistry>,
 ) -> impl Responder {
-    let shared_player = match ChannelPlayer::create(
-        &channel_id,
-        &query_params.client_id,
-        &config.path_to_ffmpeg,
-        &backend_client,
-        &logger,
-        &metrics,
-        || (),
-    )
-    .await
+    let channel_player = match player_registry
+        .get_channel_player(&channel_id, &query_params.client_id)
+        .await
     {
-        Ok(shared_player) => shared_player,
-        Err(ChannelPlayerError::PlayerLoopError(PlayerLoopError::ChannelNotFound)) => {
+        Ok(channel_player) => channel_player,
+        Err(PlayerRegistryError::ChannelNotFound) => {
             return HttpResponse::NotFound().finish();
         }
-        Err(error) => {
-            error!(logger, "Unexpected error on starting shared player"; "error" => ?error);
-
+        Err(_) => {
             return HttpResponse::InternalServerError().finish();
         }
     };
-    let mut player_messages = shared_player.create_receiver();
+    let mut player_messages = channel_player.create_receiver();
 
     let (bytes_tx, bytes_rx) = mpsc::channel::<Result<_, io::Error>>(0);
 
@@ -71,8 +62,6 @@ pub(crate) async fn test_channel_playback(
                     }
                 }
             }
-
-            drop(shared_player);
         }
     });
 

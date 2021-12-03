@@ -39,7 +39,7 @@ impl ChannelPlayer {
         on_all_receivers_disconnected: F,
     ) -> Result<Self, ChannelPlayerError>
     where
-        F: Fn() -> () + 'static,
+        F: 'static + Fn() -> () + Send + Sync,
     {
         let inner = Inner::create(
             channel_id,
@@ -93,7 +93,7 @@ struct Inner {
     current_track_title: RwLock<Option<String>>,
     restart_sender: Mutex<Option<oneshot::Sender<()>>>,
     handle: Mutex<Option<JoinHandle<()>>>,
-    on_all_receivers_disconnected: Box<dyn Fn() -> ()>,
+    on_all_receivers_disconnected: Box<dyn Fn() -> () + Send + Sync>,
 }
 
 impl Drop for Inner {
@@ -117,7 +117,7 @@ impl Inner {
         on_all_receivers_disconnected: F,
     ) -> Result<Arc<Self>, ChannelPlayerError>
     where
-        F: Fn() -> () + 'static,
+        F: 'static + Fn() -> () + Send + Sync,
     {
         let senders: Arc<Mutex<Vec<mpsc::Sender<_>>>> = Arc::default();
         let restart_sender: Mutex<Option<_>> = Mutex::default();

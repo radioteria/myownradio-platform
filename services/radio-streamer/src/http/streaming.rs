@@ -1,16 +1,17 @@
 use crate::audio_formats::AudioFormats;
-use crate::backend_client::{BackendClient, MorBackendClientError};
-use crate::channel::factory::ChannelPlayerFactory;
-use crate::channel::registry::{ChannelKey, ChannelPlayerRegistry};
+use crate::channel::registry::ChannelPlayerRegistry;
 use crate::config::Config;
-use crate::icy_metadata::{IcyMetadataMuxer, ICY_METADATA_INTERVAL};
-use crate::transcoder::TranscoderService;
+use crate::stream::channel_player::ChannelPlayerMessage;
+use crate::stream::ffmpeg_encoder::make_ffmpeg_encoder;
+use crate::stream::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
+use crate::stream::player_registry::PlayerRegistryError;
+use crate::stream::types::TimedBuffer;
+use crate::{Metrics, PlayerRegistry};
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
-use futures::channel::mpsc;
-use futures::{SinkExt, StreamExt, TryStreamExt};
+use futures::{SinkExt, StreamExt};
 use serde::Deserialize;
-use slog::{error, Logger};
+use slog::{debug, error, Logger};
 use std::sync::Arc;
 
 #[get("/streams")]
@@ -54,37 +55,22 @@ pub struct ListenQueryParams {
 }
 
 #[get("/listen/{channel_id}")]
-pub async fn listen_by_channel_id(
+pub(crate) async fn listen_channel(
     request: HttpRequest,
     channel_id: web::Path<usize>,
     query_params: Query<ListenQueryParams>,
-    backend_client: Data<Arc<BackendClient>>,
-    transcoder: Data<Arc<TranscoderService>>,
     logger: Data<Arc<Logger>>,
-    channel_player_factory: Data<Arc<ChannelPlayerFactory>>,
-    channel_player_registry: Data<Arc<ChannelPlayerRegistry>>,
+    metrics: Data<Arc<Metrics>>,
+    player_registry: Data<PlayerRegistry>,
+    config: Data<Arc<Config>>, // TODO Remove from app data
 ) -> impl Responder {
-    let client_id = query_params.client_id.clone();
-
-    let channel_info = match backend_client
-        .get_channel_info(&channel_id, client_id.clone())
-        .await
-    {
-        Ok(channel_info) => channel_info,
-        Err(MorBackendClientError::ChannelNotFound) => {
-            return HttpResponse::NotFound().finish();
-        }
-        Err(error) => {
-            error!(logger, "Unable to get channel info"; "error" => ?error);
-            return HttpResponse::ServiceUnavailable().finish();
-        }
-    };
+    eprintln!("Here");
 
     let format_param = query_params.format.clone();
 
     let format = format_param
         .and_then(|f| AudioFormats::from_string(&f))
-        .unwrap_or(AudioFormats::MP3_192K);
+        .unwrap_or(AudioFormats::MP3_320K);
 
     let is_icy_enabled = request
         .headers()
@@ -92,47 +78,59 @@ pub async fn listen_by_channel_id(
         .filter(|v| v.to_str().unwrap() == "1")
         .is_some();
 
-    let (enc_sender, enc_receiver) = match transcoder.encoder(&format) {
-        Ok(ok) => ok,
+    let channel_player = match player_registry
+        .get_player(&channel_id, &query_params.client_id)
+        .await
+    {
+        Ok(channel_player) => channel_player,
+        Err(PlayerRegistryError::ChannelNotFound) => {
+            return HttpResponse::NotFound().finish();
+        }
         Err(error) => {
-            error!(logger, "Unable to start audio encoder"; "error" => ?error);
+            error!(logger, "Error"; "error" => ?error);
             return HttpResponse::InternalServerError().finish();
         }
     };
 
-    let channel_player = {
-        let channel_key = ChannelKey(*channel_id, client_id.clone());
+    let player_messages = channel_player.create_receiver();
 
-        match channel_player_registry.get(&channel_key) {
-            Some(channel_player) => channel_player,
-            None => {
-                let channel_player = channel_player_factory.create(*channel_id, client_id.clone());
-                let channel_player = Arc::new(channel_player);
-
-                channel_player_registry.register(channel_key, Arc::downgrade(&channel_player));
-
-                channel_player
+    let (encoder_sender, encoder_receiver) =
+        match make_ffmpeg_encoder(&format, &config.path_to_ffmpeg, &logger, &metrics) {
+            Ok(res) => res,
+            Err(error) => {
+                error!(logger, "Error"; "error" => ?error);
+                return HttpResponse::InternalServerError().finish();
             }
-        }
-    };
+        };
 
-    // Pipe audio data to encoder
+    let icy_muxer = Arc::new(IcyMuxer::new());
+
     actix_rt::spawn({
-        let channel_player = Arc::clone(&channel_player);
-        let logger = logger.clone();
+        let mut encoder_sender = encoder_sender;
+        let mut player_messages = player_messages;
 
-        let mut enc_sender = enc_sender;
-        let mut audio_receiver = channel_player.audio_receiver.activate_cloned();
+        let icy_muxer = Arc::downgrade(&icy_muxer);
 
         async move {
-            while let Some(bytes) = audio_receiver.next().await {
-                if let Err(error) = enc_sender.send(Ok(bytes)).await {
-                    error!(logger, "Unable to send audio data to encoder"; "error" => ?error);
-                    break;
+            while let Some(event) = player_messages.next().await {
+                match event {
+                    ChannelPlayerMessage::TimedBuffer(TimedBuffer(bytes, _)) => {
+                        if let Err(_) = encoder_sender.send(bytes).await {
+                            break;
+                        }
+                    }
+                    ChannelPlayerMessage::ChannelTitle(title) => {
+                        debug!(logger, "Received channel title"; "name" => ?title);
+                    }
+                    ChannelPlayerMessage::TrackTitle(title) => {
+                        debug!(logger, "Received track title"; "title" => ?title);
+
+                        if let Some(muxer) = icy_muxer.upgrade() {
+                            muxer.send_track_title(title);
+                        }
+                    }
                 }
             }
-
-            drop(channel_player);
         }
     });
 
@@ -142,42 +140,21 @@ pub async fn listen_by_channel_id(
         response.content_type(format.content_type).force_close();
 
         if is_icy_enabled {
-            let (metadata_sender, metadata_receiver) = mpsc::unbounded();
-
-            let mut icy_metadata_muxer = IcyMetadataMuxer::new(metadata_receiver);
-
-            actix_rt::spawn({
-                let channel_player = Arc::clone(&channel_player);
-                let logger = logger.clone();
-
-                let mut metadata_sender = metadata_sender;
-                let mut title_receiver = channel_player.title_receiver.activate_cloned();
-
-                async move {
-                    while let Some(title) = title_receiver.next().await {
-                        let metadata = format!("StreamTitle='{}';", &title);
-                        if let Err(error) = metadata_sender.send(metadata.into_bytes()).await {
-                            if is_icy_enabled {
-                                error!(logger, "Unable to send metadata to client"; "error" => ?error);
-                                break;
-                            }
-                        }
-                    }
-
-                    drop(channel_player);
-                }
-            });
-
             response
                 .insert_header(("icy-metadata", "1"))
                 .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)))
-                .insert_header(("icy-name", format!("{}", &channel_info.name)));
+                .insert_header((
+                    "icy-name",
+                    channel_player.get_channel_title().unwrap_or_default(),
+                ));
 
-            response.streaming({
-                enc_receiver.map_ok(move |bytes| icy_metadata_muxer.handle_bytes(bytes))
+            response.streaming::<_, actix_web::Error>({
+                encoder_receiver
+                    .map(move |bytes| icy_muxer.handle_bytes(bytes))
+                    .map::<Result<_, actix_web::Error>, _>(Ok)
             })
         } else {
-            response.streaming(enc_receiver)
+            response.streaming::<_, actix_web::Error>(encoder_receiver.map(Ok))
         }
     }
 }

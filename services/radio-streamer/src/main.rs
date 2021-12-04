@@ -5,7 +5,6 @@ mod config;
 mod constants;
 mod helpers;
 mod http;
-mod icy_metadata;
 mod metrics;
 mod stream;
 mod transcoder;
@@ -17,7 +16,7 @@ use crate::channel::registry::ChannelPlayerRegistry;
 use crate::config::Config;
 use crate::http::channel::test_channel_playback;
 use crate::http::metrics::get_metrics;
-use crate::http::streaming::{get_active_streams, listen_by_channel_id, restart_by_channel_id};
+use crate::http::streaming::{get_active_streams, listen_channel, restart_by_channel_id};
 use crate::metrics::Metrics;
 use crate::stream::player_registry::PlayerRegistry;
 use crate::transcoder::TranscoderService;
@@ -120,7 +119,8 @@ async fn main() -> Result<()> {
                 .data(channel_player_factory.clone())
                 .data(channel_player_registry.clone())
                 .data(player_registry.clone())
-                .service(listen_by_channel_id)
+                .data(config.clone())
+                .service(listen_channel)
                 .service(restart_by_channel_id)
                 .service(get_active_streams)
                 .service(get_metrics)

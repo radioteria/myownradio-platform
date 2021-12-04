@@ -52,6 +52,21 @@ pub enum PipeChannelError {
     CancelError(oneshot::Canceled),
 }
 
+pub fn link<A>(mut receiver: mpsc::Receiver<A>, mut sender: mpsc::Sender<A>)
+where
+    A: 'static,
+{
+    actix_rt::spawn({
+        async move {
+            while let Some(data) = receiver.next().await {
+                if let Err(_) = sender.send(data).await {
+                    break;
+                }
+            }
+        }
+    });
+}
+
 pub async fn pipe_channel_with_cancel<'a>(
     receiver: &'a mut mpsc::Receiver<Result<Bytes, Error>>,
     sender: &'a mut mpsc::Sender<Result<Bytes, Error>>,

@@ -1,3 +1,4 @@
+#[derive(Debug, Hash, Eq, PartialEq, Clone)]
 pub struct AudioFormat {
     pub bitrate: u16,
     pub format: &'static str,

@@ -3,7 +3,7 @@ use crate::metrics::Metrics;
 use crate::stream::constants::{
     AUDIO_BYTES_PER_SECOND, AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY,
 };
-use crate::stream::types::TimedBuffer;
+use crate::stream::types::DecodedBuffer;
 use async_process::{Command, Stdio};
 use futures::channel::mpsc;
 use futures::SinkExt;
@@ -25,8 +25,8 @@ pub(crate) fn make_ffmpeg_decoder(
     path_to_ffmpeg: &str,
     logger: &Logger,
     metrics: &Metrics,
-) -> Result<mpsc::Receiver<TimedBuffer>, DecoderError> {
-    let (mut tx, rx) = mpsc::channel::<TimedBuffer>(0);
+) -> Result<mpsc::Receiver<DecodedBuffer>, DecoderError> {
+    let (mut tx, rx) = mpsc::channel::<DecodedBuffer>(0);
     let decoder_logger = logger.new(o!("kind" => "ffmpeg_decoder"));
 
     let mut process = match Command::new(&path_to_ffmpeg)
@@ -91,7 +91,7 @@ pub(crate) fn make_ffmpeg_decoder(
                 let bytes_len = bytes.len();
                 let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
                 let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
-                let timed_bytes = TimedBuffer(bytes, decoding_time);
+                let timed_bytes = DecodedBuffer(bytes, decoding_time);
 
                 if let Err(error) = tx.send(timed_bytes).await {
                     break;

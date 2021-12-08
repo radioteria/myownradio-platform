@@ -1,8 +1,9 @@
 use crate::backend_client::{BackendClient, MorBackendClientError};
 use crate::helpers::io::sleep_until_deadline;
 use crate::metrics::Metrics;
+use crate::stream::constants::AUDIO_BYTES_PER_SECOND;
 use crate::stream::ffmpeg_decoder::{make_ffmpeg_decoder, DecoderError};
-use crate::stream::types::TimedBuffer;
+use crate::stream::types::DecodedBuffer;
 use actix_rt::time::Instant;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
@@ -23,7 +24,7 @@ pub(crate) enum PlayerLoopError {
 #[derive(Debug)]
 pub(crate) enum PlayerLoopMessage {
     ChannelTitle(String),
-    TimedBuffer(TimedBuffer),
+    DecodedBuffer(DecodedBuffer),
     TrackTitle(String),
     RestartSender(oneshot::Sender<()>),
 }
@@ -87,6 +88,8 @@ pub(crate) async fn make_player_loop(
             info!(logger, "Started player loop"; "channel_id" => &channel_id);
 
             defer!(info!(logger, "Stopped player loop"; "channel_id" => &channel_id););
+
+            let mut bytes_sent = 0usize;
 
             loop {
                 let now_playing = match backend_client
@@ -167,9 +170,7 @@ pub(crate) async fn make_player_loop(
                     return;
                 }
 
-                let time_offset = time - base_time;
-
-                while let Some(TimedBuffer(bytes, bytes_offset)) = track_decoder.next().await {
+                while let Some(DecodedBuffer(bytes, bytes_offset)) = track_decoder.next().await {
                     let deadline = time + bytes_offset;
 
                     if let Err(error) = sleep_until_deadline(deadline, &mut restart_rx).await {
@@ -181,10 +182,14 @@ pub(crate) async fn make_player_loop(
                         break;
                     }
 
+                    let bytes_len = bytes.len();
+                    let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
+                    let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
+
                     if let Err(error) = tx
-                        .send(PlayerLoopMessage::TimedBuffer(TimedBuffer(
+                        .send(PlayerLoopMessage::DecodedBuffer(DecodedBuffer(
                             bytes,
-                            time_offset + bytes_offset,
+                            decoding_time,
                         )))
                         .await
                     {
@@ -194,6 +199,8 @@ pub(crate) async fn make_player_loop(
                         );
                         return;
                     }
+
+                    bytes_sent += bytes_len;
                 }
             }
         }

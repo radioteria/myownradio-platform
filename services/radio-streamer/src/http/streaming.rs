@@ -5,7 +5,7 @@ use crate::stream::channel_player::ChannelPlayerMessage;
 use crate::stream::ffmpeg_encoder::make_ffmpeg_encoder;
 use crate::stream::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
 use crate::stream::player_registry::PlayerRegistryError;
-use crate::stream::types::TimedBuffer;
+use crate::stream::types::DecodedBuffer;
 use crate::{Metrics, PlayerRegistry};
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
@@ -114,7 +114,7 @@ pub(crate) async fn listen_channel(
         async move {
             while let Some(event) = player_messages.next().await {
                 match event {
-                    ChannelPlayerMessage::TimedBuffer(TimedBuffer(bytes, _)) => {
+                    ChannelPlayerMessage::TimedBuffer(DecodedBuffer(bytes, _)) => {
                         if let Err(_) = encoder_sender.send(bytes).await {
                             break;
                         }

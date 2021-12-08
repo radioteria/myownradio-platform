@@ -5,7 +5,7 @@ use crate::stream::channel_player::{ChannelPlayer, ChannelPlayerMessage};
 use crate::stream::ffmpeg_encoder::{make_ffmpeg_encoder, EncoderError};
 use crate::stream::player_loop::{make_player_loop, PlayerLoopError, PlayerLoopMessage};
 use crate::stream::player_registry::PlayerRegistry;
-use crate::stream::types::TimedBuffer;
+use crate::stream::types::DecodedBuffer;
 use actix_rt::task::JoinHandle;
 use actix_web::web::Bytes;
 use futures::channel::{mpsc, oneshot};
@@ -139,7 +139,7 @@ impl Inner {
             let input = async move {
                 while let Some(message) = channel_player_messages.next().await {
                     match message {
-                        ChannelPlayerMessage::TimedBuffer(TimedBuffer(bytes, _)) => {
+                        ChannelPlayerMessage::TimedBuffer(DecodedBuffer(bytes, _)) => {
                             if let Err(error) = encoder_sender.send(bytes).await {
                                 break;
                             }

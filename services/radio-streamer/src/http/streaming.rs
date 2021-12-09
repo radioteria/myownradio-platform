@@ -1,14 +1,14 @@
 use crate::audio_formats::AudioFormats;
 use crate::channel::registry::ChannelPlayerRegistry;
 use crate::config::Config;
-use crate::stream::channel_player::ChannelPlayerMessage;
-use crate::stream::ffmpeg_encoder::make_ffmpeg_encoder;
+use crate::stream::channel_encoder::ChannelEncoderMessage;
+use crate::stream::encoder_registry::EncoderRegistryError;
 use crate::stream::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
 use crate::stream::player_registry::PlayerRegistryError;
-use crate::stream::types::DecodedBuffer;
-use crate::{Metrics, PlayerRegistry};
+use crate::{EncoderRegistry, Metrics, PlayerRegistry};
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
+use futures::channel::mpsc;
 use futures::{SinkExt, StreamExt};
 use serde::Deserialize;
 use slog::{debug, error, Logger};
@@ -24,11 +24,11 @@ pub async fn get_active_streams(
 }
 
 #[get("/restart/{channel_id}")]
-pub async fn restart_by_channel_id(
+pub(crate) async fn restart_by_channel_id(
     request: HttpRequest,
     channel_id: web::Path<usize>,
     config: Data<Arc<Config>>,
-    channel_player_registry: Data<Arc<ChannelPlayerRegistry>>,
+    player_registry: Data<PlayerRegistry>,
 ) -> impl Responder {
     let actual_token = match request.headers().get("token").map(|v| v.to_str()) {
         Some(Ok(token)) => token,
@@ -41,9 +41,7 @@ pub async fn restart_by_channel_id(
         return HttpResponse::Unauthorized().finish();
     }
 
-    for channel_player in channel_player_registry.get_by_id(&channel_id) {
-        channel_player.restart().await;
-    }
+    player_registry.restart_by_channel_id(&channel_id);
 
     HttpResponse::Ok().finish()
 }
@@ -61,8 +59,7 @@ pub(crate) async fn listen_channel(
     query_params: Query<ListenQueryParams>,
     logger: Data<Arc<Logger>>,
     metrics: Data<Arc<Metrics>>,
-    player_registry: Data<PlayerRegistry>,
-    config: Data<Arc<Config>>, // TODO Remove from app data
+    encoder_registry: Data<EncoderRegistry>,
 ) -> impl Responder {
     eprintln!("Here");
 
@@ -78,51 +75,41 @@ pub(crate) async fn listen_channel(
         .filter(|v| v.to_str().unwrap() == "1")
         .is_some();
 
-    let channel_player = match player_registry
-        .get_player(&channel_id, &query_params.client_id)
+    let encoder = match encoder_registry
+        .get_encoder(&channel_id, &query_params.client_id, &format)
         .await
     {
-        Ok(channel_player) => channel_player,
-        Err(PlayerRegistryError::ChannelNotFound) => {
+        Ok(encoder) => encoder,
+        Err(EncoderRegistryError::PlayerRegistryError(PlayerRegistryError::ChannelNotFound)) => {
             return HttpResponse::NotFound().finish();
         }
         Err(error) => {
             error!(logger, "Error"; "error" => ?error);
+
             return HttpResponse::InternalServerError().finish();
         }
     };
 
-    let player_messages = channel_player.create_receiver();
-
-    let (encoder_sender, encoder_receiver) =
-        match make_ffmpeg_encoder(&format, &config.path_to_ffmpeg, &logger, &metrics) {
-            Ok(res) => res,
-            Err(error) => {
-                error!(logger, "Error"; "error" => ?error);
-                return HttpResponse::InternalServerError().finish();
-            }
-        };
+    let encoder_messages = encoder.create_receiver();
 
     let icy_muxer = Arc::new(IcyMuxer::new());
+    let (response_sender, response_receiver) = mpsc::channel(0);
 
     actix_rt::spawn({
-        let mut encoder_sender = encoder_sender;
-        let mut player_messages = player_messages;
+        let mut encoder_messages = encoder_messages;
+        let mut response_sender = response_sender;
 
         let icy_muxer = Arc::downgrade(&icy_muxer);
 
         async move {
-            while let Some(event) = player_messages.next().await {
+            while let Some(event) = encoder_messages.next().await {
                 match event {
-                    ChannelPlayerMessage::TimedBuffer(DecodedBuffer(bytes, _)) => {
-                        if let Err(_) = encoder_sender.send(bytes).await {
+                    ChannelEncoderMessage::EncodedBuffer(bytes) => {
+                        if let Err(_) = response_sender.send(bytes).await {
                             break;
                         }
                     }
-                    ChannelPlayerMessage::ChannelTitle(title) => {
-                        debug!(logger, "Received channel title"; "name" => ?title);
-                    }
-                    ChannelPlayerMessage::TrackTitle(title) => {
+                    ChannelEncoderMessage::TrackTitle(title) => {
                         debug!(logger, "Received track title"; "title" => ?title);
 
                         if let Some(muxer) = icy_muxer.upgrade() {
@@ -143,18 +130,15 @@ pub(crate) async fn listen_channel(
             response
                 .insert_header(("icy-metadata", "1"))
                 .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)))
-                .insert_header((
-                    "icy-name",
-                    channel_player.get_channel_title().unwrap_or_default(),
-                ));
+                .insert_header(("icy-name", encoder.get_channel_title().unwrap_or_default()));
 
             response.streaming::<_, actix_web::Error>({
-                encoder_receiver
+                response_receiver
                     .map(move |bytes| icy_muxer.handle_bytes(bytes))
                     .map::<Result<_, actix_web::Error>, _>(Ok)
             })
         } else {
-            response.streaming::<_, actix_web::Error>(encoder_receiver.map(Ok))
+            response.streaming::<_, actix_web::Error>(response_receiver.map(Ok))
         }
     }
 }

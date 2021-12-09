@@ -1,18 +1,15 @@
 use crate::audio_formats::AudioFormat;
-use crate::backend_client::BackendClient;
 use crate::metrics::Metrics;
 use crate::stream::channel_player::{ChannelPlayer, ChannelPlayerMessage};
 use crate::stream::ffmpeg_encoder::{make_ffmpeg_encoder, EncoderError};
-use crate::stream::player_loop::{make_player_loop, PlayerLoopError, PlayerLoopMessage};
-use crate::stream::player_registry::PlayerRegistry;
-use crate::stream::types::DecodedBuffer;
+use crate::stream::player_loop::PlayerLoopMessage;
+use crate::stream::types::TimedBuffer;
 use actix_rt::task::JoinHandle;
 use actix_web::web::Bytes;
-use futures::channel::{mpsc, oneshot};
-use futures::{join, SinkExt, StreamExt, TryStreamExt};
-use slog::{debug, o, Logger};
-use std::sync::{Arc, Mutex, RwLock};
-use std::time::Duration;
+use futures::channel::mpsc;
+use futures::{join, SinkExt, StreamExt};
+use slog::{debug, Logger};
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug)]
 pub(crate) enum ChannelEncoderError {
@@ -139,7 +136,7 @@ impl Inner {
             let input = async move {
                 while let Some(message) = channel_player_messages.next().await {
                     match message {
-                        ChannelPlayerMessage::TimedBuffer(DecodedBuffer(bytes, _)) => {
+                        ChannelPlayerMessage::TimedBuffer(TimedBuffer(bytes, _)) => {
                             if let Err(error) = encoder_sender.send(bytes).await {
                                 break;
                             }

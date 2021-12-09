@@ -42,6 +42,14 @@ impl PlayerRegistry {
         }
     }
 
+    pub fn restart_by_channel_id(&self, channel_id: &usize) {
+        for (PlayerEntry(id, _), player) in self.players_map.lock().unwrap().iter() {
+            if id == channel_id {
+                player.restart();
+            }
+        }
+    }
+
     pub async fn get_player(
         &self,
         channel_id: &usize,

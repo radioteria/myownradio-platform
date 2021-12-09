@@ -1,17 +1,13 @@
-use crate::backend_client::BackendClient;
-use crate::config::Config;
-use crate::metrics::Metrics;
-use crate::stream::channel_player::{ChannelPlayer, ChannelPlayerError, ChannelPlayerMessage};
-use crate::stream::player_loop::PlayerLoopError;
+use crate::stream::channel_player::{ChannelPlayerError, ChannelPlayerMessage};
 use crate::stream::player_registry::PlayerRegistryError;
-use crate::stream::types::DecodedBuffer;
+use crate::stream::types::TimedBuffer;
 use crate::PlayerRegistry;
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpResponse, Responder};
 use futures::channel::mpsc;
 use futures::{io, SinkExt, StreamExt};
 use serde::Deserialize;
-use slog::{debug, error, Logger};
+use slog::{debug, Logger};
 use std::sync::Arc;
 
 #[derive(Deserialize, Clone)]
@@ -49,7 +45,7 @@ pub(crate) async fn test_channel_playback(
         async move {
             while let Some(event) = player_messages.next().await {
                 match event {
-                    ChannelPlayerMessage::TimedBuffer(DecodedBuffer(bytes, _)) => {
+                    ChannelPlayerMessage::TimedBuffer(TimedBuffer(bytes, _)) => {
                         if let Err(_) = bytes_tx.send(Ok(bytes)).await {
                             break;
                         }

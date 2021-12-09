@@ -18,6 +18,7 @@ use crate::http::channel::test_channel_playback;
 use crate::http::metrics::get_metrics;
 use crate::http::streaming::{get_active_streams, listen_channel, restart_by_channel_id};
 use crate::metrics::Metrics;
+use crate::stream::encoder_registry::EncoderRegistry;
 use crate::stream::player_registry::PlayerRegistry;
 use crate::transcoder::TranscoderService;
 use actix_rt::signal::unix;
@@ -72,8 +73,15 @@ async fn main() -> Result<()> {
     let player_registry = PlayerRegistry::new(
         config.path_to_ffmpeg.clone(),
         backend_client.clone(),
-        logger.new(o!("service" => "ChannelPlayer")),
+        logger.new(o!("service" => "PlayerRegistry")),
         metrics.clone(),
+    );
+
+    let encoder_registry = EncoderRegistry::new(
+        config.path_to_ffmpeg.clone(),
+        logger.new(o!("service" => "EncoderRegistry")),
+        metrics.clone(),
+        player_registry.clone(),
     );
 
     info!(logger, "Starting application...");
@@ -119,6 +127,7 @@ async fn main() -> Result<()> {
                 .data(channel_player_factory.clone())
                 .data(channel_player_registry.clone())
                 .data(player_registry.clone())
+                .data(encoder_registry.clone())
                 .data(config.clone())
                 .service(listen_channel)
                 .service(restart_by_channel_id)

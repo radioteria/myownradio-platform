@@ -3,7 +3,7 @@ use crate::helpers::io::sleep_until_deadline;
 use crate::metrics::Metrics;
 use crate::stream::constants::AUDIO_BYTES_PER_SECOND;
 use crate::stream::ffmpeg_decoder::{make_ffmpeg_decoder, DecoderError};
-use crate::stream::types::DecodedBuffer;
+use crate::stream::types::{DecodedBuffer, TimedBuffer};
 use actix_rt::time::Instant;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
@@ -24,7 +24,7 @@ pub(crate) enum PlayerLoopError {
 #[derive(Debug)]
 pub(crate) enum PlayerLoopMessage {
     ChannelTitle(String),
-    DecodedBuffer(DecodedBuffer),
+    TimedBuffer(TimedBuffer),
     TrackTitle(String),
     RestartSender(oneshot::Sender<()>),
 }
@@ -185,12 +185,10 @@ pub(crate) async fn make_player_loop(
                     let bytes_len = bytes.len();
                     let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
                     let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
+                    let time = base_time + decoding_time;
 
                     if let Err(error) = tx
-                        .send(PlayerLoopMessage::DecodedBuffer(DecodedBuffer(
-                            bytes,
-                            decoding_time,
-                        )))
+                        .send(PlayerLoopMessage::TimedBuffer(TimedBuffer(bytes, time)))
                         .await
                     {
                         debug!(

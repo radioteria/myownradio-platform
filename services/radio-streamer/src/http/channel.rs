@@ -14,11 +14,13 @@ use serde::Deserialize;
 use slog::{debug, error, Logger};
 use std::sync::Arc;
 
-#[get("/streams")]
-pub(crate) async fn get_active_streams(player_registry: Data<PlayerRegistry>) -> impl Responder {
-    let channels = player_registry.get_channel_ids();
+#[get("/active")]
+pub(crate) async fn get_active_channel_ids(
+    player_registry: Data<PlayerRegistry>,
+) -> impl Responder {
+    let channel_ids = player_registry.get_channel_ids();
 
-    HttpResponse::Ok().json(channels)
+    HttpResponse::Ok().json(serde_json::json!({ "channel_ids": channel_ids }))
 }
 
 #[get("/restart/{channel_id}")]
@@ -28,9 +30,9 @@ pub(crate) async fn restart_by_channel_id(
     config: Data<Arc<Config>>,
     player_registry: Data<PlayerRegistry>,
 ) -> impl Responder {
-    let actual_token = match request.headers().get("token").map(|v| v.to_str()) {
-        Some(Ok(token)) => token,
-        _ => {
+    let actual_token = match request.headers().get("token").and_then(|v| v.to_str().ok()) {
+        Some(token) => token,
+        None => {
             return HttpResponse::Unauthorized().finish();
         }
     };

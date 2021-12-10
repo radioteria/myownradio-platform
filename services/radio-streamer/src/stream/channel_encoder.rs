@@ -2,8 +2,8 @@ use crate::audio_formats::AudioFormat;
 use crate::metrics::Metrics;
 use crate::stream::channel_player::{ChannelPlayer, ChannelPlayerMessage};
 use crate::stream::ffmpeg_encoder::{make_ffmpeg_encoder, EncoderError};
-use crate::stream::player_loop::PlayerLoopMessage;
 use crate::stream::types::TimedBuffer;
+use crate::upgrade_weak;
 use actix_rt::task::JoinHandle;
 use actix_web::web::Bytes;
 use futures::channel::mpsc;
@@ -133,25 +133,40 @@ impl Inner {
 
             let inner = Arc::downgrade(&inner);
 
-            let input = async move {
-                while let Some(message) = channel_player_messages.next().await {
-                    match message {
-                        ChannelPlayerMessage::TimedBuffer(TimedBuffer(bytes, _)) => {
-                            if let Err(error) = encoder_sender.send(bytes).await {
-                                break;
+            let input = {
+                let inner = inner.clone();
+
+                async move {
+                    while let Some(message) = channel_player_messages.next().await {
+                        match message {
+                            ChannelPlayerMessage::TimedBuffer(TimedBuffer(bytes, _)) => {
+                                if let Err(_) = encoder_sender.send(bytes).await {
+                                    break;
+                                }
                             }
+                            ChannelPlayerMessage::ChannelTitle(title) => {
+                                let inner = upgrade_weak!(inner);
+
+                                inner
+                                    .send_all(ChannelEncoderMessage::TrackTitle(title))
+                                    .await
+                            }
+                            _ => (),
                         }
-                        _ => (),
                     }
                 }
             };
 
-            let output = async move {
-                while let Some(bytes) = encoder_receiver.next().await {
-                    if let Some(inner) = inner.upgrade() {
+            let output = {
+                let inner = inner.clone();
+
+                async move {
+                    while let Some(bytes) = encoder_receiver.next().await {
+                        let inner = upgrade_weak!(inner);
+
                         inner
                             .send_all(ChannelEncoderMessage::EncodedBuffer(bytes))
-                            .await
+                            .await;
                     }
                 }
             };

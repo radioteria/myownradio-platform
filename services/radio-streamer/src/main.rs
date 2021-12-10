@@ -5,6 +5,7 @@ mod config;
 mod constants;
 mod helpers;
 mod http;
+mod macros;
 mod metrics;
 mod stream;
 mod transcoder;

@@ -1,0 +1,14 @@
+FROM rust
+
+ARG USER=1000:1000
+
+RUN mkdir /rust && chown $USER /rust
+
+USER $USER
+
+ENV HOME=/rust
+
+WORKDIR /code
+
+COPY --from=pldin601/static-ffmpeg:4.3.2 /ffmpeg /usr/local/bin/
+COPY --from=pldin601/static-ffmpeg:4.3.2 /ffprobe /usr/local/bin/

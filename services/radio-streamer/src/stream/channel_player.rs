@@ -1,15 +1,12 @@
 use crate::backend_client::BackendClient;
 use crate::metrics::Metrics;
 use crate::stream::player_loop::{make_player_loop, PlayerLoopError, PlayerLoopMessage};
-use crate::stream::types::{DecodedBuffer, TimedBuffer};
+use crate::stream::types::TimedBuffer;
 use actix_rt::task::JoinHandle;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use slog::{debug, o, Logger};
 use std::sync::{Arc, Mutex, RwLock};
-use std::time::Duration;
-
-pub(crate) const PLAYER_IDLE_TIMEOUT: Duration = Duration::from_secs(30);
 
 #[derive(Debug)]
 pub(crate) enum ChannelPlayerError {
@@ -156,11 +153,14 @@ impl Inner {
             handle,
             on_all_receivers_disconnected: Box::new(on_all_receivers_disconnected),
         });
+        let (init_title_sender, init_title_receiver) = oneshot::channel();
 
         let handle = actix_rt::spawn({
             let inner = Arc::downgrade(&inner);
 
             async move {
+                let mut init_title_sender = Some(init_title_sender);
+
                 while let Some(message) = player_loop_messages.next().await {
                     if let Some(inner) = inner.upgrade() {
                         match message {
@@ -169,6 +169,10 @@ impl Inner {
                                 inner
                                     .send_all(ChannelPlayerMessage::ChannelTitle(title))
                                     .await;
+
+                                if let Some(init_title_sender) = init_title_sender.take() {
+                                    let _ = init_title_sender.send(());
+                                }
                             }
                             PlayerLoopMessage::TrackTitle(title) => {
                                 inner.update_current_track_title(title.clone());
@@ -191,6 +195,8 @@ impl Inner {
         });
 
         inner.handle.lock().unwrap().replace(handle);
+
+        let _ = init_title_receiver.await;
 
         Ok(inner)
     }

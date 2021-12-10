@@ -14,7 +14,7 @@ mod utils;
 use crate::backend_client::BackendClient;
 use crate::channel::factory::ChannelPlayerFactory;
 use crate::channel::registry::ChannelPlayerRegistry;
-use crate::config::Config;
+use crate::config::{Config, LogFormat};
 use crate::http::channel::test_channel_playback;
 use crate::http::metrics::get_metrics;
 use crate::http::streaming::{get_active_streams, listen_channel, restart_by_channel_id};
@@ -27,7 +27,6 @@ use actix_web::dev::Service;
 use actix_web::{App, HttpServer};
 use futures_lite::FutureExt;
 use slog::{info, o, Drain, Logger};
-use slog_json::Json;
 use std::io;
 use std::io::Result;
 use std::sync::{Arc, Mutex};
@@ -45,13 +44,25 @@ async fn main() -> Result<()> {
     let bind_address = &config.bind_address.clone();
     let shutdown_timeout = config.shutdown_timeout.clone();
 
-    let drain = Json::new(io::stderr())
-        .add_default_keys()
-        .set_pretty(cfg!(debug_assertions))
-        .build()
-        .filter_level(config.log_level);
-    let safe_drain = Mutex::new(drain).map(slog::Fuse);
-    let logger = Arc::new(Logger::root(safe_drain, o!("version" => VERSION)));
+    let logger = match config.log_format {
+        LogFormat::Json => {
+            let drain = slog_json::Json::new(io::stderr())
+                .add_default_keys()
+                .set_pretty(cfg!(debug_assertions))
+                .build()
+                .filter_level(config.log_level);
+            let safe_drain = Mutex::new(drain).map(slog::Fuse);
+            Logger::root(safe_drain, o!("version" => VERSION))
+        }
+        LogFormat::Term => {
+            let drain = slog_term::FullFormat::new(slog_term::TermDecorator::new().build())
+                .build()
+                .filter_level(config.log_level);
+            let safe_drain = Mutex::new(drain).map(slog::Fuse);
+            Logger::root(safe_drain, o!("version" => VERSION))
+        }
+    };
+    let logger = Arc::new(logger);
 
     let backend_client = Arc::new(BackendClient::new(
         &config.mor_backend_url,

@@ -4,12 +4,13 @@ use crate::metrics::Metrics;
 use crate::stream::constants::AUDIO_BYTES_PER_SECOND;
 use crate::stream::ffmpeg_decoder::{make_ffmpeg_decoder, DecoderError};
 use crate::stream::types::{DecodedBuffer, TimedBuffer};
+use actix_rt::task::JoinHandle;
 use actix_rt::time::Instant;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use scopeguard::defer;
 use slog::{debug, error, info, Logger};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 const ALLOWED_DELAY: Duration = Duration::from_secs(1);
@@ -64,7 +65,8 @@ pub(crate) async fn make_player_loop(
         let backend_client = backend_client.clone();
         let logger = logger.clone();
 
-        let stored_next_track_decoder: Mutex<Option<_>> = Mutex::default();
+        let stored_next_track_decoder: Arc<Mutex<Option<_>>> = Arc::default();
+        let next_track_future: Mutex<Option<JoinHandle<_>>> = Mutex::default();
         let base_time = Instant::now();
 
         let mut tx = tx;
@@ -92,6 +94,10 @@ pub(crate) async fn make_player_loop(
             let mut bytes_sent = 0usize;
 
             loop {
+                if let Some(future) = next_track_future.lock().unwrap().take() {
+                    future.abort();
+                }
+
                 let now_playing = match backend_client
                     .get_now_playing(&channel_id, client_id.clone(), &Duration::from_secs(0))
                     .await
@@ -131,24 +137,34 @@ pub(crate) async fn make_player_loop(
                     },
                 };
 
-                let next_track_decoder = match make_ffmpeg_decoder(
-                    &now_playing.next_track.url,
-                    &Duration::from_secs(0),
-                    &path_to_ffmpeg,
-                    &logger,
-                    &metrics,
-                ) {
-                    Ok(next_track_decoder) => next_track_decoder,
-                    Err(error) => {
-                        error!(logger, "Unable create next track decoder"; "error" => ?error);
-                        return;
-                    }
-                };
+                next_track_future.lock().unwrap().replace(actix_rt::spawn({
+                    let logger = logger.clone();
+                    let metrics = metrics.clone();
+                    let next_track_url = now_playing.next_track.url.clone();
+                    let stored_next_track_decoder = stored_next_track_decoder.clone();
+                    let path_to_ffmpeg = path_to_ffmpeg.clone();
 
-                stored_next_track_decoder
-                    .lock()
-                    .expect("Unable to obtain lock on replacing stored next track decoder")
-                    .replace(next_track_decoder);
+                    async move {
+                        let next_track_decoder = match make_ffmpeg_decoder(
+                            &next_track_url,
+                            &Duration::from_secs(0),
+                            &path_to_ffmpeg,
+                            &logger,
+                            &metrics,
+                        ) {
+                            Ok(next_track_decoder) => next_track_decoder,
+                            Err(error) => {
+                                error!(logger, "Unable create next track decoder"; "error" => ?error);
+                                return;
+                            }
+                        };
+
+                        stored_next_track_decoder
+                            .lock()
+                            .expect("Unable to obtain lock on replacing stored next track decoder")
+                            .replace(next_track_decoder);
+                    }
+                }));
 
                 let title = now_playing.current_track.title.clone();
 

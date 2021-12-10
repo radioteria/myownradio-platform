@@ -50,6 +50,16 @@ impl PlayerRegistry {
         }
     }
 
+    pub fn get_channel_ids(&self) -> Vec<usize> {
+        self.players_map
+            .lock()
+            .unwrap()
+            .keys()
+            .map(|PlayerEntry(channel_id, _)| channel_id)
+            .cloned()
+            .collect()
+    }
+
     pub async fn get_player(
         &self,
         channel_id: &usize,

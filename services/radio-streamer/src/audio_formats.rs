@@ -22,6 +22,12 @@ impl AudioFormat {
     }
 }
 
+impl Default for AudioFormat {
+    fn default() -> Self {
+        AudioFormats::MP3_256K
+    }
+}
+
 #[non_exhaustive]
 pub struct AudioFormats;
 

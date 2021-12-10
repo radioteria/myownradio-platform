@@ -15,9 +15,8 @@ use crate::backend_client::BackendClient;
 use crate::channel::factory::ChannelPlayerFactory;
 use crate::channel::registry::ChannelPlayerRegistry;
 use crate::config::{Config, LogFormat};
-use crate::http::channel::test_channel_playback;
+use crate::http::channel::{get_active_streams, listen_channel, restart_by_channel_id};
 use crate::http::metrics::get_metrics;
-use crate::http::streaming::{get_active_streams, listen_channel, restart_by_channel_id};
 use crate::metrics::Metrics;
 use crate::stream::encoder_registry::EncoderRegistry;
 use crate::stream::player_registry::PlayerRegistry;
@@ -140,12 +139,10 @@ async fn main() -> Result<()> {
                 .data(channel_player_registry.clone())
                 .data(player_registry.clone())
                 .data(encoder_registry.clone())
-                .data(config.clone())
                 .service(listen_channel)
                 .service(restart_by_channel_id)
                 .service(get_active_streams)
                 .service(get_metrics)
-                .service(test_channel_playback)
         }
     })
     .shutdown_timeout(shutdown_timeout)

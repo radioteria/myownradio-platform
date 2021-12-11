@@ -147,14 +147,11 @@ impl Inner {
             handle,
             on_all_receivers_disconnected: Box::new(on_all_receivers_disconnected),
         });
-        let (init_sender, init_receiver) = oneshot::channel();
 
         let handle = actix_rt::spawn({
             let inner = Arc::downgrade(&inner);
 
             async move {
-                let mut init_sender = Some(init_sender);
-
                 while let Some(message) = player_loop_messages.next().await {
                     if let Some(inner) = inner.upgrade() {
                         match message {
@@ -163,11 +160,6 @@ impl Inner {
                                 inner
                                     .send_all(ChannelPlayerMessage::ChannelTitle(title))
                                     .await;
-
-                                // Send channel title only once on player init
-                                if let Some(init_sender) = init_sender.take() {
-                                    let _ = init_sender.send(());
-                                }
                             }
                             PlayerLoopMessage::TrackTitle(title) => {
                                 inner.update_current_track_title(title.clone());
@@ -190,8 +182,6 @@ impl Inner {
         });
 
         inner.handle.lock().unwrap().replace(handle);
-
-        let _ = init_receiver.await;
 
         Ok(inner)
     }

@@ -1,5 +1,4 @@
 use crate::stream::channel_player::{ChannelPlayer, ChannelPlayerError};
-use crate::stream::player_loop::PlayerLoopError;
 use crate::{BackendClient, Metrics};
 use slog::{debug, Logger};
 use std::collections::hash_map::Entry;
@@ -8,7 +7,6 @@ use std::sync::{Arc, Mutex};
 
 #[derive(Debug)]
 pub(crate) enum PlayerRegistryError {
-    ChannelNotFound,
     ChannelPlayerError(ChannelPlayerError),
 }
 
@@ -94,9 +92,6 @@ impl PlayerRegistry {
                 .await
                 {
                     Ok(player) => player,
-                    Err(ChannelPlayerError::PlayerLoopError(PlayerLoopError::ChannelNotFound)) => {
-                        return Err(PlayerRegistryError::ChannelNotFound)
-                    }
                     Err(error) => return Err(PlayerRegistryError::ChannelPlayerError(error)),
                 };
 

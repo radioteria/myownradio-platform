@@ -1,6 +1,6 @@
 use crate::backend_client::BackendClient;
 use crate::metrics::Metrics;
-use crate::stream::player_loop::{make_player_loop, PlayerLoopError, PlayerLoopMessage};
+use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
 use crate::stream::types::TimedBuffer;
 use actix_rt::task::JoinHandle;
 use futures::channel::{mpsc, oneshot};
@@ -9,13 +9,10 @@ use slog::{debug, o, warn, Logger};
 use std::sync::{Arc, Mutex, RwLock};
 
 #[derive(Debug)]
-pub(crate) enum ChannelPlayerError {
-    PlayerLoopError(PlayerLoopError),
-}
+pub(crate) enum ChannelPlayerError {}
 
 #[derive(Clone, Debug)]
 pub(crate) enum ChannelPlayerMessage {
-    ChannelTitle(String),
     TrackTitle(String),
     TimedBuffer(TimedBuffer),
 }
@@ -68,10 +65,6 @@ impl ChannelPlayer {
         }
     }
 
-    pub fn get_channel_title(&self) -> Option<String> {
-        self.inner.current_channel_title.read().unwrap().clone()
-    }
-
     pub fn get_track_title(&self) -> Option<String> {
         self.inner.current_track_title.read().unwrap().clone()
     }
@@ -80,7 +73,6 @@ impl ChannelPlayer {
 struct Inner {
     logger: Logger,
     senders: Arc<Mutex<Vec<mpsc::Sender<ChannelPlayerMessage>>>>,
-    current_channel_title: RwLock<Option<String>>,
     current_track_title: RwLock<Option<String>>,
     restart_sender: Mutex<Option<oneshot::Sender<()>>>,
     handle: Mutex<Option<JoinHandle<()>>>,
@@ -112,37 +104,26 @@ impl Inner {
     {
         let senders: Arc<Mutex<Vec<mpsc::Sender<_>>>> = Arc::default();
         let restart_sender: Mutex<Option<_>> = Mutex::default();
-        let current_channel_title: RwLock<Option<String>> = RwLock::default();
         let current_track_title: RwLock<Option<String>> = RwLock::default();
         let handle: Mutex<Option<_>> = Mutex::default();
 
         let logger = logger.new(o!("channel_id" => *channel_id));
 
         let mut player_loop_messages = {
-            let player_loop_logger = logger.new(o!("service" => "player_loop"));
-
-            match make_player_loop(
+            make_player_loop(
                 channel_id,
                 client_id,
                 path_to_ffmpeg,
                 backend_client,
-                &player_loop_logger,
+                &logger,
                 metrics,
             )
-            .await
-            {
-                Ok(player_loop_events) => player_loop_events,
-                Err(error) => {
-                    return Err(ChannelPlayerError::PlayerLoopError(error));
-                }
-            }
         };
 
         let inner = Arc::new(Self {
             logger,
             senders,
             restart_sender,
-            current_channel_title,
             current_track_title,
             handle,
             on_all_receivers_disconnected: Box::new(on_all_receivers_disconnected),
@@ -155,12 +136,6 @@ impl Inner {
                 while let Some(message) = player_loop_messages.next().await {
                     if let Some(inner) = inner.upgrade() {
                         match message {
-                            PlayerLoopMessage::ChannelTitle(title) => {
-                                inner.update_current_channel_title(title.clone());
-                                inner
-                                    .send_all(ChannelPlayerMessage::ChannelTitle(title))
-                                    .await;
-                            }
                             PlayerLoopMessage::TrackTitle(title) => {
                                 inner.update_current_track_title(title.clone());
                                 inner
@@ -184,10 +159,6 @@ impl Inner {
         inner.handle.lock().unwrap().replace(handle);
 
         Ok(inner)
-    }
-
-    fn update_current_channel_title(&self, title: String) {
-        let _ = self.current_channel_title.write().unwrap().replace(title);
     }
 
     fn update_current_track_title(&self, title: String) {

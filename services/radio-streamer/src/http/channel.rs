@@ -2,9 +2,7 @@ use crate::audio_formats::AudioFormats;
 use crate::backend_client::{BackendClient, MorBackendClientError};
 use crate::config::Config;
 use crate::stream::channel_encoder::ChannelEncoderMessage;
-use crate::stream::encoder_registry::EncoderRegistryError;
 use crate::stream::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
-use crate::stream::player_registry::PlayerRegistryError;
 use crate::{EncoderRegistry, PlayerRegistry};
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
@@ -92,9 +90,6 @@ pub(crate) async fn get_channel_audio_stream(
         .await
     {
         Ok(encoder) => encoder,
-        Err(EncoderRegistryError::PlayerRegistryError(PlayerRegistryError::ChannelNotFound)) => {
-            return HttpResponse::NotFound().finish();
-        }
         Err(error) => {
             error!(logger, "Error"; "error" => ?error);
 

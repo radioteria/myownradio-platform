@@ -2,7 +2,7 @@ use crate::backend_client::{BackendClient, MorBackendClientError};
 use crate::helpers::io::sleep_until_deadline;
 use crate::metrics::Metrics;
 use crate::stream::constants::AUDIO_BYTES_PER_SECOND;
-use crate::stream::ffmpeg_decoder::{make_ffmpeg_decoder, DecoderError};
+use crate::stream::ffmpeg_decoder::make_ffmpeg_decoder;
 use crate::stream::types::{DecodedBuffer, TimedBuffer};
 use actix_rt::task::JoinHandle;
 use actix_rt::time::Instant;
@@ -18,7 +18,6 @@ const ALLOWED_DELAY: Duration = Duration::from_secs(1);
 #[derive(Debug)]
 pub(crate) enum PlayerLoopError {
     ChannelNotFound,
-    DecoderError(DecoderError),
     BackendClientError(MorBackendClientError),
 }
 
@@ -76,13 +75,13 @@ pub(crate) async fn make_player_loop(
 
             defer!(metrics.dec_player_loops_active());
 
-            if let Err(error) = tx
+            if let Err(_) = tx
                 .send(PlayerLoopMessage::ChannelTitle(channel_info.name))
                 .await
             {
                 debug!(
                     logger,
-                    "Stopping player loop: channel closed on sending channel name"
+                    "Stopping player loop: channel closed on updating channel title"
                 );
                 return;
             }
@@ -161,27 +160,27 @@ pub(crate) async fn make_player_loop(
 
                         stored_next_track_decoder
                             .lock()
-                            .expect("Unable to obtain lock on replacing stored next track decoder")
+                            .unwrap()
                             .replace(next_track_decoder);
                     }
                 }));
 
                 let title = now_playing.current_track.title.clone();
 
-                if let Err(error) = tx.send(PlayerLoopMessage::TrackTitle(title)).await {
+                if let Err(_) = tx.send(PlayerLoopMessage::TrackTitle(title)).await {
                     debug!(
                         logger,
-                        "Stopping player loop: channel closed on sending title change"
+                        "Stopping player loop: channel closed on updating title"
                     );
                     return;
                 }
 
                 let (restart_tx, mut restart_rx) = oneshot::channel::<()>();
 
-                if let Err(error) = tx.send(PlayerLoopMessage::RestartSender(restart_tx)).await {
+                if let Err(_) = tx.send(PlayerLoopMessage::RestartSender(restart_tx)).await {
                     debug!(
                         logger,
-                        "Stopping player loop: channel closed on sending restart sender"
+                        "Stopping player loop: channel closed on updating restart sender"
                     );
                     return;
                 }
@@ -189,7 +188,7 @@ pub(crate) async fn make_player_loop(
                 while let Some(DecodedBuffer(bytes, bytes_offset)) = track_decoder.next().await {
                     let deadline = time + bytes_offset;
 
-                    if let Err(error) = sleep_until_deadline(deadline, &mut restart_rx).await {
+                    if let Err(_) = sleep_until_deadline(deadline, &mut restart_rx).await {
                         debug!(logger, "Sleep cancelled");
                     }
 
@@ -203,7 +202,7 @@ pub(crate) async fn make_player_loop(
                     let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
                     let time = base_time + decoding_time;
 
-                    if let Err(error) = tx
+                    if let Err(_) = tx
                         .send(PlayerLoopMessage::TimedBuffer(TimedBuffer(bytes, time)))
                         .await
                     {

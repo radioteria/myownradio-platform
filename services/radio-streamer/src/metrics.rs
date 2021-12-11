@@ -9,7 +9,7 @@ pub struct Metrics {
     spawned_decoder_processes: Gauge,
     spawned_encoder_processes: Gauge,
     player_loops_active: Gauge,
-    streaming_in_progress: Gauge,
+    streams_in_progress: Gauge,
     prometheus_registry: Registry,
     http_requests_total: IntCounterVec,
     http_requests_duration_seconds: HistogramVec,
@@ -99,7 +99,7 @@ impl Metrics {
             spawned_decoder_processes,
             spawned_encoder_processes,
             player_loops_active,
-            streaming_in_progress,
+            streams_in_progress: streaming_in_progress,
             prometheus_registry,
             http_requests_total,
             http_requests_duration_seconds,
@@ -130,12 +130,12 @@ impl Metrics {
         self.player_loops_active.dec()
     }
 
-    pub fn inc_streaming_in_progress(&self) {
-        self.streaming_in_progress.inc()
+    pub fn inc_streams_in_progress(&self) {
+        self.streams_in_progress.inc()
     }
 
-    pub fn dec_streaming_in_progress(&self) {
-        self.streaming_in_progress.dec()
+    pub fn dec_streams_in_progress(&self) {
+        self.streams_in_progress.dec()
     }
 
     pub fn update_http_request_total(

@@ -1,11 +1,10 @@
 use crate::audio_formats::AudioFormats;
-use crate::channel::registry::ChannelPlayerRegistry;
 use crate::config::Config;
 use crate::stream::channel_encoder::ChannelEncoderMessage;
 use crate::stream::encoder_registry::EncoderRegistryError;
 use crate::stream::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
 use crate::stream::player_registry::PlayerRegistryError;
-use crate::{EncoderRegistry, Metrics, PlayerRegistry};
+use crate::{EncoderRegistry, PlayerRegistry};
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use futures::channel::mpsc;
@@ -58,7 +57,6 @@ pub(crate) async fn listen_channel(
     channel_id: web::Path<usize>,
     query_params: Query<ListenQueryParams>,
     logger: Data<Arc<Logger>>,
-    metrics: Data<Arc<Metrics>>,
     encoder_registry: Data<EncoderRegistry>,
 ) -> impl Responder {
     let format_param = query_params.format.clone();
@@ -92,6 +90,8 @@ pub(crate) async fn listen_channel(
 
     let icy_muxer = Arc::new(IcyMuxer::new());
     let (response_sender, response_receiver) = mpsc::channel(0);
+
+    icy_muxer.send_track_title(encoder.get_track_title().unwrap_or_default());
 
     actix_rt::spawn({
         let mut encoder_messages = encoder_messages;

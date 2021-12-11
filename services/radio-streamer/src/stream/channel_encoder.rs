@@ -14,7 +14,6 @@ use std::sync::{Arc, Mutex};
 #[derive(Debug)]
 pub(crate) enum ChannelEncoderError {
     EncoderError(EncoderError),
-    Unexpected,
 }
 
 #[derive(Clone, Debug)]
@@ -137,6 +136,8 @@ impl Inner {
                 let inner = inner.clone();
 
                 async move {
+                    metrics.inc_streams_in_progress();
+
                     while let Some(message) = channel_player_messages.next().await {
                         match message {
                             ChannelPlayerMessage::TimedBuffer(TimedBuffer(bytes, _)) => {
@@ -154,6 +155,8 @@ impl Inner {
                             _ => (),
                         }
                     }
+
+                    metrics.dec_streams_in_progress()
                 }
             };
 

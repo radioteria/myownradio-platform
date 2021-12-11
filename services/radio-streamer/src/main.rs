@@ -1,26 +1,3 @@
-mod audio_formats;
-mod backend_client;
-mod channel;
-mod config;
-mod constants;
-mod helpers;
-mod http;
-mod macros;
-mod metrics;
-mod stream;
-mod transcoder;
-mod utils;
-
-use crate::backend_client::BackendClient;
-use crate::channel::factory::ChannelPlayerFactory;
-use crate::channel::registry::ChannelPlayerRegistry;
-use crate::config::{Config, LogFormat};
-use crate::http::channel::{get_active_channel_ids, listen_channel, restart_by_channel_id};
-use crate::http::metrics::get_metrics;
-use crate::metrics::Metrics;
-use crate::stream::encoder_registry::EncoderRegistry;
-use crate::stream::player_registry::PlayerRegistry;
-use crate::transcoder::TranscoderService;
 use actix_rt::signal::unix;
 use actix_web::dev::Service;
 use actix_web::{App, HttpServer};
@@ -30,6 +7,23 @@ use std::io;
 use std::io::Result;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
+
+use crate::backend_client::BackendClient;
+use crate::config::{Config, LogFormat};
+use crate::http::channel::{get_active_channel_ids, listen_channel, restart_by_channel_id};
+use crate::http::metrics::get_metrics;
+use crate::metrics::Metrics;
+use crate::stream::encoder_registry::EncoderRegistry;
+use crate::stream::player_registry::PlayerRegistry;
+
+mod audio_formats;
+mod backend_client;
+mod config;
+mod helpers;
+mod http;
+mod macros;
+mod metrics;
+mod stream;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -68,18 +62,6 @@ async fn main() -> Result<()> {
         &logger.new(o!("scope" => "BackendClient")),
     ));
     let metrics = Arc::new(Metrics::new());
-    let transcoder = Arc::new(TranscoderService::new(
-        &config.path_to_ffmpeg,
-        logger.new(o!("scope" => "TranscoderService")),
-        metrics.clone(),
-    ));
-    let channel_player_factory = Arc::new(ChannelPlayerFactory::new(
-        backend_client.clone(),
-        transcoder.clone(),
-        metrics.clone(),
-        logger.new(o!("scope" => "ChannelPlayerFactory")),
-    ));
-    let channel_player_registry = Arc::new(ChannelPlayerRegistry::new());
 
     let player_registry = PlayerRegistry::new(
         config.path_to_ffmpeg.clone(),
@@ -134,9 +116,6 @@ async fn main() -> Result<()> {
                 .data(backend_client.clone())
                 .data(logger.clone())
                 .data(metrics.clone())
-                .data(transcoder.clone())
-                .data(channel_player_factory.clone())
-                .data(channel_player_registry.clone())
                 .data(player_registry.clone())
                 .data(encoder_registry.clone())
                 .service(listen_channel)

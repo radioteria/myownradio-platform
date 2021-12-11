@@ -1,7 +1,10 @@
-use crate::helpers::math::div_ceil;
 use actix_web::web::Bytes;
 use bytebuffer::ByteBuffer;
 use std::sync::Mutex;
+
+fn div_ceil(a: usize, b: usize) -> usize {
+    (a as f32 / b as f32).ceil() as usize
+}
 
 pub const ICY_METADATA_INTERVAL: usize = 8192;
 

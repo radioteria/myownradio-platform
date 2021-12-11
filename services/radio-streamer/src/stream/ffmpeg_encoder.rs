@@ -2,11 +2,10 @@ use crate::audio_formats::AudioFormat;
 use crate::helpers::io::{read_from_stdout, write_to_stdin};
 use crate::metrics::Metrics;
 use crate::stream::constants::{AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY};
-use crate::stream::types::DecodedBuffer;
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
 use futures::channel::{mpsc, oneshot};
-use futures::{select, SinkExt, StreamExt};
+use futures::{SinkExt, StreamExt};
 use futures_lite::FutureExt;
 use slog::{error, o, Logger};
 

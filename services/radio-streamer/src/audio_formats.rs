@@ -1,3 +1,4 @@
+#[derive(Debug, Hash, Eq, PartialEq, Clone)]
 pub struct AudioFormat {
     pub bitrate: u16,
     pub format: &'static str,
@@ -18,6 +19,12 @@ impl AudioFormat {
             content_type,
             codec,
         }
+    }
+}
+
+impl Default for AudioFormat {
+    fn default() -> Self {
+        AudioFormats::MP3_256K
     }
 }
 

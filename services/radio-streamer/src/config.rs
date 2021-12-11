@@ -13,12 +13,23 @@ pub enum LogLevel {
     Trace,
 }
 
+#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
+#[serde(field_identifier, untagged)]
+pub enum LogFormat {
+    Json,
+    Term,
+}
+
 fn default_bind_address() -> String {
     "0.0.0.0:8080".to_string()
 }
 
 fn default_log_level() -> Level {
     Level::Warning
+}
+
+fn default_log_format() -> LogFormat {
+    LogFormat::Json
 }
 
 fn default_shutdown_timeout() -> u64 {
@@ -53,6 +64,8 @@ pub struct Config {
     pub path_to_ffprobe: String,
     #[serde(with = "LogLevel", default = "default_log_level")]
     pub log_level: Level,
+    #[serde(default = "default_log_format")]
+    pub log_format: LogFormat,
     #[serde(default = "default_shutdown_timeout")]
     pub shutdown_timeout: u64,
     // Required environment variables

@@ -1,33 +1,29 @@
-mod audio_formats;
-mod backend_client;
-mod channel;
-mod config;
-mod constants;
-mod helpers;
-mod http;
-mod icy_metadata;
-mod metrics;
-mod transcoder;
-mod utils;
-
-use crate::backend_client::BackendClient;
-use crate::channel::factory::ChannelPlayerFactory;
-use crate::channel::registry::ChannelPlayerRegistry;
-use crate::config::Config;
-use crate::http::metrics::get_metrics;
-use crate::http::streaming::{get_active_streams, listen_by_channel_id, restart_by_channel_id};
-use crate::metrics::Metrics;
-use crate::transcoder::TranscoderService;
 use actix_rt::signal::unix;
 use actix_web::dev::Service;
 use actix_web::{App, HttpServer};
 use futures_lite::FutureExt;
 use slog::{info, o, Drain, Logger};
-use slog_json::Json;
 use std::io;
 use std::io::Result;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
+
+use crate::backend_client::BackendClient;
+use crate::config::{Config, LogFormat};
+use crate::http::channel::{get_active_channel_ids, listen_channel, restart_by_channel_id};
+use crate::http::metrics::get_metrics;
+use crate::metrics::Metrics;
+use crate::stream::encoder_registry::EncoderRegistry;
+use crate::stream::player_registry::PlayerRegistry;
+
+mod audio_formats;
+mod backend_client;
+mod config;
+mod helpers;
+mod http;
+mod macros;
+mod metrics;
+mod stream;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -41,31 +37,45 @@ async fn main() -> Result<()> {
     let bind_address = &config.bind_address.clone();
     let shutdown_timeout = config.shutdown_timeout.clone();
 
-    let drain = Json::new(io::stderr())
-        .add_default_keys()
-        .set_pretty(cfg!(debug_assertions))
-        .build()
-        .filter_level(config.log_level);
-    let safe_drain = Mutex::new(drain).map(slog::Fuse);
-    let logger = Arc::new(Logger::root(safe_drain, o!("version" => VERSION)));
+    let logger = match config.log_format {
+        LogFormat::Json => {
+            let drain = slog_json::Json::new(io::stderr())
+                .add_default_keys()
+                .set_pretty(cfg!(debug_assertions))
+                .build()
+                .filter_level(config.log_level);
+            let safe_drain = Mutex::new(drain).map(slog::Fuse);
+            Logger::root(safe_drain, o!("version" => VERSION))
+        }
+        LogFormat::Term => {
+            let drain = slog_term::FullFormat::new(slog_term::TermDecorator::new().build())
+                .build()
+                .filter_level(config.log_level);
+            let safe_drain = Mutex::new(drain).map(slog::Fuse);
+            Logger::root(safe_drain, o!("version" => VERSION))
+        }
+    };
+    let logger = Arc::new(logger);
 
     let backend_client = Arc::new(BackendClient::new(
         &config.mor_backend_url,
         &logger.new(o!("scope" => "BackendClient")),
     ));
     let metrics = Arc::new(Metrics::new());
-    let transcoder = Arc::new(TranscoderService::new(
-        &config.path_to_ffmpeg,
-        logger.new(o!("scope" => "TranscoderService")),
-        metrics.clone(),
-    ));
-    let channel_player_factory = Arc::new(ChannelPlayerFactory::new(
+
+    let player_registry = PlayerRegistry::new(
+        config.path_to_ffmpeg.clone(),
         backend_client.clone(),
-        transcoder.clone(),
+        logger.new(o!("service" => "PlayerRegistry")),
         metrics.clone(),
-        logger.new(o!("scope" => "ChannelPlayerFactory")),
-    ));
-    let channel_player_registry = Arc::new(ChannelPlayerRegistry::new());
+    );
+
+    let encoder_registry = EncoderRegistry::new(
+        config.path_to_ffmpeg.clone(),
+        logger.new(o!("service" => "EncoderRegistry")),
+        metrics.clone(),
+        player_registry.clone(),
+    );
 
     info!(logger, "Starting application...");
 
@@ -106,12 +116,11 @@ async fn main() -> Result<()> {
                 .data(backend_client.clone())
                 .data(logger.clone())
                 .data(metrics.clone())
-                .data(transcoder.clone())
-                .data(channel_player_factory.clone())
-                .data(channel_player_registry.clone())
-                .service(listen_by_channel_id)
+                .data(player_registry.clone())
+                .data(encoder_registry.clone())
+                .service(listen_channel)
                 .service(restart_by_channel_id)
-                .service(get_active_streams)
+                .service(get_active_channel_ids)
                 .service(get_metrics)
         }
     })

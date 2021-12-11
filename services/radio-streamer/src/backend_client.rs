@@ -52,6 +52,7 @@ pub struct ChannelInfoResponse {
     pub data: Option<ChannelInfo>,
 }
 
+#[derive(Clone)]
 pub struct BackendClient {
     logger: Logger,
     mor_backend_url: String,

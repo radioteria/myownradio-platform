@@ -5,7 +5,7 @@ use crate::stream::types::TimedBuffer;
 use actix_rt::task::JoinHandle;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
-use slog::{debug, o, Logger};
+use slog::{debug, o, warn, Logger};
 use std::sync::{Arc, Mutex, RwLock};
 
 #[derive(Debug)]
@@ -55,15 +55,9 @@ impl ChannelPlayer {
     pub fn create_receiver(&self) -> mpsc::Receiver<ChannelPlayerMessage> {
         let (tx, rx) = mpsc::channel(0);
 
-        actix_rt::spawn({
-            let senders = self.inner.senders.clone();
+        let mut senders = self.inner.senders.lock().unwrap();
 
-            async move {
-                let mut senders = senders.lock().unwrap();
-
-                senders.push(tx);
-            }
-        });
+        senders.push(tx);
 
         rx
     }
@@ -214,13 +208,19 @@ impl Inner {
         let _ = self.restart_sender.lock().unwrap().replace(sender);
     }
 
-    async fn send_all(&self, event: ChannelPlayerMessage) {
+    async fn send_all(&self, message: ChannelPlayerMessage) {
         let logger = self.logger.clone();
+
+        let mut senders = self.senders.lock().unwrap();
+
+        if senders.len() == 0 {
+            warn!(logger, "Sending message to nobody"; "message" => ?message);
+        }
 
         let mut has_disconnected_senders = false;
 
-        for sender in self.senders.lock().unwrap().iter_mut() {
-            if let Err(_) = sender.send(event.clone()).await {
+        for sender in senders.iter_mut() {
+            if let Err(_) = sender.send(message.clone()).await {
                 debug!(logger, "Unable to send message: channel closed");
                 has_disconnected_senders = true;
             }
@@ -228,8 +228,6 @@ impl Inner {
 
         if has_disconnected_senders {
             debug!(logger, "Performing retain");
-
-            let mut senders = self.senders.lock().unwrap();
 
             senders.retain(|sender| !sender.is_closed());
 

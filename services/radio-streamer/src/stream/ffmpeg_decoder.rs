@@ -8,7 +8,7 @@ use async_process::{Command, Stdio};
 use futures::channel::mpsc;
 use futures::SinkExt;
 use scopeguard::defer;
-use slog::{debug, error, o, Logger};
+use slog::{debug, error, o, warn, Logger};
 use std::time::Duration;
 
 const STDIO_BUFFER_SIZE: usize = 4096;
@@ -27,7 +27,7 @@ pub(crate) fn make_ffmpeg_decoder(
     metrics: &Metrics,
 ) -> Result<mpsc::Receiver<DecodedBuffer>, DecoderError> {
     let (mut tx, rx) = mpsc::channel::<DecodedBuffer>(0);
-    let decoder_logger = logger.new(o!("kind" => "ffmpeg_decoder"));
+    let logger = logger.new(o!("kind" => "ffmpeg_decoder"));
 
     let mut process = match Command::new(&path_to_ffmpeg)
         .args(&[
@@ -56,12 +56,12 @@ pub(crate) fn make_ffmpeg_decoder(
     {
         Ok(process) => process,
         Err(error) => {
-            error!(logger, "Unable to spawn the decoder process"; "error" => ?error);
+            error!(logger, "Unable to start the decoder process"; "error" => ?error);
             return Err(DecoderError::ProcessError);
         }
     };
 
-    debug!(decoder_logger, "Process spawn"; "source_url" => source_url, "offset" => ?offset);
+    debug!(logger, "Starting audio decoder"; "url" => source_url, "offset" => ?offset);
 
     let status = process.status();
 
@@ -102,7 +102,12 @@ pub(crate) fn make_ffmpeg_decoder(
             drop(stdout);
 
             if let Ok(exit_status) = status.await {
-                debug!(decoder_logger, "Process exit"; "exit_code" => exit_status.code());
+                match exit_status.code() {
+                    Some(code) if code != 0 => {
+                        warn!(logger, "Decoder existed with non-zero exit code"; "exit_code" => code);
+                    }
+                    _ => (),
+                }
             }
         }
     });

@@ -1,16 +1,15 @@
 use crate::audio_formats::AudioFormats;
+use crate::backend_client::{BackendClient, MorBackendClientError};
 use crate::config::Config;
 use crate::stream::channel_encoder::ChannelEncoderMessage;
-use crate::stream::encoder_registry::EncoderRegistryError;
 use crate::stream::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
-use crate::stream::player_registry::PlayerRegistryError;
 use crate::{EncoderRegistry, PlayerRegistry};
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use futures::channel::mpsc;
 use futures::StreamExt;
 use serde::Deserialize;
-use slog::{debug, error, Logger};
+use slog::{debug, error, warn, Logger};
 use std::sync::Arc;
 
 #[get("/active")]
@@ -58,7 +57,22 @@ pub(crate) async fn get_channel_audio_stream(
     query_params: Query<GetChannelAudioStreamQueryParams>,
     logger: Data<Arc<Logger>>,
     encoder_registry: Data<EncoderRegistry>,
+    backend_client: Data<Arc<BackendClient>>,
 ) -> impl Responder {
+    let channel_info = match backend_client
+        .get_channel_info(&channel_id.clone(), query_params.client_id.clone())
+        .await
+    {
+        Ok(channel_info) => channel_info,
+        Err(MorBackendClientError::ChannelNotFound) => {
+            return HttpResponse::NotFound().finish();
+        }
+        Err(error) => {
+            error!(logger, "Unable to get channel info"; "error" => ?error);
+            return HttpResponse::ServiceUnavailable().finish();
+        }
+    };
+
     let format_param = query_params.format.clone();
 
     let format = format_param
@@ -76,9 +90,6 @@ pub(crate) async fn get_channel_audio_stream(
         .await
     {
         Ok(encoder) => encoder,
-        Err(EncoderRegistryError::PlayerRegistryError(PlayerRegistryError::ChannelNotFound)) => {
-            return HttpResponse::NotFound().finish();
-        }
         Err(error) => {
             error!(logger, "Error"; "error" => ?error);
 
@@ -103,8 +114,21 @@ pub(crate) async fn get_channel_audio_stream(
             while let Some(event) = encoder_messages.next().await {
                 match event {
                     ChannelEncoderMessage::EncodedBuffer(bytes) => {
-                        if let Err(_) = response_sender.try_send(bytes) {
-                            break;
+                        // Do not block encoder if one of the consumers are blocked due to network issues
+                        match response_sender.try_send(bytes) {
+                            Err(error) if error.is_disconnected() => {
+                                // Disconnected: drop the receiver
+                                break;
+                            }
+                            Err(error) if error.is_full() => {
+                                // Buffer is full: skip the remaining bytes
+                            }
+                            Err(error) => {
+                                warn!(logger, "Unable to send bytes to the client"; "error" => ?error);
+                                // Unexpected error: drop the receiver
+                                break;
+                            }
+                            Ok(_) => (),
                         }
                     }
                     ChannelEncoderMessage::TrackTitle(title) => {
@@ -128,7 +152,7 @@ pub(crate) async fn get_channel_audio_stream(
             response
                 .insert_header(("icy-metadata", "1"))
                 .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)))
-                .insert_header(("icy-name", encoder.get_channel_title().unwrap_or_default()));
+                .insert_header(("icy-name", channel_info.name));
 
             response.streaming::<_, actix_web::Error>({
                 response_receiver

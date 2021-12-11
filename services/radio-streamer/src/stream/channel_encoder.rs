@@ -62,10 +62,6 @@ impl ChannelEncoder {
         rx
     }
 
-    pub fn get_channel_title(&self) -> Option<String> {
-        self.inner.channel_player.get_channel_title()
-    }
-
     pub fn get_track_title(&self) -> Option<String> {
         self.inner.channel_player.get_track_title()
     }
@@ -146,7 +142,6 @@ impl Inner {
                                     .send_all(ChannelEncoderMessage::TrackTitle(title))
                                     .await
                             }
-                            _ => (),
                         }
                     }
 

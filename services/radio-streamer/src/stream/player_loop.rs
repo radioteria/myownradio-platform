@@ -16,27 +16,20 @@ use std::time::Duration;
 const ALLOWED_DELAY: Duration = Duration::from_secs(1);
 
 #[derive(Debug)]
-pub(crate) enum PlayerLoopError {
-    ChannelNotFound,
-    BackendClientError(MorBackendClientError),
-}
-
-#[derive(Debug)]
 pub(crate) enum PlayerLoopMessage {
-    ChannelTitle(String),
     TimedBuffer(TimedBuffer),
     TrackTitle(String),
     RestartSender(oneshot::Sender<()>),
 }
 
-pub(crate) async fn make_player_loop(
+pub(crate) fn make_player_loop(
     channel_id: &usize,
     client_id: &Option<String>,
     path_to_ffmpeg: &str,
     backend_client: &BackendClient,
     logger: &Logger,
     metrics: &Metrics,
-) -> Result<mpsc::Receiver<PlayerLoopMessage>, PlayerLoopError> {
+) -> mpsc::Receiver<PlayerLoopMessage> {
     let client_id = client_id.clone();
     let channel_id = channel_id.clone();
     let path_to_ffmpeg = path_to_ffmpeg.to_owned();
@@ -45,20 +38,6 @@ pub(crate) async fn make_player_loop(
     let metrics = metrics.clone();
 
     let (tx, rx) = mpsc::channel(0);
-
-    let channel_info = match backend_client
-        .get_channel_info(&channel_id, client_id.clone())
-        .await
-    {
-        Ok(channel_info) => channel_info,
-        Err(MorBackendClientError::ChannelNotFound) => {
-            return Err(PlayerLoopError::ChannelNotFound);
-        }
-        Err(error) => {
-            error!(logger, "Unable to get channel info"; "error" => ?error);
-            return Err(PlayerLoopError::BackendClientError(error));
-        }
-    };
 
     actix_rt::spawn({
         let backend_client = backend_client.clone();
@@ -75,20 +54,9 @@ pub(crate) async fn make_player_loop(
 
             defer!(metrics.dec_player_loops_active());
 
-            if let Err(_) = tx
-                .send(PlayerLoopMessage::ChannelTitle(channel_info.name))
-                .await
-            {
-                debug!(
-                    logger,
-                    "Stopping player loop: channel closed on updating channel title"
-                );
-                return;
-            }
+            info!(logger, "Starting player loop"; "channel_id" => &channel_id);
 
-            info!(logger, "Started player loop"; "channel_id" => &channel_id);
-
-            defer!(info!(logger, "Stopped player loop"; "channel_id" => &channel_id););
+            defer!(info!(logger, "Stopping player loop"; "channel_id" => &channel_id););
 
             let mut bytes_sent = 0usize;
 
@@ -219,5 +187,5 @@ pub(crate) async fn make_player_loop(
         }
     });
 
-    Ok(rx)
+    rx
 }

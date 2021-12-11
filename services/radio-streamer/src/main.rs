@@ -10,7 +10,9 @@ use std::time::Instant;
 
 use crate::backend_client::BackendClient;
 use crate::config::{Config, LogFormat};
-use crate::http::channel::{get_active_channel_ids, listen_channel, restart_by_channel_id};
+use crate::http::channel::{
+    get_active_channel_ids, get_channel_audio_stream, restart_channel_by_id,
+};
 use crate::http::metrics::get_metrics;
 use crate::metrics::Metrics;
 use crate::stream::encoder_registry::EncoderRegistry;
@@ -118,8 +120,8 @@ async fn main() -> Result<()> {
                 .data(metrics.clone())
                 .data(player_registry.clone())
                 .data(encoder_registry.clone())
-                .service(listen_channel)
-                .service(restart_by_channel_id)
+                .service(get_channel_audio_stream)
+                .service(restart_channel_by_id)
                 .service(get_active_channel_ids)
                 .service(get_metrics)
         }

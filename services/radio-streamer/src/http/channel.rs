@@ -8,7 +8,7 @@ use crate::{EncoderRegistry, PlayerRegistry};
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use futures::channel::mpsc;
-use futures::{SinkExt, StreamExt};
+use futures::StreamExt;
 use serde::Deserialize;
 use slog::{debug, error, Logger};
 use std::sync::Arc;
@@ -23,7 +23,7 @@ pub(crate) async fn get_active_channel_ids(
 }
 
 #[get("/restart/{channel_id}")]
-pub(crate) async fn restart_by_channel_id(
+pub(crate) async fn restart_channel_by_id(
     request: HttpRequest,
     channel_id: web::Path<usize>,
     config: Data<Arc<Config>>,
@@ -46,16 +46,16 @@ pub(crate) async fn restart_by_channel_id(
 }
 
 #[derive(Deserialize, Clone)]
-pub struct ListenQueryParams {
+pub struct GetChannelAudioStreamQueryParams {
     format: Option<String>,
     client_id: Option<String>,
 }
 
 #[get("/listen/{channel_id}")]
-pub(crate) async fn listen_channel(
+pub(crate) async fn get_channel_audio_stream(
     request: HttpRequest,
     channel_id: web::Path<usize>,
-    query_params: Query<ListenQueryParams>,
+    query_params: Query<GetChannelAudioStreamQueryParams>,
     logger: Data<Arc<Logger>>,
     encoder_registry: Data<EncoderRegistry>,
 ) -> impl Responder {
@@ -89,7 +89,7 @@ pub(crate) async fn listen_channel(
     let encoder_messages = encoder.create_receiver();
 
     let icy_muxer = Arc::new(IcyMuxer::new());
-    let (response_sender, response_receiver) = mpsc::channel(0);
+    let (response_sender, response_receiver) = mpsc::channel(512);
 
     icy_muxer.send_track_title(encoder.get_track_title().unwrap_or_default());
 
@@ -103,7 +103,7 @@ pub(crate) async fn listen_channel(
             while let Some(event) = encoder_messages.next().await {
                 match event {
                     ChannelEncoderMessage::EncodedBuffer(bytes) => {
-                        if let Err(_) = response_sender.send(bytes).await {
+                        if let Err(_) = response_sender.try_send(bytes) {
                             break;
                         }
                     }

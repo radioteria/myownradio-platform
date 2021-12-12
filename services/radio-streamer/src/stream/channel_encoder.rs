@@ -107,10 +107,12 @@ impl Inner {
             make_ffmpeg_encoder(audio_format, path_to_ffmpeg, &logger, &metrics)
                 .map_err(|error| ChannelEncoderError::EncoderError(error))?;
 
+        let channel_player = channel_player.clone();
+        let channel_player_messages = channel_player.create_receiver();
         let inner = Arc::new(Self {
             logger,
             senders,
-            channel_player: channel_player.clone(),
+            channel_player,
             handle,
             on_all_receivers_disconnected,
         });
@@ -118,7 +120,7 @@ impl Inner {
         let handle = actix_rt::spawn({
             let mut encoder_receiver = encoder_receiver;
             let mut encoder_sender = encoder_sender;
-            let mut channel_player_messages = channel_player.create_receiver();
+            let mut channel_player_messages = channel_player_messages;
 
             let inner = Arc::downgrade(&inner);
 
@@ -126,8 +128,6 @@ impl Inner {
                 let inner = inner.clone();
 
                 async move {
-                    metrics.inc_streams_in_progress();
-
                     while let Some(message) = channel_player_messages.next().await {
                         match message {
                             ChannelPlayerMessage::TimedBuffer(TimedBuffer(bytes, _)) => {
@@ -144,8 +144,6 @@ impl Inner {
                             }
                         }
                     }
-
-                    metrics.dec_streams_in_progress()
                 }
             };
 

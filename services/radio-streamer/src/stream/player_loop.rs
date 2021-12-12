@@ -50,9 +50,9 @@ pub(crate) fn make_player_loop(
         let mut tx = tx;
 
         async move {
-            metrics.inc_player_loops_active();
+            metrics.inc_active_player_loops();
 
-            defer!(metrics.dec_player_loops_active());
+            defer!(metrics.dec_active_player_loops());
 
             info!(logger, "Starting player loop"; "channel_id" => &channel_id);
 

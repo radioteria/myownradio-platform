@@ -79,9 +79,9 @@ pub(crate) fn make_ffmpeg_decoder(
         let mut bytes_sent = 0usize;
 
         async move {
-            metrics.inc_spawned_decoder_processes();
+            metrics.inc_active_decoders();
 
-            defer!(metrics.dec_spawned_decoder_processes());
+            defer!(metrics.dec_active_decoders());
 
             let mut stdout = stdout;
             let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];

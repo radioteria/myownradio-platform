@@ -7,6 +7,7 @@ use async_process::{Command, Stdio};
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use futures_lite::FutureExt;
+use scopeguard::defer;
 use slog::{error, o, Logger};
 
 const STDIO_BUFFER_SIZE: usize = 4096;
@@ -126,9 +127,12 @@ pub(crate) fn make_ffmpeg_encoder(
 
         let logger = logger.clone();
         let metrics = metrics.clone();
+        let format_string = format.to_string();
 
         async move {
-            metrics.inc_spawned_encoder_processes();
+            metrics.inc_active_encoders(&format_string);
+
+            defer!(metrics.dec_active_encoders(&format_string));
 
             let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
             while let Some(Ok(bytes)) = read_from_stdout(&mut stdout, &mut buffer).await {
@@ -137,8 +141,6 @@ pub(crate) fn make_ffmpeg_encoder(
                     break;
                 };
             }
-
-            metrics.dec_spawned_encoder_processes();
 
             let _ = term_signal.send(());
         }

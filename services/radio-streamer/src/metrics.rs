@@ -1,15 +1,16 @@
 use crate::VERSION;
 use actix_web::http::{Method, StatusCode};
-use prometheus::{Encoder, Gauge, HistogramVec, IntCounterVec, Opts, Registry, TextEncoder};
+use prometheus::{
+    Encoder, Gauge, HistogramVec, IntCounterVec, IntGaugeVec, Opts, Registry, TextEncoder,
+};
 use std::collections::HashMap;
 use std::time::Duration;
 
 #[derive(Clone)]
 pub struct Metrics {
-    spawned_decoder_processes: Gauge,
-    spawned_encoder_processes: Gauge,
-    player_loops_active: Gauge,
-    streams_in_progress: Gauge,
+    active_decoders: Gauge,
+    active_encoders: IntGaugeVec,
+    active_player_loops: Gauge,
     prometheus_registry: Registry,
     http_requests_total: IntCounterVec,
     http_requests_duration_seconds: HistogramVec,
@@ -17,27 +18,21 @@ pub struct Metrics {
 
 impl Metrics {
     pub fn new() -> Self {
-        let spawned_decoder_processes = Gauge::with_opts(Opts::new(
-            "spawned_decoder_processes",
-            "Number of spawned decoder processes",
+        let active_decoders = Gauge::with_opts(Opts::new(
+            "active_decoders",
+            "Number of active decoder processes",
         ))
         .unwrap();
 
-        let spawned_encoder_processes = Gauge::with_opts(Opts::new(
-            "spawned_encoder_processes",
-            "Number of spawned encoder processes",
-        ))
+        let active_encoders = IntGaugeVec::new(
+            Opts::new("active_encoders", "Number of active encoder processes"),
+            &["format"],
+        )
         .unwrap();
 
-        let player_loops_active = Gauge::with_opts(Opts::new(
-            "player_loops_active",
-            "Number of started player loops",
-        ))
-        .unwrap();
-
-        let streaming_in_progress = Gauge::with_opts(Opts::new(
-            "streaming_in_progress",
-            "Number of streaming currently in progress",
+        let active_player_loops = Gauge::with_opts(Opts::new(
+            "active_player_loops",
+            "Number of active player loops",
         ))
         .unwrap();
 
@@ -77,16 +72,13 @@ impl Metrics {
         }
 
         prometheus_registry
-            .register(Box::new(spawned_decoder_processes.clone()))
+            .register(Box::new(active_decoders.clone()))
             .unwrap();
         prometheus_registry
-            .register(Box::new(spawned_encoder_processes.clone()))
+            .register(Box::new(active_encoders.clone()))
             .unwrap();
         prometheus_registry
-            .register(Box::new(player_loops_active.clone()))
-            .unwrap();
-        prometheus_registry
-            .register(Box::new(streaming_in_progress.clone()))
+            .register(Box::new(active_player_loops.clone()))
             .unwrap();
         prometheus_registry
             .register(Box::new(http_requests_total.clone()))
@@ -96,46 +88,37 @@ impl Metrics {
             .unwrap();
 
         Self {
-            spawned_decoder_processes,
-            spawned_encoder_processes,
-            player_loops_active,
-            streams_in_progress: streaming_in_progress,
+            active_decoders,
+            active_encoders,
+            active_player_loops,
             prometheus_registry,
             http_requests_total,
             http_requests_duration_seconds,
         }
     }
 
-    pub fn inc_spawned_decoder_processes(&self) {
-        self.spawned_decoder_processes.inc()
+    pub fn inc_active_decoders(&self) {
+        self.active_decoders.inc()
     }
 
-    pub fn dec_spawned_decoder_processes(&self) {
-        self.spawned_decoder_processes.dec()
+    pub fn dec_active_decoders(&self) {
+        self.active_decoders.dec()
     }
 
-    pub fn inc_spawned_encoder_processes(&self) {
-        self.spawned_encoder_processes.inc()
+    pub fn inc_active_encoders(&self, format: &str) {
+        self.active_encoders.with_label_values(&[format]).inc();
     }
 
-    pub fn dec_spawned_encoder_processes(&self) {
-        self.spawned_encoder_processes.dec()
+    pub fn dec_active_encoders(&self, format: &str) {
+        self.active_encoders.with_label_values(&[format]).dec()
     }
 
-    pub fn inc_player_loops_active(&self) {
-        self.player_loops_active.inc()
+    pub fn inc_active_player_loops(&self) {
+        self.active_player_loops.inc()
     }
 
-    pub fn dec_player_loops_active(&self) {
-        self.player_loops_active.dec()
-    }
-
-    pub fn inc_streams_in_progress(&self) {
-        self.streams_in_progress.inc()
-    }
-
-    pub fn dec_streams_in_progress(&self) {
-        self.streams_in_progress.dec()
+    pub fn dec_active_player_loops(&self) {
+        self.active_player_loops.dec()
     }
 
     pub fn update_http_request_total(

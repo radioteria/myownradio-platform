@@ -22,6 +22,12 @@ impl AudioFormat {
     }
 }
 
+impl ToString for AudioFormat {
+    fn to_string(&self) -> String {
+        format!("{}/{}k", self.format, self.bitrate)
+    }
+}
+
 impl Default for AudioFormat {
     fn default() -> Self {
         AudioFormats::MP3_256K

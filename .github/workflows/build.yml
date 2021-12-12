@@ -37,8 +37,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: QEMU
-        uses: docker/setup-qemu-action@v1
+#      - name: QEMU
+#        uses: docker/setup-qemu-action@v1
       - name: setup
         uses: docker/setup-buildx-action@v1
         id: builder

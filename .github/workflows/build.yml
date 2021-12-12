@@ -52,9 +52,9 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:${{ env.BUILD_ID }}
             ${{ env.IMAGE_NAME }}:latest
-          platforms: |
-            linux/amd64
-            linux/arm64
+#          platforms: |
+#            linux/amd64
+#            linux/arm64
       - name: comment
         uses: peter-evans/commit-comment@v1
         with:

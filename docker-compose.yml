@@ -13,6 +13,41 @@ services:
       - mysql-data:/var/lib/mysql
     networks:
       - myownradio-dev
+    ports:
+      - 127.0.0.1:40001:3306
+  backend-nginx:
+    depends_on:
+      - backend-php-fpm
+    image: myownradio/backend-nginx-base:1.0.2
+    volumes:
+      - ./services/backend:/code:ro
+    networks:
+      - myownradio-dev
+    ports:
+      - 127.0.0.1:40002:80
+  backend-php-fpm:
+    depends_on:
+      - db
+    image: myownradio/backend-php-base:2.0.0
+    working_dir: /code
+    volumes:
+      - ./services/backend:/code:ro
+    user: "${UID}:${GID}"
+    networks:
+      - myownradio-dev
+  migration:
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: ./images/migration/Dockerfile
+    networks:
+      - myownradio-dev
+    environment:
+      MYSQL_DB: "mor"
+      MYSQL_USER: "mor"
+      MYSQL_PASSWORD: "mor"
+      MYSQL_HOST: "db"
 
 volumes:
   mysql-data:
@@ -21,3 +56,4 @@ volumes:
 networks:
   myownradio-dev:
     name: myownradio-dev
+

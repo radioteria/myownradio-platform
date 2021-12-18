@@ -1,6 +1,13 @@
 USER := $(shell id -u):$(shell id -g)
 PWD := $(shell pwd)
 
+compose:
+	mkdir -p services/backend/.cache/storage
+	UID=$(shell id -u) GID=$(shell id -g) docker-compose up -d
+
+shell:
+	docker-compose exec backend-php-fpm sh
+
 start-dev-dependencies:
 	docker-compose up -d
 

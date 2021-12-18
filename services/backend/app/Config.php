@@ -17,17 +17,34 @@ class Config implements Injectable, SingletonInterface
     private string $facebookAppId;
     private string $facebookAppSecret;
 
+    private string $smtpHost;
+    private string $smtpUser;
+    private string $smtpPassword;
+    private int $smtpPort;
+
+    private string $emailSenderEmail = "noreply@myownradio.biz";
+    private string $emailSenderName = "myownradio.biz";
+
     private function __construct(
         string $radioStreamerEndpoint,
         string $radioStreamerToken,
         string $facebookAppId,
-        string $facebookAppSecret
+        string $facebookAppSecret,
+        string $smtpHost,
+        string $smtpUser,
+        string $smtpPassword,
+        int $smtpPort
     ) {
         $this->radioStreamerEndpoint = $radioStreamerEndpoint;
         $this->radioStreamerToken = $radioStreamerToken;
 
         $this->facebookAppId = $facebookAppId;
         $this->facebookAppSecret = $facebookAppSecret;
+
+        $this->smtpHost = $smtpHost;
+        $this->smtpUser = $smtpUser;
+        $this->smtpPassword = $smtpPassword;
+        $this->smtpPort = $smtpPort;
     }
 
     public static function fromEnv(): Config
@@ -50,11 +67,27 @@ class Config implements Injectable, SingletonInterface
             );
         }
 
+
+        $smtpHost = env('SMTP_HOST');
+        $smtpUser = env('SMTP_USER');
+        $smtpPassword = env('SMTP_PASSWORD');
+        $smtpPort = intval(env('SMTP_PORT'), 10);
+
+        if ($smtpHost === null || $smtpUser === null || $smtpPassword === null || $smtpPort === null) {
+            throw new ApplicationException(
+                'Environment variables "SMTP_HOST", "SMTP_HOST", "SMTP_PASSWORD" and "SMTP_PORT" are required for operation'
+            );
+        }
+
         return new static(
             $radioStreamerEndpoint,
             $radioStreamerToken,
             $facebookAppId,
-            $facebookAppSecret
+            $facebookAppSecret,
+            $smtpHost,
+            $smtpUser,
+            $smtpPassword,
+            $smtpPort,
         );
     }
 
@@ -76,5 +109,35 @@ class Config implements Injectable, SingletonInterface
     public function getFacebookAppSecret(): string
     {
         return $this->facebookAppSecret;
+    }
+
+    public function getSmtpHost(): string
+    {
+        return $this->smtpHost;
+    }
+
+    public function getSmtpUser(): string
+    {
+        return $this->smtpUser;
+    }
+
+    public function getSmtpPassword(): string
+    {
+        return $this->smtpPassword;
+    }
+
+    public function getSmtpPort(): int
+    {
+        return $this->smtpPort;
+    }
+
+    public function getEmailSenderEmail(): string
+    {
+        return $this->emailSenderEmail;
+    }
+
+    public function getEmailSenderName(): string
+    {
+        return $this->emailSenderName;
     }
 }

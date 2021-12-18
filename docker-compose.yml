@@ -31,10 +31,12 @@ services:
     image: myownradio/backend-php-base:2.0.0
     working_dir: /code
     volumes:
-      - ./services/backend:/code:ro
+      - ./services/backend:/code:rw
     user: "${UID}:${GID}"
     networks:
       - myownradio-dev
+    environment:
+      COMPOSER_HOME: /code/.cache/composer-home
   migration:
     depends_on:
       - db

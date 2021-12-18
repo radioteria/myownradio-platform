@@ -19,7 +19,6 @@ use Framework\Models\UserModel;
 use Framework\Models\UsersModel;
 use Framework\Services\HttpPost;
 use Framework\Services\JsonResponse;
-use Framework\Services\Letter;
 use Objects\User;
 
 class DoFbLogin implements Controller {
@@ -64,13 +63,6 @@ class DoFbLogin implements Controller {
                     $user->setRights(1);
                     $user->setPermalink(NULL);
                     $user->save();
-
-                    $notify = new Letter("no-reply@myownradio.biz", "myownradio.biz");
-                    $notify->addAddress("roman@homefs.biz");
-                    $notify->setSubject("You have new user");
-                    $notify->setBody(sprintf("Hello! You have a new user from facebook '%s' (%s).",
-                        $user->getName(), $user->getEmail()));
-                    $notify->send();
 
                     LettersModel::sendRegistrationCompleted($user_profile->getEmail());
 

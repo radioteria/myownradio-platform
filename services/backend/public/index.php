@@ -8,7 +8,7 @@ use app\Config;
 use function Sentry\captureException;
 use function Sentry\init;
 
-define('BASE_DIR', __DIR__ . '/..');
+define('BASE_DIR', realpath(__DIR__ . '/..'));
 
 $uri = urldecode(parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH));
 

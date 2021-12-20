@@ -22,13 +22,6 @@ require_once BASE_DIR . '/vendor/autoload.php';
 // Init sentry
 init(['dsn' => env('SENTRY_DSN')]);
 
-configureScope(function (Scope $scope): void {
-    try {
-        $userModel = AuthUserModel::getInstance();
-        $scope->setUser(['email' => $userModel->getEmail()]);
-    } catch (\Exception $exception) {}
-});
-
 // AntiShame Mode: On
 require_once BASE_DIR . '/application/init.php';
 require_once BASE_DIR . '/application/startup.php';
@@ -61,6 +54,14 @@ try {
 
     // Set timezone
     date_default_timezone_set(config('app.timezone'));
+
+    // Configure sentry scope
+    configureScope(function (Scope $scope): void {
+        try {
+            $userModel = AuthUserModel::getInstance();
+            $scope->setUser(['email' => $userModel->getEmail()]);
+        } catch (\Exception $exception) {}
+    });
 
     // Routing setup and run
     $router = Router::getInstance();

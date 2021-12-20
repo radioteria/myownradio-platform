@@ -1,11 +1,14 @@
 <?php
 
 use Facebook\FacebookSession;
+use Framework\Models\AuthUserModel;
 use Framework\Router;
 use Framework\Template;
 use josegonzalez\Dotenv\Loader;
 use app\Config;
+use Sentry\State\Scope;
 use function Sentry\captureException;
+use function Sentry\configureScope;
 use function Sentry\init;
 
 define('BASE_DIR', realpath(__DIR__ . '/..'));
@@ -18,6 +21,13 @@ require_once BASE_DIR . '/vendor/autoload.php';
 
 // Init sentry
 init(['dsn' => env('SENTRY_DSN')]);
+
+configureScope(function (Scope $scope): void {
+    try {
+        $userModel = AuthUserModel::getInstance();
+        $scope->setUser(['email' => $userModel->getEmail()]);
+    } catch (\Exception $exception) {}
+});
 
 // AntiShame Mode: On
 require_once BASE_DIR . '/application/init.php';

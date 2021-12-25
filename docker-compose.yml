@@ -50,6 +50,12 @@ services:
       MYSQL_USER: "mor"
       MYSQL_PASSWORD: "mor"
       MYSQL_HOST: "db"
+  file-server:
+    image: myownradio/file-server:1.0.2
+    volumes:
+      - ./services/backend/.cache/storage:/usr/share/nginx/html:ro
+    ports:
+      - 127.0.0.1:40004:80
 
 volumes:
   mysql-data:

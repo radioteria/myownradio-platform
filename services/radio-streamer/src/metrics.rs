@@ -14,6 +14,7 @@ pub struct Metrics {
     prometheus_registry: Registry,
     http_requests_total: IntCounterVec,
     http_requests_duration_seconds: HistogramVec,
+    audio_decoder_track_open_duration_seconds: HistogramVec,
 }
 
 impl Metrics {
@@ -52,6 +53,16 @@ impl Metrics {
         )
         .unwrap();
 
+        let audio_decoder_track_open_duration_seconds = HistogramVec::new(
+            Opts::new(
+                "audio_decoder_track_open_duration_seconds",
+                "How much time audio decoder spend on loading the track",
+            )
+            .into(),
+            &[],
+        )
+        .unwrap();
+
         let prometheus_registry = Registry::new_custom(
             Some("myownradio_radio_streamer".to_string()),
             Some({
@@ -86,6 +97,9 @@ impl Metrics {
         prometheus_registry
             .register(Box::new(http_requests_duration_seconds.clone()))
             .unwrap();
+        prometheus_registry
+            .register(Box::new(audio_decoder_track_open_duration_seconds.clone()))
+            .unwrap();
 
         Self {
             active_decoders,
@@ -94,6 +108,7 @@ impl Metrics {
             prometheus_registry,
             http_requests_total,
             http_requests_duration_seconds,
+            audio_decoder_track_open_duration_seconds,
         }
     }
 
@@ -138,6 +153,12 @@ impl Metrics {
         self.http_requests_total
             .with_label_values(&[&path, &method, &status])
             .inc();
+    }
+
+    pub fn update_audio_decoder_track_open_duration(&self, duration: Duration) {
+        self.audio_decoder_track_open_duration_seconds
+            .with_label_values(&[])
+            .observe(duration.as_secs_f64());
     }
 
     pub fn gather(&self) -> Vec<u8> {

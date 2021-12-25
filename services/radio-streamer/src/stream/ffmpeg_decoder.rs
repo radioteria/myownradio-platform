@@ -9,7 +9,7 @@ use futures::channel::mpsc;
 use futures::SinkExt;
 use scopeguard::defer;
 use slog::{debug, error, o, warn, Logger};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 const STDIO_BUFFER_SIZE: usize = 4096;
 
@@ -28,6 +28,8 @@ pub(crate) fn make_ffmpeg_decoder(
 ) -> Result<mpsc::Receiver<DecodedBuffer>, DecoderError> {
     let (mut tx, rx) = mpsc::channel::<DecodedBuffer>(0);
     let logger = logger.new(o!("kind" => "ffmpeg_decoder"));
+
+    let mut start_time = Some(Instant::now());
 
     let mut process = match Command::new(&path_to_ffmpeg)
         .args(&[
@@ -87,6 +89,10 @@ pub(crate) fn make_ffmpeg_decoder(
             let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
 
             while let Some(Ok(bytes)) = read_from_stdout(&mut stdout, &mut buffer).await {
+                if let Some(time) = start_time.take() {
+                    metrics.update_audio_decoder_track_open_duration(time.elapsed());
+                }
+
                 let bytes_len = bytes.len();
                 let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
                 let decoding_time = Duration::from_secs_f64(decoding_time_seconds);

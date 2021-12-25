@@ -3,6 +3,9 @@ PWD := $(shell pwd)
 
 compose:
 	mkdir -p services/backend/.cache/storage
+	mkdir -p services/radio-streamer/.cargo-cache/git
+	mkdir -p services/radio-streamer/.cargo-cache/registry
+	mkdir -p services/radio-streamer/target
 	UID=$(shell id -u) GID=$(shell id -g) docker-compose up -d
 
 shell:

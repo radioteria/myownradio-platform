@@ -59,6 +59,29 @@ services:
       - 127.0.0.1:40004:80
     networks:
       - myownradio-dev
+  radio-streamer:
+    depends_on:
+      - backend-nginx
+      - file-server
+    build:
+      context: ./services/radio-streamer
+      dockerfile: Dockerfile-dev
+    volumes:
+      - ./services/radio-streamer:/code:rw
+      - ./services/radio-streamer/.cargo-cache/git:/rust/.cargo/git
+      - ./services/radio-streamer/.cargo-cache/registry:/rust/.cargo/registry
+    user: "${UID}:${GID}"
+    working_dir: /code
+    command: cargo run
+    networks:
+      - myownradio-dev
+    ports:
+      - 127.0.0.1:40003:8080
+    environment:
+      - LOG_LEVEL=Debug
+      - MOR_BACKEND_URL=http://backend-nginx
+      - STREAM_MUTATION_TOKEN=secret
+      - BIND_ADDRESS=0.0.0.0:8080
 
 volumes:
   mysql-data:

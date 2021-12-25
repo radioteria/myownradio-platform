@@ -4,7 +4,7 @@
 namespace app\Services;
 
 
-use app\Config;
+use app\Config\Config;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Tools\Singleton;

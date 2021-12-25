@@ -1,11 +1,12 @@
 <?php
 
-namespace app;
+namespace app\Config;
 
 use Framework\Exceptions\ApplicationException;
 use Framework\Injector\Injectable;
 use Tools\Singleton;
 use Tools\SingletonInterface;
+use function env;
 
 class Config implements Injectable, SingletonInterface
 {
@@ -25,6 +26,9 @@ class Config implements Injectable, SingletonInterface
     private string $emailSenderEmail = "noreply@myownradio.biz";
     private string $emailSenderName = "myownradio.biz";
 
+    private string $webServerOwnAddress;
+    private string $fileServerOwnAddress;
+
     private function __construct(
         string $radioStreamerEndpoint,
         string $radioStreamerToken,
@@ -33,7 +37,9 @@ class Config implements Injectable, SingletonInterface
         string $smtpHost,
         string $smtpUser,
         string $smtpPassword,
-        int $smtpPort
+        int $smtpPort,
+        string $webServerOwnAddress,
+        string $fileServerOwnAddress
     ) {
         $this->radioStreamerEndpoint = $radioStreamerEndpoint;
         $this->radioStreamerToken = $radioStreamerToken;
@@ -45,15 +51,21 @@ class Config implements Injectable, SingletonInterface
         $this->smtpUser = $smtpUser;
         $this->smtpPassword = $smtpPassword;
         $this->smtpPort = $smtpPort;
+
+        $this->webServerOwnAddress = $webServerOwnAddress;
+        $this->fileServerOwnAddress = $fileServerOwnAddress;
     }
 
+    /**
+     * @throws ConfigException
+     */
     public static function fromEnv(): Config
     {
         $radioStreamerEndpoint = env("RADIO_STREAMER_ENDPOINT");
         $radioStreamerToken = env("RADIO_STREAMER_TOKEN");
 
         if ($radioStreamerEndpoint === null || $radioStreamerToken === null) {
-            throw new ApplicationException(
+            throw new ConfigException(
                 'Environment variables "RADIO_STREAMER_ENDPOINT" and "RADIO_STREAMER_TOKEN" are required for operation'
             );
         }
@@ -62,7 +74,7 @@ class Config implements Injectable, SingletonInterface
         $facebookAppSecret = env('FACEBOOK_APP_SECRET');
 
         if ($facebookAppId === null || $facebookAppSecret === null) {
-            throw new ApplicationException(
+            throw new ConfigException(
                 'Environment variables "FACEBOOK_APP_ID" and "FACEBOOK_APP_SECRET" are required for operation'
             );
         }
@@ -74,8 +86,24 @@ class Config implements Injectable, SingletonInterface
         $smtpPort = intval(env('SMTP_PORT'), 10);
 
         if ($smtpHost === null || $smtpUser === null || $smtpPassword === null || $smtpPort === null) {
-            throw new ApplicationException(
+            throw new ConfigException(
                 'Environment variables "SMTP_HOST", "SMTP_HOST", "SMTP_PASSWORD" and "SMTP_PORT" are required for operation'
+            );
+        }
+
+        $webServerOwnAddress = env('WEB_SERVER_OWN_ADDRESS');
+
+        if ($webServerOwnAddress === null) {
+            throw new ConfigException(
+                'Environment variable "WEB_SERVER_OWN_ADDRESS" is required for operation'
+            );
+        }
+
+        $fileServerOwnAddress = env('FILE_SERVER_OWN_ADDRESS');
+
+        if ($fileServerOwnAddress === null) {
+            throw new ConfigException(
+                'Environment variable "FILE_SERVER_OWN_ADDRESS" is required for operation'
             );
         }
 
@@ -88,6 +116,8 @@ class Config implements Injectable, SingletonInterface
             $smtpUser,
             $smtpPassword,
             $smtpPort,
+            $webServerOwnAddress,
+            $fileServerOwnAddress,
         );
     }
 
@@ -139,5 +169,15 @@ class Config implements Injectable, SingletonInterface
     public function getEmailSenderName(): string
     {
         return $this->emailSenderName;
+    }
+
+    public function getWebServerOwnAddress(): string
+    {
+        return $this->webServerOwnAddress;
+    }
+
+    public function getFileServerOwnAddress(): string
+    {
+        return $this->fileServerOwnAddress;
     }
 }

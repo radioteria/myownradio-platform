@@ -4,7 +4,7 @@
 namespace app\Services;
 
 
-use app\Config;
+use app\Config\Config;
 use app\Logger;
 use Framework\Injector\Injectable;
 use GuzzleHttp\Client;

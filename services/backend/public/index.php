@@ -5,7 +5,7 @@ use Framework\Models\AuthUserModel;
 use Framework\Router;
 use Framework\Template;
 use josegonzalez\Dotenv\Loader;
-use app\Config;
+use app\Config\Config;
 use Sentry\State\Scope;
 use function Sentry\captureException;
 use function Sentry\configureScope;

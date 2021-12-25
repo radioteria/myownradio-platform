@@ -28,6 +28,7 @@ services:
   backend-php-fpm:
     depends_on:
       - db
+      - file-server
     image: myownradio/backend-php-base:2.0.0
     working_dir: /code
     volumes:
@@ -56,6 +57,8 @@ services:
       - ./services/backend/.cache/storage:/usr/share/nginx/html:ro
     ports:
       - 127.0.0.1:40004:80
+    networks:
+      - myownradio-dev
 
 volumes:
   mysql-data:

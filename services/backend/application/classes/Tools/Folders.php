@@ -2,6 +2,7 @@
 
 namespace Tools;
 
+use app\Config\Config;
 use Framework\Injector\Injectable;
 use Objects\Track;
 use Objects\User;

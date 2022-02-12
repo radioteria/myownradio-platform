@@ -1,5 +1,7 @@
 FROM rust
 
+ENV DUMMY=0
+
 WORKDIR /code
 
 COPY Cargo.lock /code/Cargo.lock

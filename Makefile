@@ -27,6 +27,9 @@ run-database-migration:
 			--env MYSQL_PASSWORD=mor \
 			myownradio-migration
 
+initialize-frontend:
+	docker run --rm --user=$(USER) -v "$(PWD)/services/backend":/code --workdir=/code node:12 /bin/bash -c "npm i && npm run bower:install && npm run build"
+
 build-backend-images:
 	docker build -t pldin601/myownradio-backend-nginx:latest --file images/backend-nginx/Dockerfile services/backend/
 	docker build -t pldin601/myownradio-backend-php:latest --file images/backend-php/Dockerfile services/backend/

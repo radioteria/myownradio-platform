@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "",
   "scripts": {
+    "bower:install": "bower install",
     "build": "run-s build:*",
     "build:scripts": "gulp scripts",
     "build:styles": "lessc public/css/styles/src/application.less public/css/styles/compiled/application.css",
@@ -44,6 +45,7 @@
     "typescript": "^4.2.4",
     "webpack": "^5.31.2",
     "webpack-assets-manifest": "^5.0.4",
-    "webpack-cli": "^4.6.0"
+    "webpack-cli": "^4.6.0",
+    "bower": "^1.8.14"
   }
 }

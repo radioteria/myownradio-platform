@@ -1,3 +1,3 @@
-FROM mysql:5.6
+FROM mysql:5.7-oracle
 
 COPY init.sql /docker-entrypoint-initdb.d/

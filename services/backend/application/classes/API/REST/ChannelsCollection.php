@@ -85,7 +85,6 @@ class ChannelsCollection implements Injectable, SingletonInterface {
         $query->select("e.duration - (MOD(:micro - (a.started - a.started_from), b.tracks_duration) - d.time_offset) as time_left");
 
         $query->addGroupBy("a.sid");
-
     }
 
     public function getUpcomingChange(array $channels = null, $threshold = 5000) {

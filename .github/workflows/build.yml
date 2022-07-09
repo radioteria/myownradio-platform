@@ -30,18 +30,6 @@ jobs:
       CONTEXT: ${{ github.event.client_payload.context }}
       BUILD_ID: ${{ needs.get_build.outputs.build_id }}
     steps:
-      - name: Build
-        uses: pldin601/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@master
-        with:
-          DOCKER_IMAGE_TAG: ${{ env.BUILD_ID }}
-          WORKFLOW_CHECKOUT: master # Should be the same as the ref used in "uses" expression.
-          AWS_REGION: eu-central-1
-          AWS_EC2_INSTANCE_SIZE: large
-        secrets:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKER_PASSWORD }}
       - name: checkout
         uses: actions/checkout@master
       - name: Set up QEMU

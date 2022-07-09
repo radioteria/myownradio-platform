@@ -52,7 +52,7 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `add` AFTER INSERT ON `fs_file` FOR EACH ROW UPDATE fs_list SET files_count = files_count + 1 WHERE fs_id = NEW.server_id */;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `file.when.added` AFTER INSERT ON `fs_file` FOR EACH ROW UPDATE fs_list SET files_count = files_count + 1 WHERE fs_id = NEW.server_id */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -67,7 +67,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `del` AFTER DELETE ON `fs_file` FOR EACH ROW UPDATE fs_list SET files_count = files_count - 1 WHERE fs_id = OLD.server_id */;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `file.when.deleted` AFTER DELETE ON `fs_file` FOR EACH ROW UPDATE fs_list SET files_count = files_count - 1 WHERE fs_id = OLD.server_id */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -662,7 +662,7 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `ADD` AFTER INSERT ON `mor_track_like` FOR EACH ROW IF (NEW.relation = "like") THEN
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `like.when.added` AFTER INSERT ON `mor_track_like` FOR EACH ROW IF (NEW.relation = "like") THEN
     UPDATE mor_track_stat SET likes = likes + 1 WHERE track_id = NEW.track_id;
 ELSE
     UPDATE mor_track_stat SET dislikes = dislikes + 1 WHERE track_id = NEW.track_id;
@@ -681,7 +681,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `DEL` AFTER DELETE ON `mor_track_like` FOR EACH ROW IF (OLD.relation = "like") THEN
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `like.when.deleted` AFTER DELETE ON `mor_track_like` FOR EACH ROW IF (OLD.relation = "like") THEN
     UPDATE mor_track_stat SET likes = likes - 1 WHERE track_id = OLD.track_id;
 ELSE
     UPDATE mor_track_stat SET dislikes = dislikes - 1 WHERE track_id = OLD.track_id;
@@ -980,7 +980,7 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `STREAM_ADD_TRACK` AFTER INSERT ON `r_link` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `rlink.when.added` AFTER INSERT ON `r_link` FOR EACH ROW BEGIN
 
     SELECT duration INTO @duration FROM r_tracks WHERE tid = NEW.track_id;
     UPDATE r_tracks SET used_count = used_count + 1 WHERE tid = NEW.track_id;
@@ -1002,7 +1002,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `STREAM_MODIFY_TRACK` AFTER UPDATE ON `r_link` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `rlink.when.modified` AFTER UPDATE ON `r_link` FOR EACH ROW BEGIN
     IF (OLD.track_id != NEW.track_id) THEN
         UPDATE r_tracks SET used_count = used_count - 1 WHERE tid = OLD.track_id;
         UPDATE r_tracks SET used_count = used_count + 1 WHERE tid = NEW.track_id;
@@ -1022,7 +1022,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `STREAM_REMOVE_TRACK` BEFORE DELETE ON `r_link` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `rlink.when.deleted` BEFORE DELETE ON `r_link` FOR EACH ROW BEGIN
 
     SELECT duration
     INTO @duration
@@ -1485,7 +1485,7 @@ UNLOCK TABLES;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `ADD_TRACK` AFTER INSERT ON `r_tracks` FOR EACH ROW BEGIN
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `track.when.added` AFTER INSERT ON `r_tracks` FOR EACH ROW BEGIN
     INSERT INTO `r_static_user_vars` SET `user_id` = NEW.`uid`, `tracks_count` = 1, `tracks_duration` = NEW.`duration`, `tracks_size` = NEW.`filesize`
     ON DUPLICATE KEY UPDATE `tracks_count` = `tracks_count` + 1, `tracks_duration` = `tracks_duration` + NEW.`duration`, `tracks_size` = `tracks_size` + NEW.`filesize`;
     INSERT INTO mor_track_stat SET track_id = NEW.tid;

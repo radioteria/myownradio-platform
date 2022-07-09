@@ -30,7 +30,7 @@ USER nobody:nogroup
 
 COPY --from=0 /code/radio-streamer /radio-streamer
 
-COPY --from=pldin601/static-ffmpeg:22.02.112002-11fbed4 /ffmpeg /usr/local/bin/
-COPY --from=pldin601/static-ffmpeg:22.02.112002-11fbed4 /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:5.0.1-3 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:5.0.1-3 /ffprobe /usr/local/bin/
 
 CMD ["/radio-streamer"]

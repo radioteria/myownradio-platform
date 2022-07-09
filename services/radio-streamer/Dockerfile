@@ -1,6 +1,6 @@
 FROM rust
 
-ENV DUMMY=3
+ENV DUMMY=6
 
 WORKDIR /code
 

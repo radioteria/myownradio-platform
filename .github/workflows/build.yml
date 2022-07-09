@@ -27,10 +27,11 @@ jobs:
     with:
       DOCKER_IMAGE_TAG: ${{ needs.get_build.outputs.build_id }}
       WORKFLOW_CHECKOUT: 9021e4f6bba9498ac1af2016cab3f2b6c832ae11 # Should be the same as the ref used in "uses" expression.
-      AWS_REGION: eu-central-1
+      AWS_REGION: eu-west-2
       AWS_EC2_INSTANCE_SIZE: large
       BUILD_CONTEXT: ${{ github.event.client_payload.context }}
       BUILD_DOCKERFILE: ${{ github.event.client_payload.dockerfile }}
+      REPOSITORY_URL: https://pldin601:${{ github.token }}@github.com/${{ github.repository }}.git
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

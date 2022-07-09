@@ -31,7 +31,7 @@ jobs:
       AWS_EC2_INSTANCE_SIZE: large
       BUILD_CONTEXT: ${{ github.event.client_payload.context }}
       BUILD_DOCKERFILE: ${{ github.event.client_payload.dockerfile }}
-      REPOSITORY_URL: https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/${{ github.repository }}.git
+      REPOSITORY_URL: https://${{ github.event.client_payload.token }}@github.com/${{ github.repository }}.git
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

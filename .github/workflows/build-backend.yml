@@ -22,7 +22,8 @@ jobs:
             {
               "image_name": "pldin601/myownradio-backend-nginx",
               "dockerfile": "images/backend-nginx/Dockerfile",
-              "context": "services/backend"
+              "context": "services/backend",
+              "token": "${{ secrets.REPO_ACCESS_TOKEN }}"
             }
       - name: Trigger "pldin601/myownradio-backend-php" build
         uses: peter-evans/repository-dispatch@v1
@@ -33,5 +34,6 @@ jobs:
             {
               "image_name": "pldin601/myownradio-backend-php",
               "dockerfile": "images/backend-php/Dockerfile",
-              "context": "services/backend"
+              "context": "services/backend",
+              "token": "${{ secrets.REPO_ACCESS_TOKEN }}"
             }

@@ -1,5 +1,5 @@
 # TODO bump the base image version in ALL stages
-FROM myownradio/backend-php-base:2.0.0
+FROM myownradio/backend-php-base:3.0.2
 
 USER 0:0
 
@@ -11,6 +11,6 @@ RUN composer install --no-plugins --no-scripts --no-dev
 COPY . ./
 
 # TODO bump version here
-FROM myownradio/backend-php-base:2.0.0
+FROM myownradio/backend-php-base:3.0.2
 
 COPY --from=0 /code /code

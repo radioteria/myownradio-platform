@@ -20,48 +20,19 @@ jobs:
     outputs:
       build_id: ${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
 
-  main:
+  build:
     needs: [get_build]
-    name: build ${{ github.event.client_payload.image_name }}:${{ needs.get_build.outputs.build_id }}
-    runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: ${{ github.event.client_payload.image_name }}
-      DOCKERFILE: ${{ github.event.client_payload.dockerfile }}
-      CONTEXT: ${{ github.event.client_payload.context }}
-      BUILD_ID: ${{ needs.get_build.outputs.build_id }}
-    steps:
-      - name: checkout
-        uses: actions/checkout@master
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-        id: builder
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        with:
-          builder: ${{ steps.builder.outputs.name }}
-          file: ${{ env.DOCKERFILE }}
-          context: ${{ env.CONTEXT }}
-          push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:${{ env.BUILD_ID }}
-            ${{ env.IMAGE_NAME }}:latest
-          platforms: |
-            linux/amd64
-            linux/arm64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-      - name: Leave comment
-        uses: peter-evans/commit-comment@v1
-        with:
-          body: |
-            New docker image has been successfully built:
-
-                ${{ env.IMAGE_NAME }}:${{ env.BUILD_ID }}
-                ${{ env.IMAGE_NAME }}:latest
+    name: Build and push
+    uses: pldin601/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@9021e4f6bba9498ac1af2016cab3f2b6c832ae11
+    with:
+      DOCKER_IMAGE_TAG: ${{ needs.get_build.outputs.build_id }}
+      WORKFLOW_CHECKOUT: 9021e4f6bba9498ac1af2016cab3f2b6c832ae11 # Should be the same as the ref used in "uses" expression.
+      AWS_REGION: eu-central-1
+      AWS_EC2_INSTANCE_SIZE: large
+      BUILD_CONTEXT: ${{ github.event.client_payload.context }}
+      BUILD_DOCKERFILE: ${{ github.event.client_payload.dockerfile }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKER_PASSWORD }}

@@ -52,13 +52,13 @@ class ImageService
         switch (strtolower(pathinfo($filename, PATHINFO_EXTENSION))) {
             case 'jpeg':
             case 'jpg':
-                return imagecreatefromjpeg($filename);
+                return \imagecreatefromjpeg($filename);
 
             case 'png':
-                return imagecreatefrompng($filename);
+                return \imagecreatefrompng($filename);
 
             case 'gif':
-                return imagecreatefromgif($filename);
+                return \imagecreatefromgif($filename);
 
             default:
                 throw new \InvalidArgumentException('File "'.$filename.'" is not valid jpg, png or gif image.');

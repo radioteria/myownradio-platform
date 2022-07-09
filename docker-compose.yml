@@ -29,11 +29,12 @@ services:
     depends_on:
       - db
       - file-server
-    image: myownradio/backend-php-base:2.0.0
+    image: myownradio/backend-php-base:3.0.0
     working_dir: /code
     volumes:
-      - ./services/backend:/code:rw
-    user: "${UID}:${GID}"
+      - ./services/backend:/code:ro
+      - user-data:/var/lib/mor/user-data
+    user: www-data:www-data
     networks:
       - myownradio-dev
     environment:
@@ -54,7 +55,7 @@ services:
   file-server:
     image: myownradio/file-server:1.0.2
     volumes:
-      - ./services/backend/.cache/storage:/usr/share/nginx/html:ro
+      - user-data:/usr/share/nginx/html:ro
     ports:
       - 127.0.0.1:40004:80
     networks:
@@ -67,10 +68,9 @@ services:
       context: ./services/radio-streamer
       dockerfile: Dockerfile-dev
     volumes:
-      - ./services/radio-streamer:/code:rw
+      - ./services/radio-streamer:/code
       - ./services/radio-streamer/.cargo-cache/git:/rust/.cargo/git
       - ./services/radio-streamer/.cargo-cache/registry:/rust/.cargo/registry
-    user: "${UID}:${GID}"
     working_dir: /code
     command: cargo run
     networks:
@@ -85,6 +85,8 @@ services:
 
 volumes:
   mysql-data:
+    driver: local
+  user-data:
     driver: local
 
 networks:

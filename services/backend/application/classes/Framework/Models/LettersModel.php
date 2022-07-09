@@ -9,6 +9,7 @@
 namespace Framework\Models;
 
 
+use app\Config\Config;
 use app\Services\EmailService;
 use Framework\Exceptions\ControllerException;
 use Framework\Services\Locale\L10n;
@@ -20,12 +21,15 @@ class LettersModel {
 
         $i18n = L10n::getInstance();
         $emailService = EmailService::getInstance();
+        $config = Config::getInstance();
 
+        $domain = $config->getWebServerOwnAddress();
         $code = md5($email . "@myownradio.biz@" . $email);
-        $confirm = base64_encode(json_encode(['email' => $email, 'code' => $code]));
+        $confirm = base64_encode(json_encode(['email' => $email, 'code' => $code, 'domain' => $domain]));
 
         $template = new Template("locale/{$i18n->getLocale()}.reg.request.mail.tmpl");
         $template->addVariable("confirm", $confirm);
+        $template->addVariable("domain", $domain);
 
         try {
             $emailService->send($email, $i18n->get("EMAIL_REG_TITLE"), $template->render());

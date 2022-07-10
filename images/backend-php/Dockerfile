@@ -10,7 +10,7 @@ RUN composer install --no-plugins --no-scripts --no-dev
 
 COPY . ./
 
-ENV DUMMY=0
+ENV DUMMY=1
 
 # TODO bump version here
 FROM myownradio/backend-php-base:3.0.3

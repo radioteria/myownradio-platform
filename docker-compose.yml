@@ -82,6 +82,23 @@ services:
       - MOR_BACKEND_URL=http://backend-nginx
       - STREAM_MUTATION_TOKEN=secret
       - BIND_ADDRESS=0.0.0.0:8080
+  tracks-storage-backend:
+    build:
+      context: ./services/tracks-storage-backend
+      dockerfile: Dockerfile-dev
+    volumes:
+      - ./services/tracks-storage-backend:/code
+      - ./services/tracks-storage-backend/.cargo-cache/git:/rust/.cargo/git
+      - ./services/tracks-storage-backend/.cargo-cache/registry:/rust/.cargo/registry
+    working_dir: /code
+    command: cargo run
+    networks:
+      - myownradio-dev
+    ports:
+      - 127.0.0.1:40005:8080
+    environment:
+      - LOG_LEVEL=Debug
+      - BIND_ADDRESS=0.0.0.0:8080
 
 volumes:
   mysql-data:

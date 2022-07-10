@@ -1,0 +1,26 @@
+name: trigger tracks-storage-backend image build
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'services/tracks-storage-backend/**'
+
+jobs:
+  main:
+    name: main
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger the build
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: build-image
+          client-payload: |
+            {
+              "image_name": "pldin601/myownradio-tracks-storage-backend",
+              "dockerfile": "services/tracks-storage-backend/Dockerfile",
+              "context": "services/tracks-storage-backend",
+              "token": "${{ secrets.REPO_ACCESS_TOKEN }}"
+            }

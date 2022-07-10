@@ -26,6 +26,7 @@ jobs:
     uses: pldin601/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@build
     with:
       DOCKER_IMAGE_TAG: ${{ needs.get_build.outputs.build_id }}
+      DOCKER_IMAGE_NAME: ${{ github.event.client_payload.image_name }}
       WORKFLOW_CHECKOUT: build # Should be the same as the ref used in "uses" expression.
       AWS_REGION: eu-west-2
       AWS_EC2_INSTANCE_SIZE: large
@@ -37,3 +38,18 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKER_PASSWORD }}
+
+  comment:
+    needs: [get_build, build]
+    name: Leave a comment
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ${{ github.event.client_payload.image_name }}
+      BUILD_ID: ${{ needs.get_build.outputs.build_id }}
+    steps:
+      - name: Leave a comment
+        uses: peter-evans/commit-comment@v1
+        with:
+          body: |
+            Docker image has been built:
+                ${{ env.IMAGE_NAME }}:${{ env.BUILD_ID }}

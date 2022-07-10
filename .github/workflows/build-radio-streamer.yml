@@ -20,7 +20,7 @@ jobs:
           client-payload: |
             {
               "image_name": "pldin601/myownradio-radio-streamer",
-              "dockerfile": "Dockerfile",
+              "dockerfile": "services/radio-streamer/Dockerfile",
               "context": "services/radio-streamer",
               "token": "${{ secrets.REPO_ACCESS_TOKEN }}"
             }

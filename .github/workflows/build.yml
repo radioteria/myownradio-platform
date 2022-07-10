@@ -23,10 +23,10 @@ jobs:
   build:
     needs: [get_build]
     name: Build and push
-    uses: pldin601/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@9021e4f6bba9498ac1af2016cab3f2b6c832ae11
+    uses: pldin601/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@b1d3244aa22fefb2e6bca29fc5202a5016f2f88c
     with:
       DOCKER_IMAGE_TAG: ${{ needs.get_build.outputs.build_id }}
-      WORKFLOW_CHECKOUT: 9021e4f6bba9498ac1af2016cab3f2b6c832ae11 # Should be the same as the ref used in "uses" expression.
+      WORKFLOW_CHECKOUT: b1d3244aa22fefb2e6bca29fc5202a5016f2f88c # Should be the same as the ref used in "uses" expression.
       AWS_REGION: eu-west-2
       AWS_EC2_INSTANCE_SIZE: large
       BUILD_CONTEXT: ${{ github.event.client_payload.context }}

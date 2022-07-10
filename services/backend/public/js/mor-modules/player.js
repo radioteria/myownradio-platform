@@ -5,7 +5,7 @@
 (function () {
     var player = angular.module("RadioPlayer", ['Site']);
 
-    player.run(["$rootScope", "$http", "Response", "Streams", "$timeout", "$location", "Popup", "$analytics", "TrackPreviewService", "$filter",
+    player.run(["$rootScope", "$http", "Response", "$streams", "$timeout", "$location", "Popup", "$analytics", "TrackPreviewService", "$filter",
 
         function ($rootScope, $http, Response, Streams, $timeout, $location, Popup, $analytics, TrackPreviewService, $filter) {
 

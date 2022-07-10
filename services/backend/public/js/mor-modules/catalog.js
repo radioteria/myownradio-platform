@@ -9,7 +9,7 @@
     catalog.constant("TIMELINE_RESOLUTION", 1800000);
 
 
-    catalog.controller("StreamEditorController", ["$scope", "$rootScope", "$routeParams", "Streams", "$location", "$dialog",
+    catalog.controller("StreamEditorController", ["$scope", "$rootScope", "$routeParams", "$streams", "$location", "$dialog",
 
         function ($scope, $rootScope, $routeParams, Streams, $location, $dialog) {
 
@@ -39,7 +39,7 @@
 
     ]);
 
-    catalog.controller("NewStreamController", ["$scope", "Streams", "$rootScope", "Response", "$http",
+    catalog.controller("NewStreamController", ["$scope", "$streams", "$rootScope", "Response", "$http",
 
         function ($scope, Streams, $rootScope, Response, $http) {
             $scope.status = "";
@@ -180,7 +180,7 @@
 
     }]);
 
-    catalog.controller("SearchFormController", ["$element", "$scope", "$location", "Streams", "$document", "$channels",
+    catalog.controller("SearchFormController", ["$element", "$scope", "$location", "$streams", "$document", "$channels",
 
         function ($element, $scope, $location, Streams, $document, $channels) {
             $scope.filter = "";
@@ -222,7 +222,7 @@
     ]);
 
 
-    catalog.controller("ListStreamsController", ["$scope", "$location", "Streams", "STREAMS_PER_SCROLL", "channelData",
+    catalog.controller("ListStreamsController", ["$scope", "$location", "$streams", "STREAMS_PER_SCROLL", "channelData",
 
         function ($scope, $location, Streams, STREAMS_PER_SCROLL, channelData) {
 
@@ -258,7 +258,7 @@
 
     ]);
 
-    catalog.controller("ListSearchController", ["$scope", "$location", "$routeParams", "Streams", "STREAMS_PER_SCROLL", "channelData",
+    catalog.controller("ListSearchController", ["$scope", "$location", "$routeParams", "$streams", "STREAMS_PER_SCROLL", "channelData",
 
         function ($scope, $location, $routeParams, Streams, STREAMS_PER_SCROLL, channelData) {
 
@@ -296,7 +296,7 @@
 
     ]);
 
-    catalog.controller("BookmarksController", ["$scope", "$location", "Streams", "STREAMS_PER_SCROLL", "channelData",
+    catalog.controller("BookmarksController", ["$scope", "$location", "$streams", "STREAMS_PER_SCROLL", "channelData",
 
         function ($scope, $location, Streams, STREAMS_PER_SCROLL, channelData) {
             $scope.content = {
@@ -329,7 +329,7 @@
 
     ]);
 
-    catalog.controller("UserStreamsController", ["$scope", "$routeParams", "Streams", "STREAMS_PER_SCROLL", "$document",
+    catalog.controller("UserStreamsController", ["$scope", "$routeParams", "$streams", "STREAMS_PER_SCROLL", "$document",
 
         function ($scope, $routeParams, Streams, STREAMS_PER_SCROLL, $document) {
             $scope.user = $routeParams.key;
@@ -366,7 +366,7 @@
 
     ]);
 
-    catalog.controller("MyStreamsController", ["$rootScope", "$scope", "$dialog", "Streams", "StreamWorks", "TrackAction", "Popup",
+    catalog.controller("MyStreamsController", ["$rootScope", "$scope", "$dialog", "$streams", "StreamWorks", "TrackAction", "Popup",
 
         function ($rootScope, $scope, $dialog, Streams, StreamWorks, TrackAction, Popup) {
 
@@ -395,7 +395,7 @@
 
     ]);
 
-    catalog.controller("OneStreamController", ["$rootScope", "$scope", "$location", "Streams", "$routeParams",
+    catalog.controller("OneStreamController", ["$rootScope", "$scope", "$location", "$streams", "$routeParams",
         "$document", "SITE_TITLE", "AudioInfoEditor", "TrackAction", "StreamWorks", "streamData",
 
         function ($rootScope, $scope, $location, Streams, $routeParams, $document, SITE_TITLE, AudioInfoEditor, TrackAction, StreamWorks, streamData) {
@@ -615,221 +615,5 @@
             }
         }
     }]);
-
-    catalog.factory("Resolvers", ["$http", "ResponseData", function ($http, ResponseData) {
-        return {
-            getChannelList: function (filter, category, offset, limit) {
-                return $http.get("/api/v2/streams/getList", {
-                    cache: true,
-                    busy: true,
-                    params: {
-                        filter: filter,
-                        category: category,
-                        offset: offset,
-                        limit: limit
-                    }
-                }).then(function (data) {
-                        return ResponseData(data);
-                    });
-            },
-            getBookmarks: function (offset, limit) {
-                return $http.get("/api/v2/streams/getBookmarks", {
-                    busy: true,
-                    params: {
-                        offset: offset,
-                        limit: limit
-                    }
-                }).then(function (data) {
-                        return ResponseData(data);
-                    });
-            },
-            getByIdWithSimilar: function (streamID) {
-                return $http.get("/api/v2/streams/getOneWithSimilar", {
-                    busy: true,
-                    params: {
-                        stream_id: streamID
-                    }
-                }).then(function (data) {
-                        return ResponseData(data);
-                    });
-            },
-            getChannelsByUser: function (userID, offset, limit) {
-                return $http.get("/api/v2/streams/getStreamsByUser", {
-                    busy: true,
-                    params: {
-                        user: userID,
-                        offset: offset,
-                        limit: limit
-                    }
-                }).then(function (data) {
-                        return ResponseData(data);
-                    });
-            },
-            getChannelsBySelf: function (offset, limit) {
-                return $http.get("/api/v2/streams/getStreamsByUser", {
-                    busy: true,
-                    params: {
-                        offset: offset,
-                        limit: limit
-                    }
-                }).then(function (data) {
-                        return ResponseData(data);
-                    });
-            }
-        }
-    }]);
-
-    catalog.factory("Streams", ["$http", "Response", "ResponseData",
-
-        function ($http, Response, ResponseData) {
-            return {
-                getByID: function (streamID) {
-                    var action = $http({
-                        method: "GET",
-                        url: "/api/v2/streams/getOne",
-                        busy: false,
-                        params: {
-                            stream_id: streamID
-                        }
-                    });
-                    return Response(action);
-                },
-                getList: function (filter, category, offset, limit, busy) {
-                    var action = $http({
-                        method: "GET",
-                        cache: true,
-                        url: "/api/v2/streams/getList",
-                        busy: busy,
-                        params: {
-                            filter: filter,
-                            category: category,
-                            offset: offset,
-                            limit: limit
-                        }
-                    });
-                    return Response(action);
-                },
-                getSimilarTo: function (streamID) {
-                    var action = $http({
-                        method: "GET",
-                        cache: true,
-                        url: "/api/v2/streams/getSimilarTo",
-                        params: {
-                            stream_id: streamID
-                        }
-                    });
-                    return Response(action);
-                },
-                getByIdWithSimilar: function (streamID) {
-                    var promise = $http.get("/api/v2/streams/getOneWithSimilar", {
-                        cache: true,
-                        url: "/api/v2/streams/getOneWithSimilar",
-                        busy: true,
-                        params: {
-                            stream_id: streamID
-                        }
-                    }).success(function (data) {
-                            return ResponseData(data);
-                        });
-
-                    return promise;
-                },
-                getByUser: function (userID, offset, busy) {
-                    var action = $http({
-                        method: "GET",
-                        url: "/api/v2/streams/getStreamsByUser",
-                        busy: busy,
-                        params: {
-                            user: userID,
-                            offset: offset
-                        }
-                    });
-                    return Response(action);
-                },
-                getBySelf: function () {
-                    var action = $http({
-                        method: "GET",
-                        url: "/api/v2/streams/getStreamsByUser"
-                    });
-                    return Response(action);
-                },
-                getBookmarks: function (offset, busy) {
-                    var action = $http({
-                        method: "GET",
-                        cache: true,
-                        url: "/api/v2/streams/getBookmarks",
-                        busy: busy,
-                        params: {
-                            offset: offset
-                        }
-                    });
-                    return Response(action);
-                },
-                getSchedule: function (streamID) {
-                    var action = $http({
-                        method: "GET",
-                        ignoreLoadingBar: true,
-                        url: "/api/v2/streams/getSchedule",
-                        params: {
-                            stream_id: streamID
-                        }
-                    });
-                    return Response(action);
-                },
-                getNowPlaying: function (streamID) {
-                    var action = $http({
-                        method: "GET",
-                        ignoreLoadingBar: true,
-                        url: "/api/v2/streams/getNowPlaying",
-                        params: {
-                            stream_id: streamID
-                        }
-                    });
-                    return Response(action);
-                },
-                updateStreamInfo: function (object) {
-                    var action = $http({
-                        method: "POST",
-                        url: "/api/v2/stream/modify",
-                        data: {
-                            stream_id: object.sid,
-                            name: object.name,
-                            info: object.info,
-                            tags: object.hashtags,
-                            permalink: object.permalink,
-                            category: object.category,
-                            access: object.access
-                        }
-                    });
-                    return Response(action);
-                },
-                createNewStream: function (object) {
-                    var action = $http({
-                        method: "POST",
-                        url: "/api/v2/stream/create",
-                        data: {
-                            name: object.name,
-                            info: object.info,
-                            tags: object.hashtags,
-                            permalink: object.permalink,
-                            category: object.category,
-                            access: object.access
-                        }
-                    });
-                    return Response(action);
-                },
-                deleteStream: function (stream) {
-                    var action = $http({
-                        method: "POST",
-                        url: "/api/v2/stream/delete",
-                        data: {
-                            stream_id: stream.sid
-                        }
-                    });
-                    return Response(action);
-                }
-            }
-        }
-    ]);
 
 })();

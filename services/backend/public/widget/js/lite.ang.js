@@ -6,7 +6,7 @@
     }]);
     m.controller("WidgetPlayerController", ["$streams", "$scope", "$location",
         function ($streams, $scope, $location) {
-            $streams.getStream($location.search().stream_id).onSuccess(function (data) {
+            $streams.getByID($location.search().stream_id).onSuccess(function (data) {
                 $scope.streamObject = data;
                 if ($location.search().auto == 1) {
                     $scope.player.controls.loadStream(data);
@@ -14,21 +14,6 @@
             }, function () {
                 $scope.streamExists = false;
             });
-        }
-    ]);
-    m.factory("$streams", [ "Response", "$http",
-        function (Response, $http) {
-            return {
-                getStream: function (streamId) {
-                    return Response($http({
-                        method: "GET",
-                        url: "/api/v2/streams/getOne",
-                        params: {
-                            stream_id: streamId
-                        }
-                    }));
-                }
-            }
         }
     ]);
     m.directive("dBackgroundColor", [

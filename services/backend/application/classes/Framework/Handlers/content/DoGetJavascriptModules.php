@@ -52,6 +52,8 @@ class DoGetJavascriptModules implements Controller
 
             "public/js/mor-modules/api/api.core.js",
             "public/js/mor-modules/api/api.channels.js",
+            "public/js/mor-modules/api/api.streams.js",
+            "public/js/mor-modules/api/api.categories.js",
             "public/js/mor-modules/api/api.tracks.js",
             "public/js/mor-modules/api/api.bookmarks.js",
             "public/js/mor-modules/api/api.schedule.js",

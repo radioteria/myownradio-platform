@@ -3,7 +3,7 @@ angular.module("Dialogs", [])
     .factory("TrackAction", [
         "TrackWorks",
         "StreamWorks",
-        "Streams",
+        "$streams",
         "$dialog",
         "Popup",
         "$rootScope",

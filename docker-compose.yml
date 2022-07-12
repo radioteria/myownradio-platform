@@ -32,7 +32,7 @@ services:
     image: myownradio/backend-php-base:3.0.3
     working_dir: /code
     volumes:
-      - ./services/backend:/code:ro
+      - ./services/backend:/code:rw
       - user-data:/var/lib/mor/user-data
     user: www-data:www-data
     networks:

@@ -9,7 +9,7 @@ compose:
 	UID=$(shell id -u) GID=$(shell id -g) docker-compose up -d
 
 shell:
-	docker-compose exec backend-php-fpm sh
+	docker-compose exec --user $(shell id -u):$(shell id -g) backend-php-fpm sh
 
 start-dev-dependencies:
 	docker-compose up -d

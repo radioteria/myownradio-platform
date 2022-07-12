@@ -23,10 +23,9 @@ class DoChannelNowPlayingV1 implements Controller
     public function doGet(RouteParams $params, HttpGet $get, Playlist $playlist, Streams $streams, JsonResponse $response)
     {
         $stream_id = $params->getRequired("stream_id");
-        $prefetch_millis = $get->getParameter("prefetch_millis")->getOrElse(0);
-        $timestamp_millis = $get->getParameter("ts")->getOrElseNull();
+        $timestamp_millis = $get->getRequired("ts");
 
-        $now_playing = $playlist->getNowPlayingAndNext($stream_id, $prefetch_millis, $timestamp_millis);
+        $now_playing = $playlist->getNowPlayingAndNext($stream_id, $timestamp_millis);
         $track = $now_playing['current'];
         $next = $now_playing['next'];
 

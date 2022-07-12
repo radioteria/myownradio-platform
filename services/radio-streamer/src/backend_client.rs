@@ -80,16 +80,16 @@ impl BackendClient {
         &self,
         channel_id: &usize,
         client_id: Option<String>,
-        prefetch_millis: &Duration,
+        ts: &Duration,
     ) -> Result<NowPlaying, MorBackendClientError> {
         let client = Client::default();
 
         let url = format!(
-            "{}/api/v1/stream/{}/now?client_id={}&prefetch_millis={}",
+            "{}/api/v1/stream/{}/now?client_id={}&ts={}",
             &self.mor_backend_url,
             channel_id,
             &client_id.unwrap_or_default(),
-            &prefetch_millis.as_millis()
+            &ts.as_millis()
         );
 
         let mut response = match client.get(url).timeout(Duration::from_secs(5)).send().await {

@@ -11,7 +11,7 @@ use futures::{SinkExt, StreamExt};
 use scopeguard::defer;
 use slog::{debug, error, info, Logger};
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 const ALLOWED_DELAY: Duration = Duration::from_secs(1);
 
@@ -65,8 +65,9 @@ pub(crate) fn make_player_loop(
                     future.abort();
                 }
 
+                let ts = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
                 let now_playing = match backend_client
-                    .get_now_playing(&channel_id, client_id.clone(), &Duration::from_secs(0))
+                    .get_now_playing(&channel_id, client_id.clone(), &ts)
                     .await
                 {
                     Ok(now_playing) => now_playing,

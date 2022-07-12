@@ -33,8 +33,7 @@ services:
     working_dir: /code
     volumes:
       - ./services/backend:/code:rw
-      - user-data:/var/lib/mor/user-data
-    user: www-data:www-data
+    user: "${UID}:${GID}"
     networks:
       - myownradio-dev
     environment:
@@ -55,7 +54,7 @@ services:
   file-server:
     image: myownradio/file-server:1.0.2
     volumes:
-      - user-data:/usr/share/nginx/html:ro
+      - ./services/backend/.cache/storage:/usr/share/nginx/html:ro
     ports:
       - 127.0.0.1:40004:80
     networks:
@@ -68,9 +67,10 @@ services:
       context: ./services/radio-streamer
       dockerfile: Dockerfile-dev
     volumes:
-      - ./services/radio-streamer:/code
+      - ./services/radio-streamer:/code:rw
       - ./services/radio-streamer/.cargo-cache/git:/rust/.cargo/git
       - ./services/radio-streamer/.cargo-cache/registry:/rust/.cargo/registry
+    user: "${UID}:${GID}"
     working_dir: /code
     command: cargo run
     networks:
@@ -87,9 +87,10 @@ services:
       context: ./services/tracks-storage-backend
       dockerfile: Dockerfile-dev
     volumes:
-      - ./services/tracks-storage-backend:/code
+      - ./services/tracks-storage-backend:/code:rw
       - ./services/tracks-storage-backend/.cargo-cache/git:/rust/.cargo/git
       - ./services/tracks-storage-backend/.cargo-cache/registry:/rust/.cargo/registry
+    user: "${UID}:${GID}"
     working_dir: /code
     command: cargo run
     networks:
@@ -102,8 +103,6 @@ services:
 
 volumes:
   mysql-data:
-    driver: local
-  user-data:
     driver: local
 
 networks:

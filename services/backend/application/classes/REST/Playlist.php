@@ -270,7 +270,7 @@ class Playlist implements SingletonInterface, Injectable
      * @return array
      * @throws ControllerException
      */
-    public function getNowPlayingAndNext(int $id, int $prefetch_millis): array
+    public function getNowPlayingAndNext(int $id, int $prefetch_millis, $timestamp_millis): array
     {
         /** @var StreamStats $stream */
 
@@ -285,7 +285,9 @@ class Playlist implements SingletonInterface, Injectable
             throw ControllerException::of("Nothing playing");
         }
 
-        $position = max(((System::time() - (self::REAL_TIME_DELAY_MS + $prefetch_millis)) -
+        $system_time = $timestamp_millis ?: System::time();
+
+        $position = max((($system_time - (self::REAL_TIME_DELAY_MS + $prefetch_millis)) -
                 $stream->getStarted() +
                 $stream->getStartedFrom()) % $stream->getTracksDuration(), 0);
 

@@ -20,20 +20,6 @@
             }
         }
     }]);
-    api.factory("$likes", ["$api", function ($api) {
-        return {
-            like: function (track) {
-                return $api.post("/api/v3/likes/like", {
-                    track_id: track.tid
-                });
-            },
-            dislike: function (track) {
-                return $api.post("/api/v3/likes/dislike", {
-                    track_id: track.tid
-                });
-            }
-        }
-    }]);
     api.factory("$library", ["$api", function ($api) {
         return {
             upload: function (data, callback) {

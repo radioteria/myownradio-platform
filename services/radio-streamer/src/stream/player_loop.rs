@@ -3,7 +3,7 @@ use crate::helpers::io::sleep_until_deadline;
 use crate::metrics::Metrics;
 use crate::stream::constants::AUDIO_BYTES_PER_SECOND;
 use crate::stream::ffmpeg_decoder::make_ffmpeg_decoder;
-use crate::stream::types::{DecodedBuffer, TimedBuffer};
+use crate::stream::types::TimedBuffer;
 use actix_rt::task::JoinHandle;
 use actix_rt::time::Instant;
 use futures::channel::{mpsc, oneshot};
@@ -154,8 +154,8 @@ pub(crate) fn make_player_loop(
                     return;
                 }
 
-                while let Some(DecodedBuffer(bytes, bytes_offset)) = track_decoder.next().await {
-                    let deadline = time + bytes_offset;
+                while let Some(buffer) = track_decoder.next().await {
+                    let deadline = time + *buffer.dts();
 
                     if let Err(_) = sleep_until_deadline(deadline, &mut restart_rx).await {
                         debug!(logger, "Sleep cancelled");
@@ -166,13 +166,16 @@ pub(crate) fn make_player_loop(
                         break;
                     }
 
-                    let bytes_len = bytes.len();
+                    let bytes_len = buffer.bytes().len();
                     let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
                     let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
                     let time = base_time + decoding_time;
 
                     if let Err(_) = tx
-                        .send(PlayerLoopMessage::TimedBuffer(TimedBuffer(bytes, time)))
+                        .send(PlayerLoopMessage::TimedBuffer(TimedBuffer(
+                            buffer.bytes().clone(),
+                            time,
+                        )))
                         .await
                     {
                         debug!(

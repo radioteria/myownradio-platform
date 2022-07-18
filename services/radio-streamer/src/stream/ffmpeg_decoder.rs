@@ -77,6 +77,7 @@ pub(crate) fn make_ffmpeg_decoder(
 
     actix_rt::spawn({
         let metrics = metrics.clone();
+        let offset = offset.clone();
 
         let mut bytes_sent = 0usize;
 
@@ -96,7 +97,7 @@ pub(crate) fn make_ffmpeg_decoder(
                 let bytes_len = bytes.len();
                 let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
                 let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
-                let timed_bytes = DecodedBuffer(bytes, decoding_time);
+                let timed_bytes = DecodedBuffer(bytes, offset + decoding_time);
 
                 if let Err(_) = tx.send(timed_bytes).await {
                     break;

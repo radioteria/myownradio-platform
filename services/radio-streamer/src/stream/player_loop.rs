@@ -182,10 +182,11 @@ pub(crate) fn make_player_loop(
 
                     trace!(
                         logger,
-                        "Received buffer from decoder";
+                        "Recved buffer from decoder";
                         "len" => buffer.bytes().len(),
-                        "dts" => buffer.dts().as_millis(),
-                        "pts" => pts.as_millis()
+                        "buff_dts" => buffer.dts().as_millis(),
+                        "buff_pts" => buffer.pts().as_millis(),
+                        "stream_pts" => pts.as_millis()
                     );
 
                     if let Err(_) = tx

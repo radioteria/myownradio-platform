@@ -78,7 +78,9 @@ services:
     ports:
       - 127.0.0.1:40003:8080
     environment:
-      - LOG_LEVEL=Debug
+      - HOME=/rust
+      - LOG_LEVEL=Trace
+      - LOG_FORMAT=Term
       - MOR_BACKEND_URL=http://backend-nginx
       - STREAM_MUTATION_TOKEN=secret
       - BIND_ADDRESS=0.0.0.0:8080

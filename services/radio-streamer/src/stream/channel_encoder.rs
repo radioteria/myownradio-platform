@@ -2,7 +2,6 @@ use crate::audio_formats::AudioFormat;
 use crate::metrics::Metrics;
 use crate::stream::channel_player::{ChannelPlayer, ChannelPlayerMessage};
 use crate::stream::ffmpeg_encoder::{make_ffmpeg_encoder, EncoderError};
-use crate::stream::types::TimedBuffer;
 use crate::upgrade_weak;
 use actix_rt::task::JoinHandle;
 use actix_web::web::Bytes;
@@ -130,8 +129,8 @@ impl Inner {
                 async move {
                     while let Some(message) = channel_player_messages.next().await {
                         match message {
-                            ChannelPlayerMessage::TimedBuffer(TimedBuffer(bytes, _)) => {
-                                if let Err(_) = encoder_sender.send(bytes).await {
+                            ChannelPlayerMessage::DecodedBuffer(buffer) => {
+                                if let Err(_) = encoder_sender.send(buffer.bytes().clone()).await {
                                     break;
                                 }
                             }

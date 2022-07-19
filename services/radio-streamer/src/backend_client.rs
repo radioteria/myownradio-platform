@@ -1,9 +1,11 @@
 extern crate serde_millis;
+
+use actix_rt::time::Instant;
 use actix_web::http::StatusCode;
 use awc::Client;
 use serde::{Deserialize, Serialize};
 use slog::{error, Logger};
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Deserialize, Debug, Serialize)]
 pub struct CurrentTrack {
@@ -80,16 +82,18 @@ impl BackendClient {
         &self,
         channel_id: &usize,
         client_id: Option<String>,
-        ts: &Duration,
+        time: &SystemTime,
     ) -> Result<NowPlaying, MorBackendClientError> {
         let client = Client::default();
+
+        let unixtime = time.duration_since(UNIX_EPOCH).unwrap().as_millis();
 
         let url = format!(
             "{}/api/v1/stream/{}/now?client_id={}&ts={}",
             &self.mor_backend_url,
             channel_id,
             &client_id.unwrap_or_default(),
-            &ts.as_millis()
+            &unixtime
         );
 
         let mut response = match client.get(url).timeout(Duration::from_secs(5)).send().await {

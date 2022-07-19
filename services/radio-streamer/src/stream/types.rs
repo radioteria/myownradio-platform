@@ -1,4 +1,3 @@
-use actix_rt::time::Instant;
 use actix_web::web::Bytes;
 use std::time::Duration;
 
@@ -6,11 +5,12 @@ use std::time::Duration;
 pub(crate) struct DecodedBuffer {
     bytes: Bytes,
     dts: Duration,
+    pts: Duration,
 }
 
 impl DecodedBuffer {
-    pub(crate) fn new(bytes: Bytes, dts: Duration) -> Self {
-        DecodedBuffer { bytes, dts }
+    pub(crate) fn new(bytes: Bytes, dts: Duration, pts: Duration) -> Self {
+        DecodedBuffer { bytes, dts, pts }
     }
 
     pub(crate) fn bytes(&self) -> &Bytes {
@@ -20,7 +20,8 @@ impl DecodedBuffer {
     pub(crate) fn dts(&self) -> &Duration {
         &self.dts
     }
-}
 
-#[derive(Clone, Debug)]
-pub(crate) struct TimedBuffer(pub(crate) Bytes, pub(crate) Instant);
+    pub(crate) fn pts(&self) -> &Duration {
+        &self.pts
+    }
+}

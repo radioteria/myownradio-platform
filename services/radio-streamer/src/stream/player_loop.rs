@@ -3,21 +3,22 @@ use crate::helpers::io::sleep_until_deadline;
 use crate::metrics::Metrics;
 use crate::stream::constants::AUDIO_BYTES_PER_SECOND;
 use crate::stream::ffmpeg_decoder::make_ffmpeg_decoder;
-use crate::stream::types::TimedBuffer;
+use crate::stream::types::DecodedBuffer;
 use actix_rt::task::JoinHandle;
 use actix_rt::time::Instant;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use scopeguard::defer;
-use slog::{debug, error, info, Logger};
+use slog::{debug, error, info, trace, Logger};
+use std::ops::Sub;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime};
 
 const ALLOWED_DELAY: Duration = Duration::from_secs(1);
 
 #[derive(Debug)]
 pub(crate) enum PlayerLoopMessage {
-    TimedBuffer(TimedBuffer),
+    DecodedBuffer(DecodedBuffer),
     TrackTitle(String),
     RestartSender(oneshot::Sender<()>),
 }
@@ -45,7 +46,6 @@ pub(crate) fn make_player_loop(
 
         let stored_next_track_decoder: Arc<Mutex<Option<_>>> = Arc::default();
         let next_track_future: Mutex<Option<JoinHandle<_>>> = Mutex::default();
-        let base_time = Instant::now();
 
         let mut tx = tx;
 
@@ -58,16 +58,26 @@ pub(crate) fn make_player_loop(
 
             defer!(info!(logger, "Stopping player loop"; "channel_id" => &channel_id););
 
+            let stream_start_time = SystemTime::now();
+            let stream_instant_time = Instant::now();
+
+            trace!(logger, "Stream initial clock"; "start_time" => ?stream_start_time, "instant_time" => ?stream_instant_time);
+
+            let mut current_track_pts_offset = stream_instant_time;
             let mut bytes_sent = 0usize;
 
             loop {
                 if let Some(future) = next_track_future.lock().unwrap().take() {
+                    debug!(logger, "Cancelling previous next track preload");
                     future.abort();
                 }
 
-                let ts = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
+                let elapsed_time =
+                    stream_start_time - (current_track_pts_offset - stream_instant_time);
+                trace!(logger, "Elapsed stream time"; "time" => ?elapsed_time);
+
                 let now_playing = match backend_client
-                    .get_now_playing(&channel_id, client_id.clone(), &ts)
+                    .get_now_playing(&channel_id, client_id.clone(), &elapsed_time)
                     .await
                 {
                     Ok(now_playing) => now_playing,
@@ -80,7 +90,6 @@ pub(crate) fn make_player_loop(
                         break;
                     }
                 };
-                let time = Instant::now();
 
                 let mut track_decoder = match stored_next_track_decoder
                     .lock()
@@ -154,10 +163,12 @@ pub(crate) fn make_player_loop(
                     return;
                 }
 
-                while let Some(buffer) = track_decoder.next().await {
-                    let deadline = time + *buffer.dts();
+                let mut last_buffer_pts = current_track_pts_offset;
 
-                    if let Err(_) = sleep_until_deadline(deadline, &mut restart_rx).await {
+                while let Some(buffer) = track_decoder.next().await {
+                    last_buffer_pts = current_track_pts_offset + *buffer.dts();
+
+                    if let Err(_) = sleep_until_deadline(&last_buffer_pts, &mut restart_rx).await {
                         debug!(logger, "Sleep cancelled");
                     }
 
@@ -166,15 +177,22 @@ pub(crate) fn make_player_loop(
                         break;
                     }
 
-                    let bytes_len = buffer.bytes().len();
-                    let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
-                    let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
-                    let time = base_time + decoding_time;
+                    let pts =
+                        Duration::from_secs_f64(bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64);
+
+                    trace!(
+                        logger,
+                        "Received buffer from decoder";
+                        "len" => buffer.bytes().len(),
+                        "dts" => buffer.dts().as_millis(),
+                        "pts" => pts.as_millis()
+                    );
 
                     if let Err(_) = tx
-                        .send(PlayerLoopMessage::TimedBuffer(TimedBuffer(
+                        .send(PlayerLoopMessage::DecodedBuffer(DecodedBuffer::new(
                             buffer.bytes().clone(),
-                            time,
+                            buffer.dts().clone(),
+                            pts,
                         )))
                         .await
                     {
@@ -185,8 +203,10 @@ pub(crate) fn make_player_loop(
                         return;
                     }
 
-                    bytes_sent += bytes_len;
+                    bytes_sent += buffer.bytes().len();
                 }
+
+                current_track_pts_offset = last_buffer_pts;
             }
         }
     });

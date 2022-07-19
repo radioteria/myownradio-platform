@@ -6,6 +6,9 @@ compose:
 	mkdir -p services/radio-streamer/.cargo-cache/git
 	mkdir -p services/radio-streamer/.cargo-cache/registry
 	mkdir -p services/radio-streamer/target
+	mkdir -p services/tracks-storage-backend/.cargo-cache/git
+	mkdir -p services/tracks-storage-backend/.cargo-cache/registry
+	mkdir -p services/tracks-storage-backend/target
 	UID=$(shell id -u) GID=$(shell id -g) docker-compose up -d
 
 shell:

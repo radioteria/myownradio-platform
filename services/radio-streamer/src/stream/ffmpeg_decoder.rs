@@ -3,7 +3,8 @@ use crate::metrics::Metrics;
 use crate::stream::constants::{
     AUDIO_BYTES_PER_SECOND, AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY,
 };
-use crate::stream::types::DecodedBuffer;
+use crate::stream::types::Buffer;
+use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
 use futures::channel::mpsc;
 use futures::SinkExt;
@@ -25,8 +26,8 @@ pub(crate) fn make_ffmpeg_decoder(
     path_to_ffmpeg: &str,
     logger: &Logger,
     metrics: &Metrics,
-) -> Result<mpsc::Receiver<DecodedBuffer>, DecoderError> {
-    let (mut tx, rx) = mpsc::channel::<DecodedBuffer>(0);
+) -> Result<mpsc::Receiver<Buffer>, DecoderError> {
+    let (mut tx, rx) = mpsc::channel::<Buffer>(0);
     let logger = logger.new(o!("kind" => "ffmpeg_decoder"));
 
     let mut start_time = Some(Instant::now());
@@ -77,6 +78,7 @@ pub(crate) fn make_ffmpeg_decoder(
 
     actix_rt::spawn({
         let metrics = metrics.clone();
+        let offset = offset.clone();
 
         let mut bytes_sent = 0usize;
 
@@ -96,7 +98,7 @@ pub(crate) fn make_ffmpeg_decoder(
                 let bytes_len = bytes.len();
                 let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
                 let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
-                let timed_bytes = DecodedBuffer(bytes, decoding_time);
+                let timed_bytes = Buffer::new(bytes, decoding_time, decoding_time + offset);
 
                 if let Err(_) = tx.send(timed_bytes).await {
                     break;
@@ -104,6 +106,16 @@ pub(crate) fn make_ffmpeg_decoder(
 
                 bytes_sent += bytes_len;
             }
+
+            let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
+            let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
+            let _ = tx
+                .send(Buffer::new(
+                    Bytes::new(),
+                    decoding_time,
+                    decoding_time + offset,
+                ))
+                .await;
 
             drop(stdout);
 

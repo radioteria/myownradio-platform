@@ -13,7 +13,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
 const ALLOWED_DELAY: Duration = Duration::from_secs(1);
-const LAST_PRELOAD_TIME: Duration = Duration::from_secs_f64(2.5);
+const LAST_PRELOAD_TIME: Duration = Duration::from_millis(2500);
 
 #[derive(Debug)]
 pub(crate) enum PlayerLoopMessage {

@@ -13,6 +13,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
 const ALLOWED_DELAY: Duration = Duration::from_secs(1);
+const LAST_PRELOAD_TIME: Duration = Duration::from_secs_f64(2.5);
 
 #[derive(Debug)]
 pub(crate) enum PlayerLoopMessage {
@@ -56,8 +57,8 @@ pub(crate) fn make_player_loop(
 
             defer!(info!(logger, "Stopping player loop"; "channel_id" => &channel_id););
 
-            let stream_start_time = SystemTime::now();
-            let stream_instant_time = Instant::now();
+            let stream_start_time = SystemTime::now() - LAST_PRELOAD_TIME;
+            let stream_instant_time = Instant::now() - LAST_PRELOAD_TIME;
 
             trace!(logger, "Stream initial clock"; "start_time" => ?stream_start_time, "instant_time" => ?stream_instant_time);
 
@@ -87,12 +88,18 @@ pub(crate) fn make_player_loop(
                     }
                 };
 
+                let left_offset = now_playing.current_track.offset;
+                let right_offset =
+                    now_playing.current_track.duration - now_playing.current_track.offset;
+
                 let mut track_decoder = match stored_next_track_decoder
                     .lock()
                     .expect("Unable to obtain lock on reading stored next track decoder")
                     .take()
                 {
-                    Some(track_decoder) if now_playing.current_track.offset < ALLOWED_DELAY => {
+                    Some(track_decoder)
+                        if left_offset < ALLOWED_DELAY || right_offset < ALLOWED_DELAY =>
+                    {
                         track_decoder
                     }
                     _ => match make_ffmpeg_decoder(

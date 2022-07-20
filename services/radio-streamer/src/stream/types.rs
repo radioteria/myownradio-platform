@@ -2,15 +2,15 @@ use actix_web::web::Bytes;
 use std::time::Duration;
 
 #[derive(Clone, Debug)]
-pub(crate) struct DecodedBuffer {
+pub(crate) struct Buffer {
     bytes: Bytes,
     dts: Duration,
     pts: Duration,
 }
 
-impl DecodedBuffer {
+impl Buffer {
     pub(crate) fn new(bytes: Bytes, dts: Duration, pts: Duration) -> Self {
-        DecodedBuffer { bytes, dts, pts }
+        Buffer { bytes, dts, pts }
     }
 
     pub(crate) fn bytes(&self) -> &Bytes {
@@ -23,5 +23,9 @@ impl DecodedBuffer {
 
     pub(crate) fn pts(&self) -> &Duration {
         &self.pts
+    }
+
+    pub(crate) fn is_empty(&self) -> bool {
+        self.bytes.is_empty()
     }
 }

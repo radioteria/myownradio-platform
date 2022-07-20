@@ -1,6 +1,5 @@
 extern crate serde_millis;
 
-use actix_rt::time::Instant;
 use actix_web::http::StatusCode;
 use awc::Client;
 use serde::{Deserialize, Serialize};

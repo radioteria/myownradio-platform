@@ -1,16 +1,14 @@
 use crate::backend_client::{BackendClient, MorBackendClientError};
 use crate::helpers::io::sleep_until_deadline;
 use crate::metrics::Metrics;
-use crate::stream::constants::AUDIO_BYTES_PER_SECOND;
 use crate::stream::ffmpeg_decoder::make_ffmpeg_decoder;
-use crate::stream::types::DecodedBuffer;
+use crate::stream::types::Buffer;
 use actix_rt::task::JoinHandle;
 use actix_rt::time::Instant;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use scopeguard::defer;
 use slog::{debug, error, info, trace, Logger};
-use std::ops::Sub;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
@@ -18,7 +16,7 @@ const ALLOWED_DELAY: Duration = Duration::from_secs(1);
 
 #[derive(Debug)]
 pub(crate) enum PlayerLoopMessage {
-    DecodedBuffer(DecodedBuffer),
+    DecodedBuffer(Buffer),
     TrackTitle(String),
     RestartSender(oneshot::Sender<()>),
 }
@@ -63,17 +61,15 @@ pub(crate) fn make_player_loop(
 
             trace!(logger, "Stream initial clock"; "start_time" => ?stream_start_time, "instant_time" => ?stream_instant_time);
 
-            let mut current_track_pts_offset = stream_instant_time;
-            let mut bytes_sent = 0usize;
+            let mut offset_pts = Duration::from_secs(0);
 
             loop {
                 if let Some(future) = next_track_future.lock().unwrap().take() {
-                    debug!(logger, "Cancelling previous next track preload");
+                    debug!(logger, "Cancelling preloaded next track decoder");
                     future.abort();
                 }
 
-                let elapsed_time =
-                    stream_start_time - (current_track_pts_offset - stream_instant_time);
+                let elapsed_time = stream_start_time + offset_pts;
                 trace!(logger, "Elapsed stream time"; "time" => ?elapsed_time);
 
                 let now_playing = match backend_client
@@ -163,12 +159,15 @@ pub(crate) fn make_player_loop(
                     return;
                 }
 
-                let mut last_buffer_pts = current_track_pts_offset;
+                let mut stream_pts = offset_pts;
 
                 while let Some(buffer) = track_decoder.next().await {
-                    last_buffer_pts = current_track_pts_offset + *buffer.dts();
+                    stream_pts = offset_pts + *buffer.dts();
 
-                    if let Err(_) = sleep_until_deadline(&last_buffer_pts, &mut restart_rx).await {
+                    if let Err(_) =
+                        sleep_until_deadline(&(stream_instant_time + stream_pts), &mut restart_rx)
+                            .await
+                    {
                         debug!(logger, "Sleep cancelled");
                     }
 
@@ -177,23 +176,24 @@ pub(crate) fn make_player_loop(
                         break;
                     }
 
-                    let pts =
-                        Duration::from_secs_f64(bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64);
-
                     trace!(
                         logger,
-                        "Recved buffer from decoder";
+                        "Received buffer from decoder";
                         "len" => buffer.bytes().len(),
                         "buff_dts" => buffer.dts().as_millis(),
                         "buff_pts" => buffer.pts().as_millis(),
-                        "stream_pts" => pts.as_millis()
+                        "stream_pts" => stream_pts.as_millis()
                     );
 
+                    if buffer.is_empty() {
+                        break;
+                    }
+
                     if let Err(_) = tx
-                        .send(PlayerLoopMessage::DecodedBuffer(DecodedBuffer::new(
+                        .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
                             buffer.bytes().clone(),
                             buffer.dts().clone(),
-                            pts,
+                            stream_pts.clone(),
                         )))
                         .await
                     {
@@ -203,11 +203,9 @@ pub(crate) fn make_player_loop(
                         );
                         return;
                     }
-
-                    bytes_sent += buffer.bytes().len();
                 }
 
-                current_track_pts_offset = last_buffer_pts;
+                offset_pts = stream_pts;
             }
         }
     });

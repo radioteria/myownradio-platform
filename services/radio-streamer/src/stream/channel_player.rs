@@ -1,7 +1,7 @@
 use crate::backend_client::BackendClient;
 use crate::metrics::Metrics;
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
-use crate::stream::types::DecodedBuffer;
+use crate::stream::types::Buffer;
 use actix_rt::task::JoinHandle;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
@@ -14,7 +14,7 @@ pub(crate) enum ChannelPlayerError {}
 #[derive(Clone, Debug)]
 pub(crate) enum ChannelPlayerMessage {
     TrackTitle(String),
-    DecodedBuffer(DecodedBuffer),
+    DecodedBuffer(Buffer),
 }
 
 #[derive(Clone)]

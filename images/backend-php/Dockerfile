@@ -1,5 +1,5 @@
 # TODO bump the base image version in ALL stages
-FROM myownradio/backend-php-base:3.0.3
+FROM myownradio/backend-php-base:3.0.4
 
 USER 0:0
 
@@ -13,6 +13,6 @@ COPY . ./
 ENV DUMMY=1
 
 # TODO bump version here
-FROM myownradio/backend-php-base:3.0.3
+FROM myownradio/backend-php-base:3.0.4
 
 COPY --from=0 /code /code

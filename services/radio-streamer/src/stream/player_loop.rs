@@ -1,4 +1,4 @@
-use crate::backend_client::{BackendClient, MorBackendClientError};
+use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
 use crate::helpers::io::sleep_until_deadline;
 use crate::metrics::Metrics;
 use crate::stream::ffmpeg_decoder::make_ffmpeg_decoder;
@@ -8,7 +8,7 @@ use actix_rt::time::Instant;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use scopeguard::defer;
-use slog::{debug, error, info, trace, Logger};
+use slog::{debug, error, info, trace, warn, Logger};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
@@ -66,7 +66,6 @@ pub(crate) fn make_player_loop(
 
             loop {
                 if let Some(future) = next_track_future.lock().unwrap().take() {
-                    debug!(logger, "Cancelling preloaded next track decoder");
                     future.abort();
                 }
 
@@ -88,28 +87,44 @@ pub(crate) fn make_player_loop(
                     }
                 };
 
-                let left_offset = now_playing.current_track.offset;
-                let right_offset =
-                    now_playing.current_track.duration - now_playing.current_track.offset;
+                let NowPlaying {
+                    current_track,
+                    next_track,
+                    ..
+                } = now_playing;
 
-                let mut track_decoder = match stored_next_track_decoder
+                let left_offset = current_track.offset;
+                let right_offset = current_track.duration - current_track.offset;
+                let current_track_url = current_track.url.clone();
+                let next_track_url = next_track.url.clone();
+
+                let (title, mut track_decoder) = match stored_next_track_decoder
                     .lock()
                     .expect("Unable to obtain lock on reading stored next track decoder")
                     .take()
                 {
-                    Some(track_decoder)
-                        if left_offset < ALLOWED_DELAY || right_offset < ALLOWED_DELAY =>
+                    Some((url, track_decoder))
+                        if left_offset < ALLOWED_DELAY && current_track_url == url =>
                     {
-                        track_decoder
+                        warn!(logger, "We are late a bit"; "delay" => ?left_offset);
+
+                        (current_track.title, track_decoder)
+                    }
+                    Some((url, track_decoder))
+                        if right_offset < ALLOWED_DELAY && next_track_url == url =>
+                    {
+                        warn!(logger, "We are soon a bit"; "advance" => ?right_offset);
+
+                        (next_track.title, track_decoder)
                     }
                     _ => match make_ffmpeg_decoder(
-                        &now_playing.current_track.url,
-                        &now_playing.current_track.offset,
+                        &current_track.url,
+                        &current_track.offset,
                         &path_to_ffmpeg,
                         &logger,
                         &metrics,
                     ) {
-                        Ok(track_decoder) => track_decoder,
+                        Ok(track_decoder) => (current_track.title, track_decoder),
                         Err(error) => {
                             error!(logger, "Unable create track decoder"; "error" => ?error);
                             return;
@@ -120,7 +135,7 @@ pub(crate) fn make_player_loop(
                 next_track_future.lock().unwrap().replace(actix_rt::spawn({
                     let logger = logger.clone();
                     let metrics = metrics.clone();
-                    let next_track_url = now_playing.next_track.url.clone();
+                    let next_track_url = next_track.url.clone();
                     let stored_next_track_decoder = stored_next_track_decoder.clone();
                     let path_to_ffmpeg = path_to_ffmpeg.clone();
 
@@ -142,11 +157,9 @@ pub(crate) fn make_player_loop(
                         stored_next_track_decoder
                             .lock()
                             .unwrap()
-                            .replace(next_track_decoder);
+                            .replace((next_track_url, next_track_decoder));
                     }
                 }));
-
-                let title = now_playing.current_track.title.clone();
 
                 if let Err(_) = tx.send(PlayerLoopMessage::TrackTitle(title)).await {
                     debug!(

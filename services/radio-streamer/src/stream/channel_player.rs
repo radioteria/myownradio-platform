@@ -1,7 +1,7 @@
 use crate::backend_client::BackendClient;
 use crate::metrics::Metrics;
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
-use crate::stream::types::TimedBuffer;
+use crate::stream::types::Buffer;
 use actix_rt::task::JoinHandle;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
@@ -14,7 +14,7 @@ pub(crate) enum ChannelPlayerError {}
 #[derive(Clone, Debug)]
 pub(crate) enum ChannelPlayerMessage {
     TrackTitle(String),
-    TimedBuffer(TimedBuffer),
+    DecodedBuffer(Buffer),
 }
 
 #[derive(Clone)]
@@ -142,9 +142,9 @@ impl Inner {
                                     .send_all(ChannelPlayerMessage::TrackTitle(title))
                                     .await;
                             }
-                            PlayerLoopMessage::TimedBuffer(buffer) => {
+                            PlayerLoopMessage::DecodedBuffer(buffer) => {
                                 inner
-                                    .send_all(ChannelPlayerMessage::TimedBuffer(buffer))
+                                    .send_all(ChannelPlayerMessage::DecodedBuffer(buffer))
                                     .await;
                             }
                             PlayerLoopMessage::RestartSender(sender) => {

@@ -7,6 +7,12 @@ on:
     paths:
       - 'services/backend/**'
       - 'images/backend-*/**'
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - 'services/backend/**'
+      - 'images/backend-*/**'
 
 jobs:
   main:

@@ -32,10 +32,11 @@ class DoGetStreamCover implements Controller
 
         if ($size === null) {
             header("Location: " . $storage->url($path));
-            return;
         } else {
             $cachePath = $folders->generateCacheFile2($_GET, $extension);
+            error_log("COVER_DEBUG: Before check path $cachePath");
             if (!$storage->exists($cachePath)) {
+                error_log("COVER_DEBUG: Path does not exist $cachePath");
                 $image = new \acResizeImage($storage->url($path));
                 $image->cropSquare();
                 $image->resize($size);
@@ -48,9 +49,10 @@ class DoGetStreamCover implements Controller
                 $storage->put($cachePath, $imageData, [
                     'ContentType' => mimetype_from_extension($extension)
                 ]);
+            } else {
+                error_log("COVER_DEBUG: Path exists $cachePath");
             }
             header("Location: " . $storage->url($cachePath));
-            return;
         }
     }
 }

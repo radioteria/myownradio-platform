@@ -11,6 +11,16 @@ compose:
 	mkdir -p services/radio-manager-backend/target
 	UID=$(shell id -u) GID=$(shell id -g) docker-compose up -d
 
+clean:
+	rm -rf services/backend/.cache/storage
+	rm -rf services/radio-streamer/.cargo-cache/git
+	rm -rf services/radio-streamer/.cargo-cache/registry
+	rm -rf services/radio-streamer/target
+	rm -rf services/radio-manager-backend/.cargo-cache/git
+	rm -rf services/radio-manager-backend/.cargo-cache/registry
+	rm -rf services/radio-manager-backend/target
+	UID=$(shell id -u) GID=$(shell id -g) docker-compose down --volumes --remove-orphans --rmi all
+
 shell:
 	docker-compose exec --user $(shell id -u):$(shell id -g) backend-php-fpm sh
 

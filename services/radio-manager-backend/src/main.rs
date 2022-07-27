@@ -25,7 +25,9 @@
 // @todo GET /user/${user_id}/channels/${channel_id}/now-playing (get what's playing on the channel on specific time)
 //
 mod config;
+mod data_structures;
 mod http;
+mod models;
 mod system;
 
 use crate::config::{Config, LogFormat};

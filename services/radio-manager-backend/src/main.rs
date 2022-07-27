@@ -28,6 +28,8 @@ mod config;
 mod data_structures;
 mod http;
 mod models;
+mod mysql_client;
+mod repositories;
 mod system;
 
 use crate::config::{Config, LogFormat};

@@ -84,14 +84,14 @@ services:
       - MOR_BACKEND_URL=http://backend-nginx
       - STREAM_MUTATION_TOKEN=secret
       - BIND_ADDRESS=0.0.0.0:8080
-  tracks-storage-backend:
+  radio-manager-backend:
     build:
-      context: ./services/tracks-storage-backend
+      context: services/radio-manager-backend
       dockerfile: Dockerfile-dev
     volumes:
-      - ./services/tracks-storage-backend:/code:rw
-      - ./services/tracks-storage-backend/.cargo-cache/git:/rust/.cargo/git
-      - ./services/tracks-storage-backend/.cargo-cache/registry:/rust/.cargo/registry
+      - ./services/radio-manager-backend:/code:rw
+      - ./services/radio-manager-backend/.cargo-cache/git:/rust/.cargo/git
+      - ./services/radio-manager-backend/.cargo-cache/registry:/rust/.cargo/registry
     user: "${UID}:${GID}"
     working_dir: /code
     command: cargo run

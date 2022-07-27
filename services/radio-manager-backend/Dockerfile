@@ -19,16 +19,16 @@ RUN \
     touch src/main.rs && \
     cargo test --release && \
     cargo build --release && \
-    mv target/release/tracks-storage-backend tracks-storage-backend && \
+    mv target/release/radio-manager-backend radio-manager-backend && \
     rm -rf target
 
 FROM ubuntu:22.04
 
 USER nobody:nogroup
 
-COPY --from=0 /code/tracks-storage-backend /tracks-storage-backend
+COPY --from=0 /code/radio-manager-backend /radio-manager-backend
 
 COPY --from=mwader/static-ffmpeg:5.0.1-3 /ffmpeg /usr/local/bin/
 COPY --from=mwader/static-ffmpeg:5.0.1-3 /ffprobe /usr/local/bin/
 
-CMD ["/tracks-storage-backend"]
+CMD ["/radio-manager-backend"]

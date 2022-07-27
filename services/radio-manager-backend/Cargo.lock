@@ -1400,7 +1400,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tracks-storage-backend"
+name = "radio-manager-backend"
 version = "0.0.1"
 dependencies = [
  "actix-rt",

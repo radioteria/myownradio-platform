@@ -1,5 +1,5 @@
 [package]
-name = "tracks-storage-backend"
+name = "radio-manager-backend"
 version = "0.0.1"
 authors = ["Roman Lakhtadyr <roman.lakhtadyr@gmail.com>"]
 edition = "2021"

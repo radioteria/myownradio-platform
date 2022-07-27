@@ -1,11 +1,11 @@
-name: trigger tracks-storage-backend image build
+name: trigger radio-manager-backend image build
 
 on:
   push:
     branches:
       - master
     paths:
-      - 'services/tracks-storage-backend/**'
+      - 'services/radio-manager-backend/**'
 
 jobs:
   main:
@@ -19,8 +19,8 @@ jobs:
           event-type: build-image
           client-payload: |
             {
-              "image_name": "pldin601/myownradio-tracks-storage-backend",
-              "dockerfile": "services/tracks-storage-backend/Dockerfile",
-              "context": "services/tracks-storage-backend",
+              "image_name": "pldin601/myownradio-radio-manager-backend",
+              "dockerfile": "services/radio-manager-backend/Dockerfile",
+              "context": "services/radio-manager-backend",
               "token": "${{ secrets.REPO_ACCESS_TOKEN }}"
             }

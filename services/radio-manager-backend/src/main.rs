@@ -1,13 +1,29 @@
 //
 // Exposed endpoints:
 //
+// audio tracks:
+//
 // @todo GET /user/${user_id}/tracks (get list of user tracks)
 // @todo GET /user/${user_id}/tracks/${track_id}/preview (preview audio)
 // @todo POST /user/${user_id}/tracks (upload audio track)
 // @todo DELETE /user/${user_id}/tracks/${track_id} (delete audio track)
 // @todo PUT /user/${user_id}/tracks/${track_id}/metadata (update track metadata)
 //
-
+// stream channels:
+//
+// @todo GET /user/${user_id}/channels (get list of user channels)
+// @todo POST /user/${user_id}/channels (create new channel)
+// @todo PUT /user/${user_id}/channels/${channel_id} (update channel details)
+// @todo PUT /user/${user_id}/channels/${channel_id}/image (update channel's image details)
+// @todo DELETE /user/${user_id}/channels/${channel_id} (delete channel)
+// @todo POST /user/${user_id}/channels/${channel_id}/track (add track to channel)
+// @todo DELETE /user/${user_id}/channels/${channel_id}/entries/${entry_id} (delete track entry from channel)
+// @todo POST /user/${user_id}/channels/${channel_id}/shuffle (shuffle tracks in channel)
+// @todo PUT /user/${user_id}/channels/${channel_id}/entries/${entry_id}/reorder (change entry's order in channel)
+// @todo POST /user/${user_id}/channels/${channel_id}/start (start channel)
+// @todo POST /user/${user_id}/channels/${channel_id}/stop (stop channel)
+// @todo GET /user/${user_id}/channels/${channel_id}/now-playing (get what's playing on the channel on specific time)
+//
 mod config;
 mod http;
 mod system;

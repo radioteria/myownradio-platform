@@ -984,6 +984,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "radio-manager-backend"
+version = "0.0.1"
+dependencies = [
+ "actix-rt",
+ "actix-server",
+ "actix-web",
+ "bytebuffer",
+ "dotenv",
+ "envy",
+ "futures",
+ "prometheus",
+ "serde",
+ "serde_json",
+ "serde_millis",
+ "slog",
+ "slog-json",
+ "slog-term",
+ "uuid",
+]
+
+[[package]]
 name = "rand"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1397,27 +1418,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7b7358be39f2f274f322d2aaed611acc57f382e8eb1e5b48cb9ae30933495ce7"
 dependencies = [
  "once_cell",
-]
-
-[[package]]
-name = "radio-manager-backend"
-version = "0.0.1"
-dependencies = [
- "actix-rt",
- "actix-server",
- "actix-web",
- "bytebuffer",
- "dotenv",
- "envy",
- "futures",
- "prometheus",
- "serde",
- "serde_json",
- "serde_millis",
- "slog",
- "slog-json",
- "slog-term",
- "uuid",
 ]
 
 [[package]]

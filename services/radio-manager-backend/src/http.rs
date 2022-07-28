@@ -24,7 +24,7 @@ pub(crate) fn run_server(
             .app_data(Data::new(audio_tracks_repository.clone()))
             .service(
                 web::scope("/users/{user_id}/tracks")
-                    .route("/", web::get().to(user_tracks::get_user_tracks)),
+                    .route("/", web::get().to(user_tracks::get_user_audio_tracks)),
             )
     });
 

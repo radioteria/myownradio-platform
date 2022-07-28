@@ -4,7 +4,7 @@ use actix_web::web::Data;
 use actix_web::{web, HttpResponse, Responder};
 use slog::{error, Logger};
 
-pub(crate) async fn get_user_tracks(
+pub(crate) async fn get_user_audio_tracks(
     path: web::Path<UserId>,
     audio_tracks_repository: Data<AudioTracksRepository>,
     logger: Data<Logger>,

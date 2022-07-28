@@ -1,7 +1,8 @@
 use crate::models::types::{FileId, TrackId, UserId};
 use serde::Serialize;
+use sqlx::FromRow;
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, FromRow)]
 pub(crate) struct AudioTrack {
     tid: TrackId,
     file_id: Option<FileId>,
@@ -17,14 +18,14 @@ pub(crate) struct AudioTrack {
     date: String,
     cue: Option<String>,
     buy: Option<String>,
-    duration: usize,
-    filesize: usize,
-    color: usize,
-    uploaded: usize,
-    copy_of: Option<usize>,
-    used_count: usize,
+    duration: i32,
+    filesize: i32,
+    color: i32,
+    uploaded: i32,
+    copy_of: Option<i32>,
+    used_count: i32,
     is_new: bool,
     can_be_shared: bool,
     is_deleted: bool,
-    deleted: Option<usize>,
+    deleted: Option<i32>,
 }

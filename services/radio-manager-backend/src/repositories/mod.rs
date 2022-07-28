@@ -1,1 +1,1 @@
-mod audio_tracks;
+pub(crate) mod audio_tracks;

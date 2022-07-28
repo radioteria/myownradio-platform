@@ -27,6 +27,7 @@
 mod config;
 mod data_structures;
 mod http;
+mod http_handlers;
 mod models;
 mod mysql_client;
 mod repositories;
@@ -34,6 +35,7 @@ mod system;
 
 use crate::config::{Config, LogFormat};
 use crate::http::run_server;
+use crate::mysql_client::MySqlClient;
 use dotenv::dotenv;
 use slog::{info, o, Drain, Logger};
 use std::io;
@@ -67,7 +69,11 @@ async fn main() -> Result<()> {
         }
     };
 
-    let http_server = run_server(&config.bind_address)?;
+    let mysql_client = MySqlClient::new(&config.mysql, &logger)
+        .await
+        .expect("Unable to initialize MySQL client");
+
+    let http_server = run_server(&config.bind_address, &mysql_client, &logger)?;
 
     info!(logger, "Application started");
 

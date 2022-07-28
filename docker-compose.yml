@@ -104,7 +104,10 @@ services:
       - LOG_LEVEL=Trace
       - LOG_FORMAT=Term
       - BIND_ADDRESS=0.0.0.0:8080
-
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=mor
+      - MYSQL_USER=mor
+      - MYSQL_PASSWORD=mor
 volumes:
   mysql-data:
     driver: local

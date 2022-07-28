@@ -9,7 +9,7 @@ pub struct MySqlClient {
 }
 
 impl MySqlClient {
-    pub async fn new(config: &MySqlConfig, _logger: Logger) -> Result<Self, Error> {
+    pub async fn new(config: &MySqlConfig, _logger: &Logger) -> Result<Self, Error> {
         let pool = mysql::MySqlPoolOptions::new()
             .max_connections(10)
             .connect(&config.connection_string())

@@ -17,7 +17,7 @@ pub(crate) async fn get_user_tracks(
             &None,
             &0,
             &SortingColumn::TrackId,
-            &SortingOrder::Asc,
+            &SortingOrder::Desc,
         )
         .await
     {

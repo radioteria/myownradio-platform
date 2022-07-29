@@ -2,13 +2,12 @@ use crate::models::audio_track::AudioTrack;
 use crate::models::types::UserId;
 use crate::mysql_client::MySqlClient;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use sql_builder::bind::Bind;
-use sql_builder::SqlBuilder;
-use sqlx::{query_as, Error};
+use slog::{trace, Logger};
+use sqlx::{query, query_as, Database, Error, Execute, QueryBuilder, Type};
 use std::ops::Deref;
 
 // Copied from Defaults.php
-const DEFAULT_TRACKS_PER_REQUEST: usize = 50;
+const DEFAULT_TRACKS_PER_REQUEST: i32 = 50;
 
 #[derive(Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
@@ -52,10 +51,10 @@ impl Default for SortingOrder {
 }
 
 impl SortingOrder {
-    fn is_desc(&self) -> bool {
+    fn as_str(&self) -> &str {
         match self {
-            SortingOrder::Desc => true,
-            SortingOrder::Asc => false,
+            SortingOrder::Desc => "DESC",
+            SortingOrder::Asc => "ASC",
         }
     }
 }
@@ -63,12 +62,14 @@ impl SortingOrder {
 #[derive(Clone)]
 pub(crate) struct AudioTracksRepository {
     mysql_client: MySqlClient,
+    logger: Logger,
 }
 
 impl AudioTracksRepository {
-    pub(crate) fn new(mysql_client: &MySqlClient) -> Self {
+    pub(crate) fn new(mysql_client: &MySqlClient, logger: &Logger) -> Self {
         Self {
             mysql_client: mysql_client.clone(),
+            logger: logger.clone(),
         }
     }
 
@@ -81,37 +82,49 @@ impl AudioTracksRepository {
         sorting_column: &SortingColumn,
         sorting_order: &SortingOrder,
     ) -> Result<Vec<AudioTrack>, Error> {
-        let builder = {
-            let mut query = SqlBuilder::select_from("r_tracks")
-                .field("*")
-                .and_where_eq("uid", user_id.deref())
-                .order_by(sorting_column.as_str(), sorting_order.is_desc())
-                .to_owned();
+        let mut builder = {
+            let mut builder = QueryBuilder::new("SELECT * FROM r_tracks");
+
+            builder.push(" WHERE uid = ");
+            builder.push_bind(user_id.deref());
 
             if let Some(filter) = filter {
-                query.and_where(
-                    "MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)".binds(&[filter]),
-                );
-            }
+                builder.push(" AND MATCH(artist, title, genre) AGAINST (");
+                builder.push_bind(filter);
+                builder.push(" IN BOOLEAN MODE)");
+            };
 
             if let Some(color) = color {
-                query.and_where_eq("color", color);
-            }
+                builder.push(" AND color = ");
+                builder.push_bind(color);
+            };
 
-            query.offset(offset).limit(DEFAULT_TRACKS_PER_REQUEST);
+            builder.push(format_args!(
+                " ORDER BY {} {}",
+                sorting_column.as_str(),
+                sorting_order.as_str()
+            ));
 
-            query
+            builder.push(" LIMIT ");
+            builder.push_bind(offset);
+            builder.push(", ");
+            builder.push_bind(DEFAULT_TRACKS_PER_REQUEST);
+
+            builder
         };
 
-        let audio_tracks =
-            query_as::<_, AudioTrack>(&builder.sql().expect("Unable to generate SQL-expression"))
-                .fetch_all(self.mysql_client.connection())
-                .await
-                .map(|rows| {
-                    rows.into_iter()
-                        .map(Into::into)
-                        .collect::<Vec<AudioTrack>>()
-                })?;
+        let query = builder.build();
+
+        trace!(self.logger, "Running SQL query: {}", query.sql());
+
+        let audio_tracks = query
+            .fetch_all(self.mysql_client.connection())
+            .await
+            .map(|rows| {
+                rows.into_iter()
+                    .map(Into::into)
+                    .collect::<Vec<AudioTrack>>()
+            })?;
 
         Ok(audio_tracks)
     }

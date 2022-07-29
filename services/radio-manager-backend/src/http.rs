@@ -1,4 +1,4 @@
-use crate::http_handlers::user_tracks;
+use crate::http_handlers::user_audio_tracks;
 use crate::{repositories, MySqlClient};
 use actix_server::Server;
 use actix_web::web::Data;
@@ -15,7 +15,7 @@ pub(crate) fn run_server(
     let mysql_client = mysql_client.clone();
 
     let audio_tracks_repository =
-        repositories::audio_tracks::AudioTracksRepository::new(&mysql_client);
+        repositories::audio_tracks::AudioTracksRepository::new(&mysql_client, &logger);
 
     let server = HttpServer::new(move || {
         App::new()
@@ -24,7 +24,7 @@ pub(crate) fn run_server(
             .app_data(Data::new(audio_tracks_repository.clone()))
             .service(
                 web::scope("/users/{user_id}/tracks")
-                    .route("/", web::get().to(user_tracks::get_user_audio_tracks)),
+                    .route("/", web::get().to(user_audio_tracks::get_user_audio_tracks)),
             )
     });
 

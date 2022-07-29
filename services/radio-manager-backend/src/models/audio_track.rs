@@ -1,4 +1,4 @@
-use crate::models::types::{FileId, TrackId, UserId};
+use crate::models::types::{FileId, StreamId, TrackId, UserId};
 use serde::Serialize;
 use sqlx::mysql::MySqlRow;
 use sqlx::{FromRow, Row};
@@ -68,6 +68,62 @@ impl From<MySqlRow> for AudioTrack {
             can_be_shared: row.get("can_be_shared"),
             is_deleted: row.get("is_deleted"),
             deleted: row.get("deleted"),
+        }
+    }
+}
+
+#[derive(Clone, Serialize)]
+pub(crate) struct PlaylistEntry {
+    #[serde(skip_serializing)]
+    id: i32,
+    #[serde(skip_serializing)]
+    stream_id: StreamId,
+    #[serde(skip_serializing)]
+    track_id: TrackId,
+    t_order: i16,
+    unique_id: String,
+    time_offset: i32,
+    #[serde(flatten)]
+    track: AudioTrack,
+}
+
+impl From<MySqlRow> for PlaylistEntry {
+    fn from(row: MySqlRow) -> Self {
+        let track = AudioTrack {
+            tid: row.get("tid"),
+            file_id: row.get("file_id"),
+            uid: row.get("uid"),
+            filename: row.get("filename"),
+            hash: row.get("hash"),
+            ext: row.get("ext"),
+            artist: row.get("artist"),
+            title: row.get("title"),
+            album: row.get("album"),
+            track_number: row.get("track_number"),
+            genre: row.get("genre"),
+            date: row.get("date"),
+            cue: row.get("cue"),
+            buy: row.get("buy"),
+            duration: row.get("duration"),
+            filesize: row.get("filesize"),
+            color: row.get("color"),
+            uploaded: row.get("uploaded"),
+            copy_of: row.get("copy_of"),
+            used_count: row.get("used_count"),
+            is_new: row.get("is_new"),
+            can_be_shared: row.get("can_be_shared"),
+            is_deleted: row.get("is_deleted"),
+            deleted: row.get("deleted"),
+        };
+
+        Self {
+            id: row.get("id"),
+            stream_id: row.get("stream_id"),
+            track_id: row.get("track_id"),
+            t_order: row.get("t_order"),
+            unique_id: row.get("unique_id"),
+            time_offset: row.get("time_offset"),
+            track,
         }
     }
 }

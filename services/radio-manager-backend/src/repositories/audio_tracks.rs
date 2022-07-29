@@ -1,4 +1,4 @@
-use crate::models::audio_track::AudioTrack;
+use crate::models::audio_track::{AudioTrack, PlaylistEntry};
 use crate::models::types::{StreamId, UserId};
 use crate::mysql_client::MySqlClient;
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -123,11 +123,7 @@ impl AudioTracksRepository {
         let audio_tracks = query
             .fetch_all(self.mysql_client.connection())
             .await
-            .map(|rows| {
-                rows.into_iter()
-                    .map(Into::into)
-                    .collect::<Vec<AudioTrack>>()
-            })?;
+            .map(|rows| rows.into_iter().map(Into::into).collect())?;
 
         Ok(audio_tracks)
     }
@@ -139,7 +135,7 @@ impl AudioTracksRepository {
         color: &Option<u32>,
         filter: &Option<String>,
         offset: &u32,
-    ) -> Result<Vec<AudioTrack>, Error> {
+    ) -> Result<Vec<PlaylistEntry>, Error> {
         let mut builder = QueryBuilder::new("SELECT `r_tracks`.*, `r_link`.*");
 
         builder.push(" FROM `r_tracks` JOIN `r_link` ON `r_tracks`.`tid` = `r_link`.`track_id`");
@@ -177,11 +173,7 @@ impl AudioTracksRepository {
         let audio_tracks = query
             .fetch_all(self.mysql_client.connection())
             .await
-            .map(|rows| {
-                rows.into_iter()
-                    .map(Into::into)
-                    .collect::<Vec<AudioTrack>>()
-            })?;
+            .map(|rows| rows.into_iter().map(Into::into).collect())?;
 
         Ok(audio_tracks)
     }

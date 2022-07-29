@@ -99,7 +99,7 @@ impl AudioTracksRepository {
             builder.push_bind(color);
         };
 
-        if unused {
+        if *unused {
             builder.push(" AND used_count = 0");
         }
 

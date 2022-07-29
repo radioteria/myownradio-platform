@@ -22,9 +22,7 @@ RUN \
     mv target/release/radio-manager-backend radio-manager-backend && \
     rm -rf target
 
-FROM alpine:3.16
-
-RUN apk add libssl1.1
+FROM rust
 
 USER nobody:nogroup
 

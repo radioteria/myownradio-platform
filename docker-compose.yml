@@ -1,6 +1,24 @@
 version: "3.5"
 
 services:
+  traefik:
+    depends_on:
+      - backend-nginx
+    networks:
+      - myownradio-dev
+    restart: unless-stopped
+    image: library/traefik:2.4
+    ports:
+      - "40180:80"
+      - "40181:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      - --providers.docker
+      - --providers.docker.exposedbydefault=false
+      - --api=true
+      - --api.dashboard=true
+      - --api.insecure=true
   db:
     build:
       context: ./images/mysql
@@ -23,8 +41,10 @@ services:
       - ./services/backend:/code:ro
     networks:
       - myownradio-dev
-    ports:
-      - "127.0.0.1:40002:80"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=PathPrefix(`/`)
+      - traefik.http.services.backend.loadbalancer.server.port=80
   backend-php-fpm:
     depends_on:
       - db

@@ -42,3 +42,15 @@ impl Deref for FileId {
         &self.0
     }
 }
+
+#[derive(Serialize, Deserialize, Clone, sqlx::Type)]
+#[sqlx(transparent)]
+pub(crate) struct StreamId(i32);
+
+impl Deref for StreamId {
+    type Target = i32;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}

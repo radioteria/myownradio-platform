@@ -26,6 +26,10 @@ pub(crate) fn run_server(
                 web::scope("/v0/tracks")
                     .route("/", web::get().to(user_audio_tracks::get_user_audio_tracks)),
             )
+            .service(web::scope("/v0/playlists/{playlist_id}").route(
+                "/",
+                web::get().to(user_audio_tracks::get_user_playlist_audio_tracks),
+            ))
     });
 
     Ok(server.workers(2).bind(bind_address)?.run())

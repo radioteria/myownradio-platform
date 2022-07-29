@@ -14,7 +14,7 @@ services:
     networks:
       - myownradio-dev
     ports:
-      - 127.0.0.1:40001:3306
+      - "127.0.0.1:40001:3306"
   backend-nginx:
     depends_on:
       - backend-php-fpm
@@ -24,7 +24,7 @@ services:
     networks:
       - myownradio-dev
     ports:
-      - 127.0.0.1:40002:80
+      - "127.0.0.1:40002:80"
   backend-php-fpm:
     depends_on:
       - db
@@ -56,7 +56,7 @@ services:
     volumes:
       - ./services/backend/.cache/storage:/usr/share/nginx/html:ro
     ports:
-      - 127.0.0.1:40004:80
+      - "127.0.0.1:40004:80"
     networks:
       - myownradio-dev
   radio-streamer:
@@ -76,7 +76,7 @@ services:
     networks:
       - myownradio-dev
     ports:
-      - 127.0.0.1:40003:8080
+      - "127.0.0.1:40003:8080"
     environment:
       - HOME=/rust
       - LOG_LEVEL=Trace
@@ -98,7 +98,7 @@ services:
     networks:
       - myownradio-dev
     ports:
-      - 127.0.0.1:40005:8080
+      - "127.0.0.1:40005:8080"
     environment:
       - HOME=/rust
       - LOG_LEVEL=Trace

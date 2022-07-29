@@ -20,6 +20,12 @@ pub(crate) enum SortingColumn {
     Duration,
 }
 
+impl Default for SortingColumn {
+    fn default() -> Self {
+        Self::TrackId
+    }
+}
+
 impl SortingColumn {
     fn as_str(&self) -> &str {
         match self {
@@ -37,6 +43,12 @@ impl SortingColumn {
 pub(crate) enum SortingOrder {
     Desc,
     Asc,
+}
+
+impl Default for SortingOrder {
+    fn default() -> Self {
+        Self::Desc
+    }
 }
 
 impl SortingOrder {

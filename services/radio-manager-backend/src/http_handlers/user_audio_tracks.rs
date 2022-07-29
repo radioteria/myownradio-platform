@@ -36,6 +36,7 @@ pub(crate) async fn get_user_audio_tracks(
             &params.color_id,
             &params.filter,
             &params.offset,
+            &params.unused,
             &params.row,
             &params.order,
         )

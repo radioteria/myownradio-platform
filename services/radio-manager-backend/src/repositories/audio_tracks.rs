@@ -79,39 +79,40 @@ impl AudioTracksRepository {
         color: &Option<u32>,
         filter: &Option<String>,
         offset: &u32,
+        unused: &bool,
         sorting_column: &SortingColumn,
         sorting_order: &SortingOrder,
     ) -> Result<Vec<AudioTrack>, Error> {
-        let mut builder = {
-            let mut builder = QueryBuilder::new("SELECT * FROM r_tracks");
+        let mut builder = QueryBuilder::new("SELECT * FROM r_tracks");
 
-            builder.push(" WHERE uid = ");
-            builder.push_bind(user_id.deref());
+        builder.push(" WHERE uid = ");
+        builder.push_bind(user_id.deref());
 
-            if let Some(filter) = filter {
-                builder.push(" AND MATCH(artist, title, genre) AGAINST (");
-                builder.push_bind(filter);
-                builder.push(" IN BOOLEAN MODE)");
-            };
-
-            if let Some(color) = color {
-                builder.push(" AND color = ");
-                builder.push_bind(color);
-            };
-
-            builder.push(format_args!(
-                " ORDER BY {} {}",
-                sorting_column.as_str(),
-                sorting_order.as_str()
-            ));
-
-            builder.push(" LIMIT ");
-            builder.push_bind(offset);
-            builder.push(", ");
-            builder.push_bind(DEFAULT_TRACKS_PER_REQUEST);
-
-            builder
+        if let Some(filter) = filter {
+            builder.push(" AND MATCH(artist, title, genre) AGAINST (");
+            builder.push_bind(filter);
+            builder.push(" IN BOOLEAN MODE)");
         };
+
+        if let Some(color) = color {
+            builder.push(" AND color = ");
+            builder.push_bind(color);
+        };
+
+        if unused {
+            builder.push(" AND used_count = 0");
+        }
+
+        builder.push(format_args!(
+            " ORDER BY {} {}",
+            sorting_column.as_str(),
+            sorting_order.as_str()
+        ));
+
+        builder.push(" LIMIT ");
+        builder.push_bind(offset);
+        builder.push(", ");
+        builder.push_bind(DEFAULT_TRACKS_PER_REQUEST);
 
         let query = builder.build();
 

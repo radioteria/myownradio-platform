@@ -580,17 +580,12 @@
                 });
                 return Response(result);
             },
-            getByStreamID: function (stream_id, offset, filter, color_id) {
+            getByStreamID: function (stream_id, offset, filter, color_id = "") {
                 var result = $http({
                     method: "GET",
-                    url: "/api/v2/tracks/getByStream",
+                    url: `/radio-manager/api/v0/playlists/${stream_id}/tracks/`,
                     busy: false,
-                    params: {
-                        stream_id: stream_id,
-                        color_id: color_id || "",
-                        offset: offset,
-                        filter: filter
-                    }
+                    params: { color_id, offset, filter }
                 });
                 return Response(result);
             },

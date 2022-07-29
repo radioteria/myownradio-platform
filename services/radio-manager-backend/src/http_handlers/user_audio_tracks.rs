@@ -8,7 +8,7 @@ use slog::{error, Logger};
 #[derive(Deserialize)]
 pub(crate) struct GetUserAudioTracksQuery {
     #[serde(default)]
-    color_id: Option<u32>,
+    color_id: Option<String>,
     #[serde(default)]
     filter: Option<String>,
     #[serde(default)]
@@ -29,10 +29,16 @@ pub(crate) async fn get_user_audio_tracks(
 ) -> impl Responder {
     let params = query.into_inner();
 
+    let color_id = match params.color_id {
+        None => None,
+        Some(str) if str.is_empty() => None,
+        Some(str) => str.parse::<u32>().ok(),
+    };
+
     let audio_tracks = match audio_tracks_repository
         .get_user_audio_tracks(
             &user_id,
-            &params.color_id,
+            &color_id,
             &params.filter,
             &params.offset,
             &params.unused,
@@ -59,7 +65,7 @@ pub(crate) async fn get_user_audio_tracks(
 #[derive(Deserialize)]
 pub(crate) struct GetUserPlaylistAudioTracksQuery {
     #[serde(default)]
-    color_id: Option<u32>,
+    color_id: Option<String>,
     #[serde(default)]
     filter: Option<String>,
     #[serde(default)]
@@ -76,13 +82,19 @@ pub(crate) async fn get_user_playlist_audio_tracks(
     let stream_id = path.into_inner();
     let params = query.into_inner();
 
+    let color_id = match params.color_id {
+        None => None,
+        Some(str) if str.is_empty() => None,
+        Some(str) => str.parse::<u32>().ok(),
+    };
+
     // @todo 404 Not Found if playlist/channel/stream does not exist or belongs to another user
 
     let audio_tracks = match audio_tracks_repository
         .get_user_playlist_audio_tracks(
             &user_id,
             &stream_id,
-            &params.color_id,
+            &color_id,
             &params.filter,
             &params.offset,
         )

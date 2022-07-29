@@ -34,49 +34,6 @@ class Playlist implements SingletonInterface, Injectable
     const REAL_TIME_DELAY_MS = 0;
 
     /**
-     * @param Optional $color
-     * @param Optional $filter
-     * @param Optional $offset
-     * @param int $sortRow
-     * @param int $sortOrder
-     * @return array
-     */
-    public function getAllTracks(Optional $color, Optional $filter, Optional $offset, $sortRow = 0, $sortOrder = 0)
-    {
-
-        $me = AuthUserModel::getInstance();
-
-        $query = $this->getTracksPrefix()->where("uid", $me->getID());
-
-        $availableOrders = [0 => "DESC", 1 => "ASC"];
-        $availableRows = [0 => "tid", 1 => "title", 2 => "artist", 3 => "genre", 4 => "duration"];
-
-        $safeRow = isset($availableRows[$sortRow]) ? $sortRow : 0;
-        $safeOrder = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
-
-        if ($color->validate()) {
-            $query->where("color", $color->get());
-        }
-
-        if ($filter->validate()) {
-            $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
-                Common::searchQueryFilter($filter->get())
-            ]);
-        }
-
-        if ($offset->validate()) {
-            $query->offset($offset->get());
-        }
-
-        $query->limit(Defaults::DEFAULT_TRACKS_PER_REQUEST);
-
-        $query->orderBy(sprintf("%s %s", $availableRows[$safeRow], $availableOrders[$safeOrder]));
-
-        $this->printResults($query);
-
-    }
-
-    /**
      * @return SelectQuery
      */
     private function getTracksPrefix()
@@ -109,41 +66,6 @@ class Playlist implements SingletonInterface, Injectable
 
     }
 
-    public function getUnusedTracks(Optional $color, Optional $filter, Optional $offset, $sortRow = 0, $sortOrder = 0)
-    {
-
-        $me = AuthUserModel::getInstance();
-
-        $query = $this->getTracksPrefix()->where("uid", $me->getID());
-
-        $availableOrders = [0 => "DESC", 1 => "ASC"];
-        $availableRows = [0 => "tid", 1 => "title", 2 => "artist", 3 => "genre", 4 => "duration"];
-
-        $safeRow = isset($availableRows[$sortRow]) ? $sortRow : 0;
-        $safeOrder = isset($availableOrders[$sortOrder]) ? $sortOrder : 0;
-
-        if ($color->validate()) {
-            $query->where("color", $color->get());
-        }
-
-        if ($filter->validate()) {
-            $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
-                Common::searchQueryFilter($filter->get())
-            ]);
-        }
-
-        if ($offset->validate()) {
-            $query->offset($offset->get());
-        }
-
-        $query->where("used_count", 0);
-        $query->limit(Defaults::DEFAULT_TRACKS_PER_REQUEST);
-
-        $query->orderBy(sprintf("%s %s", $availableRows[$safeRow], $availableOrders[$safeOrder]));
-
-        $this->printResults($query);
-
-    }
 
     public function getOneTrack($trackID)
     {
@@ -154,59 +76,6 @@ class Playlist implements SingletonInterface, Injectable
         $query->where("tid", $trackID);
 
         return $query->fetchOneRow()->getOrElseThrow(ControllerException::noTrack($trackID));
-
-    }
-
-    /**
-     * @param StreamModel $stream
-     * @param Optional $color
-     * @param Optional $filter
-     * @param Optional $offset
-     * @return array
-     */
-    public function getTracksByStream(StreamModel $stream, Optional $color, Optional $filter, Optional $offset)
-    {
-
-        $printer = JsonPrinter::getInstance()->successPrefix();
-
-        $query = $this->getStreamTracksPrefix()
-            ->where("stream_id", $stream->getID());
-
-        $query->select("unique_id", "time_offset");
-
-        if ($color->validate()) {
-            $query->where("color", $color);
-        }
-
-        if ($filter->validate()) {
-            $query->where("MATCH(artist, title, genre) AGAINST (? IN BOOLEAN MODE)", [
-                Common::searchQueryFilter($filter->get())
-            ]);
-        }
-
-        if ($offset->validate()) {
-            $query->offset($offset->get());
-        }
-
-        $query->limit(Defaults::DEFAULT_TRACKS_PER_REQUEST);
-
-        $query->orderBy("time_offset ASC");
-
-        $printer->brPrintKey("data");
-        $printer->brOpenArray();
-
-        $index = 0;
-
-        $query->eachRow(function ($row) use ($printer, &$index) {
-            if ($index++ > 0) {
-                $printer->brComma();
-            }
-            $printer->printJSON($row);
-        });
-
-        $printer->brCloseArray();
-
-        $printer->brCloseObject();
 
     }
 

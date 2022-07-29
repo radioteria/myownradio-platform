@@ -23,7 +23,7 @@ pub(crate) fn run_server(
             .app_data(Data::new(logger.clone()))
             .app_data(Data::new(audio_tracks_repository.clone()))
             .service(
-                web::scope("/users/{user_id}/tracks")
+                web::scope("/tracks")
                     .route("/", web::get().to(user_audio_tracks::get_user_audio_tracks)),
             )
     });

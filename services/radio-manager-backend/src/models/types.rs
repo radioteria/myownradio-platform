@@ -13,6 +13,12 @@ impl Deref for UserId {
     }
 }
 
+impl From<i32> for UserId {
+    fn from(id: i32) -> Self {
+        UserId(id)
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, sqlx::Type)]
 #[sqlx(transparent)]
 pub(crate) struct TrackId(i32);

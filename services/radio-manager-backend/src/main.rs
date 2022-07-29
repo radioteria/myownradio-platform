@@ -27,6 +27,7 @@
 mod config;
 mod data_structures;
 mod http;
+mod http_extractors;
 mod http_handlers;
 mod models;
 mod mysql_client;

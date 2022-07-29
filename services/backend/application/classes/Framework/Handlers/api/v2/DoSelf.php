@@ -22,6 +22,11 @@ use REST\Users;
 class DoSelf implements Controller {
 
     public function doGet(AuthUserModel $userModel, JsonResponse $response, Streams $streams, Users $users) {
+        $userId = $userModel->getID();
+
+        $response->setHeaders([
+            "User-Id: ${userId}"
+        ]);
 
         $response->setData([
             'user'      => $users->getUserByID($userModel->getID(), true),

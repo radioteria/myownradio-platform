@@ -128,6 +128,15 @@ services:
       - MYSQL_DATABASE=mor
       - MYSQL_USER=mor
       - MYSQL_PASSWORD=mor
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.radioManager.rule=PathPrefix(`/radio-manager/api/`)
+      - traefik.http.routers.radioManager.middlewares=stripprefixRadioManager,forwardauthRadioManager
+      - traefik.http.services.radioManager.loadbalancer.server.port=8080
+      - traefik.http.middlewares.stripprefixRadioManager.stripprefix.prefixes=/radio-manager/api
+      - traefik.http.middlewares.forwardauthRadioManager.forwardauth.address=http://backend-nginx:80/api/v2/self
+      - traefik.http.middlewares.forwardauthRadioManager.forwardauth.authResponseHeaders=user-id
+      - traefik.http.middlewares.forwardauthRadioManager.forwardauth.trustForwardHeader=false
 volumes:
   mysql-data:
     driver: local

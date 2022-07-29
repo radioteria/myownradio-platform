@@ -22,12 +22,11 @@ pub(crate) struct QueryParams {
 }
 
 pub(crate) async fn get_user_audio_tracks(
-    path: web::Path<UserId>,
+    user_id: UserId,
     query: web::Query<QueryParams>,
     audio_tracks_repository: Data<AudioTracksRepository>,
     logger: Data<Logger>,
 ) -> impl Responder {
-    let user_id = path.into_inner();
     let params = query.into_inner();
 
     let audio_tracks = match audio_tracks_repository

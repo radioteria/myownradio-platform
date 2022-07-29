@@ -89,9 +89,11 @@ impl AudioTracksRepository {
         builder.push_bind(user_id.deref());
 
         if let Some(filter) = filter {
-            builder.push(" AND MATCH(artist, title, genre) AGAINST (");
-            builder.push_bind(filter);
-            builder.push(" IN BOOLEAN MODE)");
+            if !filter.is_empty() {
+                builder.push(" AND MATCH(artist, title, genre) AGAINST (");
+                builder.push_bind(filter);
+                builder.push(" IN BOOLEAN MODE)");
+            }
         };
 
         if let Some(color) = color {

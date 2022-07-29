@@ -568,12 +568,12 @@
             getAllTracks: function (offset, filter, unused, row, order, busy) {
                 var result = $http({
                     method: "GET",
-                    url: "/api/v2/tracks/getAll",
+                    url: "/radio-manager/api/v0/tracks/",
                     busy: busy || false,
                     params: {
                         offset: offset,
                         filter: filter,
-                        unused: unused ? 1 : 0,
+                        unused: unused,
                         row: row,
                         order: order
                     }

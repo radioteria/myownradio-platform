@@ -22,9 +22,14 @@ class JsonResponse implements Injectable, SingletonInterface {
     private $data = null;
     private $message = "OK";
     private $response = 200;
+    private $headers = [];
 
     public function setData($data) {
         $this->data = $data;
+    }
+
+    public function setHeaders(array $headers) {
+        $this->headers = $headers;
     }
 
     public function setMessage($message) {
@@ -46,6 +51,10 @@ class JsonResponse implements Injectable, SingletonInterface {
         http_response_code($this->response);
 
         header("Content-Type: application/json; charset=utf-8");
+
+        foreach ($this->headers as $header) {
+            header($header);
+        }
 
         http_response_code($this->response);
 

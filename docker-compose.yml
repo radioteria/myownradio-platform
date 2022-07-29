@@ -1,6 +1,24 @@
 version: "3.5"
 
 services:
+  traefik:
+    depends_on:
+      - backend-nginx
+    networks:
+      - myownradio-dev
+    restart: unless-stopped
+    image: library/traefik:2.4
+    ports:
+      - "40180:80"
+      - "40181:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      - --providers.docker
+      - --providers.docker.exposedbydefault=false
+      - --api=true
+      - --api.dashboard=true
+      - --api.insecure=true
   db:
     build:
       context: ./images/mysql
@@ -14,7 +32,7 @@ services:
     networks:
       - myownradio-dev
     ports:
-      - 127.0.0.1:40001:3306
+      - "127.0.0.1:40001:3306"
   backend-nginx:
     depends_on:
       - backend-php-fpm
@@ -23,8 +41,10 @@ services:
       - ./services/backend:/code:ro
     networks:
       - myownradio-dev
-    ports:
-      - 127.0.0.1:40002:80
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend.rule=PathPrefix(`/`)
+      - traefik.http.services.backend.loadbalancer.server.port=80
   backend-php-fpm:
     depends_on:
       - db
@@ -56,7 +76,7 @@ services:
     volumes:
       - ./services/backend/.cache/storage:/usr/share/nginx/html:ro
     ports:
-      - 127.0.0.1:40004:80
+      - "127.0.0.1:40004:80"
     networks:
       - myownradio-dev
   radio-streamer:
@@ -76,7 +96,7 @@ services:
     networks:
       - myownradio-dev
     ports:
-      - 127.0.0.1:40003:8080
+      - "127.0.0.1:40003:8080"
     environment:
       - HOME=/rust
       - LOG_LEVEL=Trace
@@ -98,13 +118,25 @@ services:
     networks:
       - myownradio-dev
     ports:
-      - 127.0.0.1:40005:8080
+      - "127.0.0.1:40005:8080"
     environment:
       - HOME=/rust
       - LOG_LEVEL=Trace
       - LOG_FORMAT=Term
       - BIND_ADDRESS=0.0.0.0:8080
-
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=mor
+      - MYSQL_USER=mor
+      - MYSQL_PASSWORD=mor
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.radioManager.rule=PathPrefix(`/radio-manager/api/`)
+      - traefik.http.routers.radioManager.middlewares=stripprefixRadioManager,forwardauthRadioManager
+      - traefik.http.services.radioManager.loadbalancer.server.port=8080
+      - traefik.http.middlewares.stripprefixRadioManager.stripprefix.prefixes=/radio-manager/api
+      - traefik.http.middlewares.forwardauthRadioManager.forwardauth.address=http://backend-nginx:80/api/v2/self
+      - traefik.http.middlewares.forwardauthRadioManager.forwardauth.authResponseHeaders=user-id
+      - traefik.http.middlewares.forwardauthRadioManager.forwardauth.trustForwardHeader=false
 volumes:
   mysql-data:
     driver: local

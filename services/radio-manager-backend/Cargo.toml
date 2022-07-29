@@ -7,7 +7,9 @@ edition = "2021"
 [dependencies]
 actix-server = "2.1.1"
 actix-rt = "2.1.0"
+actix-http = "3.2.1"
 serde_json = "1.0.60"
+serde_repr = "0.1.8"
 slog-json = "2.3.0"
 slog-term = "2.8.0"
 envy = "0.4.2"
@@ -15,6 +17,11 @@ futures = "0.3.13"
 bytebuffer = "0.2.1"
 serde_millis = "0.1.1"
 dotenv = "0.15.0"
+scooby = "0.4.0"
+
+[dependencies.sqlx]
+version = "0.5.7"
+features = [ "mysql", "runtime-async-std-native-tls", "uuid", "chrono" ]
 
 [dependencies.slog]
 version = "2.7.0"

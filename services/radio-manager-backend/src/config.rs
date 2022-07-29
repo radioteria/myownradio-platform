@@ -55,6 +55,27 @@ fn default_path_to_ffmpeg() -> String {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct MySqlConfig {
+    #[serde(rename = "mysql_host")]
+    pub host: String,
+    #[serde(rename = "mysql_user")]
+    pub user: String,
+    #[serde(rename = "mysql_password")]
+    pub password: String,
+    #[serde(rename = "mysql_database")]
+    pub database: String,
+}
+
+impl MySqlConfig {
+    pub fn connection_string(&self) -> String {
+        format!(
+            "mysql://{}:{}@{}/{}",
+            self.user, self.password, self.host, self.database
+        )
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     #[serde(default = "default_bind_address")]
     pub bind_address: String,
@@ -68,6 +89,8 @@ pub struct Config {
     pub log_format: LogFormat,
     #[serde(default = "default_shutdown_timeout")]
     pub shutdown_timeout: u64,
+    #[serde(flatten)]
+    pub mysql: MySqlConfig,
 }
 
 impl Config {

@@ -1,5 +1,6 @@
 use crate::models::types::{StreamId, UserId};
 use crate::repositories::audio_tracks::{AudioTracksRepository, SortingColumn, SortingOrder};
+use crate::repositories::streams::StreamsRepository;
 use actix_web::web::Data;
 use actix_web::{web, HttpResponse, Responder};
 use serde::Deserialize;
@@ -77,6 +78,7 @@ pub(crate) async fn get_user_playlist_audio_tracks(
     user_id: UserId,
     query: web::Query<GetUserPlaylistAudioTracksQuery>,
     audio_tracks_repository: Data<AudioTracksRepository>,
+    streams_repository: Data<StreamsRepository>,
     logger: Data<Logger>,
 ) -> impl Responder {
     let stream_id = path.into_inner();
@@ -88,7 +90,15 @@ pub(crate) async fn get_user_playlist_audio_tracks(
         Some(str) => str.parse::<u32>().ok(),
     };
 
-    // @todo 404 Not Found if playlist/channel/stream does not exist or belongs to another user
+    match streams_repository.get_single_user_stream(&user_id, &stream_id) {
+        Ok(Some(_)) => (),
+        Ok(None) => return HttpResponse::NotFound().finish(),
+        Err(error) => {
+            error!(logger, "Failed to get user stream"; "error" => ?error);
+
+            return HttpResponse::InternalServerError().finish();
+        }
+    }
 
     let audio_tracks = match audio_tracks_repository
         .get_user_playlist_audio_tracks(

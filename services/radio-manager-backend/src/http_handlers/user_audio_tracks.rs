@@ -90,7 +90,10 @@ pub(crate) async fn get_user_stream_audio_tracks(
         Some(str) => str.parse::<u32>().ok(),
     };
 
-    match streams_repository.get_single_user_stream(&user_id, &stream_id) {
+    match streams_repository
+        .get_single_user_stream(&user_id, &stream_id)
+        .await
+    {
         Ok(Some(_)) => (),
         Ok(None) => return HttpResponse::NotFound().finish(),
         Err(error) => {

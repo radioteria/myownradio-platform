@@ -2,7 +2,7 @@ use crate::models::stream::Stream;
 use crate::models::types::{StreamId, UserId};
 use crate::MySqlClient;
 use slog::{trace, Logger};
-use sqlx::{Error, QueryBuilder};
+use sqlx::{Error, Execute, QueryBuilder};
 use std::ops::Deref;
 
 #[derive(Clone)]
@@ -39,7 +39,7 @@ impl StreamsRepository {
         let streams = query
             .fetch_optional(self.mysql_client.connection())
             .await
-            .map(|rows| rows.into_iter().map(Into::into).collect())?;
+            .map(|row| row.map(Into::into))?;
 
         Ok(streams)
     }

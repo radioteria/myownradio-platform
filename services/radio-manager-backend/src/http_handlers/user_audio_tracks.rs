@@ -73,7 +73,7 @@ pub(crate) struct GetUserPlaylistAudioTracksQuery {
     offset: u32,
 }
 
-pub(crate) async fn get_user_playlist_audio_tracks(
+pub(crate) async fn get_user_stream_audio_tracks(
     path: web::Path<StreamId>,
     user_id: UserId,
     query: web::Query<GetUserPlaylistAudioTracksQuery>,
@@ -101,7 +101,7 @@ pub(crate) async fn get_user_playlist_audio_tracks(
     }
 
     let audio_tracks = match audio_tracks_repository
-        .get_user_playlist_audio_tracks(
+        .get_user_stream_audio_tracks(
             &user_id,
             &stream_id,
             &color_id,

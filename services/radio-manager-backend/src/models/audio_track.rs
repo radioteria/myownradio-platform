@@ -73,7 +73,7 @@ impl From<MySqlRow> for AudioTrack {
 }
 
 #[derive(Clone, Serialize)]
-pub(crate) struct PlaylistEntry {
+pub(crate) struct StreamTracksEntry {
     #[serde(skip_serializing)]
     id: i32,
     #[serde(skip_serializing)]
@@ -87,7 +87,7 @@ pub(crate) struct PlaylistEntry {
     track: AudioTrack,
 }
 
-impl From<MySqlRow> for PlaylistEntry {
+impl From<MySqlRow> for StreamTracksEntry {
     fn from(row: MySqlRow) -> Self {
         let track = AudioTrack {
             tid: row.get("tid"),

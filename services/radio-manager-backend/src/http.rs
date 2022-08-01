@@ -28,9 +28,9 @@ pub(crate) fn run_server(
                 web::scope("/v0/tracks")
                     .route("/", web::get().to(user_audio_tracks::get_user_audio_tracks)),
             )
-            .service(web::scope("/v0/playlists/{playlist_id}/tracks").route(
+            .service(web::scope("/v0/streams/{stream_id}/tracks").route(
                 "/",
-                web::get().to(user_audio_tracks::get_user_playlist_audio_tracks),
+                web::get().to(user_audio_tracks::get_user_stream_audio_tracks),
             ))
             .service(
                 web::scope("/v0/streams").route("/", web::get().to(user_streams::get_user_streams)),

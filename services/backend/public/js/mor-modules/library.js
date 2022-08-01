@@ -583,7 +583,7 @@
             getByStreamID: function (stream_id, offset, filter, color_id = "") {
                 var result = $http({
                     method: "GET",
-                    url: `/radio-manager/api/v0/playlists/${stream_id}/tracks/`,
+                    url: `/radio-manager/api/v0/streams/${stream_id}/tracks/`,
                     busy: false,
                     params: { color_id, offset, filter }
                 });

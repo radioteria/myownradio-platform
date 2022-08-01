@@ -1,4 +1,4 @@
-use crate::models::audio_track::{AudioTrack, PlaylistEntry};
+use crate::models::audio_track::{AudioTrack, StreamTracksEntry};
 use crate::models::types::{StreamId, UserId};
 use crate::mysql_client::MySqlClient;
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -128,14 +128,14 @@ impl AudioTracksRepository {
         Ok(audio_tracks)
     }
 
-    pub async fn get_user_playlist_audio_tracks(
+    pub async fn get_user_stream_audio_tracks(
         &self,
         user_id: &UserId,
         stream_id: &StreamId,
         color: &Option<u32>,
         filter: &Option<String>,
         offset: &u32,
-    ) -> Result<Vec<PlaylistEntry>, Error> {
+    ) -> Result<Vec<StreamTracksEntry>, Error> {
         let mut builder = QueryBuilder::new("SELECT `r_tracks`.*, `r_link`.*");
 
         builder.push(" FROM `r_tracks` JOIN `r_link` ON `r_tracks`.`tid` = `r_link`.`track_id`");

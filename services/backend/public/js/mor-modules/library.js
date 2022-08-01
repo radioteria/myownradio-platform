@@ -570,13 +570,7 @@
                     method: "GET",
                     url: "/radio-manager/api/v0/tracks/",
                     busy: busy || false,
-                    params: {
-                        offset: offset,
-                        filter: filter,
-                        unused: unused,
-                        row: row,
-                        order: order
-                    }
+                    params: { offset, filter, unused, row, order }
                 });
                 return Response(result);
             },

@@ -14,8 +14,8 @@ pub(crate) struct Stream {
     #[serde(skip_serializing)]
     jingle_interval: i32,
     status: i32,
-    started: i32,
-    started_from: i32,
+    started: i64,
+    started_from: i64,
     access: String,
     category: i32,
     hashtags: String,

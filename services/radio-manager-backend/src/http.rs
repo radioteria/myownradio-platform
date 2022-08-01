@@ -35,6 +35,10 @@ pub(crate) fn run_server(
             .service(
                 web::scope("/v0/streams").route("/", web::get().to(user_streams::get_user_streams)),
             )
+            .service(
+                web::scope("/pub/v0/streams/{stream_id}")
+                    .route("/now-playing", web::get().to(todo!())),
+            )
     });
 
     Ok(server.workers(2).bind(bind_address)?.run())

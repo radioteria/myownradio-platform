@@ -3,7 +3,7 @@ use crate::models::types::{StreamId, UserId};
 use crate::mysql_client::MySqlClient;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use slog::{trace, Logger};
-use sqlx::{query, query_as, Database, Error, Execute, QueryBuilder, Row, Type};
+use sqlx::{query, query_as, Database, Error, Execute, MySql, QueryBuilder, Row, Type};
 use std::ops::Deref;
 
 // Copied from Defaults.php
@@ -57,6 +57,14 @@ impl SortingOrder {
             SortingOrder::Asc => "ASC",
         }
     }
+}
+
+fn create_stream_audio_tracks_builder() -> QueryBuilder<MySql> {
+    let mut builder = QueryBuilder::new("SELECT `r_tracks`.*, `r_link`.*");
+
+    builder.push(" FROM `r_tracks` JOIN `r_link` ON `r_tracks`.`tid` = `r_link`.`track_id`");
+
+    builder
 }
 
 #[derive(Clone)]
@@ -157,9 +165,7 @@ impl AudioTracksRepository {
         stream_id: &StreamId,
         time_offset: &i32,
     ) -> Result<Vec<StreamTracksEntry>, Error> {
-        let mut builder = QueryBuilder::new("SELECT `r_tracks`.*, `r_link`.*");
-
-        builder.push(" FROM `r_tracks` JOIN `r_link` ON `r_tracks`.`tid` = `r_link`.`track_id`");
+        let mut builder = create_stream_audio_tracks_builder();
 
         builder.push(" WHERE `r_link`.`stream_id` = ");
         builder.push_bind(stream_id.deref());
@@ -188,9 +194,7 @@ impl AudioTracksRepository {
         filter: &Option<String>,
         offset: &u32,
     ) -> Result<Vec<StreamTracksEntry>, Error> {
-        let mut builder = QueryBuilder::new("SELECT `r_tracks`.*, `r_link`.*");
-
-        builder.push(" FROM `r_tracks` JOIN `r_link` ON `r_tracks`.`tid` = `r_link`.`track_id`");
+        let mut builder = create_stream_audio_tracks_builder();
 
         builder.push(" WHERE `r_tracks`.`uid` = ");
         builder.push_bind(user_id.deref());

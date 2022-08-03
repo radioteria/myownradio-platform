@@ -59,10 +59,13 @@ impl SortingOrder {
     }
 }
 
-fn create_stream_audio_tracks_builder() -> QueryBuilder<MySql> {
+fn create_stream_audio_tracks_builder(stream_id: &StreamId) -> QueryBuilder<MySql> {
     let mut builder = QueryBuilder::new("SELECT `r_tracks`.*, `r_link`.*");
 
     builder.push(" FROM `r_tracks` JOIN `r_link` ON `r_tracks`.`tid` = `r_link`.`track_id`");
+
+    builder.push(" WHERE `r_link`.`stream_id` = ");
+    builder.push_bind(stream_id.deref());
 
     builder
 }
@@ -164,11 +167,9 @@ impl AudioTracksRepository {
         &self,
         stream_id: &StreamId,
         time_offset: &i32,
-    ) -> Result<Vec<StreamTracksEntry>, Error> {
-        let mut builder = create_stream_audio_tracks_builder();
+    ) -> Result<Option<(StreamTracksEntry, StreamTracksEntry)>, Error> {
+        let mut builder = create_stream_audio_tracks_builder(stream_id);
 
-        builder.push(" WHERE `r_link`.`stream_id` = ");
-        builder.push_bind(stream_id.deref());
         builder.push(" AND `r_link`.`time_offset` + `r_tracks`.`duration` >= ");
         builder.push_bind(time_offset);
 
@@ -178,12 +179,30 @@ impl AudioTracksRepository {
 
         trace!(self.logger, "Running SQL query: {}", query.sql());
 
-        let audio_tracks = query
+        let audio_tracks: Vec<StreamTracksEntry> = query
             .fetch_all(self.mysql_client.connection())
             .await
             .map(|rows| rows.into_iter().map(Into::into).collect())?;
 
-        Ok(audio_tracks)
+        match audio_tracks.len() {
+            0 => return Ok(None),
+            1 => {
+                // In case if it's the last track in tracklist, next track will be the first in tracklist
+                let mut builder = create_stream_audio_tracks_builder(stream_id);
+                builder.push(" ORDER BY `r_link`.`t_order` LIMIT 1");
+                let query = builder.build();
+
+                trace!(self.logger, "Running SQL query: {}", query.sql());
+
+                let audio_track = query
+                    .fetch_one(self.mysql_client.connection())
+                    .await
+                    .map(|row| row.into())?;
+
+                Ok(Some((audio_tracks[0].clone(), audio_track)))
+            }
+            _ => Ok(Some((audio_tracks[0].clone(), audio_tracks[1].clone()))),
+        }
     }
 
     pub async fn get_user_stream_audio_tracks(
@@ -194,13 +213,10 @@ impl AudioTracksRepository {
         filter: &Option<String>,
         offset: &u32,
     ) -> Result<Vec<StreamTracksEntry>, Error> {
-        let mut builder = create_stream_audio_tracks_builder();
+        let mut builder = create_stream_audio_tracks_builder(stream_id);
 
-        builder.push(" WHERE `r_tracks`.`uid` = ");
+        builder.push(" AND `r_tracks`.`uid` = ");
         builder.push_bind(user_id.deref());
-
-        builder.push(" AND `r_link`.`stream_id` = ");
-        builder.push_bind(stream_id.deref());
 
         if let Some(filter) = filter {
             if !filter.is_empty() {

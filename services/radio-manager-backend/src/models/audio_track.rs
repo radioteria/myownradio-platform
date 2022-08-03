@@ -16,7 +16,7 @@ pub(crate) struct AudioTrack {
     #[serde(skip_serializing)]
     ext: String,
     artist: String,
-    title: String,
+    pub(crate) title: String,
     album: String,
     track_number: String,
     genre: String,
@@ -80,11 +80,11 @@ pub(crate) struct StreamTracksEntry {
     stream_id: StreamId,
     #[serde(skip_serializing)]
     track_id: TrackId,
-    t_order: i16,
+    pub(crate) t_order: i16,
     unique_id: String,
-    time_offset: i32,
+    pub(crate) time_offset: i32,
     #[serde(flatten)]
-    track: AudioTrack,
+    pub(crate) track: AudioTrack,
 }
 
 impl From<MySqlRow> for StreamTracksEntry {

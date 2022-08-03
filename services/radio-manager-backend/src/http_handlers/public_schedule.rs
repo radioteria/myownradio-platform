@@ -65,6 +65,12 @@ pub(crate) async fn get_now_playing(
         }
     };
 
+    if tracks_duration == 0 {
+        error!(logger, "Stream tracklist has zero duration");
+
+        return HttpResponse::Conflict().finish();
+    }
+
     let time_offset = (time_offset_with_overflow % tracks_duration) as i32;
 
     let tracks = match audio_tracks_repository
@@ -79,5 +85,26 @@ pub(crate) async fn get_now_playing(
         }
     };
 
-    HttpResponse::Ok().json(tracks)
+    match tracks {
+        Some((current_track, next_track)) => HttpResponse::Ok().json(serde_json::json!({
+            "code": 1i32,
+            "message": "OK",
+            "data": {
+                "time": params.timestamp,
+                "playlist_position": current_track.t_order,
+                "current_track": {
+                    "offset": None,
+                    "title": current_track.track.title,
+                    "url": None,
+                    "duration": None
+                },
+                "next_track": {
+                    "title": next_track.track.title,
+                    "url": None,
+                    "duration": None
+                },
+            },
+        })),
+        None => HttpResponse::Conflict().finish(),
+    }
 }

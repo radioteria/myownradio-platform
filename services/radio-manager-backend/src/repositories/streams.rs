@@ -19,6 +19,30 @@ impl StreamsRepository {
         }
     }
 
+    pub(crate) async fn get_public_stream(
+        &self,
+        stream_id: &StreamId,
+    ) -> Result<Option<Stream>, Error> {
+        let mut builder = QueryBuilder::new("SELECT * FROM r_streams");
+
+        builder.push(" WHERE sid = ");
+        builder.push_bind(stream_id.deref());
+
+        builder.push(" OR permalink = ");
+        builder.push_bind(stream_id.deref());
+
+        let query = builder.build();
+
+        trace!(self.logger, "Running SQL query: {}", query.sql());
+
+        let stream = query
+            .fetch_optional(self.mysql_client.connection())
+            .await
+            .map(|row| row.map(Into::into))?;
+
+        Ok(stream)
+    }
+
     pub async fn get_single_user_stream(
         &self,
         user_id: &UserId,

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 
-#[derive(Serialize, Deserialize, Clone, sqlx::Type)]
+#[derive(Serialize, Deserialize, Clone, sqlx::Type, Debug)]
 #[sqlx(transparent)]
 pub(crate) struct UserId(i32);
 
@@ -19,7 +19,7 @@ impl From<i32> for UserId {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, sqlx::Type)]
+#[derive(Serialize, Deserialize, Clone, sqlx::Type, Debug)]
 #[sqlx(transparent)]
 pub(crate) struct TrackId(i32);
 
@@ -31,7 +31,7 @@ impl Deref for TrackId {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, sqlx::Type)]
+#[derive(Serialize, Deserialize, Clone, sqlx::Type, Debug)]
 #[sqlx(transparent)]
 pub(crate) struct FileId(i32);
 
@@ -43,7 +43,7 @@ impl Deref for FileId {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, sqlx::Type)]
+#[derive(Serialize, Deserialize, Clone, sqlx::Type, Debug)]
 #[sqlx(transparent)]
 pub(crate) struct StreamId(i32);
 

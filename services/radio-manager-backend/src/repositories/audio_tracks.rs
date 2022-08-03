@@ -3,7 +3,7 @@ use crate::models::types::{StreamId, UserId};
 use crate::mysql_client::MySqlClient;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use slog::{trace, Logger};
-use sqlx::{query, query_as, Database, Error, Execute, QueryBuilder, Type};
+use sqlx::{query, query_as, Database, Error, Execute, QueryBuilder, Row, Type};
 use std::ops::Deref;
 
 // Copied from Defaults.php
@@ -115,6 +115,58 @@ impl AudioTracksRepository {
         builder.push_bind(offset);
         builder.push(", ");
         builder.push_bind(DEFAULT_TRACKS_PER_REQUEST);
+
+        let query = builder.build();
+
+        trace!(self.logger, "Running SQL query: {}", query.sql());
+
+        let audio_tracks = query
+            .fetch_all(self.mysql_client.connection())
+            .await
+            .map(|rows| rows.into_iter().map(Into::into).collect())?;
+
+        Ok(audio_tracks)
+    }
+
+    pub(crate) async fn get_stream_audio_tracks_duration(
+        &self,
+        stream_id: &StreamId,
+    ) -> Result<i64, Error> {
+        let mut builder =
+            QueryBuilder::new("SELECT CAST(SUM(`r_tracks`.`duration`) AS SIGNED) as `sum`");
+
+        builder.push(" FROM `r_tracks` JOIN `r_link` ON `r_tracks`.`tid` = `r_link`.`track_id`");
+
+        builder.push(" WHERE `r_link`.`stream_id` = ");
+        builder.push_bind(stream_id.deref());
+
+        let query = builder.build();
+
+        trace!(self.logger, "Running SQL query: {}", query.sql());
+
+        let tracks_duration = query
+            .fetch_one(self.mysql_client.connection())
+            .await
+            .map(|row| row.get::<Option<i64>, _>("sum"))?;
+
+        Ok(tracks_duration.unwrap_or_default())
+    }
+
+    pub(crate) async fn get_current_and_next_audio_tracks_at_offset(
+        &self,
+        stream_id: &StreamId,
+        time_offset: &i32,
+    ) -> Result<Vec<StreamTracksEntry>, Error> {
+        let mut builder = QueryBuilder::new("SELECT `r_tracks`.*, `r_link`.*");
+
+        builder.push(" FROM `r_tracks` JOIN `r_link` ON `r_tracks`.`tid` = `r_link`.`track_id`");
+
+        builder.push(" WHERE `r_link`.`stream_id` = ");
+        builder.push_bind(stream_id.deref());
+        builder.push(" AND `r_link`.`time_offset` + `r_tracks`.`duration` >= ");
+        builder.push_bind(time_offset);
+
+        builder.push(" ORDER BY `r_link`.`t_order` LIMIT 2");
 
         let query = builder.build();
 

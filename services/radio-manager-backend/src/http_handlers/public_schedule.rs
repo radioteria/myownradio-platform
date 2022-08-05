@@ -93,15 +93,15 @@ pub(crate) async fn get_now_playing(
                 "time": params.timestamp,
                 "playlist_position": current_track.t_order,
                 "current_track": {
-                    "offset": None,
-                    "title": current_track.track.title,
-                    "url": None,
-                    "duration": None
+                    "offset": time_offset - current_track.time_offset,
+                    "title": current_track.track.artist_and_title(),
+                    "url": "",
+                    "duration": current_track.track.duration,
                 },
                 "next_track": {
-                    "title": next_track.track.title,
-                    "url": None,
-                    "duration": None
+                    "title": next_track.track.artist_and_title(),
+                    "url": "",
+                    "duration": next_track.track.duration,
                 },
             },
         })),

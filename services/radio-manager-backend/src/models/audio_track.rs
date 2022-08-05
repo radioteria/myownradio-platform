@@ -23,7 +23,7 @@ pub(crate) struct AudioTrack {
     date: String,
     cue: Option<String>,
     buy: Option<String>,
-    duration: i32,
+    pub(crate) duration: i32,
     #[serde(skip_serializing)]
     filesize: i32,
     color: i32,
@@ -69,6 +69,12 @@ impl From<MySqlRow> for AudioTrack {
             is_deleted: row.get("is_deleted"),
             deleted: row.get("deleted"),
         }
+    }
+}
+
+impl AudioTrack {
+    pub(crate) fn artist_and_title(&self) -> String {
+        format!("{} - {}", self.artist, self.title)
     }
 }
 

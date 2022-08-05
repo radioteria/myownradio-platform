@@ -60,10 +60,11 @@ impl SortingOrder {
 }
 
 fn create_stream_audio_tracks_builder(stream_id: &StreamId) -> QueryBuilder<MySql> {
-    let mut builder = QueryBuilder::new("SELECT `r_tracks`.*, `r_link`.*");
-
+    let mut builder = QueryBuilder::new(
+        "SELECT `r_tracks`.*, `r_link`.*, `fs_file`.`file_hash`, `fs_file`.`file_size`, `fs_file`.`file_extension`"
+    );
     builder.push(" FROM `r_tracks` JOIN `r_link` ON `r_tracks`.`tid` = `r_link`.`track_id`");
-
+    builder.push(" JOIN `fs_file` ON `fs_file`.`file_id` = `r_tracks`.`file_id`");
     builder.push(" WHERE `r_link`.`stream_id` = ");
     builder.push_bind(stream_id.deref());
 
@@ -94,7 +95,10 @@ impl AudioTracksRepository {
         sorting_column: &SortingColumn,
         sorting_order: &SortingOrder,
     ) -> Result<Vec<AudioTrack>, Error> {
-        let mut builder = QueryBuilder::new("SELECT * FROM r_tracks");
+        let mut builder = QueryBuilder::new(
+            "SELECT `r_tracks`.*, `fs_file`.`file_hash`, `fs_file`.`file_size`, `fs_file`.`file_extension`
+            FROM `r_tracks` JOIN `fs_file` ON `fs_file`.`file_id` = `r_tracks`.`file_id`",
+        );
 
         builder.push(" WHERE uid = ");
         builder.push_bind(user_id.deref());

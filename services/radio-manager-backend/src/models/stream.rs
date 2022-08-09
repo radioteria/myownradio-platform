@@ -33,8 +33,8 @@ pub(crate) struct Stream {
     created: i64,
 }
 
-impl From<MySqlRow> for Stream {
-    fn from(row: MySqlRow) -> Self {
+impl From<&MySqlRow> for Stream {
+    fn from(row: &MySqlRow) -> Self {
         Self {
             sid: row.get("sid"),
             uid: row.get("uid"),
@@ -45,7 +45,7 @@ impl From<MySqlRow> for Stream {
             status: match row.get("status") {
                 0 => StreamStatus::Stopped,
                 1 => StreamStatus::Playing,
-                status => StreamStatus::Unknown,
+                _ => StreamStatus::Unknown,
             },
             started: row.get("started"),
             started_from: row.get("started_from"),

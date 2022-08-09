@@ -138,7 +138,7 @@ impl AudioTracksRepository {
         let audio_tracks = query
             .fetch_all(self.mysql_client.connection())
             .await
-            .map(|rows| rows.into_iter().map(Into::into).collect())?;
+            .map(|rows| rows.iter().map(Into::into).collect())?;
 
         Ok(audio_tracks)
     }
@@ -186,7 +186,7 @@ impl AudioTracksRepository {
         let audio_tracks: Vec<StreamTracksEntry> = query
             .fetch_all(self.mysql_client.connection())
             .await
-            .map(|rows| rows.into_iter().map(Into::into).collect())?;
+            .map(|rows| rows.iter().map(Into::into).collect())?;
 
         match audio_tracks.len() {
             0 => return Ok(None),
@@ -201,7 +201,7 @@ impl AudioTracksRepository {
                 let audio_track = query
                     .fetch_one(self.mysql_client.connection())
                     .await
-                    .map(|row| row.into())?;
+                    .map(|ref row| row.into())?;
 
                 Ok(Some((audio_tracks[0].clone(), audio_track)))
             }
@@ -249,7 +249,7 @@ impl AudioTracksRepository {
         let audio_tracks = query
             .fetch_all(self.mysql_client.connection())
             .await
-            .map(|rows| rows.into_iter().map(Into::into).collect())?;
+            .map(|rows| rows.iter().map(Into::into).collect())?;
 
         Ok(audio_tracks)
     }

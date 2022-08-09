@@ -38,7 +38,7 @@ impl StreamsRepository {
         let stream = query
             .fetch_optional(self.mysql_client.connection())
             .await
-            .map(|row| row.map(Into::into))?;
+            .map(|row| row.map(|ref row| row.into()))?;
 
         Ok(stream)
     }
@@ -63,7 +63,7 @@ impl StreamsRepository {
         let streams = query
             .fetch_optional(self.mysql_client.connection())
             .await
-            .map(|row| row.map(Into::into))?;
+            .map(|row| row.map(|ref row| row.into()))?;
 
         Ok(streams)
     }
@@ -81,7 +81,7 @@ impl StreamsRepository {
         let streams = query
             .fetch_all(self.mysql_client.connection())
             .await
-            .map(|rows| rows.into_iter().map(Into::into).collect())?;
+            .map(|rows| rows.iter().map(Into::into).collect())?;
 
         Ok(streams)
     }

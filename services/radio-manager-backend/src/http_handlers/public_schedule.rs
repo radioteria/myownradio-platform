@@ -2,6 +2,7 @@ use crate::models::stream::StreamStatus;
 use crate::models::types::StreamId;
 use crate::repositories::audio_tracks::AudioTracksRepository;
 use crate::repositories::streams::StreamsRepository;
+use crate::Config;
 use actix_web::{web, HttpResponse, Responder};
 use serde::Deserialize;
 use slog::{error, Logger};
@@ -18,6 +19,7 @@ pub(crate) async fn get_now_playing(
     audio_tracks_repository: web::Data<AudioTracksRepository>,
     streams_repository: web::Data<StreamsRepository>,
     logger: web::Data<Logger>,
+    config: web::Data<Config>,
 ) -> impl Responder {
     let stream_id = path.into_inner();
     let params = query.into_inner();
@@ -95,12 +97,12 @@ pub(crate) async fn get_now_playing(
                 "current_track": {
                     "offset": time_offset - current_track.time_offset,
                     "title": current_track.track.artist_and_title(),
-                    "url": "",
+                    "url": format!("{}{}", config.file_server_endpoint, current_track.track.file_path()),
                     "duration": current_track.track.duration,
                 },
                 "next_track": {
                     "title": next_track.track.artist_and_title(),
-                    "url": "",
+                    "url": format!("{}{}", config.file_server_endpoint, next_track.track.file_path()),
                     "duration": next_track.track.duration,
                 },
             },

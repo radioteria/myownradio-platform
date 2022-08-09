@@ -90,6 +90,16 @@ impl AudioTrack {
     pub(crate) fn artist_and_title(&self) -> String {
         format!("{} - {}", self.artist, self.title)
     }
+
+    pub(crate) fn file_path(&self) -> String {
+        format!(
+            "{}/{}/{}.{}",
+            &self.file.hash[..1],
+            &self.file.hash[1..2],
+            self.file.hash,
+            self.file.extension
+        )
+    }
 }
 
 #[derive(Clone, Serialize)]

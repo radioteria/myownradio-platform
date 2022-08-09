@@ -128,6 +128,7 @@ services:
       - MYSQL_DATABASE=mor
       - MYSQL_USER=mor
       - MYSQL_PASSWORD=mor
+      - FILE_SERVER_ENDPOINT=http://file-server:80/
     labels:
       - traefik.enable=true
       - traefik.http.routers.radioManager.rule=PathPrefix(`/radio-manager/api/`)

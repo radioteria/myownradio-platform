@@ -74,7 +74,7 @@ async fn main() -> Result<()> {
         .await
         .expect("Unable to initialize MySQL client");
 
-    let http_server = run_server(&config.bind_address, &mysql_client, &logger)?;
+    let http_server = run_server(&config.bind_address, &mysql_client, &logger, &config)?;
 
     info!(logger, "Application started");
 

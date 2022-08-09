@@ -91,6 +91,7 @@ pub struct Config {
     pub shutdown_timeout: u64,
     #[serde(flatten)]
     pub mysql: MySqlConfig,
+    pub file_server_endpoint: String,
 }
 
 impl Config {

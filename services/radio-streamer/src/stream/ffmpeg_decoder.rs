@@ -90,6 +90,8 @@ pub(crate) fn make_ffmpeg_decoder(
             let mut stdout = stdout;
             let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
 
+            let mut channel_closed = false;
+
             while let Some(Ok(bytes)) = read_from_stdout(&mut stdout, &mut buffer).await {
                 if let Some(time) = start_time.take() {
                     metrics.update_audio_decoder_track_open_duration(time.elapsed());
@@ -101,6 +103,7 @@ pub(crate) fn make_ffmpeg_decoder(
                 let timed_bytes = Buffer::new(bytes, decoding_time, decoding_time + offset);
 
                 if let Err(_) = tx.send(timed_bytes).await {
+                    channel_closed = true;
                     break;
                 };
 
@@ -121,8 +124,14 @@ pub(crate) fn make_ffmpeg_decoder(
 
             if let Ok(exit_status) = status.await {
                 match exit_status.code() {
+                    Some(code) if code == 1 && channel_closed => {
+                        debug!(
+                            logger,
+                            "Decoder exited because output channel has been closed"
+                        );
+                    }
                     Some(code) if code != 0 => {
-                        warn!(logger, "Decoder existed with non-zero exit code"; "exit_code" => code);
+                        warn!(logger, "Decoder exited with non-zero exit code"; "exit_code" => code);
                     }
                     _ => (),
                 }

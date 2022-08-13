@@ -125,7 +125,6 @@ pub(crate) fn make_ffmpeg_encoder(
         let mut stdout = stdout;
         let mut src_sender = src_sender;
 
-        let logger = logger.clone();
         let metrics = metrics.clone();
         let format_string = format.to_string();
 
@@ -136,8 +135,7 @@ pub(crate) fn make_ffmpeg_encoder(
 
             let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
             while let Some(Ok(bytes)) = read_from_stdout(&mut stdout, &mut buffer).await {
-                if let Err(error) = src_sender.send(bytes).await {
-                    error!(logger, "Unable to send data from encoder: I/O error"; "error" => ?error);
+                if let Err(_) = src_sender.send(bytes).await {
                     break;
                 };
             }

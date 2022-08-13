@@ -1,4 +1,4 @@
-use crate::http_handlers::{public_schedule, user_audio_tracks, user_streams};
+use crate::http_handlers::{public_schedule, public_streams, user_audio_tracks, user_streams};
 use crate::{repositories, Config, MySqlClient};
 use actix_server::Server;
 use actix_web::web::Data;
@@ -39,10 +39,14 @@ pub(crate) fn run_server(
             .service(
                 web::scope("/v0/streams").route("/", web::get().to(user_streams::get_user_streams)),
             )
-            .service(web::scope("/pub/v0/streams/{stream_id}").route(
-                "/now-playing",
-                web::get().to(public_schedule::get_now_playing),
-            ))
+            .service(
+                web::scope("/pub/v0/streams/{stream_id}")
+                    .route(
+                        "/now-playing",
+                        web::get().to(public_schedule::get_now_playing),
+                    )
+                    .route("/info", web::get().to(public_streams::get_stream_info)),
+            )
     });
 
     Ok(server.workers(2).bind(bind_address)?.run())

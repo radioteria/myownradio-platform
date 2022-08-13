@@ -97,12 +97,12 @@ pub(crate) async fn get_now_playing(
                 "current_track": {
                     "offset": time_offset - current_track.time_offset,
                     "title": current_track.track.artist_and_title(),
-                    "url": format!("{}{}", config.file_server_endpoint, current_track.track.file_path()),
+                    "url": format!("{}audio/{}", config.file_server_endpoint, current_track.track.file_path()),
                     "duration": current_track.track.duration,
                 },
                 "next_track": {
                     "title": next_track.track.artist_and_title(),
-                    "url": format!("{}{}", config.file_server_endpoint, next_track.track.file_path()),
+                    "url": format!("{}audio/{}", config.file_server_endpoint, next_track.track.file_path()),
                     "duration": next_track.track.duration,
                 },
             },

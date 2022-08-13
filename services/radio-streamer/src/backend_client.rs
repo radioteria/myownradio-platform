@@ -88,7 +88,7 @@ impl BackendClient {
         let unixtime = time.duration_since(UNIX_EPOCH).unwrap().as_millis();
 
         let url = format!(
-            "{}/api/v1/stream/{}/now?client_id={}&ts={}",
+            "{}/pub/v0/streams/{}/now-playing?client_id={}&ts={}",
             &self.mor_backend_url,
             channel_id,
             &client_id.unwrap_or_default(),
@@ -148,10 +148,10 @@ impl BackendClient {
         let client = Client::default();
 
         let url = format!(
-            "{}/api/v0/stream/{}/info?client_id={}",
+            "{}/pub/v0/streams/{}/info?client_id={}",
             &self.mor_backend_url,
-            channel_id,
-            client_id.unwrap_or_default()
+            &channel_id,
+            &client_id.unwrap_or_default(),
         );
 
         let mut response = match client.get(url).timeout(Duration::from_secs(5)).send().await {

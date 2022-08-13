@@ -23,13 +23,16 @@ pub(crate) struct Stream {
     #[serde(skip_serializing)]
     jingle_interval: i32,
     pub(crate) status: StreamStatus,
+    #[serde(skip_serializing)]
     pub(crate) started: Option<i64>,
+    #[serde(skip_serializing)]
     pub(crate) started_from: Option<i64>,
     access: String,
     category: Option<i32>,
     hashtags: String,
     cover: Option<String>,
     cover_background: Option<String>,
+    #[serde(skip_serializing)]
     created: i64,
 }
 

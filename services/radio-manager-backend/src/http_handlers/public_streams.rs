@@ -25,6 +25,9 @@ pub(crate) async fn get_stream_info(
     HttpResponse::Ok().json(serde_json::json!({
         "code": 1i32,
         "message": "OK",
-        "data": stream
+        "data": {
+            "name": stream.name,
+            "status": stream.status,
+        }
     }))
 }

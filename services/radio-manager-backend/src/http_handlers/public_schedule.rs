@@ -1,12 +1,20 @@
+use crate::models::audio_track::StreamTracksEntry;
 use crate::models::stream::StreamStatus;
 use crate::models::types::StreamId;
 use crate::repositories::audio_tracks::AudioTracksRepository;
 use crate::repositories::streams::StreamsRepository;
 use crate::Config;
 use actix_web::{web, HttpResponse, Responder};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use slog::{error, Logger};
 use std::time::{SystemTime, UNIX_EPOCH};
+
+#[derive(Clone, Serialize)]
+pub(crate) struct StreamTracksEntryWithPosition {
+    #[serde(flatten)]
+    pub(crate) track_entry: StreamTracksEntry,
+    pub(crate) position: i32,
+}
 
 pub(crate) async fn get_current_track(
     path: web::Path<StreamId>,
@@ -85,10 +93,13 @@ pub(crate) async fn get_current_track(
     };
 
     match tracks {
-        Some((current_track, _next_track)) => HttpResponse::Ok().json(serde_json::json!({
+        Some((current_track, _)) => HttpResponse::Ok().json(serde_json::json!({
             "code": 1i32,
             "message": "OK",
-            "data": current_track,
+            "data": StreamTracksEntryWithPosition {
+                position: time_offset - current_track.time_offset,
+                track_entry: current_track,
+            },
         })),
         None => HttpResponse::Conflict().finish(),
     }

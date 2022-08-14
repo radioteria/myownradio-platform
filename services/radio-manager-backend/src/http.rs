@@ -45,6 +45,10 @@ pub(crate) fn run_server(
                         "/now-playing",
                         web::get().to(public_schedule::get_now_playing),
                     )
+                    .route(
+                        "/current-track",
+                        web::get().to(public_schedule::get_current_track),
+                    )
                     .route("/info", web::get().to(public_streams::get_stream_info)),
             )
     });

@@ -13,9 +13,7 @@
                 }));
             },
             nowPlaying: function (channel) {
-                return $api.get("/api/v2/schedule/onSingleChannel", $api.filter({
-                    stream_id: channel.sid
-                }));
+                return $api.get(`/radio-manager/api/pub/v0/streams/${channel.sid}/current-track`);
             }
         }
     }]);

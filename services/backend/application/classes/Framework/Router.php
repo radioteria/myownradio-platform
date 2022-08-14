@@ -83,13 +83,6 @@ class Router implements SingletonInterface, Injectable
     $sub->addRoute('getchunk/:id', 'content\\DoGetChunk');
     $sub->addRoute('flow', 'content\\DoGetAudioStream');
 
-    $sub->addRoute('api/v0/stream/:stream_id/now', 'api\\DoChannelNowPlaying');
-    $sub->addRoute('api/v1/stream/:stream_id/now', 'api\\DoChannelNowPlayingV1');
-    $sub->addRoute('api/v0/stream/:stream_id/info', 'api\\DoChannelInfo');
-
-    // @todo Move to external scheduler service
-    $sub->addRoute('api/v1/stream/:stream_id/current-track/&time', 'api\\statical\\DoCurrentTrack');
-
     // Default route
     $sub->defaultRoute(function (Router $router) {
       http_response_code(404);

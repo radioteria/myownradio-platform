@@ -133,6 +133,8 @@ services:
       - traefik.enable=true
       - traefik.http.routers.radioManager.rule=PathPrefix(`/radio-manager/api/`)
       - traefik.http.routers.radioManager.middlewares=stripprefixRadioManager,forwardauthRadioManager
+      - traefik.http.routers.radioManagerPub.rule=PathPrefix(`/radio-manager/api/pub`)
+      - traefik.http.routers.radioManagerPub.middlewares=stripprefixRadioManager
       - traefik.http.services.radioManager.loadbalancer.server.port=8080
       - traefik.http.middlewares.stripprefixRadioManager.stripprefix.prefixes=/radio-manager/api
       - traefik.http.middlewares.forwardauthRadioManager.forwardauth.address=http://backend-nginx:80/api/v2/me

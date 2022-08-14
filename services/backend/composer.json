@@ -3,6 +3,7 @@
   "description": "",
   "minimum-stability": "beta",
   "license": "proprietary",
+  "version": "1.0.0",
   "authors": [
     {
       "name": "Roman Gemini",

@@ -170,7 +170,7 @@ impl AudioTracksRepository {
     pub(crate) async fn get_current_and_next_audio_tracks_at_offset(
         &self,
         stream_id: &StreamId,
-        time_offset: &i32,
+        time_offset: &i64,
     ) -> Result<Option<(StreamTracksEntry, StreamTracksEntry)>, Error> {
         let mut builder = create_stream_audio_tracks_builder(stream_id);
 

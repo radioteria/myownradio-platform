@@ -1,5 +1,6 @@
 use crate::models::audio_track::StreamTracksEntry;
 use crate::models::stream::StreamStatus;
+use crate::models::stream_ext::{TimeOffsetComputationError, TimeOffsetWithOverflow};
 use crate::models::types::StreamId;
 use crate::repositories::audio_tracks::AudioTracksRepository;
 use crate::repositories::streams::StreamsRepository;
@@ -13,7 +14,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 pub(crate) struct StreamTracksEntryWithPosition {
     #[serde(flatten)]
     pub(crate) track_entry: StreamTracksEntry,
-    pub(crate) position: i32,
+    pub(crate) position: i64,
 }
 
 pub(crate) async fn get_current_track(
@@ -41,25 +42,6 @@ pub(crate) async fn get_current_track(
         }
     };
 
-    let time_offset_with_overflow = match (&stream.status, &stream.started, &stream.started_from) {
-        (&StreamStatus::Playing, Some(started), Some(started_from)) => {
-            (timestamp - started) + started_from
-        }
-        (&StreamStatus::Playing, _, _) => {
-            error!(logger, "Unexpected stream entity state"; "stream" => ?stream);
-
-            return HttpResponse::Conflict().finish();
-        }
-        (&StreamStatus::Stopped, _, _) => {
-            return HttpResponse::Conflict().finish();
-        }
-        (&StreamStatus::Unknown, _, _) => {
-            error!(logger, "Unknown stream status"; "status" => ?stream.status);
-
-            return HttpResponse::Conflict().finish();
-        }
-    };
-
     let tracks_duration = match audio_tracks_repository
         .get_stream_audio_tracks_duration(&stream_id)
         .await
@@ -78,7 +60,22 @@ pub(crate) async fn get_current_track(
         return HttpResponse::Conflict().finish();
     }
 
-    let time_offset = (time_offset_with_overflow % tracks_duration) as i32;
+    let time_offset = match stream.calculate_time_offset(&timestamp, &tracks_duration) {
+        Ok(offset) => offset,
+        Err(TimeOffsetComputationError::UnexpectedStreamState) => {
+            error!(logger, "Unexpected stream entity state"; "stream" => ?stream);
+
+            return HttpResponse::Conflict().finish();
+        }
+        Err(TimeOffsetComputationError::StreamStopped) => {
+            return HttpResponse::Conflict().finish();
+        }
+        Err(TimeOffsetComputationError::UnknownStreamStatus) => {
+            error!(logger, "Unknown stream status"; "status" => ?stream.status);
+
+            return HttpResponse::Conflict().finish();
+        }
+    };
 
     let tracks = match audio_tracks_repository
         .get_current_and_next_audio_tracks_at_offset(&stream_id, &time_offset)
@@ -97,7 +94,7 @@ pub(crate) async fn get_current_track(
             "code": 1i32,
             "message": "OK",
             "data": StreamTracksEntryWithPosition {
-                position: time_offset - current_track.time_offset,
+                position: time_offset - (current_track.time_offset as i64),
                 track_entry: current_track,
             },
         })),
@@ -134,25 +131,6 @@ pub(crate) async fn get_now_playing(
         }
     };
 
-    let time_offset_with_overflow = match (&stream.status, &stream.started, &stream.started_from) {
-        (&StreamStatus::Playing, Some(started), Some(started_from)) => {
-            (params.timestamp - started) + started_from
-        }
-        (&StreamStatus::Playing, _, _) => {
-            error!(logger, "Unexpected stream entity state"; "stream" => ?stream);
-
-            return HttpResponse::Conflict().finish();
-        }
-        (&StreamStatus::Stopped, _, _) => {
-            return HttpResponse::Conflict().finish();
-        }
-        (&StreamStatus::Unknown, _, _) => {
-            error!(logger, "Unknown stream status"; "status" => ?stream.status);
-
-            return HttpResponse::Conflict().finish();
-        }
-    };
-
     let tracks_duration = match audio_tracks_repository
         .get_stream_audio_tracks_duration(&stream_id)
         .await
@@ -171,7 +149,22 @@ pub(crate) async fn get_now_playing(
         return HttpResponse::Conflict().finish();
     }
 
-    let time_offset = (time_offset_with_overflow % tracks_duration) as i32;
+    let time_offset = match stream.calculate_time_offset(&params.timestamp, &tracks_duration) {
+        Ok(offset) => offset,
+        Err(TimeOffsetComputationError::UnexpectedStreamState) => {
+            error!(logger, "Unexpected stream entity state"; "stream" => ?stream);
+
+            return HttpResponse::Conflict().finish();
+        }
+        Err(TimeOffsetComputationError::StreamStopped) => {
+            return HttpResponse::Conflict().finish();
+        }
+        Err(TimeOffsetComputationError::UnknownStreamStatus) => {
+            error!(logger, "Unknown stream status"; "status" => ?stream.status);
+
+            return HttpResponse::Conflict().finish();
+        }
+    };
 
     let tracks = match audio_tracks_repository
         .get_current_and_next_audio_tracks_at_offset(&stream_id, &time_offset)
@@ -193,7 +186,7 @@ pub(crate) async fn get_now_playing(
                 "time": params.timestamp,
                 "playlist_position": current_track.t_order,
                 "current_track": {
-                    "offset": time_offset - current_track.time_offset,
+                    "offset": time_offset - (current_track.time_offset as i64),
                     "title": current_track.track.artist_and_title(),
                     "url": format!("{}audio/{}", config.file_server_endpoint, current_track.track.file_path()),
                     "duration": current_track.track.duration,

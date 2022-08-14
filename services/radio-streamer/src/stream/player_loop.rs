@@ -106,14 +106,18 @@ pub(crate) fn make_player_loop(
                     Some((url, track_decoder))
                         if left_offset < ALLOWED_DELAY && current_track_url == url =>
                     {
-                        warn!(logger, "We are late a bit"; "delay" => ?left_offset);
+                        if !left_offset.is_zero() {
+                            warn!(logger, "We are late a bit"; "delay" => ?left_offset);
+                        }
 
                         (current_track.title, track_decoder)
                     }
                     Some((url, track_decoder))
                         if right_offset < ALLOWED_DELAY && next_track_url == url =>
                     {
-                        warn!(logger, "We are soon a bit"; "advance" => ?right_offset);
+                        if !right_offset.is_zero() {
+                            warn!(logger, "We are soon a bit"; "advance" => ?right_offset);
+                        }
 
                         (next_track.title, track_decoder)
                     }

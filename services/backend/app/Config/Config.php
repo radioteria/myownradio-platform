@@ -13,6 +13,7 @@ class Config implements Injectable, SingletonInterface
     use Singleton;
 
     private string $radioStreamerEndpoint;
+    private string $radioStreamerInternalEndpoint;
     private string $radioStreamerToken;
 
     private string $facebookAppId;
@@ -31,6 +32,7 @@ class Config implements Injectable, SingletonInterface
 
     private function __construct(
         string $radioStreamerEndpoint,
+        string $radioStreamerInternalEndpoint,
         string $radioStreamerToken,
         string $facebookAppId,
         string $facebookAppSecret,
@@ -42,6 +44,7 @@ class Config implements Injectable, SingletonInterface
         string $fileServerOwnAddress
     ) {
         $this->radioStreamerEndpoint = $radioStreamerEndpoint;
+        $this->radioStreamerInternalEndpoint = $radioStreamerInternalEndpoint;
         $this->radioStreamerToken = $radioStreamerToken;
 
         $this->facebookAppId = $facebookAppId;
@@ -62,11 +65,12 @@ class Config implements Injectable, SingletonInterface
     public static function fromEnv(): Config
     {
         $radioStreamerEndpoint = env("RADIO_STREAMER_ENDPOINT");
+        $radioStreamerInternalEndpoint = env("RADIO_STREAMER_INTERNAL_ENDPOINT");
         $radioStreamerToken = env("RADIO_STREAMER_TOKEN");
 
-        if ($radioStreamerEndpoint === null || $radioStreamerToken === null) {
+        if ($radioStreamerEndpoint === null || $radioStreamerInternalEndpoint === null || $radioStreamerToken === null) {
             throw new ConfigException(
-                'Environment variables "RADIO_STREAMER_ENDPOINT" and "RADIO_STREAMER_TOKEN" are required for operation'
+                'Environment variables "RADIO_STREAMER_ENDPOINT", "RADIO_STREAMER_INTERNAL_ENDPOINT" and "RADIO_STREAMER_TOKEN" are required for operation'
             );
         }
 
@@ -109,6 +113,7 @@ class Config implements Injectable, SingletonInterface
 
         return new static(
             $radioStreamerEndpoint,
+            $radioStreamerInternalEndpoint,
             $radioStreamerToken,
             $facebookAppId,
             $facebookAppSecret,
@@ -124,6 +129,11 @@ class Config implements Injectable, SingletonInterface
     public function getRadioStreamerEndpoint(): string
     {
         return $this->radioStreamerEndpoint;
+    }
+
+    public function getRadioStreamerInternalEndpoint(): string
+    {
+        return $this->radioStreamerInternalEndpoint;
     }
 
     public function getRadioStreamerToken(): string

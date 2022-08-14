@@ -422,7 +422,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface
             });
 
 
-        if ($notify == true) {
+        if ($notify === true) {
             $this->notifyStreamers();
         }
 
@@ -461,4 +461,4 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface
         return $query->fetchObject($query, null, StreamTrack::className());
     }
 
-} 
+}

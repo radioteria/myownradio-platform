@@ -123,7 +123,11 @@ pub(crate) fn make_player_loop(
                     }
                     _ => match make_ffmpeg_decoder(
                         &current_track.url,
-                        &current_track.offset,
+                        &(if current_track.offset < ALLOWED_DELAY {
+                            Duration::default()
+                        } else {
+                            current_track.offset
+                        }),
                         &path_to_ffmpeg,
                         &logger,
                         &metrics,
@@ -193,6 +197,7 @@ pub(crate) fn make_player_loop(
                             .await
                     {
                         debug!(logger, "Sleep cancelled");
+                        break;
                     }
 
                     if let Ok(Some(())) = restart_rx.try_recv() {

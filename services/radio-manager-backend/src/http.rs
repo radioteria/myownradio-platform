@@ -1,4 +1,6 @@
-use crate::http_handlers::{public_schedule, public_streams, user_audio_tracks, user_streams};
+use crate::http_handlers::{
+    internal_radio_streamer, public_schedule, public_streams, user_audio_tracks, user_streams,
+};
 use crate::{repositories, Config, MySqlClient};
 use actix_server::Server;
 use actix_web::web::Data;
@@ -51,6 +53,10 @@ pub(crate) fn run_server(
                     )
                     .route("/info", web::get().to(public_streams::get_stream_info)),
             )
+            .service(web::scope("/radio-streamer").route(
+                "/streams/{stream_id}/skip-current-track",
+                web::post().to(internal_radio_streamer::skip_current_track),
+            ))
     });
 
     Ok(server.workers(2).bind(bind_address)?.run())

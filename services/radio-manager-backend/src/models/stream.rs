@@ -5,7 +5,7 @@ use sqlx::mysql::MySqlRow;
 use sqlx::{FromRow, Row};
 
 #[derive(Clone, Serialize_repr, Debug)]
-#[repr(i32)]
+#[repr(i64)]
 pub(crate) enum StreamStatus {
     Stopped,
     Playing,
@@ -21,14 +21,14 @@ pub(crate) struct Stream {
     permalink: Option<String>,
     info: String,
     #[serde(skip_serializing)]
-    jingle_interval: i32,
+    jingle_interval: i64,
     pub(crate) status: StreamStatus,
     #[serde(skip_serializing)]
     pub(crate) started: Option<i64>,
     #[serde(skip_serializing)]
     pub(crate) started_from: Option<i64>,
     access: String,
-    category: Option<i32>,
+    category: Option<i64>,
     hashtags: String,
     cover: Option<String>,
     cover_background: Option<String>,

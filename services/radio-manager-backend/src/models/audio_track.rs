@@ -6,7 +6,7 @@ use sqlx::{FromRow, Row};
 #[derive(Clone, Serialize)]
 pub(crate) struct AudioFile {
     hash: String,
-    size: i32,
+    size: i64,
     extension: String,
 }
 
@@ -30,22 +30,22 @@ pub(crate) struct AudioTrack {
     date: String,
     cue: Option<String>,
     buy: Option<String>,
-    pub(crate) duration: i32,
+    pub(crate) duration: i64,
     #[serde(skip_serializing)]
-    filesize: i32,
-    color: i32,
+    filesize: i64,
+    color: i64,
     #[serde(skip_serializing)]
-    uploaded: i32,
+    uploaded: i64,
     #[serde(skip_serializing)]
-    copy_of: Option<i32>,
+    copy_of: Option<i64>,
     #[serde(skip_serializing)]
-    used_count: i32,
+    used_count: i64,
     is_new: bool,
     can_be_shared: bool,
     #[serde(skip_serializing)]
     is_deleted: bool,
     #[serde(skip_serializing)]
-    deleted: Option<i32>,
+    deleted: Option<i64>,
     #[serde(skip_serializing)]
     file: AudioFile,
 }
@@ -105,16 +105,22 @@ impl AudioTrack {
 #[derive(Clone, Serialize)]
 pub(crate) struct StreamTracksEntry {
     #[serde(skip_serializing)]
-    id: i32,
+    id: i64,
     #[serde(skip_serializing)]
     stream_id: StreamId,
     #[serde(skip_serializing)]
     track_id: TrackId,
     pub(crate) t_order: i16,
     unique_id: String,
-    pub(crate) time_offset: i32,
+    pub(crate) time_offset: i64,
     #[serde(flatten)]
     pub(crate) track: AudioTrack,
+}
+
+impl StreamTracksEntry {
+    pub(crate) fn remainder_at_time_position(&self, time_position: i64) -> i64 {
+        self.track.duration - time_position - self.time_offset
+    }
 }
 
 impl From<&MySqlRow> for StreamTracksEntry {

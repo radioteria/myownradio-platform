@@ -1,4 +1,4 @@
-use crate::http_handlers::{
+use crate::http_server::handlers::{
     internal_radio_streamer, public_schedule, public_streams, user_audio_tracks, user_streams,
 };
 use crate::{repositories, Config, MySqlClient};

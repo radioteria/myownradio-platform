@@ -42,3 +42,6 @@ features = ["process"]
 [dependencies.serde]
 version = "1.0.123"
 features = ["derive"]
+
+[dependencies.thiserror]
+version = "1.0.32"

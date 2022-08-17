@@ -2,7 +2,7 @@ use crate::models::stream::Stream;
 use crate::models::types::{StreamId, UserId};
 use crate::MySqlClient;
 use slog::{trace, Logger};
-use sqlx::{Error, Execute, QueryBuilder};
+use sqlx::{query, Error, Execute, QueryBuilder};
 use std::ops::Deref;
 
 #[derive(Clone)]
@@ -84,5 +84,32 @@ impl StreamsRepository {
             .map(|rows| rows.iter().map(Into::into).collect())?;
 
         Ok(streams)
+    }
+
+    pub(crate) async fn seek_forward_user_stream(
+        &self,
+        stream_id: &StreamId,
+        seek_time: i64,
+    ) -> Result<(), Error> {
+        query("UPDATE `r_streams` SET `started_from` = `started_from` - ? WHERE `sid` = ? AND `started_from` IS NOT NULL")
+        .bind(seek_time).bind(stream_id)
+        .fetch_all(self.mysql_client.connection())
+        .await?;
+
+        Ok(())
+    }
+
+    pub(crate) async fn seek_backward_user_stream(
+        &self,
+        stream_id: &StreamId,
+        seek_time: i64,
+    ) -> Result<(), Error> {
+        query("UPDATE `r_streams` SET `started_from` = `started_from` + ? WHERE `sid` = ? AND `started_from` IS NOT NULL")
+        .bind(seek_time)
+        .bind(stream_id)
+        .fetch_all(self.mysql_client.connection())
+        .await?;
+
+        Ok(())
     }
 }

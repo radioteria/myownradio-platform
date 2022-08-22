@@ -6,7 +6,6 @@ services:
       - backend-nginx
     networks:
       - myownradio-dev
-    restart: unless-stopped
     image: library/traefik:2.4
     ports:
       - "40180:80"

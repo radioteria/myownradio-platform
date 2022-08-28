@@ -1,16 +1,16 @@
 use crate::system::which;
 use serde::Deserialize;
-use slog::Level;
+use tracing::Level;
 
 #[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
 #[serde(field_identifier, remote = "Level", untagged)]
 pub enum LogLevel {
-    Critical,
-    Error,
-    Warning,
-    Info,
-    Debug,
-    Trace,
+    ERROR,
+    WARN,
+    INFO,
+    DEBUG,
+    #[serde(rename = "Trace")]
+    TRACE,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
@@ -25,7 +25,7 @@ fn default_bind_address() -> String {
 }
 
 fn default_log_level() -> Level {
-    Level::Debug
+    Level::DEBUG
 }
 
 fn default_log_format() -> LogFormat {

@@ -1,21 +1,19 @@
 use crate::models::stream::Stream;
 use crate::models::types::{StreamId, UserId};
 use crate::MySqlClient;
-use slog::{trace, Logger};
 use sqlx::{query, Error, Execute, QueryBuilder};
 use std::ops::Deref;
+use tracing::trace;
 
 #[derive(Clone)]
 pub(crate) struct StreamsRepository {
     mysql_client: MySqlClient,
-    logger: Logger,
 }
 
 impl StreamsRepository {
-    pub(crate) fn new(mysql_client: &MySqlClient, logger: &Logger) -> Self {
+    pub(crate) fn new(mysql_client: &MySqlClient) -> Self {
         Self {
             mysql_client: mysql_client.clone(),
-            logger: logger.clone(),
         }
     }
 
@@ -33,7 +31,7 @@ impl StreamsRepository {
 
         let query = builder.build();
 
-        trace!(self.logger, "Running SQL query: {}", query.sql());
+        trace!("Running SQL query: {}", query.sql());
 
         let stream = query
             .fetch_optional(self.mysql_client.connection())
@@ -58,7 +56,7 @@ impl StreamsRepository {
 
         let query = builder.build();
 
-        trace!(self.logger, "Running SQL query: {}", query.sql());
+        trace!("Running SQL query: {}", query.sql());
 
         let streams = query
             .fetch_optional(self.mysql_client.connection())
@@ -76,7 +74,7 @@ impl StreamsRepository {
 
         let query = builder.build();
 
-        trace!(self.logger, "Running SQL query: {}", query.sql());
+        trace!("Running SQL query: {}", query.sql());
 
         let streams = query
             .fetch_all(self.mysql_client.connection())

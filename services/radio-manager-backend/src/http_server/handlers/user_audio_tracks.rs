@@ -4,7 +4,7 @@ use crate::repositories::streams::StreamsRepository;
 use actix_web::web::Data;
 use actix_web::{web, HttpResponse, Responder};
 use serde::Deserialize;
-use slog::{error, Logger};
+use tracing::error;
 
 #[derive(Deserialize)]
 pub(crate) struct GetUserAudioTracksQuery {
@@ -26,7 +26,6 @@ pub(crate) async fn get_user_audio_tracks(
     user_id: UserId,
     query: web::Query<GetUserAudioTracksQuery>,
     audio_tracks_repository: Data<AudioTracksRepository>,
-    logger: Data<Logger>,
 ) -> impl Responder {
     let params = query.into_inner();
 
@@ -50,7 +49,7 @@ pub(crate) async fn get_user_audio_tracks(
     {
         Ok(audio_tracks) => audio_tracks,
         Err(error) => {
-            error!(logger, "Failed to get user audio tracks"; "error" => ?error);
+            error!(?error, "Failed to get user audio tracks");
 
             return HttpResponse::InternalServerError().finish();
         }
@@ -79,7 +78,6 @@ pub(crate) async fn get_user_stream_audio_tracks(
     query: web::Query<GetUserPlaylistAudioTracksQuery>,
     audio_tracks_repository: Data<AudioTracksRepository>,
     streams_repository: Data<StreamsRepository>,
-    logger: Data<Logger>,
 ) -> impl Responder {
     let stream_id = path.into_inner();
     let params = query.into_inner();
@@ -97,7 +95,7 @@ pub(crate) async fn get_user_stream_audio_tracks(
         Ok(Some(_)) => (),
         Ok(None) => return HttpResponse::NotFound().finish(),
         Err(error) => {
-            error!(logger, "Failed to get user stream"; "error" => ?error);
+            error!(?error, "Failed to get user stream");
 
             return HttpResponse::InternalServerError().finish();
         }
@@ -115,7 +113,7 @@ pub(crate) async fn get_user_stream_audio_tracks(
     {
         Ok(audio_tracks) => audio_tracks,
         Err(error) => {
-            error!(logger, "Failed to get user playlist audio tracks"; "error" => ?error);
+            error!(?error, "Failed to get user playlist audio tracks");
 
             return HttpResponse::InternalServerError().finish();
         }

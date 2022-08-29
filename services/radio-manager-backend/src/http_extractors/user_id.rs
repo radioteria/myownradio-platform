@@ -4,17 +4,13 @@ use actix_web::error::ErrorBadRequest;
 use actix_web::web::Data;
 use actix_web::{FromRequest, HttpRequest};
 use futures::future::{err, ok, Ready};
-use slog::{warn, Logger};
+use tracing::warn;
 
 impl FromRequest for UserId {
     type Error = actix_web::Error;
     type Future = Ready<Result<Self, Self::Error>>;
 
     fn from_request(req: &HttpRequest, _payload: &mut Payload<BoxedPayloadStream>) -> Self::Future {
-        let logger = req
-            .app_data::<Data<Logger>>()
-            .expect("Unable to get logger from app data");
-
         ok(UserId::from(
             match req
                 .headers()
@@ -23,7 +19,7 @@ impl FromRequest for UserId {
             {
                 Some(Ok(Ok(header))) => header,
                 _ => {
-                    warn!(logger, "Bad request: no user-id header");
+                    warn!("Bad request: no user-id header");
                     return err(ErrorBadRequest(String::new()));
                 }
             },

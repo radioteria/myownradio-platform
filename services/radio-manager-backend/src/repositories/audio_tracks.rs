@@ -2,12 +2,12 @@ use crate::models::audio_track::{AudioTrack, StreamTracksEntry};
 use crate::models::types::{StreamId, UserId};
 use crate::mysql_client::MySqlClient;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use slog::{trace, Logger};
 use sqlx::{query, query_as, Database, Error, Execute, MySql, QueryBuilder, Row, Type};
 use std::ops::Deref;
+use tracing::trace;
 
 // Copied from Defaults.php
-const DEFAULT_TRACKS_PER_REQUEST: i32 = 50;
+const DEFAULT_TRACKS_PER_REQUEST: i64 = 50;
 
 #[derive(Serialize_repr, Deserialize_repr)]
 #[repr(u8)]
@@ -74,14 +74,12 @@ fn create_stream_audio_tracks_builder(stream_id: &StreamId) -> QueryBuilder<MySq
 #[derive(Clone)]
 pub(crate) struct AudioTracksRepository {
     mysql_client: MySqlClient,
-    logger: Logger,
 }
 
 impl AudioTracksRepository {
-    pub(crate) fn new(mysql_client: &MySqlClient, logger: &Logger) -> Self {
+    pub(crate) fn new(mysql_client: &MySqlClient) -> Self {
         Self {
             mysql_client: mysql_client.clone(),
-            logger: logger.clone(),
         }
     }
 
@@ -133,7 +131,7 @@ impl AudioTracksRepository {
 
         let query = builder.build();
 
-        trace!(self.logger, "Running SQL query: {}", query.sql());
+        trace!("Running SQL query: {}", query.sql());
 
         let audio_tracks = query
             .fetch_all(self.mysql_client.connection())
@@ -157,7 +155,7 @@ impl AudioTracksRepository {
 
         let query = builder.build();
 
-        trace!(self.logger, "Running SQL query: {}", query.sql());
+        trace!("Running SQL query: {}", query.sql());
 
         let tracks_duration = query
             .fetch_one(self.mysql_client.connection())
@@ -165,6 +163,32 @@ impl AudioTracksRepository {
             .map(|row| row.get::<Option<i64>, _>("sum"))?;
 
         Ok(tracks_duration.unwrap_or_default())
+    }
+
+    pub(crate) async fn get_audio_track_at_offset(
+        &self,
+        stream_id: &StreamId,
+        time_offset: &i64,
+    ) -> Result<Option<StreamTracksEntry>, Error> {
+        let tracks_duration = match self.get_stream_audio_tracks_duration(stream_id).await? {
+            0 => return Ok(None),
+            duration => duration,
+        };
+
+        let mut builder = create_stream_audio_tracks_builder(stream_id);
+
+        builder.push(" AND `r_link`.`time_offset` + `r_tracks`.`duration` >= ");
+        builder.push_bind(time_offset % tracks_duration);
+        builder.push(" ORDER BY `r_link`.`t_order` LIMIT 1");
+
+        let query = builder.build();
+
+        trace!("Running SQL query: {}", query.sql());
+
+        query
+            .fetch_optional(self.mysql_client.connection())
+            .await
+            .map(|row| row.as_ref().map(Into::into))
     }
 
     pub(crate) async fn get_current_and_next_audio_tracks_at_offset(
@@ -181,7 +205,7 @@ impl AudioTracksRepository {
 
         let query = builder.build();
 
-        trace!(self.logger, "Running SQL query: {}", query.sql());
+        trace!("Running SQL query: {}", query.sql());
 
         let audio_tracks: Vec<StreamTracksEntry> = query
             .fetch_all(self.mysql_client.connection())
@@ -196,7 +220,7 @@ impl AudioTracksRepository {
                 builder.push(" ORDER BY `r_link`.`t_order` LIMIT 1");
                 let query = builder.build();
 
-                trace!(self.logger, "Running SQL query: {}", query.sql());
+                trace!("Running SQL query: {}", query.sql());
 
                 let audio_track = query
                     .fetch_one(self.mysql_client.connection())
@@ -244,7 +268,7 @@ impl AudioTracksRepository {
 
         let query = builder.build();
 
-        trace!(self.logger, "Running SQL query: {}", query.sql());
+        trace!("Running SQL query: {}", query.sql());
 
         let audio_tracks = query
             .fetch_all(self.mysql_client.connection())

@@ -5,10 +5,11 @@ use crate::models::types::StreamId;
 use crate::repositories::audio_tracks::AudioTracksRepository;
 use crate::repositories::streams::StreamsRepository;
 use crate::Config;
+use actix_web::middleware::Logger;
 use actix_web::{web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
-use slog::{error, Logger};
 use std::time::{SystemTime, UNIX_EPOCH};
+use tracing::error;
 
 #[derive(Clone, Serialize)]
 pub(crate) struct StreamTracksEntryWithPosition {
@@ -21,7 +22,6 @@ pub(crate) async fn get_current_track(
     path: web::Path<StreamId>,
     audio_tracks_repository: web::Data<AudioTracksRepository>,
     streams_repository: web::Data<StreamsRepository>,
-    logger: web::Data<Logger>,
     config: web::Data<Config>,
 ) -> impl Responder {
     let stream_id = path.into_inner();
@@ -36,7 +36,7 @@ pub(crate) async fn get_current_track(
             return HttpResponse::NotFound().finish();
         }
         Err(error) => {
-            error!(logger, "Unable to get stream information"; "error" => ?error);
+            error!(?error, "Unable to get stream information");
 
             return HttpResponse::InternalServerError().finish();
         }
@@ -46,24 +46,23 @@ pub(crate) async fn get_current_track(
         .get_stream_audio_tracks_duration(&stream_id)
         .await
     {
+        Ok(0) => {
+            error!("Stream tracks list has zero duration");
+
+            return HttpResponse::Conflict().finish();
+        }
         Ok(tracks_duration) => tracks_duration,
         Err(error) => {
-            error!(logger, "Unable to count stream tracks duration"; "error" => ?error);
+            error!(?error, "Unable to count stream tracks duration");
 
             return HttpResponse::InternalServerError().finish();
         }
     };
 
-    if tracks_duration == 0 {
-        error!(logger, "Stream tracklist has zero duration");
-
-        return HttpResponse::Conflict().finish();
-    }
-
     let time_offset = match stream.calculate_time_offset(&timestamp, &tracks_duration) {
         Ok(offset) => offset,
         Err(TimeOffsetComputationError::UnexpectedStreamState) => {
-            error!(logger, "Unexpected stream entity state"; "stream" => ?stream);
+            error!(?stream, "Unexpected stream entity state");
 
             return HttpResponse::Conflict().finish();
         }
@@ -71,7 +70,7 @@ pub(crate) async fn get_current_track(
             return HttpResponse::Conflict().finish();
         }
         Err(TimeOffsetComputationError::UnknownStreamStatus) => {
-            error!(logger, "Unknown stream status"; "status" => ?stream.status);
+            error!(?stream.status, "Unknown stream status");
 
             return HttpResponse::Conflict().finish();
         }
@@ -83,7 +82,7 @@ pub(crate) async fn get_current_track(
     {
         Ok(tracks) => tracks,
         Err(error) => {
-            error!(logger, "Unable to get stream information"; "error" => ?error);
+            error!(?error, "Unable to get stream information");
 
             return HttpResponse::InternalServerError().finish();
         }
@@ -113,7 +112,6 @@ pub(crate) async fn get_now_playing(
     query: web::Query<GetNowPlayingQuery>,
     audio_tracks_repository: web::Data<AudioTracksRepository>,
     streams_repository: web::Data<StreamsRepository>,
-    logger: web::Data<Logger>,
     config: web::Data<Config>,
 ) -> impl Responder {
     let stream_id = path.into_inner();
@@ -125,7 +123,7 @@ pub(crate) async fn get_now_playing(
             return HttpResponse::NotFound().finish();
         }
         Err(error) => {
-            error!(logger, "Unable to get stream information"; "error" => ?error);
+            error!(?error, "Unable to get stream information");
 
             return HttpResponse::InternalServerError().finish();
         }
@@ -135,24 +133,23 @@ pub(crate) async fn get_now_playing(
         .get_stream_audio_tracks_duration(&stream_id)
         .await
     {
+        Ok(0) => {
+            error!("Stream tracks list has zero duration");
+
+            return HttpResponse::Conflict().finish();
+        }
         Ok(tracks_duration) => tracks_duration,
         Err(error) => {
-            error!(logger, "Unable to count stream tracks duration"; "error" => ?error);
+            error!(?error, "Unable to count stream tracks duration");
 
             return HttpResponse::InternalServerError().finish();
         }
     };
 
-    if tracks_duration == 0 {
-        error!(logger, "Stream tracklist has zero duration");
-
-        return HttpResponse::Conflict().finish();
-    }
-
     let time_offset = match stream.calculate_time_offset(&params.timestamp, &tracks_duration) {
         Ok(offset) => offset,
         Err(TimeOffsetComputationError::UnexpectedStreamState) => {
-            error!(logger, "Unexpected stream entity state"; "stream" => ?stream);
+            error!(?stream, "Unexpected stream entity state");
 
             return HttpResponse::Conflict().finish();
         }
@@ -160,7 +157,7 @@ pub(crate) async fn get_now_playing(
             return HttpResponse::Conflict().finish();
         }
         Err(TimeOffsetComputationError::UnknownStreamStatus) => {
-            error!(logger, "Unknown stream status"; "status" => ?stream.status);
+            error!(?stream.status, "Unknown stream status");
 
             return HttpResponse::Conflict().finish();
         }
@@ -172,7 +169,7 @@ pub(crate) async fn get_now_playing(
     {
         Ok(tracks) => tracks,
         Err(error) => {
-            error!(logger, "Unable to get stream information"; "error" => ?error);
+            error!(?error, "Unable to get stream information");
 
             return HttpResponse::InternalServerError().finish();
         }

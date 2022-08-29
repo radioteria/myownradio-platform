@@ -2,12 +2,11 @@ use crate::models::types::StreamId;
 use crate::repositories::streams::StreamsRepository;
 use crate::Config;
 use actix_web::{web, HttpResponse, Responder};
-use slog::{error, Logger};
+use tracing::error;
 
 pub(crate) async fn get_stream_info(
     path: web::Path<StreamId>,
     streams_repository: web::Data<StreamsRepository>,
-    logger: web::Data<Logger>,
     config: web::Data<Config>,
 ) -> impl Responder {
     let stream_id = path.into_inner();
@@ -16,7 +15,7 @@ pub(crate) async fn get_stream_info(
         Ok(Some(stream)) => stream,
         Ok(None) => return HttpResponse::NotFound().finish(),
         Err(error) => {
-            error!(logger, "Unable to get stream information"; "error" => ?error);
+            error!(?error, "Unable to get stream information");
 
             return HttpResponse::InternalServerError().finish();
         }

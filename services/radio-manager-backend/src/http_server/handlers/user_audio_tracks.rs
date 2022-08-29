@@ -1,6 +1,7 @@
 use crate::models::types::{StreamId, UserId};
 use crate::repositories::audio_tracks::{AudioTracksRepository, SortingColumn, SortingOrder};
-use crate::repositories::streams::StreamsRepository;
+use crate::repositories::streams;
+use crate::MySqlClient;
 use actix_web::web::Data;
 use actix_web::{web, HttpResponse, Responder};
 use serde::Deserialize;
@@ -77,7 +78,7 @@ pub(crate) async fn get_user_stream_audio_tracks(
     user_id: UserId,
     query: web::Query<GetUserPlaylistAudioTracksQuery>,
     audio_tracks_repository: Data<AudioTracksRepository>,
-    streams_repository: Data<StreamsRepository>,
+    mysql_client: Data<MySqlClient>,
 ) -> impl Responder {
     let stream_id = path.into_inner();
     let params = query.into_inner();
@@ -88,10 +89,7 @@ pub(crate) async fn get_user_stream_audio_tracks(
         Some(str) => str.parse::<u32>().ok(),
     };
 
-    match streams_repository
-        .get_single_user_stream(&user_id, &stream_id)
-        .await
-    {
+    match streams::get_single_user_stream(mysql_client.connection(), &user_id, &stream_id).await {
         Ok(Some(_)) => (),
         Ok(None) => return HttpResponse::NotFound().finish(),
         Err(error) => {

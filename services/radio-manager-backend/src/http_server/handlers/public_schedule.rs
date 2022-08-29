@@ -3,8 +3,8 @@ use crate::models::stream::StreamStatus;
 use crate::models::stream_ext::{TimeOffsetComputationError, TimeOffsetWithOverflow};
 use crate::models::types::StreamId;
 use crate::repositories::audio_tracks::AudioTracksRepository;
-use crate::repositories::streams::StreamsRepository;
-use crate::Config;
+use crate::repositories::streams;
+use crate::{Config, MySqlClient};
 use actix_web::middleware::Logger;
 use actix_web::{web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
@@ -21,8 +21,8 @@ pub(crate) struct StreamTracksEntryWithPosition {
 pub(crate) async fn get_current_track(
     path: web::Path<StreamId>,
     audio_tracks_repository: web::Data<AudioTracksRepository>,
-    streams_repository: web::Data<StreamsRepository>,
     config: web::Data<Config>,
+    mysql_client: web::Data<MySqlClient>,
 ) -> impl Responder {
     let stream_id = path.into_inner();
     let timestamp = SystemTime::now()
@@ -30,7 +30,7 @@ pub(crate) async fn get_current_track(
         .unwrap()
         .as_millis() as i64;
 
-    let stream = match streams_repository.get_public_stream(&stream_id).await {
+    let stream = match streams::get_public_stream(mysql_client.connection(), &stream_id).await {
         Ok(Some(stream)) => stream,
         Ok(None) => {
             return HttpResponse::NotFound().finish();
@@ -111,13 +111,13 @@ pub(crate) async fn get_now_playing(
     path: web::Path<StreamId>,
     query: web::Query<GetNowPlayingQuery>,
     audio_tracks_repository: web::Data<AudioTracksRepository>,
-    streams_repository: web::Data<StreamsRepository>,
     config: web::Data<Config>,
+    mysql_client: web::Data<MySqlClient>,
 ) -> impl Responder {
     let stream_id = path.into_inner();
     let params = query.into_inner();
 
-    let stream = match streams_repository.get_public_stream(&stream_id).await {
+    let stream = match streams::get_public_stream(mysql_client.connection(), &stream_id).await {
         Ok(Some(stream)) => stream,
         Ok(None) => {
             return HttpResponse::NotFound().finish();

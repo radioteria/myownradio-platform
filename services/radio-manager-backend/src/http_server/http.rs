@@ -16,7 +16,6 @@ pub(crate) fn run_server(
 
     let audio_tracks_repository =
         repositories::audio_tracks::AudioTracksRepository::new(&mysql_client);
-    let streams_repository = repositories::streams::StreamsRepository::new(&mysql_client);
 
     let config = config.clone();
 
@@ -24,7 +23,6 @@ pub(crate) fn run_server(
         App::new()
             .app_data(Data::new(mysql_client.clone()))
             .app_data(Data::new(audio_tracks_repository.clone()))
-            .app_data(Data::new(streams_repository.clone()))
             .app_data(Data::new(config.clone()))
             .service(
                 web::scope("/v0/tracks")

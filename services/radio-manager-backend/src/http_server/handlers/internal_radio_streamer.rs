@@ -1,8 +1,9 @@
 use crate::models::stream_ext::{TimeOffsetComputationError, TimeOffsetWithOverflow};
 use crate::models::types::StreamId;
 use crate::repositories::audio_tracks::AudioTracksRepository;
-use crate::repositories::streams::StreamsRepository;
+use crate::repositories::streams;
 use crate::utils::TeeResultUtils;
+use crate::MySqlClient;
 use actix_web::{web, HttpResponse, Responder};
 use serde::Deserialize;
 use sqlx::{query, Result};
@@ -17,14 +18,13 @@ pub(crate) struct SkipCurrentTrackQuery {
 pub(crate) async fn skip_current_track(
     query: web::Query<SkipCurrentTrackQuery>,
     path: web::Path<StreamId>,
-    streams_repository: web::Data<StreamsRepository>,
     audio_tracks_repository: web::Data<AudioTracksRepository>,
+    mysql_client: web::Data<MySqlClient>,
 ) -> impl Responder {
     let params = query.into_inner();
     let stream_id = path.into_inner();
 
-    let stream = match streams_repository
-        .get_public_stream(&stream_id)
+    let stream = match streams::get_public_stream(mysql_client.connection(), &stream_id)
         .await
         .tee_err(|error| {
             error!(?error, "Unable to get stream information");
@@ -91,13 +91,15 @@ pub(crate) async fn skip_current_track(
 
     let track_remainder = track_at_offset.remainder_at_time_position(time_offset);
 
-    if let Err(_) = streams_repository
-        .seek_forward_user_stream(&stream_id, track_remainder as i64)
-        .await
-        .tee_err(|error| {
-            error!(?error, "Unable to skip track at specified time offset");
-        })
-    {
+    if let Err(_) = streams::seek_forward_user_stream(
+        mysql_client.connection(),
+        &stream_id,
+        track_remainder as i64,
+    )
+    .await
+    .tee_err(|error| {
+        error!(?error, "Unable to skip track at specified time offset");
+    }) {
         return HttpResponse::InternalServerError().finish();
     }
 

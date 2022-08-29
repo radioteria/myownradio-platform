@@ -1,17 +1,17 @@
 use crate::models::types::StreamId;
-use crate::repositories::streams::StreamsRepository;
-use crate::Config;
+use crate::repositories::streams;
+use crate::{Config, MySqlClient};
 use actix_web::{web, HttpResponse, Responder};
 use tracing::error;
 
 pub(crate) async fn get_stream_info(
     path: web::Path<StreamId>,
-    streams_repository: web::Data<StreamsRepository>,
     config: web::Data<Config>,
+    mysql_client: web::Data<MySqlClient>,
 ) -> impl Responder {
     let stream_id = path.into_inner();
 
-    let stream = match streams_repository.get_public_stream(&stream_id).await {
+    let stream = match streams::get_public_stream(mysql_client.connection(), &stream_id).await {
         Ok(Some(stream)) => stream,
         Ok(None) => return HttpResponse::NotFound().finish(),
         Err(error) => {

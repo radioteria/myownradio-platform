@@ -1,7 +1,6 @@
 use crate::models::stream_ext::{TimeOffsetComputationError, TimeOffsetWithOverflow};
 use crate::models::types::StreamId;
-use crate::repositories::audio_tracks::AudioTracksRepository;
-use crate::repositories::streams;
+use crate::repositories::{audio_tracks, streams};
 use crate::utils::TeeResultUtils;
 use crate::MySqlClient;
 use actix_web::{web, HttpResponse, Responder};
@@ -18,7 +17,6 @@ pub(crate) struct SkipCurrentTrackQuery {
 pub(crate) async fn skip_current_track(
     query: web::Query<SkipCurrentTrackQuery>,
     path: web::Path<StreamId>,
-    audio_tracks_repository: web::Data<AudioTracksRepository>,
     mysql_client: web::Data<MySqlClient>,
 ) -> impl Responder {
     let params = query.into_inner();
@@ -38,22 +36,22 @@ pub(crate) async fn skip_current_track(
         }
     };
 
-    let tracks_duration = match audio_tracks_repository
-        .get_stream_audio_tracks_duration(&stream_id)
-        .await
-        .tee_err(|error| {
-            error!(?error, "Unable to count stream tracks duration");
-        }) {
-        Ok(0) => {
-            error!("Stream tracklist has zero duration");
+    let tracks_duration =
+        match audio_tracks::get_stream_audio_tracks_duration(mysql_client.connection(), &stream_id)
+            .await
+            .tee_err(|error| {
+                error!(?error, "Unable to count stream tracks duration");
+            }) {
+            Ok(0) => {
+                error!("Stream tracklist has zero duration");
 
-            return HttpResponse::Conflict().finish();
-        }
-        Ok(tracks_duration) => tracks_duration,
-        Err(error) => {
-            return HttpResponse::InternalServerError().finish();
-        }
-    };
+                return HttpResponse::Conflict().finish();
+            }
+            Ok(tracks_duration) => tracks_duration,
+            Err(error) => {
+                return HttpResponse::InternalServerError().finish();
+            }
+        };
 
     let time_offset = match stream.calculate_time_offset(&params.timestamp, &tracks_duration) {
         Ok(offset) => offset,
@@ -72,12 +70,15 @@ pub(crate) async fn skip_current_track(
         }
     };
 
-    let track_at_offset = match audio_tracks_repository
-        .get_audio_track_at_offset(&stream_id, &time_offset)
-        .await
-        .tee_err(|error| {
-            error!(?error, "Unable to get track at specified time offset");
-        }) {
+    let track_at_offset = match audio_tracks::get_audio_track_at_offset(
+        mysql_client.connection(),
+        &stream_id,
+        &time_offset,
+    )
+    .await
+    .tee_err(|error| {
+        error!(?error, "Unable to get track at specified time offset");
+    }) {
         Ok(Some(track_entry)) => track_entry,
         Ok(None) => {
             error!(?time_offset, "No track at specified time offset");

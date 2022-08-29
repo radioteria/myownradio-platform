@@ -2,8 +2,7 @@ use crate::models::audio_track::StreamTracksEntry;
 use crate::models::stream::StreamStatus;
 use crate::models::stream_ext::{TimeOffsetComputationError, TimeOffsetWithOverflow};
 use crate::models::types::StreamId;
-use crate::repositories::audio_tracks::AudioTracksRepository;
-use crate::repositories::streams;
+use crate::repositories::{audio_tracks, streams};
 use crate::{Config, MySqlClient};
 use actix_web::middleware::Logger;
 use actix_web::{web, HttpResponse, Responder};
@@ -20,7 +19,6 @@ pub(crate) struct StreamTracksEntryWithPosition {
 
 pub(crate) async fn get_current_track(
     path: web::Path<StreamId>,
-    audio_tracks_repository: web::Data<AudioTracksRepository>,
     config: web::Data<Config>,
     mysql_client: web::Data<MySqlClient>,
 ) -> impl Responder {
@@ -42,22 +40,22 @@ pub(crate) async fn get_current_track(
         }
     };
 
-    let tracks_duration = match audio_tracks_repository
-        .get_stream_audio_tracks_duration(&stream_id)
-        .await
-    {
-        Ok(0) => {
-            error!("Stream tracks list has zero duration");
+    let tracks_duration =
+        match audio_tracks::get_stream_audio_tracks_duration(mysql_client.connection(), &stream_id)
+            .await
+        {
+            Ok(0) => {
+                error!("Stream tracks list has zero duration");
 
-            return HttpResponse::Conflict().finish();
-        }
-        Ok(tracks_duration) => tracks_duration,
-        Err(error) => {
-            error!(?error, "Unable to count stream tracks duration");
+                return HttpResponse::Conflict().finish();
+            }
+            Ok(tracks_duration) => tracks_duration,
+            Err(error) => {
+                error!(?error, "Unable to count stream tracks duration");
 
-            return HttpResponse::InternalServerError().finish();
-        }
-    };
+                return HttpResponse::InternalServerError().finish();
+            }
+        };
 
     let time_offset = match stream.calculate_time_offset(&timestamp, &tracks_duration) {
         Ok(offset) => offset,
@@ -76,9 +74,12 @@ pub(crate) async fn get_current_track(
         }
     };
 
-    let tracks = match audio_tracks_repository
-        .get_current_and_next_audio_tracks_at_offset(&stream_id, &time_offset)
-        .await
+    let tracks = match audio_tracks::get_current_and_next_audio_tracks_at_offset(
+        mysql_client.connection(),
+        &stream_id,
+        &time_offset,
+    )
+    .await
     {
         Ok(tracks) => tracks,
         Err(error) => {
@@ -110,7 +111,6 @@ pub(crate) struct GetNowPlayingQuery {
 pub(crate) async fn get_now_playing(
     path: web::Path<StreamId>,
     query: web::Query<GetNowPlayingQuery>,
-    audio_tracks_repository: web::Data<AudioTracksRepository>,
     config: web::Data<Config>,
     mysql_client: web::Data<MySqlClient>,
 ) -> impl Responder {
@@ -129,22 +129,22 @@ pub(crate) async fn get_now_playing(
         }
     };
 
-    let tracks_duration = match audio_tracks_repository
-        .get_stream_audio_tracks_duration(&stream_id)
-        .await
-    {
-        Ok(0) => {
-            error!("Stream tracks list has zero duration");
+    let tracks_duration =
+        match audio_tracks::get_stream_audio_tracks_duration(mysql_client.connection(), &stream_id)
+            .await
+        {
+            Ok(0) => {
+                error!("Stream tracks list has zero duration");
 
-            return HttpResponse::Conflict().finish();
-        }
-        Ok(tracks_duration) => tracks_duration,
-        Err(error) => {
-            error!(?error, "Unable to count stream tracks duration");
+                return HttpResponse::Conflict().finish();
+            }
+            Ok(tracks_duration) => tracks_duration,
+            Err(error) => {
+                error!(?error, "Unable to count stream tracks duration");
 
-            return HttpResponse::InternalServerError().finish();
-        }
-    };
+                return HttpResponse::InternalServerError().finish();
+            }
+        };
 
     let time_offset = match stream.calculate_time_offset(&params.timestamp, &tracks_duration) {
         Ok(offset) => offset,
@@ -163,9 +163,12 @@ pub(crate) async fn get_now_playing(
         }
     };
 
-    let tracks = match audio_tracks_repository
-        .get_current_and_next_audio_tracks_at_offset(&stream_id, &time_offset)
-        .await
+    let tracks = match audio_tracks::get_current_and_next_audio_tracks_at_offset(
+        mysql_client.connection(),
+        &stream_id,
+        &time_offset,
+    )
+    .await
     {
         Ok(tracks) => tracks,
         Err(error) => {

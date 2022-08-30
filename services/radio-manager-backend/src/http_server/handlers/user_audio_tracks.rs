@@ -1,6 +1,8 @@
+use crate::http_server::response::Response;
 use crate::models::types::{StreamId, UserId};
-use crate::repositories::audio_tracks::{AudioTracksRepository, SortingColumn, SortingOrder};
-use crate::repositories::streams::StreamsRepository;
+use crate::repositories::audio_tracks::{SortingColumn, SortingOrder};
+use crate::repositories::{audio_tracks, streams};
+use crate::MySqlClient;
 use actix_web::web::Data;
 use actix_web::{web, HttpResponse, Responder};
 use serde::Deserialize;
@@ -25,8 +27,8 @@ pub(crate) struct GetUserAudioTracksQuery {
 pub(crate) async fn get_user_audio_tracks(
     user_id: UserId,
     query: web::Query<GetUserAudioTracksQuery>,
-    audio_tracks_repository: Data<AudioTracksRepository>,
-) -> impl Responder {
+    mysql_client: Data<MySqlClient>,
+) -> Response {
     let params = query.into_inner();
 
     let color_id = match params.color_id {
@@ -35,31 +37,33 @@ pub(crate) async fn get_user_audio_tracks(
         Some(str) => str.parse::<u32>().ok(),
     };
 
-    let audio_tracks = match audio_tracks_repository
-        .get_user_audio_tracks(
-            &user_id,
-            &color_id,
-            &params.filter,
-            &params.offset,
-            &params.unused,
-            &params.row,
-            &params.order,
-        )
-        .await
+    let mut conn = mysql_client.connection().await?;
+
+    let audio_tracks = match audio_tracks::get_user_audio_tracks(
+        &mut conn,
+        &user_id,
+        &color_id,
+        &params.filter,
+        &params.offset,
+        &params.unused,
+        &params.row,
+        &params.order,
+    )
+    .await
     {
         Ok(audio_tracks) => audio_tracks,
         Err(error) => {
             error!(?error, "Failed to get user audio tracks");
 
-            return HttpResponse::InternalServerError().finish();
+            return Ok(HttpResponse::InternalServerError().finish());
         }
     };
 
-    HttpResponse::Ok().json(serde_json::json!({
+    Ok(HttpResponse::Ok().json(serde_json::json!({
         "code": 1i32,
         "message": "OK",
         "data": audio_tracks,
-    }))
+    })))
 }
 
 #[derive(Deserialize)]
@@ -76,9 +80,8 @@ pub(crate) async fn get_user_stream_audio_tracks(
     path: web::Path<StreamId>,
     user_id: UserId,
     query: web::Query<GetUserPlaylistAudioTracksQuery>,
-    audio_tracks_repository: Data<AudioTracksRepository>,
-    streams_repository: Data<StreamsRepository>,
-) -> impl Responder {
+    mysql_client: Data<MySqlClient>,
+) -> Response {
     let stream_id = path.into_inner();
     let params = query.into_inner();
 
@@ -88,40 +91,39 @@ pub(crate) async fn get_user_stream_audio_tracks(
         Some(str) => str.parse::<u32>().ok(),
     };
 
-    match streams_repository
-        .get_single_user_stream(&user_id, &stream_id)
-        .await
-    {
+    let mut conn = mysql_client.connection().await?;
+
+    match streams::get_single_user_stream(&mut conn, &user_id, &stream_id).await {
         Ok(Some(_)) => (),
-        Ok(None) => return HttpResponse::NotFound().finish(),
+        Ok(None) => return Ok(HttpResponse::NotFound().finish()),
         Err(error) => {
             error!(?error, "Failed to get user stream");
 
-            return HttpResponse::InternalServerError().finish();
+            return Ok(HttpResponse::InternalServerError().finish());
         }
     }
 
-    let audio_tracks = match audio_tracks_repository
-        .get_user_stream_audio_tracks(
-            &user_id,
-            &stream_id,
-            &color_id,
-            &params.filter,
-            &params.offset,
-        )
-        .await
+    let audio_tracks = match audio_tracks::get_user_stream_audio_tracks(
+        &mut conn,
+        &user_id,
+        &stream_id,
+        &color_id,
+        &params.filter,
+        &params.offset,
+    )
+    .await
     {
         Ok(audio_tracks) => audio_tracks,
         Err(error) => {
             error!(?error, "Failed to get user playlist audio tracks");
 
-            return HttpResponse::InternalServerError().finish();
+            return Ok(HttpResponse::InternalServerError().finish());
         }
     };
 
-    HttpResponse::Ok().json(serde_json::json!({
+    Ok(HttpResponse::Ok().json(serde_json::json!({
         "code": 1i32,
         "message": "OK",
         "data": audio_tracks,
-    }))
+    })))
 }

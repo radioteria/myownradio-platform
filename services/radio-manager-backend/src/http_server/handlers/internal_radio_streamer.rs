@@ -1,3 +1,4 @@
+use crate::http_server::response::Response;
 use crate::models::stream_ext::{TimeOffsetComputationError, TimeOffsetWithOverflow};
 use crate::models::types::StreamId;
 use crate::repositories::{audio_tracks, streams};
@@ -18,39 +19,34 @@ pub(crate) async fn skip_current_track(
     query: web::Query<SkipCurrentTrackQuery>,
     path: web::Path<StreamId>,
     mysql_client: web::Data<MySqlClient>,
-) -> impl Responder {
+) -> Response {
     let params = query.into_inner();
     let stream_id = path.into_inner();
+    let mut transaction = mysql_client.transaction().await?;
 
-    let stream = match streams::get_public_stream(mysql_client.connection(), &stream_id)
+    let stream = match streams::get_public_stream(&mut transaction, &stream_id)
         .await
         .tee_err(|error| {
             error!(?error, "Unable to get stream information");
-        }) {
-        Ok(Some(stream)) => stream,
-        Ok(None) => {
-            return HttpResponse::NotFound().finish();
-        }
-        Err(error) => {
-            return HttpResponse::InternalServerError().finish();
+        })? {
+        Some(stream) => stream,
+        None => {
+            return Ok(HttpResponse::NotFound().finish());
         }
     };
 
     let tracks_duration =
-        match audio_tracks::get_stream_audio_tracks_duration(mysql_client.connection(), &stream_id)
+        match audio_tracks::get_stream_audio_tracks_duration(&mut transaction, &stream_id)
             .await
             .tee_err(|error| {
                 error!(?error, "Unable to count stream tracks duration");
-            }) {
-            Ok(0) => {
+            })? {
+            0 => {
                 error!("Stream tracklist has zero duration");
 
-                return HttpResponse::Conflict().finish();
+                return Ok(HttpResponse::Conflict().finish());
             }
-            Ok(tracks_duration) => tracks_duration,
-            Err(error) => {
-                return HttpResponse::InternalServerError().finish();
-            }
+            tracks_duration => tracks_duration,
         };
 
     let time_offset = match stream.calculate_time_offset(&params.timestamp, &tracks_duration) {
@@ -58,51 +54,41 @@ pub(crate) async fn skip_current_track(
         Err(TimeOffsetComputationError::UnexpectedStreamState) => {
             error!(?stream, "Unexpected stream entity state");
 
-            return HttpResponse::Conflict().finish();
+            return Ok(HttpResponse::Conflict().finish());
         }
         Err(TimeOffsetComputationError::StreamStopped) => {
-            return HttpResponse::Conflict().finish();
+            return Ok(HttpResponse::Conflict().finish());
         }
         Err(TimeOffsetComputationError::UnknownStreamStatus) => {
             error!(?stream.status, "Unknown stream status");
 
-            return HttpResponse::Conflict().finish();
+            return Ok(HttpResponse::Conflict().finish());
         }
     };
 
-    let track_at_offset = match audio_tracks::get_audio_track_at_offset(
-        mysql_client.connection(),
-        &stream_id,
-        &time_offset,
-    )
-    .await
-    .tee_err(|error| {
-        error!(?error, "Unable to get track at specified time offset");
-    }) {
-        Ok(Some(track_entry)) => track_entry,
-        Ok(None) => {
-            error!(?time_offset, "No track at specified time offset");
+    let track_at_offset =
+        match audio_tracks::get_audio_track_at_offset(&mut transaction, &stream_id, &time_offset)
+            .await
+            .tee_err(|error| {
+                error!(?error, "Unable to get track at specified time offset");
+            })? {
+            Some(track_entry) => track_entry,
+            None => {
+                error!(?time_offset, "No track at specified time offset");
 
-            return HttpResponse::Conflict().finish();
-        }
-        Err(error) => {
-            return HttpResponse::InternalServerError().finish();
-        }
-    };
+                return Ok(HttpResponse::Conflict().finish());
+            }
+        };
 
     let track_remainder = track_at_offset.remainder_at_time_position(time_offset);
 
-    if let Err(_) = streams::seek_forward_user_stream(
-        mysql_client.connection(),
-        &stream_id,
-        track_remainder as i64,
-    )
-    .await
-    .tee_err(|error| {
-        error!(?error, "Unable to skip track at specified time offset");
-    }) {
-        return HttpResponse::InternalServerError().finish();
-    }
+    streams::seek_forward_user_stream(&mut transaction, &stream_id, track_remainder as i64)
+        .await
+        .tee_err(|error| {
+            error!(?error, "Unable to skip track at specified time offset");
+        })?;
 
-    HttpResponse::Ok().finish()
+    transaction.commit().await?;
+
+    Ok(HttpResponse::Ok().finish())
 }

@@ -1,16 +1,14 @@
 use crate::models::stream::Stream;
 use crate::models::types::{StreamId, UserId};
-use sqlx::{query, Error, Execute, Executor, MySql, QueryBuilder};
-use std::ops::Deref;
+use crate::mysql_client::MySqlConnection;
+use sqlx::{query, Error, Execute, MySql, QueryBuilder};
+use std::ops::{Deref, DerefMut};
 use tracing::trace;
 
-pub(crate) async fn get_public_stream<'e, E>(
-    executor: E,
+pub(crate) async fn get_public_stream(
+    conn: &mut MySqlConnection,
     stream_id: &StreamId,
-) -> Result<Option<Stream>, Error>
-where
-    E: Executor<'e, Database = MySql>,
-{
+) -> Result<Option<Stream>, Error> {
     let mut builder = QueryBuilder::new("SELECT * FROM r_streams");
 
     builder.push(" WHERE sid = ");
@@ -24,21 +22,18 @@ where
     trace!("Running SQL query: {}", query.sql());
 
     let stream = query
-        .fetch_optional(executor)
+        .fetch_optional(conn.deref_mut())
         .await
         .map(|row| row.map(|ref row| row.into()))?;
 
     Ok(stream)
 }
 
-pub(crate) async fn get_single_user_stream<'e, E>(
-    executor: E,
+pub(crate) async fn get_single_user_stream(
+    conn: &mut MySqlConnection,
     user_id: &UserId,
     stream_id: &StreamId,
-) -> Result<Option<Stream>, Error>
-where
-    E: Executor<'e, Database = MySql>,
-{
+) -> Result<Option<Stream>, Error> {
     let mut builder = QueryBuilder::new("SELECT * FROM r_streams");
 
     builder.push(" WHERE uid = ");
@@ -52,20 +47,17 @@ where
     trace!("Running SQL query: {}", query.sql());
 
     let streams = query
-        .fetch_optional(executor)
+        .fetch_optional(conn.deref_mut())
         .await
         .map(|row| row.map(|ref row| row.into()))?;
 
     Ok(streams)
 }
 
-pub(crate) async fn get_user_streams<'e, E>(
-    executor: E,
+pub(crate) async fn get_user_streams(
+    conn: &mut MySqlConnection,
     user_id: &UserId,
-) -> Result<Vec<Stream>, Error>
-where
-    E: Executor<'e, Database = MySql>,
-{
+) -> Result<Vec<Stream>, Error> {
     let mut builder = QueryBuilder::new("SELECT * FROM r_streams");
 
     builder.push(" WHERE uid = ");
@@ -76,41 +68,35 @@ where
     trace!("Running SQL query: {}", query.sql());
 
     let streams = query
-        .fetch_all(executor)
+        .fetch_all(conn.deref_mut())
         .await
         .map(|rows| rows.iter().map(Into::into).collect())?;
 
     Ok(streams)
 }
 
-pub(crate) async fn seek_forward_user_stream<'e, E>(
-    executor: E,
+pub(crate) async fn seek_forward_user_stream(
+    conn: &mut MySqlConnection,
     stream_id: &StreamId,
     seek_time: i64,
-) -> Result<(), Error>
-where
-    E: Executor<'e, Database = MySql>,
-{
+) -> Result<(), Error> {
     query("UPDATE `r_streams` SET `started_from` = `started_from` - ? WHERE `sid` = ? AND `started_from` IS NOT NULL")
         .bind(seek_time).bind(stream_id)
-        .fetch_all(executor)
+        .fetch_all(conn.deref_mut())
         .await?;
 
     Ok(())
 }
 
-pub(crate) async fn seek_backward_user_stream<'e, E>(
-    executor: E,
+pub(crate) async fn seek_backward_user_stream(
+    conn: &mut MySqlConnection,
     stream_id: &StreamId,
     seek_time: i64,
-) -> Result<(), Error>
-where
-    E: Executor<'e, Database = MySql>,
-{
+) -> Result<(), Error> {
     query("UPDATE `r_streams` SET `started_from` = `started_from` + ? WHERE `sid` = ? AND `started_from` IS NOT NULL")
         .bind(seek_time)
         .bind(stream_id)
-        .fetch_all(executor)
+        .fetch_all(conn.deref_mut())
         .await?;
 
     Ok(())

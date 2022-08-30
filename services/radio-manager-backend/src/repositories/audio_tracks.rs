@@ -2,8 +2,11 @@ use crate::models::audio_track::{AudioTrack, StreamTracksEntry};
 use crate::models::types::{StreamId, UserId};
 use crate::mysql_client::MySqlClient;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use sqlx::{query, query_as, Database, Error, Execute, Executor, MySql, QueryBuilder, Row, Type};
-use std::ops::Deref;
+use sqlx::{
+    query, query_as, Acquire, Database, Error, Execute, MySql, MySqlConnection, MySqlExecutor,
+    QueryBuilder, Row, Type,
+};
+use std::ops::{Deref, DerefMut};
 use tracing::trace;
 
 // Copied from Defaults.php
@@ -71,8 +74,8 @@ fn create_stream_audio_tracks_builder(stream_id: &StreamId) -> QueryBuilder<MySq
     builder
 }
 
-pub(crate) async fn get_user_audio_tracks<'e, E>(
-    executor: E,
+pub(crate) async fn get_user_audio_tracks(
+    mut conn: &mut MySqlConnection,
     user_id: &UserId,
     color: &Option<u32>,
     filter: &Option<String>,
@@ -80,10 +83,7 @@ pub(crate) async fn get_user_audio_tracks<'e, E>(
     unused: &bool,
     sorting_column: &SortingColumn,
     sorting_order: &SortingOrder,
-) -> Result<Vec<AudioTrack>, Error>
-where
-    E: Executor<'e, Database = MySql>,
-{
+) -> Result<Vec<AudioTrack>, Error> {
     let mut builder = QueryBuilder::new(
         "SELECT `r_tracks`.*, `fs_file`.`file_hash`, `fs_file`.`file_size`, `fs_file`.`file_extension`
             FROM `r_tracks` JOIN `fs_file` ON `fs_file`.`file_id` = `r_tracks`.`file_id`",
@@ -125,20 +125,17 @@ where
     trace!("Running SQL query: {}", query.sql());
 
     let audio_tracks = query
-        .fetch_all(executor)
+        .fetch_all(conn.deref_mut())
         .await
         .map(|rows| rows.iter().map(Into::into).collect())?;
 
     Ok(audio_tracks)
 }
 
-pub(crate) async fn get_stream_audio_tracks_duration<'e, E>(
-    executor: E,
+pub(crate) async fn get_stream_audio_tracks_duration(
+    mut conn: &mut MySqlConnection,
     stream_id: &StreamId,
-) -> Result<i64, Error>
-where
-    E: Executor<'e, Database = MySql>,
-{
+) -> Result<i64, Error> {
     let mut builder =
         QueryBuilder::new("SELECT CAST(SUM(`r_tracks`.`duration`) AS SIGNED) as `sum`");
 
@@ -152,26 +149,22 @@ where
     trace!("Running SQL query: {}", query.sql());
 
     let tracks_duration = query
-        .fetch_one(executor)
+        .fetch_one(conn.deref_mut())
         .await
         .map(|row| row.get::<Option<i64>, _>("sum"))?;
 
     Ok(tracks_duration.unwrap_or_default())
 }
 
-pub(crate) async fn get_audio_track_at_offset<'e, E>(
-    executor: E,
+pub(crate) async fn get_audio_track_at_offset(
+    mut conn: &mut MySqlConnection,
     stream_id: &StreamId,
     time_offset: &i64,
-) -> Result<Option<StreamTracksEntry>, Error>
-where
-    E: Executor<'e, Database = MySql> + Clone,
-{
-    let tracks_duration =
-        match get_stream_audio_tracks_duration(executor.clone(), stream_id).await? {
-            0 => return Ok(None),
-            duration => duration,
-        };
+) -> Result<Option<StreamTracksEntry>, Error> {
+    let tracks_duration = match get_stream_audio_tracks_duration(&mut conn, stream_id).await? {
+        0 => return Ok(None),
+        duration => duration,
+    };
 
     let mut builder = create_stream_audio_tracks_builder(stream_id);
 
@@ -184,19 +177,16 @@ where
     trace!("Running SQL query: {}", query.sql());
 
     query
-        .fetch_optional(executor)
+        .fetch_optional(conn.deref_mut())
         .await
         .map(|row| row.as_ref().map(Into::into))
 }
 
-pub(crate) async fn get_current_and_next_audio_tracks_at_offset<'e, E>(
-    executor: E,
+pub(crate) async fn get_current_and_next_audio_tracks_at_offset(
+    mut conn: &mut MySqlConnection,
     stream_id: &StreamId,
     time_offset: &i64,
-) -> Result<Option<(StreamTracksEntry, StreamTracksEntry)>, Error>
-where
-    E: Executor<'e, Database = MySql> + Clone,
-{
+) -> Result<Option<(StreamTracksEntry, StreamTracksEntry)>, Error> {
     let mut builder = create_stream_audio_tracks_builder(stream_id);
 
     builder.push(" AND `r_link`.`time_offset` + `r_tracks`.`duration` >= ");
@@ -209,7 +199,7 @@ where
     trace!("Running SQL query: {}", query.sql());
 
     let audio_tracks: Vec<StreamTracksEntry> = query
-        .fetch_all(executor.clone())
+        .fetch_all(conn.deref_mut())
         .await
         .map(|rows| rows.iter().map(Into::into).collect())?;
 
@@ -223,7 +213,10 @@ where
 
             trace!("Running SQL query: {}", query.sql());
 
-            let audio_track = query.fetch_one(executor).await.map(|ref row| row.into())?;
+            let audio_track = query
+                .fetch_one(conn.deref_mut())
+                .await
+                .map(|ref row| row.into())?;
 
             Ok(Some((audio_tracks[0].clone(), audio_track)))
         }
@@ -231,17 +224,14 @@ where
     }
 }
 
-pub(crate) async fn get_user_stream_audio_tracks<'e, E>(
-    executor: E,
+pub(crate) async fn get_user_stream_audio_tracks(
+    mut conn: &mut MySqlConnection,
     user_id: &UserId,
     stream_id: &StreamId,
     color: &Option<u32>,
     filter: &Option<String>,
     offset: &u32,
-) -> Result<Vec<StreamTracksEntry>, Error>
-where
-    E: Executor<'e, Database = MySql>,
-{
+) -> Result<Vec<StreamTracksEntry>, Error> {
     let mut builder = create_stream_audio_tracks_builder(stream_id);
 
     builder.push(" AND `r_tracks`.`uid` = ");
@@ -272,7 +262,7 @@ where
     trace!("Running SQL query: {}", query.sql());
 
     let audio_tracks = query
-        .fetch_all(executor)
+        .fetch_all(conn.deref_mut())
         .await
         .map(|rows| rows.iter().map(Into::into).collect())?;
 

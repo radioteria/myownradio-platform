@@ -1,3 +1,4 @@
+use crate::http_server::response::Response;
 use crate::models::audio_track::StreamTracksEntry;
 use crate::models::stream::StreamStatus;
 use crate::models::stream_ext::{TimeOffsetComputationError, TimeOffsetWithOverflow};
@@ -21,39 +22,39 @@ pub(crate) async fn get_current_track(
     path: web::Path<StreamId>,
     config: web::Data<Config>,
     mysql_client: web::Data<MySqlClient>,
-) -> impl Responder {
+) -> Response {
     let stream_id = path.into_inner();
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_millis() as i64;
 
-    let stream = match streams::get_public_stream(mysql_client.connection(), &stream_id).await {
+    let mut conn = mysql_client.connection().await?;
+
+    let stream = match streams::get_public_stream(&mut conn, &stream_id).await {
         Ok(Some(stream)) => stream,
         Ok(None) => {
-            return HttpResponse::NotFound().finish();
+            return Ok(HttpResponse::NotFound().finish());
         }
         Err(error) => {
             error!(?error, "Unable to get stream information");
 
-            return HttpResponse::InternalServerError().finish();
+            return Ok(HttpResponse::InternalServerError().finish());
         }
     };
 
     let tracks_duration =
-        match audio_tracks::get_stream_audio_tracks_duration(mysql_client.connection(), &stream_id)
-            .await
-        {
+        match audio_tracks::get_stream_audio_tracks_duration(&mut conn, &stream_id).await {
             Ok(0) => {
                 error!("Stream tracks list has zero duration");
 
-                return HttpResponse::Conflict().finish();
+                return Ok(HttpResponse::Conflict().finish());
             }
             Ok(tracks_duration) => tracks_duration,
             Err(error) => {
                 error!(?error, "Unable to count stream tracks duration");
 
-                return HttpResponse::InternalServerError().finish();
+                return Ok(HttpResponse::InternalServerError().finish());
             }
         };
 
@@ -62,20 +63,20 @@ pub(crate) async fn get_current_track(
         Err(TimeOffsetComputationError::UnexpectedStreamState) => {
             error!(?stream, "Unexpected stream entity state");
 
-            return HttpResponse::Conflict().finish();
+            return Ok(HttpResponse::Conflict().finish());
         }
         Err(TimeOffsetComputationError::StreamStopped) => {
-            return HttpResponse::Conflict().finish();
+            return Ok(HttpResponse::Conflict().finish());
         }
         Err(TimeOffsetComputationError::UnknownStreamStatus) => {
             error!(?stream.status, "Unknown stream status");
 
-            return HttpResponse::Conflict().finish();
+            return Ok(HttpResponse::Conflict().finish());
         }
     };
 
     let tracks = match audio_tracks::get_current_and_next_audio_tracks_at_offset(
-        mysql_client.connection(),
+        &mut conn,
         &stream_id,
         &time_offset,
     )
@@ -85,20 +86,20 @@ pub(crate) async fn get_current_track(
         Err(error) => {
             error!(?error, "Unable to get stream information");
 
-            return HttpResponse::InternalServerError().finish();
+            return Ok(HttpResponse::InternalServerError().finish());
         }
     };
 
     match tracks {
-        Some((current_track, _)) => HttpResponse::Ok().json(serde_json::json!({
+        Some((current_track, _)) => Ok(HttpResponse::Ok().json(serde_json::json!({
             "code": 1i32,
             "message": "OK",
             "data": StreamTracksEntryWithPosition {
                 position: time_offset - (current_track.time_offset as i64),
                 track_entry: current_track,
             },
-        })),
-        None => HttpResponse::Conflict().finish(),
+        }))),
+        None => Ok(HttpResponse::Conflict().finish()),
     }
 }
 
@@ -113,36 +114,36 @@ pub(crate) async fn get_now_playing(
     query: web::Query<GetNowPlayingQuery>,
     config: web::Data<Config>,
     mysql_client: web::Data<MySqlClient>,
-) -> impl Responder {
+) -> Response {
     let stream_id = path.into_inner();
     let params = query.into_inner();
 
-    let stream = match streams::get_public_stream(mysql_client.connection(), &stream_id).await {
+    let mut conn = mysql_client.connection().await?;
+
+    let stream = match streams::get_public_stream(&mut conn, &stream_id).await {
         Ok(Some(stream)) => stream,
         Ok(None) => {
-            return HttpResponse::NotFound().finish();
+            return Ok(HttpResponse::NotFound().finish());
         }
         Err(error) => {
             error!(?error, "Unable to get stream information");
 
-            return HttpResponse::InternalServerError().finish();
+            return Ok(HttpResponse::InternalServerError().finish());
         }
     };
 
     let tracks_duration =
-        match audio_tracks::get_stream_audio_tracks_duration(mysql_client.connection(), &stream_id)
-            .await
-        {
+        match audio_tracks::get_stream_audio_tracks_duration(&mut conn, &stream_id).await {
             Ok(0) => {
                 error!("Stream tracks list has zero duration");
 
-                return HttpResponse::Conflict().finish();
+                return Ok(HttpResponse::Conflict().finish());
             }
             Ok(tracks_duration) => tracks_duration,
             Err(error) => {
                 error!(?error, "Unable to count stream tracks duration");
 
-                return HttpResponse::InternalServerError().finish();
+                return Ok(HttpResponse::InternalServerError().finish());
             }
         };
 
@@ -151,20 +152,20 @@ pub(crate) async fn get_now_playing(
         Err(TimeOffsetComputationError::UnexpectedStreamState) => {
             error!(?stream, "Unexpected stream entity state");
 
-            return HttpResponse::Conflict().finish();
+            return Ok(HttpResponse::Conflict().finish());
         }
         Err(TimeOffsetComputationError::StreamStopped) => {
-            return HttpResponse::Conflict().finish();
+            return Ok(HttpResponse::Conflict().finish());
         }
         Err(TimeOffsetComputationError::UnknownStreamStatus) => {
             error!(?stream.status, "Unknown stream status");
 
-            return HttpResponse::Conflict().finish();
+            return Ok(HttpResponse::Conflict().finish());
         }
     };
 
     let tracks = match audio_tracks::get_current_and_next_audio_tracks_at_offset(
-        mysql_client.connection(),
+        &mut conn,
         &stream_id,
         &time_offset,
     )
@@ -174,12 +175,12 @@ pub(crate) async fn get_now_playing(
         Err(error) => {
             error!(?error, "Unable to get stream information");
 
-            return HttpResponse::InternalServerError().finish();
+            return Ok(HttpResponse::InternalServerError().finish());
         }
     };
 
     match tracks {
-        Some((current_track, next_track)) => HttpResponse::Ok().json(serde_json::json!({
+        Some((current_track, next_track)) => Ok(HttpResponse::Ok().json(serde_json::json!({
             "code": 1i32,
             "message": "OK",
             "data": {
@@ -197,7 +198,7 @@ pub(crate) async fn get_now_playing(
                     "duration": next_track.track.duration,
                 },
             },
-        })),
-        None => HttpResponse::Conflict().finish(),
+        }))),
+        None => Ok(HttpResponse::Conflict().finish()),
     }
 }

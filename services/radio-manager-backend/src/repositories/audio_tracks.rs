@@ -1,10 +1,11 @@
 use crate::models::audio_track::{AudioTrack, StreamTracksEntry};
 use crate::models::types::{StreamId, UserId};
-use crate::mysql_client::MySqlClient;
+use crate::mysql_client::{MySqlClient, MySqlConnection};
+use crate::repositories::stream_audio_tracks::get_playlist_duration;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use sqlx::{
-    query, query_as, Acquire, Database, Error, Execute, MySql, MySqlConnection, MySqlExecutor,
-    QueryBuilder, Row, Type,
+    query, query_as, Acquire, Database, Error, Execute, MySql, MySqlExecutor, QueryBuilder, Row,
+    Type,
 };
 use std::ops::{Deref, DerefMut};
 use tracing::trace;
@@ -132,36 +133,12 @@ pub(crate) async fn get_user_audio_tracks(
     Ok(audio_tracks)
 }
 
-pub(crate) async fn get_stream_audio_tracks_duration(
-    mut conn: &mut MySqlConnection,
-    stream_id: &StreamId,
-) -> Result<i64, Error> {
-    let mut builder =
-        QueryBuilder::new("SELECT CAST(SUM(`r_tracks`.`duration`) AS SIGNED) as `sum`");
-
-    builder.push(" FROM `r_tracks` JOIN `r_link` ON `r_tracks`.`tid` = `r_link`.`track_id`");
-
-    builder.push(" WHERE `r_link`.`stream_id` = ");
-    builder.push_bind(stream_id.deref());
-
-    let query = builder.build();
-
-    trace!("Running SQL query: {}", query.sql());
-
-    let tracks_duration = query
-        .fetch_one(conn.deref_mut())
-        .await
-        .map(|row| row.get::<Option<i64>, _>("sum"))?;
-
-    Ok(tracks_duration.unwrap_or_default())
-}
-
 pub(crate) async fn get_audio_track_at_offset(
     mut conn: &mut MySqlConnection,
     stream_id: &StreamId,
     time_offset: &i64,
 ) -> Result<Option<StreamTracksEntry>, Error> {
-    let tracks_duration = match get_stream_audio_tracks_duration(&mut conn, stream_id).await? {
+    let tracks_duration = match get_playlist_duration(conn, stream_id).await? {
         0 => return Ok(None),
         duration => duration,
     };

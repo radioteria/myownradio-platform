@@ -3,7 +3,7 @@ use crate::models::audio_track::StreamTracksEntry;
 use crate::models::stream::StreamStatus;
 use crate::models::stream_ext::{TimeOffsetComputationError, TimeOffsetWithOverflow};
 use crate::models::types::StreamId;
-use crate::repositories::{audio_tracks, streams};
+use crate::repositories::{audio_tracks, stream_audio_tracks, streams};
 use crate::{Config, MySqlClient};
 use actix_web::middleware::Logger;
 use actix_web::{web, HttpResponse, Responder};
@@ -44,7 +44,7 @@ pub(crate) async fn get_current_track(
     };
 
     let tracks_duration =
-        match audio_tracks::get_stream_audio_tracks_duration(&mut conn, &stream_id).await {
+        match stream_audio_tracks::get_playlist_duration(&mut conn, &stream_id).await {
             Ok(0) => {
                 error!("Stream tracks list has zero duration");
 
@@ -133,7 +133,7 @@ pub(crate) async fn get_now_playing(
     };
 
     let tracks_duration =
-        match audio_tracks::get_stream_audio_tracks_duration(&mut conn, &stream_id).await {
+        match stream_audio_tracks::get_playlist_duration(&mut conn, &stream_id).await {
             Ok(0) => {
                 error!("Stream tracks list has zero duration");
 

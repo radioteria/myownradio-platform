@@ -1,7 +1,7 @@
 use crate::http_server::response::Response;
 use crate::models::stream_ext::{TimeOffsetComputationError, TimeOffsetWithOverflow};
 use crate::models::types::StreamId;
-use crate::repositories::{audio_tracks, streams};
+use crate::repositories::{audio_tracks, stream_audio_tracks, streams};
 use crate::utils::TeeResultUtils;
 use crate::MySqlClient;
 use actix_web::{web, HttpResponse, Responder};
@@ -36,7 +36,7 @@ pub(crate) async fn skip_current_track(
     };
 
     let tracks_duration =
-        match audio_tracks::get_stream_audio_tracks_duration(&mut transaction, &stream_id)
+        match stream_audio_tracks::get_playlist_duration(&mut transaction, &stream_id)
             .await
             .tee_err(|error| {
                 error!(?error, "Unable to count stream tracks duration");

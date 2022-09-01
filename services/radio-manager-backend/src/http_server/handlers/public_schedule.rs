@@ -75,7 +75,7 @@ pub(crate) async fn get_current_track(
         }
     };
 
-    let tracks = match audio_tracks::get_current_and_next_audio_tracks_at_offset(
+    let tracks = match stream_audio_tracks::get_current_and_next_audio_tracks_at_offset(
         &mut conn,
         &stream_id,
         &time_offset,
@@ -164,7 +164,7 @@ pub(crate) async fn get_now_playing(
         }
     };
 
-    let tracks = match audio_tracks::get_current_and_next_audio_tracks_at_offset(
+    let tracks = match stream_audio_tracks::get_current_and_next_audio_tracks_at_offset(
         &mut conn,
         &stream_id,
         &time_offset,

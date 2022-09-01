@@ -1,7 +1,7 @@
 use crate::http_server::response::Response;
 use crate::models::types::{StreamId, UserId};
 use crate::repositories::audio_tracks::{SortingColumn, SortingOrder};
-use crate::repositories::{audio_tracks, streams};
+use crate::repositories::{audio_tracks, stream_audio_tracks, streams};
 use crate::MySqlClient;
 use actix_web::web::Data;
 use actix_web::{web, HttpResponse, Responder};
@@ -103,7 +103,7 @@ pub(crate) async fn get_user_stream_audio_tracks(
         }
     }
 
-    let audio_tracks = match audio_tracks::get_user_stream_audio_tracks(
+    let audio_tracks = match stream_audio_tracks::get_user_stream_audio_tracks(
         &mut conn,
         &user_id,
         &stream_id,

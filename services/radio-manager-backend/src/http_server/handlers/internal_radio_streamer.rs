@@ -66,19 +66,22 @@ pub(crate) async fn skip_current_track(
         }
     };
 
-    let track_at_offset =
-        match audio_tracks::get_audio_track_at_offset(&mut transaction, &stream_id, &time_offset)
-            .await
-            .tee_err(|error| {
-                error!(?error, "Unable to get track at specified time offset");
-            })? {
-            Some(track_entry) => track_entry,
-            None => {
-                error!(?time_offset, "No track at specified time offset");
+    let track_at_offset = match stream_audio_tracks::get_audio_track_at_offset(
+        &mut transaction,
+        &stream_id,
+        &time_offset,
+    )
+    .await
+    .tee_err(|error| {
+        error!(?error, "Unable to get track at specified time offset");
+    })? {
+        Some(track_entry) => track_entry,
+        None => {
+            error!(?time_offset, "No track at specified time offset");
 
-                return Ok(HttpResponse::Conflict().finish());
-            }
-        };
+            return Ok(HttpResponse::Conflict().finish());
+        }
+    };
 
     let track_remainder = track_at_offset.remainder_at_time_position(time_offset);
 

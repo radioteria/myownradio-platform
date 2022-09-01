@@ -3,8 +3,8 @@ use crate::models::types::{StreamId, UserId};
 use crate::repositories::audio_tracks::{SortingColumn, SortingOrder};
 use crate::repositories::{audio_tracks, stream_audio_tracks, streams};
 use crate::MySqlClient;
-use actix_web::web::Data;
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::web::{Data, Form};
+use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use serde::Deserialize;
 use tracing::error;
 
@@ -126,4 +126,24 @@ pub(crate) async fn get_user_stream_audio_tracks(
         "message": "OK",
         "data": audio_tracks,
     })))
+}
+
+#[derive(Deserialize)]
+pub(crate) struct UploadedFile {}
+
+#[derive(Deserialize)]
+pub(crate) struct UploadAudioTrackForm {
+    #[serde(default)]
+    stream_id: Option<StreamId>,
+    #[serde(default)]
+    up_next: bool,
+    file: UploadedFile,
+}
+
+pub(crate) async fn upload_audio_track(
+    user_id: UserId,
+    form: Form<UploadAudioTrackForm>,
+    mysql_client: Data<MySqlClient>,
+) -> Response {
+    Ok(HttpResponse::Ok().finish())
 }

@@ -22,7 +22,8 @@ pub(crate) fn run_server(
             .app_data(Data::new(config.clone()))
             .service(
                 web::scope("/v0/tracks")
-                    .route("/", web::get().to(user_audio_tracks::get_user_audio_tracks)),
+                    .route("/", web::get().to(user_audio_tracks::get_user_audio_tracks))
+                    .route("/", web::post().to(user_audio_tracks::upload_audio_track)),
             )
             .service(web::scope("/v0/streams/{stream_id}/tracks").route(
                 "/",

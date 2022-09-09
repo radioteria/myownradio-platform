@@ -5,6 +5,7 @@ mod http_server;
 mod models;
 mod mysql_client;
 mod repositories;
+mod storage;
 mod system;
 mod utils;
 

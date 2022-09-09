@@ -1,7 +1,10 @@
 use crate::http_server::response::Response;
 use crate::models::types::{StreamId, UserId};
-use crate::repositories::audio_tracks::{SortingColumn, SortingOrder};
 use crate::repositories::{audio_tracks, stream_audio_tracks, streams};
+use crate::storage::db::repositories::user_tracks::{
+    get_user_tracks, SortingColumn, SortingOrder, UserTracksParams,
+};
+use crate::utils::TeeResultUtils;
 use crate::MySqlClient;
 use actix_web::web::{Data, Form};
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
@@ -39,30 +42,49 @@ pub(crate) async fn get_user_audio_tracks(
 
     let mut conn = mysql_client.connection().await?;
 
-    let audio_tracks = match audio_tracks::get_user_audio_tracks(
+    let rows = get_user_tracks(
         &mut conn,
         &user_id,
-        &color_id,
-        &params.filter,
+        &UserTracksParams {
+            color: color_id,
+            filter: params.filter,
+            sorting_column: params.row,
+            sorting_order: params.order,
+            unused: params.unused,
+        },
         &params.offset,
-        &params.unused,
-        &params.row,
-        &params.order,
     )
     .await
-    {
-        Ok(audio_tracks) => audio_tracks,
-        Err(error) => {
-            error!(?error, "Failed to get user audio tracks");
+    .tee_err(|error| {
+        error!(?error, "Failed to get user audio tracks from repository");
+    })?;
 
-            return Ok(HttpResponse::InternalServerError().finish());
-        }
-    };
+    let user_tracks: Vec<serde_json::Value> = rows
+        .into_iter()
+        .map(|row| {
+            serde_json::json!({
+                "album": row.track.album,
+                "artist": row.track.artist,
+                "buy": row.track.buy,
+                "can_be_shared": row.track.can_be_shared,
+                "color": row.track.color,
+                "cue": row.track.cue,
+                "date": row.track.date,
+                "duration": row.track.duration,
+                "filename": row.track.filename,
+                "genre": row.track.genre,
+                "is_new": row.track.is_new,
+                "tid": row.track.tid,
+                "title": row.track.title,
+                "track_number": row.track.track_number
+            })
+        })
+        .collect();
 
     Ok(HttpResponse::Ok().json(serde_json::json!({
         "code": 1i32,
         "message": "OK",
-        "data": audio_tracks,
+        "data": user_tracks,
     })))
 }
 

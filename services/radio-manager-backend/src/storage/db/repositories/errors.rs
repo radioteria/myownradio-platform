@@ -1,5 +1,7 @@
+#[derive(thiserror::Error, Debug)]
 pub(crate) enum RepositoryError {
-    DatabaseError(sqlx::Error),
+    #[error(transparent)]
+    DatabaseError(#[from] sqlx::Error),
 }
 
 pub(crate) type RepositoryResult<T> = Result<T, RepositoryError>;

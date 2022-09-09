@@ -1,2 +1,2 @@
 mod entities;
-mod repositories;
+pub(crate) mod repositories;

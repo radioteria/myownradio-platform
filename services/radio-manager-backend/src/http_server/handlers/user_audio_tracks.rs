@@ -1,8 +1,8 @@
 use crate::http_server::response::Response;
 use crate::models::types::{StreamId, UserId};
-use crate::repositories::{audio_tracks, stream_audio_tracks, streams};
+use crate::repositories::{stream_audio_tracks, streams};
 use crate::storage::db::repositories::user_tracks::{
-    get_user_tracks, SortingColumn, SortingOrder, UserTracksParams,
+    get_user_tracks, GetUserTracksParams, SortingColumn, SortingOrder,
 };
 use crate::utils::TeeResultUtils;
 use crate::MySqlClient;
@@ -45,7 +45,7 @@ pub(crate) async fn get_user_audio_tracks(
     let rows = get_user_tracks(
         &mut conn,
         &user_id,
-        &UserTracksParams {
+        &GetUserTracksParams {
             color: color_id,
             filter: params.filter,
             sorting_column: params.row,

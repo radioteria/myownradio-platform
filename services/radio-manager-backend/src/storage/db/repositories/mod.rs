@@ -1,5 +1,46 @@
+use crate::models::types::{FileId, TrackId, UserId};
+
 pub(crate) mod errors;
+pub(crate) mod user_stream_tracks;
 pub(crate) mod user_tracks;
+
+#[derive(sqlx::FromRow)]
+pub(crate) struct TrackRow {
+    pub(crate) tid: TrackId,
+    pub(crate) file_id: Option<FileId>,
+    pub(crate) uid: UserId,
+    pub(crate) filename: String,
+    pub(crate) hash: String,
+    pub(crate) ext: String,
+    pub(crate) artist: String,
+    pub(crate) title: String,
+    pub(crate) album: String,
+    pub(crate) track_number: String,
+    pub(crate) genre: String,
+    pub(crate) date: String,
+    pub(crate) cue: Option<String>,
+    pub(crate) buy: Option<String>,
+    pub(crate) duration: i64,
+    pub(crate) filesize: i64,
+    pub(crate) color: i64,
+    pub(crate) uploaded: i64,
+    pub(crate) copy_of: Option<i64>,
+    pub(crate) used_count: i64,
+    pub(crate) is_new: bool,
+    pub(crate) can_be_shared: bool,
+    pub(crate) is_deleted: bool,
+    pub(crate) deleted: Option<i64>,
+}
+
+#[derive(sqlx::FromRow)]
+pub(crate) struct FileRow {
+    pub(crate) file_id: FileId,
+    pub(crate) file_size: i64,
+    pub(crate) file_hash: String,
+    pub(crate) file_extension: String,
+    pub(crate) server_id: i32,
+    pub(crate) use_count: i32,
+}
 
 // Copied from Defaults.php
 pub(crate) const DEFAULT_TRACKS_PER_REQUEST: i64 = 50;

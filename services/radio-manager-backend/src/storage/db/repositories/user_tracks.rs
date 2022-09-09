@@ -1,56 +1,18 @@
 use crate::models::types::{FileId, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
-use crate::storage::db::repositories::DEFAULT_TRACKS_PER_REQUEST;
+use crate::storage::db::repositories::{FileRow, TrackRow, DEFAULT_TRACKS_PER_REQUEST};
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use sqlx::{Execute, FromRow, QueryBuilder, Type};
+use sqlx::{Execute, FromRow, QueryBuilder};
 use std::ops::{Deref, DerefMut};
 use tracing::trace;
 
-#[derive(FromRow, Type)]
-pub(crate) struct RTracksRow {
-    pub(crate) tid: TrackId,
-    pub(crate) file_id: Option<FileId>,
-    pub(crate) uid: UserId,
-    pub(crate) filename: String,
-    pub(crate) hash: String,
-    pub(crate) ext: String,
-    pub(crate) artist: String,
-    pub(crate) title: String,
-    pub(crate) album: String,
-    pub(crate) track_number: String,
-    pub(crate) genre: String,
-    pub(crate) date: String,
-    pub(crate) cue: Option<String>,
-    pub(crate) buy: Option<String>,
-    pub(crate) duration: i64,
-    pub(crate) filesize: i64,
-    pub(crate) color: i64,
-    pub(crate) uploaded: i64,
-    pub(crate) copy_of: Option<i64>,
-    pub(crate) used_count: i64,
-    pub(crate) is_new: bool,
-    pub(crate) can_be_shared: bool,
-    pub(crate) is_deleted: bool,
-    pub(crate) deleted: Option<i64>,
-}
-
-#[derive(FromRow, Type)]
-pub(crate) struct FsFileRow {
-    pub(crate) file_id: FileId,
-    pub(crate) file_size: i64,
-    pub(crate) file_hash: String,
-    pub(crate) file_extension: String,
-    pub(crate) server_id: i32,
-    pub(crate) use_count: i32,
-}
-
-#[derive(FromRow, Type)]
-pub(crate) struct RTracksFsFileMergedRow {
+#[derive(FromRow)]
+pub(crate) struct TrackFileMergedRow {
     #[sqlx(flatten)]
-    pub(crate) track: RTracksRow,
+    pub(crate) track: TrackRow,
     #[sqlx(flatten)]
-    pub(crate) file: FsFileRow,
+    pub(crate) file: FileRow,
 }
 
 #[derive(Serialize_repr, Deserialize_repr)]
@@ -103,11 +65,8 @@ impl SortingOrder {
     }
 }
 
-const USER_TRACKS_TABLE_NAME: &str = "r_tracks";
-const USER_FILES_TABLE_NAME: &str = "fs_file";
-
 #[derive(Default)]
-pub(crate) struct UserTracksParams {
+pub(crate) struct GetUserTracksParams {
     pub(crate) color: Option<u32>,
     pub(crate) filter: Option<String>,
     pub(crate) unused: bool,
@@ -118,9 +77,9 @@ pub(crate) struct UserTracksParams {
 pub(crate) async fn get_user_tracks(
     connection: &mut MySqlConnection,
     user_id: &UserId,
-    params: &UserTracksParams,
+    params: &GetUserTracksParams,
     offset: &u32,
-) -> RepositoryResult<Vec<RTracksFsFileMergedRow>> {
+) -> RepositoryResult<Vec<TrackFileMergedRow>> {
     let mut builder = QueryBuilder::new(
         r#"
 SELECT `r_tracks`.`tid`,
@@ -147,7 +106,6 @@ SELECT `r_tracks`.`tid`,
        `r_tracks`.`can_be_shared`,
        `r_tracks`.`is_deleted`,
        `r_tracks`.`deleted`,
-       `fs_file`.`file_id`,
        `fs_file`.`file_hash`,
        `fs_file`.`file_size`,
        `fs_file`.`file_extension`,
@@ -191,7 +149,7 @@ JOIN `fs_file` ON `fs_file`.`file_id` = `r_tracks`.`file_id`
     builder.push(", ");
     builder.push_bind(DEFAULT_TRACKS_PER_REQUEST);
 
-    let query = builder.build_query_as::<RTracksFsFileMergedRow>();
+    let query = builder.build_query_as::<TrackFileMergedRow>();
 
     trace!("Running SQL query: {}", query.sql());
 

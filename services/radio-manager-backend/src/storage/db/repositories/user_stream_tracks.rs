@@ -149,9 +149,10 @@ pub(crate) async fn get_current_and_next_stream_track_at_time_offset(
     builder.push_bind(stream_id.deref());
 
     builder.push(
-        " AND `r_link`.`time_offset` = 0 OR `r_link`.`time_offset` + `r_tracks`.`duration` > ",
+        " AND (`r_link`.`time_offset` = 0 OR `r_link`.`time_offset` + `r_tracks`.`duration` > ",
     );
     builder.push_bind(time_offset.as_millis() as i64);
+    builder.push(")");
 
     builder.push(" ORDER BY `r_link`.`t_order` DESC LIMIT 3");
 

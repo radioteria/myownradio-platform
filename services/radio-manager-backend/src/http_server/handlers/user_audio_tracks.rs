@@ -1,9 +1,11 @@
 use crate::http_server::response::Response;
 use crate::models::types::{StreamId, UserId};
 use crate::repositories::{stream_audio_tracks, streams};
-use crate::storage::db::repositories::user_tracks::{
-    get_user_tracks, GetUserTracksParams, SortingColumn, SortingOrder,
+use crate::storage::db::repositories::user_stream_tracks::{
+    get_user_stream_tracks, GetUserStreamTracksParams,
 };
+use crate::storage::db::repositories::user_tracks::{get_user_tracks, GetUserTracksParams};
+use crate::storage::db::repositories::{SortingColumn, SortingOrder};
 use crate::utils::TeeResultUtils;
 use crate::MySqlClient;
 use actix_web::web::{Data, Form};
@@ -42,7 +44,7 @@ pub(crate) async fn get_user_audio_tracks(
 
     let mut conn = mysql_client.connection().await?;
 
-    let rows = get_user_tracks(
+    let track_rows = get_user_tracks(
         &mut conn,
         &user_id,
         &GetUserTracksParams {
@@ -59,7 +61,7 @@ pub(crate) async fn get_user_audio_tracks(
         error!(?error, "Failed to get user audio tracks from repository");
     })?;
 
-    let user_tracks: Vec<serde_json::Value> = rows
+    let tracks_json: Vec<_> = track_rows
         .into_iter()
         .map(|row| {
             serde_json::json!({
@@ -84,7 +86,7 @@ pub(crate) async fn get_user_audio_tracks(
     Ok(HttpResponse::Ok().json(serde_json::json!({
         "code": 1i32,
         "message": "OK",
-        "data": user_tracks,
+        "data": tracks_json,
     })))
 }
 
@@ -125,28 +127,52 @@ pub(crate) async fn get_user_stream_audio_tracks(
         }
     }
 
-    let audio_tracks = match stream_audio_tracks::get_user_stream_audio_tracks(
+    let track_rows = get_user_stream_tracks(
         &mut conn,
-        &user_id,
         &stream_id,
-        &color_id,
-        &params.filter,
+        &GetUserStreamTracksParams {
+            color: color_id,
+            filter: params.filter,
+        },
         &params.offset,
     )
     .await
-    {
-        Ok(audio_tracks) => audio_tracks,
-        Err(error) => {
-            error!(?error, "Failed to get user playlist audio tracks");
+    .tee_err(|error| {
+        error!(
+            ?error,
+            "Failed to get user stream audio tracks from repository"
+        );
+    })?;
 
-            return Ok(HttpResponse::InternalServerError().finish());
-        }
-    };
+    let tracks_json: Vec<_> = track_rows
+        .into_iter()
+        .map(|row| {
+            serde_json::json!({
+                "t_order": row.link.t_order,
+                "unique_id": row.link.unique_id,
+                "time_offset": row.link.time_offset,
+                "album": row.track.album,
+                "artist": row.track.artist,
+                "buy": row.track.buy,
+                "can_be_shared": row.track.can_be_shared,
+                "color": row.track.color,
+                "cue": row.track.cue,
+                "date": row.track.date,
+                "duration": row.track.duration,
+                "filename": row.track.filename,
+                "genre": row.track.genre,
+                "is_new": row.track.is_new,
+                "tid": row.track.tid,
+                "title": row.track.title,
+                "track_number": row.track.track_number
+            })
+        })
+        .collect();
 
     Ok(HttpResponse::Ok().json(serde_json::json!({
         "code": 1i32,
         "message": "OK",
-        "data": audio_tracks,
+        "data": tracks_json,
     })))
 }
 

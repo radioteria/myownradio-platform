@@ -1,8 +1,9 @@
 use crate::models::types::{FileId, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
-use crate::storage::db::repositories::{FileRow, TrackRow, DEFAULT_TRACKS_PER_REQUEST};
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use crate::storage::db::repositories::{
+    FileRow, SortingColumn, SortingOrder, TrackRow, DEFAULT_TRACKS_PER_REQUEST,
+};
 use sqlx::{Execute, FromRow, QueryBuilder};
 use std::ops::{Deref, DerefMut};
 use tracing::trace;
@@ -15,57 +16,7 @@ pub(crate) struct TrackFileMergedRow {
     pub(crate) file: FileRow,
 }
 
-#[derive(Serialize_repr, Deserialize_repr)]
-#[repr(u8)]
-pub(crate) enum SortingColumn {
-    TrackId,
-    Title,
-    Artist,
-    Genre,
-    Duration,
-}
-
-impl Default for SortingColumn {
-    fn default() -> Self {
-        Self::TrackId
-    }
-}
-
-impl SortingColumn {
-    fn as_str(&self) -> &str {
-        match self {
-            SortingColumn::TrackId => "`r_tracks`.`tid`",
-            SortingColumn::Title => "`r_tracks`.`title`",
-            SortingColumn::Artist => "`r_tracks`.`artist`",
-            SortingColumn::Genre => "`r_tracks`.`genre`",
-            SortingColumn::Duration => "`r_tracks`.`duration`",
-        }
-    }
-}
-
-#[derive(Serialize_repr, Deserialize_repr)]
-#[repr(u8)]
-pub(crate) enum SortingOrder {
-    Desc,
-    Asc,
-}
-
-impl Default for SortingOrder {
-    fn default() -> Self {
-        Self::Desc
-    }
-}
-
-impl SortingOrder {
-    fn as_str(&self) -> &str {
-        match self {
-            SortingOrder::Desc => "DESC",
-            SortingOrder::Asc => "ASC",
-        }
-    }
-}
-
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub(crate) struct GetUserTracksParams {
     pub(crate) color: Option<u32>,
     pub(crate) filter: Option<String>,
@@ -74,6 +25,7 @@ pub(crate) struct GetUserTracksParams {
     pub(crate) sorting_order: SortingOrder,
 }
 
+#[tracing::instrument(err, skip(connection))]
 pub(crate) async fn get_user_tracks(
     connection: &mut MySqlConnection,
     user_id: &UserId,

@@ -154,13 +154,13 @@ pub(crate) async fn get_current_and_next_stream_track_at_time_offset(
     builder.push_bind(time_offset.as_millis() as i64);
     builder.push(")");
 
-    builder.push(" ORDER BY `r_link`.`t_order` DESC LIMIT 3");
+    builder.push(" ORDER BY `r_link`.`t_order` ASC LIMIT 3");
 
     let query = builder.build_query_as::<TrackFileLinkMergedRow>();
 
-    let tracks = query.fetch_all(connection.deref_mut()).await?;
+    let track_rows = query.fetch_all(connection.deref_mut()).await?;
 
-    match tracks.as_slice() {
+    match track_rows.as_slice() {
         [] => Ok(None),
         [curr] => {
             let track_time_offset = Duration::from_millis(curr.link.time_offset as u64);

@@ -7,6 +7,7 @@ use crate::repositories::{stream_audio_tracks, streams};
 use crate::storage::db::repositories::streams::get_stream_playlist_duration;
 use crate::storage::db::repositories::user_stream_tracks::{
     get_current_and_next_stream_track_at_time_offset, get_single_stream_track_at_time_offset,
+    TrackFileLinkMergedRow,
 };
 use crate::utils::TeeResultUtils;
 use crate::{Config, MySqlClient};
@@ -90,6 +91,20 @@ pub(crate) async fn get_current_track(
     Ok(HttpResponse::Conflict().finish())
 }
 
+fn get_artist_and_title(row: &TrackFileLinkMergedRow) -> String {
+    format!("{} - {}", row.track.artist, row.track.title)
+}
+
+fn get_file_path(row: &TrackFileLinkMergedRow) -> String {
+    format!(
+        "{}/{}/{}.{}",
+        &row.file.file_hash[..1],
+        &row.file.file_hash[1..2],
+        row.file.file_hash,
+        row.file.file_extension
+    )
+}
+
 #[derive(Deserialize)]
 pub(crate) struct GetNowPlayingQuery {
     #[serde(rename = "ts")]
@@ -105,87 +120,59 @@ pub(crate) async fn get_now_playing(
     let stream_id = path.into_inner();
     let params = query.into_inner();
 
-    let mut conn = mysql_client.connection().await?;
+    let mut connection = mysql_client.connection().await?;
 
-    let stream = match streams::get_public_stream(&mut conn, &stream_id).await {
-        Ok(Some(stream)) => stream,
-        Ok(None) => {
+    let stream = match streams::get_public_stream(&mut connection, &stream_id)
+        .await
+        .tee_err(|error| error!(?error, "Unable to get stream information"))?
+    {
+        Some(stream) => stream,
+        None => {
             return Ok(HttpResponse::NotFound().finish());
         }
-        Err(error) => {
-            error!(?error, "Unable to get stream information");
-
-            return Ok(HttpResponse::InternalServerError().finish());
-        }
     };
 
-    let tracks_duration =
-        match stream_audio_tracks::get_playlist_duration(&mut conn, &stream_id).await {
-            Ok(0) => {
-                error!("Stream tracks list has zero duration");
+    let playlist_duration = get_stream_playlist_duration(&mut connection, &stream_id)
+        .await
+        .tee_err(|error| error!(?error, "Unable to get stream playlist duration"))?;
 
-                return Ok(HttpResponse::Conflict().finish());
-            }
-            Ok(tracks_duration) => tracks_duration,
-            Err(error) => {
-                error!(?error, "Unable to count stream tracks duration");
-
-                return Ok(HttpResponse::InternalServerError().finish());
-            }
-        };
-
-    let time_offset = match stream.calculate_time_offset(&params.timestamp, &tracks_duration) {
-        Ok(offset) => offset,
-        Err(TimeOffsetComputationError::UnexpectedStreamState) => {
-            error!(?stream, "Unexpected stream entity state");
-
-            return Ok(HttpResponse::Conflict().finish());
-        }
-        Err(TimeOffsetComputationError::StreamStopped) => {
-            return Ok(HttpResponse::Conflict().finish());
-        }
-        Err(TimeOffsetComputationError::UnknownStreamStatus) => {
-            error!(?stream.status, "Unknown stream status");
-
-            return Ok(HttpResponse::Conflict().finish());
-        }
-    };
-
-    let tracks = match stream_audio_tracks::get_current_and_next_audio_tracks_at_offset(
-        &mut conn,
-        &stream_id,
-        &time_offset,
-    )
-    .await
+    if let (StreamStatus::Playing, Some(started_at), Some(started_from)) =
+        (&stream.status, &stream.started, &stream.started_from)
     {
-        Ok(tracks) => tracks,
-        Err(error) => {
-            error!(?error, "Unable to get stream information");
-
-            return Ok(HttpResponse::InternalServerError().finish());
+        let time_offset = Duration::from_millis(
+            (((params.timestamp - started_at) + started_from)
+                % playlist_duration.as_millis() as i64) as u64,
+        );
+        if let Some((current, next, track_time_pos)) =
+            get_current_and_next_stream_track_at_time_offset(
+                &mut connection,
+                &stream_id,
+                &time_offset,
+            )
+            .await
+            .tee_err(|error| error!(?error, "Unable to get stream playlist tracks"))?
+        {
+            return Ok(HttpResponse::Ok().json(serde_json::json!({
+                "code": 1i32,
+                "message": "OK",
+                "data": {
+                    "time": params.timestamp,
+                    "playlist_position": current.link.t_order,
+                    "current_track": {
+                        "offset": track_time_pos.as_millis() as i64,
+                        "title": get_artist_and_title(&current),
+                        "url": format!("{}audio/{}", config.file_server_endpoint, get_file_path(&current)),
+                        "duration": current.track.duration,
+                    },
+                    "next_track": {
+                        "title": get_artist_and_title(&next),
+                        "url": format!("{}audio/{}", config.file_server_endpoint, get_file_path(&next)),
+                        "duration": next.track.duration,
+                    },
+                },
+            })));
         }
-    };
-
-    match tracks {
-        Some((current_track, next_track)) => Ok(HttpResponse::Ok().json(serde_json::json!({
-            "code": 1i32,
-            "message": "OK",
-            "data": {
-                "time": params.timestamp,
-                "playlist_position": current_track.t_order,
-                "current_track": {
-                    "offset": time_offset - (current_track.time_offset as i64),
-                    "title": current_track.track.artist_and_title(),
-                    "url": format!("{}audio/{}", config.file_server_endpoint, current_track.track.file_path()),
-                    "duration": current_track.track.duration,
-                },
-                "next_track": {
-                    "title": next_track.track.artist_and_title(),
-                    "url": format!("{}audio/{}", config.file_server_endpoint, next_track.track.file_path()),
-                    "duration": next_track.track.duration,
-                },
-            },
-        }))),
-        None => Ok(HttpResponse::Conflict().finish()),
     }
+
+    Ok(HttpResponse::Conflict().finish())
 }

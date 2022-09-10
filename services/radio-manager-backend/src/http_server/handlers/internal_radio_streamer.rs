@@ -38,6 +38,7 @@ pub(crate) async fn skip_current_track(
 
     let tracks_duration = match get_stream_playlist_duration(&mut transaction, &stream_id)
         .await
+        .map(|d| d.as_millis() as i64)
         .tee_err(|error| {
             error!(?error, "Unable to count stream tracks duration");
         })? {

@@ -6,7 +6,7 @@ pub(crate) mod streams;
 pub(crate) mod user_stream_tracks;
 pub(crate) mod user_tracks;
 
-#[derive(sqlx::FromRow)]
+#[derive(sqlx::FromRow, Clone)]
 pub(crate) struct TrackRow {
     pub(crate) tid: TrackId,
     pub(crate) file_id: Option<FileId>,
@@ -34,7 +34,7 @@ pub(crate) struct TrackRow {
     pub(crate) deleted: Option<i64>,
 }
 
-#[derive(sqlx::FromRow)]
+#[derive(sqlx::FromRow, Clone)]
 pub(crate) struct FileRow {
     pub(crate) file_id: FileId,
     pub(crate) file_size: i64,
@@ -44,7 +44,7 @@ pub(crate) struct FileRow {
     pub(crate) use_count: i32,
 }
 
-#[derive(sqlx::FromRow)]
+#[derive(sqlx::FromRow, Clone)]
 pub(crate) struct LinkRow {
     pub(crate) id: i64,
     pub(crate) stream_id: StreamId,

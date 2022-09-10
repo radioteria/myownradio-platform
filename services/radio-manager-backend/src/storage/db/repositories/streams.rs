@@ -3,11 +3,12 @@ use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use sqlx::{query, Row};
 use std::ops::{Deref, DerefMut};
+use std::time::Duration;
 
 pub(crate) async fn get_stream_playlist_duration(
     mut connection: &mut MySqlConnection,
     stream_id: &StreamId,
-) -> RepositoryResult<i64> {
+) -> RepositoryResult<Duration> {
     let sql = r#"
 SELECT CAST(SUM(`r_tracks`.`duration`) AS SIGNED) as `sum`
 FROM `r_tracks` 
@@ -22,5 +23,5 @@ WHERE `r_link`.`stream_id` = ?
         .map(|row| row.get::<Option<i64>, _>("sum"))?
         .unwrap_or_default();
 
-    Ok(duration)
+    Ok(Duration::from_millis(duration as u64))
 }

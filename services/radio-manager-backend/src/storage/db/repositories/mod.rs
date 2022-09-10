@@ -2,6 +2,7 @@ use crate::models::types::{FileId, StreamId, TrackId, UserId};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 pub(crate) mod errors;
+pub(crate) mod streams;
 pub(crate) mod user_stream_tracks;
 pub(crate) mod user_tracks;
 

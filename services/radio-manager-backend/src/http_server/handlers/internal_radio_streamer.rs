@@ -2,6 +2,7 @@ use crate::http_server::response::Response;
 use crate::models::stream_ext::{TimeOffsetComputationError, TimeOffsetWithOverflow};
 use crate::models::types::StreamId;
 use crate::repositories::{stream_audio_tracks, streams};
+use crate::storage::db::repositories::streams::get_stream_playlist_duration;
 use crate::utils::TeeResultUtils;
 use crate::MySqlClient;
 use actix_web::{web, HttpResponse, Responder};
@@ -35,19 +36,18 @@ pub(crate) async fn skip_current_track(
         }
     };
 
-    let tracks_duration =
-        match stream_audio_tracks::get_playlist_duration(&mut transaction, &stream_id)
-            .await
-            .tee_err(|error| {
-                error!(?error, "Unable to count stream tracks duration");
-            })? {
-            0 => {
-                error!("Stream tracklist has zero duration");
+    let tracks_duration = match get_stream_playlist_duration(&mut transaction, &stream_id)
+        .await
+        .tee_err(|error| {
+            error!(?error, "Unable to count stream tracks duration");
+        })? {
+        0 => {
+            error!("Stream tracklist has zero duration");
 
-                return Ok(HttpResponse::Conflict().finish());
-            }
-            tracks_duration => tracks_duration,
-        };
+            return Ok(HttpResponse::Conflict().finish());
+        }
+        tracks_duration => tracks_duration,
+    };
 
     let time_offset = match stream.calculate_time_offset(&params.timestamp, &tracks_duration) {
         Ok(offset) => offset,

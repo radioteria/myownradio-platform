@@ -29,9 +29,9 @@ pub(crate) async fn get_current_track(
         .unwrap()
         .as_millis() as i64;
 
-    let mut conn = mysql_client.connection().await?;
+    let mut connection = mysql_client.connection().await?;
 
-    let stream = match streams::get_public_stream(&mut conn, &stream_id).await {
+    let stream = match streams::get_public_stream(&mut connection, &stream_id).await {
         Ok(Some(stream)) => stream,
         Ok(None) => {
             return Ok(HttpResponse::NotFound().finish());
@@ -44,7 +44,7 @@ pub(crate) async fn get_current_track(
     };
 
     let tracks_duration =
-        match stream_audio_tracks::get_playlist_duration(&mut conn, &stream_id).await {
+        match stream_audio_tracks::get_playlist_duration(&mut connection, &stream_id).await {
             Ok(0) => {
                 error!("Stream tracks list has zero duration");
 
@@ -76,7 +76,7 @@ pub(crate) async fn get_current_track(
     };
 
     let tracks = match stream_audio_tracks::get_current_and_next_audio_tracks_at_offset(
-        &mut conn,
+        &mut connection,
         &stream_id,
         &time_offset,
     )

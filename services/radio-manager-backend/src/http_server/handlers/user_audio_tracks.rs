@@ -2,7 +2,7 @@ use crate::http_server::response::Response;
 use crate::models::types::{StreamId, UserId};
 use crate::repositories::{stream_audio_tracks, streams};
 use crate::storage::db::repositories::user_stream_tracks::{
-    get_user_stream_tracks, GetUserStreamTracksParams,
+    get_stream_tracks, GetUserStreamTracksParams,
 };
 use crate::storage::db::repositories::user_tracks::{get_user_tracks, GetUserTracksParams};
 use crate::storage::db::repositories::{SortingColumn, SortingOrder};
@@ -127,7 +127,7 @@ pub(crate) async fn get_user_stream_audio_tracks(
         }
     }
 
-    let track_rows = get_user_stream_tracks(
+    let track_rows = get_stream_tracks(
         &mut conn,
         &stream_id,
         &GetUserStreamTracksParams {

@@ -54,6 +54,32 @@ pub(crate) struct LinkRow {
     pub(crate) time_offset: i64,
 }
 
+#[derive(sqlx::Type, Clone)]
+#[repr(i64)]
+pub(crate) enum StreamStatus {
+    Stopped = 0,
+    Playing = 1,
+}
+
+#[derive(sqlx::FromRow, Clone)]
+pub(crate) struct StreamRow {
+    pub(crate) sid: StreamId,
+    pub(crate) uid: UserId,
+    pub(crate) name: String,
+    pub(crate) permalink: Option<String>,
+    pub(crate) info: String,
+    pub(crate) jingle_interval: i32,
+    pub(crate) status: StreamStatus,
+    pub(crate) started: Option<i64>,
+    pub(crate) started_from: Option<i64>,
+    pub(crate) access: String,
+    pub(crate) category: Option<i32>,
+    pub(crate) hashtags: String,
+    pub(crate) cover: Option<String>,
+    pub(crate) cover_background: Option<String>,
+    pub(crate) created: i64,
+}
+
 #[derive(Serialize_repr, Deserialize_repr, Debug)]
 #[repr(u8)]
 pub(crate) enum SortingColumn {

@@ -1,14 +1,15 @@
 use crate::http_server::response::Response;
 use crate::models::audio_track::StreamTracksEntry;
-use crate::models::stream::StreamStatus;
-use crate::models::stream_ext::{TimeOffsetComputationError, TimeOffsetWithOverflow};
 use crate::models::types::StreamId;
 use crate::repositories::{stream_audio_tracks, streams};
-use crate::storage::db::repositories::streams::get_stream_playlist_duration;
+use crate::storage::db::repositories::streams::{
+    get_single_stream_by_id, get_stream_playlist_duration,
+};
 use crate::storage::db::repositories::user_stream_tracks::{
     get_current_and_next_stream_track_at_time_offset, get_single_stream_track_at_time_offset,
     TrackFileLinkMergedRow,
 };
+use crate::storage::db::repositories::StreamStatus;
 use crate::utils::TeeResultUtils;
 use crate::{Config, MySqlClient};
 use actix_web::middleware::Logger;
@@ -37,7 +38,7 @@ pub(crate) async fn get_current_track(
 
     let mut connection = mysql_client.connection().await?;
 
-    let stream = match streams::get_public_stream(&mut connection, &stream_id)
+    let stream = match get_single_stream_by_id(&mut connection, &stream_id)
         .await
         .tee_err(|error| error!("Unable to get stream information"))?
     {
@@ -122,7 +123,7 @@ pub(crate) async fn get_now_playing(
 
     let mut connection = mysql_client.connection().await?;
 
-    let stream = match streams::get_public_stream(&mut connection, &stream_id)
+    let stream = match get_single_stream_by_id(&mut connection, &stream_id)
         .await
         .tee_err(|error| error!(?error, "Unable to get stream information"))?
     {

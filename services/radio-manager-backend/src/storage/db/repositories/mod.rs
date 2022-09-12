@@ -54,7 +54,7 @@ pub(crate) struct LinkRow {
     pub(crate) time_offset: i64,
 }
 
-#[derive(sqlx::Type, Clone)]
+#[derive(sqlx::Type, Clone, Serialize_repr)]
 #[repr(i64)]
 pub(crate) enum StreamStatus {
     Stopped = 0,

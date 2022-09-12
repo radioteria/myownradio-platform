@@ -1,4 +1,4 @@
-use crate::models::types::StreamId;
+use crate::models::types::{StreamId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::StreamRow;
@@ -51,7 +51,7 @@ SELECT `r_streams`.`sid`,
        `r_streams`.`cover_background`,
        `r_streams`.`created`
 FROM `r_streams`
-WHERE `r_streams`.`sid` = ?
+WHERE `r_streams`.`sid` = ? OR `r_streams`.`permalink` = ?
 LIMIT 1
     "#;
 
@@ -59,7 +59,43 @@ LIMIT 1
 
     let stream = query_as(sql)
         .bind(stream_id.deref())
+        .bind(stream_id.deref())
         .fetch_optional(connection.deref_mut())
+        .await?;
+
+    Ok(stream)
+}
+
+pub(crate) async fn get_user_streams_by_user_id(
+    connection: &mut MySqlConnection,
+    user_id: &UserId,
+) -> RepositoryResult<Vec<StreamRow>> {
+    let sql = r#"
+SELECT `r_streams`.`sid`,
+       `r_streams`.`uid`,
+       `r_streams`.`name`,
+       `r_streams`.`permalink`,
+       `r_streams`.`info`,
+       `r_streams`.`jingle_interval`,
+       `r_streams`.`status`,
+       `r_streams`.`started`,
+       `r_streams`.`started_from`,
+       `r_streams`.`access`,
+       `r_streams`.`category`,
+       `r_streams`.`hashtags`,
+       `r_streams`.`cover`,
+       `r_streams`.`cover_background`,
+       `r_streams`.`created`
+FROM `r_streams`
+WHERE `r_streams`.`uid` = ?
+LIMIT 1
+    "#;
+
+    trace!("Running SQL query: {}", sql);
+
+    let stream = query_as(sql)
+        .bind(user_id.deref())
+        .fetch_all(connection.deref_mut())
         .await?;
 
     Ok(stream)

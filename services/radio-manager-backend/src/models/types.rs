@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 
-#[derive(Serialize, Deserialize, Clone, sqlx::Type, Debug)]
+#[derive(Serialize, Deserialize, Clone, sqlx::Type, Debug, Eq, PartialEq)]
 #[sqlx(transparent)]
 pub(crate) struct UserId(i32);
 

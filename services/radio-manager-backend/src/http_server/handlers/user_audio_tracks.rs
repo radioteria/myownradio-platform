@@ -1,7 +1,7 @@
 use crate::data_structures::{SortingColumn, SortingOrder};
 use crate::http_server::response::Response;
 use crate::models::types::{StreamId, UserId};
-use crate::repositories::{stream_audio_tracks, streams};
+use crate::storage::db::repositories::streams::get_single_stream_by_id;
 use crate::storage::db::repositories::user_stream_tracks::{
     get_stream_tracks, GetUserStreamTracksParams,
 };
@@ -115,10 +115,11 @@ pub(crate) async fn get_user_stream_audio_tracks(
         Some(str) => str.parse::<u32>().ok(),
     };
 
-    let mut conn = mysql_client.connection().await?;
+    let mut connection = mysql_client.connection().await?;
 
-    match streams::get_single_user_stream(&mut conn, &user_id, &stream_id).await {
-        Ok(Some(_)) => (),
+    match get_single_stream_by_id(&mut connection, &stream_id).await {
+        Ok(Some(stream)) if stream.uid == user_id => (),
+        Ok(Some(_)) => return Ok(HttpResponse::Forbidden().finish()),
         Ok(None) => return Ok(HttpResponse::NotFound().finish()),
         Err(error) => {
             error!(?error, "Failed to get user stream");
@@ -128,7 +129,7 @@ pub(crate) async fn get_user_stream_audio_tracks(
     }
 
     let track_rows = get_stream_tracks(
-        &mut conn,
+        &mut connection,
         &stream_id,
         &GetUserStreamTracksParams {
             color: color_id,

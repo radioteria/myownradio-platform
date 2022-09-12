@@ -1,7 +1,5 @@
+use crate::data_structures::StreamId;
 use crate::http_server::response::Response;
-use crate::models::audio_track::StreamTracksEntry;
-use crate::models::types::StreamId;
-use crate::repositories::{stream_audio_tracks, streams};
 use crate::storage::db::repositories::streams::{
     get_single_stream_by_id, get_stream_playlist_duration,
 };
@@ -17,13 +15,6 @@ use actix_web::{web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tracing::error;
-
-#[derive(Clone, Serialize)]
-pub(crate) struct StreamTracksEntryWithPosition {
-    #[serde(flatten)]
-    pub(crate) track_entry: StreamTracksEntry,
-    pub(crate) position: i64,
-}
 
 pub(crate) async fn get_current_track(
     path: web::Path<StreamId>,

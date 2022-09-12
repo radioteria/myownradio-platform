@@ -1,4 +1,4 @@
-use crate::models::types::{FileId, StreamId, TrackId, UserId};
+use crate::data_structures::{FileId, StreamId, TrackId, UserId};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
 pub(crate) mod errors;

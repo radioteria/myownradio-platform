@@ -1,5 +1,6 @@
-use crate::data_structures::{SortingColumn, SortingOrder, DEFAULT_TRACKS_PER_REQUEST};
-use crate::models::types::{FileId, TrackId, UserId};
+use crate::data_structures::{
+    FileId, SortingColumn, SortingOrder, TrackId, UserId, DEFAULT_TRACKS_PER_REQUEST,
+};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{FileRow, TrackRow};

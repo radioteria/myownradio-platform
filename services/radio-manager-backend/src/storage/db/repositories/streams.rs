@@ -1,4 +1,4 @@
-use crate::models::types::{StreamId, UserId};
+use crate::data_structures::{StreamId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::StreamRow;

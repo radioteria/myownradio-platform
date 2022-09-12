@@ -1,6 +1,5 @@
-use crate::data_structures::{SortingColumn, SortingOrder};
+use crate::data_structures::{SortingColumn, SortingOrder, StreamId, UserId};
 use crate::http_server::response::Response;
-use crate::models::types::{StreamId, UserId};
 use crate::storage::db::repositories::streams::get_single_stream_by_id;
 use crate::storage::db::repositories::user_stream_tracks::{
     get_stream_tracks, GetUserStreamTracksParams,

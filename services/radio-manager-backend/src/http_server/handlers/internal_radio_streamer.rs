@@ -1,5 +1,5 @@
+use crate::data_structures::StreamId;
 use crate::http_server::response::Response;
-use crate::models::types::StreamId;
 use crate::storage::db::repositories::streams::{
     get_single_stream_by_id, get_stream_playlist_duration,
 };

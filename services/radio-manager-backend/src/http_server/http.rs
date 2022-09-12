@@ -1,7 +1,7 @@
 use crate::http_server::handlers::{
     internal_radio_streamer, public_schedule, public_streams, user_audio_tracks, user_streams,
 };
-use crate::{repositories, Config, MySqlClient};
+use crate::{Config, MySqlClient};
 use actix_server::Server;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};

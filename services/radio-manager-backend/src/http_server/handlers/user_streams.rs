@@ -1,5 +1,5 @@
+use crate::data_structures::UserId;
 use crate::http_server::response::Response;
-use crate::models::types::UserId;
 use crate::storage::db::repositories::streams::get_user_streams_by_user_id;
 use crate::MySqlClient;
 use actix_web::web::Data;

@@ -1,9 +1,8 @@
+use crate::data_structures::{SortingColumn, SortingOrder, DEFAULT_TRACKS_PER_REQUEST};
 use crate::models::types::{FileId, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
-use crate::storage::db::repositories::{
-    FileRow, SortingColumn, SortingOrder, TrackRow, DEFAULT_TRACKS_PER_REQUEST,
-};
+use crate::storage::db::repositories::{FileRow, TrackRow};
 use sqlx::{Execute, FromRow, QueryBuilder};
 use std::ops::{Deref, DerefMut};
 use tracing::trace;

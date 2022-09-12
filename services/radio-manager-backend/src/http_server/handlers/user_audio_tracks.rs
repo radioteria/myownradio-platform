@@ -1,3 +1,4 @@
+use crate::data_structures::{SortingColumn, SortingOrder};
 use crate::http_server::response::Response;
 use crate::models::types::{StreamId, UserId};
 use crate::repositories::{stream_audio_tracks, streams};
@@ -5,7 +6,6 @@ use crate::storage::db::repositories::user_stream_tracks::{
     get_stream_tracks, GetUserStreamTracksParams,
 };
 use crate::storage::db::repositories::user_tracks::{get_user_tracks, GetUserTracksParams};
-use crate::storage::db::repositories::{SortingColumn, SortingOrder};
 use crate::utils::TeeResultUtils;
 use crate::MySqlClient;
 use actix_web::web::{Data, Form};

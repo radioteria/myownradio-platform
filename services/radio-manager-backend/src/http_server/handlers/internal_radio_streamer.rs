@@ -38,7 +38,7 @@ pub(crate) async fn skip_current_track(
         }
     };
 
-    let playlist_duration = get_stream_playlist_duration(&mut connection, &stream_id)
+    let playlist_duration = get_stream_playlist_duration(&mut transaction, &stream_id)
         .await
         .tee_err(|error| error!("Unable to get stream playlist duration"))?;
 

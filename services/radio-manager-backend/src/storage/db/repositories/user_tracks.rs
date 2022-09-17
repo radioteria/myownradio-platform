@@ -4,35 +4,12 @@ use crate::data_structures::{
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{FileRow, TrackRow};
-use sqlx::{Execute, FromRow, QueryBuilder};
+use sqlx::{Execute, FromRow, MySql, QueryBuilder};
 use std::ops::{Deref, DerefMut};
 use tracing::trace;
 
-#[derive(FromRow)]
-pub(crate) struct TrackFileMergedRow {
-    #[sqlx(flatten)]
-    pub(crate) track: TrackRow,
-    #[sqlx(flatten)]
-    pub(crate) file: FileRow,
-}
-
-#[derive(Default, Debug)]
-pub(crate) struct GetUserTracksParams {
-    pub(crate) color: Option<u32>,
-    pub(crate) filter: Option<String>,
-    pub(crate) unused: bool,
-    pub(crate) sorting_column: SortingColumn,
-    pub(crate) sorting_order: SortingOrder,
-}
-
-#[tracing::instrument(err, skip(connection))]
-pub(crate) async fn get_user_tracks(
-    connection: &mut MySqlConnection,
-    user_id: &UserId,
-    params: &GetUserTracksParams,
-    offset: &u32,
-) -> RepositoryResult<Vec<TrackFileMergedRow>> {
-    let mut builder = QueryBuilder::new(
+fn create_select_query_builder<'a>() -> QueryBuilder<'a, MySql> {
+    QueryBuilder::new(
         r#"
 SELECT `r_tracks`.`tid`,
        `r_tracks`.`file_id`,
@@ -66,7 +43,34 @@ SELECT `r_tracks`.`tid`,
 FROM `r_tracks`
 JOIN `fs_file` ON `fs_file`.`file_id` = `r_tracks`.`file_id`
 "#,
-    );
+    )
+}
+
+#[derive(FromRow)]
+pub(crate) struct TrackFileMergedRow {
+    #[sqlx(flatten)]
+    pub(crate) track: TrackRow,
+    #[sqlx(flatten)]
+    pub(crate) file: FileRow,
+}
+
+#[derive(Default, Debug)]
+pub(crate) struct GetUserTracksParams {
+    pub(crate) color: Option<u32>,
+    pub(crate) filter: Option<String>,
+    pub(crate) unused: bool,
+    pub(crate) sorting_column: SortingColumn,
+    pub(crate) sorting_order: SortingOrder,
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn get_user_tracks(
+    connection: &mut MySqlConnection,
+    user_id: &UserId,
+    params: &GetUserTracksParams,
+    offset: &u32,
+) -> RepositoryResult<Vec<TrackFileMergedRow>> {
+    let mut builder = create_select_query_builder();
 
     builder.push(" WHERE `r_tracks`.`uid` = ");
     builder.push_bind(user_id.deref());
@@ -108,4 +112,23 @@ JOIN `fs_file` ON `fs_file`.`file_id` = `r_tracks`.`file_id`
     let audio_tracks = query.fetch_all(connection.deref_mut()).await?;
 
     Ok(audio_tracks)
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn get_single_user_track(
+    connection: &mut MySqlConnection,
+    track_id: &TrackId,
+) -> RepositoryResult<Option<TrackFileMergedRow>> {
+    let mut builder = create_select_query_builder();
+
+    builder.push(" WHERE `r_tracks`.`tid` = ");
+    builder.push_bind(track_id.deref());
+
+    let query = builder.build_query_as::<TrackFileMergedRow>();
+
+    trace!("Running SQL query: {}", query.sql());
+
+    let audio_track = query.fetch_optional(connection.deref_mut()).await?;
+
+    Ok(audio_track)
 }

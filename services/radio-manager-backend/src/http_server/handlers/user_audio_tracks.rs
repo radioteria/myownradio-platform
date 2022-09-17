@@ -1,13 +1,15 @@
-use crate::data_structures::{SortingColumn, SortingOrder, StreamId, UserId};
+use crate::data_structures::{SortingColumn, SortingOrder, StreamId, TrackId, UserId};
 use crate::http_server::response::Response;
 use crate::storage::db::repositories::streams::get_single_stream_by_id;
 use crate::storage::db::repositories::user_stream_tracks::{
     get_stream_tracks, GetUserStreamTracksParams,
 };
-use crate::storage::db::repositories::user_tracks::{get_user_tracks, GetUserTracksParams};
+use crate::storage::db::repositories::user_tracks::{
+    get_single_user_track, get_user_tracks, GetUserTracksParams,
+};
 use crate::utils::TeeResultUtils;
 use crate::MySqlClient;
-use actix_web::web::{Data, Form};
+use actix_web::web::{Data, Form, Path};
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use serde::Deserialize;
 use tracing::error;
@@ -193,5 +195,26 @@ pub(crate) async fn upload_audio_track(
     form: Form<UploadAudioTrackForm>,
     mysql_client: Data<MySqlClient>,
 ) -> Response {
+    Ok(HttpResponse::Ok().finish())
+}
+
+pub(crate) async fn delete_audio_track(
+    user_id: UserId,
+    path: Path<(TrackId)>,
+    mysql_client: Data<MySqlClient>,
+) -> Response {
+    let track_id = path.into_inner();
+
+    let mut connection = mysql_client.connection().await?;
+
+    let track_row = match get_single_user_track(&mut connection, &track_id).await? {
+        Some(track_row) => track_row,
+        None => return Ok(HttpResponse::NotFound().finish()),
+    };
+
+    if track_row.track.uid != user_id {
+        return Ok(HttpResponse::Forbidden().finish());
+    }
+
     Ok(HttpResponse::Ok().finish())
 }

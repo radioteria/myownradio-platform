@@ -1,6 +1,8 @@
 use crate::data_structures::{SortingColumn, SortingOrder, StreamId, TrackId, UserId};
 use crate::http_server::response::Response;
-use crate::storage::db::repositories::streams::get_single_stream_by_id;
+use crate::storage::db::repositories::streams::{
+    get_single_stream_by_id, get_user_streams_having_track,
+};
 use crate::storage::db::repositories::user_stream_tracks::{
     get_stream_tracks, GetUserStreamTracksParams,
 };
@@ -207,7 +209,10 @@ pub(crate) async fn delete_audio_track(
 
     let mut connection = mysql_client.connection().await?;
 
-    let track_row = match get_single_user_track(&mut connection, &track_id).await? {
+    let track_row = match get_single_user_track(&mut connection, &track_id)
+        .await
+        .tee_err(|error| error!(?error, "Unable to get user track from database"))?
+    {
         Some(track_row) => track_row,
         None => return Ok(HttpResponse::NotFound().finish()),
     };
@@ -215,6 +220,15 @@ pub(crate) async fn delete_audio_track(
     if track_row.track.uid != user_id {
         return Ok(HttpResponse::Forbidden().finish());
     }
+
+    let streams = get_user_streams_having_track(&mut connection, &track_row.track.tid)
+        .await
+        .tee_err(|error| {
+            error!(
+                ?error,
+                "Unable to get user streams having given track from database"
+            )
+        })?;
 
     Ok(HttpResponse::Ok().finish())
 }

@@ -1,8 +1,8 @@
-use crate::data_structures::{StreamId, DEFAULT_TRACKS_PER_REQUEST};
+use crate::data_structures::{StreamId, TrackId, DEFAULT_TRACKS_PER_REQUEST};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{FileRow, LinkRow, TrackRow};
-use sqlx::{Execute, MySql, QueryBuilder};
+use sqlx::{query, Execute, MySql, QueryBuilder};
 use std::ops::{Deref, DerefMut};
 use std::time::Duration;
 use tracing::trace;
@@ -67,6 +67,9 @@ pub(crate) struct GetUserStreamTracksParams {
     pub(crate) color: Option<u32>,
     pub(crate) filter: Option<String>,
 }
+
+pub(crate) const DEFAULT_GET_USER_STREAM_TRACKS_PARAMS: GetUserStreamTracksParams =
+    GetUserStreamTracksParams::default();
 
 #[tracing::instrument(err, skip(connection))]
 pub(crate) async fn get_stream_tracks(
@@ -175,4 +178,50 @@ pub(crate) async fn get_current_and_next_stream_track_at_time_offset(
             Ok(Some((curr.clone(), next.clone(), track_position)))
         }
     }
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn delete_track_from_user_stream(
+    mut connection: &mut MySqlConnection,
+    track_id: &TrackId,
+    stream_id: &StreamId,
+) -> RepositoryResult<()> {
+    query("DELETE FROM `r_links` WHERE `r_link`.`stream_id` = ? AND `r_link`.`track_id` = ?")
+        .bind(stream_id.deref())
+        .bind(track_id.deref())
+        .execute(&mut connection)
+        .await?;
+
+    Ok(())
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn optimize_tracks_in_user_stream(
+    mut connection: &mut MySqlConnection,
+    stream_id: &StreamId,
+) -> RepositoryResult<()> {
+    let stream_track_rows = get_stream_tracks(
+        &mut connection,
+        stream_id,
+        &DEFAULT_GET_USER_STREAM_TRACKS_PARAMS,
+        &0,
+    )
+    .await?;
+
+    let mut current_t_order = 1;
+    let mut current_accumulated_duration = 0;
+
+    for stream_track_row in stream_track_rows.iter() {
+        query("UPDATE `r_link` SET `t_order` = ?, `time_offset` = ? WHERE `id` = ?")
+            .bind(current_t_order)
+            .bind(current_accumulated_duration)
+            .bind(stream_track_row.link.id)
+            .execute(&mut connection)
+            .await?;
+
+        current_t_order += 1;
+        current_accumulated_duration += stream_track_row.track.duration;
+    }
+
+    Ok(())
 }

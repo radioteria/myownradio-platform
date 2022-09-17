@@ -5,6 +5,7 @@ mod http_server;
 mod mysql_client;
 mod storage;
 mod system;
+mod tasks;
 mod utils;
 
 use crate::config::{Config, LogFormat};

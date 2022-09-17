@@ -100,4 +100,26 @@ pub(crate) async fn get_user_streams_having_track(
     connection: &mut MySqlConnection,
     track_id: &TrackId,
 ) -> RepositoryResult<Vec<StreamRow>> {
+    let mut builder = create_select_query_builder();
+
+    builder.push(
+        r#" WHERE (
+SELECT COUNT(`id`) 
+FROM `r_links` 
+WHERE `r_links`.`stream_id` = `r_streams`.`sid` 
+  AND `r_links`.`track_id` = "#,
+    );
+    builder.push_bind(track_id.deref());
+    builder.push(") > 0");
+
+    let query = builder.build_query_as();
+
+    trace!("Running SQL query: {}", query.sql());
+
+    let stream = query
+        .bind(user_id.deref())
+        .fetch_all(connection.deref_mut())
+        .await?;
+
+    Ok(stream)
 }

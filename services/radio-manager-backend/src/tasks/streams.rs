@@ -1,5 +1,6 @@
 use crate::data_structures::{StreamId, TrackId};
 use crate::mysql_client::MySqlConnection;
+use crate::storage::db::repositories::user_stream_tracks::TrackFileLinkMergedRow;
 use crate::storage::db::repositories::{streams, user_stream_tracks};
 use crate::storage::db::repositories::{StreamRow, StreamStatus};
 use crate::tasks::TaskResult;
@@ -28,16 +29,17 @@ pub(crate) fn get_user_stream_playing_time(user_stream: &StreamRow) -> Option<Du
 
 pub(crate) async fn delete_track_from_user_stream(
     mut connection: &mut MySqlConnection,
-    track_id: &TrackId,
-    user_stream: &StreamRow,
+    track: &TrackFileLinkMergedRow,
+    stream: &StreamRow,
 ) -> TaskResult {
-    let stream_id = &user_stream.sid;
+    let stream_id = &stream.sid;
+    let track_id = &track.track.tid;
 
-    if matches!(user_stream.status, StreamStatus::Playing) {
+    if matches!(stream.status, StreamStatus::Playing) {
         let playlist_duration =
             streams::get_stream_playlist_duration(&mut transaction, &stream_id).await?;
 
-        let time_offset = get_user_stream_playing_time(user_stream).unwrap_or_default();
+        let time_offset = get_user_stream_playing_time(stream).unwrap_or_default();
 
         let now_playing = user_stream_tracks::get_single_stream_track_at_time_offset(
             &mut connection,
@@ -46,13 +48,17 @@ pub(crate) async fn delete_track_from_user_stream(
         )
         .await?;
 
-        if let Some((track, time_position)) = now_playing {
-            if &track.track.tid == track_id {
-                // Restart from next track
-                todo!()
+        if let Some((now_playing_track, time_position)) = now_playing {
+            let mut laps_played = (time_offset.as_millis() / playlist_duration.as_millis()) as i64;
+            if now_playing_track.link.t_order > track.link.t_order {
+                laps_played += 1;
             }
 
-            // Compensate position
+            let mut seek_amount = laps_played * track.track.duration;
+            if &now_playing_track.track.tid == track_id {
+                seek_amount -= time_position.as_millis() as i64;
+            }
+
             todo!()
         }
     }

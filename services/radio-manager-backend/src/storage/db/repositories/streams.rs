@@ -1,11 +1,34 @@
-use crate::data_structures::{StreamId, UserId};
+use crate::data_structures::{StreamId, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::StreamRow;
-use sqlx::{query, query_as, Row};
+use sqlx::{query, query_as, MySql, QueryBuilder, Row};
 use std::ops::{Deref, DerefMut};
 use std::time::Duration;
 use tracing::trace;
+
+fn create_select_query_builder<'a>() -> QueryBuilder<'a, MySql> {
+    QueryBuilder::new(
+        r#"
+SELECT `r_streams`.`sid`,
+       `r_streams`.`uid`,
+       `r_streams`.`name`,
+       `r_streams`.`permalink`,
+       `r_streams`.`info`,
+       `r_streams`.`jingle_interval`,
+       `r_streams`.`status`,
+       `r_streams`.`started`,
+       `r_streams`.`started_from`,
+       `r_streams`.`access`,
+       `r_streams`.`category`,
+       `r_streams`.`hashtags`,
+       `r_streams`.`cover`,
+       `r_streams`.`cover_background`,
+       `r_streams`.`created`
+FROM `r_streams`
+"#,
+    )
+}
 
 pub(crate) async fn get_stream_playlist_duration(
     mut connection: &mut MySqlConnection,
@@ -34,34 +57,19 @@ pub(crate) async fn get_single_stream_by_id(
     connection: &mut MySqlConnection,
     stream_id: &StreamId,
 ) -> RepositoryResult<Option<StreamRow>> {
-    let sql = r#"
-SELECT `r_streams`.`sid`,
-       `r_streams`.`uid`,
-       `r_streams`.`name`,
-       `r_streams`.`permalink`,
-       `r_streams`.`info`,
-       `r_streams`.`jingle_interval`,
-       `r_streams`.`status`,
-       `r_streams`.`started`,
-       `r_streams`.`started_from`,
-       `r_streams`.`access`,
-       `r_streams`.`category`,
-       `r_streams`.`hashtags`,
-       `r_streams`.`cover`,
-       `r_streams`.`cover_background`,
-       `r_streams`.`created`
-FROM `r_streams`
-WHERE `r_streams`.`sid` = ? OR `r_streams`.`permalink` = ?
-LIMIT 1
-    "#;
+    let mut builder = create_select_query_builder();
 
-    trace!("Running SQL query: {}", sql);
+    builder.push(" WHERE `r_streams`.`sid` = ");
+    builder.push_bind(stream_id.deref());
+    builder.push(" OR `r_streams`.`permalink` = ");
+    builder.push_bind(stream_id.deref());
+    builder.push(" LIMIT 1");
 
-    let stream = query_as(sql)
-        .bind(stream_id.deref())
-        .bind(stream_id.deref())
-        .fetch_optional(connection.deref_mut())
-        .await?;
+    let query = builder.build_query_as();
+
+    trace!("Running SQL query: {}", query.sql());
+
+    let stream = query.fetch_optional(connection.deref_mut()).await?;
 
     Ok(stream)
 }
@@ -70,33 +78,26 @@ pub(crate) async fn get_user_streams_by_user_id(
     connection: &mut MySqlConnection,
     user_id: &UserId,
 ) -> RepositoryResult<Vec<StreamRow>> {
-    let sql = r#"
-SELECT `r_streams`.`sid`,
-       `r_streams`.`uid`,
-       `r_streams`.`name`,
-       `r_streams`.`permalink`,
-       `r_streams`.`info`,
-       `r_streams`.`jingle_interval`,
-       `r_streams`.`status`,
-       `r_streams`.`started`,
-       `r_streams`.`started_from`,
-       `r_streams`.`access`,
-       `r_streams`.`category`,
-       `r_streams`.`hashtags`,
-       `r_streams`.`cover`,
-       `r_streams`.`cover_background`,
-       `r_streams`.`created`
-FROM `r_streams`
-WHERE `r_streams`.`uid` = ?
-LIMIT 1
-    "#;
+    let mut builder = create_select_query_builder();
 
-    trace!("Running SQL query: {}", sql);
+    builder.push(" WHERE `r_streams`.`uid` = ");
+    builder.push_bind(user_id.deref());
+    builder.push(" LIMIT 1");
 
-    let stream = query_as(sql)
+    let query = builder.build_query_as();
+
+    trace!("Running SQL query: {}", query.sql());
+
+    let stream = query
         .bind(user_id.deref())
         .fetch_all(connection.deref_mut())
         .await?;
 
     Ok(stream)
+}
+
+pub(crate) async fn get_user_streams_having_track(
+    connection: &mut MySqlConnection,
+    track_id: &TrackId,
+) -> RepositoryResult<Vec<StreamRow>> {
 }

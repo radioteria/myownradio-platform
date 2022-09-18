@@ -7,13 +7,14 @@ use crate::storage::db::repositories::user_stream_tracks::{
     get_stream_tracks, GetUserStreamTracksParams,
 };
 use crate::storage::db::repositories::user_tracks::{
-    get_single_user_track, get_user_tracks, GetUserTracksParams,
+    delete_user_track, get_single_user_track, get_user_tracks, GetUserTracksParams,
 };
 use crate::utils::TeeResultUtils;
-use crate::MySqlClient;
+use crate::{tasks, MySqlClient};
 use actix_web::web::{Data, Form, Path};
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
 use serde::Deserialize;
+use std::ops::Deref;
 use tracing::error;
 
 #[derive(Deserialize)]
@@ -207,7 +208,7 @@ pub(crate) async fn delete_audio_track(
 ) -> Response {
     let track_id = path.into_inner();
 
-    let mut connection = mysql_client.connection().await?;
+    let mut connection = mysql_client.transaction().await?;
 
     let track_row = match get_single_user_track(&mut connection, &track_id)
         .await
@@ -221,7 +222,7 @@ pub(crate) async fn delete_audio_track(
         return Ok(HttpResponse::Forbidden().finish());
     }
 
-    let streams = get_user_streams_having_track(&mut connection, &track_row.track.tid)
+    let stream_rows = get_user_streams_having_track(&mut connection, &track_row.track.tid)
         .await
         .tee_err(|error| {
             error!(
@@ -229,6 +230,23 @@ pub(crate) async fn delete_audio_track(
                 "Unable to get user streams having given track from database"
             )
         })?;
+
+    for stream_row in stream_rows.iter() {
+        tasks::streams::delete_track_from_user_stream(&mut connection, &track_row, stream_row)
+            .await
+            .tee_err(|error| {
+                error!(
+                    ?error,
+                    "Unable to delete track from user stream in database"
+                )
+            })?;
+    }
+
+    // @todo Try to delete file
+
+    delete_user_track(&mut connection, &*track_row).await?;
+
+    connection.commit().await?;
 
     Ok(HttpResponse::Ok().finish())
 }

@@ -4,7 +4,7 @@ use crate::data_structures::{
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{FileRow, TrackRow};
-use sqlx::{Execute, FromRow, MySql, QueryBuilder};
+use sqlx::{query, Execute, FromRow, MySql, QueryBuilder};
 use std::ops::{Deref, DerefMut};
 use tracing::trace;
 
@@ -52,6 +52,14 @@ pub(crate) struct TrackFileMergedRow {
     pub(crate) track: TrackRow,
     #[sqlx(flatten)]
     pub(crate) file: FileRow,
+}
+
+impl Deref for TrackFileMergedRow {
+    type Target = TrackId;
+
+    fn deref(&self) -> &Self::Target {
+        &self.track.tid
+    }
 }
 
 #[derive(Default, Debug)]
@@ -131,4 +139,17 @@ pub(crate) async fn get_single_user_track(
     let audio_track = query.fetch_optional(connection.deref_mut()).await?;
 
     Ok(audio_track)
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn delete_user_track(
+    mut connection: &mut MySqlConnection,
+    track_id: &TrackId,
+) -> RepositoryResult<()> {
+    query("DELETE FROM `r_tracks` WHERE `tid` = ?")
+        .bind(track_id.deref())
+        .execute(&mut connection)
+        .await?;
+
+    Ok(())
 }

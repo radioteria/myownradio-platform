@@ -1,11 +1,13 @@
 use crate::storage::db::repositories::errors::RepositoryError;
 
-mod streams;
+pub(crate) mod streams;
 
 #[derive(thiserror::Error)]
 pub(crate) enum TaskError {
     #[error(transparent)]
     RepositoryError(#[from] RepositoryError),
+    #[error("Stream is not playing")]
+    StreamIsNotPlaying,
 }
 
 pub(crate) type TaskResult = Result<(), TaskError>;

@@ -1,9 +1,10 @@
 use crate::data_structures::{StreamId, TrackId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::user_stream_tracks::TrackFileLinkMergedRow;
+use crate::storage::db::repositories::user_tracks::TrackFileMergedRow;
 use crate::storage::db::repositories::{streams, user_stream_tracks};
 use crate::storage::db::repositories::{StreamRow, StreamStatus};
-use crate::tasks::TaskResult;
+use crate::tasks::{TaskError, TaskResult};
 use sqlx::query;
 use std::ops::Deref;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -29,7 +30,7 @@ pub(crate) fn get_user_stream_playing_time(user_stream: &StreamRow) -> Option<Du
 
 pub(crate) async fn delete_track_from_user_stream(
     mut connection: &mut MySqlConnection,
-    track: &TrackFileLinkMergedRow,
+    track: &TrackFileMergedRow,
     stream: &StreamRow,
 ) -> TaskResult {
     let stream_id = &stream.sid;
@@ -59,13 +60,34 @@ pub(crate) async fn delete_track_from_user_stream(
                 seek_amount -= time_position.as_millis() as i64;
             }
 
-            todo!()
+            seek_amount = seek_amount.max(0);
+
+            seek_user_stream(
+                &mut connection,
+                stream,
+                &Duration::from_millis(seek_amount as u64),
+            )
+            .await?;
         }
     }
 
     user_stream_tracks::delete_track_from_user_stream(&mut connection, track_id, stream_id).await?;
 
     user_stream_tracks::optimize_tracks_in_user_stream(&mut connection, stream_id).await?;
+
+    Ok(())
+}
+
+pub(crate) async fn seek_user_stream(
+    mut connection: &mut MySqlConnection,
+    stream: &StreamRow,
+    seek_time: &Duration,
+) -> TaskResult {
+    if !matches!(stream.status, StreamStatus::Playing) {
+        return Err(TaskError::StreamIsNotPlaying);
+    }
+
+    streams::seek_user_stream_forward(&mut connection, &stream.sid, &seek_time).await?;
 
     Ok(())
 }

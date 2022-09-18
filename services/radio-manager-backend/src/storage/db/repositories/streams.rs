@@ -123,3 +123,24 @@ WHERE `r_links`.`stream_id` = `r_streams`.`sid`
 
     Ok(stream)
 }
+
+pub(crate) async fn seek_user_stream_forward(
+    mut connection: &mut MySqlConnection,
+    stream_id: &StreamId,
+    seek_time: &Duration,
+) -> RepositoryResult<()> {
+    query(
+        r#"
+UPDATE `r_streams`
+SET `started_from` = `started_from` + ?
+WHERE `sid` = ?
+  AND `started_from` IS NOT NULL
+"#,
+    )
+    .bind(seek_time.as_millis() as i64)
+    .bind(stream_id.deref())
+    .execute(&mut connection)
+    .await?;
+
+    Ok(())
+}

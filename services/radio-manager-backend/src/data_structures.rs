@@ -70,7 +70,7 @@ impl From<i32> for UserId {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, sqlx::Type, Debug)]
+#[derive(Serialize, Deserialize, Clone, sqlx::Type, Debug, Eq, PartialEq)]
 #[sqlx(transparent)]
 pub(crate) struct TrackId(i32);
 

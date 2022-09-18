@@ -10,6 +10,7 @@ mod utils;
 
 use crate::config::{Config, LogFormat};
 use crate::mysql_client::MySqlClient;
+use crate::storage::fs::local::LocalFileSystem;
 use dotenv::dotenv;
 use http_server::run_server;
 use std::io;
@@ -37,7 +38,9 @@ async fn main() -> Result<()> {
         .await
         .expect("Unable to initialize MySQL client");
 
-    let http_server = run_server(&config.bind_address, &mysql_client, &config)?;
+    let file_system = LocalFileSystem::create(config.file_system_root_path.clone());
+
+    let http_server = run_server(&config.bind_address, mysql_client, config, file_system)?;
 
     tracing::info!("Application started");
 

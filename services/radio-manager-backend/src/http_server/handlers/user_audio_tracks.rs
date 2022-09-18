@@ -9,6 +9,8 @@ use crate::storage::db::repositories::user_stream_tracks::{
 use crate::storage::db::repositories::user_tracks::{
     delete_user_track, get_single_user_track, get_user_tracks, GetUserTracksParams,
 };
+use crate::storage::fs::utils::GetPath;
+use crate::storage::fs::FileSystem;
 use crate::utils::TeeResultUtils;
 use crate::{tasks, MySqlClient};
 use actix_web::web::{Data, Form, Path};
@@ -201,10 +203,11 @@ pub(crate) async fn upload_audio_track(
     Ok(HttpResponse::Ok().finish())
 }
 
-pub(crate) async fn delete_audio_track(
+pub(crate) async fn delete_audio_track<FS: FileSystem>(
     user_id: UserId,
     path: Path<(TrackId)>,
     mysql_client: Data<MySqlClient>,
+    file_system: Data<FS>,
 ) -> Response {
     let track_id = path.into_inner();
 
@@ -242,9 +245,11 @@ pub(crate) async fn delete_audio_track(
             })?;
     }
 
-    // @todo Try to delete file
-
     delete_user_track(&mut connection, &*track_row).await?;
+
+    file_system
+        .delete_file(&format!("audio/{}", track_row.file.get_path()))
+        .await?;
 
     connection.commit().await?;
 

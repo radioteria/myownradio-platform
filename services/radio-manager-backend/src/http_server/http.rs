@@ -1,16 +1,18 @@
 use crate::http_server::handlers::{
     internal_radio_streamer, public_schedule, public_streams, user_audio_tracks, user_streams,
 };
+use crate::storage::fs::FileSystem;
 use crate::{Config, MySqlClient};
 use actix_server::Server;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
 use std::io::Result;
 
-pub(crate) fn run_server(
+pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
     bind_address: &str,
-    mysql_client: &MySqlClient,
-    config: &Config,
+    mysql_client: MySqlClient,
+    config: Config,
+    file_system: FS,
 ) -> Result<Server> {
     let mysql_client = mysql_client.clone();
 
@@ -20,11 +22,15 @@ pub(crate) fn run_server(
         App::new()
             .app_data(Data::new(mysql_client.clone()))
             .app_data(Data::new(config.clone()))
+            .app_data(Data::new(file_system.clone()))
             .service(
                 web::scope("/v0/tracks")
                     .route("/", web::get().to(user_audio_tracks::get_user_audio_tracks))
                     .route("/", web::post().to(user_audio_tracks::upload_audio_track))
-                    .route("/", web::delete().to(user_audio_tracks::delete_audio_track)),
+                    .route(
+                        "/",
+                        web::delete().to(user_audio_tracks::delete_audio_track::<FS>),
+                    ),
             )
             .service(web::scope("/v0/streams/{stream_id}/tracks").route(
                 "/",

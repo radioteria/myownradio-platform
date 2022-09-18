@@ -20,10 +20,10 @@ pub(crate) fn get_user_stream_playing_time(user_stream: &StreamRow) -> Option<Du
             .unwrap_or_default()
             .as_millis() as i64;
 
-        Some(Duration::from_millis(
+        return Some(Duration::from_millis(
             ((now - started_at) + started_from) as u64,
-        ))
-    }
+        ));
+    };
 
     None
 }

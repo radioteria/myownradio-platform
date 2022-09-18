@@ -14,6 +14,8 @@ pub(crate) enum Error {
     DatabaseError(#[from] sqlx::Error),
     #[error("Repository error: {0}")]
     RepositoryError(#[from] RepositoryError),
+    #[error("IO error: {0}")]
+    IOError(#[from] std::io::Error),
 }
 
 #[derive(Serialize)]
@@ -26,6 +28,7 @@ impl ResponseError for Error {
         match self {
             Error::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::RepositoryError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::IOError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
@@ -40,6 +43,9 @@ impl ResponseError for Error {
                 HttpResponse::build(self.status_code()).json(ErrorResponse {
                     error: "repository_error",
                 })
+            }
+            Error::IOError(_) => {
+                HttpResponse::build(self.status_code()).json(ErrorResponse { error: "io_error" })
             }
         }
     }

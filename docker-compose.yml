@@ -111,6 +111,7 @@ services:
       - ./services/radio-manager-backend:/code:rw
       - ./services/radio-manager-backend/.cargo-cache/git:/rust/.cargo/git
       - ./services/radio-manager-backend/.cargo-cache/registry:/rust/.cargo/registry
+      - ./services/backend/.cache/storage:/data:rw
     user: "${UID}:${GID}"
     working_dir: /code
     command: cargo run
@@ -128,6 +129,7 @@ services:
       - MYSQL_USER=mor
       - MYSQL_PASSWORD=mor
       - FILE_SERVER_ENDPOINT=http://file-server:80/
+      - FILE_SYSTEM_ROOT_PATH=/data
     labels:
       - traefik.enable=true
       - traefik.http.routers.radioManager.rule=PathPrefix(`/radio-manager/api/`)

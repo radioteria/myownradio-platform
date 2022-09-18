@@ -92,6 +92,7 @@ pub struct Config {
     #[serde(flatten)]
     pub mysql: MySqlConfig,
     pub file_server_endpoint: String,
+    pub file_system_root_path: String,
 }
 
 impl Config {

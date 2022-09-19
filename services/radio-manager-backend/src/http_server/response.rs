@@ -1,10 +1,9 @@
 use crate::storage::db::repositories::errors::RepositoryError;
-use actix_http::body::BoxBody;
+use crate::tasks::TaskError;
 use actix_http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
 use serde::Serialize;
-use serde_json::json;
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::Debug;
 
 pub(crate) type Response = Result<HttpResponse, Error>;
 
@@ -16,6 +15,8 @@ pub(crate) enum Error {
     RepositoryError(#[from] RepositoryError),
     #[error("IO error: {0}")]
     IOError(#[from] std::io::Error),
+    #[error("Task error: {0}")]
+    TaskError(#[from] TaskError),
 }
 
 #[derive(Serialize)]
@@ -29,6 +30,7 @@ impl ResponseError for Error {
             Error::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::RepositoryError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::IOError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::TaskError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
@@ -47,6 +49,9 @@ impl ResponseError for Error {
             Error::IOError(_) => {
                 HttpResponse::build(self.status_code()).json(ErrorResponse { error: "io_error" })
             }
+            Error::TaskError(_) => HttpResponse::build(self.status_code()).json(ErrorResponse {
+                error: "task_error",
+            }),
         }
     }
 }

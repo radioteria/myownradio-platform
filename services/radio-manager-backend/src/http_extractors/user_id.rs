@@ -1,7 +1,6 @@
 use crate::data_structures::UserId;
 use actix_http::{BoxedPayloadStream, Payload};
 use actix_web::error::ErrorBadRequest;
-use actix_web::web::Data;
 use actix_web::{FromRequest, HttpRequest};
 use futures::future::{err, ok, Ready};
 use tracing::warn;

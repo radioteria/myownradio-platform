@@ -3,8 +3,7 @@ use crate::http_server::response::Response;
 use crate::storage::db::repositories::streams::get_user_streams_by_user_id;
 use crate::MySqlClient;
 use actix_web::web::Data;
-use actix_web::{HttpResponse, Responder};
-use std::ops::DerefMut;
+use actix_web::HttpResponse;
 use tracing::error;
 
 pub(crate) async fn get_user_streams(user_id: UserId, mysql_client: Data<MySqlClient>) -> Response {

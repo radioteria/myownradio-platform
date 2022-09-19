@@ -1,5 +1,5 @@
 use crate::data_structures::{FileId, StreamId, TrackId, UserId};
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde_repr::Serialize_repr;
 
 pub(crate) mod errors;
 pub(crate) mod streams;

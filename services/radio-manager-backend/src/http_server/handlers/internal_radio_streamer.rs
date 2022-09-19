@@ -6,9 +6,8 @@ use crate::storage::db::repositories::streams::{
 use crate::storage::db::repositories::StreamStatus;
 use crate::utils::TeeResultUtils;
 use crate::MySqlClient;
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse};
 use serde::Deserialize;
-use sqlx::{query, Result};
 use tracing::error;
 
 #[derive(Deserialize)]

@@ -8,14 +8,12 @@ mod system;
 mod tasks;
 mod utils;
 
-use crate::config::{Config, LogFormat};
+use crate::config::Config;
 use crate::mysql_client::MySqlClient;
 use crate::storage::fs::local::LocalFileSystem;
 use dotenv::dotenv;
 use http_server::run_server;
-use std::io;
 use std::io::Result;
-use std::sync::Mutex;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 

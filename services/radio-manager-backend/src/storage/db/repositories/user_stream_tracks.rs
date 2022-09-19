@@ -2,9 +2,9 @@ use crate::data_structures::{StreamId, TrackId, DEFAULT_TRACKS_PER_REQUEST};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{FileRow, LinkRow, TrackRow};
+use chrono::Duration;
 use sqlx::{query, Execute, MySql, QueryBuilder};
 use std::ops::{Deref, DerefMut};
-use std::time::Duration;
 use tracing::trace;
 
 #[derive(sqlx::FromRow, Clone)]
@@ -68,9 +68,6 @@ pub(crate) struct GetUserStreamTracksParams {
     pub(crate) filter: Option<String>,
 }
 
-pub(crate) const DEFAULT_GET_USER_STREAM_TRACKS_PARAMS: GetUserStreamTracksParams =
-    GetUserStreamTracksParams::default();
-
 #[tracing::instrument(err, skip(connection))]
 pub(crate) async fn get_stream_tracks(
     connection: &mut MySqlConnection,
@@ -124,7 +121,7 @@ pub(crate) async fn get_single_stream_track_at_time_offset(
     builder.push_bind(stream_id.deref());
 
     builder.push(" AND `r_link`.`time_offset` <= ");
-    builder.push_bind(time_offset.as_millis() as i64);
+    builder.push_bind(time_offset.num_milliseconds());
 
     builder.push(" ORDER BY `r_link`.`t_order` DESC LIMIT 1");
 
@@ -133,7 +130,7 @@ pub(crate) async fn get_single_stream_track_at_time_offset(
     let optional_track = query.fetch_optional(connection.deref_mut()).await?;
 
     Ok(optional_track.map(|track| {
-        let track_time_offset = Duration::from_millis(track.link.time_offset as u64);
+        let track_time_offset = Duration::milliseconds(track.link.time_offset);
         let track_position = *time_offset - track_time_offset;
 
         (track, track_position)
@@ -154,7 +151,7 @@ pub(crate) async fn get_current_and_next_stream_track_at_time_offset(
     builder.push(
         " AND (`r_link`.`time_offset` = 0 OR `r_link`.`time_offset` + `r_tracks`.`duration` > ",
     );
-    builder.push_bind(time_offset.as_millis() as i64);
+    builder.push_bind(time_offset.num_milliseconds());
     builder.push(")");
 
     builder.push(" ORDER BY `r_link`.`t_order` ASC LIMIT 3");
@@ -166,13 +163,13 @@ pub(crate) async fn get_current_and_next_stream_track_at_time_offset(
     match track_rows.as_slice() {
         [] => Ok(None),
         [curr] => {
-            let track_time_offset = Duration::from_millis(curr.link.time_offset as u64);
+            let track_time_offset = Duration::milliseconds(curr.link.time_offset);
             let track_position = *time_offset - track_time_offset;
 
             Ok(Some((curr.clone(), curr.clone(), track_position)))
         }
         [curr, next] | [_, curr, next, ..] => {
-            let track_time_offset = Duration::from_millis(curr.link.time_offset as u64);
+            let track_time_offset = Duration::milliseconds(curr.link.time_offset);
             let track_position = *time_offset - track_time_offset;
 
             Ok(Some((curr.clone(), next.clone(), track_position)))
@@ -182,14 +179,14 @@ pub(crate) async fn get_current_and_next_stream_track_at_time_offset(
 
 #[tracing::instrument(err, skip(connection))]
 pub(crate) async fn delete_track_from_user_stream(
-    mut connection: &mut MySqlConnection,
+    connection: &mut MySqlConnection,
     track_id: &TrackId,
     stream_id: &StreamId,
 ) -> RepositoryResult<()> {
     query("DELETE FROM `r_links` WHERE `r_link`.`stream_id` = ? AND `r_link`.`track_id` = ?")
         .bind(stream_id.deref())
         .bind(track_id.deref())
-        .execute(&mut connection)
+        .execute(connection.deref_mut())
         .await?;
 
     Ok(())
@@ -203,7 +200,7 @@ pub(crate) async fn optimize_tracks_in_user_stream(
     let stream_track_rows = get_stream_tracks(
         &mut connection,
         stream_id,
-        &DEFAULT_GET_USER_STREAM_TRACKS_PARAMS,
+        &GetUserStreamTracksParams::default(),
         &0,
     )
     .await?;
@@ -216,7 +213,7 @@ pub(crate) async fn optimize_tracks_in_user_stream(
             .bind(current_t_order)
             .bind(current_accumulated_duration)
             .bind(stream_track_row.link.id)
-            .execute(&mut connection)
+            .execute(connection.deref_mut())
             .await?;
 
         current_t_order += 1;

@@ -1,5 +1,5 @@
 use crate::data_structures::{
-    FileId, SortingColumn, SortingOrder, TrackId, UserId, DEFAULT_TRACKS_PER_REQUEST,
+    SortingColumn, SortingOrder, TrackId, UserId, DEFAULT_TRACKS_PER_REQUEST,
 };
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
@@ -143,12 +143,12 @@ pub(crate) async fn get_single_user_track(
 
 #[tracing::instrument(err, skip(connection))]
 pub(crate) async fn delete_user_track(
-    mut connection: &mut MySqlConnection,
+    connection: &mut MySqlConnection,
     track_id: &TrackId,
 ) -> RepositoryResult<()> {
     query("DELETE FROM `r_tracks` WHERE `tid` = ?")
         .bind(track_id.deref())
-        .execute(&mut connection)
+        .execute(connection.deref_mut())
         .await?;
 
     Ok(())

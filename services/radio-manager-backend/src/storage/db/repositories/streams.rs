@@ -2,9 +2,9 @@ use crate::data_structures::{StreamId, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::StreamRow;
-use sqlx::{query, query_as, MySql, QueryBuilder, Row};
+use chrono::Duration;
+use sqlx::{query, Execute, MySql, QueryBuilder, Row};
 use std::ops::{Deref, DerefMut};
-use std::time::Duration;
 use tracing::trace;
 
 fn create_select_query_builder<'a>() -> QueryBuilder<'a, MySql> {
@@ -31,7 +31,7 @@ FROM `r_streams`
 }
 
 pub(crate) async fn get_stream_playlist_duration(
-    mut connection: &mut MySqlConnection,
+    connection: &mut MySqlConnection,
     stream_id: &StreamId,
 ) -> RepositoryResult<Duration> {
     let sql = r#"
@@ -50,7 +50,7 @@ WHERE `r_link`.`stream_id` = ?
         .map(|row| row.get::<Option<i64>, _>("sum"))?
         .unwrap_or_default();
 
-    Ok(Duration::from_millis(duration as u64))
+    Ok(Duration::milliseconds(duration))
 }
 
 pub(crate) async fn get_single_stream_by_id(
@@ -116,16 +116,13 @@ WHERE `r_links`.`stream_id` = `r_streams`.`sid`
 
     trace!("Running SQL query: {}", query.sql());
 
-    let stream = query
-        .bind(user_id.deref())
-        .fetch_all(connection.deref_mut())
-        .await?;
+    let stream = query.fetch_all(connection.deref_mut()).await?;
 
     Ok(stream)
 }
 
 pub(crate) async fn seek_user_stream_forward(
-    mut connection: &mut MySqlConnection,
+    connection: &mut MySqlConnection,
     stream_id: &StreamId,
     seek_time: &Duration,
 ) -> RepositoryResult<()> {
@@ -137,9 +134,9 @@ WHERE `sid` = ?
   AND `started_from` IS NOT NULL
 "#,
     )
-    .bind(seek_time.as_millis() as i64)
+    .bind(seek_time.num_milliseconds())
     .bind(stream_id.deref())
-    .execute(&mut connection)
+    .execute(connection.deref_mut())
     .await?;
 
     Ok(())

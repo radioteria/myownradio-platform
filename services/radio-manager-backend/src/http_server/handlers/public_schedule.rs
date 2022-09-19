@@ -10,10 +10,9 @@ use crate::storage::db::repositories::user_stream_tracks::{
 use crate::storage::db::repositories::StreamStatus;
 use crate::utils::TeeResultUtils;
 use crate::{Config, MySqlClient};
-use actix_web::middleware::Logger;
-use actix_web::{web, HttpResponse, Responder};
-use serde::{Deserialize, Serialize};
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use actix_web::{web, HttpResponse};
+use serde::Deserialize;
+use std::time::{SystemTime, UNIX_EPOCH};
 use tracing::error;
 
 pub(crate) async fn get_current_track(
@@ -44,9 +43,8 @@ pub(crate) async fn get_current_track(
     if let (StreamStatus::Playing, Some(started_at), Some(started_from)) =
         (&stream.status, &stream.started, &stream.started_from)
     {
-        let time_offset = Duration::from_millis(
-            (((timestamp - started_at) + started_from) % playlist_duration.as_millis() as i64)
-                as u64,
+        let time_offset = chrono::Duration::milliseconds(
+            ((timestamp - started_at) + started_from) % playlist_duration.num_milliseconds(),
         );
         if let Some((row, track_position)) =
             get_single_stream_track_at_time_offset(&mut connection, &stream_id, &time_offset)
@@ -57,7 +55,7 @@ pub(crate) async fn get_current_track(
                 "code": 1i32,
                 "message": "OK",
                 "data": {
-                    "position": track_position.as_millis() as i64,
+                    "position": track_position.num_milliseconds(),
                     "time_offset": row.link.time_offset,
                     "t_order": row.link.t_order,
                     "unique_id": row.link.unique_id,
@@ -131,9 +129,8 @@ pub(crate) async fn get_now_playing(
     if let (StreamStatus::Playing, Some(started_at), Some(started_from)) =
         (&stream.status, &stream.started, &stream.started_from)
     {
-        let time_offset = Duration::from_millis(
-            (((params.timestamp - started_at) + started_from)
-                % playlist_duration.as_millis() as i64) as u64,
+        let time_offset = chrono::Duration::milliseconds(
+            ((params.timestamp - started_at) + started_from) % playlist_duration.num_milliseconds(),
         );
         if let Some((current, next, track_time_pos)) =
             get_current_and_next_stream_track_at_time_offset(
@@ -151,7 +148,7 @@ pub(crate) async fn get_now_playing(
                     "time": params.timestamp,
                     "playlist_position": current.link.t_order,
                     "current_track": {
-                        "offset": track_time_pos.as_millis() as i64,
+                        "offset": track_time_pos.num_milliseconds(),
                         "title": get_artist_and_title(&current),
                         "url": format!("{}audio/{}", config.file_server_endpoint, get_file_path(&current)),
                         "duration": current.track.duration,

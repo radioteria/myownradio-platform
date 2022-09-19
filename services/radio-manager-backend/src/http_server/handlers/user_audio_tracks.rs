@@ -14,9 +14,8 @@ use crate::storage::fs::FileSystem;
 use crate::utils::TeeResultUtils;
 use crate::{tasks, MySqlClient};
 use actix_web::web::{Data, Form, Path};
-use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use actix_web::{web, HttpResponse};
 use serde::Deserialize;
-use std::ops::Deref;
 use tracing::error;
 
 #[derive(Deserialize)]
@@ -205,7 +204,7 @@ pub(crate) async fn upload_audio_track(
 
 pub(crate) async fn delete_audio_track<FS: FileSystem>(
     user_id: UserId,
-    path: Path<(TrackId)>,
+    path: Path<TrackId>,
     mysql_client: Data<MySqlClient>,
     file_system: Data<FS>,
 ) -> Response {

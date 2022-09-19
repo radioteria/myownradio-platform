@@ -1,5 +1,6 @@
 use crate::storage::fs::FileSystem;
 use crate::utils::TeeResultUtils;
+use async_trait::async_trait;
 use tracing::error;
 
 #[derive(Clone)]
@@ -13,9 +14,11 @@ impl LocalFileSystem {
     }
 }
 
+#[async_trait]
 impl FileSystem for LocalFileSystem {
-    async fn delete_file(&mut self, path: &str) -> std::io::Result<()> {
+    async fn delete_file(&self, path: &str) -> std::io::Result<()> {
         let root_path = self.root_path.clone();
+        let path = path.to_string();
 
         actix_rt::task::spawn_blocking(move || {
             std::fs::remove_file(format!("{}/{}", root_path, path))

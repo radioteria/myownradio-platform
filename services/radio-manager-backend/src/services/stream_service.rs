@@ -1,7 +1,8 @@
 use crate::data_structures::{StreamId, UserId};
 use crate::storage::db::repositories::errors::RepositoryError;
-use crate::storage::db::repositories::streams::get_single_stream_by_id;
-use crate::storage::db::repositories::StreamRow;
+use crate::storage::db::repositories::streams::{get_single_stream_by_id, update_stream};
+use crate::storage::db::repositories::{StreamRow, StreamStatus};
+use crate::system::now;
 use crate::MySqlClient;
 use chrono::Duration;
 
@@ -69,9 +70,35 @@ impl StreamService {
         }
     }
 
-    pub(crate) async fn play(&mut self) {}
+    async fn notify_streaming(&self) -> Result<(), StreamServiceError> {
+        Ok(())
+    }
 
-    pub(crate) async fn stop(&mut self) {}
+    pub(crate) async fn play(&mut self) -> Result<(), StreamServiceError> {
+        let mut connection = self.mysql_client.connection().await?;
+        self.stream_row.status = StreamStatus::Playing;
+        self.stream_row.started_from = Some(0);
+        self.stream_row.started = Some(now());
+        update_stream(&mut connection, &self.stream_row).await?;
+        drop(connection);
+
+        self.notify_streaming();
+
+        Ok(())
+    }
+
+    pub(crate) async fn stop(&mut self) -> Result<(), StreamServiceError> {
+        let mut connection = self.mysql_client.connection().await?;
+        self.stream_row.status = StreamStatus::Stopped;
+        self.stream_row.started_from = None;
+        self.stream_row.started = None;
+        update_stream(&mut connection, &self.stream_row).await?;
+        drop(connection);
+
+        self.notify_streaming();
+
+        Ok(())
+    }
 
     pub(crate) async fn seek_forward(&mut self, time: Duration) {}
 

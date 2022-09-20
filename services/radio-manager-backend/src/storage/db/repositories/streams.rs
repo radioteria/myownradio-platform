@@ -1,7 +1,7 @@
 use crate::data_structures::{StreamId, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::{RepositoryError, RepositoryResult};
-use crate::storage::db::repositories::StreamRow;
+use crate::storage::db::repositories::{StreamRow, StreamStatus};
 use chrono::Duration;
 use sqlx::{query, Execute, MySql, QueryBuilder, Row};
 use std::ops::{Deref, DerefMut};
@@ -119,6 +119,24 @@ WHERE `r_links`.`stream_id` = `r_streams`.`sid`
     let stream = query.fetch_all(connection.deref_mut()).await?;
 
     Ok(stream)
+}
+
+pub(crate) async fn update_stream_status(
+    connection: &mut MySqlConnection,
+    stream_id: &StreamId,
+    stream_status: &StreamStatus,
+    started_at: &Option<i64>,
+    started_from: &Option<i64>,
+) -> RepositoryResult<()> {
+    query("UPDATE `r_streams` SET `status` = ?, `started` = ?, `started_from` = ? WHERE `sid` = ?")
+        .bind(stream_status.clone())
+        .bind(started_at.clone())
+        .bind(started_from.clone())
+        .bind(stream_id.deref())
+        .execute(connection.deref_mut())
+        .await?;
+
+    Ok(())
 }
 
 pub(crate) async fn update_stream(

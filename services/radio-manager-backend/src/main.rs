@@ -3,6 +3,7 @@ mod data_structures;
 mod http_extractors;
 mod http_server;
 mod mysql_client;
+mod services;
 mod storage;
 mod system;
 mod tasks;

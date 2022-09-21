@@ -162,6 +162,8 @@ impl StreamService {
 
         seek_user_stream_forward(&mut connection, &self.stream_id, &-position).await?;
 
+        // @todo Play previous track if position less than 1 second
+
         Ok(())
     }
 
@@ -236,7 +238,7 @@ impl StreamService {
             _ => None,
         };
 
-        debug!("Now playing track before transaction: {:?}", now_playing);
+        debug!("Now playing track before transaction: {:?}", &now_playing);
 
         handler(&mut connection).await?;
 

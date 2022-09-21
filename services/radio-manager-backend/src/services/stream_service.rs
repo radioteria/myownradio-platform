@@ -7,6 +7,7 @@ use crate::storage::db::repositories::streams::{
 };
 use crate::storage::db::repositories::user_stream_tracks::{
     get_single_stream_track_at_time_offset, get_stream_tracks, GetUserStreamTracksParams,
+    TrackFileLinkMergedRow,
 };
 use crate::storage::db::repositories::{StreamRow, StreamStatus};
 use crate::system::now;
@@ -73,14 +74,18 @@ impl StreamService {
         }
     }
 
-    pub(crate) async fn play(&mut self) -> Result<(), StreamServiceError> {
+    pub(crate) async fn play(&self) -> Result<(), StreamServiceError> {
+        self.play_from(&Duration::zero())
+    }
+
+    async fn play_from(&self, position: &Duration) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
         update_stream_status(
             &mut connection,
             &self.stream_id,
             &StreamStatus::Playing,
             &Some(now()),
-            &Some(0),
+            &Some(position.num_milliseconds()),
         )
         .await?;
         drop(connection);
@@ -90,7 +95,7 @@ impl StreamService {
         Ok(())
     }
 
-    pub(crate) async fn stop(&mut self) -> Result<(), StreamServiceError> {
+    pub(crate) async fn stop(&self) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
         update_stream_status(
             &mut connection,
@@ -107,7 +112,7 @@ impl StreamService {
         Ok(())
     }
 
-    pub(crate) async fn seek_forward(&mut self, time: Duration) -> Result<(), StreamServiceError> {
+    pub(crate) async fn seek_forward(&self, time: Duration) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
         seek_user_stream_forward(&mut connection, &self.stream_id, &time).await?;
         drop(connection);
@@ -117,7 +122,7 @@ impl StreamService {
         Ok(())
     }
 
-    pub(crate) async fn seek_backward(&mut self, time: Duration) -> Result<(), StreamServiceError> {
+    pub(crate) async fn seek_backward(&self, time: Duration) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
         seek_user_stream_forward(&mut connection, &self.stream_id, &-time).await?;
         drop(connection);
@@ -127,20 +132,78 @@ impl StreamService {
         Ok(())
     }
 
-    pub(crate) async fn play_next(&mut self) {}
+    pub(crate) async fn play_next(&self) -> Result<(), StreamServiceError> {
+        let mut connection = self.mysql_client.transaction().await?;
 
-    pub(crate) async fn play_prev(&mut self) {}
+        let (track, position) = match self.get_now_playing(&mut connection).await? {
+            Some(now_playing) => now_playing,
+            None => return Err(StreamServiceError::NotFound),
+        };
 
-    pub(crate) async fn play_by_index(&mut self, index: u64) {}
+        let track_duration = Duration::milliseconds(track.track.duration);
+
+        seek_user_stream_forward(
+            &mut connection,
+            &self.stream_id,
+            &(track_duration - position),
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    pub(crate) async fn play_prev(&self) -> Result<(), StreamServiceError> {
+        let mut connection = self.mysql_client.transaction().await?;
+
+        let (_track, position) = match self.get_now_playing(&mut connection).await? {
+            Some(now_playing) => now_playing,
+            None => return Err(StreamServiceError::NotFound),
+        };
+
+        seek_user_stream_forward(&mut connection, &self.stream_id, &-position).await?;
+
+        Ok(())
+    }
+
+    pub(crate) async fn play_by_index(&self, index: u64) {}
 
     async fn notify_streams(&self) -> Result<(), StreamServiceError> {
         Ok(())
     }
 
-    async fn update_stream_in_transaction<H, F>(
-        &mut self,
-        handler: H,
-    ) -> Result<(), StreamServiceError>
+    async fn get_now_playing(
+        &self,
+        mut connection: &mut MySqlConnection,
+    ) -> Result<Option<(TrackFileLinkMergedRow, Duration)>, StreamServiceError> {
+        let stream_row = match get_single_stream_by_id(&mut connection, &self.stream_id).await? {
+            Some(stream_row) => stream_row,
+            None => return Err(StreamServiceError::NotFound),
+        };
+
+        match (
+            &stream_row.status,
+            &stream_row.started,
+            &stream_row.started_from,
+        ) {
+            (StreamStatus::Playing, Some(started_at), Some(started_from)) => {
+                let stream_time_position = now() - started_at + started_from;
+                let playlist_duration =
+                    get_stream_playlist_duration(&mut connection, &self.stream_id).await?;
+                let playlist_time_position =
+                    stream_time_position % playlist_duration.num_milliseconds();
+
+                Ok(get_single_stream_track_at_time_offset(
+                    &mut connection,
+                    &self.stream_id,
+                    &Duration::milliseconds(playlist_time_position),
+                )
+                .await?)
+            }
+            _ => None,
+        }
+    }
+
+    async fn update_stream_in_transaction<H, F>(&self, handler: H) -> Result<(), StreamServiceError>
     where
         H: FnOnce(&mut MySqlConnection) -> F + Future<Output = Result<(), StreamServiceError>>,
         F: Future<Output = Result<(), StreamServiceError>>,

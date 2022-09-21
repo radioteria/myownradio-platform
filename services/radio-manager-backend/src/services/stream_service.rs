@@ -13,7 +13,7 @@ use crate::system::now;
 use crate::MySqlClient;
 use chrono::Duration;
 use std::future::Future;
-use std::ops::DerefMut;
+use std::ops::{DerefMut, Neg};
 use tracing::debug;
 
 #[derive(thiserror::Error, Debug)]
@@ -107,9 +107,25 @@ impl StreamService {
         Ok(())
     }
 
-    pub(crate) async fn seek_forward(&mut self, time: Duration) {}
+    pub(crate) async fn seek_forward(&mut self, time: Duration) -> Result<(), StreamServiceError> {
+        let mut connection = self.mysql_client.connection().await?;
+        seek_user_stream_forward(&mut connection, &self.stream_id, &time).await?;
+        drop(connection);
 
-    pub(crate) async fn seek_backward(&mut self, time: Duration) {}
+        self.notify_streams();
+
+        Ok(())
+    }
+
+    pub(crate) async fn seek_backward(&mut self, time: Duration) -> Result<(), StreamServiceError> {
+        let mut connection = self.mysql_client.connection().await?;
+        seek_user_stream_forward(&mut connection, &self.stream_id, &-time).await?;
+        drop(connection);
+
+        self.notify_streams();
+
+        Ok(())
+    }
 
     pub(crate) async fn play_next(&mut self) {}
 

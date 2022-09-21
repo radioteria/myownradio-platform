@@ -7,7 +7,7 @@ use sqlx::{query, Execute, MySql, QueryBuilder};
 use std::ops::{Deref, DerefMut};
 use tracing::trace;
 
-#[derive(sqlx::FromRow, Clone)]
+#[derive(sqlx::FromRow, Clone, Debug)]
 pub(crate) struct TrackFileLinkMergedRow {
     #[sqlx(flatten)]
     pub(crate) track: TrackRow,

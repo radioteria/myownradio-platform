@@ -14,8 +14,9 @@ use crate::system::now;
 use crate::MySqlClient;
 use chrono::Duration;
 use std::future::Future;
-use std::ops::{DerefMut, Neg};
+use std::ops::{DerefMut, Index, Neg};
 use tracing::debug;
+use tracing::log::kv::Source;
 
 #[derive(thiserror::Error, Debug)]
 pub(crate) enum StreamServiceError {
@@ -29,6 +30,8 @@ pub(crate) enum StreamServiceError {
     RepositoryError(#[from] RepositoryError),
     #[error("Database error: {0}")]
     DatabaseError(#[from] sqlx::Error),
+    #[error("Track index out of bounds")]
+    TrackIndexOutOfBounds,
 }
 
 pub(crate) struct StreamServiceFactory {
@@ -167,7 +170,25 @@ impl StreamService {
         Ok(())
     }
 
-    pub(crate) async fn play_by_index(&self, index: u64) {}
+    pub(crate) async fn play_by_index(&self, index: u64) -> Result<(), StreamServiceError> {
+        let mut connection = self.mysql_client.transaction().await?;
+        let stream_tracks = get_stream_tracks(
+            &mut connection,
+            &self.stream_id,
+            &GetUserStreamTracksParams::default(),
+            &0,
+        )
+        .await?;
+
+        match stream_tracks.get(index as i32) {
+            Some(track) => {
+                self.play_from(track.link.time_offset).await?;
+            }
+            None => return Err(StreamServiceError::TrackIndexOutOfBounds),
+        }
+
+        Ok(())
+    }
 
     async fn notify_streams(&self) -> Result<(), StreamServiceError> {
         Ok(())

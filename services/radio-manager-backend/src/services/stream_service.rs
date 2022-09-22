@@ -6,7 +6,8 @@ use crate::storage::db::repositories::streams::{
     update_stream_status,
 };
 use crate::storage::db::repositories::user_stream_tracks::{
-    get_single_stream_track_at_time_offset, get_stream_tracks, GetUserStreamTracksParams,
+    get_single_stream_track_at_time_offset, get_single_stream_track_by_link_id,
+    get_single_stream_track_by_order_id, get_stream_tracks, GetUserStreamTracksParams,
     TrackFileLinkMergedRow,
 };
 use crate::storage::db::repositories::{StreamRow, StreamStatus};
@@ -254,7 +255,8 @@ impl StreamService {
                     &self.stream_id,
                     &Duration::milliseconds(playlist_time_position),
                 )
-                .await?
+                .await
+                .map(|option| option.map(|(entry, _)| entry))?
             }
             _ => None,
         };
@@ -263,53 +265,55 @@ impl StreamService {
 
         handler(&mut connection).await?;
 
-        if let Some((track, position)) = now_playing {
-            let playlist_after_transaction = get_stream_tracks(
+        if let Some(now_playing_entry) = now_playing {
+            let new_track_offset = get_single_stream_track_by_link_id(
                 &mut connection,
                 &self.stream_id,
-                &GetUserStreamTracksParams::default(),
-                &0,
+                &now_playing_entry.link.id,
             )
-            .await?;
+            .await
+            .map(|row| row.map(|entry| entry.link.time_offset))?;
 
-            match playlist_after_transaction
-                .iter()
-                .find(|entry| entry.link.id == track.link.id)
-            {
-                Some(entry) => {
-                    let offset_diff = track.link.time_offset - entry.link.time_offset;
+            match new_track_offset {
+                Some(new_track_offset) => {
+                    let offset_change = now_playing_entry.link.time_offset - new_track_offset;
 
-                    debug!("Now playing track has changed time_offset: {}", offset_diff);
+                    debug!(
+                        "Now playing track time_offset changed. Seeking forward seamless: {}",
+                        offset_change
+                    );
 
                     seek_user_stream_forward(
                         &mut connection,
                         &self.stream_id,
-                        &Duration::milliseconds(offset_diff),
+                        &Duration::milliseconds(offset_change),
                     )
                     .await?;
                 }
                 None => {
-                    debug!("Now playing track has been removed during transaction");
+                    debug!("Now playing track has been removed during transaction. Moving forward to play the next track");
 
-                    // User deleted track from playlist: starting next track
-                    match playlist_after_transaction
-                        .iter()
-                        .find_or_first(|entry| entry.link.t_order == track.link.t_order)
-                    {
-                        Some(entry) => {
-                            let offset_diff = track.link.time_offset
-                                - entry.link.time_offset
-                                - position.num_milliseconds();
+                    let next_track_time_offset = get_single_stream_track_by_order_id(
+                        &mut connection,
+                        &self.stream_id,
+                        &now_playing_entry.link.t_order,
+                    )
+                    .await
+                    .map(|row| row.map(|entry| entry.link.time_offset))?;
 
+                    match next_track_time_offset {
+                        Some(next_track_time_offset) => {
                             debug!(
-                                "Will start next track playing by changing offset: {}",
-                                offset_diff
+                                "Going to restart stream with initial time_offset: {}",
+                                next_track_time_offset
                             );
 
-                            seek_user_stream_forward(
+                            update_stream_status(
                                 &mut connection,
                                 &self.stream_id,
-                                &Duration::milliseconds(offset_diff),
+                                &StreamStatus::Playing,
+                                &Some(now()),
+                                &Some(next_track_time_offset),
                             )
                             .await?;
                         }

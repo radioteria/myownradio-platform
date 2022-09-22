@@ -1,4 +1,4 @@
-use crate::data_structures::{FileId, StreamId, TrackId, UserId};
+use crate::data_structures::{FileId, LinkId, OrderId, StreamId, TrackId, UserId};
 use serde_repr::Serialize_repr;
 
 pub(crate) mod errors;
@@ -46,10 +46,10 @@ pub(crate) struct FileRow {
 
 #[derive(sqlx::FromRow, Clone, Debug)]
 pub(crate) struct LinkRow {
-    pub(crate) id: i64,
+    pub(crate) id: LinkId,
     pub(crate) stream_id: StreamId,
     pub(crate) track_id: TrackId,
-    pub(crate) t_order: i32,
+    pub(crate) t_order: OrderId,
     pub(crate) unique_id: String,
     pub(crate) time_offset: i64,
 }

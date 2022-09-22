@@ -1,4 +1,4 @@
-use crate::data_structures::{StreamId, TrackId, DEFAULT_TRACKS_PER_REQUEST};
+use crate::data_structures::{LinkId, OrderId, StreamId, TrackId, DEFAULT_TRACKS_PER_REQUEST};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{FileRow, LinkRow, TrackRow};
@@ -175,6 +175,52 @@ pub(crate) async fn get_current_and_next_stream_track_at_time_offset(
             Ok(Some((curr.clone(), next.clone(), track_position)))
         }
     }
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn get_single_stream_track_by_link_id(
+    connection: &mut MySqlConnection,
+    stream_id: &StreamId,
+    link_id: &LinkId,
+) -> RepositoryResult<Option<TrackFileLinkMergedRow>> {
+    let mut builder = create_select_query_builder();
+
+    builder.push(" WHERE `r_link`.`stream_id` = ");
+    builder.push_bind(stream_id.deref());
+
+    builder.push(" AND `r_link`.`id` = ");
+    builder.push_bind(link_id.deref());
+
+    builder.push(" LIMIT 1");
+
+    let query = builder.build_query_as::<TrackFileLinkMergedRow>();
+
+    let optional_track = query.fetch_optional(connection.deref_mut()).await?;
+
+    Ok(optional_track)
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn get_single_stream_track_by_order_id(
+    connection: &mut MySqlConnection,
+    stream_id: &StreamId,
+    order_id: &OrderId,
+) -> RepositoryResult<Option<TrackFileLinkMergedRow>> {
+    let mut builder = create_select_query_builder();
+
+    builder.push(" WHERE `r_link`.`stream_id` = ");
+    builder.push_bind(stream_id.deref());
+
+    builder.push(" AND `r_link`.`t_order` = ");
+    builder.push_bind(order_id.deref());
+
+    builder.push(" LIMIT 1");
+
+    let query = builder.build_query_as::<TrackFileLinkMergedRow>();
+
+    let optional_track = query.fetch_optional(connection.deref_mut()).await?;
+
+    Ok(optional_track)
 }
 
 #[tracing::instrument(err, skip(connection))]

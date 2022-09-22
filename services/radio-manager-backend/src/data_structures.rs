@@ -107,5 +107,29 @@ impl Deref for StreamId {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, sqlx::Type, Debug)]
+#[sqlx(transparent)]
+pub(crate) struct LinkId(i64);
+
+impl Deref for LinkId {
+    type Target = i64;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, sqlx::Type, Debug)]
+#[sqlx(transparent)]
+pub(crate) struct OrderId(i32);
+
+impl Deref for OrderId {
+    type Target = i32;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 // Copied from Defaults.php
 pub(crate) const DEFAULT_TRACKS_PER_REQUEST: i64 = 50;

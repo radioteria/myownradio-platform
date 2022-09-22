@@ -131,5 +131,21 @@ impl Deref for OrderId {
     }
 }
 
+impl std::ops::Add<i32> for OrderId {
+    type Output = OrderId;
+
+    fn add(self, rhs: i32) -> OrderId {
+        OrderId(self.0 + rhs)
+    }
+}
+
+impl std::ops::Sub<i32> for OrderId {
+    type Output = OrderId;
+
+    fn sub(self, rhs: i32) -> OrderId {
+        OrderId(self.0 - rhs)
+    }
+}
+
 // Copied from Defaults.php
 pub(crate) const DEFAULT_TRACKS_PER_REQUEST: i64 = 50;

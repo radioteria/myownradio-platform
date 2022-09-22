@@ -1,5 +1,4 @@
-use crate::data_structures::SortingColumn::Duration;
-use crate::data_structures::{OrderId, StreamId, UserId};
+use crate::data_structures::{LinkId, OrderId, StreamId, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryError;
 use crate::storage::db::repositories::streams::{
@@ -7,9 +6,9 @@ use crate::storage::db::repositories::streams::{
     update_stream_status,
 };
 use crate::storage::db::repositories::user_stream_tracks::{
-    get_single_stream_track_at_time_offset, get_single_stream_track_by_link_id,
-    get_single_stream_track_by_order_id, get_stream_tracks, GetUserStreamTracksParams,
-    TrackFileLinkMergedRow,
+    delete_track_by_link_id, get_single_stream_track_at_time_offset,
+    get_single_stream_track_by_link_id, get_single_stream_track_by_order_id, get_stream_tracks,
+    remove_tracks_by_track_id, GetUserStreamTracksParams, TrackFileLinkMergedRow,
 };
 use crate::storage::db::repositories::{StreamRow, StreamStatus};
 use crate::system::now;
@@ -182,6 +181,34 @@ impl StreamService {
         }
     }
 
+    pub(crate) async fn remove_track_by_link_id(
+        &self,
+        link_id: &LinkId,
+    ) -> Result<(), StreamServiceError> {
+        let link_id = link_id.clone();
+        let stream_id = self.stream_id.clone();
+
+        self.update_stream_in_transaction(|connection| async move {
+            delete_track_by_link_id(connection, &link_id, &stream_id).await?;
+            Ok(())
+        })
+        .await
+    }
+
+    pub(crate) async fn remove_tracks_by_track_id(
+        &self,
+        track_id: &TrackId,
+    ) -> Result<(), StreamServiceError> {
+        let track_id = track_id.clone();
+        let stream_id = self.stream_id.clone();
+
+        self.update_stream_in_transaction(|connection| async move {
+            remove_tracks_by_track_id(connection, &track_id, &stream_id).await?;
+            Ok(())
+        })
+        .await
+    }
+
     async fn play_internal(
         &self,
         mut connection: &mut MySqlConnection,
@@ -247,14 +274,17 @@ impl StreamService {
                 )
                 .await?)
             }
-            _ => None,
+            _ => Ok(None),
         }
     }
 
-    async fn update_stream_in_transaction<H, F>(&self, handler: H) -> Result<(), StreamServiceError>
+    async fn update_stream_in_transaction<'a, 'b: 'a, H, F>(
+        &self,
+        handler: H,
+    ) -> Result<(), StreamServiceError>
     where
-        H: FnOnce(&mut MySqlConnection) -> F + Future<Output = Result<(), StreamServiceError>>,
-        F: Future<Output = Result<(), StreamServiceError>>,
+        H: FnOnce(&'b mut MySqlConnection) -> F,
+        F: Future<Output = Result<(), StreamServiceError>> + 'a,
     {
         let mut connection = self.mysql_client.transaction().await?;
 

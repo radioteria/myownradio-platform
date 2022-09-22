@@ -69,7 +69,7 @@ pub(crate) async fn delete_track_from_user_stream(
         }
     }
 
-    user_stream_tracks::delete_track_from_user_stream(&mut connection, track_id, stream_id).await?;
+    user_stream_tracks::remove_tracks_by_track_id(&mut connection, track_id, stream_id).await?;
 
     user_stream_tracks::optimize_tracks_in_user_stream(&mut connection, stream_id).await?;
 

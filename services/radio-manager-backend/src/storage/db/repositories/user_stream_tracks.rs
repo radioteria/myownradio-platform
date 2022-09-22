@@ -224,7 +224,7 @@ pub(crate) async fn get_single_stream_track_by_order_id(
 }
 
 #[tracing::instrument(err, skip(connection))]
-pub(crate) async fn delete_track_from_user_stream(
+pub(crate) async fn remove_tracks_by_track_id(
     connection: &mut MySqlConnection,
     track_id: &TrackId,
     stream_id: &StreamId,
@@ -232,6 +232,21 @@ pub(crate) async fn delete_track_from_user_stream(
     query("DELETE FROM `r_links` WHERE `r_link`.`stream_id` = ? AND `r_link`.`track_id` = ?")
         .bind(stream_id.deref())
         .bind(track_id.deref())
+        .execute(connection.deref_mut())
+        .await?;
+
+    Ok(())
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn delete_track_by_link_id(
+    connection: &mut MySqlConnection,
+    link_id: &LinkId,
+    stream_id: &StreamId,
+) -> RepositoryResult<()> {
+    query("DELETE FROM `r_links` WHERE `r_link`.`stream_id` = ? AND `r_link`.`id` = ?")
+        .bind(stream_id.deref())
+        .bind(link_id.deref())
         .execute(connection.deref_mut())
         .await?;
 

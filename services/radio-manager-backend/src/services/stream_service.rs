@@ -20,20 +20,6 @@ use std::pin::Pin;
 use tracing::debug;
 use tracing::log::kv::Source;
 
-trait AsyncSingleArgFnOnce<Arg>: FnOnce(Arg) -> <Self as AsyncSingleArgFnOnce<Arg>>::Fut {
-    type Fut: Future<Output = <Self as AsyncSingleArgFnOnce<Arg>>::Output>;
-    type Output;
-}
-
-impl<Arg, F, Fut> AsyncSingleArgFnOnce<Arg> for F
-where
-    F: FnOnce(Arg) -> Fut,
-    Fut: Future,
-{
-    type Fut = Fut;
-    type Output = Fut::Output;
-}
-
 #[derive(thiserror::Error, Debug)]
 pub(crate) enum StreamServiceError {
     #[error("No permission to access this stream")]

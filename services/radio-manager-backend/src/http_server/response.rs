@@ -4,6 +4,7 @@ use actix_http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
 use serde::Serialize;
 use std::fmt::Debug;
+use tracing::error;
 
 pub(crate) type Response = Result<HttpResponse, Error>;
 
@@ -35,6 +36,8 @@ impl ResponseError for Error {
     }
 
     fn error_response(&self) -> HttpResponse {
+        error!(?self, "Error response");
+
         match self {
             Error::DatabaseError(_) => {
                 HttpResponse::build(self.status_code()).json(ErrorResponse {

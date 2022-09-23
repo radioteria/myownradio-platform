@@ -25,7 +25,7 @@ pub(crate) enum StreamServiceError {
     #[error("No permission to access this stream")]
     Forbidden,
     #[error("Stream does not exist")]
-    NotFound,
+    StreamNotFound,
     #[error("Stream has unexpected state")]
     UnexpectedState,
     #[error("Repository error: {0}")]
@@ -59,7 +59,7 @@ impl StreamServiceFactory {
 
         let stream_row = match stream_row {
             Some(stream_row) => stream_row,
-            None => return Err(StreamServiceError::NotFound),
+            None => return Err(StreamServiceError::StreamNotFound),
         };
 
         if &stream_row.uid != user_id {
@@ -129,7 +129,7 @@ impl StreamService {
 
         let (track, position) = match self.get_now_playing(&mut connection).await? {
             Some(now_playing) => now_playing,
-            None => return Err(StreamServiceError::NotFound),
+            None => return Err(StreamServiceError::StreamNotFound),
         };
 
         let next_time_offset = Duration::milliseconds(
@@ -153,7 +153,7 @@ impl StreamService {
 
         let (track, position) = match self.get_now_playing(&mut connection).await? {
             Some(now_playing) => now_playing,
-            None => return Err(StreamServiceError::NotFound),
+            None => return Err(StreamServiceError::StreamNotFound),
         };
 
         let next_time_offset = Duration::milliseconds(
@@ -264,7 +264,7 @@ impl StreamService {
     ) -> Result<Option<(TrackFileLinkMergedRow, Duration)>, StreamServiceError> {
         let stream_row = match get_single_stream_by_id(&mut connection, &self.stream_id).await? {
             Some(stream_row) => stream_row,
-            None => return Err(StreamServiceError::NotFound),
+            None => return Err(StreamServiceError::StreamNotFound),
         };
 
         match (

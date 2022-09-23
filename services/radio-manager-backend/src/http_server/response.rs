@@ -1,3 +1,4 @@
+use crate::services::StreamServiceError;
 use crate::storage::db::repositories::errors::RepositoryError;
 use crate::tasks::TaskError;
 use actix_http::StatusCode;
@@ -17,6 +18,10 @@ pub(crate) enum Error {
     IOError(#[from] std::io::Error),
     #[error("Task error: {0}")]
     TaskError(#[from] TaskError),
+    #[error("Stream not found: {0}")]
+    StreamNotFound(#[from] StreamServiceError::NotFound),
+    #[error("StreamServiceError: {0}")]
+    StreamServiceError(#[from] StreamServiceError),
 }
 
 #[derive(Serialize)]
@@ -31,6 +36,8 @@ impl ResponseError for Error {
             Error::RepositoryError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::IOError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::TaskError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::StreamServiceError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::StreamNotFound(_) => StatusCode::NOT_FOUND,
         }
     }
 
@@ -52,6 +59,16 @@ impl ResponseError for Error {
             Error::TaskError(_) => HttpResponse::build(self.status_code()).json(ErrorResponse {
                 error: "task_error",
             }),
+            Error::StreamServiceError(_) => {
+                HttpResponse::build(self.status_code()).json(ErrorResponse {
+                    error: "stream_service_error",
+                })
+            }
+            Error::StreamNotFound(_) => {
+                HttpResponse::build(self.status_code()).json(ErrorResponse {
+                    error: "stream_not_found_error",
+                })
+            }
         }
     }
 }

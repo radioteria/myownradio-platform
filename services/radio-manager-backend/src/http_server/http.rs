@@ -1,8 +1,9 @@
 use crate::http_server::handlers::{
-    internal_radio_streamer, public_schedule, public_streams, user_audio_tracks, user_streams,
+    internal_radio_streamer, public_schedule, public_streams, user_audio_tracks,
+    user_stream_control, user_streams,
 };
 use crate::storage::fs::FileSystem;
-use crate::{Config, MySqlClient};
+use crate::{Config, MySqlClient, StreamServiceFactory};
 use actix_server::Server;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
@@ -13,6 +14,7 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
     mysql_client: MySqlClient,
     config: Config,
     file_system: FS,
+    stream_service_factory: StreamServiceFactory,
 ) -> Result<Server> {
     let mysql_client = mysql_client.clone();
 
@@ -23,6 +25,7 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
             .app_data(Data::new(mysql_client.clone()))
             .app_data(Data::new(config.clone()))
             .app_data(Data::new(file_system.clone()))
+            .app_data(Data::new(stream_service_factory.clone()))
             .service(
                 web::scope("/v0/tracks")
                     .route("/", web::get().to(user_audio_tracks::get_user_audio_tracks))
@@ -36,6 +39,13 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                 "/",
                 web::get().to(user_audio_tracks::get_user_stream_audio_tracks),
             ))
+            .service(
+                web::scope("/v0/streams/{stream_id}/controls")
+                    .route("/play", web::post().to(user_stream_control::play))
+                    .route("/stop", web::post().to(user_stream_control::stop))
+                    .route("/play-next", web::post().to(user_stream_control::play_next))
+                    .route("/play-prev", web::post().to(user_stream_control::play_prev)),
+            )
             .service(
                 web::scope("/v0/streams").route("/", web::get().to(user_streams::get_user_streams)),
             )

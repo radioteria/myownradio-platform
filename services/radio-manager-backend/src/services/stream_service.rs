@@ -36,11 +36,18 @@ pub(crate) enum StreamServiceError {
     TrackIndexOutOfBounds,
 }
 
+#[derive(Clone)]
 pub(crate) struct StreamServiceFactory {
     mysql_client: MySqlClient,
 }
 
 impl StreamServiceFactory {
+    pub(crate) fn create(mysql_client: &MySqlClient) -> Self {
+        Self {
+            mysql_client: mysql_client.clone(),
+        }
+    }
+
     pub(crate) async fn create_service(
         &self,
         stream_id: &StreamId,

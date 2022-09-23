@@ -12,7 +12,7 @@ use crate::storage::db::repositories::user_tracks::{
 use crate::storage::fs::utils::GetPath;
 use crate::storage::fs::FileSystem;
 use crate::utils::TeeResultUtils;
-use crate::{tasks, MySqlClient};
+use crate::MySqlClient;
 use actix_web::web::{Data, Form, Path};
 use actix_web::{web, HttpResponse};
 use serde::Deserialize;
@@ -234,14 +234,7 @@ pub(crate) async fn delete_audio_track<FS: FileSystem>(
         })?;
 
     for stream_row in stream_rows.iter() {
-        tasks::streams::delete_track_from_user_stream(&mut connection, &track_row, stream_row)
-            .await
-            .tee_err(|error| {
-                error!(
-                    ?error,
-                    "Unable to delete track from user stream in database"
-                )
-            })?;
+        todo!()
     }
 
     delete_user_track(&mut connection, &*track_row).await?;

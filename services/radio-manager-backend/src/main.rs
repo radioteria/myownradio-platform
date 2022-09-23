@@ -6,7 +6,6 @@ mod mysql_client;
 mod services;
 mod storage;
 mod system;
-mod tasks;
 mod utils;
 
 use crate::config::Config;
@@ -24,6 +23,8 @@ async fn main() -> Result<()> {
     dotenv().ok();
 
     let config = Config::from_env();
+
+    let bind_address = config.bind_address.clone();
 
     let subscriber = tracing_subscriber::FmtSubscriber::builder()
         // all spans/events with a level higher than TRACE (e.g, debug, info, warn, etc.)
@@ -43,7 +44,7 @@ async fn main() -> Result<()> {
     let stream_service_factory = StreamServiceFactory::create(&mysql_client);
 
     let http_server = run_server(
-        &config.bind_address,
+        &bind_address,
         mysql_client,
         config,
         file_system,

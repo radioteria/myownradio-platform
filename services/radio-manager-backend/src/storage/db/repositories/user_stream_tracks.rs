@@ -273,7 +273,7 @@ pub(crate) async fn optimize_tracks_in_user_stream(
         query("UPDATE `r_link` SET `t_order` = ?, `time_offset` = ? WHERE `id` = ?")
             .bind(current_t_order)
             .bind(current_accumulated_duration)
-            .bind(stream_track_row.link.id)
+            .bind(&stream_track_row.link.id)
             .execute(connection.deref_mut())
             .await?;
 

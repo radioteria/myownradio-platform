@@ -16,8 +16,23 @@ use crate::MySqlClient;
 use chrono::Duration;
 use std::future::Future;
 use std::ops::{DerefMut, Index, Neg};
+use std::pin::Pin;
 use tracing::debug;
 use tracing::log::kv::Source;
+
+trait AsyncSingleArgFnOnce<Arg>: FnOnce(Arg) -> <Self as AsyncSingleArgFnOnce<Arg>>::Fut {
+    type Fut: Future<Output = <Self as AsyncSingleArgFnOnce<Arg>>::Output>;
+    type Output;
+}
+
+impl<Arg, F, Fut> AsyncSingleArgFnOnce<Arg> for F
+where
+    F: FnOnce(Arg) -> Fut,
+    Fut: Future,
+{
+    type Fut = Fut;
+    type Output = Fut::Output;
+}
 
 #[derive(thiserror::Error, Debug)]
 pub(crate) enum StreamServiceError {
@@ -188,9 +203,11 @@ impl StreamService {
         let link_id = link_id.clone();
         let stream_id = self.stream_id.clone();
 
-        self.update_stream_in_transaction(|connection| async move {
-            delete_track_by_link_id(connection, &link_id, &stream_id).await?;
-            Ok(())
+        self.update_stream_in_transaction(|connection| {
+            Box::pin(async move {
+                delete_track_by_link_id(connection, &link_id, &stream_id).await?;
+                Ok(())
+            })
         })
         .await
     }
@@ -202,9 +219,11 @@ impl StreamService {
         let track_id = track_id.clone();
         let stream_id = self.stream_id.clone();
 
-        self.update_stream_in_transaction(|connection| async move {
-            remove_tracks_by_track_id(connection, &track_id, &stream_id).await?;
-            Ok(())
+        self.update_stream_in_transaction(|connection| {
+            Box::pin(async move {
+                remove_tracks_by_track_id(connection, &track_id, &stream_id).await?;
+                Ok(())
+            })
         })
         .await
     }
@@ -278,13 +297,13 @@ impl StreamService {
         }
     }
 
-    async fn update_stream_in_transaction<'a, 'b: 'a, H, F>(
-        &self,
-        handler: H,
-    ) -> Result<(), StreamServiceError>
+    async fn update_stream_in_transaction<H>(&self, handler: H) -> Result<(), StreamServiceError>
     where
-        H: FnOnce(&'b mut MySqlConnection) -> F,
-        F: Future<Output = Result<(), StreamServiceError>> + 'a,
+        H: for<'a> FnOnce(
+            &'a mut MySqlConnection,
+        ) -> Pin<
+            Box<dyn Future<Output = Result<(), StreamServiceError>> + Send + 'a>,
+        >,
     {
         let mut connection = self.mysql_client.transaction().await?;
 

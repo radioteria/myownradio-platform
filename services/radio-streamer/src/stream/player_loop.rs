@@ -86,28 +86,27 @@ pub(crate) fn make_player_loop(
                     ..
                 } = now_playing;
 
-                let left_offset = current_track.offset;
-                let right_offset = current_track.duration - current_track.offset;
-                let current_track_url = current_track.url.clone();
-                let next_track_url = next_track.url.clone();
+                let (title, url, offset) = {
+                    let left_offset = current_track.offset;
+                    let right_offset = current_track.duration - current_track.offset;
 
-                let (title, mut track_decoder) = match make_ffmpeg_decoder(
-                    &current_track.url,
-                    &(if current_track.offset < ALLOWED_DELAY {
-                        Duration::default()
+                    if right_offset < ALLOWED_DELAY {
+                        (next_track.title, next_track.url, Duration::default())
+                    } else if left_offset < ALLOWED_DELAY {
+                        (current_track.title, current_track.url, Duration::default())
                     } else {
-                        current_track.offset
-                    }),
-                    &path_to_ffmpeg,
-                    &logger,
-                    &metrics,
-                ) {
-                    Ok(track_decoder) => (current_track.title, track_decoder),
-                    Err(error) => {
-                        error!(logger, "Unable create track decoder"; "error" => ?error);
-                        return;
+                        (current_track.title, current_track.url, left_offset)
                     }
                 };
+
+                let mut track_decoder =
+                    match make_ffmpeg_decoder(&url, &offset, &path_to_ffmpeg, &logger, &metrics) {
+                        Ok(track_decoder) => track_decoder,
+                        Err(error) => {
+                            error!(logger, "Unable create track decoder"; "error" => ?error);
+                            return;
+                        }
+                    };
 
                 if let Err(_) = tx.send(PlayerLoopMessage::TrackTitle(title)).await {
                     debug!(

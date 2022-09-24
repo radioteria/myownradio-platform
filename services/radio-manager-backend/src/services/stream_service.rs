@@ -287,7 +287,7 @@ impl StreamService {
         Ok(())
     }
 
-    pub(crate) async fn get_now_playing(
+    async fn get_now_playing(
         &self,
         mut connection: &mut MySqlConnection,
     ) -> Result<Option<(TrackFileLinkMergedRow, Duration)>, StreamServiceError> {

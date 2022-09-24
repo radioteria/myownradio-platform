@@ -4,6 +4,7 @@ use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{FileRow, LinkRow, TrackRow};
 use chrono::Duration;
 use sqlx::{query, Execute, MySql, QueryBuilder};
+use std::mem::swap;
 use std::ops::{Deref, DerefMut};
 use tracing::trace;
 
@@ -148,27 +149,36 @@ pub(crate) async fn get_current_and_next_stream_track_at_time_offset(
     builder.push(" WHERE `r_link`.`stream_id` = ");
     builder.push_bind(stream_id.deref());
 
-    builder.push(
-        " AND (`r_link`.`time_offset` = 0 OR `r_link`.`time_offset` + `r_tracks`.`duration` > ",
-    );
+    builder.push(" AND `r_link`.`time_offset` + `r_tracks`.`duration` > ");
     builder.push_bind(time_offset.num_milliseconds());
-    builder.push(")");
 
-    builder.push(" ORDER BY `r_link`.`t_order` ASC LIMIT 3");
+    builder.push(" ORDER BY `r_link`.`t_order` ASC LIMIT 2");
 
     let query = builder.build_query_as::<TrackFileLinkMergedRow>();
 
     let track_rows = query.fetch_all(connection.deref_mut()).await?;
 
-    match track_rows.as_slice() {
+    match &track_rows[..] {
         [] => Ok(None),
         [curr] => {
             let track_time_offset = Duration::milliseconds(curr.link.time_offset);
             let track_position = *time_offset - track_time_offset;
 
-            Ok(Some((curr.clone(), curr.clone(), track_position)))
+            let track_row = {
+                let mut builder = create_select_query_builder();
+                builder.push(" WHERE `r_link`.`stream_id` = ");
+                builder.push_bind(stream_id.deref());
+                builder.push(" ORDER BY `r_link`.`t_order` ASC LIMIT 1");
+                let query = builder.build_query_as::<TrackFileLinkMergedRow>();
+                query.fetch_optional(connection.deref_mut()).await?
+            };
+
+            match track_row {
+                Some(track_row) => Ok(Some((curr.clone(), track_row, track_position))),
+                None => Ok(None),
+            }
         }
-        [curr, next] | [_, curr, next, ..] => {
+        [curr, next, ..] => {
             let track_time_offset = Duration::milliseconds(curr.link.time_offset);
             let track_position = *time_offset - track_time_offset;
 

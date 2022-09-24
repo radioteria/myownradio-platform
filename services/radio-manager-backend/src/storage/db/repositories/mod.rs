@@ -6,6 +6,7 @@ pub(crate) mod streams;
 pub(crate) mod user_stream_tracks;
 pub(crate) mod user_tracks;
 
+#[allow(dead_code)]
 #[derive(sqlx::FromRow, Clone, Debug)]
 pub(crate) struct TrackRow {
     pub(crate) tid: TrackId,
@@ -34,6 +35,7 @@ pub(crate) struct TrackRow {
     pub(crate) deleted: Option<i64>,
 }
 
+#[allow(dead_code)]
 #[derive(sqlx::FromRow, Clone, Debug)]
 pub(crate) struct FileRow {
     pub(crate) file_id: FileId,
@@ -44,6 +46,7 @@ pub(crate) struct FileRow {
     pub(crate) use_count: i32,
 }
 
+#[allow(dead_code)]
 #[derive(sqlx::FromRow, Clone, Debug)]
 pub(crate) struct LinkRow {
     pub(crate) id: LinkId,
@@ -61,6 +64,7 @@ pub(crate) enum StreamStatus {
     Playing = 1,
 }
 
+#[allow(dead_code)]
 #[derive(sqlx::FromRow, Clone)]
 pub(crate) struct StreamRow {
     pub(crate) sid: StreamId,

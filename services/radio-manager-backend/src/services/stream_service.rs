@@ -125,26 +125,6 @@ impl StreamService {
         Ok(())
     }
 
-    pub(crate) async fn seek_forward(&self, time: Duration) -> Result<(), StreamServiceError> {
-        let mut connection = self.mysql_client.connection().await?;
-        seek_user_stream_forward(&mut connection, &self.stream_id, &time).await?;
-        drop(connection);
-
-        self.notify_streams();
-
-        Ok(())
-    }
-
-    pub(crate) async fn seek_backward(&self, time: Duration) -> Result<(), StreamServiceError> {
-        let mut connection = self.mysql_client.connection().await?;
-        seek_user_stream_forward(&mut connection, &self.stream_id, &-time).await?;
-        drop(connection);
-
-        self.notify_streams();
-
-        Ok(())
-    }
-
     pub(crate) async fn play_next(&self) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
 
@@ -226,6 +206,7 @@ impl StreamService {
         }
     }
 
+    #[allow(dead_code)]
     pub(crate) async fn remove_track_by_link_id(
         &self,
         link_id: &LinkId,
@@ -242,6 +223,7 @@ impl StreamService {
         .await
     }
 
+    #[allow(dead_code)]
     pub(crate) async fn remove_tracks_by_track_id(
         &self,
         track_id: &TrackId,
@@ -289,38 +271,6 @@ impl StreamService {
         .await?;
 
         Ok(())
-    }
-
-    async fn get_now_playing(
-        &self,
-        mut connection: &mut MySqlConnection,
-    ) -> Result<Option<(TrackFileLinkMergedRow, Duration)>, StreamServiceError> {
-        let stream_row = match get_single_stream_by_id(&mut connection, &self.stream_id).await? {
-            Some(stream_row) => stream_row,
-            None => return Err(StreamServiceError::StreamNotFound),
-        };
-
-        match (
-            &stream_row.status,
-            &stream_row.started,
-            &stream_row.started_from,
-        ) {
-            (StreamStatus::Playing, Some(started_at), Some(started_from)) => {
-                let stream_time_position = now() - started_at + started_from;
-                let playlist_duration =
-                    get_stream_playlist_duration(&mut connection, &self.stream_id).await?;
-                let playlist_time_position =
-                    stream_time_position % playlist_duration.num_milliseconds();
-
-                Ok(get_single_stream_track_at_time_offset(
-                    &mut connection,
-                    &self.stream_id,
-                    &Duration::milliseconds(playlist_time_position),
-                )
-                .await?)
-            }
-            _ => Ok(None),
-        }
     }
 
     async fn update_stream_in_transaction<H>(&self, handler: H) -> Result<(), StreamServiceError>

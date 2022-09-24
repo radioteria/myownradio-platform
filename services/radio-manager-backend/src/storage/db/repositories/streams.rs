@@ -139,50 +139,6 @@ pub(crate) async fn update_stream_status(
     Ok(())
 }
 
-pub(crate) async fn update_stream(
-    connection: &mut MySqlConnection,
-    stream_row: &StreamRow,
-) -> RepositoryResult<()> {
-    query(
-        r#"
-UPDATE `r_streams`
-SET `uid`               = ?,
-    `name`              = ?,
-    `permalink`         = ?,
-    `info`              = ?,
-    `jingle_interval`   = ?,
-    `status`            = ?,
-    `started`           = ?,
-    `started_from`      = ?,
-    `access`            = ?,
-    `category`          = ?,
-    `hashtags`          = ?,
-    `cover`             = ?,
-    `cover_background`  = ?,
-    `created`           = ?
-WHERE `sid` = ?
-    "#,
-    )
-    .bind(stream_row.uid.deref())
-    .bind(stream_row.name.clone())
-    .bind(stream_row.permalink.clone())
-    .bind(stream_row.info.clone())
-    .bind(stream_row.jingle_interval)
-    .bind(stream_row.status.clone())
-    .bind(stream_row.started.clone())
-    .bind(stream_row.started_from.clone())
-    .bind(stream_row.access.clone())
-    .bind(stream_row.category.clone())
-    .bind(stream_row.hashtags.clone())
-    .bind(stream_row.cover.clone())
-    .bind(stream_row.created)
-    .bind(stream_row.sid.deref())
-    .execute(connection.deref_mut())
-    .await?;
-
-    Ok(())
-}
-
 pub(crate) async fn seek_user_stream_forward(
     connection: &mut MySqlConnection,
     stream_id: &StreamId,

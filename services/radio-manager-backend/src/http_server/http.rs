@@ -1,6 +1,5 @@
 use crate::http_server::handlers::{
-    internal_radio_streamer, public_schedule, public_streams, user_audio_tracks,
-    user_stream_control, user_streams,
+    public_schedule, public_streams, user_audio_tracks, user_stream_control, user_streams,
 };
 use crate::storage::fs::FileSystem;
 use crate::{Config, MySqlClient, StreamServiceFactory};
@@ -44,7 +43,11 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                     .route("/play", web::post().to(user_stream_control::play))
                     .route("/stop", web::post().to(user_stream_control::stop))
                     .route("/play-next", web::post().to(user_stream_control::play_next))
-                    .route("/play-prev", web::post().to(user_stream_control::play_prev)),
+                    .route("/play-prev", web::post().to(user_stream_control::play_prev))
+                    .route(
+                        "/play-from/{order_id}",
+                        web::post().to(user_stream_control::play_from),
+                    ),
             )
             .service(
                 web::scope("/v0/streams").route("/", web::get().to(user_streams::get_user_streams)),
@@ -61,10 +64,6 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                     )
                     .route("/info", web::get().to(public_streams::get_stream_info)),
             )
-            .service(web::scope("/radio-streamer").route(
-                "/streams/{stream_id}/skip-current-track",
-                web::post().to(internal_radio_streamer::skip_current_track),
-            ))
     });
 
     Ok(server.workers(2).bind(bind_address)?.run())

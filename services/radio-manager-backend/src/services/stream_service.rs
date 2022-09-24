@@ -1,7 +1,7 @@
 use crate::config::RadioStreamerConfig;
 use crate::data_structures::{LinkId, OrderId, StreamId, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
-use crate::storage::db::repositories::errors::RepositoryError;
+use crate::storage::db::repositories::errors::{RepositoryError, RepositoryResult};
 use crate::storage::db::repositories::streams::{
     get_single_stream_by_id, get_stream_playlist_duration, seek_user_stream_forward,
     update_stream_status,
@@ -108,6 +108,8 @@ impl StreamService {
         self.play_internal(&mut connection, &position).await?;
         drop(connection);
 
+        self.notify_streams();
+
         Ok(())
     }
 
@@ -115,6 +117,8 @@ impl StreamService {
         let mut connection = self.mysql_client.connection().await?;
         self.stop_internal(&mut connection).await?;
         drop(connection);
+
+        self.notify_streams();
 
         Ok(())
     }
@@ -140,7 +144,7 @@ impl StreamService {
     }
 
     pub(crate) async fn play_next(&self) -> Result<(), StreamServiceError> {
-        let mut connection = self.mysql_client.transaction().await?;
+        let mut connection = self.mysql_client.connection().await?;
 
         let (track, position) = match self.get_now_playing(&mut connection).await? {
             Some(now_playing) => now_playing,
@@ -163,13 +167,13 @@ impl StreamService {
         self.play_internal(&mut connection, &next_time_offset)
             .await?;
 
-        connection.commit().await?;
+        self.notify_streams();
 
         Ok(())
     }
 
     pub(crate) async fn play_prev(&self) -> Result<(), StreamServiceError> {
-        let mut connection = self.mysql_client.transaction().await?;
+        let mut connection = self.mysql_client.connection().await?;
 
         let (track, position) = match self.get_now_playing(&mut connection).await? {
             Some(now_playing) => now_playing,
@@ -192,7 +196,7 @@ impl StreamService {
         self.play_internal(&mut connection, &next_time_offset)
             .await?;
 
-        connection.commit().await?;
+        self.notify_streams();
 
         Ok(())
     }
@@ -201,7 +205,7 @@ impl StreamService {
         &self,
         order_id: &OrderId,
     ) -> Result<(), StreamServiceError> {
-        let mut connection = self.mysql_client.transaction().await?;
+        let mut connection = self.mysql_client.connection().await?;
 
         match get_single_stream_track_by_order_id(&mut connection, &self.stream_id, order_id)
             .await?
@@ -210,7 +214,7 @@ impl StreamService {
                 let position = Duration::milliseconds(track.link.time_offset);
                 self.play_internal(&mut connection, &position).await?;
 
-                connection.commit().await?;
+                self.notify_streams();
 
                 Ok(())
             }
@@ -264,8 +268,6 @@ impl StreamService {
         )
         .await?;
 
-        self.notify_streams();
-
         Ok(())
     }
 
@@ -282,12 +284,10 @@ impl StreamService {
         )
         .await?;
 
-        self.notify_streams();
-
         Ok(())
     }
 
-    async fn get_now_playing(
+    pub(crate) async fn get_now_playing(
         &self,
         mut connection: &mut MySqlConnection,
     ) -> Result<Option<(TrackFileLinkMergedRow, Duration)>, StreamServiceError> {

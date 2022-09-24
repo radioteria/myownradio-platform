@@ -43,9 +43,6 @@ pub(crate) fn make_player_loop(
         let backend_client = backend_client.clone();
         let logger = logger.clone();
 
-        let stored_next_track_decoder: Arc<Mutex<Option<_>>> = Arc::default();
-        let next_track_future: Mutex<Option<JoinHandle<_>>> = Mutex::default();
-
         let mut tx = tx;
 
         async move {
@@ -65,10 +62,6 @@ pub(crate) fn make_player_loop(
             let mut offset_pts = Duration::from_secs(0);
 
             loop {
-                if let Some(future) = next_track_future.lock().unwrap().take() {
-                    future.abort();
-                }
-
                 let elapsed_time = stream_start_time + offset_pts;
                 trace!(logger, "Elapsed stream time"; "time" => ?elapsed_time);
 
@@ -98,76 +91,23 @@ pub(crate) fn make_player_loop(
                 let current_track_url = current_track.url.clone();
                 let next_track_url = next_track.url.clone();
 
-                let (title, mut track_decoder) = match stored_next_track_decoder
-                    .lock()
-                    .expect("Unable to obtain lock on reading stored next track decoder")
-                    .take()
-                {
-                    Some((url, track_decoder))
-                        if left_offset < ALLOWED_DELAY && current_track_url == url =>
-                    {
-                        if !left_offset.is_zero() {
-                            warn!(logger, "We are late a bit"; "delay" => ?left_offset);
-                        }
-
-                        (current_track.title, track_decoder)
+                let (title, mut track_decoder) = match make_ffmpeg_decoder(
+                    &current_track.url,
+                    &(if current_track.offset < ALLOWED_DELAY {
+                        Duration::default()
+                    } else {
+                        current_track.offset
+                    }),
+                    &path_to_ffmpeg,
+                    &logger,
+                    &metrics,
+                ) {
+                    Ok(track_decoder) => (current_track.title, track_decoder),
+                    Err(error) => {
+                        error!(logger, "Unable create track decoder"; "error" => ?error);
+                        return;
                     }
-                    Some((url, track_decoder))
-                        if right_offset < ALLOWED_DELAY && next_track_url == url =>
-                    {
-                        if !right_offset.is_zero() {
-                            warn!(logger, "We are soon a bit"; "advance" => ?right_offset);
-                        }
-
-                        (next_track.title, track_decoder)
-                    }
-                    _ => match make_ffmpeg_decoder(
-                        &current_track.url,
-                        &(if current_track.offset < ALLOWED_DELAY {
-                            Duration::default()
-                        } else {
-                            current_track.offset
-                        }),
-                        &path_to_ffmpeg,
-                        &logger,
-                        &metrics,
-                    ) {
-                        Ok(track_decoder) => (current_track.title, track_decoder),
-                        Err(error) => {
-                            error!(logger, "Unable create track decoder"; "error" => ?error);
-                            return;
-                        }
-                    },
                 };
-
-                next_track_future.lock().unwrap().replace(actix_rt::spawn({
-                    let logger = logger.clone();
-                    let metrics = metrics.clone();
-                    let next_track_url = next_track.url.clone();
-                    let stored_next_track_decoder = stored_next_track_decoder.clone();
-                    let path_to_ffmpeg = path_to_ffmpeg.clone();
-
-                    async move {
-                        let next_track_decoder = match make_ffmpeg_decoder(
-                            &next_track_url,
-                            &Duration::from_secs(0),
-                            &path_to_ffmpeg,
-                            &logger,
-                            &metrics,
-                        ) {
-                            Ok(next_track_decoder) => next_track_decoder,
-                            Err(error) => {
-                                error!(logger, "Unable create next track decoder"; "error" => ?error);
-                                return;
-                            }
-                        };
-
-                        stored_next_track_decoder
-                            .lock()
-                            .unwrap()
-                            .replace((next_track_url, next_track_decoder));
-                    }
-                }));
 
                 if let Err(_) = tx.send(PlayerLoopMessage::TrackTitle(title)).await {
                     debug!(

@@ -120,9 +120,6 @@ impl BackendClient {
             }
         };
 
-        let b = String::from_utf8_lossy(&bytes).to_string();
-        debug!(self.logger, "Resp"; "b" => b);
-
         match serde_json::from_slice::<NowPlayingResponse>(&bytes) {
             Ok(NowPlayingResponse {
                 code,

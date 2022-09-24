@@ -130,6 +130,8 @@ services:
       - MYSQL_PASSWORD=mor
       - FILE_SERVER_ENDPOINT=http://file-server:80/
       - FILE_SYSTEM_ROOT_PATH=/data
+      - RADIO_STREAMER_ENDPOINT=http://radio-streamer:8080
+      - RADIO_STREAMER_TOKEN=secret
     labels:
       - traefik.enable=true
       - traefik.http.routers.radioManager.rule=PathPrefix(`/radio-manager/api/`)

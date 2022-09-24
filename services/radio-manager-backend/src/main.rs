@@ -41,7 +41,8 @@ async fn main() -> Result<()> {
 
     let file_system = LocalFileSystem::create(config.file_system_root_path.clone());
 
-    let stream_service_factory = StreamServiceFactory::create(&mysql_client);
+    let stream_service_factory =
+        StreamServiceFactory::create(&mysql_client, &config.radio_streamer);
 
     let http_server = run_server(
         &bind_address,

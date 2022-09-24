@@ -1,3 +1,4 @@
+use crate::config::RadioStreamerConfig;
 use crate::data_structures::{LinkId, OrderId, StreamId, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryError;
@@ -14,11 +15,13 @@ use crate::storage::db::repositories::{StreamRow, StreamStatus};
 use crate::system::now;
 use crate::MySqlClient;
 use chrono::Duration;
+use futures::SinkExt;
+use reqwest::StatusCode;
 use std::future::Future;
 use std::ops::{DerefMut, Index, Neg};
 use std::pin::Pin;
-use tracing::debug;
 use tracing::log::kv::Source;
+use tracing::{debug, error};
 
 #[derive(thiserror::Error, Debug)]
 pub(crate) enum StreamServiceError {
@@ -39,12 +42,17 @@ pub(crate) enum StreamServiceError {
 #[derive(Clone)]
 pub(crate) struct StreamServiceFactory {
     mysql_client: MySqlClient,
+    radio_streamer_config: RadioStreamerConfig,
 }
 
 impl StreamServiceFactory {
-    pub(crate) fn create(mysql_client: &MySqlClient) -> Self {
+    pub(crate) fn create(
+        mysql_client: &MySqlClient,
+        radio_streamer_config: &RadioStreamerConfig,
+    ) -> Self {
         Self {
             mysql_client: mysql_client.clone(),
+            radio_streamer_config: radio_streamer_config.clone(),
         }
     }
 
@@ -69,6 +77,7 @@ impl StreamServiceFactory {
         Ok(StreamService::create(
             stream_id.clone(),
             self.mysql_client.clone(),
+            self.radio_streamer_config.clone(),
         ))
     }
 }
@@ -76,13 +85,19 @@ impl StreamServiceFactory {
 pub(crate) struct StreamService {
     stream_id: StreamId,
     mysql_client: MySqlClient,
+    radio_streamer_config: RadioStreamerConfig,
 }
 
 impl StreamService {
-    pub(crate) fn create(stream_id: StreamId, mysql_client: MySqlClient) -> Self {
+    pub(crate) fn create(
+        stream_id: StreamId,
+        mysql_client: MySqlClient,
+        radio_streamer_config: RadioStreamerConfig,
+    ) -> Self {
         Self {
             stream_id,
             mysql_client,
+            radio_streamer_config,
         }
     }
 
@@ -398,8 +413,35 @@ impl StreamService {
     }
 
     fn notify_streams(&self) {
+        let endpoint = self.radio_streamer_config.endpoint.clone();
+        let token = self.radio_streamer_config.token.clone();
+        let stream_id = self.stream_id.clone();
+
         actix_rt::spawn(async move {
-            // @todo
+            let client = reqwest::Client::new();
+            let response = match client
+                .get(format!("{}/restart/{}", endpoint, *stream_id))
+                .header("token", token)
+                .send()
+                .await
+            {
+                Ok(res) => res,
+                Err(error) => {
+                    error!(
+                        ?error,
+                        "Error occurred on sending request to radio streamer"
+                    );
+                    return;
+                }
+            };
+
+            let status = response.status();
+
+            if !matches!(status, StatusCode::OK) {
+                let body = response.text().await;
+
+                error!(?status, ?body, "Unexpected response")
+            }
         });
     }
 }

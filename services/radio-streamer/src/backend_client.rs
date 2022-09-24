@@ -3,7 +3,7 @@ extern crate serde_millis;
 use actix_web::http::StatusCode;
 use awc::Client;
 use serde::{Deserialize, Serialize};
-use slog::{error, Logger};
+use slog::{debug, error, Logger};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Deserialize, Debug, Serialize)]
@@ -119,6 +119,9 @@ impl BackendClient {
                 return Err(MorBackendClientError::ResponseReadError);
             }
         };
+
+        let b = String::from_utf8_lossy(&bytes).to_string();
+        debug!(self.logger, "Resp"; "b" => b);
 
         match serde_json::from_slice::<NowPlayingResponse>(&bytes) {
             Ok(NowPlayingResponse {

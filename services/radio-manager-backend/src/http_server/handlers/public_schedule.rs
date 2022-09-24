@@ -8,7 +8,7 @@ use crate::storage::db::repositories::user_stream_tracks::{
     TrackFileLinkMergedRow,
 };
 use crate::storage::db::repositories::StreamStatus;
-use crate::utils::TeeResultUtils;
+use crate::utils::{positive_mod, TeeResultUtils};
 use crate::{Config, MySqlClient};
 use actix_web::{web, HttpResponse};
 use serde::Deserialize;
@@ -129,9 +129,10 @@ pub(crate) async fn get_now_playing(
     if let (StreamStatus::Playing, Some(started_at), Some(started_from)) =
         (&stream.status, &stream.started, &stream.started_from)
     {
-        let time_offset = chrono::Duration::milliseconds(
-            ((params.timestamp - started_at) + started_from) % playlist_duration.num_milliseconds(),
-        );
+        let time_offset = chrono::Duration::milliseconds(positive_mod(
+            ((params.timestamp - started_at) + started_from),
+            playlist_duration.num_milliseconds(),
+        ));
         if let Some((current, next, track_time_pos)) =
             get_current_and_next_stream_track_at_time_offset(
                 &mut connection,

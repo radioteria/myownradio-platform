@@ -3,7 +3,7 @@ extern crate serde_millis;
 use actix_web::http::StatusCode;
 use awc::Client;
 use serde::{Deserialize, Serialize};
-use slog::{error, Logger};
+use slog::{debug, error, Logger};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Deserialize, Debug, Serialize)]

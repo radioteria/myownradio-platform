@@ -4,7 +4,7 @@ use tracing::Level;
 
 #[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
 #[serde(field_identifier, remote = "Level", untagged)]
-pub enum LogLevel {
+pub(crate) enum LogLevel {
     ERROR,
     WARN,
     INFO,
@@ -15,7 +15,7 @@ pub enum LogLevel {
 
 #[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
 #[serde(field_identifier, untagged)]
-pub enum LogFormat {
+pub(crate) enum LogFormat {
     Json,
     Term,
 }
@@ -55,19 +55,19 @@ fn default_path_to_ffmpeg() -> String {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct MySqlConfig {
+pub(crate) struct MySqlConfig {
     #[serde(rename = "mysql_host")]
-    pub host: String,
+    pub(crate) host: String,
     #[serde(rename = "mysql_user")]
-    pub user: String,
+    pub(crate) user: String,
     #[serde(rename = "mysql_password")]
-    pub password: String,
+    pub(crate) password: String,
     #[serde(rename = "mysql_database")]
-    pub database: String,
+    pub(crate) database: String,
 }
 
 impl MySqlConfig {
-    pub fn connection_string(&self) -> String {
+    pub(crate) fn connection_string(&self) -> String {
         format!(
             "mysql://{}:{}@{}/{}",
             self.user, self.password, self.host, self.database
@@ -76,26 +76,37 @@ impl MySqlConfig {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct Config {
+pub(crate) struct RadioStreamerConfig {
+    #[serde(rename = "radio_streamer_endpoint")]
+    pub(crate) endpoint: String,
+    #[serde(rename = "radio_streamer_token")]
+    pub(crate) token: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub(crate) struct Config {
     #[serde(default = "default_bind_address")]
-    pub bind_address: String,
+    pub(crate) bind_address: String,
     #[serde(default = "default_path_to_ffmpeg")]
-    pub path_to_ffmpeg: String,
+    pub(crate) path_to_ffmpeg: String,
     #[serde(default = "default_path_to_ffprobe")]
-    pub path_to_ffprobe: String,
+    pub(crate) path_to_ffprobe: String,
     #[serde(with = "LogLevel", default = "default_log_level")]
-    pub log_level: Level,
+    pub(crate) log_level: Level,
     #[serde(default = "default_log_format")]
-    pub log_format: LogFormat,
+    pub(crate) log_format: LogFormat,
     #[serde(default = "default_shutdown_timeout")]
-    pub shutdown_timeout: u64,
+    pub(crate) shutdown_timeout: u64,
     #[serde(flatten)]
-    pub mysql: MySqlConfig,
-    pub file_server_endpoint: String,
+    pub(crate) mysql: MySqlConfig,
+    #[serde(flatten)]
+    pub(crate) radio_streamer: RadioStreamerConfig,
+    pub(crate) file_server_endpoint: String,
+    pub(crate) file_system_root_path: String,
 }
 
 impl Config {
-    pub fn from_env() -> Self {
+    pub(crate) fn from_env() -> Self {
         match envy::from_env::<Self>() {
             Ok(config) => config,
             Err(error) => panic!("Missing environment variable: {:#?}", error),

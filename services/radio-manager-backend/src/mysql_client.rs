@@ -1,9 +1,8 @@
 use crate::config::MySqlConfig;
 use std::ops::{Deref, DerefMut};
-use std::pin::Pin;
 
 use sqlx::pool::PoolConnection;
-use sqlx::{mysql, Error, MySql, MySqlExecutor, Pool, Transaction};
+use sqlx::{mysql, Error, MySql, Pool, Transaction};
 
 pub(crate) enum MySqlConnection {
     Pool(PoolConnection<MySql>),
@@ -22,7 +21,7 @@ impl Deref for MySqlConnection {
 }
 
 impl MySqlConnection {
-    pub(crate) async fn commit(mut self) -> Result<(), Error> {
+    pub(crate) async fn commit(self) -> Result<(), Error> {
         if let MySqlConnection::Transaction(tx) = self {
             tx.commit().await?;
         }

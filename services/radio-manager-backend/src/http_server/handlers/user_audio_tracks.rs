@@ -1,14 +1,20 @@
-use crate::data_structures::{SortingColumn, SortingOrder, StreamId, UserId};
+use crate::data_structures::{SortingColumn, SortingOrder, StreamId, TrackId, UserId};
 use crate::http_server::response::Response;
-use crate::storage::db::repositories::streams::get_single_stream_by_id;
+use crate::storage::db::repositories::streams::{
+    get_single_stream_by_id, get_user_streams_having_track,
+};
 use crate::storage::db::repositories::user_stream_tracks::{
     get_stream_tracks, GetUserStreamTracksParams,
 };
-use crate::storage::db::repositories::user_tracks::{get_user_tracks, GetUserTracksParams};
+use crate::storage::db::repositories::user_tracks::{
+    delete_user_track, get_single_user_track, get_user_tracks, GetUserTracksParams,
+};
+use crate::storage::fs::utils::GetPath;
+use crate::storage::fs::FileSystem;
 use crate::utils::TeeResultUtils;
 use crate::MySqlClient;
-use actix_web::web::{Data, Form};
-use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use actix_web::web::{Data, Form, Path};
+use actix_web::{web, HttpResponse};
 use serde::Deserialize;
 use tracing::error;
 
@@ -193,5 +199,51 @@ pub(crate) async fn upload_audio_track(
     form: Form<UploadAudioTrackForm>,
     mysql_client: Data<MySqlClient>,
 ) -> Response {
+    Ok(HttpResponse::Ok().finish())
+}
+
+pub(crate) async fn delete_audio_track<FS: FileSystem>(
+    user_id: UserId,
+    path: Path<TrackId>,
+    mysql_client: Data<MySqlClient>,
+    file_system: Data<FS>,
+) -> Response {
+    let track_id = path.into_inner();
+
+    let mut connection = mysql_client.transaction().await?;
+
+    let track_row = match get_single_user_track(&mut connection, &track_id)
+        .await
+        .tee_err(|error| error!(?error, "Unable to get user track from database"))?
+    {
+        Some(track_row) => track_row,
+        None => return Ok(HttpResponse::NotFound().finish()),
+    };
+
+    if track_row.track.uid != user_id {
+        return Ok(HttpResponse::Forbidden().finish());
+    }
+
+    let stream_rows = get_user_streams_having_track(&mut connection, &track_row.track.tid)
+        .await
+        .tee_err(|error| {
+            error!(
+                ?error,
+                "Unable to get user streams having given track from database"
+            )
+        })?;
+
+    for stream_row in stream_rows.iter() {
+        todo!()
+    }
+
+    delete_user_track(&mut connection, &*track_row).await?;
+
+    file_system
+        .delete_file(&format!("audio/{}", track_row.file.get_path()))
+        .await?;
+
+    connection.commit().await?;
+
     Ok(HttpResponse::Ok().finish())
 }

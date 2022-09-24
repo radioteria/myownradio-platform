@@ -2,7 +2,7 @@ use crate::data_structures::StreamId;
 use crate::http_server::response::Response;
 use crate::storage::db::repositories::streams::get_single_stream_by_id;
 use crate::{Config, MySqlClient};
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse};
 use tracing::error;
 
 pub(crate) async fn get_stream_info(

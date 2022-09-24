@@ -1,12 +1,13 @@
-use crate::data_structures::{FileId, StreamId, TrackId, UserId};
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use crate::data_structures::{FileId, LinkId, OrderId, StreamId, TrackId, UserId};
+use serde_repr::Serialize_repr;
 
 pub(crate) mod errors;
 pub(crate) mod streams;
 pub(crate) mod user_stream_tracks;
 pub(crate) mod user_tracks;
 
-#[derive(sqlx::FromRow, Clone)]
+#[allow(dead_code)]
+#[derive(sqlx::FromRow, Clone, Debug)]
 pub(crate) struct TrackRow {
     pub(crate) tid: TrackId,
     pub(crate) file_id: Option<FileId>,
@@ -34,7 +35,8 @@ pub(crate) struct TrackRow {
     pub(crate) deleted: Option<i64>,
 }
 
-#[derive(sqlx::FromRow, Clone)]
+#[allow(dead_code)]
+#[derive(sqlx::FromRow, Clone, Debug)]
 pub(crate) struct FileRow {
     pub(crate) file_id: FileId,
     pub(crate) file_size: i64,
@@ -44,12 +46,13 @@ pub(crate) struct FileRow {
     pub(crate) use_count: i32,
 }
 
-#[derive(sqlx::FromRow, Clone)]
+#[allow(dead_code)]
+#[derive(sqlx::FromRow, Clone, Debug)]
 pub(crate) struct LinkRow {
-    pub(crate) id: i64,
+    pub(crate) id: LinkId,
     pub(crate) stream_id: StreamId,
     pub(crate) track_id: TrackId,
-    pub(crate) t_order: i32,
+    pub(crate) t_order: OrderId,
     pub(crate) unique_id: String,
     pub(crate) time_offset: i64,
 }
@@ -61,6 +64,7 @@ pub(crate) enum StreamStatus {
     Playing = 1,
 }
 
+#[allow(dead_code)]
 #[derive(sqlx::FromRow, Clone)]
 pub(crate) struct StreamRow {
     pub(crate) sid: StreamId,

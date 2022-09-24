@@ -153,6 +153,12 @@ impl Inner {
                         }
                     }
                 }
+
+                if let Some(inner) = inner.upgrade() {
+                    *inner.senders.lock().expect("Unable to lock senders") = vec![];
+
+                    (inner.on_all_receivers_disconnected)();
+                }
             }
         });
 

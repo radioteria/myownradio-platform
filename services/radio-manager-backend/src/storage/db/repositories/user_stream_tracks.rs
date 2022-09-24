@@ -1,13 +1,14 @@
-use crate::data_structures::{StreamId, DEFAULT_TRACKS_PER_REQUEST};
+use crate::data_structures::{LinkId, OrderId, StreamId, TrackId, DEFAULT_TRACKS_PER_REQUEST};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{FileRow, LinkRow, TrackRow};
-use sqlx::{Execute, MySql, QueryBuilder};
+use chrono::Duration;
+use sqlx::{query, Execute, MySql, QueryBuilder};
+use std::mem::swap;
 use std::ops::{Deref, DerefMut};
-use std::time::Duration;
 use tracing::trace;
 
-#[derive(sqlx::FromRow, Clone)]
+#[derive(sqlx::FromRow, Clone, Debug)]
 pub(crate) struct TrackFileLinkMergedRow {
     #[sqlx(flatten)]
     pub(crate) track: TrackRow,
@@ -121,7 +122,7 @@ pub(crate) async fn get_single_stream_track_at_time_offset(
     builder.push_bind(stream_id.deref());
 
     builder.push(" AND `r_link`.`time_offset` <= ");
-    builder.push_bind(time_offset.as_millis() as i64);
+    builder.push_bind(time_offset.num_milliseconds());
 
     builder.push(" ORDER BY `r_link`.`t_order` DESC LIMIT 1");
 
@@ -130,7 +131,7 @@ pub(crate) async fn get_single_stream_track_at_time_offset(
     let optional_track = query.fetch_optional(connection.deref_mut()).await?;
 
     Ok(optional_track.map(|track| {
-        let track_time_offset = Duration::from_millis(track.link.time_offset as u64);
+        let track_time_offset = Duration::milliseconds(track.link.time_offset);
         let track_position = *time_offset - track_time_offset;
 
         (track, track_position)
@@ -148,31 +149,147 @@ pub(crate) async fn get_current_and_next_stream_track_at_time_offset(
     builder.push(" WHERE `r_link`.`stream_id` = ");
     builder.push_bind(stream_id.deref());
 
-    builder.push(
-        " AND (`r_link`.`time_offset` = 0 OR `r_link`.`time_offset` + `r_tracks`.`duration` > ",
-    );
-    builder.push_bind(time_offset.as_millis() as i64);
-    builder.push(")");
+    builder.push(" AND `r_link`.`time_offset` + `r_tracks`.`duration` > ");
+    builder.push_bind(time_offset.num_milliseconds());
 
-    builder.push(" ORDER BY `r_link`.`t_order` ASC LIMIT 3");
+    builder.push(" ORDER BY `r_link`.`t_order` ASC LIMIT 2");
 
     let query = builder.build_query_as::<TrackFileLinkMergedRow>();
 
     let track_rows = query.fetch_all(connection.deref_mut()).await?;
 
-    match track_rows.as_slice() {
+    match &track_rows[..] {
         [] => Ok(None),
         [curr] => {
-            let track_time_offset = Duration::from_millis(curr.link.time_offset as u64);
+            let track_time_offset = Duration::milliseconds(curr.link.time_offset);
             let track_position = *time_offset - track_time_offset;
 
-            Ok(Some((curr.clone(), curr.clone(), track_position)))
+            let track_row = {
+                let mut builder = create_select_query_builder();
+                builder.push(" WHERE `r_link`.`stream_id` = ");
+                builder.push_bind(stream_id.deref());
+                builder.push(" ORDER BY `r_link`.`t_order` ASC LIMIT 1");
+                let query = builder.build_query_as::<TrackFileLinkMergedRow>();
+                query.fetch_optional(connection.deref_mut()).await?
+            };
+
+            match track_row {
+                Some(track_row) => Ok(Some((curr.clone(), track_row, track_position))),
+                None => Ok(None),
+            }
         }
-        [curr, next] | [_, curr, next, ..] => {
-            let track_time_offset = Duration::from_millis(curr.link.time_offset as u64);
+        [curr, next, ..] => {
+            let track_time_offset = Duration::milliseconds(curr.link.time_offset);
             let track_position = *time_offset - track_time_offset;
 
             Ok(Some((curr.clone(), next.clone(), track_position)))
         }
     }
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn get_single_stream_track_by_link_id(
+    connection: &mut MySqlConnection,
+    stream_id: &StreamId,
+    link_id: &LinkId,
+) -> RepositoryResult<Option<TrackFileLinkMergedRow>> {
+    let mut builder = create_select_query_builder();
+
+    builder.push(" WHERE `r_link`.`stream_id` = ");
+    builder.push_bind(stream_id.deref());
+
+    builder.push(" AND `r_link`.`id` = ");
+    builder.push_bind(link_id.deref());
+
+    builder.push(" LIMIT 1");
+
+    let query = builder.build_query_as::<TrackFileLinkMergedRow>();
+
+    let optional_track = query.fetch_optional(connection.deref_mut()).await?;
+
+    Ok(optional_track)
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn get_single_stream_track_by_order_id(
+    connection: &mut MySqlConnection,
+    stream_id: &StreamId,
+    order_id: &OrderId,
+) -> RepositoryResult<Option<TrackFileLinkMergedRow>> {
+    let mut builder = create_select_query_builder();
+
+    builder.push(" WHERE `r_link`.`stream_id` = ");
+    builder.push_bind(stream_id.deref());
+
+    builder.push(" AND `r_link`.`t_order` = ");
+    builder.push_bind(order_id.deref());
+
+    builder.push(" LIMIT 1");
+
+    let query = builder.build_query_as::<TrackFileLinkMergedRow>();
+
+    let optional_track = query.fetch_optional(connection.deref_mut()).await?;
+
+    Ok(optional_track)
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn remove_tracks_by_track_id(
+    connection: &mut MySqlConnection,
+    track_id: &TrackId,
+    stream_id: &StreamId,
+) -> RepositoryResult<()> {
+    query("DELETE FROM `r_links` WHERE `r_link`.`stream_id` = ? AND `r_link`.`track_id` = ?")
+        .bind(stream_id.deref())
+        .bind(track_id.deref())
+        .execute(connection.deref_mut())
+        .await?;
+
+    Ok(())
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn delete_track_by_link_id(
+    connection: &mut MySqlConnection,
+    link_id: &LinkId,
+    stream_id: &StreamId,
+) -> RepositoryResult<()> {
+    query("DELETE FROM `r_links` WHERE `r_link`.`stream_id` = ? AND `r_link`.`id` = ?")
+        .bind(stream_id.deref())
+        .bind(link_id.deref())
+        .execute(connection.deref_mut())
+        .await?;
+
+    Ok(())
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn optimize_tracks_in_user_stream(
+    mut connection: &mut MySqlConnection,
+    stream_id: &StreamId,
+) -> RepositoryResult<()> {
+    let stream_track_rows = get_stream_tracks(
+        &mut connection,
+        stream_id,
+        &GetUserStreamTracksParams::default(),
+        &0,
+    )
+    .await?;
+
+    let mut current_t_order = 1;
+    let mut current_accumulated_duration = 0;
+
+    for stream_track_row in stream_track_rows.iter() {
+        query("UPDATE `r_link` SET `t_order` = ?, `time_offset` = ? WHERE `id` = ?")
+            .bind(current_t_order)
+            .bind(current_accumulated_duration)
+            .bind(&stream_track_row.link.id)
+            .execute(connection.deref_mut())
+            .await?;
+
+        current_t_order += 1;
+        current_accumulated_duration += stream_track_row.track.duration;
+    }
+
+    Ok(())
 }

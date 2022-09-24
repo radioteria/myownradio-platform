@@ -1,4 +1,5 @@
 use std::process::{Command, Output};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn which(command: &str) -> Option<String> {
     let Output { stdout, status, .. } = Command::new("which").args(&[command]).output().unwrap();
@@ -8,4 +9,11 @@ pub fn which(command: &str) -> Option<String> {
     }
 
     Some(String::from_utf8(stdout).unwrap().trim().to_string())
+}
+
+pub(crate) fn now() -> i64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as i64
 }

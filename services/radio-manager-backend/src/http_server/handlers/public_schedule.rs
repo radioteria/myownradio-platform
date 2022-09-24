@@ -8,11 +8,10 @@ use crate::storage::db::repositories::user_stream_tracks::{
     TrackFileLinkMergedRow,
 };
 use crate::storage::db::repositories::StreamStatus;
-use crate::utils::TeeResultUtils;
-use crate::{Config, MySqlClient};
-use actix_web::middleware::Logger;
-use actix_web::{web, HttpResponse, Responder};
-use serde::{Deserialize, Serialize};
+use crate::utils::{positive_mod, TeeResultUtils};
+use crate::{services, Config, MySqlClient};
+use actix_web::{web, HttpResponse};
+use serde::Deserialize;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tracing::error;
 
@@ -44,9 +43,8 @@ pub(crate) async fn get_current_track(
     if let (StreamStatus::Playing, Some(started_at), Some(started_from)) =
         (&stream.status, &stream.started, &stream.started_from)
     {
-        let time_offset = Duration::from_millis(
-            (((timestamp - started_at) + started_from) % playlist_duration.as_millis() as i64)
-                as u64,
+        let time_offset = chrono::Duration::milliseconds(
+            ((timestamp - started_at) + started_from) % playlist_duration.num_milliseconds(),
         );
         if let Some((row, track_position)) =
             get_single_stream_track_at_time_offset(&mut connection, &stream_id, &time_offset)
@@ -57,7 +55,7 @@ pub(crate) async fn get_current_track(
                 "code": 1i32,
                 "message": "OK",
                 "data": {
-                    "position": track_position.as_millis() as i64,
+                    "position": track_position.num_milliseconds(),
                     "time_offset": row.link.time_offset,
                     "t_order": row.link.t_order,
                     "unique_id": row.link.unique_id,
@@ -100,7 +98,7 @@ fn get_file_path(row: &TrackFileLinkMergedRow) -> String {
 #[derive(Deserialize)]
 pub(crate) struct GetNowPlayingQuery {
     #[serde(rename = "ts")]
-    timestamp: i64,
+    timestamp: u64,
 }
 
 pub(crate) async fn get_now_playing(
@@ -114,57 +112,35 @@ pub(crate) async fn get_now_playing(
 
     let mut connection = mysql_client.connection().await?;
 
-    let stream = match get_single_stream_by_id(&mut connection, &stream_id)
-        .await
-        .tee_err(|error| error!(?error, "Unable to get stream information"))?
-    {
+    let stream = match get_single_stream_by_id(&mut connection, &stream_id).await? {
         Some(stream) => stream,
-        None => {
-            return Ok(HttpResponse::NotFound().finish());
-        }
+        None => return Ok(HttpResponse::NotFound().finish()),
     };
 
-    let playlist_duration = get_stream_playlist_duration(&mut connection, &stream_id)
-        .await
-        .tee_err(|error| error!(?error, "Unable to get stream playlist duration"))?;
+    let time = UNIX_EPOCH + Duration::from_millis(params.timestamp);
+    let now_playing = match services::get_now_playing(time, &stream_id, &mut connection).await? {
+        Some(now_playing) => now_playing,
+        None => return Ok(HttpResponse::Conflict().finish()),
+    };
+    let (current_track, next_track, current_position) = now_playing;
 
-    if let (StreamStatus::Playing, Some(started_at), Some(started_from)) =
-        (&stream.status, &stream.started, &stream.started_from)
-    {
-        let time_offset = Duration::from_millis(
-            (((params.timestamp - started_at) + started_from)
-                % playlist_duration.as_millis() as i64) as u64,
-        );
-        if let Some((current, next, track_time_pos)) =
-            get_current_and_next_stream_track_at_time_offset(
-                &mut connection,
-                &stream_id,
-                &time_offset,
-            )
-            .await
-            .tee_err(|error| error!(?error, "Unable to get stream playlist tracks"))?
-        {
-            return Ok(HttpResponse::Ok().json(serde_json::json!({
-                "code": 1i32,
-                "message": "OK",
-                "data": {
-                    "time": params.timestamp,
-                    "playlist_position": current.link.t_order,
-                    "current_track": {
-                        "offset": track_time_pos.as_millis() as i64,
-                        "title": get_artist_and_title(&current),
-                        "url": format!("{}audio/{}", config.file_server_endpoint, get_file_path(&current)),
-                        "duration": current.track.duration,
-                    },
-                    "next_track": {
-                        "title": get_artist_and_title(&next),
-                        "url": format!("{}audio/{}", config.file_server_endpoint, get_file_path(&next)),
-                        "duration": next.track.duration,
-                    },
-                },
-            })));
-        }
-    }
-
-    Ok(HttpResponse::Conflict().finish())
+    Ok(HttpResponse::Ok().json(serde_json::json!({
+        "code": 1i32,
+        "message": "OK",
+        "data": {
+            "time": params.timestamp,
+            "playlist_position": current_track.link.t_order,
+            "current_track": {
+                "offset": current_position.num_milliseconds(),
+                "title": get_artist_and_title(&current_track),
+                "url": format!("{}audio/{}", config.file_server_endpoint, get_file_path(&current_track)),
+                "duration": current_track.track.duration,
+            },
+            "next_track": {
+                "title": get_artist_and_title(&next_track),
+                "url": format!("{}audio/{}", config.file_server_endpoint, get_file_path(&next_track)),
+                "duration": next_track.track.duration,
+            },
+        },
+    })))
 }

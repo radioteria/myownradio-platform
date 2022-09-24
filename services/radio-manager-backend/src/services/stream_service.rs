@@ -145,7 +145,12 @@ impl StreamService {
             },
         );
 
-        self.play_internal(&mut connection, &next_time_offset).await
+        self.play_internal(&mut connection, &next_time_offset)
+            .await?;
+
+        connection.commit().await?;
+
+        Ok(())
     }
 
     pub(crate) async fn play_prev(&self) -> Result<(), StreamServiceError> {
@@ -169,7 +174,12 @@ impl StreamService {
             },
         );
 
-        self.play_internal(&mut connection, &next_time_offset).await
+        self.play_internal(&mut connection, &next_time_offset)
+            .await?;
+
+        connection.commit().await?;
+
+        Ok(())
     }
 
     pub(crate) async fn play_by_order_id(
@@ -183,7 +193,11 @@ impl StreamService {
         {
             Some(track) => {
                 let position = Duration::milliseconds(track.link.time_offset);
-                self.play_internal(&mut connection, &position).await
+                self.play_internal(&mut connection, &position).await?;
+
+                connection.commit().await?;
+
+                Ok(())
             }
             None => return Err(StreamServiceError::TrackIndexOutOfBounds),
         }
@@ -383,8 +397,9 @@ impl StreamService {
         Ok(())
     }
 
-    async fn notify_streams(&self) -> Result<(), StreamServiceError> {
-        // @todo
-        Ok(())
+    fn notify_streams(&self) {
+        actix_rt::spawn(async move {
+            // @todo
+        });
     }
 }

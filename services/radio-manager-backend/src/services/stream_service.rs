@@ -1,6 +1,7 @@
 use crate::config::RadioStreamerConfig;
 use crate::data_structures::{LinkId, OrderId, StreamId, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
+use crate::services::stream_service_utils::get_now_playing;
 use crate::storage::db::repositories::errors::{RepositoryError, RepositoryResult};
 use crate::storage::db::repositories::streams::{
     get_single_stream_by_id, get_stream_playlist_duration, seek_user_stream_forward,
@@ -20,6 +21,7 @@ use reqwest::StatusCode;
 use std::future::Future;
 use std::ops::{DerefMut, Index, Neg};
 use std::pin::Pin;
+use std::time::SystemTime;
 use tracing::log::kv::Source;
 use tracing::{debug, error};
 
@@ -146,10 +148,11 @@ impl StreamService {
     pub(crate) async fn play_next(&self) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
 
-        let (track, position) = match self.get_now_playing(&mut connection).await? {
-            Some(now_playing) => now_playing,
-            None => return Err(StreamServiceError::StreamNotFound),
-        };
+        let track =
+            match get_now_playing(SystemTime::now(), &self.stream_id, &mut connection).await? {
+                Some((track, _, _)) => track,
+                None => return Err(StreamServiceError::StreamNotFound),
+            };
 
         let next_time_offset = Duration::milliseconds(
             match get_single_stream_track_by_order_id(
@@ -175,10 +178,11 @@ impl StreamService {
     pub(crate) async fn play_prev(&self) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
 
-        let (track, position) = match self.get_now_playing(&mut connection).await? {
-            Some(now_playing) => now_playing,
-            None => return Err(StreamServiceError::StreamNotFound),
-        };
+        let track =
+            match get_now_playing(SystemTime::now(), &self.stream_id, &mut connection).await? {
+                Some((track, _, _)) => track,
+                None => return Err(StreamServiceError::StreamNotFound),
+            };
 
         let next_time_offset = Duration::milliseconds(
             match get_single_stream_track_by_order_id(
@@ -329,10 +333,9 @@ impl StreamService {
     {
         let mut connection = self.mysql_client.transaction().await?;
 
-        let now_playing = self
-            .get_now_playing(&mut connection)
+        let now_playing = get_now_playing(SystemTime::now(), &self.stream_id, &mut connection)
             .await
-            .map(|option| option.map(|(entry, _)| entry))?;
+            .map(|option| option.map(|(entry, _, _)| entry))?;
 
         debug!("Now playing track before transaction: {:?}", &now_playing);
 

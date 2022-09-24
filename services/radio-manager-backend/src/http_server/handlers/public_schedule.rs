@@ -133,7 +133,7 @@ pub(crate) async fn get_now_playing(
             ((params.timestamp - started_at) + started_from),
             playlist_duration.num_milliseconds(),
         ));
-        eprintln!("HERE!!!!!!!!!!!!!!!!!! {}", time_offset);
+
         if let Some((current, next, track_time_pos)) =
             get_current_and_next_stream_track_at_time_offset(
                 &mut connection,

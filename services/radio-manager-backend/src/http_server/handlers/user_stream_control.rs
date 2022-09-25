@@ -10,7 +10,7 @@ pub(crate) async fn play(
 ) -> Response {
     let stream_id = params.into_inner();
     let stream_service = stream_service_factory
-        .create_service(&stream_id, &user_id)
+        .create_service_for_user(&stream_id, &user_id)
         .await?;
 
     stream_service.play().await?;
@@ -25,7 +25,7 @@ pub(crate) async fn stop(
 ) -> Response {
     let stream_id = params.into_inner();
     let stream_service = stream_service_factory
-        .create_service(&stream_id, &user_id)
+        .create_service_for_user(&stream_id, &user_id)
         .await?;
 
     stream_service.stop().await?;
@@ -40,7 +40,7 @@ pub(crate) async fn play_next(
 ) -> Response {
     let stream_id = params.into_inner();
     let stream_service = stream_service_factory
-        .create_service(&stream_id, &user_id)
+        .create_service_for_user(&stream_id, &user_id)
         .await?;
 
     stream_service.play_next().await?;
@@ -55,7 +55,7 @@ pub(crate) async fn play_prev(
 ) -> Response {
     let stream_id = params.into_inner();
     let stream_service = stream_service_factory
-        .create_service(&stream_id, &user_id)
+        .create_service_for_user(&stream_id, &user_id)
         .await?;
 
     stream_service.play_prev().await?;
@@ -70,7 +70,7 @@ pub(crate) async fn play_from(
 ) -> Response {
     let (stream_id, order_id) = params.into_inner();
     let stream_service = stream_service_factory
-        .create_service(&stream_id, &user_id)
+        .create_service_for_user(&stream_id, &user_id)
         .await?;
 
     stream_service.play_by_order_id(&order_id).await?;

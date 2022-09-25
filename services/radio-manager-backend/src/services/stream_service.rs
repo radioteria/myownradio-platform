@@ -61,6 +61,28 @@ impl StreamServiceFactory {
     pub(crate) async fn create_service(
         &self,
         stream_id: &StreamId,
+    ) -> Result<StreamService, StreamServiceError> {
+        let mut connection = self.mysql_client.connection().await?;
+
+        if get_single_stream_by_id(&mut connection, stream_id)
+            .await?
+            .is_none()
+        {
+            return Err(StreamServiceError::StreamNotFound);
+        };
+
+        drop(connection);
+
+        Ok(StreamService::create(
+            stream_id.clone(),
+            self.mysql_client.clone(),
+            self.radio_streamer_config.clone(),
+        ))
+    }
+
+    pub(crate) async fn create_service_for_user(
+        &self,
+        stream_id: &StreamId,
         user_id: &UserId,
     ) -> Result<StreamService, StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;

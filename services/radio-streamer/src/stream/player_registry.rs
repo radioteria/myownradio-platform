@@ -76,7 +76,6 @@ impl PlayerRegistry {
 
                 let player = match ChannelPlayer::create(
                     channel_id,
-                    client_id,
                     &self.path_to_ffmpeg,
                     &self.backend_client,
                     &self.logger,

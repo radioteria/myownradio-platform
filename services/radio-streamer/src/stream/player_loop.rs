@@ -3,13 +3,11 @@ use crate::helpers::io::sleep_until_deadline;
 use crate::metrics::Metrics;
 use crate::stream::ffmpeg_decoder::make_ffmpeg_decoder;
 use crate::stream::types::Buffer;
-use actix_rt::task::JoinHandle;
 use actix_rt::time::Instant;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use scopeguard::defer;
-use slog::{debug, error, info, trace, warn, Logger};
-use std::sync::{Arc, Mutex};
+use slog::{debug, error, info, trace, Logger};
 use std::time::{Duration, SystemTime};
 
 const ALLOWED_DELAY: Duration = Duration::from_secs(1);
@@ -24,13 +22,11 @@ pub(crate) enum PlayerLoopMessage {
 
 pub(crate) fn make_player_loop(
     channel_id: &usize,
-    client_id: &Option<String>,
     path_to_ffmpeg: &str,
     backend_client: &BackendClient,
     logger: &Logger,
     metrics: &Metrics,
 ) -> mpsc::Receiver<PlayerLoopMessage> {
-    let client_id = client_id.clone();
     let channel_id = channel_id.clone();
     let path_to_ffmpeg = path_to_ffmpeg.to_owned();
 
@@ -66,7 +62,7 @@ pub(crate) fn make_player_loop(
                 trace!(logger, "Elapsed stream time"; "time" => ?elapsed_time);
 
                 let now_playing = match backend_client
-                    .get_now_playing(&channel_id, client_id.clone(), &elapsed_time)
+                    .get_now_playing(&channel_id, &elapsed_time)
                     .await
                 {
                     Ok(now_playing) => now_playing,

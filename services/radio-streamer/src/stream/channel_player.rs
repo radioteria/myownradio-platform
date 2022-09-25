@@ -25,7 +25,6 @@ pub(crate) struct ChannelPlayer {
 impl ChannelPlayer {
     pub async fn create<F>(
         channel_id: &usize,
-        client_id: &Option<String>,
         path_to_ffmpeg: &str,
         backend_client: &BackendClient,
         logger: &Logger,
@@ -37,7 +36,6 @@ impl ChannelPlayer {
     {
         let inner = Inner::create(
             channel_id,
-            client_id,
             path_to_ffmpeg,
             backend_client,
             logger,
@@ -92,7 +90,6 @@ impl Drop for Inner {
 impl Inner {
     pub async fn create<F>(
         channel_id: &usize,
-        client_id: &Option<String>,
         path_to_ffmpeg: &str,
         backend_client: &BackendClient,
         logger: &Logger,
@@ -109,16 +106,8 @@ impl Inner {
 
         let logger = logger.new(o!("channel_id" => *channel_id));
 
-        let mut player_loop_messages = {
-            make_player_loop(
-                channel_id,
-                client_id,
-                path_to_ffmpeg,
-                backend_client,
-                &logger,
-                metrics,
-            )
-        };
+        let mut player_loop_messages =
+            { make_player_loop(channel_id, path_to_ffmpeg, backend_client, &logger, metrics) };
 
         let inner = Arc::new(Self {
             logger,

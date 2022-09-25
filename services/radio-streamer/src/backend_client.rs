@@ -3,7 +3,7 @@ extern crate serde_millis;
 use actix_web::http::StatusCode;
 use awc::Client;
 use serde::{Deserialize, Serialize};
-use slog::{debug, error, Logger};
+use slog::{error, Logger};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Deserialize, Debug, Serialize)]
@@ -78,7 +78,6 @@ impl BackendClient {
     pub async fn get_now_playing(
         &self,
         channel_id: &usize,
-        client_id: Option<String>,
         time: &SystemTime,
     ) -> Result<NowPlaying, MorBackendClientError> {
         let client = Client::default();

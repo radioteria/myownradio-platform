@@ -1,5 +1,6 @@
 use crate::http_server::handlers::{
-    public_schedule, public_streams, user_audio_tracks, user_stream_control, user_streams,
+    internal_radio_streamer, public_schedule, public_streams, user_audio_tracks,
+    user_stream_control, user_streams,
 };
 use crate::storage::fs::FileSystem;
 use crate::{Config, MySqlClient, StreamServiceFactory};
@@ -63,6 +64,17 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                         web::get().to(public_schedule::get_current_track),
                     )
                     .route("/info", web::get().to(public_streams::get_stream_info)),
+            )
+            .service(
+                web::scope("/internal/radio-streamer")
+                    .route(
+                        "/v0/streams/{stream_id}/playing-at/{unix_time}",
+                        web::get().to(internal_radio_streamer::get_playing_at),
+                    )
+                    .route(
+                        "/v0/streams/{stream_id}/skip-track",
+                        web::post().to(internal_radio_streamer::skip_track),
+                    ),
             )
     });
 

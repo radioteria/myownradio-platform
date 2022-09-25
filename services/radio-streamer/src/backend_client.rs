@@ -26,8 +26,6 @@ pub struct NextTrack {
 
 #[derive(Deserialize, Debug)]
 pub struct NowPlaying {
-    #[serde(with = "serde_millis")]
-    pub time: SystemTime,
     pub playlist_position: usize,
     pub current_track: CurrentTrack,
     pub next_track: NextTrack,
@@ -85,14 +83,11 @@ impl BackendClient {
     ) -> Result<NowPlaying, MorBackendClientError> {
         let client = Client::default();
 
-        let unixtime = time.duration_since(UNIX_EPOCH).unwrap().as_millis();
+        let unix_time = time.duration_since(UNIX_EPOCH).unwrap().as_millis();
 
         let url = format!(
-            "{}/pub/v0/streams/{}/now-playing?client_id={}&ts={}",
-            &self.mor_backend_url,
-            channel_id,
-            &client_id.unwrap_or_default(),
-            &unixtime
+            "{}/internal/radio-streamer/v0/streams/{}/playing-at/{}",
+            &self.mor_backend_url, channel_id, &unix_time,
         );
 
         let mut response = match client.get(url).timeout(Duration::from_secs(5)).send().await {

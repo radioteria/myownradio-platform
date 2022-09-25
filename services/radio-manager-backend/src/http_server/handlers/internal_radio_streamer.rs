@@ -1,9 +1,24 @@
 use crate::data_structures::StreamId;
 use crate::http_server::response::Response;
 use crate::storage::db::repositories::streams;
+use crate::storage::db::repositories::user_stream_tracks::TrackFileLinkMergedRow;
 use crate::{services, Config, MySqlClient, StreamServiceFactory};
 use actix_web::{web, HttpResponse};
 use std::time::UNIX_EPOCH;
+
+fn get_artist_and_title(row: &TrackFileLinkMergedRow) -> String {
+    format!("{} - {}", row.track.artist, row.track.title)
+}
+
+fn get_file_path(row: &TrackFileLinkMergedRow) -> String {
+    format!(
+        "{}/{}/{}.{}",
+        &row.file.file_hash[..1],
+        &row.file.file_hash[1..2],
+        row.file.file_hash,
+        row.file.file_extension
+    )
+}
 
 pub(crate) async fn get_playing_at(
     path: web::Path<(StreamId, u64)>,

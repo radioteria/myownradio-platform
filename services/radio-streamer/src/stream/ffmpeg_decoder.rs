@@ -7,7 +7,9 @@ use crate::stream::types::Buffer;
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
 use futures::channel::mpsc;
-use futures::SinkExt;
+use futures::io::BufReader;
+use futures::{SinkExt, StreamExt};
+use futures_lite::AsyncBufReadExt;
 use scopeguard::defer;
 use slog::{debug, error, o, warn, Logger};
 use std::time::{Duration, Instant};
@@ -18,6 +20,11 @@ const STDIO_BUFFER_SIZE: usize = 4096;
 pub(crate) enum DecoderError {
     ProcessError,
     StdoutUnavailable,
+    StderrUnavailable,
+}
+
+pub(crate) enum DecoderOutput {
+    Buffer(Buffer),
 }
 
 pub(crate) fn make_ffmpeg_decoder(
@@ -26,8 +33,8 @@ pub(crate) fn make_ffmpeg_decoder(
     path_to_ffmpeg: &str,
     logger: &Logger,
     metrics: &Metrics,
-) -> Result<mpsc::Receiver<Buffer>, DecoderError> {
-    let (mut tx, rx) = mpsc::channel::<Buffer>(0);
+) -> Result<mpsc::Receiver<DecoderOutput>, DecoderError> {
+    let (mut tx, rx) = mpsc::channel::<DecoderOutput>(0);
     let logger = logger.new(o!("kind" => "ffmpeg_decoder"));
 
     let mut start_time = Some(Instant::now());
@@ -53,7 +60,7 @@ pub(crate) fn make_ffmpeg_decoder(
             "-",
         ])
         .stdout(Stdio::piped())
-        .stderr(Stdio::null())
+        .stderr(Stdio::piped())
         .stdin(Stdio::null())
         .spawn()
     {
@@ -75,6 +82,30 @@ pub(crate) fn make_ffmpeg_decoder(
             return Err(DecoderError::StdoutUnavailable);
         }
     };
+
+    let stderr = match process.stderr {
+        Some(stderr) => stderr,
+        None => {
+            error!(logger, "Unable to start decoder: stderr is not available");
+            return Err(DecoderError::StderrUnavailable);
+        }
+    };
+
+    actix_rt::spawn({
+        let logger = logger.clone();
+
+        async move {
+            let mut err_lines = BufReader::new(stderr).split(b'\r');
+
+            while let Some(Ok(line)) = err_lines.next().await {
+                for s in String::from_utf8_lossy(&line).split('\n') {
+                    debug!(logger, "ffmpeg output: {}", s)
+                }
+            }
+
+            drop(err_lines);
+        }
+    });
 
     actix_rt::spawn({
         let metrics = metrics.clone();
@@ -102,7 +133,7 @@ pub(crate) fn make_ffmpeg_decoder(
                 let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
                 let timed_bytes = Buffer::new(bytes, decoding_time, decoding_time + offset);
 
-                if let Err(_) = tx.send(timed_bytes).await {
+                if let Err(_) = tx.send(DecoderOutput::Buffer(timed_bytes)).await {
                     channel_closed = true;
                     break;
                 };
@@ -113,11 +144,11 @@ pub(crate) fn make_ffmpeg_decoder(
             let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
             let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
             let _ = tx
-                .send(Buffer::new(
+                .send(DecoderOutput::Buffer(Buffer::new(
                     Bytes::new(),
                     decoding_time,
                     decoding_time + offset,
-                ))
+                )))
                 .await;
 
             drop(stdout);

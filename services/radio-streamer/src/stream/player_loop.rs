@@ -1,7 +1,7 @@
 use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
 use crate::helpers::io::sleep_until_deadline;
 use crate::metrics::Metrics;
-use crate::stream::ffmpeg_decoder::make_ffmpeg_decoder;
+use crate::stream::ffmpeg_decoder::{make_ffmpeg_decoder, DecoderOutput};
 use crate::stream::types::Buffer;
 use actix_rt::time::Instant;
 use futures::channel::{mpsc, oneshot};
@@ -124,7 +124,7 @@ pub(crate) fn make_player_loop(
 
                 let mut stream_pts = offset_pts;
 
-                while let Some(buffer) = track_decoder.next().await {
+                while let Some(DecoderOutput::Buffer(buffer)) = track_decoder.next().await {
                     stream_pts = offset_pts + *buffer.dts();
 
                     if let Err(_) =

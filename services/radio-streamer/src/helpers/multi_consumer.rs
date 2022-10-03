@@ -2,13 +2,26 @@ use actix_rt::task::JoinHandle;
 use futures::channel::mpsc;
 use futures::StreamExt;
 use std::collections::HashSet;
-use std::future::Future;
 use std::mem;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 #[derive(Clone)]
-pub(crate) struct MultiSender {}
+pub(crate) struct MultiSender<T: Clone + 'static> {
+    inner: Arc<Inner<T>>,
+}
+
+impl<T: Clone + 'static> MultiSender<T> {
+    pub(crate) fn new(source_receiver: mpsc::Receiver<T>) -> Self {
+        let inner = Arc::new(Inner::new(source_receiver));
+
+        Self { inner }
+    }
+
+    pub(crate) fn create_receiver(&self) -> mpsc::Receiver<T> {
+        self.inner.create_receiver()
+    }
+}
 
 struct Inner<T: Clone + 'static> {
     // Static

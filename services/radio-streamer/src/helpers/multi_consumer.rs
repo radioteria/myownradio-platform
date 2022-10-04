@@ -1,3 +1,4 @@
+use crate::{unwrap_some, upgrade_weak};
 use actix_rt::task::JoinHandle;
 use futures::channel::mpsc;
 use futures::StreamExt;
@@ -13,7 +14,7 @@ pub(crate) struct MultiSender<T: Clone + 'static> {
 
 impl<T: Clone + 'static> MultiSender<T> {
     pub(crate) fn new(source_receiver: mpsc::Receiver<T>) -> Self {
-        let inner = Arc::new(Inner::new(source_receiver));
+        let inner = Inner::new(source_receiver);
 
         Self { inner }
     }
@@ -25,59 +26,47 @@ impl<T: Clone + 'static> MultiSender<T> {
 
 struct Inner<T: Clone + 'static> {
     // Static
-    no_senders_timeout: Duration,
+    channel_close_timeout: Duration,
     child_sender_receive_timeout: Duration,
     child_sender_buffer_size: usize,
     // Dynamic
     children_senders: Arc<Mutex<Vec<mpsc::Sender<T>>>>,
+    loop_handle_container: Arc<Mutex<Option<JoinHandle<()>>>>,
+    channel_close_container: Arc<Mutex<Option<JoinHandle<()>>>>,
 }
 
 impl<T: Clone + 'static> Inner<T> {
-    pub(crate) fn new(source_receiver: mpsc::Receiver<T>) -> Self {
-        let no_senders_timeout = Duration::from_secs(30);
+    pub(crate) fn new(source_receiver: mpsc::Receiver<T>) -> Arc<Self> {
+        let channel_close_timeout = Duration::from_secs(30);
         let child_sender_receive_timeout = Duration::from_secs(60);
         let child_sender_buffer_size = 10;
 
         let children_senders: Arc<Mutex<Vec<mpsc::Sender<T>>>> = Arc::default();
+        let loop_handle_container = Arc::<Mutex<Option<_>>>::default();
+        let channel_close_container = Arc::default();
 
-        let mut no_senders_timeout_handle_container = None::<JoinHandle<()>>;
-        let loop_handle_container = Arc::new(Mutex::new(None::<JoinHandle<()>>));
+        let inner = Arc::new(Self {
+            // Static
+            channel_close_timeout,
+            child_sender_receive_timeout,
+            child_sender_buffer_size,
+            // Dynamic
+            children_senders: children_senders.clone(),
+            loop_handle_container: loop_handle_container.clone(),
+            channel_close_container,
+        });
 
         let loop_handle = actix_rt::spawn({
-            let loop_handle_container = loop_handle_container.clone();
-
             let children_senders = children_senders.clone();
             let mut source_receiver = source_receiver;
+
+            let inner_weak = Arc::downgrade(&inner);
 
             async move {
                 while let Some(t) = source_receiver.next().await {
                     let mut locked_senders = children_senders
                         .lock()
                         .expect("Unable to lock children_senders on sending data");
-
-                    if locked_senders.is_empty() {
-                        let loop_handle_container = loop_handle_container.clone();
-
-                        no_senders_timeout_handle_container.get_or_insert_with(move || {
-                            let loop_handle_container = loop_handle_container.clone();
-
-                            actix_rt::spawn(async move {
-                                actix_rt::time::sleep(no_senders_timeout).await;
-
-                                if let Some(handle) = loop_handle_container
-                                    .lock()
-                                    .expect("Unable to lock loop_handle_container")
-                                    .take()
-                                {
-                                    handle.abort();
-                                }
-                            })
-                        });
-                    } else {
-                        if let Some(handle) = no_senders_timeout_handle_container.take() {
-                            handle.abort();
-                        }
-                    }
 
                     let mut senders_to_remove = HashSet::new();
 
@@ -99,28 +88,32 @@ impl<T: Clone + 'static> Inner<T> {
                             .enumerate()
                             .filter(|(i, _)| !senders_to_remove.contains(&i))
                             .map(|(i, sender)| sender)
-                            .collect::<Vec<_>>()
+                            .collect::<Vec<_>>();
+
+                        if locked_senders.is_empty() {
+                            let inner = upgrade_weak!(inner_weak);
+
+                            inner.start_channel_close_timeout();
+                        }
                     }
                 }
             }
         });
+
         let _ = loop_handle_container
             .lock()
             .expect("Unable to lock loop_handle_container")
             .insert(loop_handle);
 
-        Self {
-            // Static
-            no_senders_timeout,
-            child_sender_receive_timeout,
-            child_sender_buffer_size,
-            // Dynamic
-            children_senders,
-        }
+        inner.start_channel_close_timeout();
+
+        inner
     }
 
     pub(crate) fn create_receiver(&self) -> mpsc::Receiver<T> {
         let (tx, rx) = mpsc::channel::<T>(self.child_sender_buffer_size);
+
+        self.cancel_channel_close_timeout();
 
         self.children_senders
             .lock()
@@ -128,5 +121,34 @@ impl<T: Clone + 'static> Inner<T> {
             .push(tx);
 
         rx
+    }
+
+    fn start_channel_close_timeout(&self) {
+        let loop_handle_container_weak = Arc::downgrade(&self.loop_handle_container);
+        let channel_close_timeout = self.channel_close_timeout.clone();
+
+        self.channel_close_container
+            .lock()
+            .unwrap()
+            .get_or_insert_with(|| {
+                actix_rt::spawn(async move {
+                    actix_rt::time::sleep(channel_close_timeout).await;
+
+                    let loop_handle_container = upgrade_weak!(loop_handle_container_weak);
+                    let maybe_loop_handle = loop_handle_container
+                        .lock()
+                        .expect("Unable to lock loop_handle_container")
+                        .take();
+                    let loop_handle = unwrap_some!(maybe_loop_handle);
+
+                    loop_handle.abort();
+                })
+            });
+    }
+
+    fn cancel_channel_close_timeout(&self) {
+        if let Some(handle) = self.channel_close_container.lock().unwrap().take() {
+            handle.abort();
+        }
     }
 }

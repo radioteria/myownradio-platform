@@ -7,12 +7,17 @@ use std::mem;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+pub(crate) struct MultiReceiverStats {
+    bytes_received: u64,
+    child_receivers: u64,
+}
+
 #[derive(Clone)]
-pub(crate) struct MultiSender<T: Clone + 'static> {
+pub(crate) struct MultiReceiver<T: Clone + 'static> {
     inner: Arc<Inner<T>>,
 }
 
-impl<T: Clone + 'static> MultiSender<T> {
+impl<T: Clone + 'static> MultiReceiver<T> {
     pub(crate) fn new(source_receiver: mpsc::Receiver<T>) -> Self {
         let inner = Inner::new(source_receiver);
 
@@ -121,6 +126,13 @@ impl<T: Clone + 'static> Inner<T> {
             .push(tx);
 
         rx
+    }
+
+    pub(crate) fn get_stats(&self) -> MultiReceiverStats {
+        MultiReceiverStats {
+            bytes_received: 0,
+            child_receivers: 0,
+        }
     }
 
     fn start_channel_close_timeout(&self) {

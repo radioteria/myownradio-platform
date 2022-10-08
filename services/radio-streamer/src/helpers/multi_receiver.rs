@@ -7,19 +7,22 @@ use std::mem;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-pub(crate) struct MultiReceiverStats {
-    bytes_received: u64,
-    child_receivers: u64,
-}
-
 #[derive(Clone)]
 pub(crate) struct MultiReceiver<T: Clone + 'static> {
     inner: Arc<Inner<T>>,
 }
 
 impl<T: Clone + 'static> MultiReceiver<T> {
-    pub(crate) fn new(source_receiver: mpsc::Receiver<T>) -> Self {
-        let inner = Inner::new(source_receiver);
+    pub(crate) fn new(
+        source_receiver: mpsc::Receiver<T>,
+        channel_close_timeout: Duration,
+        child_sender_buffer_size: usize,
+    ) -> Self {
+        let inner = Inner::new(
+            source_receiver,
+            channel_close_timeout,
+            child_sender_buffer_size,
+        );
 
         Self { inner }
     }
@@ -29,35 +32,50 @@ impl<T: Clone + 'static> MultiReceiver<T> {
     }
 }
 
+#[derive(Clone)]
+struct SenderEntry<T> {
+    buffers_sent: usize,
+    buffers_dropped: usize,
+    sender: mpsc::Sender<T>,
+}
+
+impl<T> SenderEntry<T> {
+    pub(crate) fn new(sender: mpsc::Sender<T>) -> Self {
+        Self {
+            sender,
+            buffers_sent: 0,
+            buffers_dropped: 0,
+        }
+    }
+}
+
 struct Inner<T: Clone + 'static> {
     // Static
     channel_close_timeout: Duration,
-    child_sender_receive_timeout: Duration,
     child_sender_buffer_size: usize,
     // Dynamic
-    children_senders: Arc<Mutex<Vec<mpsc::Sender<T>>>>,
+    children_senders: Arc<Mutex<Vec<SenderEntry<T>>>>,
     loop_handle_container: Arc<Mutex<Option<JoinHandle<()>>>>,
     channel_close_container: Arc<Mutex<Option<JoinHandle<()>>>>,
 }
 
 impl<T: Clone + 'static> Inner<T> {
-    pub(crate) fn new(source_receiver: mpsc::Receiver<T>) -> Arc<Self> {
-        let channel_close_timeout = Duration::from_secs(30);
-        let child_sender_receive_timeout = Duration::from_secs(60);
-        let child_sender_buffer_size = 10;
-
-        let children_senders: Arc<Mutex<Vec<mpsc::Sender<T>>>> = Arc::default();
-        let loop_handle_container = Arc::<Mutex<Option<_>>>::default();
+    pub(crate) fn new(
+        source_receiver: mpsc::Receiver<T>,
+        channel_close_timeout: Duration,
+        child_sender_buffer_size: usize,
+    ) -> Arc<Self> {
+        let children_senders = Arc::default();
+        let loop_handle_container = Arc::default();
         let channel_close_container = Arc::default();
 
         let inner = Arc::new(Self {
             // Static
             channel_close_timeout,
-            child_sender_receive_timeout,
             child_sender_buffer_size,
             // Dynamic
-            children_senders: children_senders.clone(),
-            loop_handle_container: loop_handle_container.clone(),
+            children_senders: Arc::clone(&children_senders),
+            loop_handle_container: Arc::clone(&loop_handle_container),
             channel_close_container,
         });
 
@@ -75,14 +93,18 @@ impl<T: Clone + 'static> Inner<T> {
 
                     let mut senders_to_remove = HashSet::new();
 
-                    for (index, sender) in locked_senders.iter_mut().enumerate() {
-                        let result = sender.try_send(t.clone());
-                        if let Err(error) = result {
-                            if error.is_full() {
-                                // @todo Skip buffers for now. After `child_sender_receive_timeout` remove sender.
-                                senders_to_remove.insert(index);
-                            } else if error.is_disconnected() {
-                                senders_to_remove.insert(index);
+                    for (index, sender_entry) in locked_senders.iter_mut().enumerate() {
+                        let result = sender_entry.sender.try_send(t.clone());
+                        match result {
+                            Ok(_) => {
+                                sender_entry.buffers_sent += 1;
+                            }
+                            Err(error) => {
+                                if error.is_full() {
+                                    sender_entry.buffers_dropped += 1;
+                                } else if error.is_disconnected() {
+                                    senders_to_remove.insert(index);
+                                }
                             }
                         }
                     }
@@ -92,7 +114,7 @@ impl<T: Clone + 'static> Inner<T> {
                             .into_iter()
                             .enumerate()
                             .filter(|(i, _)| !senders_to_remove.contains(&i))
-                            .map(|(i, sender)| sender)
+                            .map(|(_, sender)| sender)
                             .collect::<Vec<_>>();
 
                         if locked_senders.is_empty() {
@@ -107,7 +129,7 @@ impl<T: Clone + 'static> Inner<T> {
 
         let _ = loop_handle_container
             .lock()
-            .expect("Unable to lock loop_handle_container")
+            .expect("Unable to obtain lock for loop_handle_container")
             .insert(loop_handle);
 
         inner.start_channel_close_timeout();
@@ -122,17 +144,10 @@ impl<T: Clone + 'static> Inner<T> {
 
         self.children_senders
             .lock()
-            .expect("Unable to lock children_senders on adding sender")
-            .push(tx);
+            .expect("Unable to obtain lock for children_senders on adding sender")
+            .push(SenderEntry::new(tx));
 
         rx
-    }
-
-    pub(crate) fn get_stats(&self) -> MultiReceiverStats {
-        MultiReceiverStats {
-            bytes_received: 0,
-            child_receivers: 0,
-        }
     }
 
     fn start_channel_close_timeout(&self) {

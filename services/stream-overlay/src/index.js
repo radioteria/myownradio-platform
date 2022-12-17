@@ -10,19 +10,19 @@ const element = document.getElementById('root');
 const route = new URL(window.location.href);
 
 if (STREAM_OVERLAY_ROUTE_REGEXP.test(route.pathname)) {
-    let [, channelId] = STREAM_OVERLAY_ROUTE_REGEXP.exec(route.pathname);
-    channelId = parseInt(channelId, 10);
+  let [, channelId] = STREAM_OVERLAY_ROUTE_REGEXP.exec(route.pathname);
+  channelId = parseInt(channelId, 10);
 
-    const root = ReactDOM.createRoot(element);
+  const root = ReactDOM.createRoot(element);
 
-    root.render(
-        <React.StrictMode>
-            <App channelId={channelId} />
-        </React.StrictMode>
-    );
+  root.render(
+    <React.StrictMode>
+      <App channelId={channelId}/>
+    </React.StrictMode>
+  );
 } else {
-    // @todo 404 Not Found view
-    element.innerText = '404';
+  // @todo 404 Not Found view
+  element.innerText = '404';
 }
 
 // If you want to start measuring performance in your app, pass a function

@@ -11,11 +11,11 @@
 }
 
 .Overlay-cover {
-  width: 150px;
-  height: 150px;
+  width: 20vw;
+  height: 20vw;
   position: absolute;
-  bottom: 64px;
-  left: 64px;
+  bottom: 8vw;
+  left: 8vw;
 }
 
 .Overlay-cover img {
@@ -25,20 +25,19 @@
 
 .Overlay-track {
   font-family: "Myriad Pro Thin", serif;
+  text-transform: uppercase;
   position: absolute;
-  bottom: 105px;
-  left: calc(64px + 150px + 32px);
+  bottom: 13vw;
+  left: 32vw;
   color: #ffffff;
 }
 
 .Overlay-track_title {
-  text-transform: uppercase;
-  font-size: 24pt;
+  font-size: 5vw;
   font-weight: 200;
 }
 
 .Overlay-track_artist {
-  text-transform: uppercase;
-  font-size: 18pt;
+  font-size: 4vw;
   color: rgba(255, 255, 255, .85);
 }

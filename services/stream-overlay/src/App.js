@@ -69,7 +69,7 @@ function App({channelId}) {
   return (<div className="App">
     <div className="Overlay">
       <div className="Overlay-cover">
-        <img alt="cover" src="https://fakeimg.pl/150x150/"/>
+        <img alt="cover" src="https://fakeimg.pl/300x300/"/>
       </div>
       <div className="Overlay-track">
         <div className="Overlay-track_title">

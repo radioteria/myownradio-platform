@@ -24,6 +24,7 @@
 }
 
 .Overlay-track {
+  font-family: "Myriad Pro Thin", serif;
   position: absolute;
   bottom: 105px;
   left: calc(64px + 150px + 32px);
@@ -31,14 +32,13 @@
 }
 
 .Overlay-track_title {
-  font-family: "Myriad Pro Thin", serif;
   text-transform: uppercase;
   font-size: 24pt;
   font-weight: 200;
 }
 
 .Overlay-track_artist {
-  font-family: "Myriad Pro Thin", serif;
   text-transform: uppercase;
   font-size: 18pt;
+  color: rgba(255, 255, 255, .85);
 }

@@ -14,6 +14,10 @@ services:
     volumes:
       - ./services/stream-overlay:/code
     user: "${UID}:${GID}"
+    environment:
+      - WDS_SOCKET_PATH=/stream-overlay/ws
+      - WDS_SOCKET_PORT=0
+      - CHOKIDAR_USEPOLLING=true
     labels:
       - traefik.enable=true
       - traefik.http.routers.overlay.rule=PathPrefix(`/stream-overlay`)

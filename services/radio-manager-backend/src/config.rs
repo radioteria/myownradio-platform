@@ -66,6 +66,23 @@ pub(crate) struct MySqlConfig {
     pub(crate) database: String,
 }
 
+#[derive(Clone, Debug, Deserialize)]
+#[serde(tag = "storage_backend")]
+pub(crate) enum StorageConfig {
+    #[serde(rename = "local")]
+    Local {
+        file_server_endpoint: String,
+        file_system_root_path: String,
+    },
+    #[serde(rename = "s3")]
+    S3 {
+        s3_bucket: String,
+        s3_region: String,
+        s3_access_key: String,
+        s3_secret_key: String,
+    },
+}
+
 impl MySqlConfig {
     pub(crate) fn connection_string(&self) -> String {
         format!(
@@ -101,8 +118,8 @@ pub(crate) struct Config {
     pub(crate) mysql: MySqlConfig,
     #[serde(flatten)]
     pub(crate) radio_streamer: RadioStreamerConfig,
-    pub(crate) file_server_endpoint: String,
-    pub(crate) file_system_root_path: String,
+    #[serde(flatten)]
+    pub(crate) storage: StorageConfig,
 }
 
 impl Config {

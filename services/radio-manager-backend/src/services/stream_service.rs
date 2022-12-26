@@ -2,27 +2,22 @@ use crate::config::RadioStreamerConfig;
 use crate::data_structures::{LinkId, OrderId, StreamId, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::services::stream_service_utils::get_now_playing;
-use crate::storage::db::repositories::errors::{RepositoryError, RepositoryResult};
+use crate::storage::db::repositories::errors::RepositoryError;
 use crate::storage::db::repositories::streams::{
-    get_single_stream_by_id, get_stream_playlist_duration, seek_user_stream_forward,
-    update_stream_status,
+    get_single_stream_by_id, seek_user_stream_forward, update_stream_status,
 };
 use crate::storage::db::repositories::user_stream_tracks::{
-    delete_track_by_link_id, get_single_stream_track_at_time_offset,
-    get_single_stream_track_by_link_id, get_single_stream_track_by_order_id, get_stream_tracks,
-    remove_tracks_by_track_id, GetUserStreamTracksParams, TrackFileLinkMergedRow,
+    delete_track_by_link_id, get_single_stream_track_by_link_id,
+    get_single_stream_track_by_order_id, remove_tracks_by_track_id,
 };
-use crate::storage::db::repositories::{StreamRow, StreamStatus};
+use crate::storage::db::repositories::StreamStatus;
 use crate::system::now;
 use crate::MySqlClient;
 use chrono::Duration;
-use futures::SinkExt;
 use reqwest::StatusCode;
 use std::future::Future;
-use std::ops::{DerefMut, Index, Neg};
 use std::pin::Pin;
 use std::time::SystemTime;
-use tracing::log::kv::Source;
 use tracing::{debug, error};
 
 #[derive(thiserror::Error, Debug)]

@@ -1,5 +1,6 @@
 use crate::services::StreamServiceError;
 use crate::storage::db::repositories::errors::RepositoryError;
+use crate::storage::fs::FileSystemError;
 use actix_http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
 use serde::Serialize;
@@ -18,6 +19,8 @@ pub(crate) enum Error {
     IOError(#[from] std::io::Error),
     #[error("StreamServiceError: {0}")]
     StreamServiceError(#[from] StreamServiceError),
+    #[error("FileSystemError: {0}")]
+    FileSystemError(#[from] FileSystemError),
 }
 
 #[derive(Serialize)]
@@ -32,6 +35,7 @@ impl ResponseError for Error {
             Error::RepositoryError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::IOError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::StreamServiceError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::FileSystemError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
@@ -55,6 +59,11 @@ impl ResponseError for Error {
             Error::StreamServiceError(_) => {
                 HttpResponse::build(self.status_code()).json(ErrorResponse {
                     error: "stream_service_error",
+                })
+            }
+            Error::FileSystemError(_) => {
+                HttpResponse::build(self.status_code()).json(ErrorResponse {
+                    error: "file_system_error",
                 })
             }
         }

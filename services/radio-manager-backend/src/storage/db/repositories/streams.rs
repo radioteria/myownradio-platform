@@ -1,6 +1,6 @@
 use crate::data_structures::{StreamId, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
-use crate::storage::db::repositories::errors::{RepositoryError, RepositoryResult};
+use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{StreamRow, StreamStatus};
 use chrono::Duration;
 use sqlx::{query, Execute, MySql, QueryBuilder, Row};

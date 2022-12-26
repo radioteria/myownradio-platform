@@ -5,8 +5,7 @@ use crate::storage::db::repositories::streams::{
     get_single_stream_by_id, get_stream_playlist_duration,
 };
 use crate::storage::db::repositories::user_stream_tracks::{
-    get_current_and_next_stream_track_at_time_offset, get_single_stream_track_at_time_offset,
-    TrackFileLinkMergedRow,
+    get_current_and_next_stream_track_at_time_offset, TrackFileLinkMergedRow,
 };
 use crate::storage::db::repositories::StreamStatus;
 use crate::utils::positive_mod;

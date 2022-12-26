@@ -1,4 +1,4 @@
-use crate::storage::fs::FileSystem;
+use crate::storage::fs::{FileSystem, FileSystemError, FileSystemResult};
 use crate::utils::TeeResultUtils;
 use async_trait::async_trait;
 use tracing::error;
@@ -6,6 +6,12 @@ use tracing::error;
 #[derive(Clone)]
 pub(crate) struct LocalFileSystem {
     root_path: String,
+}
+
+impl From<std::io::Error> for FileSystemError {
+    fn from(error: std::io::Error) -> Self {
+        FileSystemError::Unknown(format!("{:?}", error))
+    }
 }
 
 impl LocalFileSystem {
@@ -16,7 +22,7 @@ impl LocalFileSystem {
 
 #[async_trait]
 impl FileSystem for LocalFileSystem {
-    async fn delete_file(&self, path: &str) -> std::io::Result<()> {
+    async fn delete_file(&self, path: &str) -> FileSystemResult<()> {
         let root_path = self.root_path.clone();
         let path = path.to_string();
 

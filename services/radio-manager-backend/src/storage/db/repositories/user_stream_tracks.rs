@@ -4,7 +4,6 @@ use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{FileRow, LinkRow, TrackRow};
 use chrono::Duration;
 use sqlx::{query, Execute, MySql, QueryBuilder};
-use std::mem::swap;
 use std::ops::{Deref, DerefMut};
 use tracing::trace;
 

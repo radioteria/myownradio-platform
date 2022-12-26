@@ -8,12 +8,13 @@ use actix_server::Server;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
 use std::io::Result;
+use std::sync::Arc;
 
-pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
+pub(crate) fn run_server(
     bind_address: &str,
     mysql_client: MySqlClient,
     config: Config,
-    file_system: FS,
+    file_system: Arc<Box<dyn FileSystem + Sync + Send>>,
     stream_service_factory: StreamServiceFactory,
 ) -> Result<Server> {
     let mysql_client = mysql_client.clone();
@@ -30,10 +31,7 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                 web::scope("/v0/tracks")
                     .route("/", web::get().to(user_audio_tracks::get_user_audio_tracks))
                     .route("/", web::post().to(user_audio_tracks::upload_audio_track))
-                    .route(
-                        "/",
-                        web::delete().to(user_audio_tracks::delete_audio_track::<FS>),
-                    ),
+                    .route("/", web::delete().to(user_audio_tracks::delete_audio_track)),
             )
             .service(web::scope("/v0/streams/{stream_id}/tracks").route(
                 "/",

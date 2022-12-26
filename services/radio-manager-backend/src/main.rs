@@ -11,10 +11,11 @@ mod utils;
 use crate::config::Config;
 use crate::mysql_client::MySqlClient;
 use crate::services::StreamServiceFactory;
-use crate::storage::fs::local::LocalFileSystem;
+use crate::storage::fs::{create_file_system, FileSystem};
 use dotenv::dotenv;
 use http_server::run_server;
 use std::io::Result;
+use std::sync::Arc;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -39,7 +40,8 @@ async fn main() -> Result<()> {
         .await
         .expect("Unable to initialize MySQL client");
 
-    let file_system = LocalFileSystem::create(config.file_system_root_path.clone());
+    let file_system: Arc<Box<dyn FileSystem + Sync + Send + 'static>> =
+        Arc::new(create_file_system(&config.storage));
 
     let stream_service_factory =
         StreamServiceFactory::create(&mysql_client, &config.radio_streamer);

@@ -6,6 +6,7 @@ use tracing::error;
 #[derive(Clone)]
 pub(crate) struct LocalFileSystem {
     root_path: String,
+    url_endpoint: String,
 }
 
 impl From<std::io::Error> for FileSystemError {
@@ -15,13 +16,20 @@ impl From<std::io::Error> for FileSystemError {
 }
 
 impl LocalFileSystem {
-    pub(crate) fn create(root_path: String) -> Self {
-        Self { root_path }
+    pub(crate) fn create(root_path: String, url_endpoint: String) -> Self {
+        Self {
+            root_path,
+            url_endpoint,
+        }
     }
 }
 
 #[async_trait]
 impl FileSystem for LocalFileSystem {
+    fn get_file_url(&self, path: &str) -> String {
+        format!("{}/{}", self.url_endpoint, path)
+    }
+
     async fn delete_file(&self, path: &str) -> FileSystemResult<()> {
         let root_path = self.root_path.clone();
         let path = path.to_string();

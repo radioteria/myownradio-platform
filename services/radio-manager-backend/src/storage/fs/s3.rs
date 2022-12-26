@@ -48,6 +48,10 @@ impl S3FileSystem {
 
 #[async_trait]
 impl FileSystem for S3FileSystem {
+    fn get_file_url(&self, path: &str) -> String {
+        todo!()
+    }
+
     async fn delete_file(&self, path: &str) -> FileSystemResult<()> {
         let path = path.to_string();
 

@@ -2,8 +2,10 @@ use crate::data_structures::StreamId;
 use crate::http_server::response::Response;
 use crate::storage::db::repositories::streams;
 use crate::storage::db::repositories::user_stream_tracks::TrackFileLinkMergedRow;
+use crate::storage::fs::FileSystem;
 use crate::{services, Config, MySqlClient, StreamServiceFactory};
 use actix_web::{web, HttpResponse};
+use std::sync::Arc;
 use std::time::UNIX_EPOCH;
 
 fn get_artist_and_title(row: &TrackFileLinkMergedRow) -> String {
@@ -12,7 +14,7 @@ fn get_artist_and_title(row: &TrackFileLinkMergedRow) -> String {
 
 fn get_file_path(row: &TrackFileLinkMergedRow) -> String {
     format!(
-        "{}/{}/{}.{}",
+        "audio/{}/{}/{}.{}",
         &row.file.file_hash[..1],
         &row.file.file_hash[1..2],
         row.file.file_hash,
@@ -24,6 +26,7 @@ pub(crate) async fn get_playing_at(
     path: web::Path<(StreamId, u64)>,
     config: web::Data<Config>,
     mysql_client: web::Data<MySqlClient>,
+    file_system: web::Data<Arc<Box<dyn FileSystem>>>,
 ) -> Response {
     let (stream_id, unix_time) = path.into_inner();
     let system_time = UNIX_EPOCH + std::time::Duration::from_millis(unix_time);
@@ -52,12 +55,12 @@ pub(crate) async fn get_playing_at(
             "current_track": {
                 "offset": current_position.num_milliseconds(),
                 "title": get_artist_and_title(&current_track),
-                "url": format!("{}audio/{}", config.file_server_endpoint, get_file_path(&current_track)),
+                "url": file_system.get_file_url(&get_file_path(&current_track)),
                 "duration": current_track.track.duration,
             },
             "next_track": {
                 "title": get_artist_and_title(&next_track),
-                "url": format!("{}audio/{}", config.file_server_endpoint, get_file_path(&next_track)),
+                "url": file_system.get_file_url(&get_file_path(&next_track)),
                 "duration": next_track.track.duration,
             },
         },

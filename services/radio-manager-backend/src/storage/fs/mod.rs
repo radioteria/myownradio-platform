@@ -7,6 +7,8 @@ use async_trait::async_trait;
 
 #[async_trait]
 pub(crate) trait FileSystem {
+    fn get_file_url(&self, path: &str) -> String;
+
     async fn delete_file(&self, path: &str) -> FileSystemResult<()>;
 }
 
@@ -24,9 +26,10 @@ pub(crate) fn create_file_system(
     match config {
         StorageConfig::Local {
             file_system_root_path,
-            ..
+            file_server_endpoint,
         } => Box::new(local::LocalFileSystem::create(
             file_system_root_path.clone(),
+            file_server_endpoint.clone(),
         )),
         StorageConfig::S3 {
             s3_region,

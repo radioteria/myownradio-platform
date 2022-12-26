@@ -30,6 +30,8 @@ class Config implements Injectable, SingletonInterface
     private string $webServerOwnAddress;
     private string $fileServerOwnAddress;
 
+    private string $storageBackend;
+
     private function __construct(
         string $radioStreamerEndpoint,
         string $radioStreamerInternalEndpoint,
@@ -41,7 +43,8 @@ class Config implements Injectable, SingletonInterface
         string $smtpPassword,
         int $smtpPort,
         string $webServerOwnAddress,
-        string $fileServerOwnAddress
+        string $fileServerOwnAddress,
+        string $storageBackend
     ) {
         $this->radioStreamerEndpoint = $radioStreamerEndpoint;
         $this->radioStreamerInternalEndpoint = $radioStreamerInternalEndpoint;
@@ -57,6 +60,8 @@ class Config implements Injectable, SingletonInterface
 
         $this->webServerOwnAddress = $webServerOwnAddress;
         $this->fileServerOwnAddress = $fileServerOwnAddress;
+
+        $this->storageBackend = $storageBackend;
     }
 
     /**
@@ -111,6 +116,14 @@ class Config implements Injectable, SingletonInterface
             );
         }
 
+        $storageBackend = env('STORAGE_BACKEND');
+
+        if ($storageBackend === null) {
+            throw new ConfigException(
+                'Environment variable "STORAGE_BACKEND" is required for operation'
+            );
+        }
+
         return new static(
             $radioStreamerEndpoint,
             $radioStreamerInternalEndpoint,
@@ -123,6 +136,7 @@ class Config implements Injectable, SingletonInterface
             $smtpPort,
             $webServerOwnAddress,
             $fileServerOwnAddress,
+            $storageBackend
         );
     }
 
@@ -189,5 +203,10 @@ class Config implements Injectable, SingletonInterface
     public function getFileServerOwnAddress(): string
     {
         return $this->fileServerOwnAddress;
+    }
+
+    public function getStorageBackend(): string
+    {
+        return $this->storageBackend;
     }
 }

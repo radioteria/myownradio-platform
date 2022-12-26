@@ -2,18 +2,31 @@
 
 namespace app\Services\Storage;
 
+use app\Config\Config;
+use ReflectionException;
+
 class StorageFactory
 {
     /**
-     * @return Storage
+     * @return StorageInterface
+     * @throws ReflectionException
      */
-    public static function getStorage()
+    public static function getStorage(): StorageInterface
     {
-        $config = \app\Config\Config::getInstance();
-        $fileServerOwnAddress = $config->getFileServerOwnAddress();
+        $config = Config::getInstance();
 
-        return new LocalStorage(config('storage.local.dir'), function ($key) use (&$fileServerOwnAddress) {
-            return "${fileServerOwnAddress}/${key}";
-        });
+        switch ($config->getStorageBackend()) {
+            case 's3':
+                return new S3Storage();
+
+            case 'local':
+            default: {
+                $fileServerOwnAddress = $config->getFileServerOwnAddress();
+
+                return new LocalStorage(config('storage.local.dir'), function ($key) use (&$fileServerOwnAddress) {
+                    return "${fileServerOwnAddress}/${key}";
+                });
+            }
+        }
     }
 }

@@ -10,12 +10,12 @@ class S3Storage extends Storage
     /**
      * @var S3Client
      */
-    private $s3Client;
+    private S3Client $s3Client;
 
     /**
      * @var mixed
      */
-    private $bucket;
+    private string $bucket;
 
 
     public function __construct()
@@ -43,7 +43,7 @@ class S3Storage extends Storage
      * @param string $key
      * @return mixed
      */
-    public function get($key)
+    public function get(string $key): mixed
     {
         $result = $this->s3Client->getObject([
             'Bucket'       => $this->bucket,
@@ -58,9 +58,9 @@ class S3Storage extends Storage
      * @param mixed $body
      * @param array $parameters
      */
-    public function put($key, $body, array $parameters = [])
+    public function put(string $key, $body, array $parameters = [])
     {
-        $contentType = isset($parameters['ContentType']) ? $parameters['ContentType'] : null;
+        $contentType = $parameters['ContentType'] ?? null;
 
         $this->s3Client->putObject([
             'Bucket'      => $this->bucket,
@@ -74,7 +74,7 @@ class S3Storage extends Storage
     /**
      * @param string $key
      */
-    public function delete($key)
+    public function delete(string $key)
     {
         $this->s3Client->deleteObject([
             "Bucket"    => $this->bucket,
@@ -86,7 +86,7 @@ class S3Storage extends Storage
      * @param string $key
      * @return bool
      */
-    public function exists($key)
+    public function exists(string $key): bool
     {
         return $this->s3Client->doesObjectExist($this->bucket, $key);
     }

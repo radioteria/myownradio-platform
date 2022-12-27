@@ -3,15 +3,22 @@ GID := $(shell id -g)
 PWD := $(shell pwd)
 USER := $(UID):$(GID)
 SERVICE_NAME := $(shell basename $(PWD))
+PORT_BINDINGS := ""
 
 .env:
 	cp .env.example .env
 
-prepare-devenv: .env
-	mkdir -p .cargo-cache/git
-	mkdir -p .cargo-cache/registry
-	mkdir -p target
-	docker build -t $(SERVICE_NAME)-dev --build-arg USER=$(USER) -f Dockerfile-dev .
+devenv: prepare-devenv stop
+	docker run --rm -it \
+				--name $(SERVICE_NAME)-dev \
+				--network myownradio-dev \
+				--network-alias $(SERVICE_NAME) \
+				$(foreach PORT_BINDING,$(PORT_BINDINGS),-p $(PORT_BINDING)) \
+				--user $(USER) \
+				-v "$(PWD)/.cargo-cache/git":/rust/.cargo/git \
+				-v "$(PWD)/.cargo-cache/registry":/rust/.cargo/registry \
+				-v "$(PWD)":/code \
+				$(SERVICE_NAME)-dev bash
 
 stop:
 	USER=$(USER) docker-compose stop $(SERVICE_NAME)
@@ -22,16 +29,4 @@ rebuild:
 start:
 	USER=$(USER) docker-compose up $(SERVICE_NAME) -d
 
-devenv: prepare-devenv stop
-	docker run --rm -it \
-				--name $(SERVICE_NAME)-dev \
-				--network myownradio-dev \
-				--network-alias $(SERVICE_NAME) \
-				-p 127.0.0.1:40005:8080 \
-				--user $(USER) \
-				-v "$(PWD)/.cargo-cache/git":/rust/.cargo/git \
-				-v "$(PWD)/.cargo-cache/registry":/rust/.cargo/registry \
-				-v "$(PWD)":/code \
-				$(SERVICE_NAME)-dev bash
-
-.PHONY: prepare, devenv, start, stop, rebuild
+.PHONY: prepare-devenv, devenv, start, stop, rebuild

@@ -113,13 +113,8 @@ services:
       - myownradio-dev
     ports:
       - "127.0.0.1:40003:8080"
-    environment:
-      - HOME=/rust
-      - LOG_LEVEL=Trace
-      - LOG_FORMAT=Term
-      - MOR_BACKEND_URL=http://radio-manager-backend:8080
-      - STREAM_MUTATION_TOKEN=secret
-      - BIND_ADDRESS=0.0.0.0:8080
+    env_file:
+      - services/radio-streamer/.env
   radio-manager-backend:
     build:
       context: services/radio-manager-backend
@@ -136,19 +131,8 @@ services:
       - myownradio-dev
     ports:
       - "127.0.0.1:40005:8080"
-    environment:
-      - HOME=/rust
-      - LOG_LEVEL=DEBUG
-      - LOG_FORMAT=Term
-      - BIND_ADDRESS=0.0.0.0:8080
-      - MYSQL_HOST=db
-      - MYSQL_DATABASE=mor
-      - MYSQL_USER=mor
-      - MYSQL_PASSWORD=mor
-      - FILE_SERVER_ENDPOINT=http://file-server:80/
-      - FILE_SYSTEM_ROOT_PATH=/data
-      - RADIO_STREAMER_ENDPOINT=http://radio-streamer:8080
-      - RADIO_STREAMER_TOKEN=secret
+    env_file:
+      - services/radio-manager-backend/.env
     labels:
       - traefik.enable=true
       - traefik.http.routers.radioManager.rule=PathPrefix(`/radio-manager/api/`)

@@ -4,7 +4,10 @@ PWD := $(shell pwd)
 USER := $(UID):$(GID)
 SERVICE_NAME := $(shell basename $(PWD))
 
-prepare-devenv:
+.env:
+	cp .env.example .env
+
+prepare-devenv: .env
 	mkdir -p .cargo-cache/git
 	mkdir -p .cargo-cache/registry
 	mkdir -p target
@@ -31,4 +34,4 @@ devenv: prepare-devenv stop
 				-v "$(PWD)":/code \
 				$(SERVICE_NAME)-dev bash
 
-.PHONY: prepare, devenv
+.PHONY: prepare, devenv, start, stop, rebuild

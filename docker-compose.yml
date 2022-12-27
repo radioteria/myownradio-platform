@@ -13,7 +13,7 @@ services:
     working_dir: /code
     volumes:
       - ./services/stream-overlay:/code
-    user: "${UID}:${GID}"
+    user: "${USER}"
     labels:
       - traefik.enable=true
       - traefik.http.routers.overlay.rule=PathPrefix(`/stream-overlay`)
@@ -69,7 +69,7 @@ services:
     working_dir: /code
     volumes:
       - ./services/backend:/code:rw
-    user: "${UID}:${GID}"
+    user: "${USER}"
     networks:
       - myownradio-dev
     environment:
@@ -106,7 +106,7 @@ services:
       - ./services/radio-streamer:/code:rw
       - ./services/radio-streamer/.cargo-cache/git:/rust/.cargo/git
       - ./services/radio-streamer/.cargo-cache/registry:/rust/.cargo/registry
-    user: "${UID}:${GID}"
+    user: "${USER}"
     working_dir: /code
     command: cargo run
     networks:
@@ -124,7 +124,7 @@ services:
       - ./services/radio-manager-backend/.cargo-cache/git:/rust/.cargo/git
       - ./services/radio-manager-backend/.cargo-cache/registry:/rust/.cargo/registry
       - ./services/backend/.cache/storage:/data:rw
-    user: "${UID}:${GID}"
+    user: "${USER}"
     working_dir: /code
     command: cargo run
     networks:

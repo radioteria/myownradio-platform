@@ -9,7 +9,7 @@ compose:
 	mkdir -p services/radio-manager-backend/.cargo-cache/git
 	mkdir -p services/radio-manager-backend/.cargo-cache/registry
 	mkdir -p services/radio-manager-backend/target
-	UID=$(shell id -u) GID=$(shell id -g) docker-compose up -d
+	USER=$(USER) docker-compose up -d
 
 clean:
 	rm -rf services/backend/.cache/storage

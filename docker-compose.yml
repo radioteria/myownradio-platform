@@ -13,7 +13,7 @@ services:
     working_dir: /code
     volumes:
       - ./services/stream-overlay:/code
-    user: "${UID}:${GID}"
+    user: "${USER}"
     labels:
       - traefik.enable=true
       - traefik.http.routers.overlay.rule=PathPrefix(`/stream-overlay`)
@@ -69,7 +69,7 @@ services:
     working_dir: /code
     volumes:
       - ./services/backend:/code:rw
-    user: "${UID}:${GID}"
+    user: "${USER}"
     networks:
       - myownradio-dev
     environment:
@@ -106,20 +106,15 @@ services:
       - ./services/radio-streamer:/code:rw
       - ./services/radio-streamer/.cargo-cache/git:/rust/.cargo/git
       - ./services/radio-streamer/.cargo-cache/registry:/rust/.cargo/registry
-    user: "${UID}:${GID}"
+    user: "${USER}"
     working_dir: /code
     command: cargo run
     networks:
       - myownradio-dev
     ports:
       - "127.0.0.1:40003:8080"
-    environment:
-      - HOME=/rust
-      - LOG_LEVEL=Trace
-      - LOG_FORMAT=Term
-      - MOR_BACKEND_URL=http://radio-manager-backend:8080
-      - STREAM_MUTATION_TOKEN=secret
-      - BIND_ADDRESS=0.0.0.0:8080
+    env_file:
+      - services/radio-streamer/.env
   radio-manager-backend:
     build:
       context: services/radio-manager-backend
@@ -129,26 +124,15 @@ services:
       - ./services/radio-manager-backend/.cargo-cache/git:/rust/.cargo/git
       - ./services/radio-manager-backend/.cargo-cache/registry:/rust/.cargo/registry
       - ./services/backend/.cache/storage:/data:rw
-    user: "${UID}:${GID}"
+    user: "${USER}"
     working_dir: /code
     command: cargo run
     networks:
       - myownradio-dev
     ports:
       - "127.0.0.1:40005:8080"
-    environment:
-      - HOME=/rust
-      - LOG_LEVEL=DEBUG
-      - LOG_FORMAT=Term
-      - BIND_ADDRESS=0.0.0.0:8080
-      - MYSQL_HOST=db
-      - MYSQL_DATABASE=mor
-      - MYSQL_USER=mor
-      - MYSQL_PASSWORD=mor
-      - FILE_SERVER_ENDPOINT=http://file-server:80/
-      - FILE_SYSTEM_ROOT_PATH=/data
-      - RADIO_STREAMER_ENDPOINT=http://radio-streamer:8080
-      - RADIO_STREAMER_TOKEN=secret
+    env_file:
+      - services/radio-manager-backend/.env
     labels:
       - traefik.enable=true
       - traefik.http.routers.radioManager.rule=PathPrefix(`/radio-manager/api/`)

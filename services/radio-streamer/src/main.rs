@@ -23,6 +23,7 @@ mod backend_client;
 mod config;
 mod helpers;
 mod http;
+mod ingest;
 mod macros;
 mod metrics;
 mod stream;

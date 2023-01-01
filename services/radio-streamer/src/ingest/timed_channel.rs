@@ -13,8 +13,10 @@ enum ChannelState {
 pub(crate) struct ChannelClosed;
 
 pub(crate) struct TimedChannel<T: Clone> {
+    // Static
     timeout: Duration,
     buffer: usize,
+    // Dynamic
     state: Arc<RwLock<ChannelState>>,
     txs: Arc<RwLock<Vec<mpsc::Sender<T>>>>,
     timer: Arc<RwLock<Option<JoinHandle<()>>>>,
@@ -22,13 +24,17 @@ pub(crate) struct TimedChannel<T: Clone> {
 
 impl<T: Clone> TimedChannel<T> {
     pub(crate) fn new(timeout: Duration, buffer: usize) -> Self {
-        TimedChannel {
+        let channel = TimedChannel {
             timeout,
             buffer,
             state: Arc::new(RwLock::new(ChannelState::Open)),
             txs: Arc::new(RwLock::new(vec![])),
             timer: Arc::new(RwLock::new(None)),
-        }
+        };
+
+        channel.start_timer();
+
+        channel
     }
 
     pub(crate) fn send_all(&self, t: T) -> Result<(), ChannelClosed> {
@@ -39,7 +45,7 @@ impl<T: Clone> TimedChannel<T> {
         self.txs
             .write()
             .unwrap()
-            .retain_mut(|tx| tx.try_send(t.clone()).is_err());
+            .retain_mut(|tx| tx.try_send(t.clone()).is_ok());
 
         if self.txs.read().unwrap().len() == 0 && self.timer.read().unwrap().is_none() {
             self.start_timer();
@@ -67,9 +73,11 @@ impl<T: Clone> TimedChannel<T> {
         let timer_handle = actix_rt::spawn({
             let timeout = self.timeout.clone();
             let state = self.state.clone();
+            let timer = self.timer.clone();
 
             async move {
                 actix_rt::time::sleep(timeout).await;
+                timer.write().unwrap().take();
                 *state.write().unwrap() = ChannelState::Closed;
             }
         });
@@ -94,7 +102,7 @@ mod tests {
     use futures::StreamExt;
 
     #[actix_rt::test]
-    async fn create_single_consumer() {
+    async fn create_single_receiver() {
         let channel = TimedChannel::new(Duration::from_secs(10), 1);
         let mut rx = channel.create_receiver().unwrap();
 
@@ -103,5 +111,42 @@ mod tests {
         assert!(res.is_ok());
 
         assert_eq!(rx.next().await, Some("foo"));
+    }
+
+    #[actix_rt::test]
+    async fn create_multiple_receivers() {
+        let channel = TimedChannel::new(Duration::from_secs(10), 1);
+        let mut rx1 = channel.create_receiver().unwrap();
+        let mut rx2 = channel.create_receiver().unwrap();
+        let mut rx3 = channel.create_receiver().unwrap();
+
+        assert!(channel.send_all("foo").is_ok());
+
+        assert_eq!(rx1.next().await, Some("foo"));
+        assert_eq!(rx2.next().await, Some("foo"));
+        assert_eq!(rx3.next().await, Some("foo"));
+    }
+
+    #[actix_rt::test]
+    async fn channel_closed_after_timeout_1() {
+        let channel = TimedChannel::new(Duration::default(), 1);
+
+        actix_rt::time::sleep(Duration::from_millis(100)).await;
+
+        let res = channel.send_all("foo");
+
+        assert!(res.is_err());
+    }
+
+    #[actix_rt::test]
+    async fn channel_closed_after_timeout_2() {
+        let channel = TimedChannel::new(Duration::default(), 1);
+        drop(channel.create_receiver().unwrap());
+
+        assert!(channel.send_all("foo").is_ok());
+
+        actix_rt::time::sleep(Duration::from_millis(100)).await;
+
+        assert!(channel.send_all("foo").is_err());
     }
 }

@@ -1,13 +1,15 @@
 use actix_rt::task::JoinHandle;
 use futures::channel::mpsc;
+use futures::SinkExt;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub(crate) enum ChannelError {
+    #[error("Channel closed")]
     ChannelClosed,
 }
-
+#[derive(Clone)]
 pub(crate) struct TimedChannel<T: Clone> {
     // Static
     timeout: Duration,
@@ -18,7 +20,7 @@ pub(crate) struct TimedChannel<T: Clone> {
     timer: Arc<RwLock<Option<JoinHandle<()>>>>,
 }
 
-impl<T: Clone> TimedChannel<T> {
+impl<T: Clone + Send + Sync + 'static> TimedChannel<T> {
     pub(crate) fn new(timeout: Duration, buffer: usize) -> Self {
         let channel = TimedChannel {
             timeout,
@@ -33,15 +35,22 @@ impl<T: Clone> TimedChannel<T> {
         channel
     }
 
-    pub(crate) fn send_all(&self, t: T) -> Result<(), ChannelError> {
+    pub(crate) async fn send_all(&self, t: T) -> Result<(), ChannelError> {
+        use futures::executor::block_on;
+
         if self.is_closed() {
             return Err(ChannelError::ChannelClosed);
         }
 
-        self.txs
-            .write()
-            .unwrap()
-            .retain_mut(|tx| tx.try_send(t.clone()).is_ok());
+        let txs = self.txs.clone();
+
+        actix_rt::task::spawn_blocking(move || {
+            txs.write()
+                .unwrap()
+                .retain_mut(|tx| block_on(async { tx.send(t.clone()).await }).is_ok())
+        })
+        .await
+        .unwrap();
 
         if self.txs.read().unwrap().len() == 0 && self.timer.read().unwrap().is_none() {
             self.start_timer();
@@ -103,7 +112,7 @@ mod tests {
         let channel = TimedChannel::new(Duration::from_secs(10), 1);
         let mut rx = channel.create_receiver().unwrap();
 
-        let res = channel.send_all("foo");
+        let res = channel.send_all("foo").await;
 
         assert!(res.is_ok());
 
@@ -117,7 +126,7 @@ mod tests {
         let mut rx2 = channel.create_receiver().unwrap();
         let mut rx3 = channel.create_receiver().unwrap();
 
-        assert!(channel.send_all("foo").is_ok());
+        assert!(channel.send_all("foo").await.is_ok());
 
         assert_eq!(rx1.next().await, Some("foo"));
         assert_eq!(rx2.next().await, Some("foo"));
@@ -130,7 +139,7 @@ mod tests {
 
         actix_rt::time::sleep(Duration::from_millis(100)).await;
 
-        let res = channel.send_all("foo");
+        let res = channel.send_all("foo").await;
 
         assert!(res.is_err());
     }
@@ -140,10 +149,10 @@ mod tests {
         let channel = TimedChannel::new(Duration::default(), 1);
         drop(channel.create_receiver().unwrap());
 
-        assert!(channel.send_all("foo").is_ok());
+        assert!(channel.send_all("foo").await.is_ok());
 
         actix_rt::time::sleep(Duration::from_millis(100)).await;
 
-        assert!(channel.send_all("foo").is_err());
+        assert!(channel.send_all("foo").await.is_err());
     }
 }

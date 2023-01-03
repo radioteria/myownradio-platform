@@ -28,4 +28,8 @@ impl Buffer {
     pub(crate) fn is_empty(&self) -> bool {
         self.bytes.is_empty()
     }
+
+    pub(crate) fn into_bytes(self) -> Bytes {
+        self.bytes
+    }
 }

@@ -12,10 +12,13 @@ use slog::{error, o, Logger};
 
 const STDIO_BUFFER_SIZE: usize = 4096;
 
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub(crate) enum EncoderError {
+    #[error("Error while processing data")]
     ProcessError,
+    #[error("Unable to access stdout")]
     StdoutUnavailable,
+    #[error("Unable to access stdin")]
     StdinUnavailable,
 }
 

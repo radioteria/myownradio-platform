@@ -4,7 +4,9 @@ use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
 #[derive(Debug)]
-pub(crate) struct ChannelClosed;
+pub(crate) enum ChannelError {
+    ChannelClosed,
+}
 
 pub(crate) struct TimedChannel<T: Clone> {
     // Static
@@ -31,9 +33,9 @@ impl<T: Clone> TimedChannel<T> {
         channel
     }
 
-    pub(crate) fn send_all(&self, t: T) -> Result<(), ChannelClosed> {
+    pub(crate) fn send_all(&self, t: T) -> Result<(), ChannelError> {
         if self.is_closed() {
-            return Err(ChannelClosed);
+            return Err(ChannelError::ChannelClosed);
         }
 
         self.txs
@@ -48,14 +50,15 @@ impl<T: Clone> TimedChannel<T> {
         Ok(())
     }
 
-    pub(crate) fn create_receiver(&self) -> Result<mpsc::Receiver<T>, ChannelClosed> {
+    pub(crate) fn create_receiver(&self) -> Result<mpsc::Receiver<T>, ChannelError> {
         if self.is_closed() {
-            return Err(ChannelClosed);
+            return Err(ChannelError::ChannelClosed);
         }
 
         let (tx, rx) = mpsc::channel(self.buffer);
 
         self.stop_timer();
+
         self.txs.write().unwrap().push(tx);
 
         Ok(rx)

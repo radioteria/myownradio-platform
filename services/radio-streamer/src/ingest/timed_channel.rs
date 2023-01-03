@@ -4,12 +4,6 @@ use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
 #[derive(Debug)]
-enum ChannelState {
-    Open,
-    Closed,
-}
-
-#[derive(Debug)]
 pub(crate) struct ChannelClosed;
 
 pub(crate) struct TimedChannel<T: Clone> {
@@ -17,7 +11,7 @@ pub(crate) struct TimedChannel<T: Clone> {
     timeout: Duration,
     buffer: usize,
     // Dynamic
-    state: Arc<RwLock<ChannelState>>,
+    is_closed: Arc<RwLock<bool>>,
     txs: Arc<RwLock<Vec<mpsc::Sender<T>>>>,
     timer: Arc<RwLock<Option<JoinHandle<()>>>>,
 }
@@ -27,7 +21,7 @@ impl<T: Clone> TimedChannel<T> {
         let channel = TimedChannel {
             timeout,
             buffer,
-            state: Arc::new(RwLock::new(ChannelState::Open)),
+            is_closed: Arc::new(RwLock::new(false)),
             txs: Arc::new(RwLock::new(vec![])),
             timer: Arc::new(RwLock::new(None)),
         };
@@ -72,13 +66,13 @@ impl<T: Clone> TimedChannel<T> {
 
         let timer_handle = actix_rt::spawn({
             let timeout = self.timeout.clone();
-            let state = self.state.clone();
+            let state = self.is_closed.clone();
             let timer = self.timer.clone();
 
             async move {
                 actix_rt::time::sleep(timeout).await;
                 timer.write().unwrap().take();
-                *state.write().unwrap() = ChannelState::Closed;
+                *state.write().unwrap() = true;
             }
         });
 
@@ -92,7 +86,7 @@ impl<T: Clone> TimedChannel<T> {
     }
 
     fn is_closed(&self) -> bool {
-        matches!(*self.state.read().unwrap(), ChannelState::Closed)
+        self.is_closed.read().unwrap().clone()
     }
 }
 

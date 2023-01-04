@@ -222,6 +222,10 @@ impl Stream {
         self.player_loop_handle.abort();
     }
 
+    pub(crate) fn channel_info(&self) -> &ChannelInfo {
+        &self.channel_info
+    }
+
     fn make_encoder(
         &self,
         format: &AudioFormat,

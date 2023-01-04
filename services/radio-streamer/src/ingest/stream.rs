@@ -33,7 +33,7 @@ pub(crate) enum StreamCreateError {
     #[error("Channel not found")]
     ChannelNotFound,
     #[error(transparent)]
-    OtherBackendError(#[from] MorBackendClientError),
+    BackendError(#[from] MorBackendClientError),
 }
 
 pub(crate) enum StopReason {
@@ -80,7 +80,7 @@ impl Stream {
                 return Err(StreamCreateError::ChannelNotFound);
             }
             Err(error) => {
-                return Err(StreamCreateError::OtherBackendError(error));
+                return Err(StreamCreateError::BackendError(error));
             }
         };
 

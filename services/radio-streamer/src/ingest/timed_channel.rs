@@ -9,6 +9,7 @@ pub(crate) enum ChannelError {
     #[error("Channel closed")]
     ChannelClosed,
 }
+
 #[derive(Clone)]
 pub(crate) struct TimedChannel<T: Clone> {
     // Static
@@ -42,12 +43,14 @@ impl<T: Clone + Send + Sync + 'static> TimedChannel<T> {
             return Err(ChannelError::ChannelClosed);
         }
 
-        let txs = self.txs.clone();
+        actix_rt::task::spawn_blocking({
+            let txs = self.txs.clone();
 
-        actix_rt::task::spawn_blocking(move || {
-            txs.write()
-                .unwrap()
-                .retain_mut(|tx| block_on(async { tx.send(t.clone()).await }).is_ok())
+            move || {
+                txs.write()
+                    .unwrap()
+                    .retain_mut(|tx| block_on(tx.send(t.clone())).is_ok())
+            }
         })
         .await
         .unwrap();
@@ -154,5 +157,15 @@ mod tests {
         actix_rt::time::sleep(Duration::from_millis(100)).await;
 
         assert!(channel.send_all("foo").await.is_err());
+    }
+
+    #[actix_rt::test]
+    async fn channel_not_closed_after_timeout_without_send() {
+        let channel = TimedChannel::new(Duration::default(), 1);
+        drop(channel.create_receiver().unwrap());
+
+        actix_rt::time::sleep(Duration::from_millis(100)).await;
+
+        assert!(channel.send_all("foo").await.is_ok());
     }
 }

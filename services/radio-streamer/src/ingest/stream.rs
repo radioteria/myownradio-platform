@@ -49,7 +49,7 @@ pub(crate) struct Stream {
     // Dependencies
     logger: Logger,
     metrics: Metrics,
-    path_to_ffmpeg: &'static str,
+    path_to_ffmpeg: String,
     streams_registry: Arc<StreamsRegistry>,
     // Static state
     channel_id: usize,
@@ -65,7 +65,7 @@ pub(crate) struct Stream {
 impl Stream {
     pub(crate) async fn create(
         channel_id: &usize,
-        path_to_ffmpeg: &'static str,
+        path_to_ffmpeg: &str,
         backend_client: &BackendClient,
         logger: &Logger,
         metrics: &Metrics,
@@ -138,7 +138,7 @@ impl Stream {
             channel_id: *channel_id,
             channel_info,
             stream_messages_channel,
-            path_to_ffmpeg,
+            path_to_ffmpeg: path_to_ffmpeg.to_string(),
             logger: logger.clone(),
             metrics: metrics.clone(),
             streams_registry,
@@ -230,6 +230,6 @@ impl Stream {
         &self,
         format: &AudioFormat,
     ) -> Result<(mpsc::Sender<Bytes>, mpsc::Receiver<Bytes>), EncoderError> {
-        make_ffmpeg_encoder(format, self.path_to_ffmpeg, &self.logger, &self.metrics)
+        make_ffmpeg_encoder(format, &self.path_to_ffmpeg, &self.logger, &self.metrics)
     }
 }

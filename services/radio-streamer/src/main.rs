@@ -14,6 +14,7 @@ use crate::http::channel::{
     get_active_channel_ids, get_channel_audio_stream, restart_channel_by_id,
 };
 use crate::http::metrics::get_metrics;
+use crate::ingest::StreamsRegistry;
 use crate::metrics::Metrics;
 use crate::stream::encoder_registry::EncoderRegistry;
 use crate::stream::player_registry::PlayerRegistry;
@@ -84,7 +85,12 @@ async fn main() -> Result<()> {
 
     let server = HttpServer::new({
         let logger = logger.clone();
+        let path_to_ffmpeg = config.path_to_ffmpeg.clone();
+
         move || {
+            let streams_registry =
+                StreamsRegistry::new(&path_to_ffmpeg, &backend_client, &logger, &metrics);
+
             App::new()
                 .wrap_fn({
                     let metrics = metrics.clone();
@@ -121,6 +127,7 @@ async fn main() -> Result<()> {
                 .data(metrics.clone())
                 .data(player_registry.clone())
                 .data(encoder_registry.clone())
+                .data(Arc::new(streams_registry))
                 .service(get_channel_audio_stream)
                 .service(restart_channel_by_id)
                 .service(get_active_channel_ids)

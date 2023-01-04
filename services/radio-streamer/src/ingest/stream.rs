@@ -1,10 +1,10 @@
 use crate::audio_formats::AudioFormat;
-use crate::backend_client::BackendClient;
+use crate::backend_client::{BackendClient, ChannelInfo, MorBackendClientError};
+use crate::ingest::streams_registry::StreamRegistry;
 use crate::ingest::timed_channel::{ChannelError, TimedChannel};
 use crate::metrics::Metrics;
 use crate::stream::ffmpeg_encoder::{make_ffmpeg_encoder, EncoderError};
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
-use crate::stream::types::Buffer;
 use actix_web::web::Bytes;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
@@ -28,14 +28,29 @@ pub(crate) enum GetFormatError {
     EncoderError(#[from] EncoderError),
 }
 
+#[derive(thiserror::Error, Debug)]
+pub(crate) enum StreamCreateError {
+    #[error("Channel not found")]
+    ChannelNotFound,
+    #[error(transparent)]
+    OtherBackendError(#[from] MorBackendClientError),
+}
+
+pub(crate) enum StopReason {
+    NoConsumers,
+    PlayerStopped,
+}
+
 pub(crate) struct Stream {
     // Dependencies
     logger: Logger,
     metrics: Metrics,
     path_to_ffmpeg: &'static str,
+    streams_registry: Arc<StreamRegistry>,
     // Static state
     channel_id: usize,
     stream_messages_channel: TimedChannel<StreamMessage>,
+    channel_info: ChannelInfo,
     // Dynamic state
     restart_sender: Arc<Mutex<Option<oneshot::Sender<()>>>>,
     track_title: Arc<Mutex<String>>,
@@ -49,7 +64,8 @@ impl Stream {
         backend_client: &BackendClient,
         logger: &Logger,
         metrics: &Metrics,
-    ) -> Self {
+        streams_registry: Arc<StreamRegistry>,
+    ) -> Result<Self, StreamCreateError> {
         let stream_messages_channel = TimedChannel::new(Duration::from_secs(5), 0);
         let restart_sender = Arc::new(Mutex::new(None));
         let track_title = Arc::new(Mutex::new(String::default()));
@@ -58,13 +74,25 @@ impl Stream {
             TimedChannel<StreamMessage>,
         >::new()));
 
+        let channel_info = match backend_client.get_channel_info(&channel_id, None).await {
+            Ok(channel_info) => channel_info,
+            Err(MorBackendClientError::ChannelNotFound) => {
+                return Err(StreamCreateError::ChannelNotFound);
+            }
+            Err(error) => {
+                return Err(StreamCreateError::OtherBackendError(error));
+            }
+        };
+
         actix_rt::spawn({
+            let channel_id = channel_id.clone();
             let mut player_messages =
                 make_player_loop(&channel_id, path_to_ffmpeg, backend_client, logger, metrics);
 
             let restart_sender = restart_sender.clone();
             let stream_messages_channel = stream_messages_channel.clone();
             let track_title = track_title.clone();
+            let streams_registry = Arc::downgrade(&streams_registry);
 
             async move {
                 while let Some(msg) = player_messages.next().await {
@@ -87,28 +115,40 @@ impl Stream {
                     };
 
                     if result.is_err() {
-                        // @todo Logging
-                        break;
+                        if let Some(stream) = streams_registry
+                            .upgrade()
+                            .and_then(|registry| registry.get_single_stream(&channel_id))
+                        {
+                            stream.stop(StopReason::NoConsumers);
+                        }
+                        return;
                     }
                 }
 
                 restart_sender.lock().unwrap().take();
                 track_title.lock().unwrap().clear();
 
-                // @todo Close stream
+                if let Some(stream) = streams_registry
+                    .upgrade()
+                    .and_then(|registry| registry.get_single_stream(&channel_id))
+                {
+                    stream.stop(StopReason::PlayerStopped);
+                }
             }
         });
 
-        Self {
+        Ok(Self {
             channel_id: *channel_id,
+            channel_info,
             stream_messages_channel,
             path_to_ffmpeg,
             logger: logger.clone(),
             metrics: metrics.clone(),
+            streams_registry,
             track_title,
             restart_sender,
             encoders_map,
-        }
+        })
     }
 
     pub(crate) fn get_format(
@@ -169,7 +209,7 @@ impl Stream {
         }
     }
 
-    pub(crate) fn close(&self) {}
+    pub(crate) fn stop(&self, reason: StopReason) {}
 
     fn make_encoder(
         &self,

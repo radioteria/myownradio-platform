@@ -1,14 +1,16 @@
 use crate::audio_formats::AudioFormat;
 use crate::backend_client::{BackendClient, ChannelInfo, MorBackendClientError};
-use crate::ingest::streams_registry::StreamRegistry;
+use crate::ingest::streams_registry::StreamsRegistry;
 use crate::ingest::timed_channel::{ChannelError, TimedChannel};
 use crate::metrics::Metrics;
 use crate::stream::ffmpeg_encoder::{make_ffmpeg_encoder, EncoderError};
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
+use crate::upgrade_weak;
+use actix_rt::task::JoinHandle;
 use actix_web::web::Bytes;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
-use slog::Logger;
+use slog::{info, Logger};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -36,9 +38,11 @@ pub(crate) enum StreamCreateError {
     BackendError(#[from] MorBackendClientError),
 }
 
+#[derive(Debug)]
 pub(crate) enum StopReason {
     NoConsumers,
     PlayerStopped,
+    EncoderStopped,
 }
 
 pub(crate) struct Stream {
@@ -46,7 +50,7 @@ pub(crate) struct Stream {
     logger: Logger,
     metrics: Metrics,
     path_to_ffmpeg: &'static str,
-    streams_registry: Arc<StreamRegistry>,
+    streams_registry: Arc<StreamsRegistry>,
     // Static state
     channel_id: usize,
     stream_messages_channel: TimedChannel<StreamMessage>,
@@ -55,6 +59,7 @@ pub(crate) struct Stream {
     restart_sender: Arc<Mutex<Option<oneshot::Sender<()>>>>,
     track_title: Arc<Mutex<String>>,
     encoders_map: Arc<Mutex<HashMap<AudioFormat, TimedChannel<StreamMessage>>>>,
+    player_loop_handle: JoinHandle<()>,
 }
 
 impl Stream {
@@ -64,7 +69,7 @@ impl Stream {
         backend_client: &BackendClient,
         logger: &Logger,
         metrics: &Metrics,
-        streams_registry: Arc<StreamRegistry>,
+        streams_registry: Arc<StreamsRegistry>,
     ) -> Result<Self, StreamCreateError> {
         let stream_messages_channel = TimedChannel::new(Duration::from_secs(5), 0);
         let restart_sender = Arc::new(Mutex::new(None));
@@ -84,7 +89,7 @@ impl Stream {
             }
         };
 
-        actix_rt::spawn({
+        let player_loop_handle = actix_rt::spawn({
             let channel_id = channel_id.clone();
             let mut player_messages =
                 make_player_loop(&channel_id, path_to_ffmpeg, backend_client, logger, metrics);
@@ -115,12 +120,8 @@ impl Stream {
                     };
 
                     if result.is_err() {
-                        if let Some(stream) = streams_registry
-                            .upgrade()
-                            .and_then(|registry| registry.get_single_stream(&channel_id))
-                        {
-                            stream.stop(StopReason::NoConsumers);
-                        }
+                        let registry = upgrade_weak!(streams_registry);
+                        registry.stop_and_unregister_stream(&channel_id, StopReason::NoConsumers);
                         return;
                     }
                 }
@@ -128,12 +129,8 @@ impl Stream {
                 restart_sender.lock().unwrap().take();
                 track_title.lock().unwrap().clear();
 
-                if let Some(stream) = streams_registry
-                    .upgrade()
-                    .and_then(|registry| registry.get_single_stream(&channel_id))
-                {
-                    stream.stop(StopReason::PlayerStopped);
-                }
+                let registry = upgrade_weak!(streams_registry);
+                registry.stop_and_unregister_stream(&channel_id, StopReason::PlayerStopped);
             }
         });
 
@@ -148,6 +145,7 @@ impl Stream {
             track_title,
             restart_sender,
             encoders_map,
+            player_loop_handle,
         })
     }
 
@@ -164,13 +162,19 @@ impl Stream {
                     let mut receiver = self.stream_messages_channel.create_receiver()?;
                     let mut encoder_sink = encoder_sink;
 
+                    let channel_id = self.channel_id.clone();
+                    let streams_registry = Arc::downgrade(&self.streams_registry);
+
                     async move {
                         while let Some(msg) = receiver.next().await {
                             if let StreamMessage::BufferBytes(bytes) = msg {
-                                let result = encoder_sink.send(bytes).await;
-                                if let Err(result) = result {
-                                    // @todo Close stream with reason EncoderError
-                                    break;
+                                if encoder_sink.send(bytes).await.is_err() {
+                                    let registry = upgrade_weak!(streams_registry);
+                                    registry.stop_and_unregister_stream(
+                                        &channel_id,
+                                        StopReason::EncoderStopped,
+                                    );
+                                    return;
                                 }
                             }
                         }
@@ -209,7 +213,14 @@ impl Stream {
         }
     }
 
-    pub(crate) fn stop(&self, reason: StopReason) {}
+    pub(crate) fn stop(&self, reason: StopReason) {
+        info!(
+            self.logger,
+            "Player stopped (channel_id={}, reason={:?})", self.channel_id, reason
+        );
+
+        self.player_loop_handle.abort();
+    }
 
     fn make_encoder(
         &self,

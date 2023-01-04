@@ -43,7 +43,7 @@ pub(crate) struct Stream {
 }
 
 impl Stream {
-    pub(crate) fn new(
+    pub(crate) async fn create(
         channel_id: &usize,
         path_to_ffmpeg: &'static str,
         backend_client: &BackendClient,

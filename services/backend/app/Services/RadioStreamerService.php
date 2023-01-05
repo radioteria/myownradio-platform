@@ -29,11 +29,7 @@ class RadioStreamerService implements Injectable, SingletonInterface
 
     public function restartRadioChannel(int $channelId): void
     {
-        $uri = sprintf("%s/restart/%d", $this->config->getRadioStreamerInternalEndpoint(), $channelId);
-        error_log("-------");
-        error_log("-------");
-        error_log("-------");
-        error_log("-------");
+        $uri = sprintf("%s/v2/restart/%d", $this->config->getRadioStreamerInternalEndpoint(), $channelId);
 
         $response = $this->client->request('GET', $uri, [
             'headers' => [
@@ -60,7 +56,7 @@ class RadioStreamerService implements Injectable, SingletonInterface
         $queryParameters = implode("&", $f->zip($c)->getOrElse([]));
 
         return sprintf(
-            "%s/listen/%d?%s",
+            "%s/v2/listen/%d?%s",
             $this->config->getRadioStreamerEndpoint(),
             $channelId,
             $queryParameters

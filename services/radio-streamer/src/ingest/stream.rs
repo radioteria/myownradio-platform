@@ -151,12 +151,12 @@ impl Stream {
 
     pub(crate) fn get_format(
         &self,
-        format: AudioFormat,
+        format: &AudioFormat,
     ) -> Result<mpsc::Receiver<StreamMessage>, GetFormatError> {
         match self.encoders_map.lock().unwrap().entry(format.clone()) {
             Entry::Occupied(entry) => Ok(entry.get().create_receiver()?),
             Entry::Vacant(entry) => {
-                let (encoder_sink, encoder_src) = self.make_encoder(&format)?;
+                let (encoder_sink, encoder_src) = self.make_encoder(format)?;
 
                 actix_rt::spawn({
                     let mut receiver = self.stream_messages_channel.create_receiver()?;
@@ -189,6 +189,7 @@ impl Stream {
 
                     let encoded_messages_channel = encoded_messages_channel.clone();
                     let encoders_map = self.encoders_map.clone();
+                    let format = format.clone();
 
                     async move {
                         while let Some(bytes) = encoder_src.next().await {
@@ -222,8 +223,12 @@ impl Stream {
         self.player_loop_handle.abort();
     }
 
-    pub(crate) fn channel_info(&self) -> &ChannelInfo {
-        &self.channel_info
+    pub(crate) fn channel_info(&self) -> ChannelInfo {
+        self.channel_info.clone()
+    }
+
+    pub(crate) fn track_title(&self) -> String {
+        self.track_title.lock().unwrap().clone()
     }
 
     fn make_encoder(

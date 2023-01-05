@@ -38,7 +38,7 @@ pub struct NowPlayingResponse {
     pub data: NowPlaying,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct ChannelInfo {
     pub name: String,
     pub status: u8,

@@ -1,7 +1,7 @@
 use crate::audio_formats::AudioFormats;
 use crate::backend_client::{BackendClient, MorBackendClientError};
 use crate::config::Config;
-use crate::ingest::{StreamsRegistry, StreamsRegistryExt};
+use crate::ingest::{StreamCreateError, StreamMessage, StreamsRegistry, StreamsRegistryExt};
 use crate::stream::channel_encoder::ChannelEncoderMessage;
 use crate::stream::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
 use crate::{EncoderRegistry, PlayerRegistry};
@@ -178,20 +178,12 @@ pub(crate) async fn get_channel_audio_stream_v2(
 ) -> impl Responder {
     let channel_id = channel_id.into_inner();
     let stream = match stream_registry.get_or_create_stream(&channel_id).await {
-        Ok(_) => {}
-        Err(_) => {}
-    };
-
-    let channel_info = match backend_client
-        .get_channel_info(&channel_id.clone(), query_params.client_id.clone())
-        .await
-    {
-        Ok(channel_info) => channel_info,
-        Err(MorBackendClientError::ChannelNotFound) => {
+        Ok(stream) => stream,
+        Err(StreamCreateError::ChannelNotFound) => {
             return HttpResponse::NotFound().finish();
         }
         Err(error) => {
-            error!(logger, "Unable to get channel info"; "error" => ?error);
+            error!(logger, "Unable to create stream"; "error" => ?error);
             return HttpResponse::ServiceUnavailable().finish();
         }
     };
@@ -208,35 +200,29 @@ pub(crate) async fn get_channel_audio_stream_v2(
         .filter(|v| v.to_str().unwrap() == "1")
         .is_some();
 
-    let encoder = match encoder_registry
-        .get_encoder(&channel_id, &query_params.client_id, &format)
-        .await
-    {
-        Ok(encoder) => encoder,
-        Err(error) => {
-            error!(logger, "Error"; "error" => ?error);
-
-            return HttpResponse::InternalServerError().finish();
-        }
-    };
-
-    let encoder_messages = encoder.create_receiver();
-
     let icy_muxer = Arc::new(IcyMuxer::new());
     let (response_sender, response_receiver) = mpsc::channel(512);
 
-    icy_muxer.send_track_title(encoder.get_track_title().unwrap_or_default());
+    icy_muxer.send_track_title(stream.track_title());
+
+    let stream_source = match stream.get_format(&format) {
+        Ok(stream_source) => stream_source,
+        Err(error) => {
+            error!(logger, "Unable to create stream"; "error" => ?error);
+            return HttpResponse::ServiceUnavailable().finish();
+        }
+    };
 
     actix_rt::spawn({
-        let mut encoder_messages = encoder_messages;
+        let mut stream_source = stream_source;
         let mut response_sender = response_sender;
 
         let icy_muxer = Arc::downgrade(&icy_muxer);
 
         async move {
-            while let Some(event) = encoder_messages.next().await {
+            while let Some(event) = stream_source.next().await {
                 match event {
-                    ChannelEncoderMessage::EncodedBuffer(bytes) => {
+                    StreamMessage::BufferBytes(bytes) => {
                         // Do not block encoder if one of the consumers are blocked due to network issues
                         match response_sender.try_send(bytes) {
                             Err(error) if error.is_disconnected() => {
@@ -254,7 +240,7 @@ pub(crate) async fn get_channel_audio_stream_v2(
                             Ok(_) => (),
                         }
                     }
-                    ChannelEncoderMessage::TrackTitle(title) => {
+                    StreamMessage::TrackTitle(title) => {
                         debug!(logger, "Received track title"; "title" => ?title);
 
                         if let Some(muxer) = icy_muxer.upgrade() {
@@ -267,6 +253,8 @@ pub(crate) async fn get_channel_audio_stream_v2(
     });
 
     {
+        let channel_info = stream.channel_info();
+
         let mut response = HttpResponse::Ok();
 
         response.content_type(format.content_type).force_close();

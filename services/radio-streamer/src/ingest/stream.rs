@@ -162,19 +162,11 @@ impl Stream {
                     let mut receiver = self.stream_messages_channel.create_receiver()?;
                     let mut encoder_sink = encoder_sink;
 
-                    let channel_id = self.channel_id.clone();
-                    let streams_registry = Arc::downgrade(&self.streams_registry);
-
                     async move {
                         while let Some(msg) = receiver.next().await {
                             if let StreamMessage::BufferBytes(bytes) = msg {
                                 if encoder_sink.send(bytes).await.is_err() {
-                                    let registry = upgrade_weak!(streams_registry);
-                                    registry.stop_and_unregister_stream(
-                                        &channel_id,
-                                        StopReason::EncoderStopped,
-                                    );
-                                    return;
+                                    break;
                                 }
                             }
                         }

@@ -35,11 +35,14 @@ class HttpSession implements Injectable
                 $decodedSessionData = JWT::decode(
                     $_COOKIE[self::SESSION_COOKIE_NAME], $key, ['HS256']
                 );
+
+
                 $this->sessionId = $decodedSessionData->id ?? uniqid();
                 $this->session = (array) $decodedSessionData->data ?? [];
                 return;
             } catch (Exception $exception) {
-                //
+                // @todo Possible source of problem
+                error_log(print_r($exception, true));
             }
         }
 

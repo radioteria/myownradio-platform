@@ -38,7 +38,7 @@ pub struct NowPlayingResponse {
     pub data: NowPlaying,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct ChannelInfo {
     pub name: String,
     pub status: u8,
@@ -57,13 +57,19 @@ pub struct BackendClient {
     mor_backend_url: String,
 }
 
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum MorBackendClientError {
+    #[error("Send request error")]
     SendRequestError,
+    #[error("Unexpected status code")]
     UnexpectedStatusCode,
+    #[error("Response read error")]
     ResponseReadError,
+    #[error("Response parse error")]
     ResponseParseError,
+    #[error("Unexpected response")]
     UnexpectedResponse,
+    #[error("Channel not found")]
     ChannelNotFound,
 }
 

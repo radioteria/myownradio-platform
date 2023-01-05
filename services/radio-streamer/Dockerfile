@@ -1,4 +1,4 @@
-FROM rust
+FROM rust:1.66.0
 
 ENV DUMMY=13
 

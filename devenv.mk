@@ -18,6 +18,7 @@ devenv: prepare-devenv stop
 				-v "$(PWD)/.cargo-cache/git":/rust/.cargo/git \
 				-v "$(PWD)/.cargo-cache/registry":/rust/.cargo/registry \
 				-v "$(PWD)":/code \
+				--env-file "$(PWD)/.env" \
 				$(SERVICE_NAME)-dev bash
 
 stop:

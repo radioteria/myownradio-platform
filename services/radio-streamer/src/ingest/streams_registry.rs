@@ -48,6 +48,12 @@ impl StreamsRegistry {
             stream.stop(reason);
         }
     }
+
+    pub(crate) fn restart_stream(&self, channel_id: &usize) {
+        if let Some(stream) = self.streams_map.lock().unwrap().remove(channel_id) {
+            stream.restart();
+        }
+    }
 }
 
 #[async_trait::async_trait(?Send)]

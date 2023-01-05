@@ -45,6 +45,29 @@ pub(crate) async fn restart_channel_by_id(
     HttpResponse::Ok().finish()
 }
 
+#[get("/v2/restart/{channel_id}")]
+pub(crate) async fn restart_channel_by_id_v2(
+    request: HttpRequest,
+    channel_id: web::Path<usize>,
+    config: Data<Arc<Config>>,
+    stream_registry: Data<Arc<StreamsRegistry>>,
+) -> impl Responder {
+    let actual_token = match request.headers().get("token").and_then(|v| v.to_str().ok()) {
+        Some(token) => token,
+        None => {
+            return HttpResponse::Unauthorized().finish();
+        }
+    };
+
+    if actual_token != config.stream_mutation_token {
+        return HttpResponse::Unauthorized().finish();
+    }
+
+    stream_registry.restart_stream(&channel_id);
+
+    HttpResponse::Ok().finish()
+}
+
 #[derive(Deserialize, Clone)]
 pub struct GetChannelAudioStreamQueryParams {
     format: Option<String>,

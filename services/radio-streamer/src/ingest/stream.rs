@@ -223,6 +223,12 @@ impl Stream {
         self.track_title.lock().unwrap().clone()
     }
 
+    pub(crate) fn restart(&self) {
+        if let Some(restart_sender) = self.restart_sender.lock().unwrap().take() {
+            let _ = restart_sender.send(());
+        }
+    }
+
     fn make_encoder(
         &self,
         format: &AudioFormat,

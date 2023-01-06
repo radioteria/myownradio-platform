@@ -121,7 +121,7 @@ impl Stream {
 
                     if result.is_err() {
                         let registry = upgrade_weak!(streams_registry);
-                        registry.stop_and_unregister_stream(&channel_id, StopReason::NoConsumers);
+                        registry.unregister_stream(&channel_id, StopReason::NoConsumers);
                         return;
                     }
                 }
@@ -130,7 +130,7 @@ impl Stream {
                 track_title.lock().unwrap().clear();
 
                 let registry = upgrade_weak!(streams_registry);
-                registry.stop_and_unregister_stream(&channel_id, StopReason::PlayerStopped);
+                registry.unregister_stream(&channel_id, StopReason::PlayerStopped);
             }
         });
 
@@ -213,6 +213,9 @@ impl Stream {
         );
 
         self.player_loop_handle.abort();
+
+        self.streams_registry
+            .unregister_stream(&self.channel_id, reason);
     }
 
     pub(crate) fn channel_info(&self) -> ChannelInfo {

@@ -1,7 +1,7 @@
+use super::streams_registry::StreamsRegistry;
+use super::timed_channel::{ChannelError, TimedChannel};
 use crate::audio_formats::AudioFormat;
 use crate::backend_client::{BackendClient, ChannelInfo, MorBackendClientError};
-use crate::ingest::streams_registry::StreamsRegistry;
-use crate::ingest::timed_channel::{ChannelError, TimedChannel};
 use crate::metrics::Metrics;
 use crate::stream::ffmpeg_encoder::{make_ffmpeg_encoder, EncoderError};
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
@@ -42,7 +42,6 @@ pub(crate) enum StreamCreateError {
 pub(crate) enum StopReason {
     NoConsumers,
     PlayerStopped,
-    EncoderStopped,
 }
 
 pub(crate) struct Stream {

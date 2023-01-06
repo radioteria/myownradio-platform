@@ -1,5 +1,5 @@
+use super::stream::{StopReason, Stream, StreamCreateError};
 use crate::backend_client::BackendClient;
-use crate::ingest::stream::{StopReason, Stream, StreamCreateError};
 use crate::metrics::Metrics;
 use slog::Logger;
 use std::collections::HashMap;
@@ -45,6 +45,10 @@ impl StreamsRegistry {
         if let Some(stream) = self.streams_map.lock().unwrap().remove(channel_id) {
             stream.restart();
         }
+    }
+
+    pub fn get_channel_ids(&self) -> Vec<usize> {
+        self.streams_map.lock().unwrap().keys().cloned().collect()
     }
 }
 

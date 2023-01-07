@@ -49,6 +49,10 @@ impl AudioFormats {
     pub const AAC_PLUS_96K: AudioFormat = AudioFormat::new(96, "adts", "audio/aac", "libfdk_aac");
     pub const AAC_PLUS_128K: AudioFormat = AudioFormat::new(128, "adts", "audio/aac", "libfdk_aac");
 
+    pub const OPUS_96K: AudioFormat = AudioFormat::new(96, "opus", "audio/opus", "libopus");
+    pub const OPUS_128K: AudioFormat = AudioFormat::new(128, "opus", "audio/opus", "libopus");
+    pub const OPUS_256K: AudioFormat = AudioFormat::new(256, "opus", "audio/opus", "libopus");
+
     pub fn from_string(format: &str) -> Option<AudioFormat> {
         match format {
             "mp3_128k" => Some(AudioFormats::MP3_128K),
@@ -61,6 +65,10 @@ impl AudioFormats {
             "aacplus_64k" => Some(AudioFormats::AAC_PLUS_64K),
             "aacplus_96k" => Some(AudioFormats::AAC_PLUS_96K),
             "aacplus_128k" => Some(AudioFormats::AAC_PLUS_128K),
+
+            "opus_96k" => Some(AudioFormats::OPUS_96K),
+            "opus_128k" => Some(AudioFormats::OPUS_128K),
+            "opus_256k" => Some(AudioFormats::OPUS_256K),
 
             _ => None,
         }

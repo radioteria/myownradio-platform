@@ -52,7 +52,7 @@ pub(crate) fn make_ffmpeg_encoder(
             "-1",
             "-vn",
             "-ar",
-            "44100",
+            &AUDIO_SAMPLING_FREQUENCY.to_string(),
             "-ac",
             "2",
             "-b:a",

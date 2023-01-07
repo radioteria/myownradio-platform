@@ -5,7 +5,7 @@ use crate::stream::constants::{AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY};
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
 use futures::channel::{mpsc, oneshot};
-use futures::{SinkExt, StreamExt};
+use futures::{AsyncWriteExt, SinkExt, StreamExt};
 use futures_lite::FutureExt;
 use scopeguard::defer;
 use slog::{error, o, Logger};
@@ -115,6 +115,10 @@ pub(crate) fn make_ffmpeg_encoder(
                     break;
                 }
             }
+
+            let _ = stdin.close().await;
+
+            drop(stdin);
         };
 
         let abort = async move {
@@ -142,6 +146,8 @@ pub(crate) fn make_ffmpeg_encoder(
                     break;
                 };
             }
+
+            drop(stdout);
 
             let _ = term_signal.send(());
         }

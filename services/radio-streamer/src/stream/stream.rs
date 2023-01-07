@@ -1,7 +1,7 @@
+use super::streams_registry::StreamsRegistry;
+use super::timed_channel::{ChannelError, TimedChannel};
 use crate::audio_formats::AudioFormat;
 use crate::backend_client::{BackendClient, ChannelInfo, MorBackendClientError};
-use crate::ingest::streams_registry::StreamsRegistry;
-use crate::ingest::timed_channel::{ChannelError, TimedChannel};
 use crate::metrics::Metrics;
 use crate::stream::ffmpeg_encoder::{make_ffmpeg_encoder, EncoderError};
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
@@ -42,7 +42,6 @@ pub(crate) enum StreamCreateError {
 pub(crate) enum StopReason {
     NoConsumers,
     PlayerStopped,
-    EncoderStopped,
 }
 
 pub(crate) struct Stream {
@@ -121,7 +120,7 @@ impl Stream {
 
                     if result.is_err() {
                         let registry = upgrade_weak!(streams_registry);
-                        registry.stop_and_unregister_stream(&channel_id, StopReason::NoConsumers);
+                        registry.unregister_stream(&channel_id, StopReason::NoConsumers);
                         return;
                     }
                 }
@@ -130,7 +129,7 @@ impl Stream {
                 track_title.lock().unwrap().clear();
 
                 let registry = upgrade_weak!(streams_registry);
-                registry.stop_and_unregister_stream(&channel_id, StopReason::PlayerStopped);
+                registry.unregister_stream(&channel_id, StopReason::PlayerStopped);
             }
         });
 
@@ -213,6 +212,9 @@ impl Stream {
         );
 
         self.player_loop_handle.abort();
+
+        self.streams_registry
+            .unregister_stream(&self.channel_id, reason);
     }
 
     pub(crate) fn channel_info(&self) -> ChannelInfo {

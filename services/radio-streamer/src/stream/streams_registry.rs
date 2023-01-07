@@ -1,5 +1,5 @@
+use super::stream::{StopReason, Stream, StreamCreateError};
 use crate::backend_client::BackendClient;
-use crate::ingest::stream::{StopReason, Stream, StreamCreateError};
 use crate::metrics::Metrics;
 use slog::Logger;
 use std::collections::HashMap;
@@ -31,19 +31,11 @@ impl StreamsRegistry {
         }
     }
 
-    pub(crate) fn get_single_stream(&self, channel_id: &usize) -> Option<Arc<Stream>> {
-        self.streams_map
-            .lock()
-            .unwrap()
-            .get(channel_id)
-            .map(Clone::clone)
-    }
-
     fn register_stream(&self, channel_id: &usize, stream: Arc<Stream>) {
         let _ = self.streams_map.lock().unwrap().insert(*channel_id, stream);
     }
 
-    pub(crate) fn stop_and_unregister_stream(&self, channel_id: &usize, reason: StopReason) {
+    pub(crate) fn unregister_stream(&self, channel_id: &usize, reason: StopReason) {
         if let Some(stream) = self.streams_map.lock().unwrap().remove(channel_id) {
             stream.stop(reason);
         }
@@ -53,6 +45,10 @@ impl StreamsRegistry {
         if let Some(stream) = self.streams_map.lock().unwrap().remove(channel_id) {
             stream.restart();
         }
+    }
+
+    pub fn get_channel_ids(&self) -> Vec<usize> {
+        self.streams_map.lock().unwrap().keys().cloned().collect()
     }
 }
 
@@ -86,10 +82,7 @@ impl StreamsRegistryExt for Arc<StreamsRegistry> {
             .await?,
         );
 
-        self.streams_map
-            .lock()
-            .unwrap()
-            .insert(*channel_id, Arc::clone(&stream));
+        self.register_stream(channel_id, Arc::clone(&stream));
 
         Ok(stream)
     }

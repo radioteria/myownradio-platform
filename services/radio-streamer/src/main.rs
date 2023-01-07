@@ -11,21 +11,17 @@ use std::time::Instant;
 use crate::backend_client::BackendClient;
 use crate::config::{Config, LogFormat};
 use crate::http::channel::{
-    get_active_channel_ids, get_channel_audio_stream, get_channel_audio_stream_v2,
-    restart_channel_by_id, restart_channel_by_id_v2,
+    get_active_channel_ids, get_channel_audio_stream_v2, restart_channel_by_id_v2,
 };
 use crate::http::metrics::get_metrics;
-use crate::ingest::StreamsRegistry;
 use crate::metrics::Metrics;
-use crate::stream::encoder_registry::EncoderRegistry;
-use crate::stream::player_registry::PlayerRegistry;
+use crate::stream::StreamsRegistry;
 
 mod audio_formats;
 mod backend_client;
 mod config;
 mod helpers;
 mod http;
-mod ingest;
 mod macros;
 mod metrics;
 mod stream;
@@ -67,20 +63,6 @@ async fn main() -> Result<()> {
         &logger.new(o!("scope" => "BackendClient")),
     ));
     let metrics = Arc::new(Metrics::new());
-
-    let player_registry = PlayerRegistry::new(
-        config.path_to_ffmpeg.clone(),
-        backend_client.clone(),
-        logger.new(o!("service" => "PlayerRegistry")),
-        metrics.clone(),
-    );
-
-    let encoder_registry = EncoderRegistry::new(
-        config.path_to_ffmpeg.clone(),
-        logger.new(o!("service" => "EncoderRegistry")),
-        metrics.clone(),
-        player_registry.clone(),
-    );
 
     let streams_registry = Arc::new(StreamsRegistry::new(
         &config.path_to_ffmpeg,
@@ -129,12 +111,8 @@ async fn main() -> Result<()> {
                 .data(backend_client.clone())
                 .data(logger.clone())
                 .data(metrics.clone())
-                .data(player_registry.clone())
-                .data(encoder_registry.clone())
                 .data(streams_registry.clone())
-                .service(get_channel_audio_stream)
                 .service(get_channel_audio_stream_v2)
-                .service(restart_channel_by_id)
                 .service(restart_channel_by_id_v2)
                 .service(get_active_channel_ids)
                 .service(get_metrics)

@@ -31,13 +31,21 @@ impl StreamsRegistry {
         }
     }
 
+    pub(crate) fn get_stream(&self, channel_id: &usize) -> Option<Arc<Stream>> {
+        self.streams_map
+            .lock()
+            .unwrap()
+            .get(channel_id)
+            .map(Arc::clone)
+    }
+
     fn register_stream(&self, channel_id: &usize, stream: Arc<Stream>) {
         let _ = self.streams_map.lock().unwrap().insert(*channel_id, stream);
     }
 
-    pub(crate) fn unregister_stream(&self, channel_id: &usize, reason: StopReason) {
-        if let Some(stream) = self.streams_map.lock().unwrap().remove(channel_id) {
-            stream.stop(reason);
+    pub(crate) fn unregister_stream(&self, channel_id: &usize, _reason: StopReason) {
+        if let Some(_stream) = self.streams_map.lock().unwrap().remove(channel_id) {
+            // @todo Do something with removed stream
         }
     }
 

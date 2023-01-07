@@ -119,8 +119,9 @@ impl Stream {
                     };
 
                     if result.is_err() {
-                        let registry = upgrade_weak!(streams_registry);
-                        registry.unregister_stream(&channel_id, StopReason::NoConsumers);
+                        upgrade_weak!(streams_registry)
+                            .get_stream(&channel_id)
+                            .map(|s| s.stop(StopReason::NoConsumers));
                         return;
                     }
                 }
@@ -128,8 +129,9 @@ impl Stream {
                 restart_sender.lock().unwrap().take();
                 track_title.lock().unwrap().clear();
 
-                let registry = upgrade_weak!(streams_registry);
-                registry.unregister_stream(&channel_id, StopReason::PlayerStopped);
+                upgrade_weak!(streams_registry)
+                    .get_stream(&channel_id)
+                    .map(|s| s.stop(StopReason::PlayerStopped));
             }
         });
 

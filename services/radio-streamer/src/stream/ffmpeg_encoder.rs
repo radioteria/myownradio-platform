@@ -30,7 +30,7 @@ pub(crate) fn make_ffmpeg_encoder(
 ) -> Result<(mpsc::Sender<Bytes>, mpsc::Receiver<Bytes>), EncoderError> {
     let logger = logger.new(o!("kind" => "ffmpeg_encoder"));
 
-    let process = match Command::new(&path_to_ffmpeg)
+    let mut process = match Command::new(&path_to_ffmpeg)
         .args(&[
             "-v",
             "quiet",
@@ -75,7 +75,7 @@ pub(crate) fn make_ffmpeg_encoder(
         }
     };
 
-    let stdout = match process.stdout {
+    let stdout = match process.stdout.take() {
         Some(stdout) => stdout,
         None => {
             error!(
@@ -86,7 +86,7 @@ pub(crate) fn make_ffmpeg_encoder(
         }
     };
 
-    let stdin = match process.stdin {
+    let stdin = match process.stdin.take() {
         Some(stdin) => stdin,
         None => {
             error!(

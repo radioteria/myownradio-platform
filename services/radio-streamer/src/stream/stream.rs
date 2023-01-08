@@ -91,7 +91,7 @@ impl Stream {
         let player_loop_handle = actix_rt::spawn({
             let channel_id = channel_id.clone();
             let mut player_messages =
-                make_player_loop(&channel_id, path_to_ffmpeg, backend_client, logger, metrics);
+                make_player_loop(&channel_id, backend_client, logger, metrics);
 
             let restart_sender = restart_sender.clone();
             let stream_messages_channel = stream_messages_channel.clone();

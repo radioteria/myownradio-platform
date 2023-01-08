@@ -1,20 +1,31 @@
 use crate::helpers::io::read_from_stdout;
+use crate::helpers::system::which;
 use crate::metrics::Metrics;
 use crate::stream::constants::{
-    AUDIO_BYTES_PER_SECOND, AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY,
+    AUDIO_BITRATE, AUDIO_BYTES_PER_SECOND, AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY,
 };
-use crate::stream::types::Buffer;
+use crate::stream::types::{Buffer, Format};
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
 use futures::channel::mpsc;
 use futures::io::BufReader;
 use futures::{SinkExt, StreamExt};
 use futures_lite::AsyncBufReadExt;
+use lazy_static::lazy_static;
 use scopeguard::defer;
-use slog::{debug, error, o, warn, Logger};
+use slog::{debug, error, info, o, warn, Logger};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 const STDIO_BUFFER_SIZE: usize = 4096;
+
+lazy_static! {
+    static ref FFMPEG_COMMAND: &'static str =
+        Box::leak(Box::new(which("ffmpeg").expect("Unable to locate ffmpeg")));
+    static ref FFPROBE_COMMAND: &'static str = Box::leak(Box::new(
+        which("ffprobe").expect("Unable to locate ffprobe")
+    ));
+}
 
 #[derive(Debug)]
 pub(crate) enum DecoderError {
@@ -25,12 +36,12 @@ pub(crate) enum DecoderError {
 
 pub(crate) enum DecoderOutput {
     Buffer(Buffer),
+    EOF,
 }
 
-pub(crate) fn make_ffmpeg_decoder(
+pub(crate) fn build_ffmpeg_decoder(
     source_url: &str,
     offset: &Duration,
-    path_to_ffmpeg: &str,
     logger: &Logger,
     metrics: &Metrics,
 ) -> Result<mpsc::Receiver<DecoderOutput>, DecoderError> {
@@ -39,7 +50,7 @@ pub(crate) fn make_ffmpeg_decoder(
 
     let mut start_time = Some(Instant::now());
 
-    let mut process = match Command::new(&path_to_ffmpeg)
+    let mut process = match Command::new(*FFMPEG_COMMAND)
         .args(&[
             "-v",
             "quiet",
@@ -70,12 +81,19 @@ pub(crate) fn make_ffmpeg_decoder(
             return Err(DecoderError::ProcessError);
         }
     };
+    let format = Arc::new(Format {
+        codec: "pcm_s16le".to_string(),
+        container: "s16le".to_string(),
+        bitrate: AUDIO_BITRATE,
+        channels: AUDIO_CHANNELS_NUMBER,
+        sample_rate: AUDIO_SAMPLING_FREQUENCY,
+    });
 
-    debug!(logger, "Starting audio decoder"; "url" => source_url, "offset" => ?offset);
+    info!(logger, "Started audio decoder"; "url" => source_url, "offset" => ?offset);
 
     let status = process.status();
 
-    let stdout = match process.stdout {
+    let stdout = match process.stdout.take() {
         Some(stdout) => stdout,
         None => {
             error!(logger, "Unable to start decoder: stdout is not available");
@@ -83,7 +101,7 @@ pub(crate) fn make_ffmpeg_decoder(
         }
     };
 
-    let stderr = match process.stderr {
+    let stderr = match process.stderr.take() {
         Some(stderr) => stderr,
         None => {
             error!(logger, "Unable to start decoder: stderr is not available");
@@ -131,7 +149,8 @@ pub(crate) fn make_ffmpeg_decoder(
                 let bytes_len = bytes.len();
                 let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
                 let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
-                let timed_bytes = Buffer::new(bytes, decoding_time, decoding_time + offset);
+                let timed_bytes =
+                    Buffer::new(bytes, decoding_time, decoding_time + offset, &format);
 
                 if let Err(_) = tx.send(DecoderOutput::Buffer(timed_bytes)).await {
                     channel_closed = true;
@@ -148,8 +167,10 @@ pub(crate) fn make_ffmpeg_decoder(
                     Bytes::new(),
                     decoding_time,
                     decoding_time + offset,
+                    &format,
                 )))
                 .await;
+            let _ = tx.send(DecoderOutput::EOF).await;
 
             drop(stdout);
 

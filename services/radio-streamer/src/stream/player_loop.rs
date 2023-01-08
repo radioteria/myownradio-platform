@@ -1,8 +1,8 @@
 use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
 use crate::helpers::io::sleep_until_deadline;
 use crate::metrics::Metrics;
-use crate::stream::ffmpeg_decoder::{make_ffmpeg_decoder, DecoderOutput};
 use crate::stream::types::Buffer;
+use crate::stream::{build_ffmpeg_decoder, DecoderOutput};
 use actix_rt::time::Instant;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
@@ -22,13 +22,11 @@ pub(crate) enum PlayerLoopMessage {
 
 pub(crate) fn make_player_loop(
     channel_id: &usize,
-    path_to_ffmpeg: &str,
     backend_client: &BackendClient,
     logger: &Logger,
     metrics: &Metrics,
 ) -> mpsc::Receiver<PlayerLoopMessage> {
     let channel_id = channel_id.clone();
-    let path_to_ffmpeg = path_to_ffmpeg.to_owned();
 
     let logger = logger.clone();
     let metrics = metrics.clone();
@@ -95,14 +93,14 @@ pub(crate) fn make_player_loop(
                     }
                 };
 
-                let mut track_decoder =
-                    match make_ffmpeg_decoder(&url, &offset, &path_to_ffmpeg, &logger, &metrics) {
-                        Ok(track_decoder) => track_decoder,
-                        Err(error) => {
-                            error!(logger, "Unable create track decoder"; "error" => ?error);
-                            return;
-                        }
-                    };
+                let mut track_decoder = match build_ffmpeg_decoder(&url, &offset, &logger, &metrics)
+                {
+                    Ok(track_decoder) => track_decoder,
+                    Err(error) => {
+                        error!(logger, "Unable create track decoder"; "error" => ?error);
+                        return;
+                    }
+                };
 
                 if let Err(_) = tx.send(PlayerLoopMessage::TrackTitle(title)).await {
                     debug!(
@@ -158,6 +156,7 @@ pub(crate) fn make_player_loop(
                             buffer.bytes().clone(),
                             buffer.dts().clone(),
                             stream_pts.clone(),
+                            buffer.format(),
                         )))
                         .await
                     {

@@ -2,6 +2,14 @@ use crate::helpers::system::which;
 use serde::Deserialize;
 use slog::Level;
 
+fn default_path_to_ffmpeg() -> String {
+    which("ffmpeg").expect("Unable to locate ffmpeg")
+}
+
+fn default_path_to_ffprobe() -> String {
+    which("ffprobe").expect("Unable to locate ffprobe")
+}
+
 #[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
 #[serde(field_identifier, remote = "Level", untagged)]
 pub enum LogLevel {
@@ -34,24 +42,6 @@ fn default_log_format() -> LogFormat {
 
 fn default_shutdown_timeout() -> u64 {
     30u64
-}
-
-fn default_path_to_ffprobe() -> String {
-    match which("ffprobe") {
-        Some(path) => path,
-        None => {
-            panic!("Unable to locate ffprobe");
-        }
-    }
-}
-
-fn default_path_to_ffmpeg() -> String {
-    match which("ffmpeg") {
-        Some(path) => path,
-        None => {
-            panic!("Unable to locate ffprobe");
-        }
-    }
 }
 
 #[derive(Clone, Debug, Deserialize)]

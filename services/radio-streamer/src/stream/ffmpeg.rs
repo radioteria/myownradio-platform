@@ -177,12 +177,12 @@ pub(crate) fn build_ffmpeg_decoder(
                     .lock()
                     .unwrap()
                     .pop_front()
-                    .unwrap_or_else(|| {
-                        eprintln!("Warning! No dts in queue");
+                    .expect("Can't obtain next packet dts from queue");
 
-                        Duration::default()
-                    });
-                // .expect("Can't obtain next packet dts from queue");
+                eprintln!(
+                    "packets pts in queue: {}",
+                    encoded_dts_queue.lock().unwrap().len()
+                );
 
                 let timed_bytes = Buffer::new(bytes, next_dts, &format);
 
@@ -198,8 +198,7 @@ pub(crate) fn build_ffmpeg_decoder(
                 .lock()
                 .unwrap()
                 .pop_front()
-                .unwrap_or_default();
-            // .expect("Can't obtain next packet dts from queue");
+                .expect("Can't obtain next packet dts from queue");
 
             let _ = tx
                 .send(DecoderOutput::Buffer(Buffer::new(

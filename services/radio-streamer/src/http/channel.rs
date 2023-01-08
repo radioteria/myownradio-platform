@@ -101,9 +101,9 @@ pub(crate) async fn get_channel_audio_stream_v2(
         async move {
             while let Some(event) = stream_source.next().await {
                 match event {
-                    StreamMessage::BufferBytes(bytes) => {
+                    StreamMessage::Buffer(buffer) => {
                         // Do not block encoder if one of the consumers are blocked due to network issues
-                        match response_sender.try_send(bytes) {
+                        match response_sender.try_send(buffer.into_bytes()) {
                             Err(error) if error.is_disconnected() => {
                                 // Disconnected: drop the receiver
                                 break;

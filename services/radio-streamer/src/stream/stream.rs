@@ -3,7 +3,9 @@ use super::timed_channel::{ChannelError, TimedChannel};
 use crate::audio_formats::AudioFormat;
 use crate::backend_client::{BackendClient, ChannelInfo, MorBackendClientError};
 use crate::metrics::Metrics;
+use crate::stream::ffmpeg::EncoderOutput;
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
+use crate::stream::types::Buffer;
 use crate::stream::{build_ffmpeg_encoder, EncoderError};
 use crate::upgrade_weak;
 use actix_rt::task::JoinHandle;
@@ -18,7 +20,7 @@ use std::time::Duration;
 
 #[derive(Debug, Clone)]
 pub(crate) enum StreamMessage {
-    BufferBytes(Bytes),
+    Buffer(Buffer),
     TrackTitle(String),
 }
 
@@ -101,7 +103,7 @@ impl Stream {
                     let result = match msg {
                         PlayerLoopMessage::DecodedBuffer(buffer) => {
                             stream_messages_channel
-                                .send_all(StreamMessage::BufferBytes(buffer.into_bytes()))
+                                .send_all(StreamMessage::Buffer(buffer))
                                 .await
                         }
                         PlayerLoopMessage::TrackTitle(title) => {
@@ -162,7 +164,7 @@ impl Stream {
 
                     async move {
                         while let Some(msg) = receiver.next().await {
-                            if let StreamMessage::BufferBytes(bytes) = msg {
+                            if let StreamMessage::Buffer(bytes) = msg {
                                 if encoder_sink.send(bytes).await.is_err() {
                                     break;
                                 }
@@ -182,14 +184,22 @@ impl Stream {
                     let format = format.clone();
 
                     async move {
-                        while let Some(bytes) = encoder_src.next().await {
-                            if encoded_messages_channel
-                                .send_all(StreamMessage::BufferBytes(bytes))
-                                .await
-                                .is_err()
-                            {
-                                // All consumers has been disconnected.
-                                break;
+                        while let Some(output) = encoder_src.next().await {
+                            match output {
+                                EncoderOutput::Buffer(buffer) => {
+                                    if encoded_messages_channel
+                                        .send_all(StreamMessage::Buffer(buffer))
+                                        .await
+                                        .is_err()
+                                    {
+                                        // All consumers has been disconnected.
+                                        break;
+                                    }
+                                }
+                                EncoderOutput::EOF => {
+                                    // Received end of output
+                                    break;
+                                }
                             }
                         }
 
@@ -233,7 +243,7 @@ impl Stream {
     fn make_encoder(
         &self,
         format: &AudioFormat,
-    ) -> Result<(mpsc::Sender<Bytes>, mpsc::Receiver<Bytes>), EncoderError> {
+    ) -> Result<(mpsc::Sender<Buffer>, mpsc::Receiver<EncoderOutput>), EncoderError> {
         build_ffmpeg_encoder(format, &self.logger, &self.metrics)
     }
 }

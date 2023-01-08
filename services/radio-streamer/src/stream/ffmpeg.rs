@@ -15,7 +15,7 @@ use futures_lite::{AsyncBufReadExt, FutureExt};
 use lazy_static::lazy_static;
 use scopeguard::defer;
 use slog::{debug, error, info, o, warn, Logger};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 const STDIO_BUFFER_SIZE: usize = 4096;
@@ -205,11 +205,16 @@ pub(crate) enum EncoderError {
     StdinUnavailable,
 }
 
+pub(crate) enum EncoderOutput {
+    Buffer(Buffer),
+    EOF,
+}
+
 pub(crate) fn build_ffmpeg_encoder(
-    format: &AudioFormat,
+    audio_format: &AudioFormat,
     logger: &Logger,
     metrics: &Metrics,
-) -> Result<(mpsc::Sender<Bytes>, mpsc::Receiver<Bytes>), EncoderError> {
+) -> Result<(mpsc::Sender<Buffer>, mpsc::Receiver<EncoderOutput>), EncoderError> {
     let logger = logger.new(o!("kind" => "ffmpeg_encoder"));
 
     let mut process = match Command::new(*FFMPEG_COMMAND)
@@ -238,11 +243,11 @@ pub(crate) fn build_ffmpeg_encoder(
             "-ac",
             "2",
             "-b:a",
-            &format!("{}k", format.bitrate),
+            &format!("{}k", audio_format.bitrate),
             "-codec:a",
-            &format.codec,
+            &audio_format.codec,
             "-f",
-            &format.format,
+            &audio_format.format,
             "-",
         ])
         .stdin(Stdio::piped())
@@ -281,18 +286,31 @@ pub(crate) fn build_ffmpeg_encoder(
 
     let (term_signal, term_handler) = oneshot::channel::<()>();
 
-    let (sink_sender, sink_receiver) = mpsc::channel(0);
-    let (src_sender, src_receiver) = mpsc::channel(0);
+    let (sink_sender, sink_receiver) = mpsc::channel::<Buffer>(0);
+    let (src_sender, src_receiver) = mpsc::channel::<EncoderOutput>(0);
+
+    let last_dts = Arc::new(Mutex::new(Duration::default()));
+
+    let format = Arc::new(Format {
+        codec: audio_format.codec.to_string(),
+        container: audio_format.format.to_string(),
+        sample_rate: AUDIO_SAMPLING_FREQUENCY,
+        channels: AUDIO_CHANNELS_NUMBER,
+        bitrate: audio_format.bitrate as usize,
+    });
 
     actix_rt::spawn({
         let mut sink_receiver = sink_receiver;
         let mut stdin = stdin;
 
         let logger = logger.clone();
+        let last_dts = last_dts.clone();
 
         let pipe = async move {
-            while let Some(bytes) = sink_receiver.next().await {
-                if let Err(error) = write_to_stdin(&mut stdin, bytes).await {
+            while let Some(buffer) = sink_receiver.next().await {
+                *last_dts.lock().unwrap() = buffer.dts().clone();
+
+                if let Err(error) = write_to_stdin(&mut stdin, buffer.into_bytes()).await {
                     error!(logger, "Unable to write data to encoder: error occurred"; "error" => ?error);
                     break;
                 }
@@ -313,7 +331,7 @@ pub(crate) fn build_ffmpeg_encoder(
         let mut src_sender = src_sender;
 
         let metrics = metrics.clone();
-        let format_string = format.to_string();
+        let format_string = audio_format.to_string();
 
         async move {
             metrics.inc_active_encoders(&format_string);
@@ -322,7 +340,17 @@ pub(crate) fn build_ffmpeg_encoder(
 
             let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
             while let Some(Ok(bytes)) = read_from_stdout(&mut stdout, &mut buffer).await {
-                if let Err(_) = src_sender.send(bytes).await {
+                let dts = last_dts.lock().unwrap().clone();
+
+                if let Err(_) = src_sender
+                    .send(EncoderOutput::Buffer(Buffer::new(
+                        bytes,
+                        dts.clone(),
+                        dts,
+                        &format,
+                    )))
+                    .await
+                {
                     break;
                 };
             }

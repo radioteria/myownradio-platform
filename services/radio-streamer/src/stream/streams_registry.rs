@@ -13,12 +13,7 @@ pub(crate) struct StreamsRegistry {
 }
 
 impl StreamsRegistry {
-    pub(crate) fn new(
-        path_to_ffmpeg: &str,
-        backend_client: &BackendClient,
-        logger: &Logger,
-        metrics: &Metrics,
-    ) -> Self {
+    pub(crate) fn new(backend_client: &BackendClient, logger: &Logger, metrics: &Metrics) -> Self {
         let streams_map = Mutex::new(HashMap::new());
 
         Self {

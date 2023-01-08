@@ -64,12 +64,7 @@ async fn main() -> Result<()> {
     ));
     let metrics = Arc::new(Metrics::new());
 
-    let streams_registry = Arc::new(StreamsRegistry::new(
-        &config.path_to_ffmpeg,
-        &backend_client,
-        &logger,
-        &metrics,
-    ));
+    let streams_registry = Arc::new(StreamsRegistry::new(&backend_client, &logger, &metrics));
 
     info!(logger, "Starting application...");
 

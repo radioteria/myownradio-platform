@@ -150,8 +150,7 @@ pub(crate) fn build_ffmpeg_decoder(
                 let bytes_len = bytes.len();
                 let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
                 let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
-                let timed_bytes =
-                    Buffer::new(bytes, decoding_time, decoding_time + offset, &format);
+                let timed_bytes = Buffer::new(bytes, decoding_time, &format);
 
                 if let Err(_) = tx.send(DecoderOutput::Buffer(timed_bytes)).await {
                     channel_closed = true;
@@ -167,7 +166,6 @@ pub(crate) fn build_ffmpeg_decoder(
                 .send(DecoderOutput::Buffer(Buffer::new(
                     Bytes::new(),
                     decoding_time,
-                    decoding_time + offset,
                     &format,
                 )))
                 .await;
@@ -343,12 +341,7 @@ pub(crate) fn build_ffmpeg_encoder(
                 let dts = last_dts.lock().unwrap().clone();
 
                 if let Err(_) = src_sender
-                    .send(EncoderOutput::Buffer(Buffer::new(
-                        bytes,
-                        dts.clone(),
-                        dts,
-                        &format,
-                    )))
+                    .send(EncoderOutput::Buffer(Buffer::new(bytes, dts, &format)))
                     .await
                 {
                     break;

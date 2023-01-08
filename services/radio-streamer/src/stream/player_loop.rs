@@ -138,15 +138,6 @@ pub(crate) fn make_player_loop(
                         break;
                     }
 
-                    trace!(
-                        logger,
-                        "Received buffer from decoder";
-                        "len" => buffer.bytes().len(),
-                        "buff_dts" => buffer.dts().as_millis(),
-                        "buff_pts" => buffer.pts().as_millis(),
-                        "stream_pts" => stream_pts.as_millis()
-                    );
-
                     if buffer.is_empty() {
                         break;
                     }
@@ -155,7 +146,6 @@ pub(crate) fn make_player_loop(
                         .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
                             buffer.bytes().clone(),
                             buffer.dts().clone(),
-                            stream_pts.clone(),
                             buffer.format(),
                         )))
                         .await

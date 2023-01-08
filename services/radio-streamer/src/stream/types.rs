@@ -16,19 +16,13 @@ pub(crate) struct Buffer {
     format: Arc<Format>,
     bytes: Bytes,
     dts: Duration,
-    pts: Duration,
 }
 
 impl Buffer {
-    pub(crate) fn new(bytes: Bytes, dts: Duration, pts: Duration, format: &Arc<Format>) -> Self {
+    pub(crate) fn new(bytes: Bytes, dts: Duration, format: &Arc<Format>) -> Self {
         let format = Arc::clone(format);
 
-        Buffer {
-            bytes,
-            dts,
-            pts,
-            format,
-        }
+        Buffer { bytes, dts, format }
     }
 
     pub(crate) fn bytes(&self) -> &Bytes {
@@ -37,10 +31,6 @@ impl Buffer {
 
     pub(crate) fn dts(&self) -> &Duration {
         &self.dts
-    }
-
-    pub(crate) fn pts(&self) -> &Duration {
-        &self.pts
     }
 
     pub(crate) fn format(&self) -> &Arc<Format> {

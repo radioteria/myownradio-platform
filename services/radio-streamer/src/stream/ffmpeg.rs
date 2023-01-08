@@ -20,7 +20,7 @@ use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-const STDIO_BUFFER_SIZE: usize = 4096;
+const STDIO_BUFFER_SIZE: usize = 64576;
 
 lazy_static! {
     static ref FFMPEG_COMMAND: &'static str =
@@ -116,12 +116,12 @@ pub(crate) fn build_ffmpeg_decoder(
         }
     };
 
-    let encoded_pts_queue = Arc::new(Mutex::new(VecDeque::<Duration>::new()));
+    let encoded_dts_queue = Arc::new(Mutex::new(VecDeque::<Duration>::new()));
 
     actix_rt::spawn({
         let logger = logger.clone();
 
-        let encoded_pts_queue = encoded_pts_queue.clone();
+        let encoded_dts_queue = encoded_dts_queue.clone();
 
         async move {
             let mut err_lines = BufReader::new(stderr).split(b'\n');
@@ -130,7 +130,8 @@ pub(crate) fn build_ffmpeg_decoder(
                 let line = String::from_utf8_lossy(&line);
                 if let Some(captures) = FFMPEG_OUTPUT_PTS_REGEX.captures(&line) {
                     let last_encoded_dts = captures[2].parse::<f64>().unwrap();
-                    encoded_pts_queue
+                    println!("dts stored: {}", last_encoded_dts);
+                    encoded_dts_queue
                         .lock()
                         .unwrap()
                         .push_back(Duration::from_secs_f64(last_encoded_dts));
@@ -149,7 +150,7 @@ pub(crate) fn build_ffmpeg_decoder(
 
         let mut bytes_sent = 0usize;
 
-        let encoded_pts_queue = encoded_pts_queue.clone();
+        let encoded_dts_queue = encoded_dts_queue.clone();
 
         async move {
             metrics.inc_active_decoders();
@@ -167,9 +168,22 @@ pub(crate) fn build_ffmpeg_decoder(
                 }
 
                 let bytes_len = bytes.len();
+                eprintln!("packet size: {}", bytes_len);
                 let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
                 let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
-                let timed_bytes = Buffer::new(bytes, decoding_time, &format);
+
+                let next_dts = encoded_dts_queue
+                    .lock()
+                    .unwrap()
+                    .pop_front()
+                    .unwrap_or_else(|| {
+                        eprintln!("Warning! No dts in queue");
+
+                        Duration::default()
+                    });
+                // .expect("Can't obtain next packet dts from queue");
+
+                let timed_bytes = Buffer::new(bytes, next_dts, &format);
 
                 if let Err(_) = tx.send(DecoderOutput::Buffer(timed_bytes)).await {
                     channel_closed = true;
@@ -179,12 +193,17 @@ pub(crate) fn build_ffmpeg_decoder(
                 bytes_sent += bytes_len;
             }
 
-            let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
-            let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
+            let next_dts = encoded_dts_queue
+                .lock()
+                .unwrap()
+                .pop_front()
+                .unwrap_or_default();
+            // .expect("Can't obtain next packet dts from queue");
+
             let _ = tx
                 .send(DecoderOutput::Buffer(Buffer::new(
                     Bytes::new(),
-                    decoding_time,
+                    next_dts,
                     &format,
                 )))
                 .await;
@@ -220,6 +239,8 @@ pub(crate) enum EncoderError {
     StdoutUnavailable,
     #[error("Unable to access stdin")]
     StdinUnavailable,
+    #[error("Unable to access stderr")]
+    StderrUnavailable,
 }
 
 pub(crate) enum EncoderOutput {
@@ -236,8 +257,10 @@ pub(crate) fn build_ffmpeg_encoder(
 
     let mut process = match Command::new(*FFMPEG_COMMAND)
         .args(&[
+            "-debug_ts",
             "-v",
-            "quiet",
+            "info",
+            "-nostats",
             "-hide_banner",
             "-acodec",
             "pcm_s16le",
@@ -269,7 +292,7 @@ pub(crate) fn build_ffmpeg_encoder(
         ])
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .stderr(Stdio::null())
+        .stderr(Stdio::piped())
         .spawn()
     {
         Ok(process) => process,
@@ -301,12 +324,20 @@ pub(crate) fn build_ffmpeg_encoder(
         }
     };
 
+    let stderr = match process.stderr.take() {
+        Some(stderr) => stderr,
+        None => {
+            error!(logger, "Unable to start decoder: stderr is not available");
+            return Err(EncoderError::StderrUnavailable);
+        }
+    };
+
+    let encoded_dts_queue = Arc::new(Mutex::new(VecDeque::<Duration>::new()));
+
     let (term_signal, term_handler) = oneshot::channel::<()>();
 
     let (sink_sender, sink_receiver) = mpsc::channel::<Buffer>(0);
     let (src_sender, src_receiver) = mpsc::channel::<EncoderOutput>(0);
-
-    let last_dts = Arc::new(Mutex::new(Duration::default()));
 
     let format = Arc::new(Format {
         codec: audio_format.codec.to_string(),
@@ -317,16 +348,38 @@ pub(crate) fn build_ffmpeg_encoder(
     });
 
     actix_rt::spawn({
+        let logger = logger.clone();
+
+        let encoded_dts_queue = encoded_dts_queue.clone();
+
+        async move {
+            let mut err_lines = BufReader::new(stderr).split(b'\n');
+
+            while let Some(Ok(line)) = err_lines.next().await {
+                let line = String::from_utf8_lossy(&line);
+                if let Some(captures) = FFMPEG_OUTPUT_PTS_REGEX.captures(&line) {
+                    let last_encoded_dts = captures[2].parse::<f64>().unwrap();
+                    encoded_dts_queue
+                        .lock()
+                        .unwrap()
+                        .push_back(Duration::from_secs_f64(last_encoded_dts));
+                } else {
+                    trace!(logger, "ffmpeg output: {}", line);
+                }
+            }
+
+            drop(err_lines);
+        }
+    });
+
+    actix_rt::spawn({
         let mut sink_receiver = sink_receiver;
         let mut stdin = stdin;
 
         let logger = logger.clone();
-        let last_dts = last_dts.clone();
 
         let pipe = async move {
             while let Some(buffer) = sink_receiver.next().await {
-                *last_dts.lock().unwrap() = buffer.dts().clone();
-
                 if let Err(error) = write_to_stdin(&mut stdin, buffer.into_bytes()).await {
                     error!(logger, "Unable to write data to encoder: error occurred"; "error" => ?error);
                     break;
@@ -350,6 +403,8 @@ pub(crate) fn build_ffmpeg_encoder(
         let metrics = metrics.clone();
         let format_string = audio_format.to_string();
 
+        let encoded_dts_queue = encoded_dts_queue.clone();
+
         async move {
             metrics.inc_active_encoders(&format_string);
 
@@ -357,10 +412,15 @@ pub(crate) fn build_ffmpeg_encoder(
 
             let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
             while let Some(Ok(bytes)) = read_from_stdout(&mut stdout, &mut buffer).await {
-                let dts = last_dts.lock().unwrap().clone();
+                let next_dts = encoded_dts_queue
+                    .lock()
+                    .unwrap()
+                    .pop_front()
+                    .unwrap_or_default();
+                // .expect("Can't obtain next packet dts from queue");
 
                 if let Err(_) = src_sender
-                    .send(EncoderOutput::Buffer(Buffer::new(bytes, dts, &format)))
+                    .send(EncoderOutput::Buffer(Buffer::new(bytes, next_dts, &format)))
                     .await
                 {
                     break;

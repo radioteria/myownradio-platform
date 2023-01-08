@@ -3,8 +3,8 @@ use super::timed_channel::{ChannelError, TimedChannel};
 use crate::audio_formats::AudioFormat;
 use crate::backend_client::{BackendClient, ChannelInfo, MorBackendClientError};
 use crate::metrics::Metrics;
-use crate::stream::ffmpeg_encoder::{make_ffmpeg_encoder, EncoderError};
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
+use crate::stream::{build_ffmpeg_encoder, EncoderError};
 use crate::upgrade_weak;
 use actix_rt::task::JoinHandle;
 use actix_web::web::Bytes;
@@ -48,7 +48,6 @@ pub(crate) struct Stream {
     // Dependencies
     logger: Logger,
     metrics: Metrics,
-    path_to_ffmpeg: String,
     streams_registry: Arc<StreamsRegistry>,
     // Static state
     channel_id: usize,
@@ -64,7 +63,6 @@ pub(crate) struct Stream {
 impl Stream {
     pub(crate) async fn create(
         channel_id: &usize,
-        path_to_ffmpeg: &str,
         backend_client: &BackendClient,
         logger: &Logger,
         metrics: &Metrics,
@@ -139,7 +137,6 @@ impl Stream {
             channel_id: *channel_id,
             channel_info,
             stream_messages_channel,
-            path_to_ffmpeg: path_to_ffmpeg.to_string(),
             logger: logger.clone(),
             metrics: metrics.clone(),
             streams_registry,
@@ -237,6 +234,6 @@ impl Stream {
         &self,
         format: &AudioFormat,
     ) -> Result<(mpsc::Sender<Bytes>, mpsc::Receiver<Bytes>), EncoderError> {
-        make_ffmpeg_encoder(format, &self.path_to_ffmpeg, &self.logger, &self.metrics)
+        build_ffmpeg_encoder(format, &self.logger, &self.metrics)
     }
 }

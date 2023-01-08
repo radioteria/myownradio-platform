@@ -13,8 +13,10 @@ use futures::io::BufReader;
 use futures::{SinkExt, StreamExt};
 use futures_lite::{AsyncBufReadExt, FutureExt};
 use lazy_static::lazy_static;
+use regex::Regex;
 use scopeguard::defer;
-use slog::{debug, error, info, o, warn, Logger};
+use slog::{debug, error, info, o, trace, warn, Logger};
+use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -26,6 +28,8 @@ lazy_static! {
     static ref FFPROBE_COMMAND: &'static str = Box::leak(Box::new(
         which("ffprobe").expect("Unable to locate ffprobe")
     ));
+    static ref FFMPEG_OUTPUT_PTS_REGEX: &'static Regex =
+        Box::leak(Box::new(Regex::new(r"encoder -> type:audio pkt_pts:([0-9]+) pkt_pts_time:([0-9]+\.[0-9]+) pkt_dts:([0-9]+) pkt_dts_time:([0-9]+\.[0-9]+)").unwrap()));
 }
 
 #[derive(Debug)]
@@ -53,8 +57,10 @@ pub(crate) fn build_ffmpeg_decoder(
 
     let mut process = match Command::new(*FFMPEG_COMMAND)
         .args(&[
+            "-debug_ts",
             "-v",
-            "quiet",
+            "info",
+            "-nostats",
             "-hide_banner",
             "-ss",
             &format!("{:.4}", offset.as_secs_f32()),
@@ -73,7 +79,7 @@ pub(crate) fn build_ffmpeg_decoder(
         ])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .stdin(Stdio::null())
+        .stdin(Stdio::piped())
         .spawn()
     {
         Ok(process) => process,
@@ -110,15 +116,26 @@ pub(crate) fn build_ffmpeg_decoder(
         }
     };
 
+    let encoded_pts_queue = Arc::new(Mutex::new(VecDeque::<Duration>::new()));
+
     actix_rt::spawn({
         let logger = logger.clone();
 
+        let encoded_pts_queue = encoded_pts_queue.clone();
+
         async move {
-            let mut err_lines = BufReader::new(stderr).split(b'\r');
+            let mut err_lines = BufReader::new(stderr).split(b'\n');
 
             while let Some(Ok(line)) = err_lines.next().await {
-                for s in String::from_utf8_lossy(&line).split('\n') {
-                    debug!(logger, "ffmpeg output: {}", s)
+                let line = String::from_utf8_lossy(&line);
+                if let Some(captures) = FFMPEG_OUTPUT_PTS_REGEX.captures(&line) {
+                    let last_encoded_dts = captures[2].parse::<f64>().unwrap();
+                    encoded_pts_queue
+                        .lock()
+                        .unwrap()
+                        .push_back(Duration::from_secs_f64(last_encoded_dts));
+                } else {
+                    trace!(logger, "ffmpeg output: {}", line);
                 }
             }
 
@@ -131,6 +148,8 @@ pub(crate) fn build_ffmpeg_decoder(
         let offset = offset.clone();
 
         let mut bytes_sent = 0usize;
+
+        let encoded_pts_queue = encoded_pts_queue.clone();
 
         async move {
             metrics.inc_active_decoders();

@@ -1,9 +1,10 @@
 use crate::audio_formats::AudioFormat;
-use crate::helpers::io::{read_from_stdout, write_to_stdin};
+use crate::helpers::io::{read_exact_from_stdout, read_from_stdout, write_to_stdin};
 use crate::helpers::system::which;
 use crate::metrics::Metrics;
 use crate::stream::constants::{
-    AUDIO_BITRATE, AUDIO_BYTES_PER_SECOND, AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY,
+    AUDIO_BITRATE, AUDIO_BYTES_PER_SECOND, AUDIO_CHANNELS_NUMBER, AUDIO_PACKET_SIZE,
+    AUDIO_SAMPLING_FREQUENCY,
 };
 use crate::stream::types::{Buffer, Format};
 use actix_web::web::Bytes;
@@ -158,11 +159,11 @@ pub(crate) fn build_ffmpeg_decoder(
             defer!(metrics.dec_active_decoders());
 
             let mut stdout = stdout;
-            let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
+            let mut buffer = vec![0u8; AUDIO_PACKET_SIZE];
 
             let mut channel_closed = false;
 
-            while let Some(Ok(bytes)) = read_from_stdout(&mut stdout, &mut buffer).await {
+            while let Some(Ok(bytes)) = read_exact_from_stdout(&mut stdout, &mut buffer).await {
                 if let Some(time) = start_time.take() {
                     metrics.update_audio_decoder_track_open_duration(time.elapsed());
                 }

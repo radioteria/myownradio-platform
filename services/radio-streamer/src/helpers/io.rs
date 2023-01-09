@@ -26,12 +26,14 @@ pub async fn read_from_stdout<'a>(
     }
 }
 
-pub async fn read_exact_from_stdout<'a>(
-    stdout: &'a mut ChildStdout,
-    read_buffer: &'a mut Vec<u8>,
+pub async fn read_exact_from_stdout(
+    stdout: &mut ChildStdout,
+    size: &usize,
 ) -> Option<Result<Bytes, Error>> {
-    match actix_rt::time::timeout(READ_FROM_STDOUT_TIMEOUT, stdout.read_exact(read_buffer)).await {
-        Ok(Ok(())) => Some(Ok(Bytes::copy_from_slice(&read_buffer[..]))),
+    let mut buffer = vec![0u8; *size];
+
+    match actix_rt::time::timeout(READ_FROM_STDOUT_TIMEOUT, stdout.read_exact(&mut buffer)).await {
+        Ok(Ok(())) => Some(Ok(Bytes::copy_from_slice(&buffer[..]))),
         Ok(Err(error)) => Some(Err(Error::from(error))),
         Err(_) => Some(Err(Error::from(ErrorKind::TimedOut))),
     }

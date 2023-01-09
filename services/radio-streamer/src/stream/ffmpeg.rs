@@ -29,8 +29,9 @@ lazy_static! {
     static ref FFPROBE_COMMAND: &'static str = Box::leak(Box::new(
         which("ffprobe").expect("Unable to locate ffprobe")
     ));
+    // muxer <- type:audio pkt_pts:288639 pkt_pts_time:6.01331 pkt_dts:288639 pkt_dts_time:6.01331 size:17836
     static ref FFMPEG_OUTPUT_PTS_REGEX: &'static Regex =
-        Box::leak(Box::new(Regex::new(r"encoder -> type:audio pkt_pts:([0-9]+) pkt_pts_time:([0-9]+\.[0-9]+) pkt_dts:([0-9]+) pkt_dts_time:([0-9]+\.[0-9]+)").unwrap()));
+        Box::leak(Box::new(Regex::new(r"muxer <- type:audio pkt_pts:([0-9]+) pkt_pts_time:([0-9]+\.[0-9]+) pkt_dts:([0-9]+) pkt_dts_time:([0-9]+\.[0-9]+) size:([0-9]+)").unwrap()));
 }
 
 #[derive(Debug)]
@@ -117,27 +118,28 @@ pub(crate) fn build_ffmpeg_decoder(
         }
     };
 
-    let encoded_dts_queue = Arc::new(Mutex::new(VecDeque::<Duration>::new()));
+    let (next_packet_sender, next_packet_receiver) = mpsc::channel::<(Duration, usize)>(10);
 
     actix_rt::spawn({
         let logger = logger.clone();
 
-        let encoded_dts_queue = encoded_dts_queue.clone();
+        let mut next_packet_sender = next_packet_sender;
 
         async move {
             let mut err_lines = BufReader::new(stderr).split(b'\n');
 
             while let Some(Ok(line)) = err_lines.next().await {
                 let line = String::from_utf8_lossy(&line);
+
+                trace!(logger, "ffmpeg stderr: {}", line);
+
                 if let Some(captures) = FFMPEG_OUTPUT_PTS_REGEX.captures(&line) {
-                    let last_encoded_dts = captures[2].parse::<f64>().unwrap();
-                    println!("dts stored: {}", last_encoded_dts);
-                    encoded_dts_queue
-                        .lock()
-                        .unwrap()
-                        .push_back(Duration::from_secs_f64(last_encoded_dts));
-                } else {
-                    trace!(logger, "ffmpeg output: {}", line);
+                    let last_encoded_dts = Duration::from_secs_f64(captures[2].parse().unwrap());
+                    let last_packet_size = captures[5].parse().unwrap();
+
+                    let _ = next_packet_sender
+                        .send((last_encoded_dts, last_packet_size))
+                        .await;
                 }
             }
 
@@ -147,11 +149,11 @@ pub(crate) fn build_ffmpeg_decoder(
 
     actix_rt::spawn({
         let metrics = metrics.clone();
-        let offset = offset.clone();
+        let logger = logger.clone();
 
         let mut bytes_sent = 0usize;
 
-        let encoded_dts_queue = encoded_dts_queue.clone();
+        let mut next_packet_receiver = next_packet_receiver;
 
         async move {
             metrics.inc_active_decoders();
@@ -159,54 +161,45 @@ pub(crate) fn build_ffmpeg_decoder(
             defer!(metrics.dec_active_decoders());
 
             let mut stdout = stdout;
-            let mut buffer = vec![0u8; AUDIO_PACKET_SIZE];
 
             let mut channel_closed = false;
 
-            while let Some(Ok(bytes)) = read_exact_from_stdout(&mut stdout, &mut buffer).await {
-                if let Some(time) = start_time.take() {
-                    metrics.update_audio_decoder_track_open_duration(time.elapsed());
-                }
-
-                let bytes_len = bytes.len();
-                eprintln!("packet size: {}", bytes_len);
-                let decoding_time_seconds = bytes_sent as f64 / AUDIO_BYTES_PER_SECOND as f64;
-                let decoding_time = Duration::from_secs_f64(decoding_time_seconds);
-
-                let next_dts = encoded_dts_queue
-                    .lock()
-                    .unwrap()
-                    .pop_front()
-                    .expect("Can't obtain next packet dts from queue");
-
-                eprintln!(
-                    "packets pts in queue: {}",
-                    encoded_dts_queue.lock().unwrap().len()
-                );
-
-                let timed_bytes = Buffer::new(bytes, next_dts, &format);
-
-                if let Err(_) = tx.send(DecoderOutput::Buffer(timed_bytes)).await {
-                    channel_closed = true;
-                    break;
+            loop {
+                let (next_dts, next_size) = match next_packet_receiver.next().await {
+                    Some(d) => d,
+                    None => break,
                 };
 
-                bytes_sent += bytes_len;
+                trace!(
+                    logger,
+                    "planned packet size={} dts={:?}",
+                    next_size,
+                    next_dts
+                );
+
+                match read_exact_from_stdout(&mut stdout, &next_size).await {
+                    Some(Ok(bytes)) => {
+                        if let Some(time) = start_time.take() {
+                            metrics.update_audio_decoder_track_open_duration(time.elapsed());
+                        }
+
+                        let bytes_len = bytes.len();
+
+                        trace!(logger, "read packet size={}", bytes_len);
+
+                        let timed_bytes = Buffer::new(bytes, next_dts, &format);
+
+                        if let Err(_) = tx.send(DecoderOutput::Buffer(timed_bytes)).await {
+                            channel_closed = true;
+                            break;
+                        };
+
+                        bytes_sent += bytes_len;
+                    }
+                    _ => break,
+                }
             }
 
-            let next_dts = encoded_dts_queue
-                .lock()
-                .unwrap()
-                .pop_front()
-                .expect("Can't obtain next packet dts from queue");
-
-            let _ = tx
-                .send(DecoderOutput::Buffer(Buffer::new(
-                    Bytes::new(),
-                    next_dts,
-                    &format,
-                )))
-                .await;
             let _ = tx.send(DecoderOutput::EOF).await;
 
             drop(stdout);
@@ -332,7 +325,7 @@ pub(crate) fn build_ffmpeg_encoder(
         }
     };
 
-    let encoded_dts_queue = Arc::new(Mutex::new(VecDeque::<Duration>::new()));
+    let (next_packet_sender, next_packet_receiver) = mpsc::channel::<(Duration, usize)>(10);
 
     let (term_signal, term_handler) = oneshot::channel::<()>();
 
@@ -350,21 +343,23 @@ pub(crate) fn build_ffmpeg_encoder(
     actix_rt::spawn({
         let logger = logger.clone();
 
-        let encoded_dts_queue = encoded_dts_queue.clone();
+        let mut next_packet_sender = next_packet_sender;
 
         async move {
             let mut err_lines = BufReader::new(stderr).split(b'\n');
 
             while let Some(Ok(line)) = err_lines.next().await {
                 let line = String::from_utf8_lossy(&line);
+
+                trace!(logger, "ffmpeg stderr: {}", line);
+
                 if let Some(captures) = FFMPEG_OUTPUT_PTS_REGEX.captures(&line) {
-                    let last_encoded_dts = captures[2].parse::<f64>().unwrap();
-                    encoded_dts_queue
-                        .lock()
-                        .unwrap()
-                        .push_back(Duration::from_secs_f64(last_encoded_dts));
-                } else {
-                    trace!(logger, "ffmpeg output: {}", line);
+                    let last_encoded_dts = Duration::from_secs_f64(captures[2].parse().unwrap());
+                    let last_packet_size = captures[5].parse().unwrap();
+
+                    let _ = next_packet_sender
+                        .send((last_encoded_dts, last_packet_size))
+                        .await;
                 }
             }
 
@@ -403,29 +398,48 @@ pub(crate) fn build_ffmpeg_encoder(
         let metrics = metrics.clone();
         let format_string = audio_format.to_string();
 
-        let encoded_dts_queue = encoded_dts_queue.clone();
+        let mut next_packet_receiver = next_packet_receiver;
 
         async move {
             metrics.inc_active_encoders(&format_string);
 
             defer!(metrics.dec_active_encoders(&format_string));
 
-            let mut buffer = vec![0u8; STDIO_BUFFER_SIZE];
-            while let Some(Ok(bytes)) = read_from_stdout(&mut stdout, &mut buffer).await {
-                let next_dts = encoded_dts_queue
-                    .lock()
-                    .unwrap()
-                    .pop_front()
-                    .unwrap_or_default();
-                // .expect("Can't obtain next packet dts from queue");
-
-                if let Err(_) = src_sender
-                    .send(EncoderOutput::Buffer(Buffer::new(bytes, next_dts, &format)))
-                    .await
-                {
-                    break;
+            loop {
+                let (next_dts, next_size) = match next_packet_receiver.next().await {
+                    Some(d) => d,
+                    None => break,
                 };
+
+                trace!(
+                    logger,
+                    "planned packet size={} dts={:?}",
+                    next_size,
+                    next_dts
+                );
+
+                match read_exact_from_stdout(&mut stdout, &next_size).await {
+                    Some(Ok(bytes)) => {
+                        let bytes_len = bytes.len();
+
+                        trace!(logger, "read packet size={}", bytes_len);
+
+                        if let Err(_) = src_sender
+                            .send(EncoderOutput::Buffer(Buffer::new(
+                                bytes,
+                                Duration::default(),
+                                &format,
+                            )))
+                            .await
+                        {
+                            break;
+                        };
+                    }
+                    _ => break,
+                }
             }
+
+            let _ = src_sender.send(EncoderOutput::EOF).await;
 
             drop(stdout);
 

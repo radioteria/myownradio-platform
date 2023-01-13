@@ -1,10 +1,11 @@
 use crate::audio_formats::AudioFormat;
-use crate::helpers::io::{read_exact_from_stdout, write_to_stdin};
+use crate::helpers::io::{read_exact_from_stdout, read_from_stdout, write_to_stdin};
 use crate::helpers::system::which;
 use crate::metrics::Metrics;
 use crate::stream::constants::{AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY};
 use crate::stream::types::Buffer;
 use async_process::{Command, Stdio};
+use bytebuffer::ByteBuffer;
 use futures::channel::mpsc;
 use futures::io::BufReader;
 use futures::{SinkExt, StreamExt};
@@ -13,8 +14,10 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use scopeguard::defer;
 use slog::{error, info, o, trace, warn, Logger};
-use std::io::ErrorKind;
+use std::io::{ErrorKind, Read};
 use std::time::{Duration, Instant};
+
+const STDOUT_READ_BUFFER_SIZE: usize = 4096;
 
 lazy_static! {
     static ref FFMPEG_COMMAND: &'static str =
@@ -151,7 +154,7 @@ pub(crate) fn build_ffmpeg_decoder(
 
             defer!(metrics.dec_active_decoders());
 
-            let mut stdout = stdout;
+            let mut stdout = BufReader::new(stdout);
 
             let mut channel_closed = false;
 
@@ -317,7 +320,7 @@ pub(crate) fn build_ffmpeg_encoder(
         }
     };
 
-    let (mut next_packet_sender, mut next_packet_receiver) = mpsc::channel::<PacketInfo>(10);
+    let (mut next_packet_sender, mut next_packet_receiver) = mpsc::channel::<PacketInfo>(1);
 
     let (input_sender, mut input_receiver) = mpsc::channel::<Buffer>(0);
     let (output_sender, output_receiver) = mpsc::channel::<EncoderOutput>(0);
@@ -326,7 +329,7 @@ pub(crate) fn build_ffmpeg_encoder(
         let logger = logger.clone();
 
         async move {
-            let mut err_lines = BufReader::new(stderr).split(b'\n');
+            let mut err_lines = BufReader::with_capacity(32767, stderr).split(b'\n');
 
             while let Some(Ok(line)) = err_lines.next().await {
                 let line = String::from_utf8_lossy(&line);
@@ -338,7 +341,9 @@ pub(crate) fn build_ffmpeg_encoder(
                     let dts = Duration::from_secs_f64(captures[4].parse().unwrap());
                     let size = captures[5].parse().unwrap();
 
+                    println!("packet info start");
                     let _ = next_packet_sender.send(PacketInfo { pts, dts, size }).await;
+                    println!("packet info end");
                 }
             }
 
@@ -353,7 +358,10 @@ pub(crate) fn build_ffmpeg_encoder(
 
         let pipe = async move {
             while let Some(buffer) = input_receiver.next().await {
-                if let Err(error) = write_to_stdin(&mut stdin, buffer.into_bytes()).await {
+                println!("input write start");
+                let r = write_to_stdin(&mut stdin, buffer.into_bytes()).await;
+                println!("input write end");
+                if let Err(error) = r {
                     if error.kind() != ErrorKind::BrokenPipe {
                         error!(logger, "Unable to write data to encoder: error occurred"; "error" => ?error);
                     }
@@ -368,7 +376,7 @@ pub(crate) fn build_ffmpeg_encoder(
     });
 
     actix_rt::spawn({
-        let mut stdout = stdout;
+        let mut stdout = BufReader::with_capacity(32767, stdout);
         let mut output_sender = output_sender;
 
         let metrics = metrics.clone();
@@ -379,11 +387,41 @@ pub(crate) fn build_ffmpeg_encoder(
 
             defer!(metrics.dec_active_encoders(&format_string));
 
+            let mut stdout_read_buffer = vec![0u8; STDOUT_READ_BUFFER_SIZE];
+
+            let mut buffer = ByteBuffer::new();
+
             loop {
+                eprintln!("packet info read start");
+                let next_packet_info = match next_packet_receiver.try_next() {
+                    Ok(Some(d)) => d,
+                    Ok(None) => break,
+                    Err(_) => {
+                        match read_from_stdout(&mut stdout, &mut stdout_read_buffer).await {
+                            Ok(len) => buffer.write_bytes(&stdout_read_buffer[..len]),
+                            Err(_) => break,
+                        };
+                        continue;
+                    }
+                };
+                eprintln!("packet info read end");
+
+                match read_from_stdout(&mut stdout, &mut stdout_read_buffer).await {
+                    Ok(len) => buffer.write_bytes(&stdout_read_buffer[..len]),
+                    Err(_) => break,
+                }
+
+                eprintln!("packet info read start");
                 let next_packet_info = match next_packet_receiver.next().await {
                     Some(d) => d,
                     None => break,
                 };
+                eprintln!("packet info read end");
+
+                if buffer.len() >= next_packet_info.size {
+                    let mut packet_buffer = vec![0u8; next_packet_info.size];
+                    buffer.read_exact(&mut packet_buffer);
+                }
 
                 trace!(
                     logger,
@@ -393,7 +431,11 @@ pub(crate) fn build_ffmpeg_encoder(
                     &next_packet_info.dts,
                 );
 
-                match read_exact_from_stdout(&mut stdout, &next_packet_info.size).await {
+                eprintln!("packet read start");
+                let r = read_exact_from_stdout(&mut stdout, &next_packet_info.size).await;
+                eprintln!("packet read end");
+
+                match r {
                     Some(Ok(bytes)) => {
                         if let Err(_) = output_sender
                             .send(EncoderOutput::Buffer(Buffer::new(

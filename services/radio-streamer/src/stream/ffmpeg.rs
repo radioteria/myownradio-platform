@@ -5,14 +5,14 @@ use crate::metrics::Metrics;
 use crate::stream::constants::{AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY};
 use crate::stream::types::Buffer;
 use async_process::{Command, Stdio};
-use futures::channel::{mpsc, oneshot};
+use futures::channel::mpsc;
 use futures::io::BufReader;
 use futures::{SinkExt, StreamExt};
-use futures_lite::{AsyncBufReadExt, FutureExt};
+use futures_lite::AsyncBufReadExt;
 use lazy_static::lazy_static;
 use regex::Regex;
 use scopeguard::defer;
-use slog::{debug, error, info, o, trace, warn, Logger};
+use slog::{error, info, o, trace, warn, Logger};
 use std::io::ErrorKind;
 use std::time::{Duration, Instant};
 

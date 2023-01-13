@@ -29,12 +29,16 @@ pub async fn write_to_stdin(stdin: &mut ChildStdin, bytes: Bytes) -> Result<(), 
     }
 }
 
-pub async fn sleep_until_deadline(
-    deadline: &Instant,
+pub async fn sleep(
+    duration: &Duration,
     cancel_receiver: &mut oneshot::Receiver<()>,
 ) -> Result<(), oneshot::Canceled> {
-    let deadline = deadline.clone();
-    let pipe_future = async { Ok(actix_rt::time::sleep_until(deadline).await) };
+    if duration.is_zero() {
+        return Ok(());
+    }
+
+    let duration = duration.clone();
+    let pipe_future = async { Ok(actix_rt::time::sleep(duration).await) };
 
     pipe_future.or(cancel_receiver).await
 }

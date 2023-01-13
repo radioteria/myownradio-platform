@@ -146,7 +146,6 @@ pub(crate) fn make_player_loop(
                         .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
                             buffer.bytes().clone(),
                             buffer.dts().clone(),
-                            buffer.format(),
                         )))
                         .await
                     {

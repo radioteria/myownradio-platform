@@ -9,7 +9,6 @@ use crate::stream::types::Buffer;
 use crate::stream::{build_ffmpeg_encoder, EncoderError};
 use crate::upgrade_weak;
 use actix_rt::task::JoinHandle;
-use actix_web::web::Bytes;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use slog::{info, Logger};

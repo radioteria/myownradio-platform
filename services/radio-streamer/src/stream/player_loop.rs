@@ -132,11 +132,13 @@ pub(crate) fn make_player_loop(
 
                     let sleep_dur = (stream_started_at + pts_offset)
                         .duration_since(SystemTime::now())
-                        .unwrap_or_default();
+                        .ok();
 
-                    if let Err(_) = sleep(&sleep_dur, &mut restart_rx).await {
-                        debug!(logger, "Sleep cancelled");
-                        break;
+                    if let Some(duration) = sleep_dur {
+                        if let Err(_) = sleep(&duration, &mut restart_rx).await {
+                            debug!(logger, "Sleep cancelled");
+                            break;
+                        }
                     }
 
                     if let Ok(Some(())) = restart_rx.try_recv() {

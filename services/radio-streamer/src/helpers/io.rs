@@ -33,10 +33,6 @@ pub async fn sleep(
     duration: &Duration,
     cancel_receiver: &mut oneshot::Receiver<()>,
 ) -> Result<(), oneshot::Canceled> {
-    if duration.is_zero() {
-        return Ok(());
-    }
-
     let duration = duration.clone();
     let pipe_future = async { Ok(actix_rt::time::sleep(duration).await) };
 

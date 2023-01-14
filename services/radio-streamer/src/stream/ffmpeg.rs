@@ -4,17 +4,18 @@ use crate::helpers::system::which;
 use crate::metrics::Metrics;
 use crate::stream::constants::{AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY};
 use crate::stream::types::Buffer;
+use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
-use bytebuffer::ByteBuffer;
-use futures::channel::mpsc;
+use futures::channel::{mpsc, oneshot};
 use futures::io::BufReader;
 use futures::{SinkExt, StreamExt};
-use futures_lite::AsyncBufReadExt;
+use futures_lite::{AsyncBufReadExt, FutureExt};
 use lazy_static::lazy_static;
 use regex::Regex;
 use scopeguard::defer;
 use slog::{error, info, o, trace, warn, Logger};
-use std::io::{ErrorKind, Read};
+use std::io::ErrorKind;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 const STDOUT_READ_BUFFER_SIZE: usize = 4096;
@@ -290,46 +291,110 @@ pub(crate) fn build_ffmpeg_encoder(
         }
     };
 
-    let stdout = match process.stdout.take() {
-        Some(stdout) => stdout,
-        None => {
-            error!(
-                logger,
-                "Unable to start encoder process: stdout is not available"
-            );
-            return Err(EncoderError::StdoutUnavailable);
-        }
-    };
+    let stdout = process
+        .stdout
+        .take()
+        .ok_or_else(|| EncoderError::StdoutUnavailable)?;
 
-    let stdin = match process.stdin.take() {
-        Some(stdin) => stdin,
-        None => {
-            error!(
-                logger,
-                "Unable to start encoder process: stdin is not available"
-            );
-            return Err(EncoderError::StdinUnavailable);
-        }
-    };
+    let stdin = process
+        .stdin
+        .take()
+        .ok_or_else(|| EncoderError::StdinUnavailable)?;
 
-    let stderr = match process.stderr.take() {
-        Some(stderr) => stderr,
-        None => {
-            error!(logger, "Unable to start decoder: stderr is not available");
-            return Err(EncoderError::StderrUnavailable);
-        }
-    };
-
-    let (mut next_packet_sender, mut next_packet_receiver) = mpsc::channel::<PacketInfo>(1);
+    let stderr = process
+        .stderr
+        .take()
+        .ok_or_else(|| EncoderError::StderrUnavailable)?;
 
     let (input_sender, mut input_receiver) = mpsc::channel::<Buffer>(0);
     let (output_sender, output_receiver) = mpsc::channel::<EncoderOutput>(0);
 
+    let (stdin_term_sender, stdin_term_receiver) = oneshot::channel::<()>();
+    actix_rt::spawn({
+        let mut stdin = stdin;
+
+        let logger = logger.clone();
+
+        let pipe = async move {
+            while let Some(buffer) = input_receiver.next().await {
+                if let Err(error) = write_to_stdin(&mut stdin, buffer.into_bytes()).await {
+                    error!(logger, "Unable to write data to encoder: error occurred"; "error" => ?error);
+                    break;
+                }
+            }
+
+            drop(stdin);
+        };
+
+        let term = async move {
+            let _ = stdin_term_receiver.await;
+        };
+
+        pipe.or(term)
+    });
+
+    let (next_packet_sender, next_packet_receiver) = mpsc::channel::<PacketInfo>(100);
+
+    let buffer = Arc::new(Mutex::new(Vec::<u8>::new()));
+    let next_packet_park = Arc::new(Mutex::new(None::<oneshot::Sender<()>>));
+
+    actix_rt::spawn({
+        let mut next_packet_receiver = next_packet_receiver;
+        let mut output_sender = output_sender.clone();
+        let input_close_sender = stdin_term_sender;
+
+        let buffer = Arc::clone(&buffer);
+        let next_packet_park = Arc::clone(&next_packet_park);
+
+        async move {
+            while let Some(packet_info) = next_packet_receiver.next().await {
+                eprintln!(
+                    "Packet size {} bytes, buffer contains {} bytes",
+                    packet_info.size,
+                    buffer.lock().unwrap().len()
+                );
+
+                loop {
+                    let mut buffer_guard = buffer.lock().unwrap();
+
+                    if buffer_guard.len() >= packet_info.size {
+                        let packet_bytes = Bytes::copy_from_slice(
+                            buffer_guard.drain(..packet_info.size).as_slice(),
+                        );
+                        drop(buffer_guard);
+
+                        let encoded_buffer = Buffer::new(packet_bytes, packet_info.dts);
+                        if let Err(_) = output_sender
+                            .send(EncoderOutput::Buffer(encoded_buffer))
+                            .await
+                        {
+                            let _ = input_close_sender.send(());
+                            return;
+                        };
+
+                        break;
+                    } else {
+                        let (sender, receiver) = oneshot::channel::<()>();
+                        next_packet_park.lock().unwrap().replace(sender);
+                        drop(buffer_guard);
+
+                        if receiver.await.is_err() {
+                            let _ = input_close_sender.send(());
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
     actix_rt::spawn({
         let logger = logger.clone();
 
+        let mut next_packet_sender = next_packet_sender.clone();
+
         async move {
-            let mut err_lines = BufReader::with_capacity(32767, stderr).split(b'\n');
+            let mut err_lines = BufReader::new(stderr).split(b'\n');
 
             while let Some(Ok(line)) = err_lines.next().await {
                 let line = String::from_utf8_lossy(&line);
@@ -341,9 +406,11 @@ pub(crate) fn build_ffmpeg_encoder(
                     let dts = Duration::from_secs_f64(captures[4].parse().unwrap());
                     let size = captures[5].parse().unwrap();
 
-                    println!("packet info start");
-                    let _ = next_packet_sender.send(PacketInfo { pts, dts, size }).await;
-                    println!("packet info end");
+                    let packet_info = PacketInfo { pts, dts, size };
+
+                    if next_packet_sender.send(packet_info).await.is_err() {
+                        break;
+                    }
                 }
             }
 
@@ -352,32 +419,10 @@ pub(crate) fn build_ffmpeg_encoder(
     });
 
     actix_rt::spawn({
-        let mut stdin = stdin;
-
-        let logger = logger.clone();
-
-        let pipe = async move {
-            while let Some(buffer) = input_receiver.next().await {
-                println!("input write start");
-                let r = write_to_stdin(&mut stdin, buffer.into_bytes()).await;
-                println!("input write end");
-                if let Err(error) = r {
-                    if error.kind() != ErrorKind::BrokenPipe {
-                        error!(logger, "Unable to write data to encoder: error occurred"; "error" => ?error);
-                    }
-                    break;
-                }
-            }
-
-            drop(stdin);
-        };
-
-        pipe
-    });
-
-    actix_rt::spawn({
         let mut stdout = BufReader::with_capacity(32767, stdout);
-        let mut output_sender = output_sender;
+        let mut output_sender = output_sender.clone();
+        let buffer = Arc::clone(&buffer);
+        let next_packet_park = Arc::clone(&next_packet_park);
 
         let metrics = metrics.clone();
         let format_string = audio_format.to_string();
@@ -389,75 +434,24 @@ pub(crate) fn build_ffmpeg_encoder(
 
             let mut stdout_read_buffer = vec![0u8; STDOUT_READ_BUFFER_SIZE];
 
-            let mut buffer = ByteBuffer::new();
-
-            loop {
-                eprintln!("packet info read start");
-                let next_packet_info = match next_packet_receiver.try_next() {
-                    Ok(Some(d)) => d,
-                    Ok(None) => break,
-                    Err(_) => {
-                        match read_from_stdout(&mut stdout, &mut stdout_read_buffer).await {
-                            Ok(len) => buffer.write_bytes(&stdout_read_buffer[..len]),
-                            Err(_) => break,
-                        };
-                        continue;
-                    }
-                };
-                eprintln!("packet info read end");
-
-                match read_from_stdout(&mut stdout, &mut stdout_read_buffer).await {
-                    Ok(len) => buffer.write_bytes(&stdout_read_buffer[..len]),
-                    Err(_) => break,
+            while let Ok(size) = read_from_stdout(&mut stdout, &mut stdout_read_buffer).await {
+                if size == 0 {
+                    break;
                 }
 
-                eprintln!("packet info read start");
-                let next_packet_info = match next_packet_receiver.next().await {
-                    Some(d) => d,
-                    None => break,
-                };
-                eprintln!("packet info read end");
+                buffer
+                    .lock()
+                    .unwrap()
+                    .extend_from_slice(&stdout_read_buffer[..size]);
 
-                if buffer.len() >= next_packet_info.size {
-                    let mut packet_buffer = vec![0u8; next_packet_info.size];
-                    buffer.read_exact(&mut packet_buffer);
-                }
-
-                trace!(
-                    logger,
-                    "planned packet size={} pts={:?} dts={:?}",
-                    &next_packet_info.size,
-                    &next_packet_info.pts,
-                    &next_packet_info.dts,
-                );
-
-                eprintln!("packet read start");
-                let r = read_exact_from_stdout(&mut stdout, &next_packet_info.size).await;
-                eprintln!("packet read end");
-
-                match r {
-                    Some(Ok(bytes)) => {
-                        if let Err(_) = output_sender
-                            .send(EncoderOutput::Buffer(Buffer::new(
-                                bytes,
-                                Duration::default(),
-                            )))
-                            .await
-                        {
-                            break;
-                        };
-                    }
-                    _ => break,
+                if let Some(sender) = next_packet_park.lock().unwrap().take() {
+                    let _ = sender.send(());
                 }
             }
 
-            let _ = output_sender.send(EncoderOutput::EOF).await;
-
             drop(stdout);
 
-            process.kill().unwrap();
-
-            let _ = process.status().await;
+            let _ = output_sender.send(EncoderOutput::EOF).await;
         }
     });
 

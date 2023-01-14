@@ -1,4 +1,3 @@
-use crate::helpers::system::which;
 use serde::Deserialize;
 use slog::Level;
 
@@ -36,32 +35,10 @@ fn default_shutdown_timeout() -> u64 {
     30u64
 }
 
-fn default_path_to_ffprobe() -> String {
-    match which("ffprobe") {
-        Some(path) => path,
-        None => {
-            panic!("Unable to locate ffprobe");
-        }
-    }
-}
-
-fn default_path_to_ffmpeg() -> String {
-    match which("ffmpeg") {
-        Some(path) => path,
-        None => {
-            panic!("Unable to locate ffprobe");
-        }
-    }
-}
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     #[serde(default = "default_bind_address")]
     pub bind_address: String,
-    #[serde(default = "default_path_to_ffmpeg")]
-    pub path_to_ffmpeg: String,
-    #[serde(default = "default_path_to_ffprobe")]
-    pub path_to_ffprobe: String,
     #[serde(with = "LogLevel", default = "default_log_level")]
     pub log_level: Level,
     #[serde(default = "default_log_format")]

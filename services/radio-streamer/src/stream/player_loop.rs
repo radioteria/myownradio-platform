@@ -1,9 +1,8 @@
 use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
-use crate::helpers::io::sleep_until_deadline;
+use crate::helpers::io::sleep;
 use crate::metrics::Metrics;
-use crate::stream::ffmpeg_decoder::{make_ffmpeg_decoder, DecoderOutput};
 use crate::stream::types::Buffer;
-use actix_rt::time::Instant;
+use crate::stream::{build_ffmpeg_decoder, DecoderOutput};
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use scopeguard::defer;
@@ -22,43 +21,36 @@ pub(crate) enum PlayerLoopMessage {
 
 pub(crate) fn make_player_loop(
     channel_id: &usize,
-    path_to_ffmpeg: &str,
     backend_client: &BackendClient,
     logger: &Logger,
     metrics: &Metrics,
 ) -> mpsc::Receiver<PlayerLoopMessage> {
     let channel_id = channel_id.clone();
-    let path_to_ffmpeg = path_to_ffmpeg.to_owned();
 
     let logger = logger.clone();
     let metrics = metrics.clone();
 
-    let (tx, rx) = mpsc::channel(0);
+    let (mut player_loop_msg_sender, player_loop_msg_receiver) = mpsc::channel(0);
 
     actix_rt::spawn({
         let backend_client = backend_client.clone();
         let logger = logger.clone();
 
-        let mut tx = tx;
-
         async move {
+            info!(logger, "Starting player loop"; "channel_id" => &channel_id);
             metrics.inc_active_player_loops();
 
+            defer!(info!(logger, "Stopping player loop"; "channel_id" => &channel_id););
             defer!(metrics.dec_active_player_loops());
 
-            info!(logger, "Starting player loop"; "channel_id" => &channel_id);
+            let stream_started_at = SystemTime::now() - LAST_PRELOAD_TIME;
 
-            defer!(info!(logger, "Stopping player loop"; "channel_id" => &channel_id););
+            trace!(logger, "Stream initial clock"; "stream_started_at" => ?stream_started_at);
 
-            let stream_start_time = SystemTime::now() - LAST_PRELOAD_TIME;
-            let stream_instant_time = Instant::now() - LAST_PRELOAD_TIME;
-
-            trace!(logger, "Stream initial clock"; "start_time" => ?stream_start_time, "instant_time" => ?stream_instant_time);
-
-            let mut offset_pts = Duration::from_secs(0);
+            let mut pts_offset = Duration::from_secs(0);
 
             loop {
-                let elapsed_time = stream_start_time + offset_pts;
+                let elapsed_time = stream_started_at + pts_offset;
                 trace!(logger, "Elapsed stream time"; "time" => ?elapsed_time);
 
                 let now_playing = match backend_client
@@ -67,7 +59,7 @@ pub(crate) fn make_player_loop(
                 {
                     Ok(now_playing) => now_playing,
                     Err(MorBackendClientError::ChannelNotFound) => {
-                        // Channel was deleted when streaming. Exit loop.
+                        // Channel was deleted while streaming. Exit loop.
                         break;
                     }
                     Err(error) => {
@@ -95,16 +87,19 @@ pub(crate) fn make_player_loop(
                     }
                 };
 
-                let mut track_decoder =
-                    match make_ffmpeg_decoder(&url, &offset, &path_to_ffmpeg, &logger, &metrics) {
-                        Ok(track_decoder) => track_decoder,
-                        Err(error) => {
-                            error!(logger, "Unable create track decoder"; "error" => ?error);
-                            return;
-                        }
-                    };
+                let mut track_decoder = match build_ffmpeg_decoder(&url, &offset, &logger, &metrics)
+                {
+                    Ok(track_decoder) => track_decoder,
+                    Err(error) => {
+                        error!(logger, "Unable create track decoder"; "error" => ?error);
+                        return;
+                    }
+                };
 
-                if let Err(_) = tx.send(PlayerLoopMessage::TrackTitle(title)).await {
+                if let Err(_) = player_loop_msg_sender
+                    .send(PlayerLoopMessage::TrackTitle(title))
+                    .await
+                {
                     debug!(
                         logger,
                         "Stopping player loop: channel closed on updating title"
@@ -114,7 +109,10 @@ pub(crate) fn make_player_loop(
 
                 let (restart_tx, mut restart_rx) = oneshot::channel::<()>();
 
-                if let Err(_) = tx.send(PlayerLoopMessage::RestartSender(restart_tx)).await {
+                if let Err(_) = player_loop_msg_sender
+                    .send(PlayerLoopMessage::RestartSender(restart_tx))
+                    .await
+                {
                     debug!(
                         logger,
                         "Stopping player loop: channel closed on updating restart sender"
@@ -122,17 +120,25 @@ pub(crate) fn make_player_loop(
                     return;
                 }
 
-                let mut stream_pts = offset_pts;
+                // let mut stream_pts = pts_offset;
 
+                let mut previous_packet_pts = Duration::from_secs(0);
                 while let Some(DecoderOutput::Buffer(buffer)) = track_decoder.next().await {
-                    stream_pts = offset_pts + *buffer.dts();
+                    let buffer_dts = *buffer.dts();
+                    let buffer_dur = buffer_dts - previous_packet_pts;
 
-                    if let Err(_) =
-                        sleep_until_deadline(&(stream_instant_time + stream_pts), &mut restart_rx)
-                            .await
-                    {
-                        debug!(logger, "Sleep cancelled");
-                        break;
+                    pts_offset += buffer_dur;
+                    previous_packet_pts = buffer_dts;
+
+                    let sleep_dur = (stream_started_at + pts_offset)
+                        .duration_since(SystemTime::now())
+                        .ok();
+
+                    if let Some(duration) = sleep_dur {
+                        if let Err(_) = sleep(&duration, &mut restart_rx).await {
+                            debug!(logger, "Sleep cancelled");
+                            break;
+                        }
                     }
 
                     if let Ok(Some(())) = restart_rx.try_recv() {
@@ -140,24 +146,14 @@ pub(crate) fn make_player_loop(
                         break;
                     }
 
-                    trace!(
-                        logger,
-                        "Received buffer from decoder";
-                        "len" => buffer.bytes().len(),
-                        "buff_dts" => buffer.dts().as_millis(),
-                        "buff_pts" => buffer.pts().as_millis(),
-                        "stream_pts" => stream_pts.as_millis()
-                    );
-
                     if buffer.is_empty() {
                         break;
                     }
 
-                    if let Err(_) = tx
+                    if let Err(_) = player_loop_msg_sender
                         .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
                             buffer.bytes().clone(),
                             buffer.dts().clone(),
-                            stream_pts.clone(),
                         )))
                         .await
                     {
@@ -169,10 +165,10 @@ pub(crate) fn make_player_loop(
                     }
                 }
 
-                offset_pts = stream_pts;
+                // pts_offset = stream_pts;
             }
         }
     });
 
-    rx
+    player_loop_msg_receiver
 }

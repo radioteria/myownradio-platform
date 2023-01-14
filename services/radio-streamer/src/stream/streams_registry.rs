@@ -6,7 +6,6 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 pub(crate) struct StreamsRegistry {
-    path_to_ffmpeg: String,
     backend_client: BackendClient,
     logger: Logger,
     metrics: Metrics,
@@ -14,16 +13,10 @@ pub(crate) struct StreamsRegistry {
 }
 
 impl StreamsRegistry {
-    pub(crate) fn new(
-        path_to_ffmpeg: &str,
-        backend_client: &BackendClient,
-        logger: &Logger,
-        metrics: &Metrics,
-    ) -> Self {
+    pub(crate) fn new(backend_client: &BackendClient, logger: &Logger, metrics: &Metrics) -> Self {
         let streams_map = Mutex::new(HashMap::new());
 
         Self {
-            path_to_ffmpeg: path_to_ffmpeg.to_string(),
             backend_client: backend_client.clone(),
             logger: logger.clone(),
             metrics: metrics.clone(),
@@ -81,7 +74,6 @@ impl StreamsRegistryExt for Arc<StreamsRegistry> {
         let stream = Arc::new(
             Stream::create(
                 channel_id,
-                &self.path_to_ffmpeg,
                 &self.backend_client,
                 &self.logger,
                 &self.metrics,

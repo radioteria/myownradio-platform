@@ -21,7 +21,7 @@ pub(crate) fn timesync_channel<M: TimeSyncPacket + 'static>(
 
             while let Some(msg) = input_receiver.next().await {
                 let dts = *msg.dts();
-                dts_offset += (dts - previous_dts);
+                dts_offset += dts - previous_dts;
                 previous_dts = dts;
 
                 let sleep_dur = (offset + dts_offset).duration_since(SystemTime::now()).ok();

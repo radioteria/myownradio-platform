@@ -2,23 +2,21 @@ use actix_rt::time::Instant;
 use actix_web::web::Bytes;
 use async_process::{ChildStdin, ChildStdout};
 use futures::channel::oneshot;
-use futures::io::{Error, ErrorKind};
+use futures::io::{BufReader, Error, ErrorKind};
 use futures::{AsyncReadExt, AsyncWriteExt};
 use futures_lite::FutureExt;
 use std::time::Duration;
 
 const READ_FROM_STDOUT_TIMEOUT: Duration = Duration::from_secs(10);
 
-pub async fn read_exact_from_stdout(
-    stdout: &mut ChildStdout,
-    size: &usize,
-) -> Option<Result<Bytes, Error>> {
-    let mut buffer = vec![0u8; *size];
-
-    match actix_rt::time::timeout(READ_FROM_STDOUT_TIMEOUT, stdout.read_exact(&mut buffer)).await {
-        Ok(Ok(())) => Some(Ok(Bytes::copy_from_slice(&buffer[..]))),
-        Ok(Err(error)) => Some(Err(Error::from(error))),
-        Err(_) => Some(Err(Error::from(ErrorKind::TimedOut))),
+pub async fn read_from_stdout(
+    stdout: &mut BufReader<ChildStdout>,
+    mut buffer: &mut Vec<u8>,
+) -> Result<usize, Error> {
+    match actix_rt::time::timeout(READ_FROM_STDOUT_TIMEOUT, stdout.read(&mut buffer)).await {
+        Ok(Ok(len)) => Ok(len),
+        Ok(Err(error)) => Err(Error::from(error)),
+        Err(_) => Err(Error::from(ErrorKind::TimedOut)),
     }
 }
 

@@ -57,8 +57,6 @@ pub(crate) fn build_ffmpeg_decoder(
 ) -> Result<mpsc::Receiver<DecoderOutput>, DecoderError> {
     let logger = logger.new(o!("kind" => "ffmpeg_decoder"));
 
-    let mut start_time = Some(Instant::now());
-
     let mut process = match Command::new(*FFMPEG_COMMAND)
         .args(&[
             "-debug_ts",

@@ -20,19 +20,6 @@ pub async fn read_from_stdout(
     }
 }
 
-pub async fn read_exact_from_stdout(
-    stdout: &mut BufReader<ChildStdout>,
-    size: &usize,
-) -> Option<Result<Bytes, Error>> {
-    let mut buffer = vec![0u8; *size];
-
-    match actix_rt::time::timeout(READ_FROM_STDOUT_TIMEOUT, stdout.read_exact(&mut buffer)).await {
-        Ok(Ok(())) => Some(Ok(Bytes::copy_from_slice(&buffer[..]))),
-        Ok(Err(error)) => Some(Err(Error::from(error))),
-        Err(_) => Some(Err(Error::from(ErrorKind::TimedOut))),
-    }
-}
-
 pub async fn write_to_stdin(stdin: &mut ChildStdin, bytes: Bytes) -> Result<(), Error> {
     match stdin.write(&bytes[..]).await {
         Ok(_) => Ok(()),

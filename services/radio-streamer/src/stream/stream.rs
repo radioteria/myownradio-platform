@@ -5,12 +5,13 @@ use crate::backend_client::{BackendClient, ChannelInfo, MorBackendClientError};
 use crate::metrics::Metrics;
 use crate::stream::ffmpeg::EncoderOutput;
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
+use crate::stream::replay_timed_channel::{ReplayTimedChannel, TimedMessage};
 use crate::stream::types::Buffer;
 use crate::stream::{build_ffmpeg_encoder, EncoderError};
 use crate::upgrade_weak;
 use actix_rt::task::JoinHandle;
 use futures::channel::{mpsc, oneshot};
-use futures::{SinkExt, StreamExt};
+use futures::{stream, SinkExt, StreamExt};
 use slog::{info, Logger};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -21,6 +22,17 @@ use std::time::Duration;
 pub(crate) enum StreamMessage {
     Buffer(Buffer),
     TrackTitle(String),
+}
+
+const ZERO_DURATION: Duration = Duration::from_secs(0);
+
+impl TimedMessage for StreamMessage {
+    fn pts(&self) -> &Duration {
+        match self {
+            StreamMessage::Buffer(b) => b.dts(),
+            StreamMessage::TrackTitle(_) => &ZERO_DURATION,
+        }
+    }
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -52,12 +64,12 @@ pub(crate) struct Stream {
     streams_registry: Arc<StreamsRegistry>,
     // Static state
     channel_id: usize,
-    stream_messages_channel: TimedChannel<StreamMessage>,
+    stream_messages_channel: Arc<ReplayTimedChannel<StreamMessage>>,
     channel_info: ChannelInfo,
     // Dynamic state
     restart_sender: Arc<Mutex<Option<oneshot::Sender<()>>>>,
     track_title: Arc<Mutex<String>>,
-    encoders_map: Arc<Mutex<HashMap<AudioFormat, TimedChannel<StreamMessage>>>>,
+    encoders_map: Arc<Mutex<HashMap<AudioFormat, Arc<ReplayTimedChannel<StreamMessage>>>>>,
     player_loop_handle: JoinHandle<()>,
 }
 
@@ -69,12 +81,15 @@ impl Stream {
         metrics: &Metrics,
         streams_registry: Arc<StreamsRegistry>,
     ) -> Result<Self, StreamCreateError> {
-        let stream_messages_channel = TimedChannel::new(Duration::from_secs(5), 0);
+        let stream_messages_channel = Arc::new(ReplayTimedChannel::new(
+            TimedChannel::new(Duration::from_secs(5), 0),
+            Duration::from_secs_f32(2.5),
+        ));
         let restart_sender = Arc::new(Mutex::new(None));
         let track_title = Arc::new(Mutex::new(String::default()));
         let encoders_map = Arc::new(Mutex::new(HashMap::<
             AudioFormat,
-            TimedChannel<StreamMessage>,
+            Arc<ReplayTimedChannel<StreamMessage>>,
         >::new()));
 
         let channel_info = match backend_client.get_channel_info(&channel_id, None).await {
@@ -151,7 +166,7 @@ impl Stream {
     pub(crate) fn get_format(
         &self,
         format: &AudioFormat,
-    ) -> Result<mpsc::Receiver<StreamMessage>, GetFormatError> {
+    ) -> Result<impl stream::Stream<Item = StreamMessage>, GetFormatError> {
         match self.encoders_map.lock().unwrap().entry(format.clone()) {
             Entry::Occupied(entry) => Ok(entry.get().create_receiver()?),
             Entry::Vacant(entry) => {
@@ -172,7 +187,10 @@ impl Stream {
                     }
                 });
 
-                let encoded_messages_channel = TimedChannel::new(Duration::from_secs(10), 32);
+                let encoded_messages_channel = Arc::new(ReplayTimedChannel::new(
+                    TimedChannel::new(Duration::from_secs(10), 32),
+                    Duration::from_secs_f32(2.5),
+                ));
                 let receiver = encoded_messages_channel.create_receiver()?;
 
                 actix_rt::spawn({

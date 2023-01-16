@@ -4,20 +4,29 @@ use std::time::Duration;
 #[derive(Clone, Debug)]
 pub(crate) struct Buffer {
     bytes: Bytes,
-    dts: Duration,
+    pts_hint: Duration,
+    dts_hint: Duration,
 }
 
 impl Buffer {
-    pub(crate) fn new(bytes: Bytes, dts: Duration) -> Self {
-        Buffer { bytes, dts }
+    pub(crate) fn new(bytes: Bytes, pts_hint: Duration, dts_hint: Duration) -> Self {
+        Buffer {
+            bytes,
+            pts_hint,
+            dts_hint,
+        }
     }
 
     pub(crate) fn bytes(&self) -> &Bytes {
         &self.bytes
     }
 
-    pub(crate) fn dts(&self) -> &Duration {
-        &self.dts
+    pub(crate) fn pts_hint(&self) -> &Duration {
+        &self.pts_hint
+    }
+
+    pub(crate) fn dts_hint(&self) -> &Duration {
+        &self.dts_hint
     }
 
     pub(crate) fn is_empty(&self) -> bool {

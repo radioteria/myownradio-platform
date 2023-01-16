@@ -15,7 +15,7 @@ use regex::Regex;
 use scopeguard::defer;
 use slog::{error, info, o, trace, warn, Logger};
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 const STDOUT_READ_BUFFER_SIZE: usize = 4096;
 
@@ -155,8 +155,6 @@ pub(crate) fn build_ffmpeg_decoder(
 
             let mut stdout = BufReader::new(stdout);
 
-            let mut channel_closed = false;
-
             let mut stdout_read_buffer = vec![0u8; STDOUT_READ_BUFFER_SIZE];
             while let Ok(size) = read_from_stdout(&mut stdout, &mut stdout_read_buffer).await {
                 let next_packet_info = last_packet_info.lock().unwrap().clone().unwrap_or_default();
@@ -165,12 +163,12 @@ pub(crate) fn build_ffmpeg_decoder(
                 if let Err(_) = output_sender
                     .send(DecoderOutput::Buffer(Buffer::new(
                         buffer_bytes,
+                        next_packet_info.pts_hint,
                         next_packet_info.dts_hint,
                     )))
                     .await
                 {
-                    channel_closed = true;
-                    break;
+                    return;
                 };
             }
 
@@ -180,16 +178,10 @@ pub(crate) fn build_ffmpeg_decoder(
 
             if let Ok(exit_status) = status.await {
                 match exit_status.code() {
-                    Some(code) if code == 1 && channel_closed => {
-                        trace!(
-                            logger,
-                            "Decoder exited because output channel has been closed"
-                        );
-                    }
-                    Some(code) if code != 0 => {
-                        warn!(logger, "Decoder exited with non-zero exit code"; "exit_code" => code);
+                    Some(exit_code) if exit_code != 0 => {
+                        warn!(logger, "Decoder exited with non-zero exit code"; "exit_code" => exit_code);
 
-                        let _ = output_sender.send(DecoderOutput::Error(code)).await;
+                        let _ = output_sender.send(DecoderOutput::Error(exit_code)).await;
                     }
                     _ => (),
                 }
@@ -361,13 +353,19 @@ pub(crate) fn build_ffmpeg_encoder(
                     break;
                 }
 
-                let packet_info = last_packet_info.lock().unwrap().clone().unwrap_or_default();
+                let last_packet_info = last_packet_info.lock().unwrap().clone().unwrap_or_default();
 
                 let buffer_bytes = Bytes::copy_from_slice(&stdout_read_buffer[..size]);
-                let encoded_buffer = Buffer::new(buffer_bytes, packet_info.dts_hint);
-                let msg = EncoderOutput::Buffer(encoded_buffer);
+                let encoded_buffer = Buffer::new(
+                    buffer_bytes,
+                    last_packet_info.pts_hint,
+                    last_packet_info.dts_hint,
+                );
 
-                if let Err(_) = output_sender.send(msg).await {
+                if let Err(_) = output_sender
+                    .send(EncoderOutput::Buffer(encoded_buffer))
+                    .await
+                {
                     let _ = stdin_term_sender.send(());
                     return;
                 };

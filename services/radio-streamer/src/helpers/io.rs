@@ -1,4 +1,3 @@
-use actix_rt::time::Instant;
 use actix_web::web::Bytes;
 use async_process::{ChildStdin, ChildStdout};
 use futures::channel::oneshot;

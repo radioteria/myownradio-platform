@@ -1,6 +1,7 @@
 use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
 use crate::helpers::io::sleep;
 use crate::metrics::Metrics;
+use crate::stream::constants::PRELOAD_TIME;
 use crate::stream::types::Buffer;
 use crate::stream::{build_ffmpeg_decoder, DecoderOutput};
 use futures::channel::{mpsc, oneshot};
@@ -10,7 +11,6 @@ use slog::{debug, error, info, trace, Logger};
 use std::time::{Duration, SystemTime};
 
 const ALLOWED_DELAY: Duration = Duration::from_secs(1);
-const LAST_PRELOAD_TIME: Duration = Duration::from_millis(2500);
 
 #[derive(Debug)]
 pub(crate) enum PlayerLoopMessage {
@@ -43,14 +43,14 @@ pub(crate) fn make_player_loop(
             defer!(info!(logger, "Stopping player loop"; "channel_id" => &channel_id););
             defer!(metrics.dec_active_player_loops());
 
-            let stream_started_at = SystemTime::now() - LAST_PRELOAD_TIME;
+            let stream_started_at = SystemTime::now() - PRELOAD_TIME;
 
             trace!(logger, "Stream initial clock"; "stream_started_at" => ?stream_started_at);
 
-            let mut pts_offset = Duration::from_secs(0);
+            let mut dts_offset = Duration::from_secs(0);
 
             loop {
-                let elapsed_time = stream_started_at + pts_offset;
+                let elapsed_time = stream_started_at + dts_offset;
                 trace!(logger, "Elapsed stream time"; "time" => ?elapsed_time);
 
                 let now_playing = match backend_client
@@ -120,17 +120,15 @@ pub(crate) fn make_player_loop(
                     return;
                 }
 
-                // let mut stream_pts = pts_offset;
-
-                let mut previous_packet_pts = Duration::from_secs(0);
+                let mut previous_packet_dts = Duration::from_secs(0);
                 while let Some(DecoderOutput::Buffer(buffer)) = track_decoder.next().await {
-                    let buffer_dts = *buffer.dts();
-                    let buffer_dur = buffer_dts - previous_packet_pts;
+                    let buffer_dts = *buffer.dts_hint();
+                    let buffer_dur = buffer_dts - previous_packet_dts;
 
-                    pts_offset += buffer_dur;
-                    previous_packet_pts = buffer_dts;
+                    dts_offset += buffer_dur;
+                    previous_packet_dts = buffer_dts;
 
-                    let sleep_dur = (stream_started_at + pts_offset)
+                    let sleep_dur = (stream_started_at + dts_offset)
                         .duration_since(SystemTime::now())
                         .ok();
 
@@ -153,7 +151,8 @@ pub(crate) fn make_player_loop(
                     if let Err(_) = player_loop_msg_sender
                         .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
                             buffer.bytes().clone(),
-                            buffer.dts().clone(),
+                            buffer.pts_hint().clone(),
+                            buffer.dts_hint().clone(),
                         )))
                         .await
                     {
@@ -164,8 +163,6 @@ pub(crate) fn make_player_loop(
                         return;
                     }
                 }
-
-                // pts_offset = stream_pts;
             }
         }
     });

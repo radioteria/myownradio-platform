@@ -29,7 +29,7 @@ const ZERO_DURATION: Duration = Duration::from_secs(0);
 impl TimedMessage for StreamMessage {
     fn pts(&self) -> &Duration {
         match self {
-            StreamMessage::Buffer(b) => b.dts(),
+            StreamMessage::Buffer(b) => b.dts_hint(),
             StreamMessage::TrackTitle(_) => &ZERO_DURATION,
         }
     }

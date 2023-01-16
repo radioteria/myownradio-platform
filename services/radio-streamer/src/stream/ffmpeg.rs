@@ -36,10 +36,13 @@ struct PacketInfo {
     dts_hint: Duration,
 }
 
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub(crate) enum DecoderError {
+    #[error("Error while processing data")]
     ProcessError,
+    #[error("Unable to access stdout")]
     StdoutUnavailable,
+    #[error("Unable to access stderr")]
     StderrUnavailable,
 }
 

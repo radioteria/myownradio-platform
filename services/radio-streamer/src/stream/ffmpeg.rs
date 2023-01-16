@@ -14,6 +14,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use scopeguard::defer;
 use slog::{error, info, o, trace, warn, Logger};
+use std::io;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -39,7 +40,7 @@ struct PacketInfo {
 #[derive(thiserror::Error, Debug)]
 pub(crate) enum DecoderError {
     #[error("Error while processing data")]
-    ProcessError,
+    ProcessError(#[from] io::Error),
     #[error("Unable to access stdout")]
     StdoutUnavailable,
     #[error("Unable to access stderr")]
@@ -60,7 +61,7 @@ pub(crate) fn build_ffmpeg_decoder(
 ) -> Result<mpsc::Receiver<DecoderOutput>, DecoderError> {
     let logger = logger.new(o!("kind" => "ffmpeg_decoder"));
 
-    let mut process = match Command::new(*FFMPEG_COMMAND)
+    let mut process = Command::new(*FFMPEG_COMMAND)
         .args(&[
             "-debug_ts",
             "-v",
@@ -85,34 +86,21 @@ pub(crate) fn build_ffmpeg_decoder(
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .stdin(Stdio::piped())
-        .spawn()
-    {
-        Ok(process) => process,
-        Err(error) => {
-            error!(logger, "Unable to start the decoder process"; "error" => ?error);
-            return Err(DecoderError::ProcessError);
-        }
-    };
+        .spawn()?;
 
     info!(logger, "Started audio decoder"; "url" => source_url, "offset" => ?offset);
 
     let status = process.status();
 
-    let stdout = match process.stdout.take() {
-        Some(stdout) => stdout,
-        None => {
-            error!(logger, "Unable to start decoder: stdout is not available");
-            return Err(DecoderError::StdoutUnavailable);
-        }
-    };
+    let stdout = process
+        .stdout
+        .take()
+        .ok_or(DecoderError::StdoutUnavailable)?;
 
-    let stderr = match process.stderr.take() {
-        Some(stderr) => stderr,
-        None => {
-            error!(logger, "Unable to start decoder: stderr is not available");
-            return Err(DecoderError::StderrUnavailable);
-        }
-    };
+    let stderr = process
+        .stderr
+        .take()
+        .ok_or(DecoderError::StderrUnavailable)?;
 
     let last_packet_info = Arc::new(Mutex::new(None::<PacketInfo>));
 
@@ -198,7 +186,7 @@ pub(crate) fn build_ffmpeg_decoder(
 #[derive(thiserror::Error, Debug)]
 pub(crate) enum EncoderError {
     #[error("Error while processing data")]
-    ProcessError,
+    ProcessError(#[from] io::Error),
     #[error("Unable to access stdout")]
     StdoutUnavailable,
     #[error("Unable to access stdin")]
@@ -219,7 +207,7 @@ pub(crate) fn build_ffmpeg_encoder(
 ) -> Result<(mpsc::Sender<Buffer>, mpsc::Receiver<EncoderOutput>), EncoderError> {
     let logger = logger.new(o!("kind" => "ffmpeg_encoder"));
 
-    let mut process = match Command::new(*FFMPEG_COMMAND)
+    let mut process = Command::new(*FFMPEG_COMMAND)
         .args(&[
             "-debug_ts",
             "-v",
@@ -257,29 +245,19 @@ pub(crate) fn build_ffmpeg_encoder(
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .spawn()
-    {
-        Ok(process) => process,
-        Err(error) => {
-            error!(logger, "Unable to start encoder process: error occurred"; "error" => ?error);
-            return Err(EncoderError::ProcessError);
-        }
-    };
+        .spawn()?;
 
     let stdout = process
         .stdout
         .take()
-        .ok_or_else(|| EncoderError::StdoutUnavailable)?;
+        .ok_or(EncoderError::StdoutUnavailable)?;
 
-    let stdin = process
-        .stdin
-        .take()
-        .ok_or_else(|| EncoderError::StdinUnavailable)?;
+    let stdin = process.stdin.take().ok_or(EncoderError::StdinUnavailable)?;
 
     let stderr = process
         .stderr
         .take()
-        .ok_or_else(|| EncoderError::StderrUnavailable)?;
+        .ok_or(EncoderError::StderrUnavailable)?;
 
     let (input_sender, mut input_receiver) = mpsc::channel::<Buffer>(0);
     let (output_sender, output_receiver) = mpsc::channel::<EncoderOutput>(0);

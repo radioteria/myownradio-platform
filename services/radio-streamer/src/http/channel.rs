@@ -84,7 +84,7 @@ pub(crate) async fn get_channel_audio_stream_v2(
 
     icy_muxer.send_track_title(stream.track_title());
 
-    let stream_source = match stream.get_format(&format) {
+    let stream_source = match stream.get_output(&format) {
         Ok(stream_source) => stream_source,
         Err(error) => {
             error!(logger, "Unable to create stream"; "error" => ?error);

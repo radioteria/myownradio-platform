@@ -3,6 +3,7 @@ mod constants;
 mod ffmpeg;
 pub(crate) mod icy_muxer;
 pub(crate) mod player_loop;
+mod replay_timed_channel;
 pub mod stream;
 pub mod streams_registry;
 mod timed_channel;

@@ -3,6 +3,7 @@ use super::timed_channel::{ChannelError, TimedChannel};
 use crate::audio_formats::AudioFormat;
 use crate::backend_client::{BackendClient, ChannelInfo, MorBackendClientError};
 use crate::metrics::Metrics;
+use crate::stream::constants::PRELOAD_TIME;
 use crate::stream::ffmpeg::EncoderOutput;
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
 use crate::stream::replay_timed_channel::{ReplayTimedChannel, TimedMessage};
@@ -10,7 +11,7 @@ use crate::stream::types::Buffer;
 use crate::stream::{build_ffmpeg_encoder, EncoderError};
 use crate::upgrade_weak;
 use actix_rt::task::JoinHandle;
-use futures::channel::{mpsc, oneshot};
+use futures::channel::oneshot;
 use futures::{stream, SinkExt, StreamExt};
 use slog::{info, Logger};
 use std::collections::hash_map::Entry;
@@ -36,7 +37,7 @@ impl TimedMessage for StreamMessage {
 }
 
 #[derive(thiserror::Error, Debug)]
-pub(crate) enum GetFormatError {
+pub(crate) enum GetOutputError {
     #[error(transparent)]
     ChannelError(#[from] ChannelError),
     #[error(transparent)]
@@ -60,16 +61,14 @@ pub(crate) enum StopReason {
 pub(crate) struct Stream {
     // Dependencies
     logger: Logger,
-    metrics: Metrics,
     streams_registry: Arc<StreamsRegistry>,
+    outputs: StreamOutputs,
     // Static state
     channel_id: usize,
-    stream_messages_channel: Arc<ReplayTimedChannel<StreamMessage>>,
     channel_info: ChannelInfo,
     // Dynamic state
     restart_sender: Arc<Mutex<Option<oneshot::Sender<()>>>>,
     track_title: Arc<Mutex<String>>,
-    encoders_map: Arc<Mutex<HashMap<AudioFormat, Arc<ReplayTimedChannel<StreamMessage>>>>>,
     player_loop_handle: JoinHandle<()>,
 }
 
@@ -83,14 +82,10 @@ impl Stream {
     ) -> Result<Self, StreamCreateError> {
         let stream_messages_channel = Arc::new(ReplayTimedChannel::new(
             TimedChannel::new(Duration::from_secs(5), 0),
-            Duration::from_secs_f32(2.5),
+            PRELOAD_TIME,
         ));
         let restart_sender = Arc::new(Mutex::new(None));
         let track_title = Arc::new(Mutex::new(String::default()));
-        let encoders_map = Arc::new(Mutex::new(HashMap::<
-            AudioFormat,
-            Arc<ReplayTimedChannel<StreamMessage>>,
-        >::new()));
 
         let channel_info = match backend_client.get_channel_info(&channel_id, None).await {
             Ok(channel_info) => channel_info,
@@ -149,86 +144,23 @@ impl Stream {
             }
         });
 
-        Ok(Self {
-            channel_id: *channel_id,
-            channel_info,
+        let outputs = StreamOutputs {
             stream_messages_channel,
             logger: logger.clone(),
             metrics: metrics.clone(),
+            outputs: Arc::new(Mutex::default()),
+        };
+
+        Ok(Self {
+            channel_id: *channel_id,
+            channel_info,
+            logger: logger.clone(),
             streams_registry,
             track_title,
             restart_sender,
-            encoders_map,
             player_loop_handle,
+            outputs,
         })
-    }
-
-    pub(crate) fn get_format(
-        &self,
-        format: &AudioFormat,
-    ) -> Result<impl stream::Stream<Item = StreamMessage>, GetFormatError> {
-        match self.encoders_map.lock().unwrap().entry(format.clone()) {
-            Entry::Occupied(entry) => Ok(entry.get().create_receiver()?),
-            Entry::Vacant(entry) => {
-                let (encoder_sink, encoder_src) = self.make_encoder(format)?;
-
-                actix_rt::spawn({
-                    let mut receiver = self.stream_messages_channel.create_receiver()?;
-                    let mut encoder_sink = encoder_sink;
-
-                    async move {
-                        while let Some(msg) = receiver.next().await {
-                            if let StreamMessage::Buffer(bytes) = msg {
-                                if encoder_sink.send(bytes).await.is_err() {
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                });
-
-                let encoded_messages_channel = Arc::new(ReplayTimedChannel::new(
-                    TimedChannel::new(Duration::from_secs(10), 32),
-                    Duration::from_secs_f32(2.5),
-                ));
-                let receiver = encoded_messages_channel.create_receiver()?;
-
-                actix_rt::spawn({
-                    let mut encoder_src = encoder_src;
-
-                    let encoded_messages_channel = encoded_messages_channel.clone();
-                    let encoders_map = self.encoders_map.clone();
-                    let format = format.clone();
-
-                    async move {
-                        while let Some(output) = encoder_src.next().await {
-                            match output {
-                                EncoderOutput::Buffer(buffer) => {
-                                    if encoded_messages_channel
-                                        .send_all(StreamMessage::Buffer(buffer))
-                                        .await
-                                        .is_err()
-                                    {
-                                        // All consumers has been disconnected.
-                                        break;
-                                    }
-                                }
-                                EncoderOutput::EOF => {
-                                    // Received end of output
-                                    break;
-                                }
-                            }
-                        }
-
-                        encoders_map.lock().unwrap().remove(&format);
-                    }
-                });
-
-                entry.insert(encoded_messages_channel);
-
-                Ok(receiver)
-            }
-        }
     }
 
     pub(crate) fn stop(&self, reason: StopReason) {
@@ -257,10 +189,84 @@ impl Stream {
         }
     }
 
-    fn make_encoder(
+    pub(crate) fn get_output(
         &self,
         format: &AudioFormat,
-    ) -> Result<(mpsc::Sender<Buffer>, mpsc::Receiver<EncoderOutput>), EncoderError> {
-        build_ffmpeg_encoder(format, &self.logger, &self.metrics)
+    ) -> Result<impl stream::Stream<Item = StreamMessage>, GetOutputError> {
+        self.outputs.get_output(format)
+    }
+}
+
+struct StreamOutputs {
+    stream_messages_channel: Arc<ReplayTimedChannel<StreamMessage>>,
+    metrics: Metrics,
+    logger: Logger,
+    outputs: Arc<Mutex<HashMap<AudioFormat, Arc<ReplayTimedChannel<StreamMessage>>>>>,
+}
+
+impl StreamOutputs {
+    pub(crate) fn get_output(
+        &self,
+        format: &AudioFormat,
+    ) -> Result<impl stream::Stream<Item = StreamMessage>, GetOutputError> {
+        match self.outputs.lock().unwrap().entry(format.clone()) {
+            Entry::Occupied(entry) => Ok(entry.get().create_receiver()?),
+            Entry::Vacant(entry) => {
+                let (mut encoder_sender, mut encoder_receiver) =
+                    build_ffmpeg_encoder(format, &self.logger, &self.metrics)?;
+                let mut receiver = self.stream_messages_channel.create_receiver()?;
+
+                actix_rt::spawn({
+                    async move {
+                        while let Some(msg) = receiver.next().await {
+                            if let StreamMessage::Buffer(bytes) = msg {
+                                if encoder_sender.send(bytes).await.is_err() {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                let encoded_messages_channel = Arc::new(ReplayTimedChannel::new(
+                    TimedChannel::new(Duration::from_secs(10), 32),
+                    PRELOAD_TIME,
+                ));
+                let receiver = encoded_messages_channel.create_receiver()?;
+
+                actix_rt::spawn({
+                    let encoded_messages_channel = encoded_messages_channel.clone();
+                    let outputs = self.outputs.clone();
+                    let format = format.clone();
+
+                    async move {
+                        while let Some(output) = encoder_receiver.next().await {
+                            match output {
+                                EncoderOutput::Buffer(buffer) => {
+                                    if encoded_messages_channel
+                                        .send_all(StreamMessage::Buffer(buffer))
+                                        .await
+                                        .is_err()
+                                    {
+                                        // All consumers has been disconnected.
+                                        break;
+                                    }
+                                }
+                                EncoderOutput::EOF => {
+                                    // Received end of output
+                                    break;
+                                }
+                            }
+                        }
+
+                        outputs.lock().unwrap().remove(&format);
+                    }
+                });
+
+                entry.insert(encoded_messages_channel);
+
+                Ok(receiver)
+            }
+        }
     }
 }

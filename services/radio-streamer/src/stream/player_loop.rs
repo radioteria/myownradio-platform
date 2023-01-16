@@ -100,10 +100,6 @@ pub(crate) fn make_player_loop(
                     .send(PlayerLoopMessage::TrackTitle(title))
                     .await
                 {
-                    debug!(
-                        logger,
-                        "Stopping player loop: channel closed on updating title"
-                    );
                     return;
                 }
 
@@ -113,10 +109,6 @@ pub(crate) fn make_player_loop(
                     .send(PlayerLoopMessage::RestartSender(restart_tx))
                     .await
                 {
-                    debug!(
-                        logger,
-                        "Stopping player loop: channel closed on updating restart sender"
-                    );
                     return;
                 }
 
@@ -156,10 +148,6 @@ pub(crate) fn make_player_loop(
                         )))
                         .await
                     {
-                        debug!(
-                            logger,
-                            "Stopping player loop: channel closed on sending buffer"
-                        );
                         return;
                     }
                 }

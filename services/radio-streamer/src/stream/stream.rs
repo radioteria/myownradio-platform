@@ -7,7 +7,7 @@ use crate::stream::constants::PRELOAD_TIME;
 use crate::stream::ffmpeg::EncoderOutput;
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
 use crate::stream::replay_timed_channel::{ReplayTimedChannel, TimedMessage};
-use crate::stream::types::Buffer;
+use crate::stream::types::{Buffer, TrackTitle};
 use crate::stream::{build_ffmpeg_encoder, EncoderError};
 use crate::upgrade_weak;
 use actix_rt::task::JoinHandle;
@@ -22,16 +22,14 @@ use std::time::Duration;
 #[derive(Debug, Clone)]
 pub(crate) enum StreamMessage {
     Buffer(Buffer),
-    TrackTitle(String),
+    TrackTitle(TrackTitle),
 }
-
-const ZERO_DURATION: Duration = Duration::from_secs(0);
 
 impl TimedMessage for StreamMessage {
     fn pts(&self) -> &Duration {
         match self {
-            StreamMessage::Buffer(b) => b.dts_hint(),
-            StreamMessage::TrackTitle(_) => &ZERO_DURATION,
+            StreamMessage::Buffer(b) => b.pts_hint(),
+            StreamMessage::TrackTitle(t) => t.pts_hint(),
         }
     }
 }
@@ -116,7 +114,7 @@ impl Stream {
                                 .await
                         }
                         PlayerLoopMessage::TrackTitle(title) => {
-                            *track_title.lock().unwrap() = title.clone();
+                            *track_title.lock().unwrap() = title.title().to_string();
                             stream_messages_channel
                                 .send_all(StreamMessage::TrackTitle(title))
                                 .await

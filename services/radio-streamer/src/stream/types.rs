@@ -1,4 +1,6 @@
+use crate::stream::Stream;
 use actix_web::web::Bytes;
+use std::ops::Deref;
 use std::time::Duration;
 
 #[derive(Clone, Debug)]
@@ -35,5 +37,50 @@ impl Buffer {
 
     pub(crate) fn into_bytes(self) -> Bytes {
         self.bytes
+    }
+}
+
+impl Deref for Buffer {
+    type Target = Bytes;
+
+    fn deref(&self) -> &Self::Target {
+        &self.bytes
+    }
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct TrackTitle {
+    title: String,
+    pts_hint: Duration,
+    dts_hint: Duration,
+}
+
+impl TrackTitle {
+    pub(crate) fn new(title: String, pts_hint: Duration, dts_hint: Duration) -> Self {
+        TrackTitle {
+            title,
+            pts_hint,
+            dts_hint,
+        }
+    }
+
+    pub(crate) fn title(&self) -> &str {
+        &self.title
+    }
+
+    pub(crate) fn pts_hint(&self) -> &Duration {
+        &self.pts_hint
+    }
+
+    pub(crate) fn dts_hint(&self) -> &Duration {
+        &self.dts_hint
+    }
+}
+
+impl Deref for TrackTitle {
+    type Target = String;
+
+    fn deref(&self) -> &Self::Target {
+        &self.title
     }
 }

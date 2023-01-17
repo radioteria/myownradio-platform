@@ -123,7 +123,7 @@ pub(crate) async fn get_channel_audio_stream_v2(
                         debug!(logger, "Received track title"; "title" => ?title);
 
                         if let Some(muxer) = icy_muxer.upgrade() {
-                            muxer.send_track_title(title);
+                            muxer.send_track_title(title.title().to_string());
                         }
                     }
                 }

@@ -3,7 +3,7 @@ use crate::helpers::io::sleep;
 use crate::metrics::Metrics;
 use crate::stream::constants::PRELOAD_TIME;
 use crate::stream::ffmpeg::DecoderError;
-use crate::stream::types::Buffer;
+use crate::stream::types::{Buffer, TrackTitle};
 use crate::stream::{build_ffmpeg_decoder, DecoderOutput};
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
@@ -16,7 +16,7 @@ const ALLOWED_DELAY: Duration = Duration::from_secs(1);
 #[derive(Debug)]
 pub(crate) enum PlayerLoopMessage {
     DecodedBuffer(Buffer),
-    TrackTitle(String),
+    TrackTitle(TrackTitle),
     RestartSender(oneshot::Sender<()>),
 }
 
@@ -79,7 +79,9 @@ async fn run_loop(
         let mut track_decoder = build_ffmpeg_decoder(&url, &offset, &logger, &metrics)?;
 
         player_loop_msg_sender
-            .send(PlayerLoopMessage::TrackTitle(title))
+            .send(PlayerLoopMessage::TrackTitle(TrackTitle::new(
+                title, dts_offset, dts_offset,
+            )))
             .await?;
 
         let (restart_tx, mut restart_rx) = oneshot::channel::<()>();

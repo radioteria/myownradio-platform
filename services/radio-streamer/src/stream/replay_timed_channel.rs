@@ -59,8 +59,8 @@ impl<T: TimedMessage + Clone + Sync + Send + 'static> ReplayTimedChannel<T> {
     ///
     /// A `Result` that is either `Ok(Stream<Item = T>)` if a receiver was successfully created,
     /// or `Err(ChannelError)` if there was an error creating a receiver for the inner channel.
-    pub(crate) fn create_receiver(&self) -> Result<impl Stream<Item = T>, ChannelError> {
-        let items_receiver = self.inner.create_receiver()?;
+    pub(crate) fn subscribe(&self) -> Result<impl Stream<Item = T>, ChannelError> {
+        let items_receiver = self.inner.subscribe()?;
 
         let replay_buffer = self.replay_buffer.lock().unwrap().clone();
         let replayed_items = stream::iter(replay_buffer);

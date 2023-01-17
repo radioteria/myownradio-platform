@@ -13,7 +13,7 @@ use crate::upgrade_weak;
 use actix_rt::task::JoinHandle;
 use futures::channel::oneshot;
 use futures::{stream, SinkExt, StreamExt};
-use slog::{error, info, Logger};
+use slog::{error, info, warn, Logger};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -224,15 +224,16 @@ impl StreamOutputs {
         format: &AudioFormat,
     ) -> Result<impl stream::Stream<Item = StreamMessage>, GetOutputError> {
         match self.outputs.lock().unwrap().entry(format.clone()) {
-            Entry::Occupied(entry) => Ok(entry.get().create_receiver()?),
+            Entry::Occupied(entry) => Ok(entry.get().subscribe()?),
             Entry::Vacant(entry) => {
                 let (mut encoder_sender, mut encoder_receiver) =
                     build_ffmpeg_encoder(format, &self.logger, &self.metrics)?;
-                let mut receiver = self.stream_messages_channel.create_receiver()?;
 
                 actix_rt::spawn({
+                    let mut stream_messages = self.stream_messages_channel.subscribe()?;
+
                     async move {
-                        while let Some(msg) = receiver.next().await {
+                        while let Some(msg) = stream_messages.next().await {
                             if let StreamMessage::Buffer(bytes) = msg {
                                 if encoder_sender.send(bytes).await.is_err() {
                                     break;
@@ -246,11 +247,12 @@ impl StreamOutputs {
                     TimedChannel::new(Duration::from_secs(10), 32),
                     PRELOAD_TIME,
                 ));
-                let receiver = encoded_messages_channel.create_receiver()?;
 
                 actix_rt::spawn({
                     let encoded_messages_channel = encoded_messages_channel.clone();
+
                     let outputs = self.outputs.clone();
+                    let logger = self.logger.clone();
                     let format = format.clone();
 
                     async move {
@@ -267,11 +269,14 @@ impl StreamOutputs {
                                     }
                                 }
                                 EncoderOutput::EOF => {
-                                    // Received end of output.
+                                    warn!(logger, "Encoder stream finished");
                                     break;
                                 }
-                                EncoderOutput::Error(_exit_code) => {
-                                    // Unexpectedly terminated encoder process.
+                                EncoderOutput::Error(exit_code) => {
+                                    error!(
+                                        logger,
+                                        "Encoder exited with non-zero exit code: {}", exit_code
+                                    );
                                     break;
                                 }
                             }
@@ -281,9 +286,11 @@ impl StreamOutputs {
                     }
                 });
 
+                let encoded_messages = encoded_messages_channel.subscribe()?;
+
                 entry.insert(encoded_messages_channel);
 
-                Ok(receiver)
+                Ok(encoded_messages)
             }
         }
     }

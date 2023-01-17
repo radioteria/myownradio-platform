@@ -1,6 +1,6 @@
 use actix_rt::task::JoinHandle;
 use futures::channel::mpsc;
-use futures::SinkExt;
+use futures::{SinkExt, Stream};
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
@@ -92,13 +92,13 @@ impl<T: Clone + Send + Sync + 'static> TimedChannel<T> {
     /// ```
     /// use std::time::Duration;
     /// let channel = TimedChannel::new(Duration::from_secs(60), 10);
-    /// let receiver = channel.create_receiver().unwrap();
+    /// let receiver = channel.subscribe().unwrap();
     ///
     /// ```
     ///
     /// # Errors
     /// If the channel is closed, it will return an error of `ChannelError::ChannelClosed`
-    pub(crate) fn create_receiver(&self) -> Result<mpsc::Receiver<T>, ChannelError> {
+    pub(crate) fn subscribe(&self) -> Result<impl Stream<Item = T>, ChannelError> {
         if self.is_closed() {
             return Err(ChannelError::ChannelClosed);
         }
@@ -153,7 +153,7 @@ mod tests {
     #[actix_rt::test]
     async fn create_single_receiver() {
         let channel = TimedChannel::new(Duration::from_secs(10), 1);
-        let mut rx = channel.create_receiver().unwrap();
+        let mut rx = channel.subscribe().unwrap();
 
         let res = channel.send_all("foo").await;
 
@@ -165,9 +165,9 @@ mod tests {
     #[actix_rt::test]
     async fn create_multiple_receivers() {
         let channel = TimedChannel::new(Duration::from_secs(10), 1);
-        let mut rx1 = channel.create_receiver().unwrap();
-        let mut rx2 = channel.create_receiver().unwrap();
-        let mut rx3 = channel.create_receiver().unwrap();
+        let mut rx1 = channel.subscribe().unwrap();
+        let mut rx2 = channel.subscribe().unwrap();
+        let mut rx3 = channel.subscribe().unwrap();
 
         assert!(channel.send_all("foo").await.is_ok());
 
@@ -190,7 +190,7 @@ mod tests {
     #[actix_rt::test]
     async fn channel_closed_after_timeout_2() {
         let channel = TimedChannel::new(Duration::default(), 1);
-        drop(channel.create_receiver().unwrap());
+        drop(channel.subscribe().unwrap());
 
         assert!(channel.send_all("foo").await.is_ok());
 
@@ -202,7 +202,7 @@ mod tests {
     #[actix_rt::test]
     async fn channel_not_closed_after_timeout_without_send() {
         let channel = TimedChannel::new(Duration::default(), 1);
-        drop(channel.create_receiver().unwrap());
+        drop(channel.subscribe().unwrap());
 
         actix_rt::time::sleep(Duration::from_millis(100)).await;
 

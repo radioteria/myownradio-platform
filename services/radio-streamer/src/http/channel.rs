@@ -1,6 +1,6 @@
+use super::utils::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
 use crate::audio_formats::AudioFormats;
 use crate::config::Config;
-use crate::stream::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
 use crate::stream::{StreamCreateError, StreamMessage, StreamsRegistry, StreamsRegistryExt};
 use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};

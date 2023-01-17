@@ -1,14 +1,12 @@
 use super::streams_registry::StreamsRegistry;
-use super::timed_channel::{ChannelError, TimedChannel};
 use crate::audio_formats::AudioFormat;
 use crate::backend_client::{BackendClient, ChannelInfo, MorBackendClientError};
 use crate::metrics::Metrics;
 use crate::stream::constants::PRELOAD_TIME;
-use crate::stream::ffmpeg::EncoderOutput;
-use crate::stream::player_loop::{make_player_loop, PlayerLoopError, PlayerLoopMessage};
-use crate::stream::replay_timed_channel::{ReplayTimedChannel, TimedMessage};
+use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
 use crate::stream::types::{Buffer, TrackTitle};
-use crate::stream::{build_ffmpeg_encoder, EncoderError};
+use crate::stream::util::channels::{ChannelError, ReplayTimedChannel, TimedChannel, TimedMessage};
+use crate::stream::util::ffmpeg::{build_ffmpeg_encoder, EncoderError, EncoderOutput};
 use crate::upgrade_weak;
 use actix_rt::task::JoinHandle;
 use futures::channel::oneshot;

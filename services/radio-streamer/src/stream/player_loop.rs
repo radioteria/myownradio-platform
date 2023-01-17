@@ -10,7 +10,9 @@ use scopeguard::defer;
 use slog::{debug, error, info, trace, Logger};
 use std::time::{Duration, SystemTime};
 
-const ALLOWED_DELAY: Duration = Duration::from_secs(1);
+/// When the audio position is within this threshold from the start
+/// of the current or next track, it is considered at zero.
+const ZERO_OFFSET_THRESHOLD: Duration = Duration::from_secs(1);
 
 #[derive(Debug)]
 pub(crate) enum PlayerLoopMessage {
@@ -68,9 +70,9 @@ async fn run_loop(
             let left_offset = current_track.offset;
             let right_offset = current_track.duration - current_track.offset;
 
-            if right_offset < ALLOWED_DELAY {
+            if right_offset < ZERO_OFFSET_THRESHOLD {
                 (next_track.title, next_track.url, Duration::default())
-            } else if left_offset < ALLOWED_DELAY {
+            } else if left_offset < ZERO_OFFSET_THRESHOLD {
                 (current_track.title, current_track.url, Duration::default())
             } else {
                 (current_track.title, current_track.url, left_offset)

@@ -45,6 +45,8 @@ pub(crate) enum DecoderError {
     StdoutUnavailable,
     #[error("Unable to access stderr")]
     StderrUnavailable,
+    #[error("Process exited with non-zero exit code: {0}")]
+    ExitCode(i32),
 }
 
 pub(crate) enum DecoderOutput {
@@ -193,11 +195,14 @@ pub(crate) enum EncoderError {
     StdinUnavailable,
     #[error("Unable to access stderr")]
     StderrUnavailable,
+    #[error("Process exited with non-zero exit code: {0}")]
+    ExitCode(i32),
 }
 
 pub(crate) enum EncoderOutput {
     Buffer(Buffer),
     EOF,
+    Error(i32),
 }
 
 pub(crate) fn build_ffmpeg_encoder(
@@ -355,6 +360,17 @@ pub(crate) fn build_ffmpeg_encoder(
             drop(stdout);
 
             let _ = output_sender.send(EncoderOutput::EOF).await;
+
+            if let Ok(exit_status) = process.status().await {
+                match exit_status.code() {
+                    Some(exit_code) if exit_code != 0 => {
+                        warn!(logger, "Encoder exited with non-zero exit code"; "exit_code" => exit_code);
+
+                        let _ = output_sender.send(EncoderOutput::Error(exit_code)).await;
+                    }
+                    _ => (),
+                }
+            }
         }
     });
 

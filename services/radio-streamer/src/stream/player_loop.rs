@@ -91,40 +91,52 @@ async fn run_loop(
             .await?;
 
         let mut previous_packet_dts = Duration::from_secs(0);
-        while let Some(DecoderOutput::Buffer(buffer)) = track_decoder.next().await {
-            let buffer_dts = *buffer.dts_hint();
-            let buffer_dur = buffer_dts - previous_packet_dts;
+        while let Some(msg) = track_decoder.next().await {
+            match msg {
+                DecoderOutput::Buffer(buffer) => {
+                    let buffer_dts = *buffer.dts_hint();
+                    let buffer_dur = buffer_dts - previous_packet_dts;
 
-            dts_offset += buffer_dur;
-            previous_packet_dts = buffer_dts;
+                    dts_offset += buffer_dur;
+                    previous_packet_dts = buffer_dts;
 
-            let sleep_dur = (stream_started_at + dts_offset)
-                .duration_since(SystemTime::now())
-                .ok();
+                    let sleep_dur = (stream_started_at + dts_offset)
+                        .duration_since(SystemTime::now())
+                        .ok();
 
-            if let Some(duration) = sleep_dur {
-                if let Err(_) = sleep(&duration, &mut restart_rx).await {
-                    debug!(logger, "Sleep cancelled");
+                    if let Some(duration) = sleep_dur {
+                        if let Err(_) = sleep(&duration, &mut restart_rx).await {
+                            debug!(logger, "Sleep cancelled");
+                            break;
+                        }
+                    }
+
+                    if let Ok(Some(())) = restart_rx.try_recv() {
+                        debug!(logger, "Exit current track loop on restart signal");
+                        break;
+                    }
+
+                    if buffer.is_empty() {
+                        break;
+                    }
+
+                    player_loop_msg_sender
+                        .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
+                            buffer.bytes().clone(),
+                            buffer.pts_hint().clone(),
+                            buffer.dts_hint().clone(),
+                        )))
+                        .await?;
+                }
+                DecoderOutput::EOF => {
                     break;
                 }
+                DecoderOutput::Error(exit_code) => {
+                    return Err(PlayerLoopError::DecoderError(DecoderError::ExitCode(
+                        exit_code,
+                    )));
+                }
             }
-
-            if let Ok(Some(())) = restart_rx.try_recv() {
-                debug!(logger, "Exit current track loop on restart signal");
-                break;
-            }
-
-            if buffer.is_empty() {
-                break;
-            }
-
-            player_loop_msg_sender
-                .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
-                    buffer.bytes().clone(),
-                    buffer.pts_hint().clone(),
-                    buffer.dts_hint().clone(),
-                )))
-                .await?;
         }
     }
 }
@@ -155,8 +167,9 @@ pub(crate) fn make_player_loop(
         {
             match error {
                 PlayerLoopError::BackendError(MorBackendClientError::ChannelNotFound) => (),
+                PlayerLoopError::SendError(_) => (),
                 error => {
-                    error!(logger, "Error happened in player loop"; "error" => ?error);
+                    error!(logger, "Error happened on running player loop"; "error" => ?error);
                 }
             }
         }

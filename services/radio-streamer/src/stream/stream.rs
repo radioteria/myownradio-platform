@@ -251,7 +251,11 @@ impl StreamOutputs {
                                     }
                                 }
                                 EncoderOutput::EOF => {
-                                    // Received end of output
+                                    // Received end of output.
+                                    break;
+                                }
+                                EncoderOutput::Error(_exit_code) => {
+                                    // Unexpectedly terminated encoder process.
                                     break;
                                 }
                             }

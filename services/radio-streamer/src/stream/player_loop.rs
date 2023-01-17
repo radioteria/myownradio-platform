@@ -1,13 +1,14 @@
 use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
-use crate::helpers::io::sleep;
 use crate::metrics::Metrics;
 use crate::stream::constants::PRELOAD_TIME;
 use crate::stream::types::{Buffer, TrackTitle};
+use crate::stream::util::channels::TimedMessage;
+use crate::stream::util::clock::MessageSyncClock;
 use crate::stream::util::ffmpeg::{build_ffmpeg_decoder, DecoderError, DecoderOutput};
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use scopeguard::defer;
-use slog::{debug, error, info, trace, Logger};
+use slog::{debug, error, info, Logger};
 use std::time::{Duration, SystemTime};
 
 /// When the audio position is within this threshold from the start
@@ -33,6 +34,12 @@ pub(crate) enum PlayerLoopError {
     SendError(#[from] mpsc::SendError),
 }
 
+impl TimedMessage for &Buffer {
+    fn pts(&self) -> &Duration {
+        self.pts_hint()
+    }
+}
+
 async fn run_loop(
     channel_id: usize,
     backend_client: BackendClient,
@@ -40,24 +47,17 @@ async fn run_loop(
     metrics: Metrics,
     mut player_loop_msg_sender: mpsc::Sender<PlayerLoopMessage>,
 ) -> Result<(), PlayerLoopError> {
+    let mut sync_clock = MessageSyncClock::init(SystemTime::now() - PRELOAD_TIME);
+
     info!(logger, "Starting player loop"; "channel_id" => &channel_id);
     metrics.inc_active_player_loops();
 
     defer!(info!(logger, "Stopping player loop"; "channel_id" => &channel_id););
     defer!(metrics.dec_active_player_loops());
 
-    let stream_started_at = SystemTime::now() - PRELOAD_TIME;
-
-    trace!(logger, "Stream initial clock"; "stream_started_at" => ?stream_started_at);
-
-    let mut dts_offset = Duration::from_secs(0);
-
     loop {
-        let elapsed_time = stream_started_at + dts_offset;
-        trace!(logger, "Elapsed stream time"; "time" => ?elapsed_time);
-
         let now_playing = backend_client
-            .get_now_playing(&channel_id, &elapsed_time)
+            .get_now_playing(&channel_id, &sync_clock.elapsed())
             .await?;
 
         let NowPlaying {
@@ -83,7 +83,9 @@ async fn run_loop(
 
         player_loop_msg_sender
             .send(PlayerLoopMessage::TrackTitle(TrackTitle::new(
-                title, dts_offset, dts_offset,
+                title,
+                *sync_clock.position(),
+                *sync_clock.position(),
             )))
             .await?;
 
@@ -93,26 +95,10 @@ async fn run_loop(
             .send(PlayerLoopMessage::RestartSender(restart_tx))
             .await?;
 
-        let mut previous_packet_dts = Duration::from_secs(0);
         while let Some(msg) = track_decoder.next().await {
             match msg {
                 DecoderOutput::Buffer(buffer) => {
-                    let buffer_dts = *buffer.dts_hint();
-                    let buffer_dur = buffer_dts - previous_packet_dts;
-
-                    dts_offset += buffer_dur;
-                    previous_packet_dts = buffer_dts;
-
-                    let sleep_dur = (stream_started_at + dts_offset)
-                        .duration_since(SystemTime::now())
-                        .ok();
-
-                    if let Some(duration) = sleep_dur {
-                        if let Err(_) = sleep(&duration, &mut restart_rx).await {
-                            debug!(logger, "Sleep cancelled");
-                            break;
-                        }
-                    }
+                    sync_clock.wait(&buffer).await;
 
                     if let Ok(Some(())) = restart_rx.try_recv() {
                         debug!(logger, "Exit current track loop on restart signal");

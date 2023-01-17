@@ -2,7 +2,7 @@ use super::streams_registry::StreamsRegistry;
 use crate::audio_formats::AudioFormat;
 use crate::backend_client::{BackendClient, ChannelInfo, MorBackendClientError};
 use crate::metrics::Metrics;
-use crate::stream::constants::PRELOAD_TIME;
+use crate::stream::constants::REALTIME_STARTUP_BUFFER_TIME;
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
 use crate::stream::types::{Buffer, TrackTitle};
 use crate::stream::util::channels::{ChannelError, ReplayTimedChannel, TimedChannel, TimedMessage};
@@ -79,7 +79,7 @@ impl Stream {
     ) -> Result<Self, StreamCreateError> {
         let stream_messages_channel = Arc::new(ReplayTimedChannel::new(
             TimedChannel::new(Duration::from_secs(5), 0),
-            PRELOAD_TIME,
+            REALTIME_STARTUP_BUFFER_TIME,
         ));
         let restart_sender = Arc::new(Mutex::new(None));
         let track_title = Arc::new(Mutex::new(String::default()));
@@ -243,7 +243,7 @@ impl StreamOutputs {
 
                 let encoded_messages_channel = Arc::new(ReplayTimedChannel::new(
                     TimedChannel::new(Duration::from_secs(10), 32),
-                    PRELOAD_TIME,
+                    REALTIME_STARTUP_BUFFER_TIME,
                 ));
 
                 actix_rt::spawn({

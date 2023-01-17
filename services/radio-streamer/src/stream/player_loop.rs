@@ -1,6 +1,6 @@
 use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
 use crate::metrics::Metrics;
-use crate::stream::constants::PRELOAD_TIME;
+use crate::stream::constants::REALTIME_STARTUP_BUFFER_TIME;
 use crate::stream::types::{Buffer, TrackTitle};
 use crate::stream::util::channels::TimedMessage;
 use crate::stream::util::clock::MessageSyncClock;
@@ -47,7 +47,7 @@ async fn run_loop(
     metrics: Metrics,
     mut player_loop_msg_sender: mpsc::Sender<PlayerLoopMessage>,
 ) -> Result<(), PlayerLoopError> {
-    let mut sync_clock = MessageSyncClock::init(SystemTime::now() - PRELOAD_TIME);
+    let mut sync_clock = MessageSyncClock::init(SystemTime::now() - REALTIME_STARTUP_BUFFER_TIME);
 
     info!(logger, "Starting player loop"; "channel_id" => &channel_id);
     metrics.inc_active_player_loops();

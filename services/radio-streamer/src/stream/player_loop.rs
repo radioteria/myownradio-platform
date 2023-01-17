@@ -18,10 +18,12 @@ pub(crate) enum PlayerLoopMessage {
     DecodedBuffer(Buffer),
     TrackTitle(TrackTitle),
     RestartSender(oneshot::Sender<()>),
+    Error(PlayerLoopError),
+    EOF,
 }
 
 #[derive(thiserror::Error, Debug)]
-enum PlayerLoopError {
+pub(crate) enum PlayerLoopError {
     #[error(transparent)]
     BackendError(#[from] MorBackendClientError),
     #[error(transparent)]
@@ -153,24 +155,25 @@ pub(crate) fn make_player_loop(
     let metrics = metrics.clone();
     let backend_client = backend_client.clone();
 
-    let (player_loop_msg_sender, player_loop_msg_receiver) = mpsc::channel(0);
+    let (mut player_loop_msg_sender, player_loop_msg_receiver) = mpsc::channel(0);
 
     actix_rt::spawn(async move {
-        if let Err(error) = run_loop(
+        match run_loop(
             channel_id,
             backend_client,
             logger.clone(),
             metrics,
-            player_loop_msg_sender,
+            player_loop_msg_sender.clone(),
         )
         .await
         {
-            match error {
-                PlayerLoopError::BackendError(MorBackendClientError::ChannelNotFound) => (),
-                PlayerLoopError::SendError(_) => (),
-                error => {
-                    error!(logger, "Error happened on running player loop"; "error" => ?error);
-                }
+            Ok(_) | Err(PlayerLoopError::BackendError(MorBackendClientError::ChannelNotFound)) => {
+                let _ = player_loop_msg_sender.send(PlayerLoopMessage::EOF).await;
+            }
+            Err(error) => {
+                let _ = player_loop_msg_sender
+                    .send(PlayerLoopMessage::Error(error))
+                    .await;
             }
         }
     });

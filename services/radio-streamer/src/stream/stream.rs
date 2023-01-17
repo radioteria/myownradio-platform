@@ -5,7 +5,7 @@ use crate::backend_client::{BackendClient, ChannelInfo, MorBackendClientError};
 use crate::metrics::Metrics;
 use crate::stream::constants::PRELOAD_TIME;
 use crate::stream::ffmpeg::EncoderOutput;
-use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
+use crate::stream::player_loop::{make_player_loop, PlayerLoopError, PlayerLoopMessage};
 use crate::stream::replay_timed_channel::{ReplayTimedChannel, TimedMessage};
 use crate::stream::types::{Buffer, TrackTitle};
 use crate::stream::{build_ffmpeg_encoder, EncoderError};
@@ -13,7 +13,7 @@ use crate::upgrade_weak;
 use actix_rt::task::JoinHandle;
 use futures::channel::oneshot;
 use futures::{stream, SinkExt, StreamExt};
-use slog::{info, Logger};
+use slog::{error, info, Logger};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -54,6 +54,7 @@ pub(crate) enum StreamCreateError {
 pub(crate) enum StopReason {
     NoConsumers,
     PlayerStopped,
+    StreamFinished,
 }
 
 pub(crate) struct Stream {
@@ -99,6 +100,7 @@ impl Stream {
             let channel_id = channel_id.clone();
             let mut player_messages =
                 make_player_loop(&channel_id, backend_client, logger, metrics);
+            let logger = logger.clone();
 
             let restart_sender = restart_sender.clone();
             let stream_messages_channel = stream_messages_channel.clone();
@@ -122,6 +124,20 @@ impl Stream {
                         PlayerLoopMessage::RestartSender(sender) => {
                             restart_sender.lock().unwrap().replace(sender);
                             Ok(())
+                        }
+                        PlayerLoopMessage::Error(error) => {
+                            error!(logger, "Error happened on running player loop"; "error" => ?error);
+
+                            upgrade_weak!(streams_registry)
+                                .get_stream(&channel_id)
+                                .map(|s| s.stop(StopReason::PlayerStopped));
+                            return;
+                        }
+                        PlayerLoopMessage::EOF => {
+                            upgrade_weak!(streams_registry)
+                                .get_stream(&channel_id)
+                                .map(|s| s.stop(StopReason::StreamFinished));
+                            return;
                         }
                     };
 

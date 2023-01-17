@@ -3,7 +3,6 @@ mod constants;
 pub(crate) mod player_loop;
 pub mod stream;
 pub mod streams_registry;
-mod timesync_channel;
 pub(crate) mod types;
 mod util;
 

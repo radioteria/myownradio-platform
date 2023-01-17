@@ -4,24 +4,35 @@ use futures::SinkExt;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
+/// Error type that is used to indicate that the channel is closed
 #[derive(thiserror::Error, Debug)]
 pub(crate) enum ChannelError {
     #[error("Channel closed")]
     ChannelClosed,
 }
 
+/// A struct that is used to send and receive messages of type `T` over a channel
+/// with a specified timeout and buffer size.
 #[derive(Clone)]
 pub(crate) struct TimedChannel<T: Clone> {
-    // Static
+    /// The time until the channel closes
     timeout: Duration,
+    /// The buffer size of the channel
     buffer: usize,
-    // Dynamic
+    /// Represents the state of the channel (open or closed)
     is_closed: Arc<RwLock<bool>>,
+    /// Holds the list of senders for the channel
     txs: Arc<RwLock<Vec<mpsc::Sender<T>>>>,
+    /// Holds the handle of the timer
     timer: Arc<RwLock<Option<JoinHandle<()>>>>,
 }
 
 impl<T: Clone + Send + Sync + 'static> TimedChannel<T> {
+    /// A constructor method that creates a new `TimedChannel` struct.
+    /// It takes in `timeout` and `buffer` as parameters and initializes the fields accordingly.
+    ///
+    /// It also starts the timer for the channel so that it will automatically close
+    /// after the specified duration if there are no receivers are created.
     pub(crate) fn new(timeout: Duration, buffer: usize) -> Self {
         let channel = TimedChannel {
             timeout,
@@ -36,6 +47,19 @@ impl<T: Clone + Send + Sync + 'static> TimedChannel<T> {
         channel
     }
 
+    /// A method that sends a message `t` of type `T` to all the receivers of the channel.
+    /// If the channel is closed, it returns an error.
+    ///
+    /// # Examples
+    /// ```
+    /// use std::time::Duration;
+    /// let channel = TimedChannel::new(Duration::from_secs(60), 10);
+    /// let _ = channel.send_all("Hello World").unwrap();
+    ///
+    /// ```
+    ///
+    /// # Errors
+    /// If the channel is closed, it will return an error of `ChannelError::ChannelClosed`
     pub(crate) async fn send_all(&self, t: T) -> Result<(), ChannelError> {
         use futures::executor::block_on;
 
@@ -62,6 +86,18 @@ impl<T: Clone + Send + Sync + 'static> TimedChannel<T> {
         Ok(())
     }
 
+    /// A method that creates a receiver for the channel. If the channel is closed, it returns an error.
+    ///
+    /// # Examples
+    /// ```
+    /// use std::time::Duration;
+    /// let channel = TimedChannel::new(Duration::from_secs(60), 10);
+    /// let receiver = channel.create_receiver().unwrap();
+    ///
+    /// ```
+    ///
+    /// # Errors
+    /// If the channel is closed, it will return an error of `ChannelError::ChannelClosed`
     pub(crate) fn create_receiver(&self) -> Result<mpsc::Receiver<T>, ChannelError> {
         if self.is_closed() {
             return Err(ChannelError::ChannelClosed);
@@ -76,6 +112,8 @@ impl<T: Clone + Send + Sync + 'static> TimedChannel<T> {
         Ok(rx)
     }
 
+    /// A private method that starts the timer for the channel,
+    /// it ensures that the timer is not already running
     fn start_timer(&self) {
         assert!(self.timer.read().unwrap().is_none());
 
@@ -94,12 +132,14 @@ impl<T: Clone + Send + Sync + 'static> TimedChannel<T> {
         self.timer.write().unwrap().replace(timer_handle);
     }
 
+    /// A private method that stops the timer for the channel
     fn stop_timer(&self) {
         if let Some(handle) = self.timer.write().unwrap().take() {
             handle.abort();
         }
     }
 
+    /// A private method that returns the state of the channel whether it is closed or open.
     fn is_closed(&self) -> bool {
         self.is_closed.read().unwrap().clone()
     }

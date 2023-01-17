@@ -1,6 +1,9 @@
 use std::time::Duration;
 
+/// Audio Sampling Frequency used in the application to process audio buffers
 pub(crate) const AUDIO_SAMPLING_FREQUENCY: usize = 48_000;
+
+/// Number of audio channels used in the application to process audio buffers
 pub(crate) const AUDIO_CHANNELS_NUMBER: usize = 2;
 
 /// Duration of time in which the stream player sends initial

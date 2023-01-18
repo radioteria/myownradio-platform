@@ -147,6 +147,8 @@ impl Stream {
                     }
                 }
 
+                stream_messages_channel.close();
+
                 restart_sender.lock().unwrap().take();
                 track_title.lock().unwrap().clear();
 
@@ -227,11 +229,21 @@ impl StreamOutputs {
                 let (mut encoder_sender, mut encoder_receiver) =
                     build_ffmpeg_encoder(format, &self.logger, &self.metrics)?;
 
+                let encoded_messages_channel = Arc::new(ReplayTimedChannel::new(
+                    TimedChannel::new(Duration::from_secs(10), 32),
+                    REALTIME_STARTUP_BUFFER_TIME,
+                ));
+
                 actix_rt::spawn({
                     let mut stream_messages = self.stream_messages_channel.subscribe()?;
+                    let encoded_messages_channel = encoded_messages_channel.clone();
 
                     async move {
                         while let Some(msg) = stream_messages.next().await {
+                            if encoded_messages_channel.is_closed() {
+                                break;
+                            }
+
                             if let StreamMessage::Buffer(bytes) = msg {
                                 if encoder_sender.send(bytes).await.is_err() {
                                     break;
@@ -240,11 +252,6 @@ impl StreamOutputs {
                         }
                     }
                 });
-
-                let encoded_messages_channel = Arc::new(ReplayTimedChannel::new(
-                    TimedChannel::new(Duration::from_secs(10), 32),
-                    REALTIME_STARTUP_BUFFER_TIME,
-                ));
 
                 actix_rt::spawn({
                     let encoded_messages_channel = encoded_messages_channel.clone();
@@ -279,6 +286,8 @@ impl StreamOutputs {
                                 }
                             }
                         }
+
+                        encoded_messages_channel.close();
 
                         outputs.lock().unwrap().remove(&format);
                     }

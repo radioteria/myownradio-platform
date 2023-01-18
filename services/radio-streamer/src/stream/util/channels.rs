@@ -118,6 +118,18 @@ impl<T: Clone + Send + Sync + 'static> TimedChannel<T> {
         Ok(rx)
     }
 
+    /// Returns the state of the channel whether it is closed or open.
+    pub(crate) fn is_closed(&self) -> bool {
+        self.is_closed.read().unwrap().clone()
+    }
+
+    /// Closes the channel and removes all subscribers
+    pub(crate) fn close(&self) {
+        self.timer.write().unwrap().take();
+        *self.is_closed.write().unwrap() = true;
+        self.txs.write().unwrap().clear();
+    }
+
     /// A private method that starts the timer for the channel,
     /// it ensures that the timer is not already running
     fn start_timer(&self) {
@@ -125,13 +137,13 @@ impl<T: Clone + Send + Sync + 'static> TimedChannel<T> {
 
         let timer_handle = actix_rt::spawn({
             let timeout = self.timeout.clone();
-            let state = self.is_closed.clone();
+            let is_closed = self.is_closed.clone();
             let timer = self.timer.clone();
 
             async move {
                 actix_rt::time::sleep(timeout).await;
                 timer.write().unwrap().take();
-                *state.write().unwrap() = true;
+                *is_closed.write().unwrap() = true;
             }
         });
 
@@ -143,11 +155,6 @@ impl<T: Clone + Send + Sync + 'static> TimedChannel<T> {
         if let Some(handle) = self.timer.write().unwrap().take() {
             handle.abort();
         }
-    }
-
-    /// A private method that returns the state of the channel whether it is closed or open.
-    fn is_closed(&self) -> bool {
-        self.is_closed.read().unwrap().clone()
     }
 }
 
@@ -207,6 +214,17 @@ impl<T: TimedMessage + Clone + Sync + Send + 'static> ReplayTimedChannel<T> {
         let replayed_items = stream::iter(replay_buffer);
 
         Ok(stream::select(replayed_items, items_receiver))
+    }
+
+    /// Returns the state of the inner channel whether it is closed or open.
+    pub(crate) fn is_closed(&self) -> bool {
+        self.inner.is_closed()
+    }
+
+    /// Closes the inner channel
+    pub(crate) fn close(&self) {
+        self.inner.close();
+        self.replay_buffer.lock().unwrap().clear();
     }
 
     /// Appends an item to the replay buffer and removes items that are older than `replay_time`.

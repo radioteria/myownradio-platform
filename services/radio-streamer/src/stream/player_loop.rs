@@ -1,14 +1,17 @@
 use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
 use crate::metrics::Metrics;
-use crate::stream::constants::REALTIME_STARTUP_BUFFER_TIME;
+use crate::stream::constants::{AUDIO_BYTES_PER_SECOND, REALTIME_STARTUP_BUFFER_TIME};
 use crate::stream::types::{Buffer, TrackTitle};
 use crate::stream::util::channels::TimedMessage;
 use crate::stream::util::clock::MessageSyncClock;
-use crate::stream::util::ffmpeg::{build_ffmpeg_decoder, DecoderError, DecoderOutput};
+use crate::stream::util::ffmpeg::{
+    build_ffmpeg_decoder, build_silence_source, DecoderError, DecoderOutput,
+};
+use actix_web::web::Bytes;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use scopeguard::defer;
-use slog::{debug, error, info, Logger};
+use slog::{debug, error, info, warn, Logger};
 use std::time::{Duration, SystemTime};
 
 /// When the audio position is within this threshold from the start
@@ -68,20 +71,35 @@ async fn run_loop(
             ..
         } = now_playing;
 
-        let (title, url, offset) = {
+        let position_before_decoder = *sync_clock.position();
+        let (title, url, offset, duration) = {
             let left_offset = current_track.offset;
             let right_offset = current_track.duration - current_track.offset;
 
             if right_offset < ZERO_OFFSET_THRESHOLD {
-                (next_track.title, next_track.url, Duration::default())
+                (
+                    next_track.title,
+                    next_track.url,
+                    Duration::default(),
+                    next_track.duration,
+                )
             } else if left_offset < ZERO_OFFSET_THRESHOLD {
-                (current_track.title, current_track.url, Duration::default())
+                (
+                    current_track.title,
+                    current_track.url,
+                    Duration::default(),
+                    current_track.duration,
+                )
             } else {
-                (current_track.title, current_track.url, left_offset)
+                (
+                    current_track.title,
+                    current_track.url,
+                    left_offset,
+                    current_track.duration,
+                )
             }
         };
-
-        let mut track_decoder = build_ffmpeg_decoder(&url, &offset, &logger, &metrics)?;
+        let remaining_time = duration - offset;
 
         player_loop_msg_sender
             .send(PlayerLoopMessage::TrackTitle(TrackTitle::new(
@@ -91,11 +109,15 @@ async fn run_loop(
             )))
             .await?;
 
+        let mut track_decoder = build_ffmpeg_decoder(&url, &offset, &logger, &metrics)?;
+
         let (restart_tx, mut restart_rx) = oneshot::channel::<()>();
 
         player_loop_msg_sender
             .send(PlayerLoopMessage::RestartSender(restart_tx))
             .await?;
+
+        sync_clock.reset_next_pts();
 
         while let Some(msg) = track_decoder.next().await {
             match msg {
@@ -125,6 +147,38 @@ async fn run_loop(
                 DecoderOutput::Error(exit_code) => {
                     return Err(PlayerLoopError::DecoderUnexpectedTermination(exit_code));
                 }
+            }
+        }
+
+        let position_after_decoder = *sync_clock.position();
+        let decoded_time = position_after_decoder - position_before_decoder;
+
+        if remaining_time - decoded_time > ZERO_OFFSET_THRESHOLD {
+            let mut silence = build_silence_source(Some(&(remaining_time - decoded_time)));
+
+            warn!(logger, "Track decoder exited to early: sending silence");
+
+            sync_clock.reset_next_pts();
+
+            while let Some(buffer) = silence.next().await {
+                sync_clock.wait(&buffer).await;
+
+                if let Ok(Some(())) = restart_rx.try_recv() {
+                    debug!(logger, "Exit current track loop on restart signal");
+                    break;
+                }
+
+                if buffer.is_empty() {
+                    break;
+                }
+
+                player_loop_msg_sender
+                    .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
+                        buffer.bytes().clone(),
+                        buffer.pts_hint().clone(),
+                        buffer.dts_hint().clone(),
+                    )))
+                    .await?;
             }
         }
     }

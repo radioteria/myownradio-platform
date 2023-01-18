@@ -1,8 +1,11 @@
+extern crate core;
+
 use actix_rt::signal::unix;
 use actix_web::dev::Service;
+use actix_web::web::Data;
 use actix_web::{App, HttpServer};
 use futures_lite::FutureExt;
-use slog::{info, o, Drain, Logger};
+use slog::{error, info, o, Drain, Logger};
 use std::io;
 use std::io::Result;
 use std::sync::{Arc, Mutex};
@@ -20,7 +23,6 @@ use crate::stream::StreamsRegistry;
 mod audio_formats;
 mod backend_client;
 mod config;
-mod helpers;
 mod http;
 mod macros;
 mod metrics;
@@ -102,11 +104,11 @@ async fn main() -> Result<()> {
                         }
                     }
                 })
-                .data(config.clone())
-                .data(backend_client.clone())
-                .data(logger.clone())
-                .data(metrics.clone())
-                .data(streams_registry.clone())
+                .app_data(Data::new(config.clone()))
+                .app_data(Data::new(backend_client.clone()))
+                .app_data(Data::new(logger.clone()))
+                .app_data(Data::new(metrics.clone()))
+                .app_data(Data::new(streams_registry.clone()))
                 .service(get_channel_audio_stream_v2)
                 .service(restart_channel_by_id_v2)
                 .service(get_active_channel_ids)
@@ -116,6 +118,18 @@ async fn main() -> Result<()> {
     .shutdown_timeout(shutdown_timeout)
     .bind(bind_address)?
     .run();
+
+    let server_handle = server.handle();
+
+    actix_rt::spawn({
+        let logger = logger.clone();
+
+        async move {
+            if let Err(error) = server.await {
+                error!(logger, "Error on http server: {:?}", error);
+            }
+        }
+    });
 
     info!(logger, "Application started");
 
@@ -127,7 +141,7 @@ async fn main() -> Result<()> {
 
     info!(logger, "Received signal");
 
-    server.stop(true).await;
+    server_handle.stop(true).await;
 
     info!(logger, "Server stopped");
 

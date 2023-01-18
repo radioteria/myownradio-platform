@@ -1,9 +1,9 @@
+use super::process::{read_from_stdout, write_to_stdin};
 use crate::audio_formats::AudioFormat;
-use crate::helpers::io::{read_from_stdout, write_to_stdin};
-use crate::helpers::system::which;
 use crate::metrics::Metrics;
 use crate::stream::constants::{AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY};
 use crate::stream::types::Buffer;
+use crate::stream::util::process::which;
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
 use futures::channel::{mpsc, oneshot};

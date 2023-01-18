@@ -1,22 +1,22 @@
 [package]
 name = "radio-streamer"
-version = "1.0.0"
+version = "1.1.0"
 authors = ["Roman Lakhtadyr <roman.lakhtadyr@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-actix-rt = "2.1.0"
-awc = "3.0.0-beta.3"
-serde_json = "1.0.60"
-slog-json = "2.3.0"
-slog-term = "2.8.0"
+actix-rt = "2.7.0"
+awc = "3.0.1"
+serde_json = "1.0.91"
+slog-json = "2.6.1"
+slog-term = "2.9.0"
 envy = "0.4.2"
-futures = "0.3.13"
-futures-lite = "1.11.3"
-async-process = "1.0.2"
-bytebuffer = "0.2.1"
+futures = "0.3.25"
+futures-lite = "1.12.0"
+async-process = "1.6.0"
+bytebuffer = "2.0.1"
 serde_millis = "0.1.1"
-async-broadcast = "0.3.3"
+async-broadcast = "0.5.0"
 scopeguard = "1.1.0"
 thiserror = "1.0.38"
 async-trait = "0.1.60"
@@ -28,15 +28,15 @@ version = "2.7.0"
 features = ["max_level_debug", "release_max_level_debug"]
 
 [dependencies.actix-web]
-version = "4.0.0-beta.4"
+version = "4.2.1"
 features = ["rustls"]
 
 [dependencies.uuid]
-version = "0.8.2"
+version = "1.2.2"
 features = ["v4"]
 
 [dependencies.prometheus]
-version = "0.12.0"
+version = "0.13.3"
 features = ["process"]
 
 [dependencies.serde]

@@ -45,8 +45,6 @@ pub(crate) enum DecoderError {
     StdoutUnavailable,
     #[error("Unable to access stderr")]
     StderrUnavailable,
-    #[error("Process exited with non-zero exit code: {0}")]
-    ExitCode(i32),
 }
 
 pub(crate) enum DecoderOutput {
@@ -195,8 +193,6 @@ pub(crate) enum EncoderError {
     StdinUnavailable,
     #[error("Unable to access stderr")]
     StderrUnavailable,
-    #[error("Process exited with non-zero exit code: {0}")]
-    ExitCode(i32),
 }
 
 pub(crate) enum EncoderOutput {

@@ -32,6 +32,8 @@ pub(crate) enum PlayerLoopError {
     DecoderError(#[from] DecoderError),
     #[error(transparent)]
     SendError(#[from] mpsc::SendError),
+    #[error("The decoder stopped unexpectedly with an exit code = {0}")]
+    DecoderUnexpectedTermination(i32),
 }
 
 impl TimedMessage for &Buffer {
@@ -121,9 +123,7 @@ async fn run_loop(
                     break;
                 }
                 DecoderOutput::Error(exit_code) => {
-                    return Err(PlayerLoopError::DecoderError(DecoderError::ExitCode(
-                        exit_code,
-                    )));
+                    return Err(PlayerLoopError::DecoderUnexpectedTermination(exit_code));
                 }
             }
         }

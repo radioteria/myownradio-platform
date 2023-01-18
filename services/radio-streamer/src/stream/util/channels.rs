@@ -2,7 +2,7 @@ use actix_rt::task::JoinHandle;
 use futures::channel::mpsc;
 use futures::{stream, SinkExt, Stream, StreamExt};
 use std::sync::{Arc, Mutex, RwLock};
-use std::time::{Duration, SystemTime};
+use std::time::Duration;
 
 /// Trait for items that can be sent through a `ReplayTimedChannel`.
 /// Implementors must provide a method to retrieve a timestamp as a `Duration`.
@@ -68,7 +68,6 @@ impl<T: Clone + Send + Sync + 'static> TimedChannel<T> {
     /// If the channel is closed, it will return an error of `ChannelError::ChannelClosed`
     pub(crate) async fn send_all(&self, t: T) -> Result<(), ChannelError> {
         use futures::executor::block_on;
-        use futures::SinkExt;
 
         if self.is_closed() {
             return Err(ChannelError::ChannelClosed);
@@ -222,38 +221,6 @@ impl<T: TimedMessage + Clone + Sync + Send + 'static> ReplayTimedChannel<T> {
         guard.retain(|m| m.pts().as_secs_f32() >= threshold_millis);
         guard.push(t);
     }
-}
-
-pub(crate) fn timesync<M: TimedMessage + 'static>(
-    offset: SystemTime,
-) -> (mpsc::Sender<M>, mpsc::Receiver<M>) {
-    let (input_sender, mut input_receiver) = mpsc::channel::<M>(0);
-    let (mut output_sender, output_receiver) = mpsc::channel::<M>(0);
-
-    actix_rt::spawn({
-        let mut pts_offset = Duration::default();
-
-        async move {
-            let mut previous_pts = Duration::default();
-            while let Some(msg) = input_receiver.next().await {
-                let pts = *msg.pts();
-                pts_offset += pts - previous_pts;
-                previous_pts = pts;
-
-                let sleep_dur = (offset + pts_offset).duration_since(SystemTime::now()).ok();
-
-                if let Some(duration) = sleep_dur {
-                    actix_rt::time::sleep(duration).await;
-                }
-
-                if let Err(_) = output_sender.send(msg).await {
-                    break;
-                }
-            }
-        }
-    });
-
-    (input_sender, output_receiver)
 }
 
 pub(crate) async fn pipe<T>(

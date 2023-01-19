@@ -7,6 +7,7 @@ use crate::stream::util::clock::MessageSyncClock;
 use crate::stream::util::ffmpeg::{
     build_ffmpeg_decoder, build_silence_source, DecoderError, DecoderOutput,
 };
+use crate::stream::util::time::subtract_abs;
 use actix_web::web::Bytes;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
@@ -151,16 +152,21 @@ async fn run_loop(
         }
 
         let position_after_decoder = *sync_clock.position();
-        let decoded_time = position_after_decoder - position_before_decoder;
+        let decoded_time = subtract_abs(position_after_decoder, position_before_decoder);
 
-        if remaining_time - decoded_time > ZERO_OFFSET_THRESHOLD {
-            let mut silence = build_silence_source(Some(&(remaining_time - decoded_time)));
+        let diff = subtract_abs(remaining_time, decoded_time);
+        if diff > ZERO_OFFSET_THRESHOLD {
+            // @todo Get the reason why the track decoder exited early.
+            warn!(
+                logger,
+                "Track decoder exited early: filling time gap with silence"
+            );
 
-            warn!(logger, "Track decoder exited to early: sending silence");
+            let mut silence_stream = build_silence_source(Some(&diff));
 
             sync_clock.reset_next_pts();
 
-            while let Some(buffer) = silence.next().await {
+            while let Some(buffer) = silence_stream.next().await {
                 sync_clock.wait(&buffer).await;
 
                 if let Ok(Some(())) = restart_rx.try_recv() {

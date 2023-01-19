@@ -1,4 +1,5 @@
 use super::channels::TimedMessage;
+use crate::stream::util::time::subtract_abs;
 use std::time::{Duration, SystemTime};
 
 /// A struct for syncing the timing of messages being sent.
@@ -78,7 +79,7 @@ impl MessageSyncClock {
     /// ```
     pub(crate) async fn wait<'m>(&mut self, timed_msg: impl TimedMessage + 'm) {
         let msg_pts = *timed_msg.pts();
-        self.position += msg_pts - self.previous_pts;
+        self.position += subtract_abs(msg_pts, self.previous_pts);
         self.previous_pts = msg_pts;
 
         let sleep_dur = self.elapsed().duration_since(SystemTime::now()).ok();

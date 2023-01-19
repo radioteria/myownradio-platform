@@ -61,7 +61,7 @@ async fn run_loop(
     defer!(info!(logger, "Stopping player loop"; "channel_id" => &channel_id););
     defer!(metrics.dec_active_player_loops());
 
-    loop {
+    'player: loop {
         let now_playing = backend_client
             .get_now_playing(&channel_id, &sync_clock.elapsed())
             .await?;
@@ -126,8 +126,8 @@ async fn run_loop(
                     sync_clock.wait(&buffer).await;
 
                     if let Ok(Some(())) = restart_rx.try_recv() {
-                        debug!(logger, "Exit current track loop on restart signal");
-                        break;
+                        debug!(logger, "Aborting current track playback on restart signal");
+                        continue 'player;
                     }
 
                     if buffer.is_empty() {

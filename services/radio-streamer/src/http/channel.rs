@@ -137,6 +137,7 @@ pub(crate) async fn get_channel_audio_stream_v2(
         let mut response = HttpResponse::Ok();
 
         response.content_type(format.content_type).force_close();
+        response.insert_header(("Accept-Ranges", "none"));
 
         if is_icy_enabled {
             response

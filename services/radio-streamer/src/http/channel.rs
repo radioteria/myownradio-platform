@@ -57,10 +57,12 @@ pub(crate) async fn get_channel_audio_stream_v2(
 ) -> impl Responder {
     // Handle "Range" header in the request for real-time audio streaming and return a 416 status code (Range Not Satisfiable) if it's present.
     // This handler is designed for real-time audio streaming and does not support ranges.
-    if request.headers().get("range").is_some() {
-        return HttpResponse::RangeNotSatisfiable()
-            .insert_header(("accept-ranges", "none"))
-            .body("The requested range is not satisfiable");
+    if let Some(header) = request.headers().get("range") {
+        if header.to_str().unwrap() != "bytes=0-" {
+            return HttpResponse::RangeNotSatisfiable()
+                .insert_header(("accept-ranges", "none"))
+                .body("The requested range is not satisfiable");
+        }
     }
 
     let channel_id = channel_id.into_inner();

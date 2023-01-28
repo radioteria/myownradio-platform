@@ -5,6 +5,7 @@ namespace Framework\Handlers\content;
 use Framework\ControllerImpl;
 use Framework\Defaults;
 use Framework\Services\CurrentRoute;
+use Framework\Services\TwigTemplate;
 use Framework\Template;
 
 class DoDefaultTemplate extends ControllerImpl
@@ -39,12 +40,13 @@ class DoDefaultTemplate extends ControllerImpl
         $environment = env('ENV', 'dev');
         $scripts = new Template("frontend/scripts.{$environment}.tmpl");
 
-        $template = new Template("frontend/index.tmpl");
-        $template->putObject([
+        extract([
             "title" => $pageTitle . Defaults::SITE_TITLE,
             "metadata" => $metadata->render(),
-            "scripts" => $scripts->render()
+            "scripts" => $scripts->render(),
+            "assets" => json_decode(file_get_contents(INDEX_DIR . "/assets/assets-manifest.json"), true)
         ]);
-        $template->display();
+
+        include BASE_DIR . "/application/tmpl/frontend/index.tmpl";
     }
 }

@@ -2,12 +2,14 @@
   "name": "backend-server",
   "version": "1.0.1",
   "description": "",
+  "sideEffects": false,
   "scripts": {
     "bower:install": "bower install",
     "build": "run-s build:*",
     "build:scripts": "gulp scripts",
     "build:styles": "lessc public/css/styles/src/application.less public/css/styles/compiled/application.css",
-    "build:webpack": "rimraf public/assets/* && env TS_NODE_PROJECT=tsconfig.webpack.json webpack --env production"
+    "build:webpack": "rimraf public/assets/* && env TS_NODE_PROJECT=tsconfig.webpack.json webpack --env production",
+    "watch": "rimraf public/assets/* && TS_NODE_PROJECT=tsconfig.webpack.json webpack --env development"
   },
   "dependencies": {
     "bower": "^1.8.14",

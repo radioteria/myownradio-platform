@@ -4,27 +4,27 @@ import webpack = require('webpack')
 import WebpackAssetsManifest = require('webpack-assets-manifest')
 
 export default (env: Record<string, string> = {}): webpack.Configuration => {
-  void env
-
   return {
+    watch: !!env.development,
     entry: {
       vendors: ['react', 'react-dom'],
       app: './src/index.ts',
     },
-    mode: 'development',
+    mode: env.development ? 'development' : 'production',
     output: {
       path: resolve(__dirname, './public/assets'),
       filename: `[name].[contenthash].js`,
       publicPath: '/',
     },
     optimization: {
+      usedExports: true,
       runtimeChunk: 'single',
       splitChunks: {
+        chunks: 'all',
         cacheGroups: {
           externals: {
             test: /[\\/]node_modules[\\/]/,
             name: 'externals',
-            chunks: 'all',
           },
         },
       },
@@ -49,7 +49,10 @@ export default (env: Record<string, string> = {}): webpack.Configuration => {
     },
     plugins: [
       // @todo Workaround as there is no types compatible with Webpack 5 yet.
-      (new WebpackAssetsManifest() as unknown) as webpack.WebpackPluginInstance,
+      new WebpackAssetsManifest() as unknown as webpack.WebpackPluginInstance,
     ],
+    watchOptions: {
+      ignored: /node_modules/,
+    },
   }
 }

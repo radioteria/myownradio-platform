@@ -18,9 +18,7 @@ export const makeReactDirective = (Component: ElementType): IDirectiveFactory<My
         const container = element.get(0) as HTMLElement
         const root = createRoot(container)
 
-        scope.$watch('props', () => {
-          root.render(<Component {...scope.props} />)
-        })
+        scope.$watchCollection('props', () => root.render(<Component {...scope.props} />))
 
         element.on('$destroy', () => {
           root.unmount()

@@ -3,7 +3,6 @@ GID := $(shell id -g)
 PWD := $(shell pwd)
 USER := $(UID):$(GID)
 SERVICE_NAME := $(shell basename $(PWD))
-PORT_BINDINGS := ""
 
 .env:
 	cp .env.example .env
@@ -19,6 +18,8 @@ devenv: prepare-devenv stop
 				-v "$(PWD)/.cargo-cache/registry":/rust/.cargo/registry \
 				-v "$(PWD)":/code \
 				--env-file "$(PWD)/.env" \
+				--env "HOME=/tmp" \
+				--workdir=/code \
 				$(SERVICE_NAME)-dev bash
 
 stop:

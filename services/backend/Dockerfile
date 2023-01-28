@@ -89,3 +89,10 @@ server {
 EOF
 
 EXPOSE 80
+
+
+FROM php-base as php-devenv
+
+USER 0:0
+
+RUN apk --update add bash nodejs npm

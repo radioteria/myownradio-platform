@@ -1,1 +1,13 @@
-// @todo
+import 'jquery'
+import 'angular'
+import 'angular-route'
+import 'angular-animate'
+import 'angular-mixpanel'
+import 'angular-contenteditable/angular-contenteditable.js'
+
+import 'jquery-migrate/jquery-migrate.min.js'
+import 'jquery-ui/jquery-ui.min.js'
+import 'jquery.cookie/jquery.cookie.js'
+import 'jquery-livequery/dist/jquery.livequery.min.js'
+import 'jPlayer/dist/jplayer/jquery.jplayer.min.js'
+import 'mixpanel/mixpanel-jslib-snippet.min.js'

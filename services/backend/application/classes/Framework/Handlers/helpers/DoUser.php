@@ -43,13 +43,14 @@ class DoUser implements Controller {
                 "name"          => $title
             ]);
 
-            $template = new Template("frontend/index.tmpl");
-            $template->putObject([
-                "title" => $pageTitle,
-                "metadata" => $metadata->render()
+            extract([
+                "title" => $pageTitle . Defaults::SITE_TITLE,
+                "metadata" => $metadata->render(),
+                "assets" => json_decode(file_get_contents(INDEX_DIR . "/assets/assets-manifest.json"), true)
             ]);
 
-            $template->display();
+            include BASE_DIR . "/application/tmpl/frontend/index.tmpl";
+
 
         } catch (ControllerException $exception) {
 

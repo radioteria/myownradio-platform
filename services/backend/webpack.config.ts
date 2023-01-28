@@ -6,10 +6,7 @@ import WebpackAssetsManifest = require('webpack-assets-manifest')
 export default (env: Record<string, string> = {}): webpack.Configuration => {
   return {
     watch: !!env.development,
-    entry: {
-      vendors: ['react', 'react-dom'],
-      app: './src/index.ts',
-    },
+    entry: './src/index.ts',
     mode: env.development ? 'development' : 'production',
     output: {
       path: resolve(__dirname, './public/assets'),
@@ -31,11 +28,18 @@ export default (env: Record<string, string> = {}): webpack.Configuration => {
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx'],
-      modules: [resolve(__dirname, 'node_modules')],
+      modules: [resolve(__dirname, 'node_modules'), resolve(__dirname, 'bower_components')],
     },
     module: {
       strictExportPresence: true,
       rules: [
+        {
+          test: require.resolve('jquery'),
+          loader: 'expose-loader',
+          options: {
+            exposes: ['$', 'jQuery'],
+          },
+        },
         {
           oneOf: [
             {
@@ -47,10 +51,7 @@ export default (env: Record<string, string> = {}): webpack.Configuration => {
         },
       ],
     },
-    plugins: [
-      // @todo Workaround as there is no types compatible with Webpack 5 yet.
-      new WebpackAssetsManifest() as unknown as webpack.WebpackPluginInstance,
-    ],
+    plugins: [new WebpackAssetsManifest()],
     watchOptions: {
       ignored: /node_modules/,
     },

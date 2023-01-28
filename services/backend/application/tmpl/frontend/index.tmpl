@@ -77,11 +77,8 @@ foreach ($assets as $asset) {
         onhover: false
     });</script>
 
-    <script src="/content/application.modules.js"></script>
-    <script src="/js/functions.js"></script>
 
 </head>
-
 
 <body class="{{ rootClass ? rootClass : '' }} {{ player.isLoaded ? 'player-visible' :'' }}" analytics-on="click"
       analytics-event="Click" analytics-category="Application">
@@ -127,6 +124,8 @@ foreach ($assets as $asset) {
 
 <div synchronize="player.currentStream" sync-key="sid"></div>
 <div synchronize="player.nowPlaying" sync-key="tid"></div>
+
+<foo-bar></foo-bar>
 
 <div class="special">
     <div class="player-container ngCloak" ng-if="player.isLoaded"

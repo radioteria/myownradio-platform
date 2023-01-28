@@ -28,7 +28,11 @@ export default (env: Record<string, string> = {}): webpack.Configuration => {
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx'],
-      modules: [resolve(__dirname, 'node_modules'), resolve(__dirname, 'bower_components')],
+      modules: [
+        resolve(__dirname, 'node_modules'),
+        resolve(__dirname, 'bower_components'),
+        resolve(__dirname, 'public/js'),
+      ],
     },
     module: {
       strictExportPresence: true,

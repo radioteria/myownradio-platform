@@ -39,13 +39,13 @@ class DoStream implements Controller {
                 "stream_id"     => $stream["sid"]
             ]);
 
-            $template = new Template("frontend/index.tmpl");
-            $template->putObject([
+            extract([
                 "title" => $pageTitle,
-                "metadata" => $metadata->render()
+                "metadata" => $metadata->render(),
+                "assets" => json_decode(file_get_contents(INDEX_DIR . "/assets/assets-manifest.json"), true)
             ]);
 
-            $template->display();
+            include BASE_DIR . "/application/tmpl/frontend/index.tmpl";
 
         } catch (ControllerException $exception) {
 

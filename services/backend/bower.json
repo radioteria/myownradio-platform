@@ -17,9 +17,6 @@
   ],
   "dependencies": {
     "angular-mixpanel": "1.1.2",
-    "angular": "^1.8.2",
-    "angular-route": "^1.8.2",
-    "angular-animate": "^1.8.2",
     "angular-contenteditable": "0.3.8",
     "jquery": "2.2.4",
     "jquery-migrate": "1.3.0",
@@ -27,10 +24,5 @@
     "jquery.cookie": "jquery-cookie#1.4.1",
     "jquery-livequery": "1.3.7",
     "jPlayer": "jplayer#2.9.2"
-  },
-  "resolutions": {
-    "angular": "^1.8.2",
-    "angular-route": "^1.8.2",
-    "angular-animate": "^1.8.2"
   }
 }

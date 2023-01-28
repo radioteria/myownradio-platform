@@ -12,6 +12,7 @@ use function Sentry\configureScope;
 use function Sentry\init;
 
 define('BASE_DIR', realpath(__DIR__ . '/..'));
+const INDEX_DIR = __DIR__;
 
 $uri = urldecode(parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH));
 

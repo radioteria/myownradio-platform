@@ -19,12 +19,12 @@ class DoSearch implements Controller {
 
         $pageTitle = "Search results on ".Defaults::SITE_TITLE;
 
-        $template = new Template("frontend/index.tmpl");
-        $template->putObject([
+        extract([
             "title" => $pageTitle,
+            "assets" => json_decode(file_get_contents(INDEX_DIR . "/assets/assets-manifest.json"), true)
         ]);
 
-        $template->display();
+        include BASE_DIR . "/application/tmpl/frontend/index.tmpl";
 
     }
 } 

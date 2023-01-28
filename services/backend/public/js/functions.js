@@ -5,7 +5,7 @@
  * @param {Object} destination Second object
  * @returns {Object} Resulting object
  */
-var merge = function (source, destination) {
+window.merge = function (source, destination) {
     var obj3 = {};
     var attr;
     for (attr in source) if (source.hasOwnProperty(attr)) {
@@ -23,7 +23,7 @@ var merge = function (source, destination) {
  * @param source
  * @returns {string}
  */
-var htmlEscape = function (source) {
+window.htmlEscape = function (source) {
     if (typeof source == "undefined" || source === null) return "";
     var tagsToReplace = {
         '&': '&amp;',
@@ -43,10 +43,10 @@ var htmlEscape = function (source) {
  * @param {Array} arr Target array
  * @param {Function} predicate Predicate function
  */
-var deleteMatching = function (arr, predicate) {
+window.deleteMatching = function (arr, predicate) {
     var len = arr.length;
     for (var i = len - 1; i >= 0; i--) {
-        if (predicate(arr[i]) == true) {
+        if (predicate(arr[i]) === true) {
             arr.splice(i, 1);
         }
     }
@@ -57,11 +57,11 @@ var deleteMatching = function (arr, predicate) {
  *
  * @param arr Target array
  */
-var truncateArray = function (arr) {
+window.truncateArray = function (arr) {
     arr.splice(0, arr.length);
 };
 
-var initHelpers = function () {
+window.initHelpers = function () {
 
     /*
         Image/Element fade plugin
@@ -93,7 +93,7 @@ var initHelpers = function () {
  * @param {Boolean} $clear Delete attribute from destination if source one does not exist
  */
 
-function copyObjectValues($source, $destination, $clear) {
+window.copyObjectValues = function copyObjectValues($source, $destination, $clear) {
 
     var k;
 
@@ -132,7 +132,7 @@ function copyObjectValues($source, $destination, $clear) {
  * @param {Array} $source Source array
  * @param {Array} $destination Destination array
  */
-function copyArrayValues($source, $destination) {
+window.copyArrayValues = function copyArrayValues($source, $destination) {
     var i = 0;
     for (; i < $source.length; i += 1) {
         if (angular.isArray($source[i]) && angular.isArray($destination[i])) {
@@ -157,7 +157,7 @@ function copyArrayValues($source, $destination) {
  * @param str
  * @returns {*|XML|string|angular.ILocationService|void}
  */
-function nl2br( str ) {
+window.nl2br = function nl2br( str ) {
     return str.replace(/([^>])\n/g, '$1<br/>');
 }
 

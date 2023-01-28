@@ -22,11 +22,12 @@ class DoDashboard implements Controller {
             return;
         }
 
-        $template = new Template("frontend/index.tmpl");
-        $template->putObject([
-            "title" => "Your Dashboard on MyOwnRadio - Your own web radio station"
+        extract([
+            "title" => "Your Dashboard on MyOwnRadio - Your own web radio station",
+            "assets" => json_decode(file_get_contents(INDEX_DIR . "/assets/assets-manifest.json"), true)
         ]);
-        $template->display();
+
+        include BASE_DIR . "/application/tmpl/frontend/index.tmpl";
 
     }
 } 

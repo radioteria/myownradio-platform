@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html ng-app="application" ng-controller="MainController">
-
 <head>
 
-    <title>${title}</title>
+    <title><?= $title ?></title>
 
     <base href="/">
 
@@ -16,7 +15,7 @@
 
     <meta name="viewport" content="width=1024"/>
 
-    ${metadata}
+    <?= $metadata ?>
 
     <link href='//fonts.googleapis.com/css?family=Open+Sans:400,300,600&subset=latin,cyrillic' rel='stylesheet'
           type='text/css'>
@@ -31,9 +30,13 @@
     <link rel="stylesheet" type="text/css" href="/css/legacy/ngDialog.css">
     <link rel="stylesheet" type="text/css" href="/css/legacy/ngDialog-theme-default.css">
 
-    <script src="/content/getCurrentLocale"></script>
+<?php
+foreach ($assets as $asset) {
+    echo "    <script src=\"assets/$asset\"></script>\n";
+}
+?>
 
-    <script src="/js/dist.min.js"></script>
+    <script src="/content/getCurrentLocale"></script>
 
     <script src="/js/audio5.js"></script>
 
@@ -74,11 +77,8 @@
         onhover: false
     });</script>
 
-    <script src="/content/application.modules.js"></script>
-    <script src="/js/functions.js"></script>
 
 </head>
-
 
 <body class="{{ rootClass ? rootClass : '' }} {{ player.isLoaded ? 'player-visible' :'' }}" analytics-on="click"
       analytics-event="Click" analytics-category="Application">

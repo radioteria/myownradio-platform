@@ -44,7 +44,7 @@ class DoUser implements Controller {
             ]);
 
             extract([
-                "title" => $pageTitle . Defaults::SITE_TITLE,
+                "title" => $pageTitle,
                 "metadata" => $metadata->render(),
                 "assets" => json_decode(file_get_contents(INDEX_DIR . "/assets/assets-manifest.json"), true)
             ]);

@@ -2,11 +2,8 @@ FROM node:15
 
 WORKDIR /code
 
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json bower.json ./
 RUN npm ci
-
-COPY bower.json ./
-RUN npx bower install --allow-root
 
 COPY . ./
 

@@ -9,12 +9,13 @@
 namespace Framework\Handlers\content;
 
 
+use app\Config\Config;
 use Framework\Controller;
 use Framework\Models\AuthUserModel;
 use Framework\Template;
 
 class DoDashboard implements Controller {
-    public function doGet() {
+    public function doGet(Config $config) {
 
         if (AuthUserModel::getAuthorizedUserID() === null) {
             header("HTTP/1.1 403 Forbidden");
@@ -24,7 +25,7 @@ class DoDashboard implements Controller {
 
         extract([
             "title" => "Your Dashboard on MyOwnRadio - Your own web radio station",
-            "assets" => json_decode(file_get_contents(INDEX_DIR . "/assets/assets-manifest.json"), true)
+            "assets" => json_decode(file_get_contents($config->getAssetsManifestUrl()), true)
         ]);
 
         include BASE_DIR . "/application/tmpl/frontend/index.tmpl";

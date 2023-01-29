@@ -2,6 +2,7 @@
 
 namespace Framework\Handlers\content;
 
+use app\Config\Config;
 use Framework\ControllerImpl;
 use Framework\Defaults;
 use Framework\Services\CurrentRoute;
@@ -10,7 +11,7 @@ use Framework\Template;
 
 class DoDefaultTemplate extends ControllerImpl
 {
-    public function doGet(CurrentRoute $currentRoute)
+    public function doGet(CurrentRoute $currentRoute, Config $config)
     {
         $description = "Create your own free web radio station in a minutes";
         $keywords = "music, radio, create, radio station, web radio, listen, free, own";
@@ -44,7 +45,7 @@ class DoDefaultTemplate extends ControllerImpl
             "title" => $pageTitle . Defaults::SITE_TITLE,
             "metadata" => $metadata->render(),
             "scripts" => $scripts->render(),
-            "assets" => json_decode(file_get_contents(INDEX_DIR . "/assets/assets-manifest.json"), true)
+            "assets" => json_decode(file_get_contents($config->getAssetsManifestUrl()), true)
         ]);
 
         include BASE_DIR . "/application/tmpl/frontend/index.tmpl";

@@ -32,6 +32,8 @@ class Config implements Injectable, SingletonInterface
 
     private string $storageBackend;
 
+    private string $assetsManifestUrl;
+
     private function __construct(
         string $radioStreamerEndpoint,
         string $radioStreamerInternalEndpoint,
@@ -44,7 +46,8 @@ class Config implements Injectable, SingletonInterface
         int $smtpPort,
         string $webServerOwnAddress,
         string $fileServerOwnAddress,
-        string $storageBackend
+        string $storageBackend,
+        string $assetsManifestUrl
     ) {
         $this->radioStreamerEndpoint = $radioStreamerEndpoint;
         $this->radioStreamerInternalEndpoint = $radioStreamerInternalEndpoint;
@@ -62,6 +65,7 @@ class Config implements Injectable, SingletonInterface
         $this->fileServerOwnAddress = $fileServerOwnAddress;
 
         $this->storageBackend = $storageBackend;
+        $this->assetsManifestUrl = $assetsManifestUrl;
     }
 
     /**
@@ -124,6 +128,15 @@ class Config implements Injectable, SingletonInterface
             );
         }
 
+        $assetsManifestUrl = env('ASSETS_MANIFEST_URL');
+
+        if ($assetsManifestUrl === null) {
+            throw new ConfigException(
+                'Environment variable "ASSETS_MANIFEST_URL" is required for operation'
+            );
+        }
+
+
         return new static(
             $radioStreamerEndpoint,
             $radioStreamerInternalEndpoint,
@@ -136,7 +149,8 @@ class Config implements Injectable, SingletonInterface
             $smtpPort,
             $webServerOwnAddress,
             $fileServerOwnAddress,
-            $storageBackend
+            $storageBackend,
+            $assetsManifestUrl
         );
     }
 
@@ -208,5 +222,10 @@ class Config implements Injectable, SingletonInterface
     public function getStorageBackend(): string
     {
         return $this->storageBackend;
+    }
+
+    public function getAssetsManifestUrl(): string
+    {
+        return $this->assetsManifestUrl;
     }
 }

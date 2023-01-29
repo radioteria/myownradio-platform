@@ -9,6 +9,7 @@
 namespace Framework\Handlers\helpers;
 
 
+use app\Config\Config;
 use Framework\Controller;
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
@@ -19,7 +20,7 @@ use Framework\View\Errors\View404Exception;
 use REST\Streams;
 
 class DoStream implements Controller {
-    public function doGet(HttpGet $get, Streams $streams) {
+    public function doGet(HttpGet $get, Streams $streams, Config $config) {
 
         $id = $get->getParameter("id")->getOrElseThrow(new View404Exception());
 
@@ -42,7 +43,7 @@ class DoStream implements Controller {
             extract([
                 "title" => $pageTitle,
                 "metadata" => $metadata->render(),
-                "assets" => json_decode(file_get_contents(INDEX_DIR . "/assets/assets-manifest.json"), true)
+                "assets" => json_decode(file_get_contents($config->getAssetsManifestUrl()), true)
             ]);
 
             include BASE_DIR . "/application/tmpl/frontend/index.tmpl";

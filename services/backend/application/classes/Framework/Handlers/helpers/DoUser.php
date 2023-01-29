@@ -9,6 +9,7 @@
 namespace Framework\Handlers\helpers;
 
 
+use app\Config\Config;
 use Framework\Controller;
 use Framework\Defaults;
 use Framework\Exceptions\ControllerException;
@@ -19,7 +20,7 @@ use Objects\User;
 use REST\Users;
 
 class DoUser implements Controller {
-    public function doGet(HttpGet $get, Users $users) {
+    public function doGet(HttpGet $get, Users $users, Config $config) {
 
         $id = $get->getRequired("id");
 
@@ -46,7 +47,7 @@ class DoUser implements Controller {
             extract([
                 "title" => $pageTitle,
                 "metadata" => $metadata->render(),
-                "assets" => json_decode(file_get_contents(INDEX_DIR . "/assets/assets-manifest.json"), true)
+                "assets" => json_decode(file_get_contents($config->getAssetsManifestUrl()), true)
             ]);
 
             include BASE_DIR . "/application/tmpl/frontend/index.tmpl";

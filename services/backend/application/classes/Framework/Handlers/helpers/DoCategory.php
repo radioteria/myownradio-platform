@@ -9,6 +9,7 @@
 namespace Framework\Handlers\helpers;
 
 
+use app\Config\Config;
 use Framework\Controller;
 use Framework\Defaults;
 use Framework\Services\HttpGet;
@@ -16,7 +17,7 @@ use Framework\Template;
 use Objects\Category;
 
 class DoCategory implements Controller {
-    public function doGet(HttpGet $get) {
+    public function doGet(HttpGet $get, Config $config) {
 
         $param = $get->getParameter("category");
 
@@ -46,7 +47,7 @@ class DoCategory implements Controller {
         extract([
             "title" => Defaults::SITE_TITLE,
             "metadata" => $metadata->render(),
-            "assets" => json_decode(file_get_contents(INDEX_DIR . "/assets/assets-manifest.json"), true)
+            "assets" => json_decode(file_get_contents($config->getAssetsManifestUrl()), true)
         ]);
 
         include BASE_DIR . "/application/tmpl/frontend/index.tmpl";

@@ -32,7 +32,9 @@
 
 <?php
 foreach ($assets as $asset) {
-    echo "    <script src=\"assets/$asset\"></script>\n";
+    if (str_ends_with($asset, ".js")) {
+        echo "    <script src=\"assets/$asset\"></script>\n";
+    }
 }
 ?>
 

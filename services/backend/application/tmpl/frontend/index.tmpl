@@ -1,4 +1,16 @@
-<!DOCTYPE html>
+<?php
+function startsWith( $haystack, $needle ) {
+    $length = strlen( $needle );
+    return substr( $haystack, 0, $length ) === $needle;
+}
+function endsWith( $haystack, $needle ) {
+    $length = strlen( $needle );
+    if( !$length ) {
+        return true;
+    }
+    return substr( $haystack, -$length ) === $needle;
+}
+?><!DOCTYPE html>
 <html ng-app="application" ng-controller="MainController">
 <head>
 
@@ -32,7 +44,7 @@
 
 <?php
 foreach ($assets as $asset) {
-    if (str_ends_with($asset, ".js")) {
+    if (endsWith($asset, ".js")) {
         echo "    <script src=\"assets/$asset\"></script>\n";
     }
 }

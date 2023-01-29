@@ -10,7 +10,6 @@ export const makeReactDirective = (Component: ElementType): IDirectiveFactory<My
   return () => {
     return {
       restrict: 'E',
-      multiElement: true,
       scope: {
         props: '=',
       },

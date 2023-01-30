@@ -1,6 +1,8 @@
 /**
  * Created by Roman on 08.12.2014.
  */
+import mobxAngular from 'mobx-angularjs'
+
 
 var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
@@ -14,7 +16,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
         "Account", "Site", "Catalog", "RadioPlayer", "Search", "Profile", "Library", "AudioInfo", "mor-loader", "Dialogs",
 
-        "mor.stream.scheduler", "mor.tools", "contenteditable", "analytics.mixpanel"
+        "mor.stream.scheduler", "mor.tools", "contenteditable", "analytics.mixpanel", mobxAngular
 
     ]);
 

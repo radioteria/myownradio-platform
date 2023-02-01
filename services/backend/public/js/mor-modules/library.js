@@ -12,11 +12,11 @@
 
     lib.controller("StreamLibraryController", ["$scope", "$rootScope", "TrackWorks", "StreamWorks",
         "$streams", "$routeParams", "AudioInfoEditor", "TrackAction", "Popup", "TrackPreviewService",
-        "ngDialog", "$location", "TracksScopeActions", "$mixpanel",
+        "ngDialog", "$location",
 
         function ($scope, $rootScope, TrackWorks, StreamWorks, Streams,
                   $routeParams, AudioInfoEditor, TrackAction, Popup, TrackPreviewService,
-                  ngDialog, $location, TracksScopeActions, $mixpanel) {
+                  ngDialog, $location) {
 
             $scope.tracksPending = true;
             $scope.tracks = [];
@@ -27,7 +27,7 @@
             $scope.empty = false;
 
             $scope.$watch("tracks.length", function () {
-                $scope.empty = $scope.tracks.length == 0;
+                $scope.empty = $scope.tracks.length === 0;
             });
 
             $scope.clear = function () {
@@ -105,7 +105,7 @@
 
                     if (data.length > 0) {
                         $scope.busy = false;
-                    } else if ($scope.tracks.length == 0) {
+                    } else if ($scope.tracks.length === 0) {
                         $scope.empty = true;
                     }
 
@@ -126,7 +126,7 @@
                         name: $scope.stream.name
                     }));
                     deleteMatching($scope.tracks, function (track) {
-                        return $scope.target.indexOf(track) != -1;
+                        return $scope.target.indexOf(track) !== -1;
                     });
                     truncateArray($scope.target);
                     $rootScope.account.init();
@@ -141,7 +141,7 @@
                 TrackAction.removeTracksFromAccount($scope.target, function () {
                     Popup.message($rootScope.tr("FR_TRACKS_REMOVED_FROM_LIBRARY", {count: $scope.target.length}));
                     deleteMatching($scope.tracks, function (track) {
-                        return $scope.target.indexOf(track) != -1;
+                        return $scope.target.indexOf(track) !== -1;
                     });
                     truncateArray($scope.target);
                     $rootScope.account.init();
@@ -168,7 +168,7 @@
                         count: $scope.target.length,
                         name: stream.name
                     }));
-                    if (stream.sid == $scope.stream.sid) {
+                    if (stream.sid === $scope.stream.sid) {
                         $scope.load(true);
                     }
                     $rootScope.account.init();
@@ -183,7 +183,7 @@
                         name: stream.name
                     }));
                     deleteMatching($scope.tracks, function (track) {
-                        return $scope.target.indexOf(track) != -1;
+                        return $scope.target.indexOf(track) !== -1;
                     });
                     truncateArray($scope.target);
                     $rootScope.account.init();
@@ -242,7 +242,7 @@
                     if (typeof order == "number") {
                         $scope.sorting.row = row;
                         $scope.sorting.order = order;
-                    } else if (row == $scope.sorting.row) {
+                    } else if (row === $scope.sorting.row) {
                         $scope.sorting.order = 1 - $scope.sorting.order;
                     } else {
                         $scope.sorting.order = 0;
@@ -303,7 +303,7 @@
                 TrackAction.removeTracksFromAccount($scope.target, function () {
                     Popup.message($rootScope.tr("FR_TRACKS_REMOVED_FROM_LIBRARY", {count: $scope.target.length}));
                     deleteMatching($scope.tracks, function (track) {
-                        return $scope.target.indexOf(track) != -1;
+                        return $scope.target.indexOf(track) !== -1;
                     });
                     truncateArray($scope.target);
                     $rootScope.account.init();
@@ -318,7 +318,7 @@
                     }));
                     if ($route.current.unused === true) {
                         deleteMatching($scope.tracks, function (track) {
-                            return $scope.target.indexOf(track) != -1
+                            return $scope.target.indexOf(track) !== -1
                         });
                         truncateArray($scope.target);
                     }
@@ -397,7 +397,7 @@
             });
 
             $scope.upload = function () {
-                if ($scope.uploadQueue.length == 0) {
+                if ($scope.uploadQueue.length === 0) {
                     $scope.cancel();
                     return;
                 }
@@ -408,7 +408,7 @@
                     if (evt.lengthComputable) {
 
                         var percentComplete = evt.loaded / evt.total;
-                        percentComplete = parseInt(percentComplete * 100);
+                        percentComplete = parseInt(percentComplete * 100, 10);
 
                         $(".progress-cursor").css("width", percentComplete + "%");
 

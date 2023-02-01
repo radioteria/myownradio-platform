@@ -1,8 +1,7 @@
 /**
  * Created by Roman on 08.12.2014.
  */
-import mobxAngular from 'mobx-angularjs'
-
+const { default: mobxAngular } = require('mobx-angularjs');
 
 var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 

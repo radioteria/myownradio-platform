@@ -23,7 +23,7 @@ devenv: prepare-devenv stop
 				$(SERVICE_NAME)-dev bash
 
 stop:
-	USER=$(USER) docker-compose stop $(SERVICE_NAME)
+	USER=$(USER) docker-compose stop $(SERVICE_NAME) || exit 0
 
 rebuild:
 	USER=$(USER) docker-compose build $(SERVICE_NAME)

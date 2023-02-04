@@ -6,7 +6,7 @@ import WebpackAssetsManifest = require('webpack-assets-manifest')
 export default (env: Record<string, string> = {}): webpack.Configuration => {
   return {
     watch: !!env.development,
-    entry: './src/index.ts',
+    entry: './src/index.tsx',
     mode: env.development ? 'development' : 'production',
     output: {
       path: resolve(__dirname, './public/assets'),

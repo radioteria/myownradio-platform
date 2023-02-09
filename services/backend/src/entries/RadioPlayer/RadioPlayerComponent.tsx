@@ -1,16 +1,14 @@
 import React, { useEffect, useRef } from 'react'
 
-interface PlayerComponentProps {
+interface RadioPlayerComponentProps {
   src: null | string
-  onError: () => void
   onBufferingStatusChange: (buffering: 'waiting' | 'playing') => void
   onBufferedAmountChange: (timeSeconds: number) => void
   onCurrentTimeChange: (timeSeconds: number) => void
 }
 
-export const PlayerComponent: React.FC<PlayerComponentProps> = ({
+export const RadioPlayerComponent: React.FC<RadioPlayerComponentProps> = ({
   src,
-  onError,
   onBufferingStatusChange,
   onBufferedAmountChange,
   onCurrentTimeChange,
@@ -36,6 +34,10 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
     return () => window.clearInterval(intervalId)
   }, [src])
 
+  const handleError = () => {
+    playerRef.current?.play().catch()
+  }
+
   if (!src) {
     return null
   }
@@ -45,7 +47,7 @@ export const PlayerComponent: React.FC<PlayerComponentProps> = ({
       ref={playerRef}
       loop
       autoPlay
-      onError={() => onError()}
+      onError={handleError}
       onWaiting={() => onBufferingStatusChange('waiting')}
       onPlaying={() => onBufferingStatusChange('playing')}
     >

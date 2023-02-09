@@ -15,7 +15,7 @@ configureMobX({
 })
 
 const appStore = new AppStore()
-const { audioPlayerStore } = appStore
+const { radioPlayerStore } = appStore
 
 ng.module('application')
   .constant('store', appStore)
@@ -25,10 +25,10 @@ ng.module('application')
       <Observer>
         {() => (
           <RadioPlayerComponent
-            src={audioPlayerStore.src}
-            onBufferingStatusChange={audioPlayerStore.setBufferingStatus}
-            onBufferedAmountChange={audioPlayerStore.setBufferedAmount}
-            onCurrentTimeChange={audioPlayerStore.setCurrentTime}
+            src={radioPlayerStore.src}
+            onBufferingStatusChange={radioPlayerStore.setBufferingStatus}
+            onBufferedAmountChange={radioPlayerStore.setBufferedAmount}
+            onCurrentTimeChange={radioPlayerStore.setCurrentTime}
           />
         )}
       </Observer>,

@@ -1,5 +1,2 @@
-import { PlayerStore } from './player/playerStore'
-
-export class AppStore {
-  private readonly playerStore: PlayerStore = new PlayerStore()
-}
+export { AppStore } from './AppStore'
+export { RadioPlayerStore } from '../entries/RadioPlayer/RadioPlayerStore'

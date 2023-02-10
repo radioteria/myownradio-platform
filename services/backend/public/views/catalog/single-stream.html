@@ -83,13 +83,23 @@
                         </span>
                     </div>
                     <!-- PLAY BUTTON -->
-                    <div class="now-playing-frame" ng-if="data.channel">
+                    <div class="now-playing-frame" ng-if="data.channel" mobx-autorun>
                         <div class="player">
-                            <div mor-tooltip="Play / Stop" class="toggle" ng-click="action.play()">
-                                <i play-icon="data.channel"></i>
+                            <div ng-if="radioPlayerStore.id !== data.channel.sid"
+                                 mor-tooltip="Play"
+                                 class="toggle"
+                                 ng-click="radioPlayerStore.play('https://myownradio.biz/flow?s=30&f=mp3_128k&client_id=F1PzrSPG', data.channel.sid)">
+                                <i class='icon-play-arrow'></i>
                             </div>
-                            <div ng-if="player.isPlaying && player.currentStream.sid == data.channel.sid">
+                            <div ng-if="radioPlayerStore.id === data.channel.sid"
+                                 mor-tooltip="Stop"
+                                 class="toggle"
+                                 ng-click="radioPlayerStore.stop()">
+                                <i class='icon-stop'></i>
+                            </div>
+                            <div ng-if="radioPlayerStore.id === data.channel.sid">
                                 <div class="key overflow-hidden">
+                                    {{radioPlayerStore.bufferingStatus}}
                                     <div class="left">{{ player.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}</div>
                                 </div>
                                 <div class="value">

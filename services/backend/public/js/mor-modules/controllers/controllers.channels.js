@@ -5,8 +5,10 @@
 
     var module = angular.module("application");
 
-    module.controller("ChannelView", ["channelData", "similarData", "$scope", "$channels", "ChannelListActions", "TrackListActions",
-        function (channelData, similarData, $scope, $channels, ChannelListActions, TrackListActions) {
+    module.controller("ChannelView", ["channelData", "similarData", "$scope", "$channels", "ChannelListActions", "TrackListActions", "store",
+        function (channelData, similarData, $scope, $channels, ChannelListActions, TrackListActions, store) {
+            $scope.radioPlayerStore = store.radioPlayerStore
+
             $scope.data = channelData;
             $scope.data.channels = similarData.channels;
             $scope.action = ChannelListActions(channelData.channel);

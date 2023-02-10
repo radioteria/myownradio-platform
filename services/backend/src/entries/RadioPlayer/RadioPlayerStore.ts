@@ -1,4 +1,8 @@
 import { action, computed, makeObservable, observable } from 'mobx'
+import makeDebug from 'debug'
+import { playAudio, stopAudio } from './RadioPlayerStore.util'
+
+const debug = makeDebug('RadioPlayerStore')
 
 export enum PlayerStatus {
   Stopped = 'Stopped',
@@ -16,6 +20,8 @@ export type RadioPlayerState =
     }
 
 export class RadioPlayerStore {
+  private readonly htmlPlayerElement: HTMLAudioElement
+
   @observable.ref public state: RadioPlayerState = {
     status: PlayerStatus.Stopped,
   }
@@ -40,25 +46,45 @@ export class RadioPlayerStore {
     return null
   }
 
-  public constructor() {
-    makeObservable(this)
+  @computed public get isPlaying(): boolean {
+    return this.state.status === PlayerStatus.Playing
   }
 
-  @observable bufferingStatus: null | 'waiting' | 'playing' = null
+  public constructor() {
+    makeObservable(this)
 
-  @action public setBufferingStatus = (status: 'waiting' | 'playing') => {
+    const audio = document.createElement('audio')
+
+    audio.controls = false
+    audio.autoplay = false
+    audio.onwaiting = () => this.setBufferingStatus('buffering')
+    audio.onplaying = () => this.setBufferingStatus('playing')
+    audio.onprogress = () => {
+      this.setCurrentTime(audio.currentTime)
+
+      if (audio.buffered.length > 0) {
+        this.setBufferedAmount(audio.buffered.end(audio.buffered.length - 1))
+      }
+    }
+
+    this.htmlPlayerElement = audio
+  }
+
+  @observable bufferingStatus: null | 'buffering' | 'playing' = null
+
+  @action private setBufferingStatus = (status: 'buffering' | 'playing') => {
     this.bufferingStatus = status
   }
 
   @observable bufferedAmount: number = 0
 
-  @action public setBufferedAmount = (bufferedAmount: number) => {
+  @action private setBufferedAmount = (bufferedAmount: number) => {
     this.bufferedAmount = bufferedAmount
   }
 
   @observable public currentTime: number = 0
 
-  @action public setCurrentTime = (currentTime: number) => {
+  @action private setCurrentTime = (currentTime: number) => {
     this.currentTime = currentTime
   }
 
@@ -68,11 +94,15 @@ export class RadioPlayerStore {
       src,
       id,
     })
+
+    playAudio(this.htmlPlayerElement, src)
   }
 
   public stop() {
     this.setState({
       status: PlayerStatus.Stopped,
     })
+
+    stopAudio(this.htmlPlayerElement)
   }
 }

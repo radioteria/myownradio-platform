@@ -88,7 +88,7 @@
                             <div ng-if="radioPlayerStore.id !== data.channel.sid"
                                  mor-tooltip="Play"
                                  class="toggle"
-                                 ng-click="radioPlayerStore.play('https://myownradio.biz/flow?s=30&f=mp3_128k&client_id=F1PzrSPG', data.channel.sid)">
+                                 ng-click="radioPlayerStore.play('/flow?s=' + data.channel.sid, data.channel.sid)">
                                 <i class='icon-play-arrow'></i>
                             </div>
                             <div ng-if="radioPlayerStore.id === data.channel.sid"
@@ -99,8 +99,7 @@
                             </div>
                             <div ng-if="radioPlayerStore.id === data.channel.sid">
                                 <div class="key overflow-hidden">
-                                    {{radioPlayerStore.bufferingStatus}}
-                                    <div class="left">{{ player.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}</div>
+                                    <div class="left">{{ radioPlayerStore.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}</div>
                                 </div>
                                 <div class="value">
                                     {{ player.nowPlaying | trackCaption | uppercase }}

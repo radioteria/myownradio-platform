@@ -50,6 +50,10 @@ export class RadioPlayerStore {
     return this.state.status === PlayerStatus.Playing
   }
 
+  @computed public get isBuffering(): boolean {
+    return this.bufferingStatus === 'buffering'
+  }
+
   public constructor() {
     makeObservable(this)
 

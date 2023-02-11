@@ -88,7 +88,7 @@
                             <div ng-if="radioPlayerStore.id !== data.channel.sid"
                                  mor-tooltip="Play"
                                  class="toggle"
-                                 ng-click="radioPlayerStore.play('/flow?s=' + data.channel.sid, data.channel.sid)">
+                                 ng-click="radioPlayerStore.play(data.channel.sid, defaults.format)">
                                 <i class='icon-play-arrow'></i>
                             </div>
                             <div ng-if="radioPlayerStore.id === data.channel.sid"

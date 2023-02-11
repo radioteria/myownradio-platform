@@ -4,17 +4,17 @@ import { playAudio, stopAudio } from './RadioPlayerStore.util'
 
 const debug = makeDebug('RadioPlayerStore')
 
-export enum PlayerStatus {
+export enum RadioPlayerStatus {
   Stopped = 'Stopped',
   Playing = 'Playing',
 }
 
 export type RadioPlayerState =
   | {
-      status: PlayerStatus.Stopped
+      status: RadioPlayerStatus.Stopped
     }
   | {
-      status: PlayerStatus.Playing
+      status: RadioPlayerStatus.Playing
       src: string
       id: number
     }
@@ -23,15 +23,33 @@ export class RadioPlayerStore {
   private readonly htmlPlayerElement: HTMLAudioElement
 
   @observable.ref public state: RadioPlayerState = {
-    status: PlayerStatus.Stopped,
+    status: RadioPlayerStatus.Stopped,
   }
 
   @action private setState = (state: RadioPlayerState) => {
     this.state = state
   }
 
+  @observable bufferingStatus: null | 'buffering' | 'playing' = null
+
+  @action private setBufferingStatus = (status: 'buffering' | 'playing') => {
+    this.bufferingStatus = status
+  }
+
+  @observable bufferedAmount: number = 0
+
+  @action private setBufferedAmount = (bufferedAmount: number) => {
+    this.bufferedAmount = bufferedAmount
+  }
+
+  @observable public currentTime: number = 0
+
+  @action private setCurrentTime = (currentTime: number) => {
+    this.currentTime = currentTime
+  }
+
   @computed public get src(): null | string {
-    if (this.state.status === PlayerStatus.Playing) {
+    if (this.state.status === RadioPlayerStatus.Playing) {
       return this.state.src
     }
 
@@ -39,7 +57,7 @@ export class RadioPlayerStore {
   }
 
   @computed public get id(): null | number {
-    if (this.state.status === PlayerStatus.Playing) {
+    if (this.state.status === RadioPlayerStatus.Playing) {
       return this.state.id
     }
 
@@ -47,7 +65,7 @@ export class RadioPlayerStore {
   }
 
   @computed public get isPlaying(): boolean {
-    return this.state.status === PlayerStatus.Playing
+    return this.state.status === RadioPlayerStatus.Playing
   }
 
   @computed public get isBuffering(): boolean {
@@ -74,27 +92,11 @@ export class RadioPlayerStore {
     this.htmlPlayerElement = audio
   }
 
-  @observable bufferingStatus: null | 'buffering' | 'playing' = null
+  public play(id: number, format: string) {
+    const src = `/flow?s=${id}&f=${format}`
 
-  @action private setBufferingStatus = (status: 'buffering' | 'playing') => {
-    this.bufferingStatus = status
-  }
-
-  @observable bufferedAmount: number = 0
-
-  @action private setBufferedAmount = (bufferedAmount: number) => {
-    this.bufferedAmount = bufferedAmount
-  }
-
-  @observable public currentTime: number = 0
-
-  @action private setCurrentTime = (currentTime: number) => {
-    this.currentTime = currentTime
-  }
-
-  public play(src: string, id: number) {
     this.setState({
-      status: PlayerStatus.Playing,
+      status: RadioPlayerStatus.Playing,
       src,
       id,
     })
@@ -104,7 +106,7 @@ export class RadioPlayerStore {
 
   public stop() {
     this.setState({
-      status: PlayerStatus.Stopped,
+      status: RadioPlayerStatus.Stopped,
     })
 
     stopAudio(this.htmlPlayerElement)

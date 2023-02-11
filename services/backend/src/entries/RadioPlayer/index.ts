@@ -1,1 +1,1 @@
-export { RadioPlayerStore } from './RadioPlayerStore'
+export { RadioPlayerStore, RadioPlayerStatus } from './RadioPlayerStore'

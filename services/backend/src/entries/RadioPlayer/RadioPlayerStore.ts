@@ -1,6 +1,7 @@
 import { action, computed, makeObservable, observable, reaction } from 'mobx'
 import makeDebug from 'debug'
 import { playAudio, playMediaSource, stopAudio } from './RadioPlayerStore.util'
+import { IcyDemuxer } from './IcyDemuxer'
 
 const debug = makeDebug('RadioPlayerStore')
 
@@ -136,18 +137,22 @@ export class RadioPlayerStore {
     const mediaSource = new MediaSource()
 
     mediaSource.addEventListener('sourceopen', async () => {
-      const response = await window.fetch(url)
+      const response = await window.fetch(url, {
+        headers: {
+          'icy-metadata': '1',
+        },
+      })
+      const icyMetaInterval = parseInt(response.headers.get('icy-metaint') ?? '0', 10)
+      const reader = response.body ?? new ReadableStream()
+      const demuxedReader = new IcyDemuxer(reader, icyMetaInterval).getReader()
+
       const sourceBuffer = mediaSource.addSourceBuffer(
         response.headers.get('Content-Type') ?? 'audio/mpeg',
       )
-      const reader = (response.body ?? new ReadableStream()).getReader()
-
-      mediaSource.addEventListener('sourceclose', () => {
-        reader.cancel()
-      })
+      mediaSource.addEventListener('sourceclose', () => demuxedReader.cancel())
 
       while (true) {
-        const { done, value } = await reader.read()
+        const { done, value } = await demuxedReader.read()
 
         if (mediaSource.readyState !== 'open') {
           break
@@ -157,9 +162,9 @@ export class RadioPlayerStore {
           sourceBuffer.appendBuffer(new Uint8Array())
           mediaSource.endOfStream()
           break
-        } else {
-          sourceBuffer.appendBuffer(value)
         }
+
+        sourceBuffer.appendBuffer(value)
 
         await new Promise((resolve, reject) => {
           sourceBuffer.onupdateend = () => resolve(null)

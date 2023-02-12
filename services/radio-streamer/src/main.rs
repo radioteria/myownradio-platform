@@ -109,7 +109,9 @@ async fn main() -> Result<()> {
                 .wrap(
                     Cors::default()
                         .allow_any_origin()
-                        .allowed_methods(&[Method::GET]),
+                        .allowed_methods(&[Method::GET])
+                        .allowed_headers(["icy-metadata"])
+                        .expose_headers(["icy-metaint", "icy-name", "icy-metadata"]),
                 )
                 .app_data(Data::new(config.clone()))
                 .app_data(Data::new(backend_client.clone()))

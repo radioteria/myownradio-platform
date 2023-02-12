@@ -31,6 +31,9 @@ features = ["max_level_debug", "release_max_level_debug"]
 version = "4.2.1"
 features = ["rustls"]
 
+[dependencies.actix-cors]
+version = "0.6.4"
+
 [dependencies.uuid]
 version = "1.2.2"
 features = ["v4"]

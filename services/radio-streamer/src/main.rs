@@ -1,7 +1,9 @@
 extern crate core;
 
+use actix_cors::Cors;
 use actix_rt::signal::unix;
 use actix_web::dev::Service;
+use actix_web::http::Method;
 use actix_web::web::Data;
 use actix_web::{App, HttpServer};
 use futures_lite::FutureExt;
@@ -104,6 +106,11 @@ async fn main() -> Result<()> {
                         }
                     }
                 })
+                .wrap(
+                    Cors::default()
+                        .allow_any_origin()
+                        .allowed_methods(&[Method::GET]),
+                )
                 .app_data(Data::new(config.clone()))
                 .app_data(Data::new(backend_client.clone()))
                 .app_data(Data::new(logger.clone()))

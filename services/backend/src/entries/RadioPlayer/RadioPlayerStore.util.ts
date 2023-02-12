@@ -11,6 +11,15 @@ export function playAudio(htmlAudioElement: HTMLAudioElement, src: string) {
   })
 }
 
+export function playMediaSource(htmlAudioElement: HTMLAudioElement, source: MediaSource) {
+  debug('Starting audio playback: %s', source)
+  htmlAudioElement.src = URL.createObjectURL(source)
+  htmlAudioElement.load()
+  htmlAudioElement.play().catch((error) => {
+    debug('Unable to start audio playback: %s', error)
+  })
+}
+
 export function stopAudio(htmlAudioElement: HTMLAudioElement) {
   debug('Stopping audio playback')
   htmlAudioElement.pause()

@@ -38,10 +38,10 @@ impl Default for AudioFormat {
 pub struct AudioFormats;
 
 impl AudioFormats {
-    pub const MP3_128K: AudioFormat = AudioFormat::new(128, "mp3", "audio/mp3", "libmp3lame");
-    pub const MP3_192K: AudioFormat = AudioFormat::new(192, "mp3", "audio/mp3", "libmp3lame");
-    pub const MP3_256K: AudioFormat = AudioFormat::new(256, "mp3", "audio/mp3", "libmp3lame");
-    pub const MP3_320K: AudioFormat = AudioFormat::new(320, "mp3", "audio/mp3", "libmp3lame");
+    pub const MP3_128K: AudioFormat = AudioFormat::new(128, "mp3", "audio/mpeg", "libmp3lame");
+    pub const MP3_192K: AudioFormat = AudioFormat::new(192, "mp3", "audio/mpeg", "libmp3lame");
+    pub const MP3_256K: AudioFormat = AudioFormat::new(256, "mp3", "audio/mpeg", "libmp3lame");
+    pub const MP3_320K: AudioFormat = AudioFormat::new(320, "mp3", "audio/mpeg", "libmp3lame");
 
     pub const AAC_PLUS_24K: AudioFormat = AudioFormat::new(24, "adts", "audio/aac", "libfdk_aac");
     pub const AAC_PLUS_32K: AudioFormat = AudioFormat::new(32, "adts", "audio/aac", "libfdk_aac");

@@ -3,13 +3,17 @@ import makeDebug from 'debug'
 const debug = makeDebug('IcyDemuxer')
 
 export class IcyDemuxer extends ReadableStream<Uint8Array> {
-  constructor(sourceStream: ReadableStream<Uint8Array>, private readonly icyMetaInt: number) {
+  constructor(
+    sourceStream: ReadableStream<Uint8Array>,
+    private readonly icyMetaInt: number,
+    private readonly onMetadata: (metadata: string) => void,
+  ) {
     super({
       start: (controller) => {
         const sourceReader = sourceStream.getReader()
         const loop = icyMetaInt > 0 ? IcyDemuxer.demuxLoop : IcyDemuxer.bypassLoop
 
-        loop(controller, sourceReader, icyMetaInt).catch((error) => {
+        loop(controller, sourceReader, icyMetaInt, onMetadata).catch((error) => {
           debug('Error happened in loop: %s', error)
         })
       },
@@ -20,6 +24,7 @@ export class IcyDemuxer extends ReadableStream<Uint8Array> {
     controller: ReadableStreamDefaultController<Uint8Array>,
     sourceReader: ReadableStreamDefaultReader<Uint8Array>,
     icyMetaInt: number,
+    onMetadata: (metadata: string) => void,
   ) => {
     let buffer = new Uint8Array()
 
@@ -54,6 +59,7 @@ export class IcyDemuxer extends ReadableStream<Uint8Array> {
         )
         if (metadataSizeByte > 0) {
           debug('metadata: %s', metadata)
+          onMetadata(metadata)
         }
 
         buffer = buffer.slice(icyMetaInt + metadataSize, buffer.length)

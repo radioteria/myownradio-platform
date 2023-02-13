@@ -102,7 +102,7 @@
                                     <div class="left">{{ radioPlayerStore.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}</div>
                                 </div>
                                 <div class="value">
-                                    {{ player.nowPlaying | trackCaption | uppercase }}
+                                    {{ radioPlayerStore.metadata | uppercase }}
                                 </div>
                             </div>
                         </div>

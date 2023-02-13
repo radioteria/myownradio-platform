@@ -74,6 +74,12 @@ export class RadioPlayerStore {
     return this.bufferingStatus === 'buffering'
   }
 
+  @observable metadata: null | string = null
+  @action private setMetadata(metadata: null | string) {
+    this.metadata =
+      metadata?.replaceAll('\0', '').replace("StreamTitle='", '').replace("';", '') ?? null
+  }
+
   public constructor() {
     makeObservable(this)
 
@@ -131,6 +137,8 @@ export class RadioPlayerStore {
     })
 
     stopAudio(this.htmlPlayerElement)
+
+    this.setMetadata(null)
   }
 
   private makeMediaSource(url: string): MediaSource {
@@ -144,7 +152,9 @@ export class RadioPlayerStore {
       })
       const icyMetaInterval = parseInt(response.headers.get('icy-metaint') ?? '0', 10)
       const reader = response.body ?? new ReadableStream()
-      const demuxedReader = new IcyDemuxer(reader, icyMetaInterval).getReader()
+      const demuxedReader = new IcyDemuxer(reader, icyMetaInterval, (metadata) => {
+        this.setMetadata(metadata)
+      }).getReader()
 
       const sourceBuffer = mediaSource.addSourceBuffer(
         response.headers.get('Content-Type') ?? 'audio/mpeg',

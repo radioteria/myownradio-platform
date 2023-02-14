@@ -190,7 +190,7 @@ export class RadioPlayerStore {
         }
       }
 
-      await Promise.all([metadataLoop, mediaLoop])
+      await Promise.all([metadataLoop(), mediaLoop()])
     })
 
     return mediaSource

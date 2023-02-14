@@ -1,7 +1,8 @@
 import { action, computed, makeObservable, observable, reaction } from 'mobx'
 import makeDebug from 'debug'
 import { playAudio, playMediaSource, stopAudio } from './RadioPlayerStore.util'
-import { IcyDemuxer } from './IcyDemuxer'
+import { makeIcyDemuxer } from './IcyDemuxer'
+import { makeIcyDemuxedStream } from './IcyDemuxer.utils'
 
 const debug = makeDebug('RadioPlayerStore')
 
@@ -145,42 +146,51 @@ export class RadioPlayerStore {
     const mediaSource = new MediaSource()
 
     mediaSource.addEventListener('sourceopen', async () => {
-      const response = await window.fetch(url, {
-        headers: {
-          'icy-metadata': '1',
-        },
-      })
-      const icyMetaInterval = parseInt(response.headers.get('icy-metaint') ?? '0', 10)
-      const reader = response.body ?? new ReadableStream()
-      const demuxedReader = new IcyDemuxer(reader, icyMetaInterval, (metadata) => {
-        this.setMetadata(metadata)
-      }).getReader()
+      const [mediaStream, metadataStream, contentType] = await makeIcyDemuxedStream(url)
 
-      const sourceBuffer = mediaSource.addSourceBuffer(
-        response.headers.get('Content-Type') ?? 'audio/mpeg',
-      )
-      mediaSource.addEventListener('sourceclose', () => demuxedReader.cancel())
+      const metadataLoop = async () => {
+        const metadataStreamReader = metadataStream.getReader()
+        while (true) {
+          const { done, value } = await metadataStreamReader.read()
 
-      while (true) {
-        const { done, value } = await demuxedReader.read()
+          if (done) {
+            this.setMetadata(null)
+            break
+          }
 
-        if (mediaSource.readyState !== 'open') {
-          break
+          this.setMetadata(value)
         }
-
-        if (done) {
-          sourceBuffer.appendBuffer(new Uint8Array())
-          mediaSource.endOfStream()
-          break
-        }
-
-        sourceBuffer.appendBuffer(value)
-
-        await new Promise((resolve, reject) => {
-          sourceBuffer.onupdateend = () => resolve(null)
-          sourceBuffer.onerror = (error) => reject(error)
-        })
       }
+
+      const mediaLoop = async () => {
+        const mediaStreamReader = mediaStream.getReader()
+
+        const sourceBuffer = mediaSource.addSourceBuffer(contentType)
+        mediaSource.addEventListener('sourceclose', () => mediaStreamReader.cancel())
+
+        while (true) {
+          const { done, value } = await mediaStreamReader.read()
+
+          if (mediaSource.readyState !== 'open') {
+            break
+          }
+
+          if (done) {
+            sourceBuffer.appendBuffer(new Uint8Array())
+            mediaSource.endOfStream()
+            break
+          }
+
+          sourceBuffer.appendBuffer(value)
+
+          await new Promise((resolve, reject) => {
+            sourceBuffer.onupdateend = () => resolve(null)
+            sourceBuffer.onerror = (error) => reject(error)
+          })
+        }
+      }
+
+      await Promise.all([metadataLoop, mediaLoop])
     })
 
     return mediaSource

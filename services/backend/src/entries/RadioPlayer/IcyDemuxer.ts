@@ -1,5 +1,5 @@
 import makeDebug from 'debug'
-import { concatBuffers, createPromiseChannel } from './IcyDemuxer.utils'
+import { concatBuffers, createPromiseChannel, streamAsyncIterator } from './IcyDemuxer.utils'
 
 const debug = makeDebug('IcyDemuxer')
 
@@ -23,69 +23,54 @@ export function makeIcyDemuxer(
     },
   })
 
-  Promise.all([mediaStreamController, metadataStreamController]).then(
-    async ([mediaStreamController, metadataStreamController]) => {
-      const sourceReader = source.getReader()
-
+  Promise.all([mediaStreamController, metadataStreamController])
+    .then(async ([mediaStreamController, metadataStreamController]) => {
       let buffer = new Uint8Array()
 
-      while (true) {
-        const { value, done } = await sourceReader.read()
+      try {
+        for await (const value of streamAsyncIterator(source)) {
+          buffer = concatBuffers(buffer, value)
 
-        if (done) {
-          break
-        }
+          while (buffer.length > icyMetaInt) {
+            const bytesBeforeMetadata = buffer.slice(0, icyMetaInt)
 
-        buffer = concatBuffers(buffer, value)
-
-        while (buffer.length > icyMetaInt) {
-          const bytesBeforeMetadata = buffer.slice(0, icyMetaInt)
-
-          try {
             mediaStreamController.enqueue(bytesBeforeMetadata)
-          } catch {
-            await sourceReader.cancel()
-            break
-          }
 
-          const metadataSizeByte = buffer.at(icyMetaInt)
-          if (metadataSizeByte === undefined) {
-            debug('EOF on reading metadata size byte')
-            await sourceReader.cancel()
-            break
-          }
-          const metadataSize = 1 + metadataSizeByte * 16
-          const metadata = new TextDecoder().decode(
-            buffer.slice(icyMetaInt + 1, icyMetaInt + metadataSize),
-          )
-
-          if (metadataSizeByte > 0) {
-            debug('metadata: %s', metadata)
-            try {
-              metadataStreamController.enqueue(metadata)
-            } catch {
-              await sourceReader.cancel()
+            const metadataSizeByte = buffer.at(icyMetaInt)
+            if (metadataSizeByte === undefined) {
+              debug('EOF on reading metadata size byte')
               break
             }
-          }
+            const metadataSize = 1 + metadataSizeByte * 16
+            const metadata = new TextDecoder().decode(
+              buffer.slice(icyMetaInt + 1, icyMetaInt + metadataSize),
+            )
 
-          buffer = buffer.slice(icyMetaInt + metadataSize, buffer.length)
+            if (metadataSizeByte > 0) {
+              debug('metadata: %s', metadata)
+              metadataStreamController.enqueue(metadata)
+            }
+
+            buffer = buffer.slice(icyMetaInt + metadataSize, buffer.length)
+          }
+        }
+      } finally {
+        try {
+          mediaStreamController.close()
+        } catch {
+          // NOP
+        }
+
+        try {
+          metadataStreamController.close()
+        } catch {
+          // NOP
         }
       }
-
-      try {
-        mediaStreamController.close()
-      } catch {
-        // NOP
-      }
-
-      try {
-        metadataStreamController.close()
-      } catch {
-        // NOP
-      }
-    },
-  )
+    })
+    .catch((error) => {
+      debug('Error happened during demuxing: %s', error)
+    })
 
   return [mediaStream, metadataStream] as const
 }

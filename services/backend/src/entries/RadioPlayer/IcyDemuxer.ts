@@ -55,7 +55,11 @@ export function makeIcyDemuxer(
           }
         }
       } finally {
-        await source.cancel()
+        try {
+          await source.cancel()
+        } catch {
+          // NOP
+        }
 
         try {
           mediaStreamController.close()

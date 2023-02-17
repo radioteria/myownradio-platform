@@ -2,7 +2,7 @@ import { action, computed, makeObservable, observable, reaction } from 'mobx'
 import makeDebug from 'debug'
 import { playAudio, playMediaSource, stopAudio } from './RadioPlayerStore.util'
 import { makeIcyDemuxer } from './IcyDemuxer'
-import { makeIcyDemuxedStream } from './IcyDemuxer.utils'
+import { makeIcyDemuxedStream, streamAsyncIterator } from './IcyDemuxer.utils'
 
 const debug = makeDebug('RadioPlayerStore')
 
@@ -149,48 +149,35 @@ export class RadioPlayerStore {
       const [mediaStream, metadataStream, contentType] = await makeIcyDemuxedStream(url)
 
       const metadataLoop = async () => {
-        const metadataStreamReader = metadataStream.getReader()
-        while (true) {
-          const { done, value } = await metadataStreamReader.read()
-
-          if (done) {
-            this.setMetadata(null)
-            break
-          }
-
-          this.setMetadata(value)
+        for await (const metadata of streamAsyncIterator(metadataStream)) {
+          this.setMetadata(metadata)
         }
+        this.setMetadata(null)
       }
 
       const mediaLoop = async () => {
-        const mediaStreamReader = mediaStream.getReader()
-
         const sourceBuffer = mediaSource.addSourceBuffer(contentType)
-        mediaSource.addEventListener('sourceclose', () => mediaStreamReader.cancel())
 
-        while (true) {
-          const { done, value } = await mediaStreamReader.read()
-
+        for await (const bytes of streamAsyncIterator(mediaStream)) {
           if (mediaSource.readyState !== 'open') {
-            break
+            return
           }
 
-          if (done) {
-            sourceBuffer.appendBuffer(new Uint8Array())
-            mediaSource.endOfStream()
-            break
-          }
-
-          sourceBuffer.appendBuffer(value)
+          sourceBuffer.appendBuffer(bytes)
 
           await new Promise((resolve, reject) => {
             sourceBuffer.onupdateend = () => resolve(null)
             sourceBuffer.onerror = (error) => reject(error)
           })
         }
+
+        sourceBuffer.appendBuffer(new Uint8Array())
+        mediaSource.endOfStream()
       }
 
-      await Promise.all([metadataLoop(), mediaLoop()])
+      await Promise.race([metadataLoop(), mediaLoop()]).finally(() =>
+        Promise.all([metadataStream.cancel(), mediaStream.cancel()]),
+      )
     })
 
     return mediaSource

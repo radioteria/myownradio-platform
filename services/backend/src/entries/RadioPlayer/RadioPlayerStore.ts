@@ -1,6 +1,6 @@
 import { action, computed, makeObservable, observable, reaction } from 'mobx'
 import makeDebug from 'debug'
-import { playAudio, playMediaSource, stopAudio } from './RadioPlayerStore.util'
+import { appendBufferAsync, playAudio, playMediaSource, stopAudio } from './RadioPlayerStore.util'
 import { makeIcyDemuxer } from './IcyDemuxer'
 import { makeIcyDemuxedStream, streamAsyncIterator } from './IcyDemuxer.utils'
 
@@ -179,14 +179,7 @@ export class RadioPlayerStore {
               return
             }
 
-            sourceBuffer.appendBuffer(bytes)
-
-            if (sourceBuffer.updating) {
-              await new Promise((resolve, reject) => {
-                sourceBuffer.onupdateend = () => resolve(null)
-                sourceBuffer.onerror = (error) => reject(error)
-              })
-            }
+            await appendBufferAsync(sourceBuffer, bytes)
           }
 
           if (mediaSource.readyState !== 'open') {
@@ -196,7 +189,8 @@ export class RadioPlayerStore {
 
           localDebug('Media stream completed: ending MediaSource')
 
-          sourceBuffer.appendBuffer(new Uint8Array())
+          await appendBufferAsync(sourceBuffer, new Uint8Array())
+
           mediaSource.endOfStream()
         } finally {
           localDebug('End of media loop: closing stream')

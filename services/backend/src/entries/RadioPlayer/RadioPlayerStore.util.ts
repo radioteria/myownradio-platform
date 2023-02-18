@@ -27,3 +27,16 @@ export function stopAudio(htmlAudioElement: HTMLAudioElement) {
   htmlAudioElement.load()
   htmlAudioElement.removeAttribute('src')
 }
+
+export async function appendBufferAsync(
+  sourceBuffer: SourceBuffer,
+  buffer: Uint8Array,
+): Promise<void> {
+  sourceBuffer.appendBuffer(buffer)
+
+  if (sourceBuffer.updating) {
+    await new Promise((resolve) => {
+      sourceBuffer.onupdateend = () => resolve(null)
+    })
+  }
+}

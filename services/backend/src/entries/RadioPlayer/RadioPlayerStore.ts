@@ -144,40 +144,77 @@ export class RadioPlayerStore {
 
   private makeMediaSource(url: string): MediaSource {
     const mediaSource = new MediaSource()
+    const localDebug = debug.extend('MediaSource')
 
     mediaSource.addEventListener('sourceopen', async () => {
-      const [mediaStream, metadataStream, contentType] = await makeIcyDemuxedStream(url)
+      const abortController = new AbortController()
 
-      const metadataLoop = async () => {
-        for await (const metadata of streamAsyncIterator(metadataStream)) {
-          this.setMetadata(metadata)
+      const [mediaStream, metadataStream, contentType] = await makeIcyDemuxedStream(
+        url,
+        abortController.signal,
+      )
+      const sourceBuffer = mediaSource.addSourceBuffer(contentType)
+
+      const metadataLoop = async (signal: AbortSignal) => {
+        localDebug('Starting metadata loop')
+        try {
+          for await (const metadata of streamAsyncIterator(metadataStream, signal)) {
+            localDebug('Received metadata: %s', metadata)
+            this.setMetadata(metadata)
+          }
+          localDebug('Cleanup metadata')
+          this.setMetadata(null)
+        } finally {
+          localDebug('End of metadata loop: closing stream')
+          await metadataStream.cancel()
         }
-        this.setMetadata(null)
       }
 
-      const mediaLoop = async () => {
-        const sourceBuffer = mediaSource.addSourceBuffer(contentType)
+      const mediaLoop = async (signal: AbortSignal) => {
+        localDebug('Starting media loop')
+        try {
+          for await (const bytes of streamAsyncIterator(mediaStream, signal)) {
+            if (mediaSource.readyState !== 'open') {
+              localDebug('MediaSource closed: exiting')
+              return
+            }
 
-        for await (const bytes of streamAsyncIterator(mediaStream)) {
+            sourceBuffer.appendBuffer(bytes)
+
+            if (sourceBuffer.updating) {
+              await new Promise((resolve, reject) => {
+                sourceBuffer.onupdateend = () => resolve(null)
+                sourceBuffer.onerror = (error) => reject(error)
+              })
+            }
+          }
+
           if (mediaSource.readyState !== 'open') {
+            localDebug('MediaSource closed: exiting')
             return
           }
 
-          sourceBuffer.appendBuffer(bytes)
+          localDebug('Media stream completed: ending MediaSource')
 
-          await new Promise((resolve, reject) => {
-            sourceBuffer.onupdateend = () => resolve(null)
-            sourceBuffer.onerror = (error) => reject(error)
-          })
+          sourceBuffer.appendBuffer(new Uint8Array())
+          mediaSource.endOfStream()
+        } finally {
+          localDebug('End of media loop: closing stream')
+          await mediaStream.cancel()
         }
-
-        sourceBuffer.appendBuffer(new Uint8Array())
-        mediaSource.endOfStream()
       }
 
-      await Promise.race([metadataLoop(), mediaLoop()]).finally(() =>
-        Promise.all([metadataStream.cancel(), mediaStream.cancel()]),
-      )
+      const metadataLoopPromise = metadataLoop(abortController.signal)
+      const mediaLoopPromise = mediaLoop(abortController.signal)
+
+      try {
+        localDebug('Starting MediaSource loops')
+        await Promise.any([metadataLoopPromise, mediaLoopPromise])
+      } finally {
+        localDebug('Some or all of MediaSource loops was interrupted')
+        abortController.abort()
+        await Promise.all([metadataLoopPromise, mediaLoopPromise])
+      }
     })
 
     return mediaSource

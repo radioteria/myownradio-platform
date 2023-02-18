@@ -6,6 +6,7 @@ const debug = makeDebug('IcyDemuxer')
 export function makeIcyDemuxer(
   source: ReadableStream<Uint8Array>,
   icyMetaInt: number,
+  signal: AbortSignal,
 ): readonly [ReadableStream<Uint8Array>, ReadableStream<string>] {
   const [mediaStreamControllerResolve, mediaStreamController] =
     createPromiseChannel<ReadableStreamDefaultController<Uint8Array>>()
@@ -28,7 +29,7 @@ export function makeIcyDemuxer(
       let buffer = new Uint8Array()
 
       try {
-        for await (const value of streamAsyncIterator(source)) {
+        for await (const value of streamAsyncIterator(source, signal)) {
           buffer = concatBuffers(buffer, value)
 
           while (buffer.length > icyMetaInt) {
@@ -75,7 +76,7 @@ export function makeIcyDemuxer(
       }
     })
     .catch((error) => {
-      debug('Error happened during demuxing: %s', error)
+      debug('Error happened during demuxing', error)
     })
 
   return [mediaStream, metadataStream] as const

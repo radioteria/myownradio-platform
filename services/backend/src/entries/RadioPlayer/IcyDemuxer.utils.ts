@@ -23,6 +23,7 @@ export function concatBuffers(buffer1: Uint8Array, buffer2: Uint8Array) {
 
 export async function makeIcyDemuxedStream(
   url: string,
+  signal: AbortSignal,
 ): Promise<readonly [ReadableStream<Uint8Array>, ReadableStream<string>, string]> {
   const response = await window.fetch(url, {
     headers: { 'icy-metadata': '1' },
@@ -41,13 +42,25 @@ export async function makeIcyDemuxedStream(
 
   const icyMetaInt = parseInt(icyMetaIntStr, 10)
 
-  return [...makeIcyDemuxer(sourceStream, icyMetaInt), contentType]
+  return [...makeIcyDemuxer(sourceStream, icyMetaInt, signal), contentType]
 }
 
-export const streamAsyncIterator = <T>(stream: ReadableStream<T>) => ({
+export const streamAsyncIterator = <T>(stream: ReadableStream<T>, signal?: AbortSignal) => ({
   async *[Symbol.asyncIterator]() {
     // Get a lock on the stream
     const reader = stream.getReader()
+
+    // This function is used to interrupt the iterator when an abort signal is received
+    const abortFn = () =>
+      reader.cancel().catch(() => {
+        // We don't need to handle the rejection here
+        // since it's expected when the reader is cancelled.
+      })
+
+    if (signal) {
+      // Attach the abort function to the signal's abort event
+      signal.addEventListener('abort', abortFn)
+    }
 
     try {
       while (true) {
@@ -59,6 +72,11 @@ export const streamAsyncIterator = <T>(stream: ReadableStream<T>) => ({
         yield value
       }
     } finally {
+      if (signal) {
+        // Remove the abort function from the signal's abort event
+        signal.removeEventListener('abort', abortFn)
+      }
+      // Release the lock on the reader
       reader.releaseLock()
     }
   },

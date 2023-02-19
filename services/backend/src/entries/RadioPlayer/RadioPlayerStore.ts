@@ -1,7 +1,6 @@
 import { action, computed, makeObservable, observable, reaction } from 'mobx'
 import makeDebug from 'debug'
-import { appendBufferAsync, playAudio, playMediaSource, stopAudio } from './RadioPlayerStore.util'
-import { makeIcyDemuxer } from './IcyDemuxer'
+import { appendBufferAsync, playAudio, stopAudio } from './RadioPlayerStore.util'
 import { makeIcyDemuxedStream, streamAsyncIterator } from './IcyDemuxer.utils'
 
 const debug = makeDebug('RadioPlayerStore')
@@ -18,6 +17,7 @@ export type RadioPlayerState =
   | {
       status: RadioPlayerStatus.Playing
       src: string
+      objectURL: string
       id: number
     }
 
@@ -62,11 +62,6 @@ export class RadioPlayerStore {
     return null
   }
 
-  @observable objectURL: null | string = null
-  @action private setObjectURL(url: null | string) {
-    this.objectURL = url
-  }
-
   @computed public get isPlaying(): boolean {
     return this.state.status === RadioPlayerStatus.Playing
   }
@@ -97,23 +92,16 @@ export class RadioPlayerStore {
         this.setBufferedAmount(audio.buffered.end(audio.buffered.length - 1))
       }
     }
+    audio.onended = () => {
+      if (
+        this.state.status === RadioPlayerStatus.Playing &&
+        this.state.objectURL === this.htmlPlayerElement.src
+      ) {
+        debug('Playback unexpectedly ended: restarting')
 
-    reaction(
-      () => this.src,
-      (src, prevSrc) => {
-        if (prevSrc) {
-          URL.revokeObjectURL(prevSrc)
-        }
-
-        if (src) {
-          const mediaSource = this.makeMediaSource(src)
-          const url = URL.createObjectURL(mediaSource)
-          this.setObjectURL(url)
-        } else {
-          this.setObjectURL(null)
-        }
-      },
-    )
+        this.play(this.state.id, this.state.src)
+      }
+    }
 
     this.htmlPlayerElement = audio
   }
@@ -121,18 +109,28 @@ export class RadioPlayerStore {
   public play(id: number, format: string) {
     const src = `/flow?s=${id}&f=${format}`
 
+    const mediaSource = this.makeMediaSource(src)
+    const objectURL = URL.createObjectURL(mediaSource)
+
+    if (this.state.status === RadioPlayerStatus.Playing) {
+      URL.revokeObjectURL(this.state.objectURL)
+    }
+
     this.setState({
       status: RadioPlayerStatus.Playing,
       src,
       id,
+      objectURL,
     })
 
-    if (this.objectURL) {
-      playAudio(this.htmlPlayerElement, this.objectURL)
-    }
+    playAudio(this.htmlPlayerElement, objectURL)
   }
 
   public stop() {
+    if (this.state.status === RadioPlayerStatus.Playing) {
+      URL.revokeObjectURL(this.state.objectURL)
+    }
+
     this.setState({
       status: RadioPlayerStatus.Stopped,
     })
@@ -154,6 +152,10 @@ export class RadioPlayerStore {
         abortController.signal,
       )
       const sourceBuffer = mediaSource.addSourceBuffer(contentType)
+
+      mediaSource.addEventListener('sourceclose', () => {
+        abortController.abort()
+      })
 
       const metadataLoop = async (signal: AbortSignal) => {
         localDebug('Starting metadata loop')
@@ -203,7 +205,7 @@ export class RadioPlayerStore {
 
       try {
         localDebug('Starting MediaSource loops')
-        await Promise.any([metadataLoopPromise, mediaLoopPromise])
+        await Promise.race([metadataLoopPromise, mediaLoopPromise])
       } finally {
         localDebug('Some or all of MediaSource loops was interrupted')
         abortController.abort()

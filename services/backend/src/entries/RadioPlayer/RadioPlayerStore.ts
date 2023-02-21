@@ -75,7 +75,7 @@ export class RadioPlayerStore {
     return this.bufferingStatus === 'buffering'
   }
 
-  @observable private metadata: null | IcyMetadata = null
+  @observable.ref private metadata: null | IcyMetadata = null
   @action private setMetadata(metadata: IcyMetadata | null) {
     this.metadata = metadata
   }

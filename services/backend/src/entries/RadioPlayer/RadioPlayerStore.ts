@@ -62,6 +62,7 @@ export class RadioPlayerStore {
 
     return null
   }
+
   @computed public get streamTitle(): null | string {
     return this.metadata?.stream_title ?? null
   }

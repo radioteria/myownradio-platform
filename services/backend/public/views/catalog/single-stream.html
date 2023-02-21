@@ -102,7 +102,7 @@
                                     <div class="left" mobx-autorun>{{ radioPlayerStore.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}</div>
                                 </div>
                                 <div class="value">
-                                    {{ radioPlayerStore.metadata | uppercase }}
+                                    {{ radioPlayerStore.streamTitle | uppercase }}
                                 </div>
                             </div>
                         </div>

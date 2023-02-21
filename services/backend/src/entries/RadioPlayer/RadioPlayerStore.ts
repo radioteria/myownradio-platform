@@ -1,7 +1,8 @@
-import { action, computed, makeObservable, observable, reaction } from 'mobx'
+import { action, computed, makeObservable, observable } from 'mobx'
 import makeDebug from 'debug'
 import { appendBufferAsync, playAudio, stopAudio } from './RadioPlayerStore.util'
 import { makeIcyDemuxedStream, streamAsyncIterator } from './IcyDemuxer.utils'
+import { decodeIcyMetadata, IcyMetadata } from '../../models'
 
 const debug = makeDebug('RadioPlayerStore')
 
@@ -61,6 +62,9 @@ export class RadioPlayerStore {
 
     return null
   }
+  @computed public get streamTitle(): null | string {
+    return this.metadata?.stream_title ?? null
+  }
 
   @computed public get isPlaying(): boolean {
     return this.state.status === RadioPlayerStatus.Playing
@@ -70,10 +74,9 @@ export class RadioPlayerStore {
     return this.bufferingStatus === 'buffering'
   }
 
-  @observable metadata: null | string = null
-  @action private setMetadata(metadata: null | string) {
-    this.metadata =
-      metadata?.replaceAll('\0', '').replace("StreamTitle='", '').replace("';", '') ?? null
+  @observable private metadata: null | IcyMetadata = null
+  @action private setMetadata(metadata: IcyMetadata | null) {
+    this.metadata = metadata
   }
 
   public constructor() {
@@ -160,9 +163,9 @@ export class RadioPlayerStore {
       const metadataLoop = async (signal: AbortSignal) => {
         localDebug('Starting metadata loop')
         try {
-          for await (const metadata of streamAsyncIterator(metadataStream, signal)) {
-            localDebug('Received metadata: %s', metadata)
-            this.setMetadata(metadata)
+          for await (const rawMetadata of streamAsyncIterator(metadataStream, signal)) {
+            localDebug('Received metadata: %s', rawMetadata)
+            this.setMetadata(decodeIcyMetadata(rawMetadata))
           }
           localDebug('Cleanup metadata')
           this.setMetadata(null)

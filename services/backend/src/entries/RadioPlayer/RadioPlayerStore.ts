@@ -135,13 +135,11 @@ export class RadioPlayerStore {
       URL.revokeObjectURL(this.state.objectURL)
     }
 
-    runInAction(() => {
-      this.setState({
-        status: RadioPlayerStatus.Stopped,
-      })
-
-      this.setMetadata(null)
+    this.setState({
+      status: RadioPlayerStatus.Stopped,
     })
+
+    this.setMetadata(null)
 
     stopAudio(this.htmlPlayerElement)
   }

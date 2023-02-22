@@ -2,6 +2,8 @@
  * Created by roman on 31.12.14.
  */
 
+import { reaction } from 'mobx'
+
 (function () {
     var player = angular.module("RadioPlayer", ['Site']);
 
@@ -162,23 +164,32 @@
     player.directive("play", ["$rootScope", function ($rootScope) {
         return {
             scope: {
-                obj: "="
+                channel: "="
             },
-            template: '<div class="play-pause"><div class="toggle" ng-click="$root.player.controls.playSwitchStream(obj)" mor-tooltip="{{ $root.tr(\'FR_PLAYER_PLAY_STOP\') }}">\
-                            <i ng-show="$root.player.isPlaying && $root.player.currentID == obj.sid" class="icon-stop"></i>\
-                            <i ng-hide="$root.player.isPlaying && $root.player.currentID == obj.sid" class="icon-play-arrow"></i>\
-                            </div></div>',
+            template: `
+                <div class="play-pause">
+                    <div mobx-autorun ng-hide="$root.$store.playingChannelId === channel.sid" class="toggle" 
+                         ng-click="$root.$store.playChannel(channel, $root.defaults.format)"
+                         mor-tooltip="Play"><i mobx-autorun class="icon-play-arrow"></i>
+                    </div>                
+                    <div mobx-autorun ng-show="$root.$store.playingChannelId === channel.sid" class="toggle" 
+                         ng-click="$root.$store.stopChannelPlayer()"
+                         mor-tooltip="Play"><i class="icon-stop"></i>
+                    </div>
+                </div>`,
             link: function (scope, element, attrs) {
-                var watcher = $rootScope.$watch("player.currentStream", function (stream) {
-                    if (angular.isObject(stream) && angular.isObject(scope.obj) && stream.sid == scope.obj.sid) {
+
+                const dispose = reaction(() => $rootScope.$store.playingChannel, (channel) => {
+                    if (channel?.sid === scope.channel?.sid) {
                         element.addClass("active");
                     } else {
                         element.removeClass("active");
                     }
-                    scope.$on("$destroy", function () {
-                        watcher();
-                    });
-                });
+                }, {
+                    fireImmediately: true
+                })
+
+                scope.$on("$destroy", dispose)
             }
         }
     }]);

@@ -17,17 +17,19 @@ configureMobX({
 const appStore = new AppStore()
 
 ng.module('application')
-  .constant('store', appStore)
+  .constant('$store', appStore)
   .run([
     '$rootScope',
-    'store',
-    ($rootScope: IScope, { radioPlayerStore }: AppStore) => {
+    '$store',
+    ($rootScope: IScope, $store: AppStore) => {
       $rootScope.$watch('defaults.format', (format: string) => {
-        if (radioPlayerStore.state.status === RadioPlayerStatus.Playing) {
+        if ($store.radioPlayerState.status === RadioPlayerStatus.Playing) {
           debug('Restarting playback due to default format change: %s', format)
-          radioPlayerStore.play(radioPlayerStore.state.id, format)
+          $store.playChannel($store.radioPlayerState.channel, format)
         }
       })
+
+      Object.assign($rootScope, { $store })
     },
   ])
 

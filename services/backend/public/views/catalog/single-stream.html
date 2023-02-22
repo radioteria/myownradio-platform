@@ -85,26 +85,26 @@
                     <!-- PLAY BUTTON -->
                     <div class="now-playing-frame" ng-if="data.channel">
                         <div class="player" mobx-autorun>
-                            <div ng-if="radioPlayerStore.id !== data.channel.sid"
+                            <div ng-if='$store.playingChannelId !== data.channel.sid'
                                  mobx-autorun
                                  mor-tooltip="Play"
                                  class="toggle"
-                                 ng-click="radioPlayerStore.play(data.channel.sid, defaults.format)">
+                                 ng-click="$store.playChannel(data.channel, defaults.format)">
                                 <i class='icon-play-arrow'></i>
                             </div>
-                            <div ng-if="radioPlayerStore.id === data.channel.sid"
+                            <div ng-if='$store.playingChannelId === data.channel.sid'
                                  mobx-autorun
                                  mor-tooltip="Stop"
                                  class="toggle"
-                                 ng-click="radioPlayerStore.stop()">
+                                 ng-click="$store.stopChannelPlayer()">
                                 <i class='icon-stop'></i>
                             </div>
-                            <div ng-if="radioPlayerStore.id === data.channel.sid" mobx-autorun>
+                            <div ng-if='$store.playingChannelId === data.channel.sid' mobx-autorun>
                                 <div class="key overflow-hidden">
-                                    <div class="left" mobx-autorun>{{ radioPlayerStore.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}</div>
+                                    <div class="left" mobx-autorun>{{ $store.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}</div>
                                 </div>
                                 <div class="value" mobx-autorun>
-                                    {{ radioPlayerStore.streamTitle | uppercase }}
+                                    {{ $store.trackTitle | uppercase }}
                                 </div>
                             </div>
                         </div>

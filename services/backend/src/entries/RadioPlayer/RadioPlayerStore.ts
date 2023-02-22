@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable } from 'mobx'
+import { action, computed, makeObservable, observable, runInAction } from 'mobx'
 import makeDebug from 'debug'
 import { appendBufferAsync, playAudio, stopAudio } from './RadioPlayerStore.util'
 import { makeIcyDemuxedStream, streamAsyncIterator } from './IcyDemuxer.utils'
@@ -17,9 +17,9 @@ export type RadioPlayerState =
     }
   | {
       status: RadioPlayerStatus.Playing
-      src: string
+      channel: Channel
+      format: PlayFormat
       objectURL: string
-      id: number
     }
 
 export class RadioPlayerStore {
@@ -47,17 +47,17 @@ export class RadioPlayerStore {
     this.currentTime = currentTime
   }
 
-  @computed public get src(): null | string {
+  @computed public get playingChannelId(): null | number {
     if (this.state.status === RadioPlayerStatus.Playing) {
-      return this.state.src
+      return this.state.channel.sid
     }
 
     return null
   }
 
-  @computed public get id(): null | number {
+  @computed public get playingChannel(): Channel | null {
     if (this.state.status === RadioPlayerStatus.Playing) {
-      return this.state.id
+      return this.state.channel
     }
 
     return null
@@ -103,19 +103,15 @@ export class RadioPlayerStore {
       ) {
         debug('Playback unexpectedly ended: restarting')
 
-        this.play(this.state.id, this.state.src)
+        this.play(this.state.channel, this.state.format)
       }
     }
 
     this.htmlPlayerElement = audio
   }
 
-  public playChannel(channel: Channel, format: PlayFormat) {
-    this.play(channel.sid, format)
-  }
-
-  public play(id: number, format: string) {
-    const src = `/flow?s=${id}&f=${format}`
+  public play(channel: Channel, format: PlayFormat) {
+    const src = `/flow?s=${channel.sid}&f=${format}`
 
     const mediaSource = this.makeMediaSource(src)
     const objectURL = URL.createObjectURL(mediaSource)
@@ -126,8 +122,8 @@ export class RadioPlayerStore {
 
     this.setState({
       status: RadioPlayerStatus.Playing,
-      src,
-      id,
+      channel,
+      format,
       objectURL,
     })
 
@@ -139,31 +135,32 @@ export class RadioPlayerStore {
       URL.revokeObjectURL(this.state.objectURL)
     }
 
-    this.setState({
-      status: RadioPlayerStatus.Stopped,
+    runInAction(() => {
+      this.setState({
+        status: RadioPlayerStatus.Stopped,
+      })
+
+      this.setMetadata(null)
     })
 
     stopAudio(this.htmlPlayerElement)
-
-    this.setMetadata(null)
   }
 
   private makeMediaSource(url: string): MediaSource {
-    const mediaSource = new MediaSource()
     const localDebug = debug.extend('MediaSource')
+    const mediaSource = new MediaSource()
+    const abortController = new AbortController()
+
+    mediaSource.addEventListener('sourceclose', () => {
+      abortController.abort()
+    })
 
     mediaSource.addEventListener('sourceopen', async () => {
-      const abortController = new AbortController()
-
       const [mediaStream, metadataStream, contentType] = await makeIcyDemuxedStream(
         url,
         abortController.signal,
       )
       const sourceBuffer = mediaSource.addSourceBuffer(contentType)
-
-      mediaSource.addEventListener('sourceclose', () => {
-        abortController.abort()
-      })
 
       const metadataLoop = async (signal: AbortSignal) => {
         localDebug('Starting metadata loop')

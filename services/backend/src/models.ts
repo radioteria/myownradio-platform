@@ -13,9 +13,9 @@ export const Channel = z.object({
   listeners_count: z.number(),
   name: z.string(),
   permalink: z.string(),
-  playbacks: z.string(),
+  playbacks: z.number(),
   sid: z.number(),
-  status: z.string(),
+  status: z.number(),
   uid: z.number(),
 })
 export type Channel = z.infer<typeof Channel>

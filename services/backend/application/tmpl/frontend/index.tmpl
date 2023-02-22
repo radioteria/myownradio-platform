@@ -94,8 +94,8 @@ foreach ($assets as $asset) {
 
 </head>
 
-<body class="{{ rootClass ? rootClass : '' }} {{ player.isLoaded ? 'player-visible' :'' }}" analytics-on="click"
-      analytics-event="Click" analytics-category="Application">
+<body mobx-autorun class="{{ rootClass ? rootClass : '' }} {{ $store.isPlaying ? 'player-visible' :'' }}" analytics-on="click"
+      analytics-event="Click" analytics-category="Application" mobx-autorun>
 <div id="fb-root"></div>
 
 <script>
@@ -132,56 +132,38 @@ foreach ($assets as $asset) {
     </div>
 </div>
 
-<div ng-if="player.isPlaying" >
-    <now ng-model="player.currentStream" on-track-change="player.nowPlaying"></now>
-</div>
-
-<div synchronize="player.currentStream" sync-key="sid"></div>
-<div synchronize="player.nowPlaying" sync-key="tid"></div>
-
 <div class="special">
-    <div class="player-container ngCloak" ng-if="player.isLoaded"
-         mor-background-color="player.currentStream.cover_background">
+    <div mobx-autorun class="player-container ngCloak" ng-if="$store.isPlaying"
+         mor-background-color="$store.playingChannel.cover_background">
         <div class="cool-player table">
             <div class="row">
                 <div class="cell radio-cover">
-                    <a ng-href="{{ player.currentStream | channelLink }}">
+                    <a mobx-autorun ng-href="{{ $store.playingChannel | channelLink }}" >
                         <div class="cover dark">
-                            <img fadein ng-if="player.currentStream.cover"
-                                 ng-src="{{ player.currentStream.cover | channelArtwork }}?size=64">
+                            <img mobx-autorun fadein ng-if="$store.playingChannel.cover"
+                                 ng-src="{{ $store.playingChannel.cover | channelArtwork }}?size=64">
                         </div>
                     </a>
                 </div>
                 <div class="cell radio-title">
                     <div class="title">
-                        <a ng-href="{{ player.currentStream | channelLink }}"
-                           ng-bind="player.currentStream.name | uppercase"></a>
+                        <a mobx-autorun ng-href="{{ $store.playingChannel | channelLink }}"
+                           ng-bind="$store.playingChannel.name | uppercase"></a>
                     </div>
                 </div>
                 <div class="cell social-buttons">
-                    <i share-channel="player.currentStream" class="hoverable"></i>
-                    <bookmark class="hoverable" ng-model="player.currentStream"></bookmark>
-                    <span ng-if="account.authorized && player.currentStream.uid !== account.user.uid">
-                        <span ng-if="player.nowPlaying.can_be_shared">
-                            <i class="icon-cloud-download"
-                               mor-tooltip="{{ tr('FR_PLAYER_COPY_TRACK') }}"
-                               ng-click="copyTrack(player.nowPlaying)"></i>
-                        </span>
-                    </span>
-                    <a target="_blank" ng-if="player.nowPlaying.buy" ng-href="{{ player.nowPlaying.buy }}"
-                       mor-tooltop="{{ tr('FR_PLAYER_BUY_TRACK') }}">
-                        <i class="icon-shopping-cart"></i>
-                    </a>
+                    <i mobx-autorun share-channel="$store.playingChannel" class="hoverable"></i>
+                    <bookmark mobx-autorun class="hoverable" ng-model="$store.playingChannel"></bookmark>
                 </div>
                 <div class="cell track-title">
-                    <span ng-if="player.nowPlaying">
+                    <span mobx-autorun ng-if="$store.isPlaying">
                         <span class="darker" ng-bind-template="{{ tr('FR_PLAYER_ON_AIR') }}:"></span>
-                        <span ng-bind-template="{{ player.nowPlaying.artist | uppercase }} - {{ player.nowPlaying.title | uppercase }}"></span>
+                        <span mobx-autorun ng-bind-template="{{ $store.trackTitle | uppercase }}"></span>
                     </span>
                 </div>
                 <div class="cell right-tools">
                     <span class="play-stop hoverable" ng-click="player.controls.switch()">
-                        <i ng-class="player.isPlaying ? 'icon-stop2' : 'icon-play'"
+                        <i mobx-autorun ng-class="$store.isPlaying ? 'icon-stop2' : 'icon-play'"
                            mor-tooltip="{{ tr('FR_PLAYER_PLAY_STOP') }}"></i>
                     </span>
                     <span class="vertical-padding"></span>

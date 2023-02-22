@@ -2,7 +2,7 @@ import { action, computed, makeObservable, observable } from 'mobx'
 import makeDebug from 'debug'
 import { appendBufferAsync, playAudio, stopAudio } from './RadioPlayerStore.util'
 import { makeIcyDemuxedStream, streamAsyncIterator } from './IcyDemuxer.utils'
-import { decodeIcyMetadata, IcyMetadata } from '../../models'
+import { Channel, decodeIcyMetadata, IcyMetadata, PlayFormat } from '../../models'
 
 const debug = makeDebug('RadioPlayerStore')
 
@@ -108,6 +108,10 @@ export class RadioPlayerStore {
     }
 
     this.htmlPlayerElement = audio
+  }
+
+  public playChannel(channel: Channel, format: PlayFormat) {
+    this.play(channel.sid, format)
   }
 
   public play(id: number, format: string) {

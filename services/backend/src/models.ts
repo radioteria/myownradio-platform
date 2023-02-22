@@ -14,10 +14,22 @@ export const Channel = z.object({
   name: z.string(),
   permalink: z.string(),
   playbacks: z.string(),
-  sid: z.string(),
+  sid: z.number(),
   status: z.string(),
   uid: z.number(),
 })
+export type Channel = z.infer<typeof Channel>
+
+export const PlayFormat = z.enum([
+  'mp3_128k',
+  'mp3_256k',
+  'mp3_320k',
+  'aacplus_24k',
+  'aacplus_32k',
+  'aacplus_64k',
+  'aacplus_128k',
+])
+export type PlayFormat = z.infer<typeof PlayFormat>
 
 export const User = z.object({
   avatar: z.string(),
@@ -31,11 +43,12 @@ export const User = z.object({
   tracks_count: z.number(),
   uid: z.number(),
 })
+export type User = z.infer<typeof User>
 
 export const IcyMetadata = z.object({
   stream_title: z.string(),
 })
-export type IcyMetadata = z.TypeOf<typeof IcyMetadata>
+export type IcyMetadata = z.infer<typeof IcyMetadata>
 
 const ICY_METADATA_REGEX = /^StreamTitle='(.+)';.*/
 

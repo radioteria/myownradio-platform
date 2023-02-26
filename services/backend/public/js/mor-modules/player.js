@@ -173,7 +173,7 @@ import { reaction } from 'mobx'
                          mor-tooltip="Play"><i mobx-autorun class="icon-play-arrow"></i>
                     </div>                
                     <div mobx-autorun ng-show="$root.$store.playingChannelId === channel.sid" class="toggle" 
-                         ng-click="$root.$store.stopChannelPlayer()"
+                         ng-click="$root.$store.stopChannel()"
                          mor-tooltip="Play"><i class="icon-stop"></i>
                     </div>
                 </div>`,
@@ -197,8 +197,8 @@ import { reaction } from 'mobx'
     player.directive("preview", ["TrackPreviewService", function (TrackPreviewService) {
         return {
             template: '<span class="only-first-element" mor-tooltip="{{ $root.tr(\'FR_PLAYER_CLICK_TO_REVIEW\') }}">' +
-                '<i ng-if="!isPlaying" class="icon-play-circle-fill"></i>' +
-                '<i ng-if="isPlaying" class="icon-pause-circle-fill"></i>' +
+                '<i ng-if="!isRadioPlayerPlaying" class="icon-play-circle-fill"></i>' +
+                '<i ng-if="isRadioPlayerPlaying" class="icon-pause-circle-fill"></i>' +
                 '</span>',
             restrict: "E",
             require: "ngModel",

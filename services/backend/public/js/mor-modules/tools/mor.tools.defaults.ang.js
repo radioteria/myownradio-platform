@@ -11,7 +11,6 @@
         $rootScope.setDefaultFormat = function (format) {
             $rootScope.defaults.format = format;
             Defaults.setDefaultFormat(format);
-            $rootScope.player.controls.reload();
         };
 
     }]);

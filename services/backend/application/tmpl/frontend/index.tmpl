@@ -94,7 +94,7 @@ foreach ($assets as $asset) {
 
 </head>
 
-<body mobx-autorun class="{{ rootClass ? rootClass : '' }} {{ $store.isPlaying ? 'player-visible' :'' }}" analytics-on="click"
+<body mobx-autorun class="{{ rootClass ? rootClass : '' }} {{ $store.isRadioPlayerPlaying ? 'player-visible' :'' }}" analytics-on="click"
       analytics-event="Click" analytics-category="Application" mobx-autorun>
 <div id="fb-root"></div>
 
@@ -133,7 +133,7 @@ foreach ($assets as $asset) {
 </div>
 
 <div class="special">
-    <div mobx-autorun class="player-container ngCloak" ng-if="$store.isPlaying"
+    <div mobx-autorun class="player-container ngCloak" ng-if="$store.isRadioPlayerPlaying"
          mor-background-color="$store.playingChannel.cover_background">
         <div class="cool-player table">
             <div class="row">
@@ -151,24 +151,16 @@ foreach ($assets as $asset) {
                            ng-bind="$store.playingChannel.name | uppercase"></a>
                     </div>
                 </div>
-                <div class="cell social-buttons">
-                    <i mobx-autorun share-channel="$store.playingChannel" class="hoverable"></i>
-                    <bookmark mobx-autorun class="hoverable" ng-model="$store.playingChannel"></bookmark>
-                </div>
                 <div class="cell track-title">
-                    <span mobx-autorun ng-if="$store.isPlaying">
+                    <span mobx-autorun ng-if="$store.isRadioPlayerPlaying">
                         <span class="darker" ng-bind-template="{{ tr('FR_PLAYER_ON_AIR') }}:"></span>
                         <span mobx-autorun ng-bind-template="{{ $store.trackTitle | uppercase }}"></span>
                     </span>
                 </div>
                 <div class="cell right-tools">
-                    <span class="play-stop hoverable" ng-click="player.controls.switch()">
-                        <i mobx-autorun ng-class="$store.isPlaying ? 'icon-stop2' : 'icon-play'"
+                    <span class="play-stop hoverable" ng-click="$store.stopChannel()">
+                        <i mobx-autorun ng-class="$store.isRadioPlayerPlaying ? 'icon-stop2' : 'icon-play'"
                            mor-tooltip="{{ tr('FR_PLAYER_PLAY_STOP') }}"></i>
-                    </span>
-                    <span class="vertical-padding"></span>
-                    <span class="stop hoverable" ng-click="player.controls.unload()" mor-tooltip="{{ tr('FR_CLOSE') }}">
-                        <i class="icon-switch"></i>
                     </span>
                 </div>
             </div>

@@ -28,9 +28,6 @@
                                 </a>
                             </li>
                             <li ng-if="data.channel.uid === account.user.uid" class="vertical-separator"></li>
-                            <li>
-                                <icon share-channel="data.channel"></icon>
-                            </li>
                             <li ng-init="badgeShown=false" ng-click-outside="badgeShown=false">
                                 <i class="icon-settings" ng-class="{shown: badgeShown}" ng-click="badgeShown=!badgeShown" mor-tooltip="{{ tr('FR_SETTINGS') }}"></i>
                                 <div ng-show="badgeShown" class="settings-badge">
@@ -96,12 +93,13 @@
                                  mobx-autorun
                                  mor-tooltip="Stop"
                                  class="toggle"
-                                 ng-click="$store.stopChannelPlayer()">
+                                 ng-click='$store.stopChannel()'>
                                 <i class='icon-stop'></i>
                             </div>
                             <div ng-if='$store.playingChannelId === data.channel.sid' mobx-autorun>
                                 <div class="key overflow-hidden">
-                                    <div class="left" mobx-autorun>{{ $store.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}</div>
+                                    <div class="left" mobx-autorun>{{ $store.isRadioPlayerBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING")
+                                        }}</div>
                                 </div>
                                 <div class="value" mobx-autorun>
                                     {{ $store.trackTitle | uppercase }}

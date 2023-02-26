@@ -6,11 +6,11 @@ import { action, computed } from 'mobx'
 export class AppStore {
   readonly radioPlayerStore: RadioPlayerStore = new RadioPlayerStore()
 
-  @computed public get isBuffering(): boolean {
+  @computed public get isRadioPlayerBuffering(): boolean {
     return this.radioPlayerStore.isBuffering
   }
 
-  @computed public get isPlaying(): boolean {
+  @computed public get isRadioPlayerPlaying(): boolean {
     return this.radioPlayerStore.isPlaying
   }
 
@@ -37,7 +37,7 @@ export class AppStore {
     this.radioPlayerStore.play(channel, format)
   }
 
-  @action public stopChannelPlayer() {
+  @action public stopChannel() {
     this.radioPlayerStore.stop()
   }
 }

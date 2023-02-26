@@ -1,6 +1,8 @@
 /**
  * Created by Roman on 07.04.15.
  */
+import { reaction } from 'mobx'
+
 (function () {
     var module = angular.module("application");
 
@@ -11,8 +13,8 @@
                 playIcon: "="
             },
             link: function (scope, element, attrs) {
-                $rootScope.$watchCollection("player", function (player) {
-                    if (player.isPlaying && player.currentStream.sid == scope.playIcon.sid) {
+                const dispose = reaction(() => $rootScope.$store.playingChannel, (channel) => {
+                    if (channel?.sid === scope.playIcon.sid) {
                         element.removeClass("icon-play-arrow");
                         element.addClass("icon-stop");
                     } else {
@@ -20,6 +22,8 @@
                         element.addClass("icon-play-arrow");
                     }
                 });
+
+                scope.$on('$destroy', dispose);
             }
         }
     }]);

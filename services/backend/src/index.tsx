@@ -1,12 +1,12 @@
 import './bootstrap' // <-- This import should be first in list!
 import 'reflect-metadata'
-import ng from 'angular'
-import React from 'react'
+import ng, { IScope } from 'angular'
 import { configure as configureMobX } from 'mobx'
-import { makeReactApp } from './reactInterop'
-import { RadioPlayerComponent } from './entries/RadioPlayer'
+import makeDebug from 'debug'
 import { AppStore } from './store'
-import { Observer } from 'mobx-react-lite'
+import { RadioPlayerStatus } from './entries/RadioPlayer'
+
+const debug = makeDebug('main')
 
 configureMobX({
   computedRequiresReaction: true,
@@ -15,24 +15,22 @@ configureMobX({
 })
 
 const appStore = new AppStore()
-const { audioPlayerStore } = appStore
 
 ng.module('application')
-  .constant('store', appStore)
-  .directive(
-    'reactRadioPlayer',
-    makeReactApp(
-      <Observer>
-        {() => (
-          <RadioPlayerComponent
-            src={audioPlayerStore.src}
-            onBufferingStatusChange={audioPlayerStore.setBufferingStatus}
-            onBufferedAmountChange={audioPlayerStore.setBufferedAmount}
-            onCurrentTimeChange={audioPlayerStore.setCurrentTime}
-          />
-        )}
-      </Observer>,
-    ),
-  )
+  .constant('$store', appStore)
+  .run([
+    '$rootScope',
+    '$store',
+    ($rootScope: IScope, $store: AppStore) => {
+      $rootScope.$watch('defaults.format', (format: string) => {
+        if ($store.radioPlayerState.status === RadioPlayerStatus.Playing) {
+          debug('Restarting playback due to default format change: %s', format)
+          $store.playChannel($store.radioPlayerState.channel, format)
+        }
+      })
+
+      Object.assign($rootScope, { $store })
+    },
+  ])
 
 Object.assign(window, { appStore })

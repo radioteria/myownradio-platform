@@ -244,9 +244,21 @@ impl StreamOutputs {
                                 break;
                             }
 
-                            if let StreamMessage::Buffer(bytes) = msg {
-                                if encoder_sender.send(bytes).await.is_err() {
-                                    break;
+                            match msg {
+                                StreamMessage::TrackTitle(title) => {
+                                    if encoded_messages_channel
+                                        .send_all(StreamMessage::TrackTitle(title))
+                                        .await
+                                        .is_err()
+                                    {
+                                        // All consumers has been disconnected.
+                                        break;
+                                    }
+                                }
+                                StreamMessage::Buffer(bytes) => {
+                                    if encoder_sender.send(bytes).await.is_err() {
+                                        break;
+                                    }
                                 }
                             }
                         }

@@ -1,2 +1,1 @@
-export { RadioPlayerStore } from './RadioPlayerStore'
-export { RadioPlayerComponent } from './RadioPlayerComponent'
+export { RadioPlayerStore, RadioPlayerStatus } from './RadioPlayerStore'

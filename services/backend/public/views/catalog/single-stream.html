@@ -28,9 +28,6 @@
                                 </a>
                             </li>
                             <li ng-if="data.channel.uid === account.user.uid" class="vertical-separator"></li>
-                            <li>
-                                <icon share-channel="data.channel"></icon>
-                            </li>
                             <li ng-init="badgeShown=false" ng-click-outside="badgeShown=false">
                                 <i class="icon-settings" ng-class="{shown: badgeShown}" ng-click="badgeShown=!badgeShown" mor-tooltip="{{ tr('FR_SETTINGS') }}"></i>
                                 <div ng-show="badgeShown" class="settings-badge">
@@ -84,16 +81,28 @@
                     </div>
                     <!-- PLAY BUTTON -->
                     <div class="now-playing-frame" ng-if="data.channel">
-                        <div class="player">
-                            <div mor-tooltip="Play / Stop" class="toggle" ng-click="action.play()">
-                                <i play-icon="data.channel"></i>
+                        <div class="player" mobx-autorun>
+                            <div ng-if='$store.playingChannelId !== data.channel.sid'
+                                 mobx-autorun
+                                 mor-tooltip="Play"
+                                 class="toggle"
+                                 ng-click="$store.playChannel(data.channel, defaults.format)">
+                                <i class='icon-play-arrow'></i>
                             </div>
-                            <div ng-if="player.isPlaying && player.currentStream.sid == data.channel.sid">
+                            <div ng-if='$store.playingChannelId === data.channel.sid'
+                                 mobx-autorun
+                                 mor-tooltip="Stop"
+                                 class="toggle"
+                                 ng-click='$store.stopChannel()'>
+                                <i class='icon-stop'></i>
+                            </div>
+                            <div ng-if='$store.playingChannelId === data.channel.sid' mobx-autorun>
                                 <div class="key overflow-hidden">
-                                    <div class="left">{{ player.isBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING") }}</div>
+                                    <div class="left" mobx-autorun>{{ $store.isRadioPlayerBuffering ? tr('FR_BUFFERING') : tr("FR_NOW_PLAYING")
+                                        }}</div>
                                 </div>
-                                <div class="value">
-                                    {{ player.nowPlaying | trackCaption | uppercase }}
+                                <div class="value" mobx-autorun>
+                                    {{ $store.trackTitle | uppercase }}
                                 </div>
                             </div>
                         </div>

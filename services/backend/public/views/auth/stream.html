@@ -19,8 +19,6 @@
                 <span>URL <a class="small" href="{{stream.url}}">https:{{stream.url}}</a></span>
             </div>
 
-            <now ng-model="stream" on-track-change="now"></now>
-
             <div class="tracks-wrap">
                 <div class="dws-wrap">
                     <div class="filter">
@@ -36,7 +34,7 @@
                                 />
                     </div>
                     <div class="controls select-persistent">
-                        <div ng-if="stream.status" class="button" ng-click="player.controls.playSwitchStream(stream)" mor-tooltip="{{ tr('FR_LISTEN_TO_THIS') }}">
+                        <div ng-if="stream.status" class="button" ng-click="$store.playChannel(stream, defaults.format)" mor-tooltip="{{ tr('FR_LISTEN_TO_THIS') }}">
                             <i class="icon-play-arrow"></i>
                             <translate>FR_LISTEN</translate>
                         </div>

@@ -1,6 +1,7 @@
 name: trigger radio-streamer image build
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main

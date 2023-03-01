@@ -1,6 +1,7 @@
 name: trigger radio-manager-backend image build
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main

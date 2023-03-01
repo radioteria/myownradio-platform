@@ -1,4 +1,4 @@
-name: build an image
+name: build ${{ github.event.client_payload.image_name }} image
 
 on:
   repository_dispatch:

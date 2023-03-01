@@ -12,6 +12,17 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@master
+      - name: update workflow title
+        uses: actions/http-request@v1
+        with:
+          url: https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          method: PATCH
+          headers: |
+            Accept: application/vnd.github.v3+json
+            Authorization: token ${{ secrets.GITHUB_TOKEN }}
+          body: |
+            {"name": "build ${{ github.event.client_payload.image_name }} image - '${{ github.run_number }}' (${{ github.sha }})"}
+
       - name: setup variables
         id: vars
         run: |

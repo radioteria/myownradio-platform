@@ -130,7 +130,7 @@
                 <li ng-repeat="stream in data.channels.items" synchronize="stream" sync-key="sid">
                     <div class="cover">
                         <img fadein ng-if="stream.cover" ng-src="{{ stream.cover | channelArtwork }}?size=64">
-                        <play obj="stream"></play>
+                        <play channel="stream"></play>
                     </div>
                     <div class="info">
                         <div class="title">

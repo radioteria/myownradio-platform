@@ -6,6 +6,8 @@ import { Channel, decodeIcyMetadata, IcyMetadata, PlayFormat } from '../../model
 
 const debug = makeDebug('RadioPlayerStore')
 
+const KEEP_METADATA_ENTRIES_NUM = 5
+
 export enum RadioPlayerStatus {
   Stopped = 'Stopped',
   Playing = 'Playing',
@@ -22,6 +24,11 @@ export type RadioPlayerState =
       objectURL: string
     }
 
+export interface IcyMetadataEntry {
+  pts: number
+  metadata: IcyMetadata
+}
+
 export class RadioPlayerStore {
   private readonly htmlPlayerElement: HTMLAudioElement
 
@@ -37,9 +44,9 @@ export class RadioPlayerStore {
     this.bufferingStatus = status
   }
 
-  @observable bufferedAmount: number = 0
-  @action private setBufferedAmount = (bufferedAmount: number) => {
-    this.bufferedAmount = bufferedAmount
+  @observable bufferedTime: number = 0
+  @action private setBufferedTime = (bufferedTime: number) => {
+    this.bufferedTime = bufferedTime
   }
 
   @observable public currentTime: number = 0
@@ -63,10 +70,6 @@ export class RadioPlayerStore {
     return null
   }
 
-  @computed public get streamTitle(): null | string {
-    return this.metadata?.stream_title ?? null
-  }
-
   @computed public get isPlaying(): boolean {
     return this.state.status === RadioPlayerStatus.Playing
   }
@@ -75,9 +78,26 @@ export class RadioPlayerStore {
     return this.bufferingStatus === 'buffering'
   }
 
-  @observable.ref private metadata: null | IcyMetadata = null
-  @action private setMetadata(metadata: IcyMetadata | null) {
-    this.metadata = metadata
+  @computed public get trackTitle(): null | string {
+    for (const entry of this.metadataEntries) {
+      if (this.currentTime >= entry.pts) {
+        return entry.metadata.stream_title
+      }
+    }
+
+    return null
+  }
+
+  @observable private metadataEntries: IcyMetadataEntry[] = []
+  @action private pushMetadata(metadata: IcyMetadata | null) {
+    if (metadata === null) {
+      this.metadataEntries = []
+    } else {
+      const pts = this.metadataEntries.length > 0 ? this.bufferedTime : 0
+
+      this.metadataEntries.unshift({ pts, metadata })
+      this.metadataEntries.splice(KEEP_METADATA_ENTRIES_NUM)
+    }
   }
 
   public constructor() {
@@ -89,11 +109,12 @@ export class RadioPlayerStore {
     audio.autoplay = false
     audio.onwaiting = () => this.setBufferingStatus('buffering')
     audio.onplaying = () => this.setBufferingStatus('playing')
-    audio.onprogress = () => {
+    audio.ontimeupdate = () => {
       this.setCurrentTime(audio.currentTime)
-
+    }
+    audio.onprogress = () => {
       if (audio.buffered.length > 0) {
-        this.setBufferedAmount(audio.buffered.end(audio.buffered.length - 1))
+        this.setBufferedTime(audio.buffered.end(audio.buffered.length - 1))
       }
     }
     audio.onended = () => {
@@ -139,7 +160,7 @@ export class RadioPlayerStore {
       status: RadioPlayerStatus.Stopped,
     })
 
-    this.setMetadata(null)
+    this.pushMetadata(null)
 
     stopAudio(this.htmlPlayerElement)
   }
@@ -165,10 +186,10 @@ export class RadioPlayerStore {
         try {
           for await (const rawMetadata of streamAsyncIterator(metadataStream, signal)) {
             localDebug('Received metadata: %s', rawMetadata)
-            this.setMetadata(decodeIcyMetadata(rawMetadata))
+            this.pushMetadata(decodeIcyMetadata(rawMetadata))
           }
           localDebug('Cleanup metadata')
-          this.setMetadata(null)
+          this.pushMetadata(null)
         } finally {
           localDebug('End of metadata loop: closing stream')
           await metadataStream.cancel()

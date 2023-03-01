@@ -3,7 +3,7 @@ name: trigger radio-streamer image build
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'services/radio-streamer/**'
 

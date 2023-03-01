@@ -3,7 +3,7 @@ name: trigger radio-manager-backend image build
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'services/radio-manager-backend/**'
 

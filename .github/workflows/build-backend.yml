@@ -1,4 +1,4 @@
-name: trigger radio-streamer image build
+name: trigger backend images build
 
 on:
   workflow_dispatch:

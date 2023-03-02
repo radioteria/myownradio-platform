@@ -2,6 +2,8 @@
 import { resolve } from 'path'
 import webpack = require('webpack')
 import WebpackAssetsManifest = require('webpack-assets-manifest')
+import getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent')
+import MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 export default (env: Record<string, string> = {}): webpack.Configuration => {
   return {
@@ -50,6 +52,37 @@ export default (env: Record<string, string> = {}): webpack.Configuration => {
               test: /\.tsx?$/,
               exclude: /node_modules/,
               use: ['ts-loader'],
+            },
+          ],
+        },
+        {
+          test: [/\.module.(s(a|c)ss)$/, /\.module.css$/],
+          include: resolve(__dirname, 'src'),
+          use: [
+            env['production'] ? MiniCssExtractPlugin.loader : 'style-loader',
+            {
+              loader: 'css-loader',
+              options: {
+                modules: {
+                  getLocalIdent: getCSSModuleLocalIdent,
+                },
+                sourceMap: true,
+              },
+            },
+            {
+              loader: 'postcss-loader',
+              options: {
+                postcssOptions: {
+                  plugins: ['autoprefixer', 'postcss-csso'],
+                },
+                sourceMap: true,
+              },
+            },
+            {
+              loader: 'sass-loader',
+              options: {
+                sourceMap: true,
+              },
             },
           ],
         },

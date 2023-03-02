@@ -88,7 +88,7 @@ export class RadioPlayerStore {
     return null
   }
 
-  @observable private metadataEntries: IcyMetadataEntry[] = []
+  @observable public metadataEntries: IcyMetadataEntry[] = []
   @action private pushMetadata(metadata: IcyMetadata | null) {
     if (metadata === null) {
       this.metadataEntries = []
@@ -160,9 +160,11 @@ export class RadioPlayerStore {
       status: RadioPlayerStatus.Stopped,
     })
 
-    this.pushMetadata(null)
-
     stopAudio(this.htmlPlayerElement)
+
+    this.pushMetadata(null)
+    this.setCurrentTime(0)
+    this.setBufferedTime(0)
   }
 
   private makeMediaSource(url: string): MediaSource {

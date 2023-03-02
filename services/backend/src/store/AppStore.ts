@@ -15,7 +15,7 @@ export class AppStore {
   }
 
   @computed public get trackTitle(): string | null {
-    return this.radioPlayerStore.streamTitle
+    return this.radioPlayerStore.trackTitle
   }
 
   @computed public get playingChannelId(): number | null {

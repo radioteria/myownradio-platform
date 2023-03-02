@@ -47,6 +47,10 @@ foreach ($assets as $asset) {
     if (endsWith($asset, ".js")) {
         echo "    <script src=\"assets/$asset\"></script>\n";
     }
+
+    if (endsWith($asset, ".css")) {
+        echo "    <link rel=\"stylesheet\" type=\"text/css\" href=\"assets/$asset\">\n";
+    }
 }
 ?>
 

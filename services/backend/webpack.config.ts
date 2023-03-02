@@ -88,7 +88,7 @@ export default (env: Record<string, string> = {}): webpack.Configuration => {
         },
       ],
     },
-    plugins: [new WebpackAssetsManifest()],
+    plugins: [new WebpackAssetsManifest(), new MiniCssExtractPlugin()],
     watchOptions: {
       ignored: /node_modules/,
     },

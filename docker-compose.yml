@@ -104,7 +104,6 @@ services:
       dockerfile: Dockerfile
     user: "${USER}"
     working_dir: /code
-    command: cargo run
     networks:
       - myownradio-dev
     ports:
@@ -119,7 +118,6 @@ services:
       - ./services/backend/.cache/storage:/data:rw
     user: "${USER}"
     working_dir: /code
-    command: cargo run
     networks:
       - myownradio-dev
     ports:

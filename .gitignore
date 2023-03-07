@@ -67,3 +67,5 @@ exports
 .idea
 
 target
+
+**/.cargo/config.toml

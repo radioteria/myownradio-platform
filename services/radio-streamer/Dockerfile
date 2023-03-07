@@ -1,6 +1,11 @@
 FROM rust:1.66.0
 
-ENV DUMMY=13
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update
+
+RUN apt-get install -y --no-install-recommends \
+    libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev libclang-dev
 
 WORKDIR /code
 

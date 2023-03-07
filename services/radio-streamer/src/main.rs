@@ -62,6 +62,8 @@ async fn main() -> Result<()> {
     };
     let logger = Arc::new(logger);
 
+    ffmpeg::init().expect("Unable to initialize ffmpeg");
+
     let backend_client = Arc::new(BackendClient::new(
         &config.mor_backend_url,
         &logger.new(o!("scope" => "BackendClient")),

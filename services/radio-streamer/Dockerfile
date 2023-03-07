@@ -31,6 +31,9 @@ RUN \
 
 FROM ubuntu:20.04
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends \
+    libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev
+
 USER nobody:nogroup
 
 COPY --from=0 /code/radio-streamer /radio-streamer

@@ -101,11 +101,7 @@ services:
       - file-server
     build:
       context: ./services/radio-streamer
-      dockerfile: Dockerfile-dev
-    volumes:
-      - ./services/radio-streamer:/code:rw
-      - ./services/radio-streamer/.cargo-cache/git:/rust/.cargo/git
-      - ./services/radio-streamer/.cargo-cache/registry:/rust/.cargo/registry
+      dockerfile: Dockerfile
     user: "${USER}"
     working_dir: /code
     command: cargo run
@@ -118,11 +114,8 @@ services:
   radio-manager-backend:
     build:
       context: services/radio-manager-backend
-      dockerfile: Dockerfile-dev
+      dockerfile: Dockerfile
     volumes:
-      - ./services/radio-manager-backend:/code:rw
-      - ./services/radio-manager-backend/.cargo-cache/git:/rust/.cargo/git
-      - ./services/radio-manager-backend/.cargo-cache/registry:/rust/.cargo/registry
       - ./services/backend/.cache/storage:/data:rw
     user: "${USER}"
     working_dir: /code

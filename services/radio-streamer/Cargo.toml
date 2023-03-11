@@ -22,7 +22,9 @@ thiserror = "1.0.38"
 async-trait = "0.1.60"
 lazy_static = "1.4.0"
 regex = "1.7.0"
-ffmpeg = "0.3.0"
+
+[dependencies.ffmpeg-next]
+git = "https://github.com/pldin601/rust-ffmpeg.git"
 
 [dependencies.slog]
 version = "2.7.0"

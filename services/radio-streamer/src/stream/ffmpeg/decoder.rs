@@ -1,4 +1,10 @@
+use crate::stream::constants::AUDIO_SAMPLING_FREQUENCY;
 use crate::unwrap_or_return;
+use ffmpeg_next::codec::Id::PCM_F16LE;
+use ffmpeg_next::ffi::AVSampleFormat::AV_SAMPLE_FMT_S16;
+use ffmpeg_next::format::Sample;
+use ffmpeg_next::option::Type::SampleFormat;
+use ffmpeg_next::{frame, ChannelLayout};
 use std::sync::mpsc::{channel, Receiver};
 
 #[derive(Debug)]
@@ -27,18 +33,32 @@ pub(crate) fn decode_audio_file(
     decoder.set_parameters(input_stream.parameters()).unwrap();
 
     std::thread::spawn(move || {
-        let mut frame = ffmpeg_next::frame::audio::Audio::empty();
+        let mut resampler = ffmpeg_next::software::resampling::Context::get(
+            decoder.format(),
+            ChannelLayout::STEREO,
+            decoder.rate(),
+            decoder.format(),
+            ChannelLayout::STEREO,
+            decoder.rate(),
+        )
+        .expect("Unable to initialize resampler");
 
         for (_, packet) in input_context.packets() {
             unwrap_or_return!(decoder.send_packet(&packet));
-            while decoder.receive_frame(&mut frame).is_ok() {
-                unwrap_or_return!(frame_sender.send(frame.clone()));
+            let mut decoded = frame::Audio::empty();
+            while decoder.receive_frame(&mut decoded).is_ok() {
+                let mut resampled = frame::Audio::empty();
+                unwrap_or_return!(resampler.run(&decoded, &mut resampled));
+                unwrap_or_return!(frame_sender.send(resampled));
             }
         }
 
         unwrap_or_return!(decoder.send_eof());
-        while decoder.receive_frame(&mut frame).is_ok() {
-            unwrap_or_return!(frame_sender.send(frame.clone()));
+        let mut decoded = frame::Audio::empty();
+        while decoder.receive_frame(&mut decoded).is_ok() {
+            let mut resampled = frame::Audio::empty();
+            unwrap_or_return!(resampler.run(&decoded, &mut resampled));
+            unwrap_or_return!(frame_sender.send(resampled));
         }
     });
 

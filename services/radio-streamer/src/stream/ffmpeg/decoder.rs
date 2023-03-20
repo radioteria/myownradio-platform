@@ -1,4 +1,6 @@
 use crate::stream::constants::{AUDIO_SAMPLING_FREQUENCY, INTERNAL_TIME_BASE};
+use crate::stream::ffmpeg::utils::convert_sample_to_byte_data;
+use crate::stream::ffmpeg::INTERNAL_CHANNEL_LAYOUT;
 use crate::stream::types::Buffer;
 use crate::unwrap_or_return;
 use actix_web::web::Bytes;
@@ -7,6 +9,7 @@ use ffmpeg_next::format::Sample;
 use ffmpeg_next::option::Type::SampleFormat;
 use ffmpeg_next::{frame, rescale, ChannelLayout, Rescale};
 use std::error::Error;
+use std::io::Write;
 use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::time::Duration;
 
@@ -27,9 +30,10 @@ pub(crate) enum AudioFileDecodeError {
 impl Into<Buffer> for frame::Audio {
     fn into(self) -> Buffer {
         let pts = self.pts().unwrap_or_default() as u64;
+        let data = convert_sample_to_byte_data(&self.plane(0));
 
         Buffer::new(
-            Bytes::copy_from_slice(&self.data(0)),
+            Bytes::copy_from_slice(&data),
             Duration::from_millis(pts),
             Duration::from_millis(pts),
         )
@@ -79,7 +83,7 @@ pub(crate) fn decode_audio_file(
     let mut resampler = decoder
         .resampler(
             Sample::I16(Type::Packed),
-            ChannelLayout::STEREO,
+            INTERNAL_CHANNEL_LAYOUT,
             AUDIO_SAMPLING_FREQUENCY as u32,
         )
         .map_err(|error| AudioFileDecodeError::AudioDecoder(error))?;

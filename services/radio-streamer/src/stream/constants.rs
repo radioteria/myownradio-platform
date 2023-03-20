@@ -19,3 +19,5 @@ pub(crate) const AUDIO_BYTES_PER_SECOND: usize =
 /// This allows players to quickly fulfill their initial buffers and start playback immediately,
 /// rather than waiting for a longer duration of time to gather enough data before starting playback.
 pub(crate) const REALTIME_STARTUP_BUFFER_TIME: Duration = Duration::from_millis(2500);
+
+pub(crate) const INTERNAL_TIME_BASE: (i32, i32) = (1, 1000);

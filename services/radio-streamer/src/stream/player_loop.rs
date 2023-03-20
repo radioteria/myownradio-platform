@@ -1,6 +1,7 @@
 use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
 use crate::metrics::Metrics;
 use crate::stream::constants::{AUDIO_BYTES_PER_SECOND, REALTIME_STARTUP_BUFFER_TIME};
+use crate::stream::ffmpeg::{decode_audio_file, AudioFileDecodeError};
 use crate::stream::types::{Buffer, TrackTitle};
 use crate::stream::util::channels::TimedMessage;
 use crate::stream::util::clock::MessageSyncClock;
@@ -13,6 +14,7 @@ use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
 use scopeguard::defer;
 use slog::{debug, error, info, warn, Logger};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
 /// When the audio position is within this threshold from the start
@@ -34,6 +36,8 @@ pub(crate) enum PlayerLoopError {
     BackendError(#[from] MorBackendClientError),
     #[error(transparent)]
     DecoderError(#[from] DecoderError),
+    #[error(transparent)]
+    Decoder2Error(#[from] AudioFileDecodeError),
     #[error(transparent)]
     SendError(#[from] mpsc::SendError),
     #[error("The decoder stopped unexpectedly with an exit code = {0}")]
@@ -110,7 +114,8 @@ async fn run_loop(
             )))
             .await?;
 
-        let mut track_decoder = build_ffmpeg_decoder(&url, &offset, &logger, &metrics)?;
+        // let mut track_decoder = build_ffmpeg_decoder(&url, &offset, &logger, &metrics)?;
+        let mut track_decoder = Arc::new(Mutex::new(decode_audio_file(&url, &offset)?));
 
         let (restart_tx, mut restart_rx) = oneshot::channel::<()>();
 
@@ -120,35 +125,59 @@ async fn run_loop(
 
         sync_clock.reset_next_pts();
 
-        while let Some(msg) = track_decoder.next().await {
-            match msg {
-                DecoderOutput::Buffer(buffer) => {
-                    sync_clock.wait(&buffer).await;
+        while let Ok(Ok(buffer)) = actix_rt::task::spawn_blocking({
+            let track_decoder = track_decoder.clone();
+            move || track_decoder.lock().unwrap().recv()
+        })
+        .await
+        {
+            sync_clock.wait(&buffer).await;
 
-                    if let Ok(Some(())) = restart_rx.try_recv() {
-                        debug!(logger, "Aborting current track playback on restart signal");
-                        continue 'player;
-                    }
-
-                    if buffer.is_empty() {
-                        break;
-                    }
-
-                    player_loop_msg_sender
-                        .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
-                            buffer.bytes().clone(),
-                            buffer.pts_hint().clone(),
-                            buffer.dts_hint().clone(),
-                        )))
-                        .await?;
-                }
-                DecoderOutput::EOF => {
-                    break;
-                }
-                DecoderOutput::Error(exit_code) => {
-                    return Err(PlayerLoopError::DecoderUnexpectedTermination(exit_code));
-                }
+            if let Ok(Some(())) = restart_rx.try_recv() {
+                debug!(logger, "Aborting current track playback on restart signal");
+                continue 'player;
             }
+
+            if buffer.is_empty() {
+                break;
+            }
+
+            player_loop_msg_sender
+                .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
+                    buffer.bytes().clone(),
+                    buffer.pts_hint().clone(),
+                    buffer.dts_hint().clone(),
+                )))
+                .await?;
+
+            // match msg {
+            //     DecoderOutput::Buffer(buffer) => {
+            //         sync_clock.wait(&buffer).await;
+            //
+            //         if let Ok(Some(())) = restart_rx.try_recv() {
+            //             debug!(logger, "Aborting current track playback on restart signal");
+            //             continue 'player;
+            //         }
+            //
+            //         if buffer.is_empty() {
+            //             break;
+            //         }
+            //
+            //         player_loop_msg_sender
+            //             .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
+            //                 buffer.bytes().clone(),
+            //                 buffer.pts_hint().clone(),
+            //                 buffer.dts_hint().clone(),
+            //             )))
+            //             .await?;
+            //     }
+            //     DecoderOutput::EOF => {
+            //         break;
+            //     }
+            //     DecoderOutput::Error(exit_code) => {
+            //         return Err(PlayerLoopError::DecoderUnexpectedTermination(exit_code));
+            //     }
+            // }
         }
 
         let position_after_decoder = *sync_clock.position();

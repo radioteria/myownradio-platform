@@ -1,4 +1,4 @@
-use crate::stream::constants::AUDIO_SAMPLING_FREQUENCY;
+use crate::stream::constants::{AUDIO_SAMPLING_FREQUENCY, INTERNAL_TIME_BASE};
 use crate::stream::types::Buffer;
 use crate::unwrap_or_return;
 use actix_web::web::Bytes;
@@ -7,7 +7,7 @@ use ffmpeg_next::format::Sample;
 use ffmpeg_next::option::Type::SampleFormat;
 use ffmpeg_next::{frame, rescale, ChannelLayout, Rescale};
 use std::error::Error;
-use std::sync::mpsc::{channel, Receiver};
+use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::time::Duration;
 
 #[derive(Debug, thiserror::Error)]
@@ -39,8 +39,8 @@ impl Into<Buffer> for frame::Audio {
 pub(crate) fn decode_audio_file(
     source_url: &str,
     offset: &Duration,
-) -> Result<Receiver<frame::Audio>, AudioFileDecodeError> {
-    let (frame_sender, frame_receiver) = channel();
+) -> Result<Receiver<Buffer>, AudioFileDecodeError> {
+    let (frame_sender, frame_receiver) = sync_channel(0);
 
     let mut ictx = ffmpeg_next::format::input(&source_url.to_string())
         .map_err(|error| AudioFileDecodeError::OpenFile(error))?;
@@ -52,9 +52,9 @@ pub(crate) fn decode_audio_file(
         .time_base();
 
     {
-        let position_millis = (offset.as_millis() as i64).rescale(time_base, rescale::TIME_BASE);
-        ictx.seek(position_millis, ..position_millis)
-            .map_err(|error| AudioFileDecodeError::Seek(error))?;
+        // let position_millis = (offset.as_millis() as i64).rescale((1, 1000), time_base);
+        // ictx.seek(position_millis, ..position_millis)
+        //     .map_err(|error| AudioFileDecodeError::Seek(error))?;
     };
 
     let input_stream = ictx
@@ -85,14 +85,16 @@ pub(crate) fn decode_audio_file(
         .map_err(|error| AudioFileDecodeError::AudioDecoder(error))?;
 
     std::thread::spawn(move || {
-        for (_, packet) in ictx.packets() {
+        for (_, mut packet) in ictx.packets() {
+            packet.rescale_ts(time_base, INTERNAL_TIME_BASE);
+
             unwrap_or_return!(decoder.send_packet(&packet));
             let mut decoded = frame::Audio::empty();
             while decoder.receive_frame(&mut decoded).is_ok() {
                 let mut resampled = frame::Audio::empty();
                 resampled.clone_from(&decoded);
                 unwrap_or_return!(resampler.run(&decoded, &mut resampled));
-                unwrap_or_return!(frame_sender.send(resampled));
+                unwrap_or_return!(frame_sender.send(resampled.into()));
             }
         }
 
@@ -102,7 +104,7 @@ pub(crate) fn decode_audio_file(
             let mut resampled = frame::Audio::empty();
             resampled.clone_from(&decoded);
             unwrap_or_return!(resampler.run(&decoded, &mut resampled));
-            unwrap_or_return!(frame_sender.send(resampled));
+            unwrap_or_return!(frame_sender.send(resampled.into()));
         }
     });
 
@@ -123,11 +125,13 @@ mod tests {
         .unwrap();
 
         let mut frames_count = 0;
+        let mut max_pts = Duration::from_secs(0);
         while let Ok(frame) = decoded_frames.recv() {
-            assert!(frame.pts().is_some());
             frames_count += 1;
+            max_pts = frame.pts_hint().clone();
         }
 
         assert_eq!(123, frames_count);
+        assert_eq!(Duration::from_secs_f32(2.834286), max_pts);
     }
 }

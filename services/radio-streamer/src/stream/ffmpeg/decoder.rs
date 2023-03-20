@@ -1,5 +1,7 @@
 use crate::stream::constants::AUDIO_SAMPLING_FREQUENCY;
+use crate::stream::types::Buffer;
 use crate::unwrap_or_return;
+use actix_web::web::Bytes;
 use ffmpeg_next::codec::Id::PCM_F16LE;
 use ffmpeg_next::ffi::AVSampleFormat::AV_SAMPLE_FMT_S16;
 use ffmpeg_next::format::sample::Type;
@@ -20,10 +22,20 @@ pub(crate) enum AudioFileDecodeError {
     Seek,
 }
 
+impl Into<Buffer> for frame::Audio {
+    fn into(self) -> Buffer {
+        Buffer::new(
+            Bytes::copy_from_slice(&self.data(0)),
+            Duration::from_millis(self.pts().unwrap_or_default() as u64),
+            Duration::from_millis(self.pts().unwrap_or_default() as u64),
+        )
+    }
+}
+
 pub(crate) fn decode_audio_file(
     source_url: &str,
     offset: &Duration,
-) -> Result<Receiver<ffmpeg_next::frame::Audio>, AudioFileDecodeError> {
+) -> Result<Receiver<frame::Audio>, AudioFileDecodeError> {
     let (frame_sender, frame_receiver) = channel();
 
     let mut ictx =
@@ -93,20 +105,23 @@ pub(crate) fn decode_audio_file(
 
 #[cfg(test)]
 mod tests {
+    use crate::stream::types::Buffer;
     use std::time::Duration;
 
     #[test]
-    fn test_decode_audio_source() {
-        let decoder = super::decode_audio_file(
+    fn test_decode_audio_file() {
+        let decoded_frames = super::decode_audio_file(
             "tests/fixtures/decoder_test_file.wav",
             &Duration::from_secs(0),
         )
         .unwrap();
 
-        while let Ok(a) = decoder.recv() {
-            eprintln!("f: {:?}", a.pts())
+        let mut frames_count = 0;
+        while let Ok(frame) = decoded_frames.recv() {
+            assert!(frame.pts().is_some());
+            frames_count += 1;
         }
 
-        assert!(false);
+        assert_eq!(123, frames_count);
     }
 }

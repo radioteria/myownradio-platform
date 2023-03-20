@@ -2,8 +2,6 @@ use crate::stream::constants::AUDIO_SAMPLING_FREQUENCY;
 use crate::stream::types::Buffer;
 use crate::unwrap_or_return;
 use actix_web::web::Bytes;
-use ffmpeg_next::codec::Id::PCM_F16LE;
-use ffmpeg_next::ffi::AVSampleFormat::AV_SAMPLE_FMT_S16;
 use ffmpeg_next::format::sample::Type;
 use ffmpeg_next::format::Sample;
 use ffmpeg_next::option::Type::SampleFormat;
@@ -14,20 +12,26 @@ use std::time::Duration;
 
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum AudioFileDecodeError {
-    #[error("Unable to open input file")]
-    OpenFile,
+    #[error("Unable to open input file: {0}")]
+    OpenFile(ffmpeg_next::Error),
     #[error("Unable to find audio stream")]
-    OpenAudioStream,
-    #[error("Unable to seek in input file")]
-    Seek,
+    NoAudioStream,
+    #[error("Unable to seek in input file: {0}")]
+    Seek(ffmpeg_next::Error),
+    #[error("Unable to initialize audio decoder: {0}")]
+    AudioDecoder(ffmpeg_next::Error),
+    #[error("Unable to initialize resampler: {0}")]
+    Resampler(ffmpeg_next::Error),
 }
 
 impl Into<Buffer> for frame::Audio {
     fn into(self) -> Buffer {
+        let pts = self.pts().unwrap_or_default() as u64;
+
         Buffer::new(
             Bytes::copy_from_slice(&self.data(0)),
-            Duration::from_millis(self.pts().unwrap_or_default() as u64),
-            Duration::from_millis(self.pts().unwrap_or_default() as u64),
+            Duration::from_millis(pts),
+            Duration::from_millis(pts),
         )
     }
 }
@@ -38,33 +42,35 @@ pub(crate) fn decode_audio_file(
 ) -> Result<Receiver<frame::Audio>, AudioFileDecodeError> {
     let (frame_sender, frame_receiver) = channel();
 
-    let mut ictx =
-        ffmpeg_next::format::input(&source_url.to_string()).expect("Unable to open file");
+    let mut ictx = ffmpeg_next::format::input(&source_url.to_string())
+        .map_err(|error| AudioFileDecodeError::OpenFile(error))?;
 
     let time_base = ictx
         .streams()
         .best(ffmpeg_next::media::Type::Audio)
-        .expect("Unable to get audio stream")
+        .ok_or_else(|| AudioFileDecodeError::NoAudioStream)?
         .time_base();
 
     {
         let position_millis = (offset.as_millis() as i64).rescale(time_base, rescale::TIME_BASE);
         ictx.seek(position_millis, ..position_millis)
-            .expect("Unable to seek");
+            .map_err(|error| AudioFileDecodeError::Seek(error))?;
     };
 
     let input_stream = ictx
         .streams()
         .best(ffmpeg_next::media::Type::Audio)
-        .expect("Unable to get audio stream");
+        .ok_or_else(|| AudioFileDecodeError::NoAudioStream)?;
 
     let mut decoder = input_stream
         .codec()
         .decoder()
         .audio()
-        .expect("Unable to get audio decoder");
+        .map_err(|error| AudioFileDecodeError::AudioDecoder(error))?;
 
-    decoder.set_parameters(input_stream.parameters()).unwrap();
+    decoder
+        .set_parameters(input_stream.parameters())
+        .map_err(|error| AudioFileDecodeError::AudioDecoder(error))?;
 
     if decoder.channel_layout().is_empty() {
         decoder.set_channel_layout(ChannelLayout::default(decoder.channels() as i32));
@@ -76,7 +82,7 @@ pub(crate) fn decode_audio_file(
             ChannelLayout::STEREO,
             AUDIO_SAMPLING_FREQUENCY as u32,
         )
-        .expect("Unable to initialize resampler");
+        .map_err(|error| AudioFileDecodeError::AudioDecoder(error))?;
 
     std::thread::spawn(move || {
         for (_, packet) in ictx.packets() {

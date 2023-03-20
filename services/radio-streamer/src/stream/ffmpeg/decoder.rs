@@ -7,6 +7,7 @@ use ffmpeg_next::format::Sample;
 use ffmpeg_next::option::Type::SampleFormat;
 use ffmpeg_next::{frame, rescale, ChannelLayout, Rescale};
 use std::error::Error;
+use std::io::Write;
 use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 use std::time::Duration;
 
@@ -27,6 +28,13 @@ pub(crate) enum AudioFileDecodeError {
 impl Into<Buffer> for frame::Audio {
     fn into(self) -> Buffer {
         let pts = self.pts().unwrap_or_default() as u64;
+
+        let mut file = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open("/tmp/dump.raw")
+            .unwrap();
+        file.write_all(&self.data(0)).unwrap();
 
         Buffer::new(
             Bytes::copy_from_slice(&self.data(0)),

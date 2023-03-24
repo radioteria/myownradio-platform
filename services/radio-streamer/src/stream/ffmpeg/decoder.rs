@@ -30,7 +30,7 @@ pub(crate) enum AudioFileDecodeError {
 impl Into<Buffer> for frame::Audio {
     fn into(self) -> Buffer {
         let pts = self.pts().unwrap_or_default() as u64;
-        let data_len = self.plane::<(i16, i16)>(0).len() * 4;
+        let data_len = self.plane::<(i16, i16)>(0).len() * 4; // number of bytes required to represent each pair of 16-bit integers as four 8-bit integers
 
         Buffer::new(
             Bytes::copy_from_slice(&self.data(0)[..data_len]),

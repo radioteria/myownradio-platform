@@ -6,16 +6,11 @@ use std::time::Duration;
 pub(crate) struct Buffer {
     bytes: Bytes,
     pts_hint: Duration,
-    dts_hint: Duration,
 }
 
 impl Buffer {
-    pub(crate) fn new(bytes: Bytes, pts_hint: Duration, dts_hint: Duration) -> Self {
-        Buffer {
-            bytes,
-            pts_hint,
-            dts_hint,
-        }
+    pub(crate) fn new(bytes: Bytes, pts_hint: Duration) -> Self {
+        Buffer { bytes, pts_hint }
     }
 
     pub(crate) fn bytes(&self) -> &Bytes {
@@ -24,10 +19,6 @@ impl Buffer {
 
     pub(crate) fn pts_hint(&self) -> &Duration {
         &self.pts_hint
-    }
-
-    pub(crate) fn dts_hint(&self) -> &Duration {
-        &self.dts_hint
     }
 
     pub(crate) fn is_empty(&self) -> bool {
@@ -51,16 +42,11 @@ impl Deref for Buffer {
 pub(crate) struct TrackTitle {
     title: String,
     pts_hint: Duration,
-    dts_hint: Duration,
 }
 
 impl TrackTitle {
-    pub(crate) fn new(title: String, pts_hint: Duration, dts_hint: Duration) -> Self {
-        TrackTitle {
-            title,
-            pts_hint,
-            dts_hint,
-        }
+    pub(crate) fn new(title: String, pts_hint: Duration) -> Self {
+        TrackTitle { title, pts_hint }
     }
 
     pub(crate) fn title(&self) -> &str {
@@ -69,10 +55,6 @@ impl TrackTitle {
 
     pub(crate) fn pts_hint(&self) -> &Duration {
         &self.pts_hint
-    }
-
-    pub(crate) fn dts_hint(&self) -> &Duration {
-        &self.dts_hint
     }
 }
 

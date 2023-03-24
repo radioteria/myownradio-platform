@@ -35,7 +35,6 @@ impl Into<Buffer> for frame::Audio {
         Buffer::new(
             Bytes::copy_from_slice(&self.data(0)[..data_len]),
             Duration::from_millis(pts),
-            Duration::from_millis(pts),
         )
     }
 }

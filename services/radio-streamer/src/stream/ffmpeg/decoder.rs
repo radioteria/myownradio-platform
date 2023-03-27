@@ -4,7 +4,7 @@ use crate::stream::types::Buffer;
 use crate::unwrap_or_return;
 use actix_web::web::Bytes;
 use ffmpeg_next::format::sample::Type;
-use ffmpeg_next::format::Sample;
+use ffmpeg_next::format::{input, Sample};
 use ffmpeg_next::frame::Audio;
 use ffmpeg_next::{frame, rescale, ChannelLayout, Rational, Rescale};
 use std::io::Write;
@@ -56,10 +56,9 @@ pub(crate) fn decode_audio_file(
         .time_base();
 
     {
-        let position_millis =
-            (offset.as_millis() as i64).rescale(INTERNAL_TIME_BASE, rescale::TIME_BASE);
-        // ictx.seek(position_millis, ..position_millis)
-        //     .map_err(|error| AudioFileDecodeError::Seek(error))?;
+        let position = (offset.as_millis() as i64).rescale(INTERNAL_TIME_BASE, rescale::TIME_BASE);
+        ictx.seek(position, ..position)
+            .map_err(|error| AudioFileDecodeError::Seek(error))?;
     };
 
     let input_stream = ictx
@@ -173,18 +172,22 @@ mod tests {
     fn test_decode_audio_file() {
         let decoded_frames = super::decode_audio_file(
             "tests/fixtures/decoder_test_file.wav",
-            &Duration::from_secs(0),
+            &Duration::from_millis(1200),
         )
         .unwrap();
 
         let mut frames_count = 0;
         let mut max_pts = Duration::from_secs(0);
+        let mut min_pts = Duration::from_secs(u64::MAX);
+
         while let Ok(frame) = decoded_frames.recv() {
             frames_count += 1;
             max_pts = frame.pts_hint().clone();
+            min_pts = max_pts.min(min_pts);
         }
 
-        assert_eq!(123, frames_count);
-        assert_eq!(Duration::from_secs_f32(2.834286), max_pts);
+        assert_eq!(71, frames_count);
+        assert_eq!(2596, max_pts.as_millis());
+        assert_eq!(1103, min_pts.as_millis());
     }
 }

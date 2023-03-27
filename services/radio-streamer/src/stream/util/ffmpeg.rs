@@ -157,7 +157,6 @@ pub(crate) fn build_ffmpeg_decoder(
                     .send(DecoderOutput::Buffer(Buffer::new(
                         buffer_bytes,
                         next_packet_info.pts_hint,
-                        next_packet_info.dts_hint,
                     )))
                     .await
                 {
@@ -205,7 +204,7 @@ pub(crate) fn build_silence_source(duration: Option<&Duration>) -> mpsc::Receive
                 let frame_pts = Duration::from_secs_f32(
                     (frame * frame_size) as f32 / AUDIO_BYTES_PER_SECOND as f32,
                 );
-                let buffer = Buffer::new(buffer_bytes, frame_pts, frame_pts);
+                let buffer = Buffer::new(buffer_bytes, frame_pts);
 
                 if let Err(_) = sender.send(buffer).await {
                     break;
@@ -372,11 +371,7 @@ pub(crate) fn build_ffmpeg_encoder(
                 let last_packet_info = last_packet_info.lock().unwrap().clone().unwrap_or_default();
 
                 let buffer_bytes = Bytes::copy_from_slice(&stdout_read_buffer[..size]);
-                let encoded_buffer = Buffer::new(
-                    buffer_bytes,
-                    last_packet_info.pts_hint,
-                    last_packet_info.dts_hint,
-                );
+                let encoded_buffer = Buffer::new(buffer_bytes, last_packet_info.pts_hint);
 
                 if let Err(_) = output_sender
                     .send(EncoderOutput::Buffer(encoded_buffer))

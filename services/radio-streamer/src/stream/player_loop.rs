@@ -110,7 +110,6 @@ async fn run_loop(
             .send(PlayerLoopMessage::TrackTitle(TrackTitle::new(
                 title,
                 *sync_clock.position(),
-                *sync_clock.position(),
             )))
             .await?;
 
@@ -146,7 +145,6 @@ async fn run_loop(
                 .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
                     buffer.bytes().clone(),
                     buffer.pts_hint().clone(),
-                    buffer.dts_hint().clone(),
                 )))
                 .await?;
 
@@ -211,7 +209,6 @@ async fn run_loop(
                     .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
                         buffer.bytes().clone(),
                         buffer.pts_hint().clone(),
-                        buffer.dts_hint().clone(),
                     )))
                     .await?;
             }

@@ -7,7 +7,7 @@ use std::time::{Duration, SystemTime};
 pub(crate) struct MessageSyncClock {
     initial_time: SystemTime,
     position: Duration,
-    previous_pts: Duration,
+    previous_pts: Option<Duration>,
 }
 
 impl MessageSyncClock {
@@ -25,7 +25,7 @@ impl MessageSyncClock {
         Self {
             initial_time,
             position: Duration::ZERO,
-            previous_pts: Duration::ZERO,
+            previous_pts: None,
         }
     }
 
@@ -75,12 +75,16 @@ impl MessageSyncClock {
     /// let mut clock = SyncClock::init(initial_time);
     /// let timed_msg = TimedMessage::new();
     ///
-    /// clock.wait(timed_msg);
+    /// clock.wait(timed_msg).await;
     /// ```
     pub(crate) async fn wait<'m>(&mut self, timed_msg: impl TimedMessage + 'm) {
         let msg_pts = *timed_msg.pts();
-        self.position += subtract_abs(msg_pts, self.previous_pts);
-        self.previous_pts = msg_pts;
+
+        self.position += subtract_abs(
+            msg_pts,
+            self.previous_pts.clone().unwrap_or(msg_pts.clone()),
+        );
+        self.previous_pts = Some(msg_pts);
 
         let sleep_dur = self.elapsed().duration_since(SystemTime::now()).ok();
 
@@ -114,6 +118,6 @@ impl MessageSyncClock {
     /// clock.wait(TimedMessage::new()); // pts: 0.00010s
     /// ...
     pub(crate) fn reset_next_pts(&mut self) {
-        self.previous_pts = Duration::ZERO;
+        self.previous_pts = None;
     }
 }

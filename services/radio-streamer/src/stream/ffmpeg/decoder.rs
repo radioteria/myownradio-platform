@@ -1,14 +1,16 @@
-use crate::stream::constants::{AUDIO_SAMPLING_FREQUENCY, INTERNAL_TIME_BASE};
-use crate::stream::ffmpeg::{INTERNAL_CHANNEL_LAYOUT, INTERNAL_SAMPLING_RATE, RESAMPLER_TIME_BASE};
-use crate::stream::types::Buffer;
-use crate::unwrap_or_return;
+use crate::stream::constants::INTERNAL_TIME_BASE;
+use crate::stream::ffmpeg::{
+    INTERNAL_CHANNEL_LAYOUT, INTERNAL_SAMPLE_SIZE, INTERNAL_SAMPLING_RATE, RESAMPLER_TIME_BASE,
+};
+use crate::stream::types::{Buffer, SharedFrame};
+use actix_rt::Runtime;
 use actix_web::web::Bytes;
 use ffmpeg_next::format::sample::Type;
-use ffmpeg_next::format::{input, Sample};
+use ffmpeg_next::format::Sample;
 use ffmpeg_next::frame::Audio;
 use ffmpeg_next::{frame, rescale, ChannelLayout, Rational, Rescale};
-use std::io::Write;
-use std::sync::mpsc::{sync_channel, Receiver, SendError};
+use futures::channel::mpsc::{channel, Receiver, SendError, Sender};
+use futures::SinkExt;
 use std::time::Duration;
 
 #[derive(Debug, thiserror::Error)]
@@ -40,11 +42,26 @@ impl Into<Buffer> for frame::Audio {
     }
 }
 
+impl Into<SharedFrame> for ffmpeg_next::frame::Audio {
+    fn into(self) -> SharedFrame {
+        let millis = self
+            .pts()
+            .unwrap_or_default()
+            .rescale(RESAMPLER_TIME_BASE, INTERNAL_TIME_BASE) as u64;
+
+        let data_len = self.samples() * INTERNAL_SAMPLE_SIZE;
+
+        let data = &self.data(0)[..data_len];
+
+        SharedFrame::new(Duration::from_millis(millis), Vec::from(data))
+    }
+}
+
 pub(crate) fn decode_audio_file(
     source_url: &str,
     offset: &Duration,
-) -> Result<Receiver<Buffer>, AudioFileDecodeError> {
-    let (frame_sender, frame_receiver) = sync_channel(0);
+) -> Result<Receiver<SharedFrame>, AudioFileDecodeError> {
+    let (mut frame_sender, frame_receiver) = channel(0);
 
     let mut ictx = ffmpeg_next::format::input(&source_url.to_string())
         .map_err(|error| AudioFileDecodeError::OpenFile(error))?;
@@ -90,12 +107,14 @@ pub(crate) fn decode_audio_file(
 
     std::thread::spawn(move || {
         let packets = ictx.packets();
+        let runtime = Runtime::new().expect("Unable to init async runtime");
         if let Err(error) = process_audio_stream_packets(
             packets,
             &input_time_base,
             &mut decoder,
             &mut resampler,
-            &frame_sender,
+            &mut frame_sender,
+            &runtime,
         ) {
             eprintln!("ERROR!: {:?}", error);
         }
@@ -109,7 +128,7 @@ enum ProcessAudioStreamPacketsError {
     #[error(transparent)]
     FFmpegError(#[from] ffmpeg_next::Error),
     #[error(transparent)]
-    SendError(#[from] SendError<Buffer>),
+    SendError(#[from] SendError),
 }
 
 fn process_audio_stream_packets(
@@ -117,14 +136,15 @@ fn process_audio_stream_packets(
     input_time_base: &Rational,
     decoder: &mut ffmpeg_next::decoder::Audio,
     resampler: &mut ffmpeg_next::software::resampling::Context,
-    frame_sender: &std::sync::mpsc::SyncSender<Buffer>,
+    frame_sender: &mut Sender<SharedFrame>,
+    async_runtime: &Runtime,
 ) -> Result<(), ProcessAudioStreamPacketsError> {
     for (_, mut packet) in packets {
         decoder.send_packet(&packet)?;
 
         let frames = receive_and_process_decoded_frames(input_time_base, decoder, resampler)?;
         for frame in frames {
-            frame_sender.send(frame.into())?;
+            async_runtime.block_on(async { frame_sender.send(frame.into()).await })?;
         }
     }
 
@@ -132,7 +152,7 @@ fn process_audio_stream_packets(
 
     let frames = receive_and_process_decoded_frames(input_time_base, decoder, resampler)?;
     for frame in frames {
-        frame_sender.send(frame.into())?;
+        async_runtime.block_on(async { frame_sender.send(frame.into()).await })?;
     }
 
     Ok(())
@@ -166,11 +186,12 @@ fn receive_and_process_decoded_frames(
 #[cfg(test)]
 mod tests {
     use crate::stream::types::Buffer;
+    use futures::StreamExt;
     use std::time::Duration;
 
-    #[test]
-    fn test_decode_audio_file() {
-        let decoded_frames = super::decode_audio_file(
+    #[actix_rt::test]
+    async fn test_decode_audio_file() {
+        let mut decoded_frames = super::decode_audio_file(
             "tests/fixtures/decoder_test_file.wav",
             &Duration::from_millis(1200),
         )
@@ -180,9 +201,9 @@ mod tests {
         let mut max_pts = Duration::from_secs(0);
         let mut min_pts = Duration::from_secs(u64::MAX);
 
-        while let Ok(frame) = decoded_frames.recv() {
+        while let Some(frame) = decoded_frames.next().await {
             frames_count += 1;
-            max_pts = frame.pts_hint().clone();
+            max_pts = frame.pts().clone();
             min_pts = max_pts.min(min_pts);
         }
 

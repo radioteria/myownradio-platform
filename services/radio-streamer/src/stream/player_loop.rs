@@ -2,7 +2,7 @@ use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
 use crate::metrics::Metrics;
 use crate::stream::constants::{AUDIO_BYTES_PER_SECOND, REALTIME_STARTUP_BUFFER_TIME};
 use crate::stream::ffmpeg::{decode_audio_file, AudioFileDecodeError};
-use crate::stream::types::{Buffer, TrackTitle};
+use crate::stream::types::{Buffer, SharedFrame, TrackTitle};
 use crate::stream::util::channels::TimedMessage;
 use crate::stream::util::clock::MessageSyncClock;
 use crate::stream::util::ffmpeg::{
@@ -23,7 +23,7 @@ const ZERO_OFFSET_THRESHOLD: Duration = Duration::from_secs(1);
 
 #[derive(Debug)]
 pub(crate) enum PlayerLoopMessage {
-    DecodedBuffer(Buffer),
+    Frame(SharedFrame),
     TrackTitle(TrackTitle),
     RestartSender(oneshot::Sender<()>),
     Error(PlayerLoopError),
@@ -114,7 +114,7 @@ async fn run_loop(
             .await?;
 
         // let mut track_decoder = build_ffmpeg_decoder(&url, &offset, &logger, &metrics)?;
-        let mut track_decoder = Arc::new(Mutex::new(decode_audio_file(&url, &offset)?));
+        let mut track_decoder = decode_audio_file(&url, &offset)?;
 
         let (restart_tx, mut restart_rx) = oneshot::channel::<()>();
 
@@ -124,28 +124,20 @@ async fn run_loop(
 
         sync_clock.reset_next_pts();
 
-        while let Ok(Ok(buffer)) = actix_rt::task::spawn_blocking({
-            let track_decoder = track_decoder.clone();
-            move || track_decoder.lock().unwrap().recv()
-        })
-        .await
-        {
-            sync_clock.wait(&buffer).await;
+        while let Some(frame) = track_decoder.next().await {
+            sync_clock.wait(&frame).await;
 
             if let Ok(Some(())) = restart_rx.try_recv() {
                 debug!(logger, "Aborting current track playback on restart signal");
                 continue 'player;
             }
 
-            if buffer.is_empty() {
+            if frame.is_empty() {
                 break;
             }
 
             player_loop_msg_sender
-                .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
-                    buffer.bytes().clone(),
-                    buffer.pts_hint().clone(),
-                )))
+                .send(PlayerLoopMessage::Frame(frame))
                 .await?;
 
             // match msg {
@@ -193,23 +185,20 @@ async fn run_loop(
 
             sync_clock.reset_next_pts();
 
-            while let Some(buffer) = silence_stream.next().await {
-                sync_clock.wait(&buffer).await;
+            while let Some(frame) = silence_stream.next().await {
+                sync_clock.wait(&frame).await;
 
                 if let Ok(Some(())) = restart_rx.try_recv() {
                     debug!(logger, "Exit current track loop on restart signal");
                     break;
                 }
 
-                if buffer.is_empty() {
+                if frame.is_empty() {
                     break;
                 }
 
                 player_loop_msg_sender
-                    .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
-                        buffer.bytes().clone(),
-                        buffer.pts_hint().clone(),
-                    )))
+                    .send(PlayerLoopMessage::Frame(frame))
                     .await?;
             }
         }

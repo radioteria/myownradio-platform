@@ -2,7 +2,7 @@ use super::utils::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
 use crate::audio_formats::AudioFormats;
 use crate::config::Config;
 use crate::stream::{StreamCreateError, StreamMessage, StreamsRegistry, StreamsRegistryExt};
-use actix_web::web::{Data, Query};
+use actix_web::web::{Bytes, Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use futures::channel::mpsc;
 use futures::StreamExt;
@@ -111,9 +111,9 @@ pub(crate) async fn get_channel_audio_stream_v2(
         async move {
             while let Some(event) = stream_source.next().await {
                 match event {
-                    StreamMessage::Buffer(buffer) => {
+                    StreamMessage::Frame(buffer) => {
                         // Do not block encoder if one of the consumers are blocked due to network issues
-                        match response_sender.try_send(buffer.into_bytes()) {
+                        match response_sender.try_send(Bytes::copy_from_slice(buffer.data())) {
                             Err(error) if error.is_disconnected() => {
                                 // Disconnected: drop the receiver
                                 break;

@@ -4,7 +4,7 @@ use crate::metrics::Metrics;
 use crate::stream::constants::{
     AUDIO_BIT_DEPTH, AUDIO_BYTES_PER_SECOND, AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY,
 };
-use crate::stream::types::Buffer;
+use crate::stream::types::{Buffer, SharedFrame};
 use crate::stream::util::process::which;
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
@@ -184,7 +184,7 @@ pub(crate) fn build_ffmpeg_decoder(
     Ok(output_receiver)
 }
 
-pub(crate) fn build_silence_source(duration: Option<&Duration>) -> mpsc::Receiver<Buffer> {
+pub(crate) fn build_silence_source(duration: Option<&Duration>) -> mpsc::Receiver<SharedFrame> {
     let (mut sender, receiver) = mpsc::channel(0);
 
     actix_rt::spawn({
@@ -199,12 +199,11 @@ pub(crate) fn build_silence_source(duration: Option<&Duration>) -> mpsc::Receive
 
         async move {
             for frame in 0..num_frames {
-                let buffer = vec![0u8; frame_size];
-                let buffer_bytes = Bytes::copy_from_slice(&buffer);
-                let frame_pts = Duration::from_secs_f32(
+                let pts = Duration::from_secs_f32(
                     (frame * frame_size) as f32 / AUDIO_BYTES_PER_SECOND as f32,
                 );
-                let buffer = Buffer::new(buffer_bytes, frame_pts);
+                let data = vec![0u8; frame_size];
+                let buffer = SharedFrame::new(pts, data);
 
                 if let Err(_) = sender.send(buffer).await {
                     break;

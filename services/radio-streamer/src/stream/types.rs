@@ -1,6 +1,40 @@
+use crate::stream::util::channels::TimedMessage;
 use actix_web::web::Bytes;
 use std::ops::Deref;
+use std::sync::Arc;
 use std::time::Duration;
+
+#[derive(Clone, Debug)]
+pub(crate) struct SharedFrame {
+    data: Arc<Vec<u8>>,
+    pts: Duration,
+}
+
+impl SharedFrame {
+    pub(crate) fn new(pts: Duration, data: Vec<u8>) -> Self {
+        let data = Arc::new(data);
+
+        Self { pts, data }
+    }
+
+    pub(crate) fn data(&self) -> &Arc<Vec<u8>> {
+        &self.data
+    }
+
+    pub(crate) fn pts(&self) -> &Duration {
+        &self.pts
+    }
+
+    pub(crate) fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+}
+
+impl TimedMessage for &SharedFrame {
+    fn pts(&self) -> &Duration {
+        self.pts()
+    }
+}
 
 #[derive(Clone, Debug)]
 pub(crate) struct Buffer {

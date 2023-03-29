@@ -107,14 +107,12 @@ pub(crate) fn decode_audio_file(
 
     std::thread::spawn(move || {
         let packets = ictx.packets();
-        let runtime = Runtime::new().expect("Unable to init async runtime");
         if let Err(error) = process_audio_stream_packets(
             packets,
             &input_time_base,
             &mut decoder,
             &mut resampler,
             &mut frame_sender,
-            &runtime,
         ) {
             eprintln!("ERROR!: {:?}", error);
         }
@@ -137,14 +135,15 @@ fn process_audio_stream_packets(
     decoder: &mut ffmpeg_next::decoder::Audio,
     resampler: &mut ffmpeg_next::software::resampling::Context,
     frame_sender: &mut Sender<SharedFrame>,
-    async_runtime: &Runtime,
 ) -> Result<(), ProcessAudioStreamPacketsError> {
+    let runtime = Runtime::new().expect("Unable to init async runtime");
+
     for (_, mut packet) in packets {
         decoder.send_packet(&packet)?;
 
         let frames = receive_and_process_decoded_frames(input_time_base, decoder, resampler)?;
         for frame in frames {
-            async_runtime.block_on(async { frame_sender.send(frame.into()).await })?;
+            runtime.block_on(async { frame_sender.send(frame.into()).await })?;
         }
     }
 
@@ -152,7 +151,7 @@ fn process_audio_stream_packets(
 
     let frames = receive_and_process_decoded_frames(input_time_base, decoder, resampler)?;
     for frame in frames {
-        async_runtime.block_on(async { frame_sender.send(frame.into()).await })?;
+        runtime.block_on(async { frame_sender.send(frame.into()).await })?;
     }
 
     Ok(())

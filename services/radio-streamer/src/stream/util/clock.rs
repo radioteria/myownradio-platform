@@ -78,8 +78,7 @@ impl MessageSyncClock {
     /// clock.wait(timed_msg).await;
     /// ```
     pub(crate) async fn wait<'m>(&mut self, timed_msg: impl TimedMessage + 'm) {
-        let msg_pts = *timed_msg.pts();
-
+        let msg_pts = timed_msg.pts().clone();
         self.position += subtract_abs(
             msg_pts,
             self.previous_pts.clone().unwrap_or(msg_pts.clone()),

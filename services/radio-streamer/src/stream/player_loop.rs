@@ -178,7 +178,8 @@ async fn run_loop(
             // @todo Get the reason why the track decoder exited early.
             warn!(
                 logger,
-                "Track decoder exited early: filling time gap with silence"
+                "Track decoder exited early: filling time gap with silence";
+                "dur" => ?diff,
             );
 
             let mut silence_stream = build_silence_source(Some(&diff));

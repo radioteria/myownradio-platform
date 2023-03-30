@@ -8,9 +8,10 @@ use actix_web::web::Bytes;
 use ffmpeg_next::format::sample::Type;
 use ffmpeg_next::format::Sample;
 use ffmpeg_next::frame::Audio;
-use ffmpeg_next::{frame, rescale, ChannelLayout, Rational, Rescale};
+use ffmpeg_next::{frame, rescale, ChannelLayout, Packet, Rational, Rescale, Stream};
 use futures::channel::mpsc::{channel, Receiver, SendError, Sender};
 use futures::SinkExt;
+use std::any::Any;
 use std::time::Duration;
 
 #[derive(Debug, thiserror::Error)]
@@ -68,6 +69,8 @@ pub(crate) fn decode_audio_file(
 ) -> Result<Receiver<SharedFrame>, AudioFileDecodeError> {
     let (mut frame_sender, frame_receiver) = channel(0);
 
+    eprintln!("file: {}", source_url);
+
     let mut ictx = ffmpeg_next::format::input(&source_url.to_string())
         .map_err(|error| AudioFileDecodeError::OpenFile(error))?;
 
@@ -87,6 +90,7 @@ pub(crate) fn decode_audio_file(
         .streams()
         .best(ffmpeg_next::media::Type::Audio)
         .ok_or_else(|| AudioFileDecodeError::NoAudioStream)?;
+    let input_stream_number = input_stream.id() as usize;
 
     let mut decoder = input_stream
         .codec()
@@ -111,9 +115,13 @@ pub(crate) fn decode_audio_file(
         .map_err(|error| AudioFileDecodeError::AudioDecoder(error))?;
 
     std::thread::spawn(move || {
-        let packets = ictx.packets();
+        let audio_packets = ictx
+            .packets()
+            .filter(|(_, packet)| packet.stream() == input_stream_number)
+            .map(|(s, packet)| packet);
+
         if let Err(error) = process_audio_stream_packets(
-            packets,
+            audio_packets,
             &input_time_base,
             &mut decoder,
             &mut resampler,
@@ -134,16 +142,19 @@ enum ProcessAudioStreamPacketsError {
     SendError(#[from] SendError),
 }
 
-fn process_audio_stream_packets(
-    mut packets: ffmpeg_next::format::context::input::PacketIter,
+fn process_audio_stream_packets<I>(
+    mut packets: I,
     input_time_base: &Rational,
     decoder: &mut ffmpeg_next::decoder::Audio,
     resampler: &mut ffmpeg_next::software::resampling::Context,
     frame_sender: &mut Sender<SharedFrame>,
-) -> Result<(), ProcessAudioStreamPacketsError> {
+) -> Result<(), ProcessAudioStreamPacketsError>
+where
+    I: Iterator<Item = Packet>,
+{
     let runtime = Runtime::new().expect("Unable to init async runtime");
 
-    for (_, mut packet) in packets {
+    for packet in packets {
         decoder.send_packet(&packet)?;
 
         let frames = receive_and_process_decoded_frames(input_time_base, decoder, resampler)?;

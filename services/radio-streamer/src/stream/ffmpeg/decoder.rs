@@ -48,12 +48,17 @@ impl Into<SharedFrame> for ffmpeg_next::frame::Audio {
             .pts()
             .unwrap_or_default()
             .rescale(RESAMPLER_TIME_BASE, INTERNAL_TIME_BASE) as u64;
+        let duration =
+            (self.samples() as i64).rescale(RESAMPLER_TIME_BASE, INTERNAL_TIME_BASE) as u64;
 
         let data_len = self.samples() * INTERNAL_SAMPLE_SIZE;
-
         let data = &self.data(0)[..data_len];
 
-        SharedFrame::new(Duration::from_millis(millis), Vec::from(data))
+        SharedFrame::new(
+            Duration::from_millis(millis),
+            Duration::from_millis(duration),
+            Vec::from(data),
+        )
     }
 }
 
@@ -184,17 +189,56 @@ fn receive_and_process_decoded_frames(
 
 #[cfg(test)]
 mod tests {
-    use crate::stream::types::Buffer;
+    use crate::stream::types::SharedFrame;
     use futures::StreamExt;
     use std::time::Duration;
 
     #[actix_rt::test]
-    async fn test_decode_audio_file() {
-        let mut decoded_frames = super::decode_audio_file(
-            "tests/fixtures/decoder_test_file.wav",
-            &Duration::from_millis(1200),
-        )
-        .unwrap();
+    async fn test_decoding_wav() {
+        let mut decoded_frames =
+            super::decode_audio_file("tests/fixtures/test_file.wav", &Duration::default()).unwrap();
+
+        let mut frames_count = 0;
+        let mut max_pts = Duration::from_secs(0);
+        let mut min_pts = Duration::from_secs(u64::MAX);
+
+        let mut last_frame = None;
+
+        while let Some(frame) = decoded_frames.next().await {
+            last_frame = Some(frame);
+        }
+
+        assert_eq!(
+            Some(SharedFrame::new(
+                Duration::from_millis(2603),
+                Duration::from_millis(1),
+                vec![
+                    134, 141, 4, 245, 50, 164, 165, 248, 119, 253, 139, 12, 7, 71, 5, 214, 255,
+                    230, 222, 11, 247, 74, 69, 120, 46, 244, 2, 27, 249, 188, 151, 130, 249, 0,
+                    241, 43, 71, 138, 45, 113, 20, 176, 38, 181, 189, 163, 80, 218, 103, 140, 105,
+                    228, 102, 33, 129, 32, 25, 179, 149, 51, 151, 15, 0, 128, 16, 103, 152, 245,
+                    90, 216, 3, 94, 229, 39, 219, 167, 192, 52, 168, 164, 111, 102, 67, 189, 25,
+                    70, 145, 229, 32, 201, 182, 235, 162, 155, 29, 254, 196, 37, 170, 13, 255, 127,
+                    26, 87, 124, 18, 120, 245, 243, 243, 186, 213, 17, 173, 255, 127, 150, 172, 38,
+                    40, 83, 56, 0, 128, 133, 75, 247, 223, 250, 54, 251, 39, 162, 186, 152, 179,
+                    169, 254, 142, 140, 188, 219, 4, 177, 180, 152, 19, 73, 255, 127, 126, 47, 240,
+                    6, 0, 128, 49, 69, 49, 31, 200, 33, 177, 116, 69, 149, 16, 46, 255, 127, 203,
+                    70, 190, 100, 104, 211, 146, 121, 71, 168, 65, 148, 237, 3, 0, 128, 66, 239,
+                    168, 83, 205, 164, 206, 185, 51, 106, 4, 8, 73, 3, 34, 189, 130, 159, 187, 236,
+                    112, 186, 210, 110, 14, 143, 231, 239, 33, 0, 30, 88, 187, 43, 6, 228, 88, 46,
+                    91, 166, 105, 242, 79, 103, 172, 56, 255, 127, 207, 126, 193, 170, 248, 102,
+                    132, 46, 59, 16, 27, 42, 130, 158, 7, 208, 198, 75, 79, 239, 119, 42
+                ],
+            )),
+            last_frame
+        );
+    }
+
+    #[actix_rt::test]
+    async fn test_decoding_offset() {
+        let mut decoded_frames =
+            super::decode_audio_file("tests/fixtures/test_file.wav", &Duration::from_millis(1200))
+                .unwrap();
 
         let mut frames_count = 0;
         let mut max_pts = Duration::from_secs(0);

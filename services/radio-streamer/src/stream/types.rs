@@ -4,21 +4,30 @@ use std::ops::Deref;
 use std::sync::Arc;
 use std::time::Duration;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub(crate) struct SharedFrame {
     data: Arc<Vec<u8>>,
+    duration: Duration,
     pts: Duration,
 }
 
 impl SharedFrame {
-    pub(crate) fn new(pts: Duration, data: Vec<u8>) -> Self {
+    pub(crate) fn new(pts: Duration, duration: Duration, data: Vec<u8>) -> Self {
         let data = Arc::new(data);
 
-        Self { pts, data }
+        Self {
+            pts,
+            duration,
+            data,
+        }
     }
 
     pub(crate) fn data(&self) -> &Arc<Vec<u8>> {
         &self.data
+    }
+
+    pub(crate) fn duration(&self) -> &Duration {
+        &self.duration
     }
 
     pub(crate) fn pts(&self) -> &Duration {

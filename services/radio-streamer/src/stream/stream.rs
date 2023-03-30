@@ -285,6 +285,7 @@ impl StreamOutputs {
                                     if encoded_messages_channel
                                         .send_all(StreamMessage::Frame(SharedFrame::new(
                                             buffer.pts_hint().clone(),
+                                            Duration::default(),
                                             Vec::from(&buffer.bytes()[..]),
                                         )))
                                         .await

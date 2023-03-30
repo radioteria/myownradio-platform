@@ -203,7 +203,7 @@ pub(crate) fn build_silence_source(duration: Option<&Duration>) -> mpsc::Receive
                     (frame * frame_size) as f32 / AUDIO_BYTES_PER_SECOND as f32,
                 );
                 let data = vec![0u8; frame_size];
-                let buffer = SharedFrame::new(pts, data);
+                let buffer = SharedFrame::new(pts, Duration::default(), data);
 
                 if let Err(_) = sender.send(buffer).await {
                     break;

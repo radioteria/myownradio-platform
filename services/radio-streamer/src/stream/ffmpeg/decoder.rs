@@ -555,14 +555,29 @@ mod tests {
                 Duration::from_millis(0),
             ),
             (
+                "tests/fixtures/test_file.wav",
+                Duration::from_millis(2834),
+                Duration::from_millis(1500),
+            ),
+            (
                 "tests/fixtures/test_file.aac",
                 Duration::from_millis(2877),
                 Duration::from_millis(0),
             ),
             (
+                "tests/fixtures/test_file.aac",
+                Duration::from_millis(2877),
+                Duration::from_millis(1500),
+            ),
+            (
                 "tests/fixtures/test_file.flac",
                 Duration::from_millis(2833),
                 Duration::from_millis(0),
+            ),
+            (
+                "tests/fixtures/test_file.flac",
+                Duration::from_millis(2833),
+                Duration::from_millis(1500),
             ),
             // (
             //     "tests/fixtures/test_file.m4a",
@@ -575,9 +590,19 @@ mod tests {
                 Duration::from_millis(0),
             ),
             (
+                "tests/fixtures/test_file.mp3",
+                Duration::from_millis(2858),
+                Duration::from_millis(1500),
+            ),
+            (
                 "tests/fixtures/test_file.ogg",
                 Duration::from_millis(2836),
                 Duration::from_millis(0),
+            ),
+            (
+                "tests/fixtures/test_file.ogg",
+                Duration::from_millis(2836),
+                Duration::from_millis(1500),
             ),
         ];
 

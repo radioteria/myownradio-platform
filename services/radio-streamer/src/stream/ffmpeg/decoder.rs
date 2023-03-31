@@ -238,11 +238,16 @@ mod tests {
                 Duration::from_millis(2833),
                 Duration::from_millis(1500),
             ),
-            // (
-            //     "tests/fixtures/test_file.m4a",
-            //     Duration::from_millis(2834),
-            //     Duration::from_millis(0),
-            // ),
+            (
+                "tests/fixtures/test_file.m4a",
+                Duration::from_millis(2854),
+                Duration::from_millis(0),
+            ),
+            (
+                "tests/fixtures/test_file.m4a",
+                Duration::from_millis(2854),
+                Duration::from_millis(1500),
+            ),
             (
                 "tests/fixtures/test_file.mp3",
                 Duration::from_millis(2858),

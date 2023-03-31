@@ -547,23 +547,53 @@ mod tests {
     }
 
     #[actix_rt::test]
-    async fn test_decoding_offset() {
-        let mut decoded_frames =
-            super::decode_audio_file("tests/fixtures/test_file.wav", &Duration::from_millis(1200))
-                .unwrap();
+    async fn test_decoding_test_files() {
+        let test_files = vec![
+            (
+                "tests/fixtures/test_file.wav",
+                Duration::from_millis(2834),
+                Duration::from_millis(0),
+            ),
+            (
+                "tests/fixtures/test_file.aac",
+                Duration::from_millis(2834),
+                Duration::from_millis(0),
+            ),
+            (
+                "tests/fixtures/test_file.flac",
+                Duration::from_millis(2834),
+                Duration::from_millis(0),
+            ),
+            (
+                "tests/fixtures/test_file.m4a",
+                Duration::from_millis(2834),
+                Duration::from_millis(0),
+            ),
+            (
+                "tests/fixtures/test_file.mp3",
+                Duration::from_millis(2834),
+                Duration::from_millis(0),
+            ),
+            (
+                "tests/fixtures/test_file.ogg",
+                Duration::from_millis(2834),
+                Duration::from_millis(0),
+            ),
+        ];
 
-        let mut frames_count = 0;
-        let mut max_pts = Duration::from_secs(0);
-        let mut min_pts = Duration::from_secs(u64::MAX);
+        for (filename, expected_duration, offset) in test_files {
+            eprintln!("file: {}", filename);
 
-        while let Some(frame) = decoded_frames.next().await {
-            frames_count += 1;
-            max_pts = frame.pts().clone();
-            min_pts = max_pts.min(min_pts);
+            let mut frames =
+                super::decode_audio_file(filename, &offset).expect("Unable to decode file");
+
+            let mut duration = Duration::default();
+
+            while let Some(frame) = frames.next().await {
+                duration = (*frame.duration() + *frame.pts());
+            }
+
+            assert_eq!(expected_duration, duration);
         }
-
-        assert_eq!(71, frames_count);
-        assert_eq!(2596, max_pts.as_millis());
-        assert_eq!(1103, min_pts.as_millis());
     }
 }

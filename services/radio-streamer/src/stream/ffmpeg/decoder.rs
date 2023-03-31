@@ -88,7 +88,7 @@ pub(crate) fn decode_audio_file(
         .streams()
         .best(ffmpeg_next::media::Type::Audio)
         .ok_or_else(|| AudioFileDecodeError::NoAudioStream)?;
-    let input_stream_number = input_stream.id() as usize;
+    let input_stream_index = input_stream.index();
 
     let mut decoder = input_stream
         .codec()
@@ -115,7 +115,7 @@ pub(crate) fn decode_audio_file(
     std::thread::spawn(move || {
         let audio_packets = ictx
             .packets()
-            .filter(|(_, packet)| packet.stream() == input_stream_number)
+            .filter(|(stream, _)| stream.index() == input_stream_index)
             .map(|(s, packet)| packet);
 
         if let Err(error) = process_audio_stream_packets(

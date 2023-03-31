@@ -78,7 +78,7 @@ pub(crate) fn decode_audio_file(
         .ok_or_else(|| AudioFileDecodeError::NoAudioStream)?
         .time_base();
 
-    {
+    if !offset.is_zero() {
         let position = (offset.as_millis() as i64).rescale(INTERNAL_TIME_BASE, rescale::TIME_BASE);
         ictx.seek(position, ..position)
             .map_err(|error| AudioFileDecodeError::Seek(error))?;

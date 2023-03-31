@@ -152,7 +152,9 @@ where
 {
     let runtime = Runtime::new().expect("Unable to init async runtime");
 
-    for packet in packets {
+    for mut packet in packets {
+        packet.rescale_ts(*input_time_base, decoder.time_base());
+
         decoder.send_packet(&packet)?;
 
         let frames = receive_and_process_decoded_frames(input_time_base, decoder, resampler)?;
@@ -182,18 +184,17 @@ fn receive_and_process_decoded_frames(
 
     let mut decoded_frame = ffmpeg_next::frame::Audio::empty();
     while decoder.receive_frame(&mut decoded_frame).is_ok() {
-        let rescaled_ts = decoded_frame
-            .pts()
-            .map(|pts| pts.rescale(input_time_base.clone(), decoder_time_base));
-        decoded_frame.set_pts(rescaled_ts);
+        let timestamp = decoded_frame.timestamp();
+        decoded_frame.set_pts(timestamp);
 
         let mut resampled_frame = ffmpeg_next::frame::Audio::empty();
         resampled_frame.clone_from(&decoded_frame);
+
         resampler.run(&decoded_frame, &mut resampled_frame)?;
-        let rescaled_ts = resampled_frame
-            .pts()
-            .map(|pts| pts.rescale(decoder_time_base, RESAMPLER_TIME_BASE));
-        resampled_frame.set_pts(rescaled_ts);
+
+        let timestamp = resampled_frame.timestamp();
+        resampled_frame.set_pts(timestamp);
+
         frames.push(resampled_frame);
     }
 

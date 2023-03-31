@@ -69,8 +69,6 @@ pub(crate) fn decode_audio_file(
 ) -> Result<Receiver<SharedFrame>, AudioFileDecodeError> {
     let (mut frame_sender, frame_receiver) = channel(0);
 
-    eprintln!("file: {}", source_url);
-
     let mut ictx = ffmpeg_next::format::input(&source_url.to_string())
         .map_err(|error| AudioFileDecodeError::OpenFile(error))?;
 

@@ -190,6 +190,10 @@ fn receive_and_process_decoded_frames(
         let mut resampled_frame = ffmpeg_next::frame::Audio::empty();
         resampled_frame.clone_from(&decoded_frame);
         resampler.run(&decoded_frame, &mut resampled_frame)?;
+        let rescaled_ts = resampled_frame
+            .pts()
+            .map(|pts| pts.rescale(decoder_time_base, RESAMPLER_TIME_BASE));
+        resampled_frame.set_pts(rescaled_ts);
         frames.push(resampled_frame);
     }
 

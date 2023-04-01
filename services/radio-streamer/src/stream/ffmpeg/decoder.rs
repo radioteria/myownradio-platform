@@ -3,7 +3,6 @@ use crate::stream::ffmpeg::{
     INTERNAL_CHANNEL_LAYOUT, INTERNAL_SAMPLE_SIZE, INTERNAL_SAMPLING_RATE, RESAMPLER_TIME_BASE,
 };
 use crate::stream::types::{Buffer, SharedFrame};
-use actix_rt::Runtime;
 use actix_web::web::Bytes;
 use ffmpeg_next::format::sample::Type;
 use ffmpeg_next::format::Sample;
@@ -14,33 +13,132 @@ use futures::SinkExt;
 use std::any::Any;
 use std::time::Duration;
 
-#[derive(Debug, thiserror::Error)]
-pub(crate) enum AudioFileDecodeError {
-    #[error("Unable to open input file: {0}")]
-    OpenFile(ffmpeg_next::Error),
-    #[error("Unable to find audio stream")]
-    NoAudioStream,
-    #[error("Unable to seek in input file: {0}")]
-    Seek(ffmpeg_next::Error),
-    #[error("Unable to initialize audio decoder: {0}")]
-    AudioDecoder(ffmpeg_next::Error),
-    #[error("Unable to initialize resampler: {0}")]
-    Resampler(ffmpeg_next::Error),
+struct AudioDecoder {
+    input_index: usize,
+    input_time_base: Rational,
+    decoder: ffmpeg_next::decoder::Audio,
+    resampler: ffmpeg_next::software::resampling::Context,
+    async_runtime: actix_rt::Runtime,
+    async_sender: futures::channel::mpsc::Sender<SharedFrame>,
 }
 
-impl Into<Buffer> for frame::Audio {
-    fn into(self) -> Buffer {
-        let pts = self
-            .pts()
-            .unwrap_or_default()
-            .rescale(RESAMPLER_TIME_BASE, INTERNAL_TIME_BASE) as u64;
-        let data_len = self.samples() * 4; // number of bytes required to represent each pair of 16-bit integers as four 8-bit integers
+#[derive(Debug, thiserror::Error)]
+pub(crate) enum AudioDecoderError {
+    #[error("Unable to open input file: {0}")]
+    OpenFileError(ffmpeg_next::Error),
+    #[error("Audio stream not found")]
+    AudioStreamNotFound,
+    #[error("Audio decoding failed: {0}")]
+    AudioDecoderError(ffmpeg_next::Error),
+    #[error("Audio resampling failed: {0}")]
+    ResamplingError(ffmpeg_next::Error),
+    #[error("Unable to seek input to specified position")]
+    SeekError(ffmpeg_next::Error),
+    #[error("Unable to send processed frame to Sender")]
+    SendError(futures::channel::mpsc::SendError),
+}
 
-        Buffer::new(
-            Bytes::copy_from_slice(&self.data(0)[..data_len]),
-            Duration::from_millis(pts),
-        )
+impl AudioDecoder {
+    fn resample_and_process_frames(
+        &mut self,
+        decoded: &ffmpeg_next::frame::Audio,
+    ) -> Result<(), AudioDecoderError> {
+        let mut delay = None;
+
+        loop {
+            let mut resampled = ffmpeg_next::frame::Audio::empty();
+            resampled.clone_from(decoded);
+
+            delay = match delay {
+                Some(_) => self.resampler.flush(&mut resampled).unwrap(),
+                None => self.resampler.run(decoded, &mut resampled).unwrap(),
+            };
+
+            let timestamp = resampled.timestamp();
+            resampled.set_pts(timestamp);
+
+            self.async_runtime
+                .block_on(self.async_sender.send(resampled.into()))
+                .map_err(|error| AudioDecoderError::SendError(error))?;
+
+            if delay.is_none() {
+                break;
+            }
+        }
+
+        Ok(())
     }
+
+    fn send_packet_to_decoder(
+        &mut self,
+        packet: &ffmpeg_next::packet::Packet,
+    ) -> Result<(), AudioDecoderError> {
+        self.decoder
+            .send_packet(packet)
+            .map_err(|error| AudioDecoderError::AudioDecoderError(error))
+    }
+
+    fn send_eof_to_decoder(&mut self) -> Result<(), AudioDecoderError> {
+        self.decoder
+            .send_eof()
+            .map_err(|error| AudioDecoderError::AudioDecoderError(error))
+    }
+
+    fn receive_and_process_decoded_frames(&mut self) -> Result<(), AudioDecoderError> {
+        let mut decoded = ffmpeg_next::frame::Audio::empty();
+        while self.decoder.receive_frame(&mut decoded).is_ok() {
+            let timestamp = decoded.timestamp();
+            decoded.set_pts(timestamp);
+
+            self.resample_and_process_frames(&decoded)?;
+        }
+
+        Ok(())
+    }
+}
+
+fn make_audio_decoder(
+    ictx: &mut ffmpeg_next::format::context::Input,
+    async_runtime: actix_rt::Runtime,
+    async_sender: futures::channel::mpsc::Sender<SharedFrame>,
+) -> Result<AudioDecoder, AudioDecoderError> {
+    let input = ictx
+        .streams()
+        .best(ffmpeg_next::media::Type::Audio)
+        .ok_or_else(|| AudioDecoderError::AudioStreamNotFound)?;
+    let input_index = input.index();
+    let input_time_base = input.time_base();
+
+    let mut decoder = input
+        .codec()
+        .decoder()
+        .audio()
+        .map_err(|error| AudioDecoderError::AudioDecoderError(error))?;
+
+    decoder
+        .set_parameters(input.parameters())
+        .map_err(|error| AudioDecoderError::AudioDecoderError(error))?;
+
+    if decoder.channel_layout().is_empty() {
+        decoder.set_channel_layout(ChannelLayout::default(decoder.channels() as i32));
+    }
+
+    let resampler = decoder
+        .resampler(
+            Sample::I16(Type::Packed),
+            INTERNAL_CHANNEL_LAYOUT,
+            INTERNAL_SAMPLING_RATE as u32,
+        )
+        .map_err(|error| AudioDecoderError::ResamplingError(error))?;
+
+    Ok(AudioDecoder {
+        input_index,
+        input_time_base,
+        decoder,
+        resampler,
+        async_runtime,
+        async_sender,
+    })
 }
 
 impl Into<SharedFrame> for ffmpeg_next::frame::Audio {
@@ -66,139 +164,42 @@ impl Into<SharedFrame> for ffmpeg_next::frame::Audio {
 pub(crate) fn decode_audio_file(
     source_url: &str,
     offset: &Duration,
-) -> Result<Receiver<SharedFrame>, AudioFileDecodeError> {
+) -> Result<Receiver<SharedFrame>, AudioDecoderError> {
     let (mut frame_sender, frame_receiver) = channel(0);
 
     let mut ictx = ffmpeg_next::format::input(&source_url.to_string())
-        .map_err(|error| AudioFileDecodeError::OpenFile(error))?;
-
-    let input_time_base = ictx
-        .streams()
-        .best(ffmpeg_next::media::Type::Audio)
-        .ok_or_else(|| AudioFileDecodeError::NoAudioStream)?
-        .time_base();
+        .map_err(|error| AudioDecoderError::OpenFileError(error))?;
 
     if !offset.is_zero() {
-        let position = (offset.as_millis() as i64).rescale(INTERNAL_TIME_BASE, rescale::TIME_BASE);
+        let position_millis = offset.as_millis() as i64;
+        let position = position_millis.rescale(INTERNAL_TIME_BASE, rescale::TIME_BASE);
+
         ictx.seek(position, ..position)
-            .map_err(|error| AudioFileDecodeError::Seek(error))?;
+            .map_err(|error| AudioDecoderError::SeekError(error))?;
     };
 
-    let input_stream = ictx
-        .streams()
-        .best(ffmpeg_next::media::Type::Audio)
-        .ok_or_else(|| AudioFileDecodeError::NoAudioStream)?;
-    let input_stream_index = input_stream.index();
-
-    let mut decoder = input_stream
-        .codec()
-        .decoder()
-        .audio()
-        .map_err(|error| AudioFileDecodeError::AudioDecoder(error))?;
-
-    decoder
-        .set_parameters(input_stream.parameters())
-        .map_err(|error| AudioFileDecodeError::AudioDecoder(error))?;
-
-    if decoder.channel_layout().is_empty() {
-        decoder.set_channel_layout(ChannelLayout::default(decoder.channels() as i32));
-    }
-
-    let mut resampler = decoder
-        .resampler(
-            Sample::I16(Type::Packed),
-            INTERNAL_CHANNEL_LAYOUT,
-            INTERNAL_SAMPLING_RATE as u32,
-        )
-        .map_err(|error| AudioFileDecodeError::AudioDecoder(error))?;
-
     std::thread::spawn(move || {
-        let audio_packets = ictx
-            .packets()
-            .filter(|(stream, _)| stream.index() == input_stream_index)
-            .map(|(s, packet)| packet);
+        let async_runtime = actix_rt::Runtime::new().expect("Unable to initialize async runtime");
+        let mut audio_decoder = make_audio_decoder(&mut ictx, async_runtime, frame_sender)
+            .expect("Unable to initialize audio decoder");
 
-        if let Err(error) = process_audio_stream_packets(
-            audio_packets,
-            &input_time_base,
-            &mut decoder,
-            &mut resampler,
-            &mut frame_sender,
-        ) {
-            eprintln!("ERROR!: {:?}", error);
+        for (stream, mut packet) in ictx.packets() {
+            if stream.index() == audio_decoder.input_index {
+                packet.rescale_ts(
+                    audio_decoder.input_time_base,
+                    audio_decoder.decoder.time_base(),
+                );
+
+                audio_decoder.send_packet_to_decoder(&packet).unwrap();
+                audio_decoder.receive_and_process_decoded_frames().unwrap();
+            }
         }
+
+        audio_decoder.send_eof_to_decoder().unwrap();
+        audio_decoder.receive_and_process_decoded_frames().unwrap();
     });
 
     Ok(frame_receiver)
-}
-
-#[derive(thiserror::Error, Debug)]
-enum ProcessAudioStreamPacketsError {
-    #[error(transparent)]
-    FFmpegError(#[from] ffmpeg_next::Error),
-    #[error(transparent)]
-    SendError(#[from] SendError),
-}
-
-fn process_audio_stream_packets<I>(
-    mut packets: I,
-    input_time_base: &Rational,
-    decoder: &mut ffmpeg_next::decoder::Audio,
-    resampler: &mut ffmpeg_next::software::resampling::Context,
-    frame_sender: &mut Sender<SharedFrame>,
-) -> Result<(), ProcessAudioStreamPacketsError>
-where
-    I: Iterator<Item = Packet>,
-{
-    let runtime = Runtime::new().expect("Unable to init async runtime");
-
-    for mut packet in packets {
-        packet.rescale_ts(*input_time_base, decoder.time_base());
-
-        decoder.send_packet(&packet)?;
-
-        let frames = receive_and_process_decoded_frames(input_time_base, decoder, resampler)?;
-        for frame in frames {
-            runtime.block_on(async { frame_sender.send(frame.into()).await })?;
-        }
-    }
-
-    decoder.send_eof()?;
-
-    let frames = receive_and_process_decoded_frames(input_time_base, decoder, resampler)?;
-    for frame in frames {
-        runtime.block_on(async { frame_sender.send(frame.into()).await })?;
-    }
-
-    Ok(())
-}
-
-fn receive_and_process_decoded_frames(
-    input_time_base: &Rational,
-    decoder: &mut ffmpeg_next::decoder::Audio,
-    resampler: &mut ffmpeg_next::software::resampling::Context,
-) -> Result<Vec<Audio>, ffmpeg_next::Error> {
-    let decoder_time_base = decoder.time_base();
-
-    let mut frames = vec![];
-
-    let mut decoded_frame = ffmpeg_next::frame::Audio::empty();
-    while decoder.receive_frame(&mut decoded_frame).is_ok() {
-        let timestamp = decoded_frame.timestamp();
-        decoded_frame.set_pts(timestamp);
-
-        let mut resampled_frame = ffmpeg_next::frame::Audio::empty();
-        resampled_frame.clone_from(&decoded_frame);
-
-        resampler.run(&decoded_frame, &mut resampled_frame)?;
-
-        let timestamp = resampled_frame.timestamp();
-        resampled_frame.set_pts(timestamp);
-
-        frames.push(resampled_frame);
-    }
-
-    Ok(frames)
 }
 
 #[cfg(test)]
@@ -280,7 +281,7 @@ mod tests {
             let mut duration = Duration::default();
 
             while let Some(frame) = frames.next().await {
-                duration = (*frame.duration() + *frame.pts());
+                duration = *frame.duration() + *frame.pts();
             }
 
             assert_eq!(expected_duration, duration);

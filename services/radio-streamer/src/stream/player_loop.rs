@@ -1,7 +1,7 @@
 use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
 use crate::metrics::Metrics;
 use crate::stream::constants::{AUDIO_BYTES_PER_SECOND, REALTIME_STARTUP_BUFFER_TIME};
-use crate::stream::ffmpeg::{decode_audio_file, AudioFileDecodeError};
+use crate::stream::ffmpeg::{decode_audio_file, AudioDecoderError};
 use crate::stream::types::{Buffer, SharedFrame, TrackTitle};
 use crate::stream::util::channels::TimedMessage;
 use crate::stream::util::clock::MessageSyncClock;
@@ -35,9 +35,7 @@ pub(crate) enum PlayerLoopError {
     #[error(transparent)]
     BackendError(#[from] MorBackendClientError),
     #[error(transparent)]
-    DecoderError(#[from] DecoderError),
-    #[error(transparent)]
-    Decoder2Error(#[from] AudioFileDecodeError),
+    DecoderError(#[from] AudioDecoderError),
     #[error(transparent)]
     SendError(#[from] mpsc::SendError),
     #[error("The decoder stopped unexpectedly with an exit code = {0}")]

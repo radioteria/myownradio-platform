@@ -3,7 +3,7 @@ use ffmpeg_next::{ChannelLayout, Rational};
 mod decoder;
 mod utils;
 
-pub(crate) use decoder::{decode_audio_file, AudioFileDecodeError};
+pub(crate) use decoder::{decode_audio_file, AudioDecoderError};
 
 const INTERNAL_CHANNEL_LAYOUT: ChannelLayout = ChannelLayout::STEREO;
 const INTERNAL_SAMPLING_RATE: i32 = 48_000;

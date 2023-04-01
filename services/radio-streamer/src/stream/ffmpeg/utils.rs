@@ -1,4 +1,5 @@
 use actix_web::web::Bytes;
+use ffmpeg_next::Rescale;
 #[macro_export]
 macro_rules! unwrap_or_return {
     ($x:expr, $r:expr) => {{
@@ -44,4 +45,33 @@ pub(crate) fn convert_sample_to_byte_data(i16s: &[(i16, i16)]) -> Vec<u8> {
     }
 
     u8s
+}
+
+/// Rescales the timestamp of an audio frame using the given source and destination time bases.
+///
+/// # Arguments
+///
+/// * `frame` - A mutable reference to the audio frame to be rescaled.
+/// * `source` - The time base of the source video stream.
+/// * `dest` - The desired time base for the rescaled frame.
+///
+/// # Example
+///
+/// ```
+/// use ffmpeg_next::Rational;
+/// use ffmpeg_next::frame::Audio;
+///
+/// let mut audio_frame = Audio::new();
+/// let source_timebase = Rational::new(1, 1000);
+/// let dest_timebase = Rational::new(1, 48000);
+///
+/// rescale_audio_frame_ts(&mut audio_frame, source_timebase, dest_timebase);
+/// ```
+pub(crate) fn rescale_audio_frame_ts(
+    frame: &mut ffmpeg_next::frame::Audio,
+    source: ffmpeg_next::Rational,
+    dest: ffmpeg_next::Rational,
+) {
+    let rescaled_ts = frame.pts().map(|pts| pts.rescale(source, dest));
+    frame.set_pts(rescaled_ts);
 }

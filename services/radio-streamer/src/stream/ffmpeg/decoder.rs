@@ -51,8 +51,14 @@ impl AudioDecoder {
             resampled.clone_from(decoded);
 
             delay = match delay {
-                Some(_) => self.resampler.flush(&mut resampled).unwrap(),
-                None => self.resampler.run(decoded, &mut resampled).unwrap(),
+                Some(_) => self
+                    .resampler
+                    .flush(&mut resampled)
+                    .map_err(|error| AudioDecoderError::ResamplingError(error))?,
+                None => self
+                    .resampler
+                    .run(decoded, &mut resampled)
+                    .map_err(|error| AudioDecoderError::ResamplingError(error))?,
             };
 
             rescale_audio_frame_ts(

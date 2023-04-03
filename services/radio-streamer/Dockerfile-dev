@@ -1,9 +1,29 @@
 FROM rust:1.66.0
 
+ARG FFMPEG_VERSION=6.0
+ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
+ARG FFMPEG_SHA256=47d062731c9f66a78380e35a19aac77cebceccd1c7cc309b9c82343ffc430c3d
+
 RUN apt-get update
 
-RUN apt-get install -y --no-install-recommends \
-    libavutil-dev libavformat-dev libavfilter-dev libavdevice-dev libclang-dev
+RUN apt-get install -y --no-install-recommends nasm yasm
+
+WORKDIR /build
+
+RUN \
+      wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
+      echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
+      tar xf ffmpeg.tar.bz2 && \
+      cd ffmpeg-* && \
+      ./configure \
+      --disable-everything \
+      --enable-avutil \
+      --enable-avcodec \
+      --enable-avformat \
+      --enable-avdevice \
+      --enable-avfilter \
+      --enable-swresample \
+      && make install
 
 ARG USER=1000:1000
 

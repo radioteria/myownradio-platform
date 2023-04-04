@@ -118,9 +118,10 @@ fn make_audio_decoder(
         .ok_or_else(|| AudioDecoderError::AudioStreamNotFound)?;
     let input_index = input.index();
     let input_time_base = input.time_base();
+    let context = ffmpeg_next::codec::context::Context::from_parameters(input.parameters())
+        .map_err(|error| AudioDecoderError::AudioDecoderError(error))?;
 
-    let mut decoder = input
-        .codec()
+    let mut decoder = context
         .decoder()
         .audio()
         .map_err(|error| AudioDecoderError::AudioDecoderError(error))?;

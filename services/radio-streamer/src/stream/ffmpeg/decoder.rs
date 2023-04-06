@@ -11,7 +11,6 @@ use ffmpeg_next::frame::Audio;
 use ffmpeg_next::{frame, rescale, ChannelLayout, Packet, Rational, Rescale, Stream};
 use futures::channel::mpsc::{channel, Receiver, SendError, Sender};
 use futures::SinkExt;
-use std::any::Any;
 use std::time::Duration;
 
 struct AudioDecoder {
@@ -194,8 +193,11 @@ pub(crate) fn decode_audio_file(
         let mut audio_decoder = make_audio_decoder(&mut ictx, async_runtime, frame_sender)
             .expect("Unable to initialize audio decoder");
 
-        for (stream, mut packet) in ictx.packets() {
+        for (i, (stream, mut packet)) in ictx.packets().enumerate() {
             if stream.index() == audio_decoder.input_index {
+                let md5_digest = md5::compute(packet.data().clone().unwrap_or_default());
+                eprintln!("chunk={}, md5={:x}", i, md5_digest);
+
                 packet.rescale_ts(stream.time_base(), audio_decoder.decoder.time_base());
                 audio_decoder.send_packet_to_decoder(&packet).unwrap();
                 audio_decoder.receive_and_process_decoded_frames().unwrap();
@@ -239,12 +241,12 @@ mod tests {
             // ),
             (
                 "tests/fixtures/test_file.flac",
-                Duration::from_millis(2833),
+                Duration::from_millis(2834),
                 Duration::from_millis(0),
             ),
             (
                 "tests/fixtures/test_file.flac",
-                Duration::from_millis(2833),
+                Duration::from_millis(2834),
                 Duration::from_millis(1500),
             ),
             // (

@@ -195,8 +195,9 @@ pub(crate) fn decode_audio_file(
 
         for (i, (stream, mut packet)) in ictx.packets().enumerate() {
             if stream.index() == audio_decoder.input_index {
-                let md5_digest = md5::compute(packet.data().clone().unwrap_or_default());
-                eprintln!("chunk={}, md5={:x}", i, md5_digest);
+                if i == 2 {
+                    eprintln!("{:x?}", packet.data());
+                }
 
                 packet.rescale_ts(stream.time_base(), audio_decoder.decoder.time_base());
                 audio_decoder.send_packet_to_decoder(&packet).unwrap();

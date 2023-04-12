@@ -24,7 +24,7 @@ RUN \
       --enable-openssl \
       --enable-swresample \
       --enable-decoder=flac,pcm_s16le,aac \
-      --enable-demuxer=flac,wav,aac \
+      --enable-demuxer=flac,wav,aac,m4a \
       --enable-protocol=file \
       && make install \
       && ldconfig

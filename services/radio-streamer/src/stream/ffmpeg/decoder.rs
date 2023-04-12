@@ -3,12 +3,10 @@ use crate::stream::ffmpeg::utils::rescale_audio_frame_ts;
 use crate::stream::ffmpeg::{
     INTERNAL_CHANNEL_LAYOUT, INTERNAL_SAMPLE_SIZE, INTERNAL_SAMPLING_RATE, RESAMPLER_TIME_BASE,
 };
-use crate::stream::types::{Buffer, SharedFrame};
-use actix_web::web::Bytes;
+use crate::stream::types::SharedFrame;
 use ffmpeg_next::format::sample::Type;
 use ffmpeg_next::format::Sample;
-use ffmpeg_next::frame::Audio;
-use ffmpeg_next::{frame, rescale, ChannelLayout, Packet, Rational, Rescale, Stream};
+use ffmpeg_next::{rescale, ChannelLayout, Packet, Rational, Rescale, Stream};
 use futures::channel::mpsc::{channel, Receiver, SendError, Sender};
 use futures::SinkExt;
 use std::time::Duration;
@@ -292,5 +290,20 @@ mod tests {
 
             assert_eq!(expected_duration, duration);
         }
+    }
+
+    #[actix_rt::test]
+    async fn test_decoding_file_by_url() {
+        let test_file_url = "https://download.samplelib.com/mp3/sample-6s.mp3";
+        let mut frames = super::decode_audio_file(test_file_url, &Duration::from_secs(0))
+            .expect("Unable to decode file");
+
+        let mut duration = Duration::default();
+
+        while let Some(frame) = frames.next().await {
+            duration = *frame.duration() + *frame.pts();
+        }
+
+        assert_eq!(Duration::from_millis(6189), duration);
     }
 }

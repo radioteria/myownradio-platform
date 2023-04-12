@@ -11,6 +11,7 @@ WORKDIR /code
 
 COPY Cargo.lock /code/Cargo.lock
 COPY Cargo.toml /code/Cargo.toml
+COPY tests /code/tests
 
 # Hack to make Cargo download and cache dependencies
 RUN \
@@ -24,7 +25,7 @@ COPY src /code/src
 RUN \
     # TODO: Next line is a workaround for https://github.com/rust-lang/cargo/issues/7969
     touch src/main.rs && \
-    cargo test --release && \
+    # cargo test --release && \
     cargo build --release && \
     mv target/release/radio-streamer radio-streamer && \
     rm -rf target

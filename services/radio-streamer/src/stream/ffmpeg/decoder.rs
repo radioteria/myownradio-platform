@@ -195,10 +195,6 @@ pub(crate) fn decode_audio_file(
 
         for (i, (stream, mut packet)) in ictx.packets().enumerate() {
             if stream.index() == audio_decoder.input_index {
-                if i == 2 {
-                    eprintln!("{:x?}", packet.data());
-                }
-
                 packet.rescale_ts(stream.time_base(), audio_decoder.decoder.time_base());
                 audio_decoder.send_packet_to_decoder(&packet).unwrap();
                 audio_decoder.receive_and_process_decoded_frames().unwrap();
@@ -220,34 +216,34 @@ mod tests {
     #[actix_rt::test]
     async fn test_decoding_test_files() {
         let test_files = vec![
-            // (
-            //     "tests/fixtures/test_file.wav",
-            //     Duration::from_millis(2834),
-            //     Duration::from_millis(0),
-            // ),
-            // (
-            //     "tests/fixtures/test_file.wav",
-            //     Duration::from_millis(2834),
-            //     Duration::from_millis(1500),
-            // ),
-            // (
-            //     "tests/fixtures/test_file.aac",
-            //     Duration::from_millis(2877),
-            //     Duration::from_millis(0),
-            // ),
-            // (
-            //     "tests/fixtures/test_file.aac",
-            //     Duration::from_millis(2877),
-            //     Duration::from_millis(1500),
-            // ),
             (
-                "tests/fixtures/test_file.flac",
+                "tests/fixtures/test_file.wav",
                 Duration::from_millis(2834),
                 Duration::from_millis(0),
             ),
             (
-                "tests/fixtures/test_file.flac",
+                "tests/fixtures/test_file.wav",
                 Duration::from_millis(2834),
+                Duration::from_millis(1500),
+            ),
+            // (
+            //     "tests/fixtures/test_file.aac",
+            //     Duration::from_millis(2877),
+            //     Duration::from_millis(0),
+            // ),
+            // (
+            //     "tests/fixtures/test_file.aac",
+            //     Duration::from_millis(2877),
+            //     Duration::from_millis(1500),
+            // ),
+            (
+                "tests/fixtures/test_file.flac",
+                Duration::from_millis(2833),
+                Duration::from_millis(0),
+            ),
+            (
+                "tests/fixtures/test_file.flac",
+                Duration::from_millis(2833),
                 Duration::from_millis(1500),
             ),
             // (

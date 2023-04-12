@@ -23,8 +23,8 @@ RUN \
       --enable-avfilter \
       --enable-openssl \
       --enable-swresample \
-      --enable-decoder=flac \
-      --enable-demuxer=flac \
+      --enable-decoder=flac,pcm_s16le \
+      --enable-demuxer=flac,wav \
       --enable-protocol=file \
       && make install \
       && ldconfig

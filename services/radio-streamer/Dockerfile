@@ -28,7 +28,7 @@ RUN \
       --enable-openssl \
       --enable-decoder=flac,pcm_s16le,aac,mp3,vorbis \
       --enable-demuxer=flac,wav,aac,mov,mp4,m4a,3gp,3g2,mj2,mp3,ogg \
-      --enable-protocol=file,pipe,https,tls \
+      --enable-protocol=file,pipe,http,https,tls \
       && make install \
       && ldconfig
 

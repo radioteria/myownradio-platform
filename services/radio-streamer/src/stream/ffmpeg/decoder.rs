@@ -306,4 +306,18 @@ mod tests {
 
         assert_eq!(Duration::from_millis(6189), duration);
     }
+
+    #[actix_rt::test]
+    async fn test_seek_accuracy() {
+        let test_file_path = "tests/fixtures/test_file.wav";
+        let seek_position = Duration::from_millis(400);
+
+        let mut frame = super::decode_audio_file(test_file_path, &seek_position)
+            .expect("Unable to decode file")
+            .next()
+            .await
+            .unwrap();
+
+        assert_eq!(seek_position, frame.pts().clone());
+    }
 }

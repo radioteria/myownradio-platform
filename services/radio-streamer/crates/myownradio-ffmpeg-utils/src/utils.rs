@@ -1,5 +1,6 @@
 use crate::INTERNAL_TIME_BASE;
 use ffmpeg_next::Rescale;
+use std::fmt::Debug;
 use std::sync::Arc;
 use std::time::Duration;
 

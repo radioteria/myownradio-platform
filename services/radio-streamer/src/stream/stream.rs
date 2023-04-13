@@ -12,6 +12,7 @@ use actix_rt::task::JoinHandle;
 use actix_web::web::Bytes;
 use futures::channel::oneshot;
 use futures::{stream, SinkExt, StreamExt};
+use myownradio_ffmpeg_utils::Frame;
 use slog::{error, info, warn, Logger};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -20,14 +21,14 @@ use std::time::Duration;
 
 #[derive(Debug, Clone)]
 pub(crate) enum StreamMessage {
-    Frame(SharedFrame),
+    Buffer(Buffer),
     TrackTitle(TrackTitle),
 }
 
 impl TimedMessage for StreamMessage {
     fn pts(&self) -> &Duration {
         match self {
-            StreamMessage::Frame(b) => b.pts(),
+            StreamMessage::Buffer(buffer) => buffer.pts_hint(),
             StreamMessage::TrackTitle(t) => t.pts_hint(),
         }
     }
@@ -111,7 +112,10 @@ impl Stream {
                     let result = match msg {
                         PlayerLoopMessage::Frame(frame) => {
                             stream_messages_channel
-                                .send_all(StreamMessage::Frame(frame))
+                                .send_all(StreamMessage::Buffer(Buffer::new(
+                                    Bytes::copy_from_slice(&frame.data()),
+                                    frame.pts().into(),
+                                )))
                                 .await
                         }
                         PlayerLoopMessage::TrackTitle(title) => {
@@ -256,13 +260,8 @@ impl StreamOutputs {
                                         break;
                                     }
                                 }
-                                StreamMessage::Frame(frame) => {
-                                    let buffer = Buffer::new(
-                                        Bytes::copy_from_slice(frame.data()),
-                                        frame.pts().clone(),
-                                    );
-
-                                    if encoder_sender.send(buffer).await.is_err() {
+                                StreamMessage::Buffer(frame) => {
+                                    if encoder_sender.send(frame).await.is_err() {
                                         break;
                                     }
                                 }
@@ -283,11 +282,7 @@ impl StreamOutputs {
                             match output {
                                 EncoderOutput::Buffer(buffer) => {
                                     if encoded_messages_channel
-                                        .send_all(StreamMessage::Frame(SharedFrame::new(
-                                            buffer.pts_hint().clone(),
-                                            Duration::default(),
-                                            Vec::from(&buffer.bytes()[..]),
-                                        )))
+                                        .send_all(StreamMessage::Buffer(buffer))
                                         .await
                                         .is_err()
                                     {

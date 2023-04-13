@@ -27,8 +27,9 @@ lazy_static = "1.4.0"
 regex = "1.7.0"
 md5 = "0.7.0"
 
-[dependencies.ffmpeg-next]
-git = "https://github.com/pldin601/rust-ffmpeg.git"
+[dependencies.myownradio-ffmpeg-utils]
+version = "0.1.0"
+path = "crates/myownradio-ffmpeg-utils"
 
 [dependencies.slog]
 version = "2.7.0"

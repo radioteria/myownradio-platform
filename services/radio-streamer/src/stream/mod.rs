@@ -1,6 +1,5 @@
 mod constants;
 
-mod ffmpeg;
 pub(crate) mod player_loop;
 pub mod stream;
 pub mod streams_registry;

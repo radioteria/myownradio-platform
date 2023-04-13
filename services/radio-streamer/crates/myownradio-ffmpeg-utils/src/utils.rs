@@ -30,6 +30,12 @@ impl Into<Duration> for &Timestamp {
     }
 }
 
+impl Default for Timestamp {
+    fn default() -> Self {
+        Timestamp::new(0, INTERNAL_TIME_BASE)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Frame {
     data: Arc<Vec<u8>>,
@@ -48,19 +54,19 @@ impl Frame {
         }
     }
 
-    pub(crate) fn data(&self) -> &Arc<Vec<u8>> {
+    pub fn data(&self) -> &Arc<Vec<u8>> {
         &self.data
     }
 
-    pub(crate) fn duration(&self) -> &Timestamp {
+    pub fn duration(&self) -> &Timestamp {
         &self.duration
     }
 
-    pub(crate) fn pts(&self) -> &Timestamp {
+    pub fn pts(&self) -> &Timestamp {
         &self.pts
     }
 
-    pub(crate) fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.data.is_empty()
     }
 }

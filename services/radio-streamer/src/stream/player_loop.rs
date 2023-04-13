@@ -1,20 +1,15 @@
 use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
 use crate::metrics::Metrics;
-use crate::stream::constants::{AUDIO_BYTES_PER_SECOND, REALTIME_STARTUP_BUFFER_TIME};
-use crate::stream::ffmpeg::{decode_audio_file, AudioDecoderError};
-use crate::stream::types::{Buffer, SharedFrame, TrackTitle};
+use crate::stream::constants::REALTIME_STARTUP_BUFFER_TIME;
+use crate::stream::types::{Buffer, TrackTitle};
 use crate::stream::util::channels::TimedMessage;
 use crate::stream::util::clock::MessageSyncClock;
-use crate::stream::util::ffmpeg::{
-    build_ffmpeg_decoder, build_silence_source, DecoderError, DecoderOutput,
-};
 use crate::stream::util::time::subtract_abs;
-use actix_web::web::Bytes;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
+use myownradio_ffmpeg_utils::{decode_audio_file, generate_silence, AudioDecoderError, Frame};
 use scopeguard::defer;
 use slog::{debug, error, info, warn, Logger};
-use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
 /// When the audio position is within this threshold from the start
@@ -23,7 +18,7 @@ const ZERO_OFFSET_THRESHOLD: Duration = Duration::from_secs(1);
 
 #[derive(Debug)]
 pub(crate) enum PlayerLoopMessage {
-    Frame(SharedFrame),
+    Frame(Frame),
     TrackTitle(TrackTitle),
     RestartSender(oneshot::Sender<()>),
     Error(PlayerLoopError),
@@ -45,6 +40,12 @@ pub(crate) enum PlayerLoopError {
 impl TimedMessage for &Buffer {
     fn pts(&self) -> &Duration {
         self.pts_hint()
+    }
+}
+
+impl TimedMessage for &Frame {
+    fn pts(&self) -> &Duration {
+        self.pts().into()
     }
 }
 
@@ -111,7 +112,6 @@ async fn run_loop(
             )))
             .await?;
 
-        // let mut track_decoder = build_ffmpeg_decoder(&url, &offset, &logger, &metrics)?;
         let mut track_decoder = decode_audio_file(&url, &offset)?;
 
         let (restart_tx, mut restart_rx) = oneshot::channel::<()>();
@@ -137,35 +137,6 @@ async fn run_loop(
             player_loop_msg_sender
                 .send(PlayerLoopMessage::Frame(frame))
                 .await?;
-
-            // match msg {
-            //     DecoderOutput::Buffer(buffer) => {
-            //         sync_clock.wait(&buffer).await;
-            //
-            //         if let Ok(Some(())) = restart_rx.try_recv() {
-            //             debug!(logger, "Aborting current track playback on restart signal");
-            //             continue 'player;
-            //         }
-            //
-            //         if buffer.is_empty() {
-            //             break;
-            //         }
-            //
-            //         player_loop_msg_sender
-            //             .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
-            //                 buffer.bytes().clone(),
-            //                 buffer.pts_hint().clone(),
-            //                 buffer.dts_hint().clone(),
-            //             )))
-            //             .await?;
-            //     }
-            //     DecoderOutput::EOF => {
-            //         break;
-            //     }
-            //     DecoderOutput::Error(exit_code) => {
-            //         return Err(PlayerLoopError::DecoderUnexpectedTermination(exit_code));
-            //     }
-            // }
         }
 
         let position_after_decoder = *sync_clock.position();
@@ -180,7 +151,7 @@ async fn run_loop(
                 "dur" => ?diff,
             );
 
-            let mut silence_stream = build_silence_source(Some(&diff));
+            let mut silence_stream = generate_silence(Some(&diff));
 
             sync_clock.reset_next_pts();
 

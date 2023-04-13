@@ -1,5 +1,5 @@
 *
+!crates
 !src
 !Cargo.lock
 !Cargo.toml
-!tests

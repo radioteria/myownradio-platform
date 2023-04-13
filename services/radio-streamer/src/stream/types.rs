@@ -40,8 +40,8 @@ impl SharedFrame {
 }
 
 impl TimedMessage for &SharedFrame {
-    fn pts(&self) -> &Duration {
-        &self.pts
+    fn message_pts(&self) -> Duration {
+        self.pts.clone()
     }
 }
 

@@ -26,10 +26,10 @@ pub(crate) enum StreamMessage {
 }
 
 impl TimedMessage for StreamMessage {
-    fn pts(&self) -> &Duration {
+    fn message_pts(&self) -> Duration {
         match self {
-            StreamMessage::Buffer(buffer) => buffer.pts_hint(),
-            StreamMessage::TrackTitle(t) => t.pts_hint(),
+            StreamMessage::Buffer(buffer) => buffer.pts_hint().clone(),
+            StreamMessage::TrackTitle(t) => t.pts_hint().clone(),
         }
     }
 }

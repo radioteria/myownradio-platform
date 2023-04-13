@@ -61,7 +61,6 @@ mod tests {
     use std::time::Duration;
 
     #[actix_rt::test]
-    #[tracing_test::traced_test]
     async fn test_generating_5_seconds_of_silence() {
         let mut silence = generate_silence(Some(&Duration::from_secs(5)));
 

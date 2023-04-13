@@ -152,6 +152,7 @@ impl Into<Frame> for Audio {
     }
 }
 
+#[tracing::instrument]
 pub fn decode_audio_file(
     source_url: &str,
     offset: &Duration,

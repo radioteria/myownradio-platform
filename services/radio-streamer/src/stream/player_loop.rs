@@ -38,13 +38,13 @@ pub(crate) enum PlayerLoopError {
 }
 
 impl TimedMessage for &Buffer {
-    fn pts(&self) -> &Duration {
-        self.pts_hint()
+    fn message_pts(&self) -> Duration {
+        self.pts_hint().clone()
     }
 }
 
 impl TimedMessage for &Frame {
-    fn pts(&self) -> &Duration {
+    fn message_pts(&self) -> Duration {
         self.pts().into()
     }
 }

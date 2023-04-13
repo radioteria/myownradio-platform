@@ -7,7 +7,7 @@ use std::time::Duration;
 /// Trait for items that can be sent through a `ReplayTimedChannel`.
 /// Implementors must provide a method to retrieve a timestamp as a `Duration`.
 pub(crate) trait TimedMessage {
-    fn pts(&self) -> &Duration;
+    fn message_pts(&self) -> Duration;
 }
 
 /// Error type that is used to indicate that the channel is closed
@@ -234,9 +234,9 @@ impl<T: TimedMessage + Clone + Sync + Send + 'static> ReplayTimedChannel<T> {
     /// * `t` - The item to append to the replay buffer.
     fn append_to_buffer(&self, t: T) {
         let mut guard = self.replay_buffer.lock().unwrap();
-        let threshold_millis = t.pts().as_secs_f32() - self.replay_time.as_secs_f32();
+        let threshold_millis = t.message_pts().as_secs_f32() - self.replay_time.as_secs_f32();
 
-        guard.retain(|m| m.pts().as_secs_f32() >= threshold_millis);
+        guard.retain(|m| m.message_pts().as_secs_f32() >= threshold_millis);
         guard.push(t);
     }
 }

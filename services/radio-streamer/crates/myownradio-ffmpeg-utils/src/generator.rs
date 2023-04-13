@@ -2,6 +2,7 @@ use crate::{Frame, Timestamp, INTERNAL_SAMPLING_FREQUENCY, RESAMPLER_TIME_BASE};
 use futures::channel::mpsc::{channel, Receiver};
 use futures::SinkExt;
 use iter_tools::Itertools;
+use std::iter::repeat;
 use std::mem::size_of;
 use std::time::Duration;
 use tracing::{debug, trace};
@@ -24,8 +25,8 @@ pub fn generate_silence(duration: Option<&Duration>) -> Receiver<Frame> {
 
     debug!(?duration, "Generating {} samples of silence", num_samples);
 
-    let frames = (0..num_samples)
-        .map(|_| 0i32.to_le_bytes())
+    let frames = repeat(0i32.to_le_bytes())
+        .take(num_samples as usize)
         .chunks(SILENCE_FRAME_SIZE);
 
     actix_rt::spawn(async move {

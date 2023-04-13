@@ -10,6 +10,7 @@ use ffmpeg_next::{rescale, ChannelLayout, Packet, Rescale};
 use futures::channel::mpsc::{channel, Receiver, SendError, Sender};
 use futures::SinkExt;
 use std::time::Duration;
+use tracing::error;
 
 struct AudioDecoder {
     input_index: usize,
@@ -178,13 +179,27 @@ pub fn decode_audio_file(
         for (stream, mut packet) in ictx.packets() {
             if stream.index() == audio_decoder.input_index {
                 packet.rescale_ts(stream.time_base(), audio_decoder.decoder.time_base());
-                audio_decoder.send_packet_to_decoder(&packet).unwrap();
-                audio_decoder.receive_and_process_decoded_frames().unwrap();
+                if let Err(error) = audio_decoder.send_packet_to_decoder(&packet) {
+                    error!(?error, "Unable to send packet to decoder");
+                    return;
+                }
+
+                if let Err(error) = audio_decoder.receive_and_process_decoded_frames() {
+                    error!(?error, "Unable to receive and process decoded frames");
+                    return;
+                };
             }
         }
 
-        audio_decoder.send_eof_to_decoder().unwrap();
-        audio_decoder.receive_and_process_decoded_frames().unwrap();
+        if let Err(error) = audio_decoder.send_eof_to_decoder() {
+            error!(?error, "Unable to send EOL to decoder");
+            return;
+        };
+
+        if let Err(error) = audio_decoder.receive_and_process_decoded_frames() {
+            error!(?error, "Unable to receive and process final decoded frames");
+            return;
+        }
     });
 
     Ok(frame_receiver)

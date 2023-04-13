@@ -207,75 +207,158 @@ pub fn decode_audio_file(
 
 #[cfg(test)]
 mod tests {
+    use crate::decoder::make_audio_decoder;
+    use ffmpeg_next::format::input;
+    use ffmpeg_next::{rescale, Rescale};
+    use futures::channel::mpsc::channel;
     use futures::StreamExt;
     use std::time::Duration;
+    use tracing_test::traced_test;
+
+    const TEST_FILES: [(&str, Duration, Duration); 13] = [
+        (
+            "tests/fixtures/test_file.wav",
+            Duration::from_millis(2834),
+            Duration::from_millis(0),
+        ),
+        (
+            "tests/fixtures/test_file.wav",
+            Duration::from_millis(2834),
+            Duration::from_millis(1500),
+        ),
+        (
+            "tests/fixtures/test_file.aac",
+            Duration::from_millis(2877),
+            Duration::from_millis(0),
+        ),
+        (
+            "tests/fixtures/test_file.aac",
+            Duration::from_millis(2877),
+            Duration::from_millis(1500),
+        ),
+        (
+            "tests/fixtures/test_file.flac",
+            Duration::from_millis(2833),
+            Duration::from_millis(0),
+        ),
+        (
+            "tests/fixtures/test_file.flac",
+            Duration::from_millis(2833),
+            Duration::from_millis(1500),
+        ),
+        (
+            "tests/fixtures/test_file.m4a",
+            Duration::from_millis(2854),
+            Duration::from_millis(0),
+        ),
+        (
+            "tests/fixtures/test_file.m4a",
+            Duration::from_millis(2854),
+            Duration::from_millis(1500),
+        ),
+        (
+            "tests/fixtures/test_file.mp3",
+            Duration::from_millis(2858),
+            Duration::from_millis(0),
+        ),
+        (
+            "tests/fixtures/test_file.mp3",
+            Duration::from_millis(2858),
+            Duration::from_millis(1500),
+        ),
+        (
+            "tests/fixtures/test_file.ogg",
+            Duration::from_millis(2834),
+            Duration::from_millis(0),
+        ),
+        (
+            "tests/fixtures/test_file.ogg",
+            Duration::from_millis(2834),
+            Duration::from_millis(1500),
+        ),
+        (
+            "tests/fixtures/sample-6s.mp3",
+            Duration::from_millis(6415),
+            Duration::from_millis(1500),
+        ),
+    ];
+
+    #[actix_rt::test]
+    async fn test_opening_source_files() {
+        for (filename, ..) in TEST_FILES {
+            assert!(input(&filename).is_ok());
+        }
+    }
+
+    #[actix_rt::test]
+    async fn test_seeking_source_files() {
+        let position = 1500i64.rescale(crate::INTERNAL_TIME_BASE, rescale::TIME_BASE);
+        for (filename, ..) in TEST_FILES {
+            assert!(input(&filename)
+                .expect("Unable to open input file")
+                .seek(position, ..position)
+                .is_ok());
+        }
+    }
+
+    #[actix_rt::test]
+    async fn test_iterating_over_source_packets() {
+        for (filename, ..) in TEST_FILES {
+            let mut ictx = input(&filename).expect("Unable to open input file");
+
+            assert!(ictx.packets().last().is_some());
+        }
+    }
+
+    #[actix_rt::test]
+    async fn test_audio_decoder_decoding_packets() {
+        for (filename, ..) in TEST_FILES {
+            let (frame_sender, mut frame_receiver) = channel(1000);
+
+            actix_rt::task::spawn_blocking(move || {
+                let mut ictx = input(&filename).expect("Unable to open input file");
+                let async_runtime =
+                    actix_rt::Runtime::new().expect("Unable to initialize async runtime");
+
+                let mut audio_decoder = make_audio_decoder(&mut ictx, async_runtime, frame_sender)
+                    .expect("Unable to initialize audio decoder");
+
+                for (stream, packet) in ictx.packets() {
+                    if stream.index() == audio_decoder.input_index {
+                        audio_decoder
+                            .send_packet_to_decoder(&packet)
+                            .expect("Unable to send packet to decoder");
+
+                        audio_decoder
+                            .receive_and_process_decoded_frames()
+                            .expect("Unable to process decoded frames");
+                    }
+                }
+
+                audio_decoder
+                    .send_eof_to_decoder()
+                    .expect("Unable to send EOF to decoder");
+
+                audio_decoder
+                    .receive_and_process_decoded_frames()
+                    .expect("Unable to process decoded frames");
+            })
+            .await
+            .expect("Blocking task failed");
+
+            let mut had_frames = false;
+
+            while frame_receiver.next().await.is_some() {
+                had_frames = true;
+            }
+
+            assert!(had_frames);
+        }
+    }
 
     #[actix_rt::test]
     async fn test_decoding_test_files() {
-        let test_files = vec![
-            (
-                "tests/fixtures/test_file.wav",
-                Duration::from_millis(2834),
-                Duration::from_millis(0),
-            ),
-            (
-                "tests/fixtures/test_file.wav",
-                Duration::from_millis(2834),
-                Duration::from_millis(1500),
-            ),
-            (
-                "tests/fixtures/test_file.aac",
-                Duration::from_millis(2877),
-                Duration::from_millis(0),
-            ),
-            (
-                "tests/fixtures/test_file.aac",
-                Duration::from_millis(2877),
-                Duration::from_millis(1500),
-            ),
-            (
-                "tests/fixtures/test_file.flac",
-                Duration::from_millis(2833),
-                Duration::from_millis(0),
-            ),
-            (
-                "tests/fixtures/test_file.flac",
-                Duration::from_millis(2833),
-                Duration::from_millis(1500),
-            ),
-            (
-                "tests/fixtures/test_file.m4a",
-                Duration::from_millis(2854),
-                Duration::from_millis(0),
-            ),
-            (
-                "tests/fixtures/test_file.m4a",
-                Duration::from_millis(2854),
-                Duration::from_millis(1500),
-            ),
-            (
-                "tests/fixtures/test_file.mp3",
-                Duration::from_millis(2858),
-                Duration::from_millis(0),
-            ),
-            (
-                "tests/fixtures/test_file.mp3",
-                Duration::from_millis(2858),
-                Duration::from_millis(1500),
-            ),
-            (
-                "tests/fixtures/test_file.ogg",
-                Duration::from_millis(2834),
-                Duration::from_millis(0),
-            ),
-            (
-                "tests/fixtures/test_file.ogg",
-                Duration::from_millis(2834),
-                Duration::from_millis(1500),
-            ),
-        ];
-
-        for (filename, expected_duration, offset) in test_files {
+        for (filename, expected_duration, offset) in TEST_FILES {
             eprintln!("file: {}", filename);
 
             let mut frames =
@@ -293,6 +376,7 @@ mod tests {
     }
 
     #[actix_rt::test]
+    #[traced_test]
     async fn test_decoding_file_by_url() {
         let test_file_url = "https://download.samplelib.com/mp3/sample-6s.mp3";
         let mut frames = super::decode_audio_file(test_file_url, &Duration::from_secs(0))

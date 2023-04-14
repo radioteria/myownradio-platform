@@ -10,7 +10,7 @@ use ffmpeg_next::{rescale, ChannelLayout, Packet, Rescale};
 use futures::channel::mpsc::{channel, Receiver, SendError, Sender};
 use futures::SinkExt;
 use std::time::Duration;
-use tracing::error;
+use tracing::{debug, error, trace};
 
 struct AudioDecoder {
     input_index: usize,
@@ -37,7 +37,16 @@ pub enum AudioDecoderError {
 }
 
 impl AudioDecoder {
+    #[tracing::instrument(skip(self))]
     fn resample_and_process_frames(&mut self, decoded: &Audio) -> Result<(), AudioDecoderError> {
+        trace!(
+            "Decoded frame: {:?} {} {} {}",
+            decoded.pts(),
+            decoded.rate(),
+            decoded.channels(),
+            decoded.samples()
+        );
+
         let mut resampled = Audio::empty();
         resampled.clone_from(decoded);
 
@@ -54,6 +63,14 @@ impl AudioDecoder {
             RESAMPLER_TIME_BASE.into(),
         );
 
+        trace!(
+            "Resampled frame: {:?} {} {} {}",
+            resampled.pts(),
+            resampled.rate(),
+            resampled.channels(),
+            resampled.samples()
+        );
+
         self.async_runtime
             .block_on(self.async_sender.send(resampled.into()))
             .map_err(|error| AudioDecoderError::SendError(error))?;
@@ -61,18 +78,21 @@ impl AudioDecoder {
         Ok(())
     }
 
+    #[tracing::instrument(skip(self, packet))]
     fn send_packet_to_decoder(&mut self, packet: &Packet) -> Result<(), AudioDecoderError> {
         self.decoder
             .send_packet(packet)
             .map_err(|error| AudioDecoderError::AudioDecoderError(error))
     }
 
+    #[tracing::instrument(skip(self))]
     fn send_eof_to_decoder(&mut self) -> Result<(), AudioDecoderError> {
         self.decoder
             .send_eof()
             .map_err(|error| AudioDecoderError::AudioDecoderError(error))
     }
 
+    #[tracing::instrument(skip(self))]
     fn receive_and_process_decoded_frames(&mut self) -> Result<(), AudioDecoderError> {
         let mut decoded = Audio::empty();
         while self.decoder.receive_frame(&mut decoded).is_ok() {
@@ -99,6 +119,7 @@ fn make_audio_decoder(
     let context = Context::from_parameters(input.parameters())
         .map_err(|error| AudioDecoderError::AudioDecoderError(error))?;
 
+    debug!("Initializing decoder");
     let mut decoder = context
         .decoder()
         .audio()
@@ -109,9 +130,11 @@ fn make_audio_decoder(
         .map_err(|error| AudioDecoderError::AudioDecoderError(error))?;
 
     if decoder.channel_layout().is_empty() {
+        debug!("Setting channel layout");
         decoder.set_channel_layout(ChannelLayout::default(decoder.channels() as i32));
     }
 
+    debug!("Initializing resampler");
     let resampler = decoder
         .resampler(
             Sample::I16(Type::Packed),

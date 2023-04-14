@@ -171,12 +171,16 @@ pub fn decode_audio_file(
 ) -> Result<Receiver<Frame>, AudioDecoderError> {
     let (frame_sender, frame_receiver) = channel(0);
 
+    debug!(source_url, "Open source file");
+
     let mut ictx = ffmpeg_next::format::input(&source_url.to_string())
         .map_err(|error| AudioDecoderError::OpenFileError(error))?;
 
     if !offset.is_zero() {
         let position_millis = offset.as_millis() as i64;
         let position = position_millis.rescale(INTERNAL_TIME_BASE, rescale::TIME_BASE);
+
+        debug!(?offset, "Seek to offset");
 
         ictx.seek(position, ..position)
             .map_err(|error| AudioDecoderError::SeekError(error))?;
@@ -187,13 +191,22 @@ pub fn decode_audio_file(
         let mut audio_decoder = make_audio_decoder(&mut ictx, async_runtime, frame_sender)
             .expect("Unable to initialize audio decoder");
 
+        debug!("Starting reading packets");
+
         for (stream, mut packet) in ictx.packets() {
             if stream.index() == audio_decoder.input_index {
+                trace!("Reading packet");
+
                 packet.rescale_ts(stream.time_base(), audio_decoder.decoder.time_base());
+
+                trace!("Sending packet to decoder");
+
                 if let Err(error) = audio_decoder.send_packet_to_decoder(&packet) {
                     error!(?error, "Unable to send packet to decoder");
                     return;
                 }
+
+                trace!("Processing decoded frames");
 
                 if let Err(error) = audio_decoder.receive_and_process_decoded_frames() {
                     error!(?error, "Unable to receive and process decoded frames");
@@ -202,10 +215,14 @@ pub fn decode_audio_file(
             }
         }
 
+        trace!("Sending EOF to decoder");
+
         if let Err(error) = audio_decoder.send_eof_to_decoder() {
             error!(?error, "Unable to send EOL to decoder");
             return;
         };
+
+        trace!("Processing last decoded frames");
 
         if let Err(error) = audio_decoder.receive_and_process_decoded_frames() {
             error!(?error, "Unable to receive and process final decoded frames");

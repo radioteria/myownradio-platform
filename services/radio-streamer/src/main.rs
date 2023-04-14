@@ -7,11 +7,12 @@ use actix_web::http::Method;
 use actix_web::web::Data;
 use actix_web::{App, HttpServer};
 use futures_lite::FutureExt;
-use slog::{error, info, o, Drain, Logger};
+use slog::{o, Drain, Logger};
 use std::io;
 use std::io::Result;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
+use tracing::{error, info};
 
 use crate::backend_client::BackendClient;
 use crate::config::{Config, LogFormat};
@@ -62,6 +63,8 @@ async fn main() -> Result<()> {
     };
     let logger = Arc::new(logger);
 
+    env_logger::init();
+
     let backend_client = Arc::new(BackendClient::new(
         &config.mor_backend_url,
         &logger.new(o!("scope" => "BackendClient")),
@@ -70,7 +73,7 @@ async fn main() -> Result<()> {
 
     let streams_registry = Arc::new(StreamsRegistry::new(&backend_client, &logger, &metrics));
 
-    info!(logger, "Starting application...");
+    info!("Starting application...");
 
     let server = HttpServer::new({
         let logger = logger.clone();
@@ -135,12 +138,12 @@ async fn main() -> Result<()> {
 
         async move {
             if let Err(error) = server.await {
-                error!(logger, "Error on http server: {:?}", error);
+                error!("Error on http server: {:?}", error);
             }
         }
     });
 
-    info!(logger, "Application started");
+    info!("Application started");
 
     interrupt
         .recv()
@@ -148,11 +151,11 @@ async fn main() -> Result<()> {
         .or(user_defined1.recv())
         .await;
 
-    info!(logger, "Received signal");
+    info!("Received signal");
 
     server_handle.stop(true).await;
 
-    info!(logger, "Server stopped");
+    info!("Server stopped");
 
     Ok(())
 }

@@ -637,6 +637,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ctor"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd4056f63fce3b82d852c3da92b08ea59959890813a7f4ce9c0ff85b10cf301b"
+dependencies = [
+ "quote",
+ "syn 2.0.14",
+]
+
+[[package]]
 name = "derive_more"
 version = "0.99.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1215,6 +1225,7 @@ name = "myownradio-ffmpeg-utils"
 version = "0.1.0"
 dependencies = [
  "actix-rt",
+ "ctor",
  "ffmpeg-next",
  "futures",
  "iter_tools",

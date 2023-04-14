@@ -38,37 +38,25 @@ pub enum AudioDecoderError {
 
 impl AudioDecoder {
     fn resample_and_process_frames(&mut self, decoded: &Audio) -> Result<(), AudioDecoderError> {
-        let mut delay = None;
+        let mut resampled = Audio::empty();
+        resampled.clone_from(decoded);
 
-        loop {
-            let mut resampled = Audio::empty();
-            resampled.clone_from(decoded);
+        // @TODO Handle resampler delays somehow.
+        // Using flush after run causes error: `ffmpeg::Error(1668179714: Output changed)`
+        let _delay = self
+            .resampler
+            .run(decoded, &mut resampled)
+            .map_err(|error| AudioDecoderError::ResamplingError(error))?;
 
-            delay = match delay {
-                Some(_) => self
-                    .resampler
-                    .flush(&mut resampled)
-                    .map_err(|error| AudioDecoderError::ResamplingError(error))?,
-                None => self
-                    .resampler
-                    .run(decoded, &mut resampled)
-                    .map_err(|error| AudioDecoderError::ResamplingError(error))?,
-            };
+        rescale_audio_frame_ts(
+            &mut resampled,
+            self.decoder.time_base(),
+            RESAMPLER_TIME_BASE.into(),
+        );
 
-            rescale_audio_frame_ts(
-                &mut resampled,
-                self.decoder.time_base(),
-                RESAMPLER_TIME_BASE.into(),
-            );
-
-            self.async_runtime
-                .block_on(self.async_sender.send(resampled.into()))
-                .map_err(|error| AudioDecoderError::SendError(error))?;
-
-            if delay.is_none() {
-                break;
-            }
-        }
+        self.async_runtime
+            .block_on(self.async_sender.send(resampled.into()))
+            .map_err(|error| AudioDecoderError::SendError(error))?;
 
         Ok(())
     }
@@ -214,6 +202,12 @@ mod tests {
     use futures::StreamExt;
     use std::time::Duration;
     use tracing_test::traced_test;
+
+    #[ctor::ctor]
+    fn init() {
+        ffmpeg_next::init().expect("Unable to initialize ffmpeg");
+        ffmpeg_next::log::set_level(ffmpeg_next::log::Level::Trace);
+    }
 
     const TEST_FILES: [(&str, Duration, Duration); 13] = [
         (
@@ -389,7 +383,7 @@ mod tests {
             duration += frame.pts().into();
         }
 
-        assert_eq!(Duration::from_millis(6189), duration);
+        assert_eq!(Duration::from_millis(6415), duration);
     }
 
     #[actix_rt::test]

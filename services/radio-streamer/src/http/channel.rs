@@ -2,13 +2,14 @@ use super::utils::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
 use crate::audio_formats::AudioFormats;
 use crate::config::Config;
 use crate::stream::{StreamCreateError, StreamMessage, StreamsRegistry, StreamsRegistryExt};
-use actix_web::web::{Bytes, Data, Query};
+use actix_web::web::{trace, Bytes, Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use futures::channel::mpsc;
 use futures::StreamExt;
 use serde::Deserialize;
 use slog::{debug, error, warn, Logger};
 use std::sync::Arc;
+use tracing::trace;
 
 #[get("/active")]
 pub(crate) async fn get_active_channel_ids(

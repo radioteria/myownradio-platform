@@ -1,6 +1,7 @@
 use super::channels::TimedMessage;
 use crate::stream::util::time::subtract_abs;
 use std::time::{Duration, SystemTime};
+use tracing::warn;
 
 /// A struct for syncing the timing of messages being sent.
 #[derive(Debug)]
@@ -79,6 +80,15 @@ impl MessageSyncClock {
     /// ```
     pub(crate) async fn wait<'m>(&mut self, timed_msg: impl TimedMessage + 'm) {
         let msg_pts = timed_msg.message_pts().clone();
+
+        if let Some(prev_pts) = self.previous_pts {
+            if prev_pts == msg_pts {
+                warn!(?msg_pts, ?prev_pts, "Equal pts!");
+            } else if prev_pts > msg_pts {
+                warn!(?msg_pts, ?prev_pts, "Backward going pts!");
+            }
+        }
+
         self.position += subtract_abs(
             msg_pts,
             self.previous_pts.clone().unwrap_or(msg_pts.clone()),

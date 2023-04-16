@@ -64,6 +64,7 @@ async fn main() -> Result<()> {
     let logger = Arc::new(logger);
 
     env_logger::init();
+    myownradio_ffmpeg_utils::init().expect("Unable to initialize FFmpeg");
 
     let backend_client = Arc::new(BackendClient::new(
         &config.mor_backend_url,

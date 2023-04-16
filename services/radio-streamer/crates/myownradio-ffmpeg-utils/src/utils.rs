@@ -26,8 +26,9 @@ impl Timestamp {
 
 impl Into<Duration> for &Timestamp {
     fn into(self) -> Duration {
-        let millis = self.value.rescale(self.time_base, INTERNAL_TIME_BASE) as u64;
-        Duration::from_millis(millis)
+        let millis = self.value as f64 * self.time_base.0 as f64 / self.time_base.1 as f64;
+
+        Duration::from_secs_f64(millis)
     }
 }
 

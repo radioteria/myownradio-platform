@@ -7,7 +7,7 @@ ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
 
 RUN apt-get update
 
-RUN apt-get install -y --no-install-recommends nasm yasm libclang-dev libssl-dev
+RUN apt-get install -y --no-install-recommends nasm yasm libclang-dev libssl-dev libmp3lame-dev
 
 WORKDIR /build
 
@@ -26,8 +26,12 @@ RUN \
       --enable-openssl \
       --enable-swresample \
       --enable-openssl \
-      --enable-decoder=flac,pcm_s16le,aac,mp3,vorbis \
-      --enable-demuxer=flac,wav,aac,mov,mp4,m4a,3gp,3g2,mj2,mp3,ogg \
+      --enable-libmp3lame \
+      --enable-filter=aresample \
+      --enable-encoder=libmp3lame \
+      --enable-muxer=mp3 \
+      --enable-decoder=flac,pcm_*,aac,mp3,vorbis \
+      --enable-demuxer=flac,wav,aac,mov,mp4,m4a,3gp,3g2,mj2,mp3,ogg,pcm_s16le \
       --enable-protocol=file,pipe,http,https,tls \
       && make install \
       && ldconfig

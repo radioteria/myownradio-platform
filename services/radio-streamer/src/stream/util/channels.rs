@@ -3,6 +3,7 @@ use futures::channel::mpsc;
 use futures::{stream, SinkExt, Stream, StreamExt};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
+use tracing::{instrument, warn};
 
 /// Trait for items that can be sent through a `ReplayTimedChannel`.
 /// Implementors must provide a method to retrieve a timestamp as a `Duration`.
@@ -232,9 +233,20 @@ impl<T: TimedMessage + Clone + Sync + Send + 'static> ReplayTimedChannel<T> {
     /// # Arguments
     ///
     /// * `t` - The item to append to the replay buffer.
+    #[tracing::instrument(skip(self, t))]
     fn append_to_buffer(&self, t: T) {
         let mut guard = self.replay_buffer.lock().unwrap();
-        let threshold_millis = t.message_pts().as_secs_f32() - self.replay_time.as_secs_f32();
+        let message_pts = t.message_pts();
+
+        let threshold_millis = message_pts.as_secs_f32() - self.replay_time.as_secs_f32();
+
+        if guard
+            .iter()
+            .find(|m| m.message_pts() > message_pts)
+            .is_some()
+        {
+            warn!("Replay buffer contains message(s) from the future")
+        }
 
         guard.retain(|m| m.message_pts().as_secs_f32() >= threshold_millis);
         guard.push(t);

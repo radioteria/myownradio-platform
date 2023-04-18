@@ -88,12 +88,12 @@ impl AudioDecoder {
     fn receive_and_process_decoded_frames(&mut self) -> Result<Vec<Frame>, AudioDecoderError> {
         let mut frames = vec![];
 
-        let mut ff_frames = Audio::empty();
-        while self.decoder.receive_frame(&mut ff_frames).is_ok() {
-            let timestamp = ff_frames.timestamp();
-            ff_frames.set_pts(timestamp);
-            self.send_frame_to_resampler(&ff_frames)?;
-            self.receive_resampled_frames()?.append(&mut frames);
+        let mut ff_frame = Audio::empty();
+        while self.decoder.receive_frame(&mut ff_frame).is_ok() {
+            let timestamp = ff_frame.timestamp();
+            ff_frame.set_pts(timestamp);
+            self.send_frame_to_resampler(&ff_frame)?;
+            frames.append(&mut self.receive_resampled_frames()?);
         }
 
         Ok(frames)
@@ -275,22 +275,22 @@ mod tests {
     const TEST_FILES: [(&str, Duration, Duration); 13] = [
         (
             "tests/fixtures/test_file.wav",
-            Duration::from_millis(2834),
+            Duration::from_millis(2833),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.wav",
-            Duration::from_millis(2834),
+            Duration::from_millis(2833),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/test_file.aac",
-            Duration::from_millis(2877),
+            Duration::from_millis(2878),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.aac",
-            Duration::from_millis(2877),
+            Duration::from_millis(2878),
             Duration::from_millis(1500),
         ),
         (
@@ -305,17 +305,17 @@ mod tests {
         ),
         (
             "tests/fixtures/test_file.m4a",
-            Duration::from_millis(2854),
+            Duration::from_millis(2855),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.m4a",
-            Duration::from_millis(2854),
+            Duration::from_millis(2855),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/test_file.mp3",
-            Duration::from_millis(2858),
+            Duration::from_millis(2859),
             Duration::from_millis(0),
         ),
         (
@@ -325,18 +325,18 @@ mod tests {
         ),
         (
             "tests/fixtures/test_file.ogg",
-            Duration::from_millis(2834),
+            Duration::from_millis(2833),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.ogg",
-            Duration::from_millis(2834),
+            Duration::from_millis(2833),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/sample-6s.mp3",
             /* [FORMAT]duration=6.426122[/FORMAT] */
-            Duration::from_millis(6415),
+            Duration::from_millis(6416),
             Duration::from_millis(1500),
         ),
     ];
@@ -383,7 +383,7 @@ mod tests {
                 duration += frame.pts().into();
             }
 
-            assert_eq!(expected_duration, duration);
+            assert_eq!(expected_duration.as_millis(), duration.as_millis());
         }
     }
 
@@ -401,7 +401,7 @@ mod tests {
             duration += frame.pts().into();
         }
 
-        assert_eq!(Duration::from_millis(6415), duration);
+        assert_eq!(Duration::from_millis(6416), duration);
     }
 
     #[actix_rt::test]

@@ -158,7 +158,7 @@ async fn run_loop(
 
             sync_clock.reset_next_pts();
 
-            while let Some(frame) = silence_stream.next().await {
+            while let Some(mut frame) = silence_stream.next().await {
                 sync_clock.wait(&frame).await;
 
                 if let Ok(Some(())) = restart_rx.try_recv() {
@@ -169,6 +169,11 @@ async fn run_loop(
                 if frame.is_empty() {
                     break;
                 }
+
+                let frame_duration: Duration = frame.duration().into();
+                let clock_position: Duration = *sync_clock.position();
+
+                // frame.set_offset((frame_duration + clock_position).into());
 
                 player_loop_msg_sender
                     .send(PlayerLoopMessage::Frame(frame))

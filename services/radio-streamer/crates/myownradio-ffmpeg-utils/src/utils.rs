@@ -32,6 +32,13 @@ impl Into<Duration> for &Timestamp {
     }
 }
 
+// @todo millis -> micros
+impl Into<Timestamp> for Duration {
+    fn into(self) -> Timestamp {
+        Timestamp::new(self.as_millis() as i64, INTERNAL_TIME_BASE)
+    }
+}
+
 impl Default for Timestamp {
     fn default() -> Self {
         Timestamp::new(0, INTERNAL_TIME_BASE)
@@ -43,16 +50,19 @@ pub struct Frame {
     data: Arc<Vec<u8>>,
     duration: Timestamp,
     pts: Timestamp,
+    offset: Timestamp,
 }
 
 impl Frame {
     pub(crate) fn new(pts: Timestamp, duration: Timestamp, data: Vec<u8>) -> Self {
         let data = Arc::new(data);
+        let offset = Timestamp::new(0, INTERNAL_TIME_BASE);
 
         Self {
             pts,
             duration,
             data,
+            offset,
         }
     }
 
@@ -66,6 +76,21 @@ impl Frame {
 
     pub fn pts(&self) -> &Timestamp {
         &self.pts
+    }
+
+    pub fn offset(&self) -> &Timestamp {
+        &self.offset
+    }
+
+    pub fn set_offset(&mut self, offset: Timestamp) {
+        self.offset = offset;
+    }
+
+    pub fn pts_as_duration(&self) -> Duration {
+        let pts_dur: Duration = self.pts().into();
+        let offset_dur: Duration = self.offset().into();
+
+        pts_dur + offset_dur
     }
 
     pub fn is_empty(&self) -> bool {

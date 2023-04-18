@@ -30,8 +30,9 @@ lazy_static! {
         which("ffprobe").expect("Unable to locate ffprobe")
     ));
     // muxer <- type:audio pkt_pts:288639 pkt_pts_time:6.01331 pkt_dts:288639 pkt_dts_time:6.01331 size:17836
+    // muxer <- type:audio pkt_pts:322607 pkt_pts_time:6.72098 pkt_dts:322607 pkt_dts_time:6.72098 duration:1152 duration_time:0.024 size:768
     static ref FFMPEG_MUXER_PACKET_REGEX: &'static Regex =
-        Box::leak(Box::new(Regex::new(r"muxer <- type:audio pkt_pts:([0-9]+) pkt_pts_time:([0-9]+\.[0-9]+) pkt_dts:([0-9]+) pkt_dts_time:([0-9]+\.[0-9]+) size:([0-9]+)").unwrap()));
+        Box::leak(Box::new(Regex::new(r"muxer <- type:audio pkt_pts:([0-9]+) pkt_pts_time:([0-9]+\.[0-9]+) pkt_dts:([0-9]+) pkt_dts_time:([0-9]+\.[0-9]+)").unwrap()));
 }
 
 #[derive(Clone, Debug, Default)]
@@ -139,8 +140,6 @@ pub(crate) fn build_ffmpeg_encoder(
     actix_rt::spawn({
         let mut stdin = stdin;
 
-        let logger = logger.clone();
-
         let pipe = async move {
             while let Some(buffer) = input_receiver.next().await {
                 if let Err(error) = write_to_stdin(&mut stdin, buffer.into_bytes()).await {
@@ -162,7 +161,6 @@ pub(crate) fn build_ffmpeg_encoder(
     let last_packet_info = Arc::new(Mutex::new(None::<PacketInfo>));
 
     actix_rt::spawn({
-        let logger = logger.clone();
         let last_packet_info = last_packet_info.clone();
 
         async move {

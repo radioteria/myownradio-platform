@@ -35,8 +35,6 @@ pub(crate) enum PlayerLoopError {
     DecoderError(#[from] AudioDecoderError),
     #[error(transparent)]
     SendError(#[from] mpsc::SendError),
-    #[error("The decoder stopped unexpectedly with an exit code = {0}")]
-    DecoderUnexpectedTermination(i32),
 }
 
 impl TimedMessage for &Buffer {
@@ -47,7 +45,7 @@ impl TimedMessage for &Buffer {
 
 impl TimedMessage for &Frame {
     fn message_pts(&self) -> Duration {
-        self.pts().into()
+        self.pts_as_duration()
     }
 }
 
@@ -126,13 +124,15 @@ async fn run_loop(
 
         while let Some(msg) = track_decoder.next().await {
             match msg {
-                DecoderMessage::Frame(frame) => {
+                DecoderMessage::Frame(mut frame) => {
                     sync_clock.wait(&frame).await;
 
                     if let Ok(Some(())) = restart_rx.try_recv() {
                         debug!(logger, "Aborting current track playback on restart signal");
                         continue 'player;
                     }
+
+                    frame.set_pts(sync_clock.position().clone().into());
 
                     player_loop_msg_sender
                         .send(PlayerLoopMessage::Frame(frame))
@@ -166,14 +166,7 @@ async fn run_loop(
                     break;
                 }
 
-                if frame.is_empty() {
-                    break;
-                }
-
-                let frame_duration: Duration = frame.duration().into();
-                let clock_position: Duration = *sync_clock.position();
-
-                frame.set_offset((frame_duration + clock_position).into());
+                frame.set_pts(sync_clock.position().clone().into());
 
                 player_loop_msg_sender
                     .send(PlayerLoopMessage::Frame(frame))

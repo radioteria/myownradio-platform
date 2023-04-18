@@ -114,7 +114,7 @@ impl Stream {
                             stream_messages_channel
                                 .send_all(StreamMessage::Buffer(Buffer::new(
                                     Bytes::copy_from_slice(&frame.data()),
-                                    frame.pts().into(),
+                                    frame.pts_as_duration(),
                                 )))
                                 .await
                         }

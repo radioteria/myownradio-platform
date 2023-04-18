@@ -1,5 +1,5 @@
 use crate::ffmpeg::setup_resampling_filter;
-use crate::utils::{rescale_audio_frame_ts, Frame, Timestamp};
+use crate::utils::{Frame, Timestamp};
 use crate::{INTERNAL_CHANNELS_NUMBER, INTERNAL_TIME_BASE};
 use crate::{INTERNAL_SAMPLE_SIZE, INTERNAL_SAMPLING_FREQUENCY, RESAMPLER_TIME_BASE};
 use ffmpeg_next::codec::Context;

@@ -245,7 +245,10 @@ impl<T: TimedMessage + Clone + Sync + Send + 'static> ReplayTimedChannel<T> {
             .find(|m| m.message_pts() > message_pts)
             .is_some()
         {
-            warn!("Replay buffer contains message(s) from the future")
+            warn!(
+                ?message_pts,
+                "Replay buffer contains message(s) from the future!"
+            )
         }
 
         guard.retain(|m| m.message_pts().as_secs_f32() >= threshold_millis);

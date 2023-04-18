@@ -173,7 +173,7 @@ async fn run_loop(
                 let frame_duration: Duration = frame.duration().into();
                 let clock_position: Duration = *sync_clock.position();
 
-                // frame.set_offset((frame_duration + clock_position).into());
+                frame.set_offset((frame_duration + clock_position).into());
 
                 player_loop_msg_sender
                     .send(PlayerLoopMessage::Frame(frame))

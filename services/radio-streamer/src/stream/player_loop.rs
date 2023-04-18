@@ -7,7 +7,9 @@ use crate::stream::util::clock::MessageSyncClock;
 use crate::stream::util::time::subtract_abs;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
-use myownradio_ffmpeg_utils::{decode_audio_file, generate_silence, AudioDecoderError, Frame};
+use myownradio_ffmpeg_utils::{
+    decode_audio_file, generate_silence, AudioDecoderError, DecoderMessage, Frame,
+};
 use scopeguard::defer;
 use slog::{debug, error, info, warn, Logger};
 use std::time::{Duration, SystemTime};
@@ -122,21 +124,22 @@ async fn run_loop(
 
         sync_clock.reset_next_pts();
 
-        while let Some(frame) = track_decoder.next().await {
-            sync_clock.wait(&frame).await;
+        while let Some(msg) = track_decoder.next().await {
+            match msg {
+                DecoderMessage::Frame(frame) => {
+                    sync_clock.wait(&frame).await;
 
-            if let Ok(Some(())) = restart_rx.try_recv() {
-                debug!(logger, "Aborting current track playback on restart signal");
-                continue 'player;
+                    if let Ok(Some(())) = restart_rx.try_recv() {
+                        debug!(logger, "Aborting current track playback on restart signal");
+                        continue 'player;
+                    }
+
+                    player_loop_msg_sender
+                        .send(PlayerLoopMessage::Frame(frame))
+                        .await?;
+                }
+                DecoderMessage::EOF => break,
             }
-
-            if frame.is_empty() {
-                break;
-            }
-
-            player_loop_msg_sender
-                .send(PlayerLoopMessage::Frame(frame))
-                .await?;
         }
 
         let position_after_decoder = *sync_clock.position();

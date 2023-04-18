@@ -159,7 +159,7 @@ impl Into<Frame> for Audio {
 }
 
 #[derive(Debug)]
-pub enum DecoderMessages {
+pub enum DecoderMessage {
     Frame(Frame),
     EOF,
 }
@@ -168,7 +168,7 @@ pub enum DecoderMessages {
 pub fn decode_audio_file(
     source_url: &str,
     offset: &Duration,
-) -> Result<Receiver<DecoderMessages>, AudioDecoderError> {
+) -> Result<Receiver<DecoderMessage>, AudioDecoderError> {
     let (frame_sender, frame_receiver) = channel(0);
 
     debug!(source_url, "Open source file");
@@ -198,7 +198,7 @@ pub fn decode_audio_file(
             if stream.index() == audio_decoder.input_index {
                 packet.rescale_ts(stream.time_base(), audio_decoder.decoder.time_base());
 
-                debug!("Sending packet to decoder");
+                trace!("Sending packet to decoder");
 
                 if let Err(error) = audio_decoder.send_packet_to_decoder(&packet) {
                     error!(?error, "Unable to send packet to decoder");
@@ -215,7 +215,7 @@ pub fn decode_audio_file(
 
                 for frame in frames {
                     if async_runtime
-                        .block_on(frame_sender.send(DecoderMessages::Frame(frame)))
+                        .block_on(frame_sender.send(DecoderMessage::Frame(frame)))
                         .is_err()
                     {
                         return;
@@ -243,14 +243,14 @@ pub fn decode_audio_file(
 
         for frame in frames {
             if async_runtime
-                .block_on(frame_sender.send(DecoderMessages::Frame(frame)))
+                .block_on(frame_sender.send(DecoderMessage::Frame(frame)))
                 .is_err()
             {
                 return;
             };
         }
 
-        let _ = async_runtime.block_on(frame_sender.send(DecoderMessages::EOF));
+        let _ = async_runtime.block_on(frame_sender.send(DecoderMessage::EOF));
     });
 
     Ok(frame_receiver)
@@ -258,7 +258,7 @@ pub fn decode_audio_file(
 
 #[cfg(test)]
 mod tests {
-    use crate::decoder::DecoderMessages;
+    use crate::decoder::DecoderMessage;
     use ffmpeg_next::format::input;
     use ffmpeg_next::{rescale, Rescale};
     use futures::channel::mpsc::channel;
@@ -378,7 +378,7 @@ mod tests {
 
             let mut duration = Duration::default();
 
-            while let Some(DecoderMessages::Frame(frame)) = frames.next().await {
+            while let Some(DecoderMessage::Frame(frame)) = frames.next().await {
                 duration = frame.duration().into();
                 duration += frame.pts().into();
             }
@@ -396,7 +396,7 @@ mod tests {
 
         let mut duration = Duration::default();
 
-        while let Some(DecoderMessages::Frame(frame)) = frames.next().await {
+        while let Some(DecoderMessage::Frame(frame)) = frames.next().await {
             duration = frame.duration().into();
             duration += frame.pts().into();
         }
@@ -416,7 +416,7 @@ mod tests {
             .unwrap();
 
         match frame {
-            DecoderMessages::Frame(frame) => {
+            DecoderMessage::Frame(frame) => {
                 assert_eq!(seek_position, frame.pts().into());
             }
             msg => panic!("Unexpected first decoder message: {:?}", msg),

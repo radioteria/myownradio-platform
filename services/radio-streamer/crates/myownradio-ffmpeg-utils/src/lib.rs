@@ -3,7 +3,7 @@ mod ffmpeg;
 mod generator;
 mod utils;
 
-pub use decoder::{decode_audio_file, AudioDecoderError};
+pub use decoder::{decode_audio_file, AudioDecoderError, DecoderMessage};
 pub use ffmpeg_next::init;
 pub use generator::generate_silence;
 pub use utils::{Frame, Timestamp};

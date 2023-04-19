@@ -8,9 +8,6 @@ pub use ffmpeg_next::init;
 pub use generator::generate_silence;
 pub use utils::{Frame, Timestamp};
 
-// The number of audio channels used internally by the program.
-const INTERNAL_CHANNELS_NUMBER: i64 = 2;
-
 // The sampling rate used internally by the program, in Hz.
 const INTERNAL_SAMPLING_FREQUENCY: i64 = 48_000;
 

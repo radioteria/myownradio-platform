@@ -13,11 +13,10 @@ use futures_lite::{AsyncBufReadExt, FutureExt};
 use lazy_static::lazy_static;
 use regex::Regex;
 use scopeguard::defer;
-use slog::Logger;
 use std::io;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tracing::{debug, error, trace, warn};
+use tracing::{error, trace, warn};
 
 const STDOUT_READ_BUFFER_SIZE: usize = 4096;
 
@@ -62,10 +61,9 @@ pub(crate) enum EncoderOutput {
     Error(i32),
 }
 
-#[tracing::instrument(skip(logger, metrics))]
+#[tracing::instrument(skip(metrics))]
 pub(crate) fn build_ffmpeg_encoder(
     audio_format: &AudioFormat,
-    logger: &Logger,
     metrics: &Metrics,
 ) -> Result<(mpsc::Sender<Buffer>, mpsc::Receiver<EncoderOutput>), EncoderError> {
     let mut process = Command::new(*FFMPEG_COMMAND)

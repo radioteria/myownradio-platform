@@ -1,24 +1,19 @@
 use crate::ffmpeg::setup_resampling_filter;
 use crate::utils::{Frame, Timestamp};
-use crate::{INTERNAL_CHANNELS_NUMBER, INTERNAL_TIME_BASE};
+use crate::INTERNAL_TIME_BASE;
 use crate::{INTERNAL_SAMPLE_SIZE, INTERNAL_SAMPLING_FREQUENCY, RESAMPLER_TIME_BASE};
 use ffmpeg_next::codec::Context;
 use ffmpeg_next::format::context::Input;
-use ffmpeg_next::format::sample::Type;
-use ffmpeg_next::format::Sample;
 use ffmpeg_next::frame::Audio;
-use ffmpeg_next::software::resampling::Delay;
-use ffmpeg_next::{rescale, ChannelLayout, Packet, Rational, Rescale};
-use futures::channel::mpsc::{channel, Receiver, SendError, Sender};
+use ffmpeg_next::{rescale, ChannelLayout, Packet, Rescale};
+use futures::channel::mpsc::{channel, Receiver, SendError};
 use futures::SinkExt;
-use iter_tools::Itertools;
 use std::time::Duration;
-use tracing::{debug, error, info, trace, warn};
+use tracing::{debug, error, trace, warn};
 
 struct AudioDecoder {
     input_index: usize,
     decoder: ffmpeg_next::decoder::Audio,
-    resampler: ffmpeg_next::software::resampling::Context,
     resampling_filter: ffmpeg_next::filter::Graph,
 }
 
@@ -128,20 +123,12 @@ fn make_audio_decoder(ictx: &mut Input) -> Result<AudioDecoder, AudioDecoderErro
     let output_rate = INTERNAL_SAMPLING_FREQUENCY as u32;
 
     debug!(input_rate, output_rate, "Initializing resampler");
-    let resampler = decoder
-        .resampler(
-            Sample::I16(Type::Packed),
-            ChannelLayout::default(INTERNAL_CHANNELS_NUMBER as i32),
-            INTERNAL_SAMPLING_FREQUENCY as u32,
-        )
-        .map_err(|error| AudioDecoderError::ResamplingError(error))?;
     let resampling_filter = setup_resampling_filter(INTERNAL_SAMPLING_FREQUENCY as u32, &decoder)
         .map_err(|error| AudioDecoderError::ResamplingError(error))?;
 
     Ok(AudioDecoder {
         input_index,
         decoder,
-        resampler,
         resampling_filter,
     })
 }

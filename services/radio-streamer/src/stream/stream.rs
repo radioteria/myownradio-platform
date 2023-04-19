@@ -231,7 +231,7 @@ impl StreamOutputs {
             Entry::Occupied(entry) => Ok(entry.get().subscribe()?),
             Entry::Vacant(entry) => {
                 let (mut encoder_sender, mut encoder_receiver) =
-                    build_ffmpeg_encoder(format, &self.logger, &self.metrics)?;
+                    build_ffmpeg_encoder(format, &self.metrics)?;
 
                 let encoded_messages_channel = Arc::new(ReplayTimedChannel::new(
                     TimedChannel::new(Duration::from_secs(10), 32),

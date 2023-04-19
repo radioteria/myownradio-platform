@@ -135,8 +135,6 @@ async fn main() -> Result<()> {
     let server_handle = server.handle();
 
     actix_rt::spawn({
-        let logger = logger.clone();
-
         async move {
             if let Err(error) = server.await {
                 error!("Error on http server: {:?}", error);

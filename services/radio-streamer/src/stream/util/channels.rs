@@ -1,9 +1,9 @@
 use actix_rt::task::JoinHandle;
 use futures::channel::mpsc;
-use futures::{stream, SinkExt, Stream, StreamExt};
+use futures::{stream, SinkExt, Stream};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
-use tracing::{instrument, warn};
+use tracing::warn;
 
 /// Trait for items that can be sent through a `ReplayTimedChannel`.
 /// Implementors must provide a method to retrieve a timestamp as a `Duration`.
@@ -254,26 +254,6 @@ impl<T: TimedMessage + Clone + Sync + Send + 'static> ReplayTimedChannel<T> {
         guard.retain(|m| m.message_pts().as_secs_f32() >= threshold_millis);
         guard.push(t);
     }
-}
-
-pub(crate) async fn pipe<T>(
-    mut receiver: impl Stream<Item = T> + Unpin,
-    mut sender: mpsc::Sender<T>,
-) -> Result<(), mpsc::SendError> {
-    while let Some(t) = receiver.next().await {
-        sender.send(t).await?;
-    }
-
-    Ok(())
-}
-
-pub(crate) fn pipe_async<T: 'static>(
-    receiver: impl Stream<Item = T> + Unpin + 'static,
-    sender: mpsc::Sender<T>,
-) -> JoinHandle<()> {
-    actix_rt::spawn(async move {
-        let _ = pipe(receiver, sender).await;
-    })
 }
 
 #[cfg(test)]

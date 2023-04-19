@@ -113,7 +113,7 @@ pub(crate) async fn get_channel_audio_stream_v2(
                 match event {
                     StreamMessage::Buffer(buffer) => {
                         // Do not block encoder if one of the consumers are blocked due to network issues
-                        match response_sender.try_send(buffer.into_bytes()) {
+                        match response_sender.try_send(buffer.bytes().clone()) {
                             Err(error) if error.is_disconnected() => {
                                 // Disconnected: drop the receiver
                                 break;

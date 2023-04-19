@@ -1,16 +1,15 @@
 use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
 use crate::metrics::Metrics;
-use crate::stream::constants::{AUDIO_BYTES_PER_SECOND, REALTIME_STARTUP_BUFFER_TIME};
+use crate::stream::constants::REALTIME_STARTUP_BUFFER_TIME;
 use crate::stream::types::{Buffer, TrackTitle};
 use crate::stream::util::channels::TimedMessage;
 use crate::stream::util::clock::MessageSyncClock;
-use crate::stream::util::ffmpeg::{
-    build_ffmpeg_decoder, build_silence_source, DecoderError, DecoderOutput,
-};
 use crate::stream::util::time::subtract_abs;
-use actix_web::web::Bytes;
 use futures::channel::{mpsc, oneshot};
 use futures::{SinkExt, StreamExt};
+use myownradio_ffmpeg_utils::{
+    decode_audio_file, generate_silence, AudioDecoderError, DecoderMessage, Frame,
+};
 use scopeguard::defer;
 use slog::{debug, error, info, warn, Logger};
 use std::time::{Duration, SystemTime};
@@ -21,7 +20,7 @@ const ZERO_OFFSET_THRESHOLD: Duration = Duration::from_secs(1);
 
 #[derive(Debug)]
 pub(crate) enum PlayerLoopMessage {
-    DecodedBuffer(Buffer),
+    Frame(Frame),
     TrackTitle(TrackTitle),
     RestartSender(oneshot::Sender<()>),
     Error(PlayerLoopError),
@@ -33,16 +32,20 @@ pub(crate) enum PlayerLoopError {
     #[error(transparent)]
     BackendError(#[from] MorBackendClientError),
     #[error(transparent)]
-    DecoderError(#[from] DecoderError),
+    DecoderError(#[from] AudioDecoderError),
     #[error(transparent)]
     SendError(#[from] mpsc::SendError),
-    #[error("The decoder stopped unexpectedly with an exit code = {0}")]
-    DecoderUnexpectedTermination(i32),
 }
 
 impl TimedMessage for &Buffer {
-    fn pts(&self) -> &Duration {
-        self.pts_hint()
+    fn message_pts(&self) -> Duration {
+        self.pts_hint().clone()
+    }
+}
+
+impl TimedMessage for &Frame {
+    fn message_pts(&self) -> Duration {
+        self.pts_as_duration()
     }
 }
 
@@ -106,11 +109,10 @@ async fn run_loop(
             .send(PlayerLoopMessage::TrackTitle(TrackTitle::new(
                 title,
                 *sync_clock.position(),
-                *sync_clock.position(),
             )))
             .await?;
 
-        let mut track_decoder = build_ffmpeg_decoder(&url, &offset, &logger, &metrics)?;
+        let mut track_decoder = decode_audio_file(&url, &offset)?;
 
         let (restart_tx, mut restart_rx) = oneshot::channel::<()>();
 
@@ -122,32 +124,21 @@ async fn run_loop(
 
         while let Some(msg) = track_decoder.next().await {
             match msg {
-                DecoderOutput::Buffer(buffer) => {
-                    sync_clock.wait(&buffer).await;
+                DecoderMessage::Frame(mut frame) => {
+                    sync_clock.wait(&frame).await;
 
                     if let Ok(Some(())) = restart_rx.try_recv() {
                         debug!(logger, "Aborting current track playback on restart signal");
                         continue 'player;
                     }
 
-                    if buffer.is_empty() {
-                        break;
-                    }
+                    frame.set_pts(sync_clock.position().clone().into());
 
                     player_loop_msg_sender
-                        .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
-                            buffer.bytes().clone(),
-                            buffer.pts_hint().clone(),
-                            buffer.dts_hint().clone(),
-                        )))
+                        .send(PlayerLoopMessage::Frame(frame))
                         .await?;
                 }
-                DecoderOutput::EOF => {
-                    break;
-                }
-                DecoderOutput::Error(exit_code) => {
-                    return Err(PlayerLoopError::DecoderUnexpectedTermination(exit_code));
-                }
+                DecoderMessage::EOF => break,
             }
         }
 
@@ -159,31 +150,26 @@ async fn run_loop(
             // @todo Get the reason why the track decoder exited early.
             warn!(
                 logger,
-                "Track decoder exited early: filling time gap with silence"
+                "Track decoder exited early: filling time gap with silence";
+                "dur" => ?diff,
             );
 
-            let mut silence_stream = build_silence_source(Some(&diff));
+            let mut silence_stream = generate_silence(Some(&diff));
 
             sync_clock.reset_next_pts();
 
-            while let Some(buffer) = silence_stream.next().await {
-                sync_clock.wait(&buffer).await;
+            while let Some(mut frame) = silence_stream.next().await {
+                sync_clock.wait(&frame).await;
 
                 if let Ok(Some(())) = restart_rx.try_recv() {
                     debug!(logger, "Exit current track loop on restart signal");
                     break;
                 }
 
-                if buffer.is_empty() {
-                    break;
-                }
+                frame.set_pts(sync_clock.position().clone().into());
 
                 player_loop_msg_sender
-                    .send(PlayerLoopMessage::DecodedBuffer(Buffer::new(
-                        buffer.bytes().clone(),
-                        buffer.pts_hint().clone(),
-                        buffer.dts_hint().clone(),
-                    )))
+                    .send(PlayerLoopMessage::Frame(frame))
                     .await?;
             }
         }

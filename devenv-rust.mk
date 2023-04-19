@@ -8,4 +8,4 @@ prepare-devenv: .env
 	mkdir -p .cargo-cache/git
 	mkdir -p .cargo-cache/registry
 	mkdir -p target
-	docker build -t $(SERVICE_NAME)-dev --build-arg USER=$(USER) -f Dockerfile-dev .
+	docker build -t $(SERVICE_NAME)-dev --build-arg USER=$(USER) -f Dockerfile --target devenv .

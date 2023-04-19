@@ -9,6 +9,7 @@ use crate::stream::util::channels::{ChannelError, ReplayTimedChannel, TimedChann
 use crate::stream::util::ffmpeg::{build_ffmpeg_encoder, EncoderError, EncoderOutput};
 use crate::upgrade_weak;
 use actix_rt::task::JoinHandle;
+use actix_web::web::Bytes;
 use futures::channel::oneshot;
 use futures::{stream, SinkExt, StreamExt};
 use slog::{error, info, warn, Logger};
@@ -24,10 +25,10 @@ pub(crate) enum StreamMessage {
 }
 
 impl TimedMessage for StreamMessage {
-    fn pts(&self) -> &Duration {
+    fn message_pts(&self) -> Duration {
         match self {
-            StreamMessage::Buffer(b) => b.pts_hint(),
-            StreamMessage::TrackTitle(t) => t.pts_hint(),
+            StreamMessage::Buffer(buffer) => buffer.pts_hint().clone(),
+            StreamMessage::TrackTitle(t) => t.pts_hint().clone(),
         }
     }
 }
@@ -108,9 +109,12 @@ impl Stream {
             async move {
                 while let Some(msg) = player_messages.next().await {
                     let result = match msg {
-                        PlayerLoopMessage::DecodedBuffer(buffer) => {
+                        PlayerLoopMessage::Frame(frame) => {
                             stream_messages_channel
-                                .send_all(StreamMessage::Buffer(buffer))
+                                .send_all(StreamMessage::Buffer(Buffer::new(
+                                    Bytes::copy_from_slice(&frame.data()),
+                                    frame.pts_as_duration(),
+                                )))
                                 .await
                         }
                         PlayerLoopMessage::TrackTitle(title) => {
@@ -227,7 +231,7 @@ impl StreamOutputs {
             Entry::Occupied(entry) => Ok(entry.get().subscribe()?),
             Entry::Vacant(entry) => {
                 let (mut encoder_sender, mut encoder_receiver) =
-                    build_ffmpeg_encoder(format, &self.logger, &self.metrics)?;
+                    build_ffmpeg_encoder(format, &self.metrics)?;
 
                 let encoded_messages_channel = Arc::new(ReplayTimedChannel::new(
                     TimedChannel::new(Duration::from_secs(10), 32),
@@ -255,8 +259,8 @@ impl StreamOutputs {
                                         break;
                                     }
                                 }
-                                StreamMessage::Buffer(bytes) => {
-                                    if encoder_sender.send(bytes).await.is_err() {
+                                StreamMessage::Buffer(frame) => {
+                                    if encoder_sender.send(frame).await.is_err() {
                                         break;
                                     }
                                 }

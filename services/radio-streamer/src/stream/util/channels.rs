@@ -1,13 +1,14 @@
 use actix_rt::task::JoinHandle;
 use futures::channel::mpsc;
-use futures::{stream, SinkExt, Stream, StreamExt};
+use futures::{stream, SinkExt, Stream};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
+use tracing::warn;
 
 /// Trait for items that can be sent through a `ReplayTimedChannel`.
 /// Implementors must provide a method to retrieve a timestamp as a `Duration`.
 pub(crate) trait TimedMessage {
-    fn pts(&self) -> &Duration;
+    fn message_pts(&self) -> Duration;
 }
 
 /// Error type that is used to indicate that the channel is closed
@@ -232,33 +233,27 @@ impl<T: TimedMessage + Clone + Sync + Send + 'static> ReplayTimedChannel<T> {
     /// # Arguments
     ///
     /// * `t` - The item to append to the replay buffer.
+    #[tracing::instrument(skip(self, t))]
     fn append_to_buffer(&self, t: T) {
         let mut guard = self.replay_buffer.lock().unwrap();
-        let threshold_millis = t.pts().as_secs_f32() - self.replay_time.as_secs_f32();
+        let message_pts = t.message_pts();
 
-        guard.retain(|m| m.pts().as_secs_f32() >= threshold_millis);
+        let threshold_millis = message_pts.as_secs_f32() - self.replay_time.as_secs_f32();
+
+        if guard
+            .iter()
+            .find(|m| m.message_pts() > message_pts)
+            .is_some()
+        {
+            warn!(
+                ?message_pts,
+                "Replay buffer contains message(s) from the future!"
+            )
+        }
+
+        guard.retain(|m| m.message_pts().as_secs_f32() >= threshold_millis);
         guard.push(t);
     }
-}
-
-pub(crate) async fn pipe<T>(
-    mut receiver: impl Stream<Item = T> + Unpin,
-    mut sender: mpsc::Sender<T>,
-) -> Result<(), mpsc::SendError> {
-    while let Some(t) = receiver.next().await {
-        sender.send(t).await?;
-    }
-
-    Ok(())
-}
-
-pub(crate) fn pipe_async<T: 'static>(
-    receiver: impl Stream<Item = T> + Unpin + 'static,
-    sender: mpsc::Sender<T>,
-) -> JoinHandle<()> {
-    actix_rt::spawn(async move {
-        let _ = pipe(receiver, sender).await;
-    })
 }
 
 #[cfg(test)]

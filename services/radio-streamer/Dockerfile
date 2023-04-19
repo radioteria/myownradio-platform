@@ -96,8 +96,7 @@ USER nobody:nogroup
 
 COPY --from=build /code/radio-streamer /radio-streamer
 
-CMD ["/radio-streamer"]
-
-
 FROM scratch
 COPY --from=pre-final / /
+
+CMD ["/radio-streamer"]

@@ -46,6 +46,10 @@ RUN \
       && make install \
       && ldconfig
 
+WORKDIR /
+
+RUN rm -rf /build
+
 
 FROM base as build
 
@@ -71,6 +75,7 @@ RUN \
     cargo build --release && \
     mv target/release/radio-streamer radio-streamer && \
     rm -rf target
+
 
 FROM base as devenv
 

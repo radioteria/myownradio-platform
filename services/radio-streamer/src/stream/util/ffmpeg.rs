@@ -1,10 +1,8 @@
 use super::process::{read_from_stdout, write_to_stdin};
 use crate::audio_formats::AudioFormat;
 use crate::metrics::Metrics;
-use crate::stream::constants::{
-    AUDIO_BIT_DEPTH, AUDIO_BYTES_PER_SECOND, AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY,
-};
-use crate::stream::types::{Buffer, SharedFrame};
+use crate::stream::constants::{AUDIO_CHANNELS_NUMBER, AUDIO_SAMPLING_FREQUENCY};
+use crate::stream::types::Buffer;
 use crate::stream::util::process::which;
 use actix_web::web::Bytes;
 use async_process::{Command, Stdio};
@@ -38,23 +36,12 @@ lazy_static! {
 #[derive(Clone, Debug, Default)]
 struct PacketInfo {
     pts_hint: Duration,
-    dts_hint: Duration,
 }
 
 #[derive(thiserror::Error, Debug)]
 pub(crate) enum DecoderError {
     #[error("Error while processing data")]
     ProcessError(#[from] io::Error),
-    #[error("Unable to access stdout")]
-    StdoutUnavailable,
-    #[error("Unable to access stderr")]
-    StderrUnavailable,
-}
-
-pub(crate) enum DecoderOutput {
-    Buffer(Buffer),
-    EOF,
-    Error(i32),
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -173,9 +160,8 @@ pub(crate) fn build_ffmpeg_encoder(
 
                 if let Some(captures) = FFMPEG_MUXER_PACKET_REGEX.captures(&line) {
                     let pts_hint = Duration::from_secs_f64(captures[2].parse().unwrap());
-                    let dts_hint = Duration::from_secs_f64(captures[4].parse().unwrap());
 
-                    let packet_info = PacketInfo { pts_hint, dts_hint };
+                    let packet_info = PacketInfo { pts_hint };
 
                     last_packet_info.lock().unwrap().replace(packet_info);
                 }

@@ -1,10 +1,19 @@
 # Set the default behavior, in case people don't have core.autocrlf set.
-* text eol=lf
+* text=auto
 
-# Denote all files that are truly binary and should not be modified.
-*.aac binary
-*.flac binary
-*.m4a binary
-*.mp3 binary
-*.ogg binary
-*.wav binary
+# Known source code file formats.
+*.css text eol=lf
+*.scss text eol=lf
+*.sass text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.jsx text eol=lf
+*.tsx text eol=lf
+*.php text eol=lf
+*.json text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.rs text eol=lf
+*.rs text eol=lf
+*ignore text eol=lf
+*.toml text eol=lf

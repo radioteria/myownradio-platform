@@ -25,4 +25,4 @@ Please note that the use of different technologies over time may have resulted i
 
 ## Copyright notice
 
-Please note that in general, music has its rights owners and the public broadcast of music that you are not the owner of is not legal without proper licenses and permissions. The purpose of this project is for personal development and educational purposes only. If you choose to use this service, please ensure that you have the necessary licenses and permissions to broadcast any copyrighted material. The creator of this project is not responsible for any legal issues that may arise from the use of this service.
+It's important to understand that music is typically owned by someone, and broadcasting music that you don't own the rights to is usually illegal unless you have the proper licenses and permissions. This project is intended solely for personal development and educational purposes. If you decide to use this service, please make sure you have obtained the necessary licenses and permissions to broadcast any copyrighted material. The creator of this project is not liable for any legal problems that may arise from the use of this service.

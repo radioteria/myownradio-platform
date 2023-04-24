@@ -1,5 +1,9 @@
 # Web Radio Station Service
 
+## Screenshots
+
+<image width=800 src="https://user-images.githubusercontent.com/8050895/234032612-587bf1f8-63b8-4bd3-b252-34577776759d.png" />
+
 ## Project status
 
 This project is no longer actively developed and is mainly used for personal development purposes. However, I still make occasional commits to improve my skills and make changes for fun. The service was initially developed in 2015 when I was learning web programming.

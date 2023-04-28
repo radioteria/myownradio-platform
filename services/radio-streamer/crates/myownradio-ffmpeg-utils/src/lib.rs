@@ -1,4 +1,5 @@
 mod decoder;
+mod encoder;
 mod ffmpeg;
 mod generator;
 mod utils;

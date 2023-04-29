@@ -3,10 +3,12 @@ extern crate ffmpeg_next as ffmpeg;
 use crate::utils::Frame;
 use crate::{INTERNAL_SAMPLE_SIZE, INTERNAL_SAMPLING_FREQUENCY};
 use ffmpeg::codec::traits::Encoder;
-use ffmpeg::format::sample::Type::Planar;
+use ffmpeg::format::sample::Type::{Packed, Planar};
 use ffmpeg::format::Sample::I16;
 use ffmpeg::frame::Audio;
 use ffmpeg::{codec, encoder, ChannelLayout, Packet};
+use ffmpeg_next::format::Sample;
+use std::ops::DerefMut;
 
 struct AudioEncoder {
     encoder: encoder::audio::Encoder,
@@ -22,10 +24,6 @@ enum AudioEncoderError {
 
 impl AudioEncoder {
     fn new(name: &str, bitrate: usize) -> Result<Self, AudioEncoderError> {
-        let codec = name
-            .encoder()
-            .ok_or_else(|| AudioEncoderError::CodecError(name.to_string()))?;
-
         let ctx = codec::Context::new();
         let mut encoder = ctx.encoder().audio().unwrap();
 
@@ -34,6 +32,7 @@ impl AudioEncoder {
         encoder.set_rate(INTERNAL_SAMPLING_FREQUENCY as i32);
         encoder.set_channel_layout(ChannelLayout::STEREO);
 
+        let codec = name.encoder().unwrap();
         let encoder = encoder.open_as(codec).unwrap();
 
         Ok(Self { encoder })
@@ -42,15 +41,23 @@ impl AudioEncoder {
     fn send_frame_to_encoder(&mut self, frame: Frame) -> Result<(), AudioEncoderError> {
         let mut ff_frame = Audio::empty();
 
+        let samples = frame.data().len() / INTERNAL_SAMPLE_SIZE;
+        let pts = frame.pts_as_duration().as_millis() as i64;
+
+        ff_frame.set_pts(Some(pts));
+        ff_frame.set_format(I16(Packed));
+        ff_frame.set_samples(samples);
+        ff_frame.set_channels(2);
         ff_frame.set_rate(INTERNAL_SAMPLING_FREQUENCY as u32);
-        ff_frame.set_channel_layout(ChannelLayout::STEREO);
-        ff_frame.set_samples(frame.data().len() / INTERNAL_SAMPLE_SIZE);
-        // ff_frame.set_format(I16(Planar));
-        ff_frame.data_mut(1).copy_from_slice(frame.data());
+
+        unsafe {
+            (*ff_frame.as_mut_ptr()).linesize[0] = frame.data().len() as i32;
+            (*ff_frame.as_mut_ptr()).data[0] = frame.data().as_ptr() as *mut u8;
+        };
 
         self.encoder
             .send_frame(&ff_frame)
-            .map_err(|error| AudioEncoderError::EncodingError(error))?;
+            .expect("Unable to send frame");
 
         Ok(())
     }
@@ -90,15 +97,43 @@ mod tests {
 
     #[actix_rt::test]
     async fn test_encoding_raw_audio_samples_to_mp3() {
-        let frame = Frame::new(
+        let frame1 = Frame::new(
             Timestamp::default(),
             Timestamp::default(),
-            Vec::with_capacity(1024),
+            (0..4096).map(|_| 0u8).collect(),
         );
 
         let mut encoder =
             AudioEncoder::new("libmp3lame", 128_000).expect("Unable to construct encoder");
 
-        encoder.send_frame_to_encoder(frame).unwrap();
+        encoder.send_frame_to_encoder(frame1).unwrap();
+        encoder.send_eof_to_encoder().unwrap();
+        let packets = encoder.receive_encoded_packets().unwrap();
+
+        assert_eq!(1, packets.len());
+        assert_eq!(
+            vec![
+                255, 251, 148, 100, 0, 15, 240, 0, 0, 105, 0, 0, 0, 8, 0, 0, 13, 32, 0, 0, 1, 0, 0,
+                1, 164, 0, 0, 0, 32, 0, 0, 52, 128, 0, 0, 4, 76, 65, 77, 69, 51, 46, 49, 48, 48,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
+                85, 85, 85
+            ],
+            packets[0].data().unwrap().to_vec()
+        );
     }
 }

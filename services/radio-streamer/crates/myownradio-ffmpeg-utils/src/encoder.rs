@@ -1,16 +1,19 @@
 extern crate ffmpeg_next as ffmpeg;
 
-use crate::utils::{convert_frame_to_packed, convert_frame_to_planar, Frame};
-use crate::INTERNAL_SAMPLING_FREQUENCY;
+use crate::utils::{convert_frame_to_packed, convert_frame_to_planar, Frame, Packet};
+use crate::{Timestamp, INTERNAL_SAMPLING_FREQUENCY, INTERNAL_TIME_BASE};
 use ffmpeg::encoder::find_by_name;
 use ffmpeg::format::sample::Type::{Packed, Planar};
 use ffmpeg::format::Sample::I16;
 use ffmpeg::frame::Audio;
-use ffmpeg::{codec, encoder, ChannelLayout, Packet};
+use ffmpeg::{codec, encoder, ChannelLayout};
 use ffmpeg_next::Codec;
+use futures::channel::mpsc::{channel, Receiver, Sender};
+use futures::{SinkExt, StreamExt};
+use tracing::error;
 
 #[derive(Debug)]
-enum Format {
+pub enum Format {
     MP3,
     AAC,
 }
@@ -51,7 +54,7 @@ struct AudioEncoder {
 }
 
 #[derive(Debug, thiserror::Error)]
-enum AudioEncoderError {
+pub enum AudioEncoderError {
     #[error("Unable to find codec: {0:?}")]
     CodecError(&'static str),
     #[error("Audio encoding failed: {0:?}")]
@@ -97,15 +100,103 @@ impl AudioEncoder {
     }
 
     fn receive_encoded_packets(&mut self) -> Result<Vec<Packet>, AudioEncoderError> {
-        let mut frames = vec![];
+        let mut packets = vec![];
 
-        let mut encoded = Packet::empty();
+        let mut encoded = ffmpeg::Packet::empty();
         while self.encoder.receive_packet(&mut encoded).is_ok() {
-            frames.push(encoded.clone());
+            packets.push(Packet::new(
+                Timestamp::new(encoded.pts().unwrap_or_default(), INTERNAL_TIME_BASE),
+                Timestamp::new(encoded.duration(), INTERNAL_TIME_BASE),
+                encoded.data().unwrap_or_default().to_vec(),
+            ));
         }
 
-        Ok(frames)
+        Ok(packets)
     }
+}
+
+#[derive(Debug)]
+pub enum EncoderMessage {
+    Packet(Packet),
+    Error(AudioEncoderError),
+}
+
+pub fn make_encoder(
+    format: Format,
+    bit_rate: usize,
+) -> Result<(Sender<Frame>, Receiver<EncoderMessage>), AudioEncoderError> {
+    let encoder = AudioEncoder::open(format, bit_rate)?;
+
+    let (src_sender, src_receiver) = channel(0);
+    let (sink_sender, sink_receiver) = channel(0);
+
+    std::thread::spawn(move || {
+        let async_runtime = actix_rt::Runtime::new().expect("Unable to initialize async runtime");
+
+        let mut encoder = encoder;
+        let mut src_receiver = src_receiver;
+        let mut sink_sender = sink_sender;
+
+        let fut = async move {
+            while let Some(frame) = src_receiver.next().await {
+                if let Err(error) = encoder.send_frame_to_encoder(frame) {
+                    error!(?error, "Unable to send frame to encoder");
+                    let _ = sink_sender.send(EncoderMessage::Error(error)).await;
+                    break;
+                }
+
+                match encoder.receive_encoded_packets() {
+                    Ok(packets) => {
+                        for packet in packets {
+                            if sink_sender
+                                .send(EncoderMessage::Packet(packet))
+                                .await
+                                .is_err()
+                            {
+                                // Channel closed. No worries.
+                                break;
+                            }
+                        }
+                    }
+                    Err(error) => {
+                        error!(?error, "Unable to receive encoded packets");
+                        let _ = sink_sender.send(EncoderMessage::Error(error)).await;
+                        break;
+                    }
+                }
+            }
+
+            if let Err(error) = encoder.send_eof_to_encoder() {
+                error!(?error, "Unable to send eof to encoder");
+                let _ = sink_sender.send(EncoderMessage::Error(error)).await;
+                return;
+            }
+
+            match encoder.receive_encoded_packets() {
+                Ok(packets) => {
+                    for packet in packets {
+                        if sink_sender
+                            .send(EncoderMessage::Packet(packet))
+                            .await
+                            .is_err()
+                        {
+                            // Channel closed. No worries.
+                            return;
+                        }
+                    }
+                }
+                Err(error) => {
+                    error!(?error, "Unable to receive last encoded packets");
+                    let _ = sink_sender.send(EncoderMessage::Error(error)).await;
+                    return;
+                }
+            }
+        };
+
+        async_runtime.block_on(fut);
+    });
+
+    Ok((src_sender, sink_receiver))
 }
 
 #[cfg(test)]
@@ -114,6 +205,7 @@ mod tests {
 
     use crate::encoder::{AudioEncoder, Format};
     use crate::{Frame, Timestamp, INTERNAL_SAMPLE_SIZE};
+    use std::time::Duration;
 
     #[ctor::ctor]
     fn init() {
@@ -124,8 +216,8 @@ mod tests {
     #[actix_rt::test]
     async fn test_encoding() {
         let test_cases = vec![
-            (Format::MP3, 128_000, 427, 10372),
-            (Format::AAC, 64_000, 481, 10197),
+            (Format::MP3, 128_000, 427, Duration::from_millis(10372)),
+            (Format::AAC, 64_000, 481, Duration::from_millis(10197)),
         ];
         let raw_time_base = (1, 48_000);
         let raw_audio = include_bytes!("../tests/fixtures/test_file.raw");
@@ -155,7 +247,7 @@ mod tests {
             assert_eq!(expected_packets, encoded_packets.len());
             assert_eq!(
                 expected_last_pts,
-                encoded_packets.last().and_then(|l| l.pts()).unwrap()
+                encoded_packets.last().unwrap().pts_as_duration()
             );
         }
     }

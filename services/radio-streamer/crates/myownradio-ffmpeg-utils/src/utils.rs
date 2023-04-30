@@ -6,6 +6,7 @@ use ffmpeg_next::format::sample::Type::{Packed, Planar};
 use ffmpeg_next::format::Sample::I16;
 use ffmpeg_next::ChannelLayout;
 use std::fmt::Debug;
+use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -51,13 +52,13 @@ impl Default for Timestamp {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Frame {
+pub struct AudioUnit {
     data: Arc<Vec<u8>>,
     duration: Timestamp,
     pts: Timestamp,
 }
 
-impl Frame {
+impl AudioUnit {
     pub(crate) fn new(pts: Timestamp, duration: Timestamp, data: Vec<u8>) -> Self {
         let data = Arc::new(data);
 
@@ -90,6 +91,52 @@ impl Frame {
 
     pub fn is_empty(&self) -> bool {
         self.data.is_empty()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Frame(AudioUnit);
+
+impl Frame {
+    pub(crate) fn new(pts: Timestamp, duration: Timestamp, data: Vec<u8>) -> Self {
+        Self(AudioUnit::new(pts, duration, data))
+    }
+}
+
+impl Deref for Frame {
+    type Target = AudioUnit;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Frame {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Packet(AudioUnit);
+
+impl Packet {
+    pub(crate) fn new(pts: Timestamp, duration: Timestamp, data: Vec<u8>) -> Self {
+        Self(AudioUnit::new(pts, duration, data))
+    }
+}
+
+impl Deref for Packet {
+    type Target = AudioUnit;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Packet {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 

@@ -34,7 +34,7 @@ impl Into<Duration> for &Timestamp {
     fn into(self) -> Duration {
         let secs = self.value as f64 * self.time_base.0 as f64 / self.time_base.1 as f64;
 
-        Duration::from_secs_f64(secs)
+        Duration::from_secs_f64(secs.abs())
     }
 }
 
@@ -98,7 +98,7 @@ impl AudioUnit {
 pub struct Frame(AudioUnit);
 
 impl Frame {
-    pub(crate) fn new(pts: Timestamp, duration: Timestamp, data: Vec<u8>) -> Self {
+    pub fn new(pts: Timestamp, duration: Timestamp, data: Vec<u8>) -> Self {
         Self(AudioUnit::new(pts, duration, data))
     }
 }

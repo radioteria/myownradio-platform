@@ -20,10 +20,6 @@ impl Buffer {
     pub(crate) fn pts_hint(&self) -> &Duration {
         &self.pts_hint
     }
-
-    pub(crate) fn into_bytes(self) -> Bytes {
-        self.bytes
-    }
 }
 
 impl Deref for Buffer {

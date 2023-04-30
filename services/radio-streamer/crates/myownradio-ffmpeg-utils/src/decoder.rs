@@ -56,7 +56,7 @@ impl AudioDecoder {
             .get("out")
             .expect("Unable to get 'out' pad on filter")
             .sink()
-            .frame(&mut resampled)
+            .samples(&mut resampled, 1024)
             .is_ok()
         {
             frames.push(resampled.clone().into());

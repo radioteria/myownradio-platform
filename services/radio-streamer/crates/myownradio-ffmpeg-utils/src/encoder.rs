@@ -216,8 +216,8 @@ mod tests {
     #[actix_rt::test]
     async fn test_encoding() {
         let test_cases = vec![
-            (Format::MP3, 128_000, 427, Duration::from_millis(10372)),
-            (Format::AAC, 64_000, 481, Duration::from_millis(10197)),
+            (Format::MP3, 128_000, 426, Duration::from_millis(10223)),
+            (Format::AAC, 64_000, 480, Duration::from_millis(10176)),
         ];
         let raw_time_base = (1, 48_000);
         let raw_audio = include_bytes!("../tests/fixtures/test_file.raw");
@@ -227,7 +227,7 @@ mod tests {
                 AudioEncoder::open(format, bit_rate).expect("Unable to construct encoder");
 
             let mut encoded_packets = vec![];
-            for (i, chunk) in raw_audio.chunks_exact(1024).enumerate() {
+            for (i, chunk) in raw_audio.chunks_exact(4096).enumerate() {
                 let chunk_len = (chunk.len() / INTERNAL_SAMPLE_SIZE) as i64;
                 let chunk_id = i as i64;
 

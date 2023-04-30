@@ -6,17 +6,20 @@ use crate::stream::constants::REALTIME_STARTUP_BUFFER_TIME;
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
 use crate::stream::types::{Buffer, TrackTitle};
 use crate::stream::util::channels::{ChannelError, ReplayTimedChannel, TimedChannel, TimedMessage};
-use crate::stream::util::ffmpeg::{build_ffmpeg_encoder, EncoderError, EncoderOutput};
 use crate::upgrade_weak;
 use actix_rt::task::JoinHandle;
 use actix_web::web::Bytes;
 use futures::channel::oneshot;
 use futures::{stream, SinkExt, StreamExt};
-use slog::{error, info, warn, Logger};
+use myownradio_ffmpeg_utils::{
+    make_encoder, AudioEncoderError, EncoderMessage, Format, Frame, Timestamp,
+};
+use slog::{info, warn, Logger};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use tracing::error;
 
 #[derive(Debug, Clone)]
 pub(crate) enum StreamMessage {
@@ -38,7 +41,7 @@ pub(crate) enum GetOutputError {
     #[error(transparent)]
     ChannelError(#[from] ChannelError),
     #[error(transparent)]
-    EncoderError(#[from] EncoderError),
+    EncoderError(#[from] AudioEncoderError),
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -128,7 +131,7 @@ impl Stream {
                             Ok(())
                         }
                         PlayerLoopMessage::Error(error) => {
-                            error!(logger, "Error happened on running player loop"; "error" => ?error);
+                            error!(?error, "Error happened on running player loop");
 
                             upgrade_weak!(streams_registry)
                                 .get_stream(&channel_id)
@@ -164,7 +167,6 @@ impl Stream {
 
         let outputs = StreamOutputs {
             stream_messages_channel,
-            logger: logger.clone(),
             metrics: metrics.clone(),
             outputs: Arc::new(Mutex::default()),
         };
@@ -218,7 +220,6 @@ impl Stream {
 struct StreamOutputs {
     stream_messages_channel: Arc<ReplayTimedChannel<StreamMessage>>,
     metrics: Metrics,
-    logger: Logger,
     outputs: Arc<Mutex<HashMap<AudioFormat, Arc<ReplayTimedChannel<StreamMessage>>>>>,
 }
 
@@ -230,8 +231,14 @@ impl StreamOutputs {
         match self.outputs.lock().unwrap().entry(format.clone()) {
             Entry::Occupied(entry) => Ok(entry.get().subscribe()?),
             Entry::Vacant(entry) => {
-                let (mut encoder_sender, mut encoder_receiver) =
-                    build_ffmpeg_encoder(format, &self.metrics)?;
+                let encoder_format = match format.format {
+                    "mp3" => Format::MP3,
+                    "adts" => Format::AAC,
+                    _ => todo!(),
+                };
+
+                let (mut encoder_sink, mut encoder_src) =
+                    make_encoder(encoder_format, format.bitrate as usize * 1000)?;
 
                 let encoded_messages_channel = Arc::new(ReplayTimedChannel::new(
                     TimedChannel::new(Duration::from_secs(10), 32),
@@ -260,7 +267,18 @@ impl StreamOutputs {
                                     }
                                 }
                                 StreamMessage::Buffer(frame) => {
-                                    if encoder_sender.send(frame).await.is_err() {
+                                    if encoder_sink
+                                        .send(Frame::new(
+                                            Timestamp::new(
+                                                frame.pts_hint().as_millis() as i64,
+                                                (1, 1000),
+                                            ),
+                                            Timestamp::default(),
+                                            frame.bytes().to_vec(),
+                                        ))
+                                        .await
+                                        .is_err()
+                                    {
                                         break;
                                     }
                                 }
@@ -273,15 +291,17 @@ impl StreamOutputs {
                     let encoded_messages_channel = encoded_messages_channel.clone();
 
                     let outputs = self.outputs.clone();
-                    let logger = self.logger.clone();
                     let format = format.clone();
 
                     async move {
-                        while let Some(output) = encoder_receiver.next().await {
+                        while let Some(output) = encoder_src.next().await {
                             match output {
-                                EncoderOutput::Buffer(buffer) => {
+                                EncoderMessage::Packet(buffer) => {
                                     if encoded_messages_channel
-                                        .send_all(StreamMessage::Buffer(buffer))
+                                        .send_all(StreamMessage::Buffer(Buffer::new(
+                                            Bytes::copy_from_slice(&buffer.data()),
+                                            buffer.pts_as_duration(),
+                                        )))
                                         .await
                                         .is_err()
                                     {
@@ -289,15 +309,9 @@ impl StreamOutputs {
                                         break;
                                     }
                                 }
-                                EncoderOutput::EOF => {
-                                    warn!(logger, "Encoder stream finished");
-                                    break;
-                                }
-                                EncoderOutput::Error(exit_code) => {
-                                    error!(
-                                        logger,
-                                        "Encoder exited with non-zero exit code: {}", exit_code
-                                    );
+
+                                EncoderMessage::Error(error) => {
+                                    error!(?error, "Encoder exited with error");
                                     break;
                                 }
                             }

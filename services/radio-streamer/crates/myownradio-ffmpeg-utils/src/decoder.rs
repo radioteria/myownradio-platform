@@ -248,7 +248,6 @@ mod tests {
     use crate::decoder::DecoderMessage;
     use ffmpeg_next::format::input;
     use ffmpeg_next::{rescale, Rescale};
-    use futures::channel::mpsc::channel;
     use futures::StreamExt;
     use std::time::Duration;
     use tracing_test::traced_test;
@@ -262,62 +261,62 @@ mod tests {
     const TEST_FILES: [(&str, Duration, Duration); 13] = [
         (
             "tests/fixtures/test_file.wav",
-            Duration::from_millis(2833),
+            Duration::from_millis(10216),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.wav",
-            Duration::from_millis(2833),
+            Duration::from_millis(10216),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/test_file.aac",
-            Duration::from_millis(2878),
+            Duration::from_millis(10262),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.aac",
-            Duration::from_millis(2878),
+            Duration::from_millis(10262),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/test_file.flac",
-            Duration::from_millis(2833),
+            Duration::from_millis(10216),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.flac",
-            Duration::from_millis(2833),
+            Duration::from_millis(10216),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/test_file.m4a",
-            Duration::from_millis(2855),
+            Duration::from_millis(10216),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.m4a",
-            Duration::from_millis(2855),
+            Duration::from_millis(10216),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/test_file.mp3",
-            Duration::from_millis(2859),
+            Duration::from_millis(10216),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.mp3",
-            Duration::from_millis(2858),
+            Duration::from_millis(10216),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/test_file.ogg",
-            Duration::from_millis(2833),
+            Duration::from_millis(10216),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.ogg",
-            Duration::from_millis(2833),
+            Duration::from_millis(10216),
             Duration::from_millis(1500),
         ),
         (

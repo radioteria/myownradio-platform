@@ -1,63 +1,89 @@
 extern crate ffmpeg_next as ffmpeg;
 
-use crate::utils::Frame;
-use crate::{INTERNAL_SAMPLE_SIZE, INTERNAL_SAMPLING_FREQUENCY};
-use ffmpeg::codec::traits::Encoder;
+use crate::utils::{convert_frame_to_packed, convert_frame_to_planar, Frame};
+use crate::INTERNAL_SAMPLING_FREQUENCY;
+use ffmpeg::encoder::find_by_name;
 use ffmpeg::format::sample::Type::{Packed, Planar};
 use ffmpeg::format::Sample::I16;
 use ffmpeg::frame::Audio;
 use ffmpeg::{codec, encoder, ChannelLayout, Packet};
-use ffmpeg_next::format::Sample;
-use std::ops::DerefMut;
+use ffmpeg_next::Codec;
+
+#[derive(Debug)]
+enum Format {
+    MP3,
+    AAC,
+}
+
+impl Format {
+    fn encoder_name(&self) -> &'static str {
+        match self {
+            Format::MP3 => "libmp3lame",
+            Format::AAC => "libfdk_aac",
+        }
+    }
+
+    fn find_codec(&self) -> Option<Codec> {
+        find_by_name(self.encoder_name())
+    }
+
+    fn setup_encoder(&self, encoder: &mut encoder::audio::Audio, bit_rate: usize) {
+        encoder.set_bit_rate(bit_rate);
+        encoder.set_rate(INTERNAL_SAMPLING_FREQUENCY as i32);
+        encoder.set_channel_layout(ChannelLayout::STEREO);
+        encoder.set_format(match self {
+            Format::MP3 => I16(Planar),
+            Format::AAC => I16(Packed),
+        });
+    }
+
+    fn prepare_frame(&self, frame: Frame) -> Audio {
+        match self {
+            Format::MP3 => convert_frame_to_planar(frame),
+            Format::AAC => convert_frame_to_packed(frame),
+        }
+    }
+}
 
 struct AudioEncoder {
     encoder: encoder::audio::Encoder,
+    format: Format,
 }
 
 #[derive(Debug, thiserror::Error)]
 enum AudioEncoderError {
-    #[error("Unable to find codec: {0}")]
-    CodecError(String),
-    #[error("Audio encoding failed: {0}")]
+    #[error("Unable to find codec: {0:?}")]
+    CodecError(&'static str),
+    #[error("Audio encoding failed: {0:?}")]
     EncodingError(ffmpeg::Error),
 }
 
 impl AudioEncoder {
-    fn new(name: &str, bitrate: usize) -> Result<Self, AudioEncoderError> {
+    fn open(format: Format, bitrate: usize) -> Result<Self, AudioEncoderError> {
         let ctx = codec::Context::new();
-        let mut encoder = ctx.encoder().audio().unwrap();
+        let mut encoder = ctx
+            .encoder()
+            .audio()
+            .map_err(|error| AudioEncoderError::EncodingError(error))?;
 
-        encoder.set_bit_rate(bitrate);
-        encoder.set_format(I16(Planar));
-        encoder.set_rate(INTERNAL_SAMPLING_FREQUENCY as i32);
-        encoder.set_channel_layout(ChannelLayout::STEREO);
+        format.setup_encoder(&mut encoder, bitrate);
 
-        let codec = name.encoder().unwrap();
-        let encoder = encoder.open_as(codec).unwrap();
+        let codec = format
+            .find_codec()
+            .ok_or_else(|| AudioEncoderError::CodecError(format.encoder_name()))?;
+        let encoder = encoder
+            .open_as(codec)
+            .map_err(|error| AudioEncoderError::EncodingError(error))?;
 
-        Ok(Self { encoder })
+        Ok(Self { encoder, format })
     }
 
     fn send_frame_to_encoder(&mut self, frame: Frame) -> Result<(), AudioEncoderError> {
-        let mut ff_frame = Audio::empty();
-
-        let samples = frame.data().len() / INTERNAL_SAMPLE_SIZE;
-        let pts = frame.pts_as_duration().as_millis() as i64;
-
-        ff_frame.set_pts(Some(pts));
-        ff_frame.set_format(I16(Packed));
-        ff_frame.set_samples(samples);
-        ff_frame.set_channels(2);
-        ff_frame.set_rate(INTERNAL_SAMPLING_FREQUENCY as u32);
-
-        unsafe {
-            (*ff_frame.as_mut_ptr()).linesize[0] = frame.data().len() as i32;
-            (*ff_frame.as_mut_ptr()).data[0] = frame.data().as_ptr() as *mut u8;
-        };
+        let audio = self.format.prepare_frame(frame);
 
         self.encoder
-            .send_frame(&ff_frame)
-            .expect("Unable to send frame");
+            .send_frame(&audio)
+            .map_err(|error| AudioEncoderError::EncodingError(error))?;
 
         Ok(())
     }
@@ -66,6 +92,7 @@ impl AudioEncoder {
         self.encoder
             .send_eof()
             .map_err(|error| AudioEncoderError::EncodingError(error))?;
+
         Ok(())
     }
 
@@ -74,7 +101,6 @@ impl AudioEncoder {
 
         let mut encoded = Packet::empty();
         while self.encoder.receive_packet(&mut encoded).is_ok() {
-            encoded.set_stream(0);
             frames.push(encoded.clone());
         }
 
@@ -86,54 +112,51 @@ impl AudioEncoder {
 mod tests {
     extern crate ffmpeg_next as ffmpeg;
 
-    use crate::encoder::AudioEncoder;
-    use crate::{Frame, Timestamp};
+    use crate::encoder::{AudioEncoder, Format};
+    use crate::{Frame, Timestamp, INTERNAL_SAMPLE_SIZE};
 
     #[ctor::ctor]
     fn init() {
         ffmpeg::init().expect("Unable to initialize FFmpeg");
-        // ffmpeg::log::set_level(ffmpeg::log::Level::Trace);
+        // ffmpeg::log::set_level(ffmpeg::log::Level::Verbose);
     }
 
     #[actix_rt::test]
-    async fn test_encoding_raw_audio_samples_to_mp3() {
-        let frame1 = Frame::new(
-            Timestamp::default(),
-            Timestamp::default(),
-            (0..4096).map(|_| 0u8).collect(),
-        );
+    async fn test_encoding() {
+        let test_cases = vec![
+            (Format::MP3, 128_000, 427, 10372),
+            (Format::AAC, 64_000, 481, 10197),
+        ];
+        let raw_time_base = (1, 48_000);
+        let raw_audio = include_bytes!("../tests/fixtures/test_file.raw");
 
-        let mut encoder =
-            AudioEncoder::new("libmp3lame", 128_000).expect("Unable to construct encoder");
+        for (format, bit_rate, expected_packets, expected_last_pts) in test_cases {
+            let mut encoder =
+                AudioEncoder::open(format, bit_rate).expect("Unable to construct encoder");
 
-        encoder.send_frame_to_encoder(frame1).unwrap();
-        encoder.send_eof_to_encoder().unwrap();
-        let packets = encoder.receive_encoded_packets().unwrap();
+            let mut encoded_packets = vec![];
+            for (i, chunk) in raw_audio.chunks_exact(1024).enumerate() {
+                let chunk_len = (chunk.len() / INTERNAL_SAMPLE_SIZE) as i64;
+                let chunk_id = i as i64;
 
-        assert_eq!(1, packets.len());
-        assert_eq!(
-            vec![
-                255, 251, 148, 100, 0, 15, 240, 0, 0, 105, 0, 0, 0, 8, 0, 0, 13, 32, 0, 0, 1, 0, 0,
-                1, 164, 0, 0, 0, 32, 0, 0, 52, 128, 0, 0, 4, 76, 65, 77, 69, 51, 46, 49, 48, 48,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85, 85,
-                85, 85, 85
-            ],
-            packets[0].data().unwrap().to_vec()
-        );
+                let frame = Frame::new(
+                    Timestamp::new(chunk_id * chunk_len, raw_time_base),
+                    Timestamp::new(chunk_len, raw_time_base),
+                    chunk.to_vec(),
+                );
+
+                encoder.send_frame_to_encoder(frame).unwrap();
+                encoded_packets.append(&mut encoder.receive_encoded_packets().unwrap());
+            }
+
+            encoder.send_eof_to_encoder().unwrap();
+            encoded_packets.append(&mut encoder.receive_encoded_packets().unwrap());
+
+            assert_eq!(expected_packets, encoded_packets.len());
+            assert_eq!(
+                expected_last_pts,
+                encoded_packets.last().and_then(|l| l.pts()).unwrap()
+            );
+        }
     }
 }

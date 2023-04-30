@@ -1,12 +1,14 @@
 mod decoder;
+mod encoder;
 mod ffmpeg;
 mod generator;
 mod utils;
 
 pub use decoder::{decode_audio_file, AudioDecoderError, DecoderMessage};
+pub use encoder::{make_encoder, AudioEncoderError, EncoderMessage, Format};
 pub use ffmpeg_next::init;
 pub use generator::generate_silence;
-pub use utils::{Frame, Timestamp};
+pub use utils::{Frame, Packet, Timestamp};
 
 // The sampling rate used internally by the program, in Hz.
 const INTERNAL_SAMPLING_FREQUENCY: i64 = 48_000;

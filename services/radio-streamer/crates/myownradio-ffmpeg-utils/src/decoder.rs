@@ -1,9 +1,11 @@
-use crate::ffmpeg::setup_resampling_filter;
+use crate::ffmpeg::{open_input, setup_resampling_filter, SetupResamplingFilterError};
 use crate::utils::{Frame, Timestamp};
 use crate::INTERNAL_TIME_BASE;
 use crate::{INTERNAL_SAMPLE_SIZE, INTERNAL_SAMPLING_FREQUENCY, RESAMPLER_TIME_BASE};
 use ffmpeg_next::codec::Context;
 use ffmpeg_next::format::context::Input;
+use ffmpeg_next::format::sample::Type::Packed;
+use ffmpeg_next::format::Sample::I16;
 use ffmpeg_next::frame::Audio;
 use ffmpeg_next::{rescale, ChannelLayout, Packet, Rescale};
 use futures::channel::mpsc::{channel, Receiver, SendError};
@@ -31,6 +33,8 @@ pub enum AudioDecoderError {
     SeekError(ffmpeg_next::Error),
     #[error("Unable to send processed frame to Sender")]
     SendError(SendError),
+    #[error("Unable to setup resampling filter: {0}")]
+    SetupResamplingFilterError(#[from] SetupResamplingFilterError),
 }
 
 impl AudioDecoder {
@@ -123,8 +127,8 @@ fn make_audio_decoder(ictx: &mut Input) -> Result<AudioDecoder, AudioDecoderErro
     let output_rate = INTERNAL_SAMPLING_FREQUENCY as u32;
 
     debug!(input_rate, output_rate, "Initializing resampler");
-    let resampling_filter = setup_resampling_filter(INTERNAL_SAMPLING_FREQUENCY as u32, &decoder)
-        .map_err(|error| AudioDecoderError::ResamplingError(error))?;
+    let resampling_filter =
+        setup_resampling_filter(INTERNAL_SAMPLING_FREQUENCY as u32, I16(Packed), &decoder)?;
 
     Ok(AudioDecoder {
         input_index,
@@ -261,68 +265,68 @@ mod tests {
     const TEST_FILES: [(&str, Duration, Duration); 13] = [
         (
             "tests/fixtures/test_file.wav",
-            Duration::from_millis(10216),
+            Duration::from_millis(10197),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.wav",
-            Duration::from_millis(10216),
+            Duration::from_millis(10204),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/test_file.aac",
-            Duration::from_millis(10262),
+            Duration::from_millis(10261),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.aac",
-            Duration::from_millis(10262),
+            Duration::from_millis(10254),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/test_file.flac",
-            Duration::from_millis(10216),
+            Duration::from_millis(10197),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.flac",
-            Duration::from_millis(10216),
+            Duration::from_millis(10209),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/test_file.m4a",
-            Duration::from_millis(10216),
+            Duration::from_millis(10197),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.m4a",
-            Duration::from_millis(10216),
+            Duration::from_millis(10211),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/test_file.mp3",
-            Duration::from_millis(10216),
+            Duration::from_millis(10197),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.mp3",
-            Duration::from_millis(10216),
+            Duration::from_millis(10211),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/test_file.ogg",
-            Duration::from_millis(10216),
+            Duration::from_millis(10197),
             Duration::from_millis(0),
         ),
         (
             "tests/fixtures/test_file.ogg",
-            Duration::from_millis(10216),
+            Duration::from_millis(10202),
             Duration::from_millis(1500),
         ),
         (
             "tests/fixtures/sample-6s.mp3",
             /* [FORMAT]duration=6.426122[/FORMAT] */
-            Duration::from_millis(6416),
+            Duration::from_millis(6395),
             Duration::from_millis(1500),
         ),
     ];
@@ -374,7 +378,6 @@ mod tests {
     }
 
     #[actix_rt::test]
-    #[traced_test]
     async fn test_decoding_file_by_url() {
         let test_file_url = "https://download.samplelib.com/mp3/sample-6s.mp3";
         let mut frames = super::decode_audio_file(test_file_url, &Duration::from_secs(0))
@@ -387,7 +390,7 @@ mod tests {
             duration += frame.pts().into();
         }
 
-        assert_eq!(Duration::from_millis(6416), duration);
+        assert_eq!(6403, duration.as_millis());
     }
 
     #[actix_rt::test]

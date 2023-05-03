@@ -2,6 +2,7 @@ mod decoder;
 mod encoder;
 mod ffmpeg;
 mod generator;
+mod transcoder;
 mod utils;
 
 pub use decoder::{decode_audio_file, AudioDecoderError, DecoderMessage};

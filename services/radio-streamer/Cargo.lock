@@ -1348,6 +1348,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "myownradio-player-loop"
+version = "0.1.0"
+dependencies = [
+ "myownradio-ffmpeg-utils",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "nom"
 version = "7.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -277,26 +277,50 @@ mod tests {
 
     #[test]
     fn test_restart_player_loop() {
+        // Create a mock API client.
         let api_client = MockAPIClient::new();
+
+        // Define the output format, initial time, and channel ID.
         let output_format = OutputFormat::MP3 {
             bit_rate: 128_000,
             sampling_rate: 48_000,
         };
         let initial_time = SystemTime::UNIX_EPOCH;
-        let mut player_loop =
-            PlayerLoop::create(123, api_client.clone(), output_format, initial_time).unwrap();
+        let channel_id = 123;
 
+        // Create a new player loop with the mock API client and other parameters.
+        let mut player_loop =
+            PlayerLoop::create(channel_id, api_client.clone(), output_format, initial_time)
+                .unwrap();
+
+        // Check that the API client hasn't been called yet.
         assert_eq!(0, api_client.calls.lock().unwrap().len());
+
+        // Fetch the next set of audio packets from the player loop.
         assert!(player_loop.receive_next_audio_packets().is_ok());
+
+        // Check that the API client was called once.
         assert_eq!(1, api_client.calls.lock().unwrap().len());
+
+        // Skip ahead in the current track by 500 milliseconds.
         skip_packets(&mut player_loop, &Duration::from_millis(500));
+
+        // Restart the player loop.
         player_loop.restart();
+
+        // Skip ahead in the next track by 500 milliseconds.
         skip_packets(&mut player_loop, &Duration::from_millis(500));
+
+        // Check that the API client was called again after the player loop was restarted.
         assert_eq!(2, api_client.calls.lock().unwrap().len());
 
-        assert_eq!((123, initial_time), api_client.calls.lock().unwrap()[0]);
+        // Check that the API client was called with the correct channel ID and time arguments.
         assert_eq!(
-            (123, initial_time + Duration::from_nanos(529062500)),
+            (channel_id, initial_time),
+            api_client.calls.lock().unwrap()[0]
+        );
+        assert_eq!(
+            (channel_id, initial_time + Duration::from_nanos(529062500)),
             api_client.calls.lock().unwrap()[1]
         );
     }

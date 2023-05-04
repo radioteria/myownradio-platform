@@ -7,16 +7,16 @@ use std::time::{Duration, SystemTime};
 
 /// Defines an error that occurred while fetching now playing information.
 pub trait NowPlayingError: Debug {
-    fn get_code(&self) -> usize;
-    fn get_message(&self) -> String;
+    fn code(&self) -> usize;
+    fn message(&self) -> String;
 }
 
 /// Defines the response of the now playing API.
 pub trait NowPlayingResponse {
-    fn get_url(&self) -> String;
-    fn get_title(&self) -> String;
-    fn get_duration(&self) -> Duration;
-    fn get_position(&self) -> Duration;
+    fn url(&self) -> String;
+    fn title(&self) -> String;
+    fn duration(&self) -> Duration;
+    fn position(&self) -> Duration;
 }
 
 /// Defines the interface for the now playing API client.
@@ -109,14 +109,15 @@ impl<API: NowPlayingAPIClient> PlayerLoop<API> {
                 .map_err(|error| PlayerLoopError::NowPlayingError(error))?;
 
             let transcoder = AudioTranscoder::create(
-                &now_playing.get_url(),
-                &now_playing.get_position(),
+                &now_playing.url(),
+                &now_playing.position(),
                 &self.output_format,
             )
             .map_err(|error| PlayerLoopError::AudioTranscoderCreationError(error))?;
 
             self.running_time.reset();
             self.transcoder.replace(transcoder);
+            self.current_title = Some(now_playing.title());
         }
 
         // If there is no current transcoder, return an empty vector of packets.
@@ -132,6 +133,10 @@ impl<API: NowPlayingAPIClient> PlayerLoop<API> {
     /// Get the title of the track that is being decoded.
     pub fn current_title(&self) -> Option<&String> {
         self.current_title.as_ref()
+    }
+
+    pub fn current_running_time(&self) -> &Duration {
+        self.running_time.time()
     }
 
     /// Updates the PTS values of a set of audio packets using the running time.
@@ -152,74 +157,84 @@ impl<API: NowPlayingAPIClient> PlayerLoop<API> {
 
 #[cfg(test)]
 mod tests {
-    use super::NowPlayingAPIClient;
+    use super::*;
     use crate::{NowPlayingError, NowPlayingResponse, PlayerLoop, PlayerLoopError};
     use myownradio_ffmpeg_utils::{OutputFormat, Packet};
+    use std::sync::{Arc, Mutex};
     use std::time::{Duration, SystemTime};
 
-    struct TestClientResponse {
+    static START_SEEK_TOLERANCE_MS: u128 = 250000;
+
+    struct MockClientResponse {
         position: Duration,
     }
 
-    impl NowPlayingResponse for TestClientResponse {
-        fn get_url(&self) -> String {
+    impl NowPlayingResponse for MockClientResponse {
+        fn url(&self) -> String {
             String::from("tests/fixtures/sample-6s.mp3")
         }
 
-        fn get_title(&self) -> String {
+        fn title(&self) -> String {
             String::from("Sample Track")
         }
 
-        fn get_duration(&self) -> Duration {
+        fn duration(&self) -> Duration {
             Duration::from_secs_f32(6.426122)
         }
 
-        fn get_position(&self) -> Duration {
+        fn position(&self) -> Duration {
             self.position
         }
     }
 
     #[derive(Debug)]
-    struct TestClientError {}
+    struct MockClientError;
 
-    impl NowPlayingError for TestClientError {
-        fn get_code(&self) -> usize {
+    impl NowPlayingError for MockClientError {
+        fn code(&self) -> usize {
             todo!()
         }
 
-        fn get_message(&self) -> String {
+        fn message(&self) -> String {
             todo!()
         }
     }
 
-    struct TestClient {}
+    #[derive(Clone)]
+    struct MockAPIClient {
+        calls: Arc<Mutex<Vec<(u32, SystemTime)>>>,
+    }
 
-    static START_SEEK_TOLERANCE_MS: u128 = 250000;
+    impl MockAPIClient {
+        fn new() -> Self {
+            Self {
+                calls: Arc::new(Mutex::new(vec![])),
+            }
+        }
+    }
 
-    impl NowPlayingAPIClient for TestClient {
+    impl NowPlayingAPIClient for MockAPIClient {
         fn get_now_playing(
             &self,
-            _channel_id: &u32,
+            channel_id: &u32,
             time: &SystemTime,
         ) -> Result<Box<dyn NowPlayingResponse>, Box<dyn NowPlayingError>> {
-            let duration = 6426122;
-            let mut position = time
+            let timeline_position_micros = time
                 .duration_since(SystemTime::UNIX_EPOCH)
                 .unwrap()
-                .as_micros()
-                % duration;
+                .as_micros();
 
-            if position < START_SEEK_TOLERANCE_MS || duration - position < START_SEEK_TOLERANCE_MS {
-                position = 0
-            }
+            let duration_micros = 6426122;
+            let track_position_micros = timeline_position_micros % duration_micros;
+            let position = Duration::from_micros(track_position_micros as u64);
 
-            let position = Duration::from_micros(position as u64);
+            self.calls.lock().unwrap().push((*channel_id, *time));
 
-            Ok(Box::new(TestClientResponse { position }))
+            Ok(Box::new(MockClientResponse { position }))
         }
     }
 
-    impl Iterator for PlayerLoop<TestClient> {
+    impl Iterator for PlayerLoop<MockAPIClient> {
         type Item = Result<Vec<Packet>, PlayerLoopError>;
 
         fn next(&mut self) -> Option<Self::Item> {
@@ -228,32 +243,69 @@ mod tests {
     }
 
     #[test]
-    fn test_player_loop() {
-        let api_client = TestClient {};
-        let time = SystemTime::UNIX_EPOCH;
-        let player_loop = PlayerLoop::create(
-            0,
-            api_client,
-            OutputFormat::MP3 {
-                bit_rate: 128_000,
-                sampling_rate: 48_000,
-            },
-            time,
-        )
-        .expect("Unable to initialize PlayerLoop");
-        let mut iter = player_loop.take(2048);
+    fn test_create_player_loop() {
+        let api_client = MockAPIClient::new();
+        let output_format = OutputFormat::MP3 {
+            bit_rate: 128_000,
+            sampling_rate: 48_000,
+        };
+        let initial_time = SystemTime::UNIX_EPOCH;
+        let result = PlayerLoop::create(123, api_client, output_format, initial_time);
 
-        let mut previous_pts = Duration::ZERO;
-        while let Some(Ok(pkg)) = iter.next() {
-            if pkg.is_empty() {
-                continue;
-            }
+        assert!(result.is_ok());
+    }
 
-            let pts = pkg.first().unwrap().pts_as_duration();
+    #[test]
+    fn test_receive_track_title() {
+        let api_client = MockAPIClient::new();
+        let output_format = OutputFormat::MP3 {
+            bit_rate: 128_000,
+            sampling_rate: 48_000,
+        };
+        let initial_time = SystemTime::UNIX_EPOCH;
+        let mut player_loop =
+            PlayerLoop::create(123, api_client, output_format, initial_time).unwrap();
 
-            assert!(pts >= previous_pts);
+        assert!(player_loop.current_title().is_none());
+        assert!(player_loop.receive_next_audio_packets().is_ok());
+        assert!(player_loop.current_title().is_some());
+        assert_eq!(
+            "Sample Track",
+            player_loop.current_title().unwrap().as_str()
+        );
+    }
 
-            previous_pts = pts;
+    #[test]
+    fn test_restart_player_loop() {
+        let api_client = MockAPIClient::new();
+        let output_format = OutputFormat::MP3 {
+            bit_rate: 128_000,
+            sampling_rate: 48_000,
+        };
+        let initial_time = SystemTime::UNIX_EPOCH;
+        let mut player_loop =
+            PlayerLoop::create(123, api_client.clone(), output_format, initial_time).unwrap();
+
+        assert_eq!(0, api_client.calls.lock().unwrap().len());
+        assert!(player_loop.receive_next_audio_packets().is_ok());
+        assert_eq!(1, api_client.calls.lock().unwrap().len());
+        skip_packets(&mut player_loop, &Duration::from_millis(500));
+        player_loop.restart();
+        skip_packets(&mut player_loop, &Duration::from_millis(500));
+        assert_eq!(2, api_client.calls.lock().unwrap().len());
+
+        assert_eq!((123, initial_time), api_client.calls.lock().unwrap()[0]);
+        assert_eq!(
+            (123, initial_time + Duration::from_nanos(529062500)),
+            api_client.calls.lock().unwrap()[1]
+        );
+    }
+
+    fn skip_packets(player_loop: &mut PlayerLoop<MockAPIClient>, amount: &Duration) {
+        let current_time = *player_loop.current_running_time();
+
+        while *player_loop.current_running_time() - current_time < *amount {
+            player_loop.receive_next_audio_packets().unwrap();
         }
     }
 }

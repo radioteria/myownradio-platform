@@ -95,30 +95,26 @@ impl<API: NowPlayingAPIClient> PlayerLoop<API> {
             }
         }
 
-        if self.transcoder.is_none() {
-            // If there is no current transcoder, fetch now playing information
-            // for the current channel and create a new transcoder for the new
-            // track and output format.
-            let player_time = self.initial_time + *self.running_time.time();
-            let now_playing = self
-                .api_client
-                .get_now_playing(&self.channel_id, &player_time)
-                .map_err(|error| PlayerLoopError::NowPlayingError(error))?;
+        // If there is no current transcoder, fetch now playing information
+        // for the current channel and create a new transcoder for the new
+        // track and output format.
+        let player_time = self.initial_time + *self.running_time.time();
+        let now_playing = self
+            .api_client
+            .get_now_playing(&self.channel_id, &player_time)
+            .map_err(|error| PlayerLoopError::NowPlayingError(error))?;
+        self.current_title = Some(now_playing.title());
 
-            let transcoder = AudioTranscoder::create(
-                &now_playing.url(),
-                &now_playing.position(),
-                &self.output_format,
-            )
-            .map_err(|error| PlayerLoopError::AudioTranscoderCreationError(error))?;
+        self.running_time.reset();
+        let transcoder = AudioTranscoder::create(
+            &now_playing.url(),
+            &now_playing.position(),
+            &self.output_format,
+        )
+        .map_err(|error| PlayerLoopError::AudioTranscoderCreationError(error))?;
+        self.transcoder.replace(transcoder);
 
-            self.running_time.reset();
-            self.transcoder.replace(transcoder);
-            self.current_title = Some(now_playing.title());
-        }
-
-        // If there is no current transcoder, return an empty vector of packets.
-        Ok(vec![])
+        self.receive_next_audio_packets()
     }
 
     /// Restarts the player loop by resetting the running time and clearing the transcoder.
@@ -132,6 +128,7 @@ impl<API: NowPlayingAPIClient> PlayerLoop<API> {
         self.current_title.as_ref()
     }
 
+    /// Get the current running time value.
     pub fn current_running_time(&self) -> &Duration {
         self.running_time.time()
     }

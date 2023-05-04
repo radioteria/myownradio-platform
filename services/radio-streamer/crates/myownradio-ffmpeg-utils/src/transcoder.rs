@@ -4,6 +4,7 @@ use crate::ffmpeg::{
     open_input, setup_audio_decoder, setup_audio_encoder, setup_resampling_filter, OpenInputError,
     SetupAudioDecoderError, SetupAudioEncoderError, SetupResamplingFilterError,
 };
+use crate::utils;
 use ffmpeg::decoder;
 use ffmpeg::format::context::input::PacketIter;
 use ffmpeg::frame::Audio;
@@ -134,7 +135,7 @@ impl AudioTranscoder {
 
     pub fn receive_next_transcoded_packets(
         &mut self,
-    ) -> Result<Option<Vec<Packet>>, TranscodeError> {
+    ) -> Result<Option<Vec<utils::Packet>>, TranscodeError> {
         match self.get_packet_from_input() {
             Some(packet) => {
                 trace!("Send 1 packet to decoder");
@@ -143,7 +144,12 @@ impl AudioTranscoder {
                 let encoded_packets = self.receive_and_process_decoded_frames()?;
                 trace!("Read encoded packets: {}", encoded_packets.len());
 
-                Ok(Some(encoded_packets))
+                Ok(Some(
+                    encoded_packets
+                        .into_iter()
+                        .map(|pkt| self.prepare_packet(pkt))
+                        .collect(),
+                ))
             }
             None if self.is_eof => Ok(None),
             None => {
@@ -163,9 +169,27 @@ impl AudioTranscoder {
 
                 self.is_eof = true;
 
-                Ok(Some(final_encoded_packets))
+                Ok(Some(
+                    final_encoded_packets
+                        .into_iter()
+                        .map(|pkt| self.prepare_packet(pkt))
+                        .collect(),
+                ))
             }
         }
+    }
+
+    fn prepare_packet(&self, pkt: Packet) -> utils::Packet {
+        let pts = pkt.pts().unwrap_or_default();
+        let duration = pkt.duration();
+        let output_time_base = (1, self.encoder.rate() as i32);
+        let data = pkt.data().unwrap_or_default().to_vec();
+
+        utils::Packet::new(
+            utils::Timestamp::new(pts, output_time_base),
+            utils::Timestamp::new(duration, output_time_base),
+            data,
+        )
     }
 
     fn receive_and_process_decoded_frames(&mut self) -> Result<Vec<Packet>, ffmpeg_next::Error> {
@@ -348,7 +372,7 @@ mod tests {
 
             while let Ok(Some(packets)) = transcoder.receive_next_transcoded_packets() {
                 actual_packets += packets.len();
-                actual_last_pts = packets.last().and_then(|p| p.pts()).unwrap_or_default()
+                actual_last_pts = packets.last().map(|p| p.pts().value()).unwrap_or_default()
             }
 
             assert_eq!(expected_packets, actual_packets);

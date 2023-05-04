@@ -6,10 +6,7 @@ use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
 
 /// Defines an error that occurred while fetching now playing information.
-pub trait NowPlayingError: Debug {
-    fn code(&self) -> usize;
-    fn message(&self) -> String;
-}
+pub trait NowPlayingError: Debug {}
 
 /// Defines the response of the now playing API.
 pub trait NowPlayingResponse {
@@ -190,15 +187,7 @@ mod tests {
     #[derive(Debug)]
     struct MockClientError;
 
-    impl NowPlayingError for MockClientError {
-        fn code(&self) -> usize {
-            todo!()
-        }
-
-        fn message(&self) -> String {
-            todo!()
-        }
-    }
+    impl NowPlayingError for MockClientError {}
 
     #[derive(Clone)]
     struct MockAPIClient {

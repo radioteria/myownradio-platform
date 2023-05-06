@@ -1,4 +1,4 @@
-use crate::channel::{Channel, ChannelError};
+use crate::channel::{Channel, ChannelClosed};
 use crate::timeout::{timer, TimerHandle};
 use std::iter::Iterator;
 use std::sync::{mpsc, Arc, RwLock};
@@ -42,17 +42,19 @@ where
     ///
     /// # Errors
     /// If the channel is closed, it will return an error of `ChannelError::ChannelClosed`
-    fn send(&self, t: T) -> Result<(), ChannelError> {
+    fn send(&self, t: T) -> Result<(), ChannelClosed> {
         if self.is_closed() {
             return Err(ChannelError::ChannelClosed);
         }
 
-        self.txs
+        let mut txs = self
+            .txs
             .write()
-            .unwrap()
-            .retain_mut(|tx| tx.send(t.clone()).is_ok());
+            .expect("Failed to acquire write lock on txs");
 
-        if self.txs.read().unwrap().len() == 0 && self.timer_handle.read().unwrap().is_none() {
+        txs.retain_mut(|tx| tx.try_send(t.clone()).is_ok());
+
+        if txs.is_empty() && self.timer_handle.read().unwrap().is_none() {
             self.start_timer();
         }
 
@@ -73,12 +75,12 @@ where
     ///
     /// # Errors
     /// If the channel is closed, it will return an error of `ChannelError::ChannelClosed`
-    fn subscribe<I>(&self) -> Result<I, ChannelError>
+    fn subscribe<I>(&self) -> Result<I, ChannelClosed>
     where
         I: Iterator<Item = T>,
     {
         if self.is_closed() {
-            return Err(ChannelError::ChannelClosed);
+            return Err(ChannelClosed);
         }
 
         let (tx, rx) = mpsc::sync_channel(self.buffer);
@@ -126,8 +128,7 @@ where
         channel
     }
 
-    /// A private method that starts the timer for the channel,
-    /// it ensures that the timer is not already running
+    /// Starts the close timer for the channel.
     fn start_timer(&self) {
         assert!(self.timer_handle.read().unwrap().is_none());
 
@@ -147,10 +148,18 @@ where
         self.timer_handle.write().unwrap().replace(timer_handle);
     }
 
-    /// A private method that stops the timer for the channel
+    /// Stops the close timer for the channel if it's running.
     fn stop_timer(&self) {
         if let Some(handle) = self.timer_handle.write().unwrap().take() {
             let _ = handle.cancel();
         }
+    }
+
+    /// Checks whether the channel's close timer has been started or not.
+    ///
+    /// The close timer is started when there are no more subscribers to the channel, and
+    /// it will automatically close the channel if no new subscribers join within a certain time period.
+    fn timer_started(&self) -> bool {
+        self.timer_handle.read().unwrap().is_some()
     }
 }

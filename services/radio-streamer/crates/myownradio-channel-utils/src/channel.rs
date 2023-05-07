@@ -1,5 +1,4 @@
 use std::iter::Iterator;
-use std::sync::mpsc;
 
 /// Error type that is used to indicate that the channel is closed
 #[derive(Debug)]
@@ -9,17 +8,19 @@ pub trait Channel<T>
 where
     T: Clone + Send + Sync + 'static,
 {
+    type Iter: Iterator<Item = T>;
+
     /// Send a message to all subscribers.
-    fn send(&self, t: T) -> Result<(), ChannelClosed>;
+    fn send(&self, msg: T) -> Result<(), ChannelClosed>;
 
     /// Subscribes to the channel, returning an iterator of messages.
     ///
-    /// If the channel is closed, returns a `ChannelError::ChannelClosed` error.
-    fn subscribe<I>(&self) -> Result<I, ChannelClosed>
-    where
-        I: Iterator<Item = T>;
+    /// If the channel is closed, returns a `ChannelClosed` error.
+    fn subscribe(&self) -> Result<Self::Iter, ChannelClosed>;
 
-    /// Closes the channel.
+    /// Closes the channel and removes all subscribers.
+    ///
+    /// After the channel is closed, all subsequent attempts to send or subscribe will fail.
     fn close(&self);
 
     /// Returns whether the channel is closed or not.

@@ -1,4 +1,5 @@
 use crate::running_time::RunningTime;
+use crate::PlayerLoopIter;
 use myownradio_ffmpeg_utils::{
     AudioTranscoder, AudioTranscoderCreationError, OutputFormat, Packet, TranscodeError,
 };
@@ -10,14 +11,17 @@ pub trait NowPlayingError: Debug {}
 
 /// Defines the response of the now playing API.
 pub trait NowPlayingResponse {
-    fn url(&self) -> String;
-    fn title(&self) -> String;
-    fn duration(&self) -> Duration;
-    fn position(&self) -> Duration;
+    fn curr_url(&self) -> String;
+    fn curr_title(&self) -> String;
+    fn curr_duration(&self) -> Duration;
+    fn curr_position(&self) -> Duration;
+    fn next_url(&self) -> String;
+    fn next_title(&self) -> String;
+    fn next_duration(&self) -> Duration;
 }
 
 /// Defines the interface for the now playing API client.
-pub trait NowPlayingAPIClient {
+pub trait NowPlayingClient {
     fn get_now_playing(
         &self,
         channel_id: &u32,
@@ -34,9 +38,9 @@ pub enum PlayerLoopError {
 }
 
 /// Implements the main player loop functionality.
-pub struct PlayerLoop<API> {
+pub struct PlayerLoop<C: NowPlayingClient> {
     channel_id: u32,
-    api_client: API,
+    api_client: C,
     transcoder: Option<AudioTranscoder>,
     output_format: OutputFormat,
     running_time: RunningTime,
@@ -44,17 +48,14 @@ pub struct PlayerLoop<API> {
     current_title: Option<String>,
 }
 
-impl<API: NowPlayingAPIClient> PlayerLoop<API> {
+impl<C: NowPlayingClient> PlayerLoop<C> {
     /// Creates a new instance of the `PlayerLoop` struct.
     pub fn create(
         channel_id: u32,
-        api_client: API,
+        api_client: C,
         output_format: OutputFormat,
         initial_time: SystemTime,
-    ) -> Result<Self, PlayerLoopError>
-    where
-        API: NowPlayingAPIClient,
-    {
+    ) -> Result<Self, PlayerLoopError> {
         let running_time = RunningTime::new();
         let transcoder = None;
         let current_title = None;
@@ -103,12 +104,12 @@ impl<API: NowPlayingAPIClient> PlayerLoop<API> {
             .api_client
             .get_now_playing(&self.channel_id, &player_time)
             .map_err(|error| PlayerLoopError::NowPlayingError(error))?;
-        self.current_title = Some(now_playing.title());
+        self.current_title = Some(now_playing.curr_title());
 
         self.running_time.reset();
         let transcoder = AudioTranscoder::create(
-            &now_playing.url(),
-            &now_playing.position(),
+            &now_playing.curr_url(),
+            &now_playing.curr_position(),
             &self.output_format,
         )
         .map_err(|error| PlayerLoopError::AudioTranscoderCreationError(error))?;
@@ -133,6 +134,10 @@ impl<API: NowPlayingAPIClient> PlayerLoop<API> {
         self.running_time.time()
     }
 
+    pub fn into_iter(self) -> PlayerLoopIter<C> {
+        PlayerLoopIter::new(self)
+    }
+
     /// Updates the PTS values of a set of audio packets using the running time.
     ///
     /// The PTS is used to synchronize the packets with the audio player's timeline.
@@ -152,32 +157,46 @@ impl<API: NowPlayingAPIClient> PlayerLoop<API> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{NowPlayingError, NowPlayingResponse, PlayerLoop, PlayerLoopError};
-    use myownradio_ffmpeg_utils::{OutputFormat, Packet};
+    use crate::PlayerLoopEvent::{Continue, TrackTitle};
+    use crate::{
+        NowPlayingError, NowPlayingResponse, PlayerLoop, PlayerLoopError, PlayerLoopEvent,
+        PlayerLoopIter, Title,
+    };
+    use myownradio_ffmpeg_utils::{OutputFormat, Packet, Timestamp};
     use std::sync::{Arc, Mutex};
     use std::time::{Duration, SystemTime};
-
-    static START_SEEK_TOLERANCE_MS: u128 = 250000;
 
     struct MockClientResponse {
         position: Duration,
     }
 
     impl NowPlayingResponse for MockClientResponse {
-        fn url(&self) -> String {
+        fn curr_url(&self) -> String {
             String::from("tests/fixtures/sample-6s.mp3")
         }
 
-        fn title(&self) -> String {
+        fn curr_title(&self) -> String {
             String::from("Sample Track")
         }
 
-        fn duration(&self) -> Duration {
+        fn curr_duration(&self) -> Duration {
             Duration::from_secs_f32(6.426122)
         }
 
-        fn position(&self) -> Duration {
+        fn curr_position(&self) -> Duration {
             self.position
+        }
+
+        fn next_url(&self) -> String {
+            String::from("tests/fixtures/sample-6s.mp3")
+        }
+
+        fn next_title(&self) -> String {
+            String::from("Sample Track")
+        }
+
+        fn next_duration(&self) -> Duration {
+            Duration::from_secs_f32(6.426122)
         }
     }
 
@@ -199,7 +218,7 @@ mod tests {
         }
     }
 
-    impl NowPlayingAPIClient for MockAPIClient {
+    impl NowPlayingClient for MockAPIClient {
         fn get_now_playing(
             &self,
             channel_id: &u32,

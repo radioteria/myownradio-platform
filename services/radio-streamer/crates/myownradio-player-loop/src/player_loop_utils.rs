@@ -32,16 +32,14 @@ pub enum PlayerLoopEvent {
     /// The title of the track has changed.
     TrackTitle(Title),
     /// A new audio packet has been received.
-    TrackPacket(Packet),
-    /// Indicates that the player loop requires more data to continue looping.
-    Continue,
+    TrackPackets(Vec<Packet>),
 }
 
 /// An iterator over the events that occur in the player loop.
 pub struct PlayerLoopIter<C: NowPlayingClient> {
     player_loop: PlayerLoop<C>,
     previous_title: Option<String>,
-    packets_queue: Vec<Packet>,
+    deferred_packets: Option<Vec<Packet>>,
 }
 
 impl<C: NowPlayingClient> PlayerLoopIter<C> {
@@ -49,7 +47,7 @@ impl<C: NowPlayingClient> PlayerLoopIter<C> {
         Self {
             player_loop,
             previous_title: None,
-            packets_queue: vec![],
+            deferred_packets: None,
         }
     }
 }
@@ -57,24 +55,44 @@ impl<C: NowPlayingClient> PlayerLoopIter<C> {
 impl<C: NowPlayingClient> Iterator for PlayerLoopIter<C> {
     type Item = Result<PlayerLoopEvent, PlayerLoopError>;
 
-    /// Advances the iterator and returns the next event, if any.
+    /// Advances the iterator and returns the next `PlayerLoopEvent`, if any.
     ///
-    /// If the title of the track has changed since the last iteration, this method
-    /// returns a `TrackTitle` event with the new title and its PTS. Otherwise, if there
-    /// are packets in the packets queue, this method returns a `TrackPacket` event with
-    /// the next packet from the queue. If there are no more packets in the queue and the
-    /// end of the stream has been reached, this method returns `None`.
+    /// This method behaves as follows:
+    /// * If there are deferred packets available, it returns a `PlayerLoopEvent::TrackPackets` event
+    ///   containing the packets.
+    /// * If there are no deferred packets but there are new packets available from the player loop,
+    ///   it checks whether the title of the track has changed since the last iteration.
+    ///   - If the title has changed, it returns a `PlayerLoopEvent::TrackTitle` event with the new
+    ///     title and its running time, and stores the new packets as deferred packets for the next
+    ///     iteration.
+    ///   - If the title hasn't changed, it returns a `PlayerLoopEvent::TrackPackets` event containing
+    ///     the new packets.
+    /// * If there are no new packets, it returns `None`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use myownradio_player_loop::{NowPlayingClient, PlayerLoopEvent, PlayerLoopIter};
+    ///
+    /// fn process_events<C: NowPlayingClient>(iter: &mut PlayerLoopIter<C>) {
+    ///     while let Some(event) = iter.next() {
+    ///         match event {
+    ///             Ok(PlayerLoopEvent::TrackTitle(title)) => println!("New track: {:?}", title),
+    ///             Ok(PlayerLoopEvent::TrackPackets(packets)) => println!("Received packets: {:?}", packets),
+    ///             Err(error) => println!("Error: {:?}", error),
+    ///         }
+    ///     }
+    /// }
     /// ```
     fn next(&mut self) -> Option<Self::Item> {
-        if self.packets_queue.is_empty() {
-            trace!("Packets queue is empty: receiving next audio packets");
-            match self.player_loop.receive_next_audio_packets() {
-                Ok(packets) => {
-                    self.packets_queue = packets;
-                }
-                Err(error) => return Some(Err(error)),
-            }
+        if let Some(packets) = self.deferred_packets.take() {
+            return Some(Ok(PlayerLoopEvent::TrackPackets(packets)));
         }
+
+        let packets = match self.player_loop.receive_next_audio_packets() {
+            Ok(packets) => packets,
+            Err(error) => return Some(Err(error)),
+        };
 
         let curr_title = self.player_loop.current_title();
         let prev_title = self.previous_title.as_ref();
@@ -84,22 +102,14 @@ impl<C: NowPlayingClient> Iterator for PlayerLoopIter<C> {
 
             let running_time = (*self.player_loop.current_running_time()).into();
 
-            trace!("Current title has ben changed: emitting TrackTitle event");
+            self.deferred_packets.replace(packets);
+
             return Some(Ok(PlayerLoopEvent::TrackTitle(Title {
                 pts: running_time,
                 title: curr_title.cloned().unwrap(),
             })));
         }
 
-        Some(Ok(match self.packets_queue.pop() {
-            Some(packet) => {
-                trace!("Received next packet: emitting TrackPacket event");
-                PlayerLoopEvent::TrackPacket(packet)
-            }
-            None => {
-                trace!("No packets received: emitting Continue event");
-                PlayerLoopEvent::Continue
-            }
-        }))
+        Some(Ok(PlayerLoopEvent::TrackPackets(packets)))
     }
 }

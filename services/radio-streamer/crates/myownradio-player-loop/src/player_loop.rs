@@ -6,10 +6,8 @@ use myownradio_ffmpeg_utils::{
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
 
-/// Defines an error that occurred while fetching now playing information.
 pub trait NowPlayingError: Debug {}
 
-/// Defines the response of the now playing API.
 pub trait NowPlayingResponse {
     fn curr_url(&self) -> String;
     fn curr_title(&self) -> String;
@@ -20,7 +18,6 @@ pub trait NowPlayingResponse {
     fn next_duration(&self) -> Duration;
 }
 
-/// Defines the interface for the now playing API client.
 pub trait NowPlayingClient {
     fn get_now_playing(
         &self,
@@ -29,7 +26,6 @@ pub trait NowPlayingClient {
     ) -> Result<Box<dyn NowPlayingResponse>, Box<dyn NowPlayingError>>;
 }
 
-/// Defines the possible errors that can occur during player loop operations.
 #[derive(Debug)]
 pub enum PlayerLoopError {
     NowPlayingError(Box<dyn NowPlayingError>),
@@ -37,7 +33,6 @@ pub enum PlayerLoopError {
     TranscodeError(TranscodeError),
 }
 
-/// Implements the main player loop functionality.
 pub struct PlayerLoop<C: NowPlayingClient> {
     channel_id: u32,
     api_client: C,
@@ -49,7 +44,6 @@ pub struct PlayerLoop<C: NowPlayingClient> {
 }
 
 impl<C: NowPlayingClient> PlayerLoop<C> {
-    /// Creates a new instance of the `PlayerLoop` struct.
     pub fn create(
         channel_id: u32,
         api_client: C,
@@ -134,6 +128,10 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
         self.running_time.time()
     }
 
+    /// Converts the `PlayerLoop` instance into an iterator that yields `PlayerLoopEvent`s.
+    ///
+    /// The iterator allows processing events from the player loop, such as track title changes
+    /// and received audio packets.
     pub fn into_iter(self) -> PlayerLoopIter<C> {
         PlayerLoopIter::new(self)
     }
@@ -157,7 +155,6 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::PlayerLoopEvent::{Continue, TrackTitle};
     use crate::{
         NowPlayingError, NowPlayingResponse, PlayerLoop, PlayerLoopError, PlayerLoopEvent,
         PlayerLoopIter, Title,

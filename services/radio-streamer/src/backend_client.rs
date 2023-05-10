@@ -1,10 +1,11 @@
 extern crate serde_millis;
 
-use actix_web::http::StatusCode;
-use awc::Client;
+use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use slog::{error, Logger};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
 
 #[derive(Deserialize, Debug, Serialize)]
 pub struct CurrentTrack {
@@ -86,7 +87,10 @@ impl BackendClient {
         channel_id: &usize,
         time: &SystemTime,
     ) -> Result<NowPlaying, MorBackendClientError> {
-        let client = Client::default();
+        let client = reqwest::Client::builder()
+            .timeout(REQUEST_TIMEOUT)
+            .build()
+            .expect("Unable to initialize HTTP client");
 
         let unix_time = time.duration_since(UNIX_EPOCH).unwrap().as_millis();
 
@@ -95,7 +99,7 @@ impl BackendClient {
             &self.mor_backend_url, channel_id, &unix_time,
         );
 
-        let mut response = match client.get(url).timeout(Duration::from_secs(5)).send().await {
+        let response = match client.get(url).send().await {
             Ok(response) => response,
             Err(error) => {
                 error!(self.logger, "Unable to send request"; "error" => ?error);
@@ -104,7 +108,7 @@ impl BackendClient {
         };
 
         let body = match response.status() {
-            StatusCode::OK => response.body().await,
+            StatusCode::OK => response.bytes().await,
             StatusCode::NOT_FOUND => return Err(MorBackendClientError::ChannelNotFound),
             status_code => {
                 error!(self.logger, "Unexpected status code"; "status_code" => ?status_code);
@@ -145,7 +149,10 @@ impl BackendClient {
         channel_id: &usize,
         client_id: Option<String>,
     ) -> Result<ChannelInfo, MorBackendClientError> {
-        let client = Client::default();
+        let client = reqwest::Client::builder()
+            .timeout(REQUEST_TIMEOUT)
+            .build()
+            .expect("Unable to initialize HTTP client");
 
         let url = format!(
             "{}/pub/v0/streams/{}/info?client_id={}",
@@ -154,7 +161,7 @@ impl BackendClient {
             &client_id.unwrap_or_default(),
         );
 
-        let mut response = match client.get(url).timeout(Duration::from_secs(5)).send().await {
+        let response = match client.get(url).timeout(Duration::from_secs(5)).send().await {
             Ok(response) => response,
             Err(error) => {
                 error!(self.logger, "Unable to send request"; "error" => ?error);
@@ -163,7 +170,7 @@ impl BackendClient {
         };
 
         let body = match response.status() {
-            StatusCode::OK => response.body().await,
+            StatusCode::OK => response.bytes().await,
             status_code => {
                 error!(self.logger, "Unexpected status code"; "status_code" => ?status_code);
                 return Err(MorBackendClientError::UnexpectedStatusCode);

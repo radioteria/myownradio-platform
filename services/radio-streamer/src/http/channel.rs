@@ -1,6 +1,6 @@
 use super::utils::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
-use crate::audio_formats::AudioFormats;
-use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
+use crate::audio_formats::{AudioFormat, AudioFormats};
+use crate::backend_client::{BackendClient, GetChannelInfoError, GetNowPlayingError, NowPlaying};
 use crate::config::Config;
 use crate::stream::{StreamCreateError, StreamMessage, StreamsRegistry, StreamsRegistryExt};
 use actix_web::web::{Bytes, Data, Query};
@@ -8,6 +8,7 @@ use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use futures::channel::mpsc;
 use futures::executor::{block_on, LocalSpawner};
 use futures::StreamExt;
+use myownradio_ffmpeg_utils::OutputFormat;
 use myownradio_player_loop::{NowPlayingClient, NowPlayingError, NowPlayingResponse, PlayerLoop};
 use serde::Deserialize;
 use slog::{debug, error, warn, Logger};
@@ -200,7 +201,7 @@ impl NowPlayingResponse for NowPlaying {
     }
 }
 
-impl NowPlayingError for MorBackendClientError {}
+impl NowPlayingError for GetNowPlayingError {}
 
 impl NowPlayingClient for BackendClient {
     fn get_now_playing(
@@ -208,14 +209,33 @@ impl NowPlayingClient for BackendClient {
         channel_id: &u32,
         time: &SystemTime,
     ) -> Result<Box<dyn NowPlayingResponse>, Box<dyn NowPlayingError>> {
-        let channel_id = *channel_id as usize;
-        let mut lp = futures::executor::LocalPool::new();
+        // let channel_id = *channel_id as usize;
+        // let mut lp = futures::executor::LocalPool::new();
+        //
+        // let future = BackendClient::get_now_playing(self, &channel_id, time);
+        //
+        // lp.run_until(future)
+        //     .map(|now| Box::new(now) as Box<dyn NowPlayingResponse>)
+        //     .map_err(|err| Box::new(err) as Box<dyn NowPlayingError>)
+        todo!()
+    }
+}
 
-        let future = BackendClient::get_now_playing(self, &channel_id, time);
+const SAMPLING_RATE: u32 = 48_000;
 
-        lp.run_until(future)
-            .map(|now| Box::new(now) as Box<dyn NowPlayingResponse>)
-            .map_err(|err| Box::new(err) as Box<dyn NowPlayingError>)
+impl Into<OutputFormat> for AudioFormat {
+    fn into(self) -> OutputFormat {
+        match self.codec {
+            "libmp3lame" => OutputFormat::MP3 {
+                bit_rate: (self.bitrate as usize) * 1000,
+                sampling_rate: SAMPLING_RATE,
+            },
+            "libfdk_aac" => OutputFormat::AAC {
+                bit_rate: (self.bitrate as usize) * 1000,
+                sampling_rate: SAMPLING_RATE,
+            },
+            _ => todo!(),
+        }
     }
 }
 
@@ -227,6 +247,8 @@ pub(crate) async fn get_channel_audio_stream_v3(
     logger: Data<Arc<Logger>>,
     client: Data<Arc<BackendClient>>,
 ) -> impl Responder {
+    todo!();
+
     let channel_id = channel_id.into_inner();
     let format = query_params
         .into_inner()

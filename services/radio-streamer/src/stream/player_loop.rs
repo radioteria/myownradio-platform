@@ -1,4 +1,4 @@
-use crate::backend_client::{BackendClient, MorBackendClientError, NowPlaying};
+use crate::backend_client::{BackendClient, GetChannelInfoError, GetNowPlayingError, NowPlaying};
 use crate::metrics::Metrics;
 use crate::stream::constants::REALTIME_STARTUP_BUFFER_TIME;
 use crate::stream::types::{Buffer, TrackTitle};
@@ -30,7 +30,9 @@ pub(crate) enum PlayerLoopMessage {
 #[derive(thiserror::Error, Debug)]
 pub(crate) enum PlayerLoopError {
     #[error(transparent)]
-    BackendError(#[from] MorBackendClientError),
+    GetChannelInfoError(#[from] GetChannelInfoError),
+    #[error(transparent)]
+    GetNowPlayingError(#[from] GetNowPlayingError),
     #[error(transparent)]
     DecoderError(#[from] AudioDecoderError),
     #[error(transparent)]
@@ -200,7 +202,8 @@ pub(crate) fn make_player_loop(
         )
         .await
         {
-            Ok(_) | Err(PlayerLoopError::BackendError(MorBackendClientError::ChannelNotFound)) => {
+            Ok(_)
+            | Err(PlayerLoopError::GetChannelInfoError(GetChannelInfoError::ChannelNotFound(_))) => {
                 let _ = player_loop_msg_sender.send(PlayerLoopMessage::EOF).await;
             }
             Err(error) => {

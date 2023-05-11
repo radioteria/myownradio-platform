@@ -1338,6 +1338,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "myownradio-player-loop"
+version = "0.1.0"
+dependencies = [
+ "myownradio-ffmpeg-utils",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "native-tls"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1353,15 +1362,6 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "tempfile",
-]
-
-[[package]]
-name = "myownradio-player-loop"
-version = "0.1.0"
-dependencies = [
- "myownradio-ffmpeg-utils",
- "thiserror",
- "tracing",
 ]
 
 [[package]]
@@ -1621,6 +1621,7 @@ dependencies = [
  "lazy_static",
  "md5",
  "myownradio-ffmpeg-utils",
+ "myownradio-player-loop",
  "prometheus",
  "regex",
  "reqwest",

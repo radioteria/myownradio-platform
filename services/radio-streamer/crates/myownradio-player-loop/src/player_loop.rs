@@ -6,7 +6,7 @@ use myownradio_ffmpeg_utils::{
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
 
-pub trait NowPlayingError: Debug {}
+pub trait NowPlayingError: Debug + Send {}
 
 pub trait NowPlayingResponse {
     fn curr_url(&self) -> String;

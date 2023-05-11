@@ -256,13 +256,20 @@ pub(crate) async fn get_channel_audio_stream_v3(
         .format
         .and_then(|format| AudioFormats::from_string(&format))
         .unwrap_or_default();
+    let is_icy_enabled = request
+        .headers()
+        .get("icy-metadata")
+        .filter(|v| v.to_str().unwrap() == "1")
+        .is_some();
     let initial_time = SystemTime::now() - START_BUFFER_TIME;
     let content_type = format.content_type;
 
     let (response_sender, response_receiver) = mpsc::channel(512);
+    let icy_muxer = Arc::new(IcyMuxer::new());
 
     std::thread::spawn({
         let mut response_sender = response_sender;
+        let icy_muxer = icy_muxer.clone();
 
         move || {
             let result = PlayerLoop::create(
@@ -279,7 +286,16 @@ pub(crate) async fn get_channel_audio_stream_v3(
                 }
             };
 
+            let mut previous_title = String::new();
+
             while let Ok(packets) = player_loop.receive_next_audio_packets() {
+                if let Some(title) = player_loop.current_title().cloned() {
+                    if title != previous_title {
+                        icy_muxer.send_track_title(title.clone());
+                        previous_title = title;
+                    }
+                }
+
                 for packet in packets {
                     let bytes = Bytes::copy_from_slice(&packet.data());
                     match response_sender.try_send(bytes) {
@@ -310,10 +326,22 @@ pub(crate) async fn get_channel_audio_stream_v3(
         }
     });
 
-    {
-        let mut response = HttpResponse::Ok();
+    let mut response = HttpResponse::Ok();
 
-        response.content_type(content_type).force_close();
+    response.content_type(content_type).force_close();
+
+    if is_icy_enabled {
+        response
+            .insert_header(("icy-metadata", "1"))
+            .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)));
+        // .insert_header(("icy-name", "todo"));
+
+        response.streaming::<_, actix_web::Error>(
+            response_receiver
+                .map(move |bytes| icy_muxer.handle_bytes(bytes))
+                .map(Ok),
+        )
+    } else {
         response.streaming::<_, actix_web::Error>(response_receiver.map(Ok))
     }
 }

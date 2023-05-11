@@ -1316,6 +1316,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "myownradio-channel-utils"
+version = "0.1.0"
+dependencies = [
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "myownradio-ffmpeg-utils"
 version = "0.1.0"
 dependencies = [

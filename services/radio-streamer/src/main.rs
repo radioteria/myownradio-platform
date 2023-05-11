@@ -17,7 +17,8 @@ use tracing::{error, info};
 use crate::backend_client::BackendClient;
 use crate::config::{Config, LogFormat};
 use crate::http::channel::{
-    get_active_channel_ids, get_channel_audio_stream_v2, restart_channel_by_id_v2,
+    get_active_channel_ids, get_channel_audio_stream_v2, get_channel_audio_stream_v3,
+    restart_channel_by_id_v2,
 };
 use crate::http::metrics::get_metrics;
 use crate::metrics::Metrics;
@@ -123,6 +124,7 @@ async fn main() -> Result<()> {
                 .app_data(Data::new(metrics.clone()))
                 .app_data(Data::new(streams_registry.clone()))
                 .service(get_channel_audio_stream_v2)
+                .service(get_channel_audio_stream_v3)
                 .service(restart_channel_by_id_v2)
                 .service(get_active_channel_ids)
                 .service(get_metrics)

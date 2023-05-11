@@ -11,7 +11,7 @@ use futures::StreamExt;
 use myownradio_ffmpeg_utils::OutputFormat;
 use myownradio_player_loop::{NowPlayingClient, NowPlayingError, NowPlayingResponse, PlayerLoop};
 use serde::Deserialize;
-use slog::{debug, error, warn, Logger};
+use slog::{debug, error, warn, Drain, Logger};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
@@ -209,15 +209,16 @@ impl NowPlayingClient for BackendClient {
         channel_id: &u32,
         time: &SystemTime,
     ) -> Result<Box<dyn NowPlayingResponse>, Box<dyn NowPlayingError>> {
-        // let channel_id = *channel_id as usize;
-        // let mut lp = futures::executor::LocalPool::new();
-        //
-        // let future = BackendClient::get_now_playing(self, &channel_id, time);
-        //
-        // lp.run_until(future)
-        //     .map(|now| Box::new(now) as Box<dyn NowPlayingResponse>)
-        //     .map_err(|err| Box::new(err) as Box<dyn NowPlayingError>)
-        todo!()
+        let runtime = actix_rt::Runtime::new().expect("Unable to create Runtime");
+
+        let channel_id = *channel_id as usize;
+
+        let future = BackendClient::get_now_playing(self, &channel_id, time);
+
+        runtime
+            .block_on(future)
+            .map(|value| Box::new(value) as Box<dyn NowPlayingResponse>)
+            .map_err(|error| Box::new(error) as Box<dyn NowPlayingError>)
     }
 }
 
@@ -247,8 +248,6 @@ pub(crate) async fn get_channel_audio_stream_v3(
     logger: Data<Arc<Logger>>,
     client: Data<Arc<BackendClient>>,
 ) -> impl Responder {
-    todo!();
-
     let channel_id = channel_id.into_inner();
     let format = query_params
         .into_inner()
@@ -258,44 +257,33 @@ pub(crate) async fn get_channel_audio_stream_v3(
     let initial_time = SystemTime::now();
     let content_type = format.content_type;
 
-    let result = PlayerLoop::create(
-        channel_id,
-        BackendClient::clone(&client),
-        format.into(),
-        initial_time,
-    );
-
-    let player_loop = Arc::new(Mutex::new(match result {
-        Ok(player_loop) => player_loop,
-        Err(error) => {
-            error!(logger, "Unable to create player loop"; "error" => ?error);
-            return HttpResponse::ServiceUnavailable().finish();
-        }
-    }));
-
     let (response_sender, response_receiver) = mpsc::channel(512);
 
-    actix_rt::spawn({
-        let player_loop = player_loop;
+    std::thread::spawn({
         let mut response_sender = response_sender;
 
-        async move {
-            while let Ok(packets) = actix_rt::task::spawn_blocking({
-                let player_loop = player_loop.clone();
+        move || {
+            let result = PlayerLoop::create(
+                channel_id,
+                BackendClient::clone(&client),
+                format.into(),
+                initial_time.clone(),
+            );
 
-                move || player_loop.lock().unwrap().receive_next_audio_packets()
-            })
-            .await
-            .unwrap()
-            {
-                eprintln!("next");
+            let mut player_loop = match result {
+                Ok(player_loop) => player_loop,
+                Err(error) => {
+                    return;
+                }
+            };
 
+            while let Ok(packets) = player_loop.receive_next_audio_packets() {
                 for packet in packets {
                     let bytes = Bytes::copy_from_slice(&packet.data());
-                    match response_sender.try_send(Ok(bytes)) {
+                    match response_sender.try_send(bytes) {
                         Err(error) if error.is_disconnected() => {
                             // Disconnected: drop the receiver
-                            break;
+                            return;
                         }
                         Err(error) if error.is_full() => {
                             // Buffer is full: skip the remaining bytes
@@ -303,9 +291,17 @@ pub(crate) async fn get_channel_audio_stream_v3(
                         Err(error) => {
                             warn!(logger, "Unable to send bytes to the client"; "error" => ?error);
                             // Unexpected error: drop the receiver
-                            break;
+                            return;
                         }
                         Ok(_) => (),
+                    }
+
+                    let sleep_dur = (initial_time + packet.pts_as_duration())
+                        .duration_since(SystemTime::now())
+                        .ok();
+
+                    if let Some(dur) = sleep_dur {
+                        std::thread::sleep(dur);
                     }
                 }
             }
@@ -316,6 +312,6 @@ pub(crate) async fn get_channel_audio_stream_v3(
         let mut response = HttpResponse::Ok();
 
         response.content_type(content_type).force_close();
-        response.streaming::<_, actix_web::Error>(response_receiver)
+        response.streaming::<_, actix_web::Error>(response_receiver.map(Ok))
     }
 }

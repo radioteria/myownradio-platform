@@ -240,6 +240,8 @@ impl Into<OutputFormat> for AudioFormat {
     }
 }
 
+const START_BUFFER_TIME: Duration = Duration::from_millis(2500);
+
 #[get("/v3/listen/{channel_id}")]
 pub(crate) async fn get_channel_audio_stream_v3(
     request: HttpRequest,
@@ -254,7 +256,7 @@ pub(crate) async fn get_channel_audio_stream_v3(
         .format
         .and_then(|format| AudioFormats::from_string(&format))
         .unwrap_or_default();
-    let initial_time = SystemTime::now();
+    let initial_time = SystemTime::now() - START_BUFFER_TIME;
     let content_type = format.content_type;
 
     let (response_sender, response_receiver) = mpsc::channel(512);

@@ -1,6 +1,6 @@
 use super::streams_registry::StreamsRegistry;
 use crate::audio_formats::AudioFormat;
-use crate::backend_client::{BackendClient, ChannelInfo, MorBackendClientError};
+use crate::backend_client::{BackendClient, ChannelInfo, GetChannelInfoError};
 use crate::metrics::Metrics;
 use crate::stream::constants::REALTIME_STARTUP_BUFFER_TIME;
 use crate::stream::player_loop::{make_player_loop, PlayerLoopMessage};
@@ -49,7 +49,7 @@ pub(crate) enum StreamCreateError {
     #[error("Channel not found")]
     ChannelNotFound,
     #[error(transparent)]
-    BackendError(#[from] MorBackendClientError),
+    GetChannelInfoError(#[from] GetChannelInfoError),
 }
 
 #[derive(Debug)]
@@ -90,11 +90,11 @@ impl Stream {
 
         let channel_info = match backend_client.get_channel_info(&channel_id, None).await {
             Ok(channel_info) => channel_info,
-            Err(MorBackendClientError::ChannelNotFound) => {
+            Err(GetChannelInfoError::ChannelNotFound(_)) => {
                 return Err(StreamCreateError::ChannelNotFound);
             }
             Err(error) => {
-                return Err(StreamCreateError::BackendError(error));
+                return Err(StreamCreateError::GetChannelInfoError(error));
             }
         };
 

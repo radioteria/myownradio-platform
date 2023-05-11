@@ -1316,6 +1316,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "myownradio-channel-utils"
+version = "0.1.0"
+dependencies = [
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "myownradio-ffmpeg-utils"
 version = "0.1.0"
 dependencies = [
@@ -1327,6 +1335,15 @@ dependencies = [
  "thiserror",
  "tracing",
  "tracing-test",
+]
+
+[[package]]
+name = "myownradio-player-loop"
+version = "0.1.0"
+dependencies = [
+ "myownradio-ffmpeg-utils",
+ "thiserror",
+ "tracing",
 ]
 
 [[package]]
@@ -1604,6 +1621,7 @@ dependencies = [
  "lazy_static",
  "md5",
  "myownradio-ffmpeg-utils",
+ "myownradio-player-loop",
  "prometheus",
  "regex",
  "reqwest",

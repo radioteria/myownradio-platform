@@ -33,7 +33,7 @@ pub struct NowPlaying {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct NowPlayingResponse {
+pub struct GetNowPlayingResponse {
     pub code: u8,
     pub message: String,
     pub data: NowPlaying,
@@ -46,7 +46,7 @@ pub struct ChannelInfo {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct ChannelInfoResponse {
+pub struct GetChannelInfoResponse {
     pub code: u8,
     pub message: String,
     pub data: Option<ChannelInfo>,
@@ -59,19 +59,23 @@ pub struct BackendClient {
 }
 
 #[derive(thiserror::Error, Debug)]
-pub enum MorBackendClientError {
-    #[error("Send request error")]
-    SendRequestError,
-    #[error("Unexpected status code")]
-    UnexpectedStatusCode,
-    #[error("Response read error")]
-    ResponseReadError,
-    #[error("Response parse error")]
-    ResponseParseError,
-    #[error("Unexpected response")]
-    UnexpectedResponse,
-    #[error("Channel not found")]
-    ChannelNotFound,
+pub enum GetNowPlayingError {
+    #[error(transparent)]
+    RequestError(#[from] reqwest::Error),
+    #[error("Channel {0} not found")]
+    ChannelNotFound(usize),
+    #[error("Unexpected response: {0:?}")]
+    UnexpectedResponse(GetNowPlayingResponse),
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum GetChannelInfoError {
+    #[error(transparent)]
+    RequestError(#[from] reqwest::Error),
+    #[error("Channel {0} not found")]
+    ChannelNotFound(usize),
+    #[error("Unexpected response: {0:?}")]
+    UnexpectedResponse(GetChannelInfoResponse),
 }
 
 impl BackendClient {
@@ -86,7 +90,7 @@ impl BackendClient {
         &self,
         channel_id: &usize,
         time: &SystemTime,
-    ) -> Result<NowPlaying, MorBackendClientError> {
+    ) -> Result<NowPlaying, GetNowPlayingError> {
         let client = reqwest::Client::builder()
             .timeout(REQUEST_TIMEOUT)
             .build()
@@ -99,48 +103,28 @@ impl BackendClient {
             &self.mor_backend_url, channel_id, &unix_time,
         );
 
-        let response = match client.get(url).send().await {
-            Ok(response) => response,
-            Err(error) => {
-                error!(self.logger, "Unable to send request"; "error" => ?error);
-                return Err(MorBackendClientError::SendRequestError);
-            }
-        };
+        let response: GetNowPlayingResponse = client
+            .get(url)
+            .send()
+            .await?
+            .error_for_status()
+            .map_err(|error| {
+                if matches!(error.status(), Some(StatusCode::NOT_FOUND)) {
+                    GetNowPlayingError::ChannelNotFound(*channel_id)
+                } else {
+                    error.into()
+                }
+            })?
+            .json()
+            .await?;
 
-        let body = match response.status() {
-            StatusCode::OK => response.bytes().await,
-            StatusCode::NOT_FOUND => return Err(MorBackendClientError::ChannelNotFound),
-            status_code => {
-                error!(self.logger, "Unexpected status code"; "status_code" => ?status_code);
-                return Err(MorBackendClientError::UnexpectedStatusCode);
-            }
-        };
-
-        let bytes = match body {
-            Ok(bytes) => bytes,
-            Err(error) => {
-                error!(self.logger, "Unable to read response"; "error" => ?error);
-                return Err(MorBackendClientError::ResponseReadError);
-            }
-        };
-
-        match serde_json::from_slice::<NowPlayingResponse>(&bytes) {
-            Ok(NowPlayingResponse {
+        match response {
+            GetNowPlayingResponse {
                 code,
                 message,
                 data,
-            }) if (code == 1 && message == "OK") => Ok(data),
-            Ok(NowPlayingResponse { .. }) => {
-                error!(
-                    self.logger,
-                    "Response has unexpected code or message"; "response" => ?bytes
-                );
-                Err(MorBackendClientError::UnexpectedResponse)
-            }
-            Err(error) => {
-                error!(self.logger, "Unable to parse response"; "error" => ?error);
-                Err(MorBackendClientError::ResponseParseError)
-            }
+            } if (code == 1 && message == "OK") => Ok(data),
+            GetNowPlayingResponse { .. } => Err(GetNowPlayingError::UnexpectedResponse(response)),
         }
     }
 
@@ -148,7 +132,7 @@ impl BackendClient {
         &self,
         channel_id: &usize,
         client_id: Option<String>,
-    ) -> Result<ChannelInfo, MorBackendClientError> {
+    ) -> Result<ChannelInfo, GetChannelInfoError> {
         let client = reqwest::Client::builder()
             .timeout(REQUEST_TIMEOUT)
             .build()
@@ -161,54 +145,36 @@ impl BackendClient {
             &client_id.unwrap_or_default(),
         );
 
-        let response = match client.get(url).timeout(Duration::from_secs(5)).send().await {
-            Ok(response) => response,
-            Err(error) => {
-                error!(self.logger, "Unable to send request"; "error" => ?error);
-                return Err(MorBackendClientError::SendRequestError);
-            }
-        };
+        let response: GetChannelInfoResponse = client
+            .get(url)
+            .timeout(Duration::from_secs(5))
+            .send()
+            .await?
+            .error_for_status()
+            .map_err(|error| {
+                if matches!(error.status(), Some(StatusCode::NOT_FOUND)) {
+                    GetChannelInfoError::ChannelNotFound(*channel_id)
+                } else {
+                    error.into()
+                }
+            })?
+            .json()
+            .await?;
 
-        let body = match response.status() {
-            StatusCode::OK => response.bytes().await,
-            status_code => {
-                error!(self.logger, "Unexpected status code"; "status_code" => ?status_code);
-                return Err(MorBackendClientError::UnexpectedStatusCode);
-            }
-        };
-
-        let bytes = match body {
-            Ok(bytes) => bytes,
-            Err(error) => {
-                error!(self.logger, "Unable to read response"; "error" => ?error);
-                return Err(MorBackendClientError::ResponseReadError);
-            }
-        };
-
-        match serde_json::from_slice::<ChannelInfoResponse>(&bytes) {
-            Ok(ChannelInfoResponse {
+        match response {
+            GetChannelInfoResponse {
                 code,
                 message,
                 data: None,
-            }) if (code == 0 && message == "Stream not found") => {
-                return Err(MorBackendClientError::ChannelNotFound);
+            } if (code == 0 && message == "Stream not found") => {
+                return Err(GetChannelInfoError::ChannelNotFound(*channel_id));
             }
-            Ok(ChannelInfoResponse {
+            GetChannelInfoResponse {
                 code,
                 message,
                 data: Some(data),
-            }) if (code == 1 && message == "OK") => Ok(data),
-            Ok(ChannelInfoResponse { .. }) => {
-                error!(
-                    self.logger,
-                    "Response has unexpected code or message"; "response" => ?bytes
-                );
-                Err(MorBackendClientError::UnexpectedResponse)
-            }
-            Err(error) => {
-                error!(self.logger, "Unable to parse response"; "error" => ?error);
-                Err(MorBackendClientError::ResponseParseError)
-            }
+            } if (code == 1 && message == "OK") => Ok(data),
+            GetChannelInfoResponse { .. } => Err(GetChannelInfoError::UnexpectedResponse(response)),
         }
     }
 }

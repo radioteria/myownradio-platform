@@ -1,5 +1,4 @@
 use crate::running_time::RunningTime;
-use crate::PlayerLoopIter;
 use myownradio_ffmpeg_utils::{
     AudioTranscoder, AudioTranscoderCreationError, OutputFormat, Packet, TranscodeError,
 };
@@ -75,35 +74,31 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
     ///
     /// If a transcoder is currently active but has run out of packets, it is closed and
     /// the loop will move on to the next track.
+    ///
+    /// # Returns
+    ///
+    /// Returns a `Result` containing the vector of received packets or an error.
     pub fn receive_next_audio_packets(&mut self) -> Result<Vec<Packet>, PlayerLoopError> {
         if let Some(transcoder) = &mut self.transcoder {
-            match transcoder
-                .receive_next_transcoded_packets()
-                .map_err(|error| PlayerLoopError::TranscodeError(error))?
-            {
-                Some(mut packets) => {
+            match transcoder.receive_next_transcoded_packets() {
+                Ok(Some(mut packets)) => {
                     self.update_packets_pts(&mut packets);
-                    // The duration of the last processed packet is used to update the running time
-                    // according to the end time of the final packet received from the transcoder.
-                    if let Some(packet) = packets.last() {
-                        self.last_packet_duration.replace(packet.duration().into());
-                    }
+                    self.update_last_packet_duration(packets.last());
+
                     return Ok(packets);
                 }
-                None => {
+                Ok(None) => {
                     // If the current transcoder has no more packets, close it and
                     // prepare to fetch the next track.
                     self.transcoder.take();
                 }
+                Err(error) => {
+                    return Err(PlayerLoopError::TranscodeError(error));
+                }
             }
         }
 
-        // To be more accurate on running time estimation, we advance running time
-        // for the length of last packet received from transcoder before calling api client
-        // to provide next track for playback.
-        while let Some(duration) = self.last_packet_duration.take() {
-            self.running_time.advance_by_duration(&duration);
-        }
+        self.advance_by_last_packet_duration();
 
         // If there is no current transcoder, fetch now playing information
         // for the current channel and create a new transcoder for the new
@@ -143,14 +138,6 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
         self.running_time.time()
     }
 
-    /// Converts the `PlayerLoop` instance into an iterator that yields `PlayerLoopEvent`s.
-    ///
-    /// The iterator allows processing events from the player loop, such as track title changes
-    /// and received audio packets.
-    pub fn into_iter(self) -> PlayerLoopIter<C> {
-        PlayerLoopIter::new(self)
-    }
-
     /// Updates the PTS values of a set of audio packets using the running time.
     ///
     /// The PTS is used to synchronize the packets with the audio player's timeline.
@@ -164,6 +151,25 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
                 .advance_by_next_pts(&packet.pts_as_duration());
             // Update the PTS value of the packet based on the running time.
             packet.set_pts((*self.running_time.time()).into())
+        }
+    }
+
+    /// Updates the duration of the last processed packet.
+    ///
+    /// The `packet` parameter represents the optional reference to the last processed packet.
+    /// The function extracts the duration from the packet and updates the duration
+    /// of the last processed packet in the internal state.
+    fn update_last_packet_duration(&mut self, packet: Option<&Packet>) {
+        if let Some(packet) = packet {
+            // Extract the duration from the packet and update the duration of the last processed packet.
+            self.last_packet_duration.replace(packet.duration().into());
+        }
+    }
+
+    /// Advances the running time based on the duration of the last processed packet.
+    fn advance_by_last_packet_duration(&mut self) {
+        if let Some(duration) = self.last_packet_duration.take() {
+            self.running_time.advance_by_duration(&duration);
         }
     }
 }

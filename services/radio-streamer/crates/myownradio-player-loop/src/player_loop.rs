@@ -100,7 +100,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
             .map_err(|error| PlayerLoopError::NowPlayingError(error))?;
         self.current_title = Some(now_playing.curr_title());
 
-        self.running_time.reset();
+        self.running_time.reset_pts();
         let transcoder = AudioTranscoder::create(
             &now_playing.curr_url(),
             &now_playing.curr_position(),
@@ -114,7 +114,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
 
     /// Restarts the player loop by resetting the running time and clearing the transcoder.
     pub fn restart(&mut self) {
-        self.running_time.reset();
+        self.running_time.reset_pts();
         self.transcoder.take();
     }
 
@@ -145,7 +145,8 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
     fn update_packets_pts(&mut self, packets: &mut Vec<Packet>) {
         for packet in packets {
             // Update the running time based on the PTS value of the current packet.
-            self.running_time.advance(&packet.pts_as_duration());
+            self.running_time
+                .advance_by_next_pts(&packet.pts_as_duration());
             // Update the PTS value of the packet based on the running time.
             packet.set_pts((*self.running_time.time()).into())
         }

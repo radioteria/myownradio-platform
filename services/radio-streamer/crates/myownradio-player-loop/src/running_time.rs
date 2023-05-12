@@ -32,7 +32,7 @@ impl RunningTime {
     ///
     /// If `next_pts` is less than or equal to the previous timestamp value,
     /// a warning will be logged to help diagnose issues with the incoming frames.
-    pub(crate) fn advance(&mut self, next_pts: &Duration) {
+    pub(crate) fn advance_by_next_pts(&mut self, next_pts: &Duration) {
         if let Some(prev_pts) = &self.previous_pts {
             if prev_pts >= next_pts {
                 warn!(
@@ -52,7 +52,7 @@ impl RunningTime {
     ///
     /// This method should be called if the next incoming frame is expected
     /// to have a timestamp value of `Duration::ZERO`.
-    pub(crate) fn reset(&mut self) {
+    pub(crate) fn reset_pts(&mut self) {
         self.previous_pts = None;
     }
 }

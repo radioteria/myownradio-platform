@@ -41,6 +41,7 @@ pub struct PlayerLoop<C: NowPlayingClient> {
     running_time: RunningTime,
     initial_time: SystemTime,
     current_title: Option<String>,
+    last_packet_duration: Option<Duration>,
 }
 
 impl<C: NowPlayingClient> PlayerLoop<C> {
@@ -53,6 +54,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
         let running_time = RunningTime::new();
         let transcoder = None;
         let current_title = None;
+        let last_packet_duration = None;
 
         Ok(Self {
             channel_id,
@@ -62,6 +64,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
             running_time,
             initial_time,
             current_title,
+            last_packet_duration,
         })
     }
 
@@ -80,6 +83,11 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
             {
                 Some(mut packets) => {
                     self.update_packets_pts(&mut packets);
+                    // The duration of the last processed packet is used to update the running time
+                    // according to the end time of the final packet received from the transcoder.
+                    if let Some(packet) = packets.last() {
+                        self.last_packet_duration.replace(packet.duration().into());
+                    }
                     return Ok(packets);
                 }
                 None => {
@@ -88,6 +96,13 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
                     self.transcoder.take();
                 }
             }
+        }
+
+        // To be more accurate on running time estimation, we advance running time
+        // for the length of last packet received from transcoder before calling api client
+        // to provide next track for playback.
+        while let Some(duration) = self.last_packet_duration.take() {
+            self.running_time.advance_by_duration(&duration);
         }
 
         // If there is no current transcoder, fetch now playing information

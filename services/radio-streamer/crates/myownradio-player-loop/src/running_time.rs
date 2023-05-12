@@ -48,6 +48,16 @@ impl RunningTime {
         self.previous_pts = Some(*next_pts);
     }
 
+    /// Advances the running time based on the given duration value.
+    ///
+    /// This method should be called to manually update the running time value
+    /// by a specific duration. The `duration` parameter should represent the
+    /// time interval to be added to the current running time.
+    pub(crate) fn advance_by_duration(&mut self, duration: &Duration) {
+        self.time += *duration;
+        self.previous_pts = Some(*duration);
+    }
+
     /// Resets the previous timestamp value to `None`.
     ///
     /// This method should be called if the next incoming frame is expected

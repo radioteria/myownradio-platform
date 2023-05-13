@@ -92,6 +92,7 @@ pub struct AudioTranscoder {
     encoder: encoder::Audio,
     decoder: decoder::Audio,
     is_eof: bool,
+    transcoded_packet_number: usize,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -130,6 +131,7 @@ impl AudioTranscoder {
             resampler,
             encoder,
             is_eof: false,
+            transcoded_packet_number: 0,
         })
     }
 
@@ -144,12 +146,14 @@ impl AudioTranscoder {
                 let encoded_packets = self.receive_and_process_decoded_frames()?;
                 trace!("Read encoded packets: {}", encoded_packets.len());
 
-                Ok(Some(
-                    encoded_packets
-                        .into_iter()
-                        .map(|pkt| self.prepare_packet(pkt))
-                        .collect(),
-                ))
+                let prepared_packets: Vec<_> = encoded_packets
+                    .into_iter()
+                    .map(|pkt| self.prepare_packet(pkt))
+                    .collect();
+
+                self.transcoded_packet_number += prepared_packets.len();
+
+                Ok(Some(prepared_packets))
             }
             None if self.is_eof => Ok(None),
             None => {
@@ -169,14 +173,20 @@ impl AudioTranscoder {
 
                 self.is_eof = true;
 
-                Ok(Some(
-                    final_encoded_packets
-                        .into_iter()
-                        .map(|pkt| self.prepare_packet(pkt))
-                        .collect(),
-                ))
+                let prepared_packets: Vec<_> = final_encoded_packets
+                    .into_iter()
+                    .map(|pkt| self.prepare_packet(pkt))
+                    .collect();
+
+                self.transcoded_packet_number += prepared_packets.len();
+
+                Ok(Some(prepared_packets))
             }
         }
+    }
+
+    pub fn transcoded_packet_number(&self) -> usize {
+        self.transcoded_packet_number
     }
 
     fn prepare_packet(&self, pkt: Packet) -> utils::Packet {

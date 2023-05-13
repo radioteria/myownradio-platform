@@ -88,6 +88,15 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
                     return Ok(packets);
                 }
                 Ok(None) => {
+                    let number = transcoder.transcoded_packet_number();
+
+                    // Transcoder was not able to produce any output: advancing running time
+                    // ahead for 50ms to prevent player loop stuck in a loop.
+                    if number == 0 {
+                        self.running_time
+                            .advance_by_duration(&Duration::from_millis(50));
+                    }
+
                     // If the current transcoder has no more packets, close it and
                     // prepare to fetch the next track.
                     self.transcoder.take();

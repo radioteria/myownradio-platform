@@ -9,15 +9,12 @@ use tracing::warn;
 pub trait NowPlayingError: Debug + Send {}
 
 pub trait NowPlayingResponse {
-    fn curr_url(&self) -> String;
-    fn curr_title(&self) -> String;
-    fn curr_duration(&self) -> Duration;
-    fn curr_position(&self) -> Duration;
-    fn next_url(&self) -> String;
-    fn next_title(&self) -> String;
-    fn next_duration(&self) -> Duration;
+    fn curr_url(&self) -> &str;
+    fn curr_title(&self) -> &str;
+    fn curr_duration(&self) -> &Duration;
+    fn curr_position(&self) -> &Duration;
     fn remaining_duration(&self) -> Duration {
-        self.curr_duration() - self.curr_position()
+        *self.curr_duration() - *self.curr_position()
     }
 }
 
@@ -148,8 +145,8 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
     }
 
     /// Get the title of the track that is being decoded.
-    pub fn current_title(&self) -> Option<&String> {
-        self.current_title.as_ref()
+    pub fn current_title(&self) -> Option<&str> {
+        self.now_playing.as_ref().map(|track| track.curr_title())
     }
 
     /// Get the current running time value.

@@ -13,7 +13,7 @@ use ffmpeg::format::Sample::I16;
 use ffmpeg::frame::Audio;
 use ffmpeg::{encoder, filter, Packet};
 use std::time::Duration;
-use tracing::trace;
+use tracing::{debug, trace};
 
 trait SamplingRate {
     fn sampling_rate(&self) -> u32;
@@ -78,6 +78,7 @@ pub enum TranscodingError {
     FFmpegError(#[from] ffmpeg_next::Error),
 }
 
+#[derive(Debug)]
 pub struct Stats {
     pub first_decoded_packet_pts: Option<Timestamp>,
     pub last_decoded_packet_pts: Option<Timestamp>,
@@ -205,6 +206,8 @@ impl AudioTranscoder {
 
                 self.is_eof = true;
 
+                debug!("Transcoding stats: {:?}", self.stats);
+
                 Ok(Some(prepared_packets))
             }
         }
@@ -213,12 +216,11 @@ impl AudioTranscoder {
     fn prepare_packet(&self, pkt: Packet) -> utils::Packet {
         let pts = pkt.pts().unwrap_or_default();
         let duration = pkt.duration();
-        let output_time_base = (1, self.encoder.rate() as i32);
         let data = pkt.data().unwrap_or_default().to_vec();
 
         utils::Packet::new(
-            Timestamp::new(pts, output_time_base),
-            Timestamp::new(duration, output_time_base),
+            Timestamp::new(pts, self.output_time_base),
+            Timestamp::new(duration, self.output_time_base),
             data,
         )
     }

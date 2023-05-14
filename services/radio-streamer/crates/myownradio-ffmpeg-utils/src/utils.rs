@@ -17,15 +17,20 @@ pub struct Timestamp {
 }
 
 impl Timestamp {
-    pub fn new(value: i64, time_base: (i32, i32)) -> Self {
+    pub const ZERO: Timestamp = Timestamp::new(0, (1, 1));
+
+    #[inline]
+    pub const fn new(value: i64, time_base: (i32, i32)) -> Self {
         Self { value, time_base }
     }
 
-    pub fn value(&self) -> i64 {
+    #[inline]
+    pub const fn value(&self) -> i64 {
         self.value
     }
 
-    pub fn time_base(&self) -> (i32, i32) {
+    #[inline]
+    pub const fn time_base(&self) -> (i32, i32) {
         self.time_base
     }
 }

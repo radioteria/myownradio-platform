@@ -1,6 +1,6 @@
 use crate::running_time::RunningTime;
 use myownradio_ffmpeg_utils::{
-    AudioTranscoder, AudioTranscoderCreationError, OutputFormat, Packet, TranscodeError,
+    AudioTranscoder, OutputFormat, Packet, TranscoderCreationError, TranscodingError,
 };
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
@@ -32,8 +32,8 @@ pub trait NowPlayingClient {
 #[derive(Debug)]
 pub enum PlayerLoopError {
     NowPlayingError(Box<dyn NowPlayingError>),
-    AudioTranscoderCreationError(AudioTranscoderCreationError),
-    TranscodeError(TranscodeError),
+    TranscoderCreationError(TranscoderCreationError),
+    TranscodingError(TranscodingError),
 }
 
 pub struct PlayerLoop<C: NowPlayingClient> {
@@ -113,7 +113,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
                     self.transcoder.take();
                 }
                 Err(error) => {
-                    return Err(PlayerLoopError::TranscodeError(error));
+                    return Err(PlayerLoopError::TranscodingError(error));
                 }
             }
         }
@@ -135,7 +135,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
             &now_playing.curr_position(),
             &self.output_format,
         )
-        .map_err(|error| PlayerLoopError::AudioTranscoderCreationError(error))?;
+        .map_err(|error| PlayerLoopError::TranscoderCreationError(error))?;
         self.transcoder.replace(transcoder);
 
         self.receive_next_audio_packets()

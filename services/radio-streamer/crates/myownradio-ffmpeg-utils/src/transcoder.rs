@@ -61,7 +61,7 @@ impl EncoderName for OutputFormat {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum AudioTranscoderCreationError {
+pub enum TranscoderCreationError {
     #[error("Unable to open input: {0}")]
     OpenInputError(#[from] OpenInputError),
     #[error("Unable to initialize audio decoder: {0}")]
@@ -70,18 +70,12 @@ pub enum AudioTranscoderCreationError {
     SetupAudioEncoderError(#[from] SetupAudioEncoderError),
     #[error("Unable to initialize resampling filter: {0}")]
     SetupResamplingFilterError(#[from] SetupResamplingFilterError),
-    #[error("Unable to open input file: {0}")]
-    FileOpeningError(ffmpeg_next::Error),
-    #[error("Audio stream not found")]
-    AudioStreamNotFound,
-    #[error("Decoder failed: {0}")]
-    DecoderError(ffmpeg_next::Error),
-    #[error("Resampler failed: {0}")]
-    ResamplerError(ffmpeg_next::Error),
-    #[error("Encoder failed: {0}")]
-    EncoderError(ffmpeg_next::Error),
-    #[error("Unable to initialize codec: {0}")]
-    CodecNotFound(&'static str),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum TranscodingError {
+    #[error("FFmpeg returned error: {0}")]
+    FFmpegError(#[from] ffmpeg_next::Error),
 }
 
 pub struct Stats {
@@ -107,18 +101,12 @@ pub struct AudioTranscoder {
     input_time_base: (i32, i32),
 }
 
-#[derive(Debug, thiserror::Error)]
-pub enum TranscodeError {
-    #[error("FFmpeg returned error: {0}")]
-    FFmpegError(#[from] ffmpeg_next::Error),
-}
-
 impl AudioTranscoder {
     pub fn create(
         source_url: &str,
         offset: &Duration,
         output_format: &OutputFormat,
-    ) -> Result<Self, AudioTranscoderCreationError> {
+    ) -> Result<Self, TranscoderCreationError> {
         let mut input = open_input(source_url, offset)?;
 
         let (input_index, decoder, stream) = setup_audio_decoder(&mut input)?;
@@ -169,7 +157,7 @@ impl AudioTranscoder {
 
     pub fn receive_next_transcoded_packets(
         &mut self,
-    ) -> Result<Option<Vec<utils::Packet>>, TranscodeError> {
+    ) -> Result<Option<Vec<utils::Packet>>, TranscodingError> {
         match self.get_packet_from_input() {
             Some(packet) => {
                 trace!("Send 1 packet to decoder");

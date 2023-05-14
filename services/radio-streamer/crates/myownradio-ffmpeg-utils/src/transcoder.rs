@@ -85,14 +85,14 @@ pub enum AudioTranscoderCreationError {
 }
 
 pub struct Stats {
-    first_decoded_packet_pts: Option<i64>,
-    last_decoded_packet_pts: Option<i64>,
-    last_decoded_packet_duration: Option<i64>,
-    first_encoded_packet_pts: Option<i64>,
-    last_encoded_packet_pts: Option<i64>,
-    last_encoded_packet_duration: Option<i64>,
-    decoded_packets_number: usize,
-    encoded_packets_number: usize,
+    pub first_decoded_packet_pts: Option<Timestamp>,
+    pub last_decoded_packet_pts: Option<Timestamp>,
+    pub last_decoded_packet_duration: Option<Timestamp>,
+    pub first_encoded_packet_pts: Option<Timestamp>,
+    pub last_encoded_packet_pts: Option<Timestamp>,
+    pub last_encoded_packet_duration: Option<Timestamp>,
+    pub decoded_packets_number: usize,
+    pub encoded_packets_number: usize,
 }
 
 pub struct AudioTranscoder {
@@ -103,6 +103,8 @@ pub struct AudioTranscoder {
     decoder: decoder::Audio,
     is_eof: bool,
     stats: Stats,
+    output_time_base: (i32, i32),
+    input_time_base: (i32, i32),
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -119,7 +121,7 @@ impl AudioTranscoder {
     ) -> Result<Self, AudioTranscoderCreationError> {
         let mut input = open_input(source_url, offset)?;
 
-        let (input_index, decoder) = setup_audio_decoder(&mut input)?;
+        let (input_index, decoder, stream) = setup_audio_decoder(&mut input)?;
         let resampler = setup_resampling_filter(
             output_format.sampling_rate(),
             match output_format {
@@ -145,6 +147,9 @@ impl AudioTranscoder {
             encoded_packets_number: 0,
         };
 
+        let input_time_base = (stream.time_base().0, stream.time_base().1);
+        let output_time_base = (1, encoder.rate() as i32);
+
         Ok(Self {
             input,
             input_index,
@@ -153,6 +158,8 @@ impl AudioTranscoder {
             encoder,
             stats,
             is_eof: false,
+            input_time_base,
+            output_time_base,
         })
     }
 
@@ -364,23 +371,33 @@ impl AudioTranscoder {
     fn update_stats_for_input_packet(&mut self, packet: &Packet) {
         self.stats.decoded_packets_number += 1;
 
+        let pts_timestamp = packet
+            .pts()
+            .map(|pts| Timestamp::new(pts, self.input_time_base));
+        let dur_timestamp = Timestamp::new(packet.duration(), self.input_time_base);
+
         if self.stats.first_decoded_packet_pts.is_none() {
-            self.stats.first_decoded_packet_pts = packet.pts();
+            self.stats.first_decoded_packet_pts = pts_timestamp.clone();
         }
 
-        self.stats.last_decoded_packet_pts = packet.pts();
-        self.stats.last_decoded_packet_duration = Some(packet.duration());
+        self.stats.last_decoded_packet_pts = pts_timestamp;
+        self.stats.last_decoded_packet_duration = Some(dur_timestamp);
     }
 
     fn update_stats_for_encoded_packet(&mut self, packet: &Packet) {
         self.stats.encoded_packets_number += 1;
 
+        let pts_timestamp = packet
+            .pts()
+            .map(|pts| Timestamp::new(pts, self.output_time_base));
+        let dur_timestamp = Timestamp::new(packet.duration(), self.output_time_base);
+
         if self.stats.first_encoded_packet_pts.is_none() {
-            self.stats.first_encoded_packet_pts = packet.pts();
+            self.stats.first_encoded_packet_pts = pts_timestamp.clone();
         }
 
-        self.stats.last_encoded_packet_pts = packet.pts();
-        self.stats.last_encoded_packet_duration = Some(packet.duration());
+        self.stats.last_encoded_packet_pts = pts_timestamp;
+        self.stats.last_encoded_packet_duration = Some(dur_timestamp);
     }
 }
 

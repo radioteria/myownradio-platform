@@ -172,32 +172,20 @@ pub(crate) async fn get_channel_audio_stream_v2(
 }
 
 impl NowPlayingResponse for NowPlaying {
-    fn curr_url(&self) -> String {
-        self.current_track.url.clone()
+    fn curr_url(&self) -> &str {
+        &self.current_track.url
     }
 
-    fn curr_title(&self) -> String {
-        self.current_track.title.clone()
+    fn curr_title(&self) -> &str {
+        &self.current_track.title
     }
 
-    fn curr_duration(&self) -> Duration {
-        self.current_track.duration
+    fn curr_duration(&self) -> &Duration {
+        &self.current_track.duration
     }
 
-    fn curr_position(&self) -> Duration {
-        self.current_track.offset
-    }
-
-    fn next_url(&self) -> String {
-        self.next_track.url.clone()
-    }
-
-    fn next_title(&self) -> String {
-        self.next_track.title.clone()
-    }
-
-    fn next_duration(&self) -> Duration {
-        self.next_track.duration
+    fn curr_position(&self) -> &Duration {
+        &self.current_track.offset
     }
 }
 
@@ -289,10 +277,10 @@ pub(crate) async fn get_channel_audio_stream_v3(
             let mut previous_title = String::new();
 
             while let Ok(packets) = player_loop.receive_next_audio_packets() {
-                if let Some(title) = player_loop.current_title().cloned() {
-                    if title != previous_title {
-                        icy_muxer.send_track_title(title.clone());
-                        previous_title = title;
+                if let Some(title) = player_loop.current_title() {
+                    if title != &previous_title {
+                        icy_muxer.send_track_title(title.to_string());
+                        previous_title = title.to_string();
                     }
                 }
 

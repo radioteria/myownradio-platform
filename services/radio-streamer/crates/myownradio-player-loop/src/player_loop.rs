@@ -1,20 +1,21 @@
 use crate::running_time::RunningTime;
 use myownradio_ffmpeg_utils::{
-    AudioTranscoder, AudioTranscoderCreationError, OutputFormat, Packet, TranscodeError,
+    AudioTranscoder, OutputFormat, Packet, TranscoderCreationError, TranscodingError,
 };
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
+use tracing::warn;
 
 pub trait NowPlayingError: Debug + Send {}
 
 pub trait NowPlayingResponse {
-    fn curr_url(&self) -> String;
-    fn curr_title(&self) -> String;
-    fn curr_duration(&self) -> Duration;
-    fn curr_position(&self) -> Duration;
-    fn next_url(&self) -> String;
-    fn next_title(&self) -> String;
-    fn next_duration(&self) -> Duration;
+    fn curr_url(&self) -> &str;
+    fn curr_title(&self) -> &str;
+    fn curr_duration(&self) -> &Duration;
+    fn curr_position(&self) -> &Duration;
+    fn remaining_duration(&self) -> Duration {
+        *self.curr_duration() - *self.curr_position()
+    }
 }
 
 pub trait NowPlayingClient {
@@ -28,8 +29,8 @@ pub trait NowPlayingClient {
 #[derive(Debug)]
 pub enum PlayerLoopError {
     NowPlayingError(Box<dyn NowPlayingError>),
-    AudioTranscoderCreationError(AudioTranscoderCreationError),
-    TranscodeError(TranscodeError),
+    TranscoderCreationError(TranscoderCreationError),
+    TranscodingError(TranscodingError),
 }
 
 pub struct PlayerLoop<C: NowPlayingClient> {
@@ -40,7 +41,7 @@ pub struct PlayerLoop<C: NowPlayingClient> {
     running_time: RunningTime,
     initial_time: SystemTime,
     current_title: Option<String>,
-    last_packet_duration: Option<Duration>,
+    now_playing: Option<Box<dyn NowPlayingResponse>>,
 }
 
 impl<C: NowPlayingClient> PlayerLoop<C> {
@@ -53,7 +54,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
         let running_time = RunningTime::new();
         let transcoder = None;
         let current_title = None;
-        let last_packet_duration = None;
+        let now_playing = None;
 
         Ok(Self {
             channel_id,
@@ -63,7 +64,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
             running_time,
             initial_time,
             current_title,
-            last_packet_duration,
+            now_playing,
         })
     }
 
@@ -78,46 +79,52 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
     /// # Returns
     ///
     /// Returns a `Result` containing the vector of received packets or an error.
+    // @todo Rename to `process_next_audio_packets`
     pub fn receive_next_audio_packets(&mut self) -> Result<Vec<Packet>, PlayerLoopError> {
         if let Some(transcoder) = &mut self.transcoder {
+            // @todo Rename to `fetch_next_transcoded_packets`
             match transcoder.receive_next_transcoded_packets() {
                 Ok(Some(mut packets)) => {
-                    self.update_packets_pts(&mut packets);
-                    self.update_last_packet_duration(packets.last());
+                    self.update_packet_timestamps(&mut packets);
 
                     return Ok(packets);
                 }
                 Ok(None) => {
-                    let number = transcoder.transcoded_packet_number();
+                    // Adjust running time according to last packet's duration. If no packets produced,
+                    // use remaining track time. If no track, advance by 50ms and log an unexpected state warning.
+                    let duration = match (
+                        &transcoder.stats().last_encoded_packet_duration,
+                        &self.now_playing,
+                    ) {
+                        (Some(last_packet_duration), _) => last_packet_duration.into(),
+                        (None, Some(current_track)) => current_track.remaining_duration(),
+                        _ => {
+                            warn!("Transcoder finished but no track is currently playing!");
+                            Duration::from_millis(50)
+                        }
+                    };
+                    self.running_time.advance_by_duration(&duration);
 
-                    // Transcoder was not able to produce any output: advancing running time
-                    // ahead for 50ms to prevent player loop stuck in a loop.
-                    if number == 0 {
-                        self.running_time
-                            .advance_by_duration(&Duration::from_millis(50));
-                    }
-
-                    // If the current transcoder has no more packets, close it and
-                    // prepare to fetch the next track.
+                    // If current transcoder has no more packets, close it and
+                    // prepare for fetching the next track.
                     self.transcoder.take();
                 }
                 Err(error) => {
-                    return Err(PlayerLoopError::TranscodeError(error));
+                    return Err(PlayerLoopError::TranscodingError(error));
                 }
             }
         }
-
-        self.advance_by_last_packet_duration();
 
         // If there is no current transcoder, fetch now playing information
         // for the current channel and create a new transcoder for the new
         // track and output format.
         let player_time = self.initial_time + *self.running_time.time();
+
         let now_playing = self
             .api_client
             .get_now_playing(&self.channel_id, &player_time)
             .map_err(|error| PlayerLoopError::NowPlayingError(error))?;
-        self.current_title = Some(now_playing.curr_title());
+        let now_playing = self.now_playing.insert(now_playing);
 
         self.running_time.reset_pts();
         let transcoder = AudioTranscoder::create(
@@ -125,7 +132,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
             &now_playing.curr_position(),
             &self.output_format,
         )
-        .map_err(|error| PlayerLoopError::AudioTranscoderCreationError(error))?;
+        .map_err(|error| PlayerLoopError::TranscoderCreationError(error))?;
         self.transcoder.replace(transcoder);
 
         self.receive_next_audio_packets()
@@ -138,8 +145,8 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
     }
 
     /// Get the title of the track that is being decoded.
-    pub fn current_title(&self) -> Option<&String> {
-        self.current_title.as_ref()
+    pub fn current_title(&self) -> Option<&str> {
+        self.now_playing.as_ref().map(|track| track.curr_title())
     }
 
     /// Get the current running time value.
@@ -153,32 +160,13 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
     ///
     /// This function advances the running time based on the PTS of the current packet,
     /// and updates the PTS value of the packet based on the running time.
-    fn update_packets_pts(&mut self, packets: &mut Vec<Packet>) {
+    fn update_packet_timestamps(&mut self, packets: &mut Vec<Packet>) {
         for packet in packets {
             // Update the running time based on the PTS value of the current packet.
             self.running_time
                 .advance_by_next_pts(&packet.pts_as_duration());
             // Update the PTS value of the packet based on the running time.
             packet.set_pts((*self.running_time.time()).into())
-        }
-    }
-
-    /// Updates the duration of the last processed packet.
-    ///
-    /// The `packet` parameter represents the optional reference to the last processed packet.
-    /// The function extracts the duration from the packet and updates the duration
-    /// of the last processed packet in the internal state.
-    fn update_last_packet_duration(&mut self, packet: Option<&Packet>) {
-        if let Some(packet) = packet {
-            // Extract the duration from the packet and update the duration of the last processed packet.
-            self.last_packet_duration.replace(packet.duration().into());
-        }
-    }
-
-    /// Advances the running time based on the duration of the last processed packet.
-    fn advance_by_last_packet_duration(&mut self) {
-        if let Some(duration) = self.last_packet_duration.take() {
-            self.running_time.advance_by_duration(&duration);
         }
     }
 }

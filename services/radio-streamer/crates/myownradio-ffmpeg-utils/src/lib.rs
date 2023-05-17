@@ -9,7 +9,7 @@ pub use decoder::{decode_audio_file, AudioDecoderError, DecoderMessage};
 pub use encoder::{make_encoder, AudioEncoderError, EncoderMessage, Format};
 pub use ffmpeg_next::init;
 pub use generator::generate_silence;
-pub use transcoder::{AudioTranscoder, AudioTranscoderCreationError, OutputFormat, TranscodeError};
+pub use transcoder::{AudioTranscoder, OutputFormat, TranscoderCreationError, TranscodingError};
 pub use utils::{Frame, Packet, Timestamp};
 
 // The sampling rate used internally by the program, in Hz.

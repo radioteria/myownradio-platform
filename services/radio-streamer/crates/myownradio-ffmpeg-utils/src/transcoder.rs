@@ -13,7 +13,7 @@ use ffmpeg::format::Sample::I16;
 use ffmpeg::frame::Audio;
 use ffmpeg::{encoder, filter, Packet};
 use std::time::Duration;
-use tracing::trace;
+use tracing::{debug, trace};
 
 trait SamplingRate {
     fn sampling_rate(&self) -> u32;
@@ -61,7 +61,7 @@ impl EncoderName for OutputFormat {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum AudioTranscoderCreationError {
+pub enum TranscoderCreationError {
     #[error("Unable to open input: {0}")]
     OpenInputError(#[from] OpenInputError),
     #[error("Unable to initialize audio decoder: {0}")]
@@ -70,29 +70,24 @@ pub enum AudioTranscoderCreationError {
     SetupAudioEncoderError(#[from] SetupAudioEncoderError),
     #[error("Unable to initialize resampling filter: {0}")]
     SetupResamplingFilterError(#[from] SetupResamplingFilterError),
-    #[error("Unable to open input file: {0}")]
-    FileOpeningError(ffmpeg_next::Error),
-    #[error("Audio stream not found")]
-    AudioStreamNotFound,
-    #[error("Decoder failed: {0}")]
-    DecoderError(ffmpeg_next::Error),
-    #[error("Resampler failed: {0}")]
-    ResamplerError(ffmpeg_next::Error),
-    #[error("Encoder failed: {0}")]
-    EncoderError(ffmpeg_next::Error),
-    #[error("Unable to initialize codec: {0}")]
-    CodecNotFound(&'static str),
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum TranscodingError {
+    #[error("FFmpeg returned error: {0}")]
+    FFmpegError(#[from] ffmpeg_next::Error),
+}
+
+#[derive(Debug)]
 pub struct Stats {
-    first_decoded_packet_pts: Option<i64>,
-    last_decoded_packet_pts: Option<i64>,
-    last_decoded_packet_duration: Option<i64>,
-    first_encoded_packet_pts: Option<i64>,
-    last_encoded_packet_pts: Option<i64>,
-    last_encoded_packet_duration: Option<i64>,
-    decoded_packets_number: usize,
-    encoded_packets_number: usize,
+    pub first_decoded_packet_pts: Option<Timestamp>,
+    pub last_decoded_packet_pts: Option<Timestamp>,
+    pub last_decoded_packet_duration: Option<Timestamp>,
+    pub first_encoded_packet_pts: Option<Timestamp>,
+    pub last_encoded_packet_pts: Option<Timestamp>,
+    pub last_encoded_packet_duration: Option<Timestamp>,
+    pub decoded_packets_number: usize,
+    pub encoded_packets_number: usize,
 }
 
 pub struct AudioTranscoder {
@@ -103,12 +98,8 @@ pub struct AudioTranscoder {
     decoder: decoder::Audio,
     is_eof: bool,
     stats: Stats,
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum TranscodeError {
-    #[error("FFmpeg returned error: {0}")]
-    FFmpegError(#[from] ffmpeg_next::Error),
+    output_time_base: (i32, i32),
+    input_time_base: (i32, i32),
 }
 
 impl AudioTranscoder {
@@ -116,10 +107,10 @@ impl AudioTranscoder {
         source_url: &str,
         offset: &Duration,
         output_format: &OutputFormat,
-    ) -> Result<Self, AudioTranscoderCreationError> {
+    ) -> Result<Self, TranscoderCreationError> {
         let mut input = open_input(source_url, offset)?;
 
-        let (input_index, decoder) = setup_audio_decoder(&mut input)?;
+        let (input_index, decoder, stream) = setup_audio_decoder(&mut input)?;
         let resampler = setup_resampling_filter(
             output_format.sampling_rate(),
             match output_format {
@@ -145,6 +136,9 @@ impl AudioTranscoder {
             encoded_packets_number: 0,
         };
 
+        let input_time_base = (stream.time_base().0, stream.time_base().1);
+        let output_time_base = (1, encoder.rate() as i32);
+
         Ok(Self {
             input,
             input_index,
@@ -153,6 +147,8 @@ impl AudioTranscoder {
             encoder,
             stats,
             is_eof: false,
+            input_time_base,
+            output_time_base,
         })
     }
 
@@ -162,7 +158,7 @@ impl AudioTranscoder {
 
     pub fn receive_next_transcoded_packets(
         &mut self,
-    ) -> Result<Option<Vec<utils::Packet>>, TranscodeError> {
+    ) -> Result<Option<Vec<utils::Packet>>, TranscodingError> {
         match self.get_packet_from_input() {
             Some(packet) => {
                 trace!("Send 1 packet to decoder");
@@ -210,6 +206,8 @@ impl AudioTranscoder {
 
                 self.is_eof = true;
 
+                debug!("Transcoding stats: {:?}", self.stats);
+
                 Ok(Some(prepared_packets))
             }
         }
@@ -218,12 +216,11 @@ impl AudioTranscoder {
     fn prepare_packet(&self, pkt: Packet) -> utils::Packet {
         let pts = pkt.pts().unwrap_or_default();
         let duration = pkt.duration();
-        let output_time_base = (1, self.encoder.rate() as i32);
         let data = pkt.data().unwrap_or_default().to_vec();
 
         utils::Packet::new(
-            Timestamp::new(pts, output_time_base),
-            Timestamp::new(duration, output_time_base),
+            Timestamp::new(pts, self.output_time_base),
+            Timestamp::new(duration, self.output_time_base),
             data,
         )
     }
@@ -364,23 +361,33 @@ impl AudioTranscoder {
     fn update_stats_for_input_packet(&mut self, packet: &Packet) {
         self.stats.decoded_packets_number += 1;
 
+        let pts_timestamp = packet
+            .pts()
+            .map(|pts| Timestamp::new(pts, self.input_time_base));
+        let dur_timestamp = Timestamp::new(packet.duration(), self.input_time_base);
+
         if self.stats.first_decoded_packet_pts.is_none() {
-            self.stats.first_decoded_packet_pts = packet.pts();
+            self.stats.first_decoded_packet_pts = pts_timestamp.clone();
         }
 
-        self.stats.last_decoded_packet_pts = packet.pts();
-        self.stats.last_decoded_packet_duration = Some(packet.duration());
+        self.stats.last_decoded_packet_pts = pts_timestamp;
+        self.stats.last_decoded_packet_duration = Some(dur_timestamp);
     }
 
     fn update_stats_for_encoded_packet(&mut self, packet: &Packet) {
         self.stats.encoded_packets_number += 1;
 
+        let pts_timestamp = packet
+            .pts()
+            .map(|pts| Timestamp::new(pts, self.output_time_base));
+        let dur_timestamp = Timestamp::new(packet.duration(), self.output_time_base);
+
         if self.stats.first_encoded_packet_pts.is_none() {
-            self.stats.first_encoded_packet_pts = packet.pts();
+            self.stats.first_encoded_packet_pts = pts_timestamp.clone();
         }
 
-        self.stats.last_encoded_packet_pts = packet.pts();
-        self.stats.last_encoded_packet_duration = Some(packet.duration());
+        self.stats.last_encoded_packet_pts = pts_timestamp;
+        self.stats.last_encoded_packet_duration = Some(dur_timestamp);
     }
 }
 

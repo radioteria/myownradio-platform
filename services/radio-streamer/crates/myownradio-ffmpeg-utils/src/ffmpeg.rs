@@ -19,23 +19,23 @@ pub enum SetupAudioDecoderError {
 
 pub(crate) fn setup_audio_decoder(
     ictx: &mut format::context::Input,
-) -> Result<(usize, decoder::Audio), SetupAudioDecoderError> {
-    let input = ictx
+) -> Result<(usize, decoder::Audio, format::stream::Stream), SetupAudioDecoderError> {
+    let stream = ictx
         .streams()
         .best(ffmpeg_next::media::Type::Audio)
         .ok_or_else(|| SetupAudioDecoderError::AudioStreamNotFound)?;
-    let input_index = input.index();
-    let context = codec::Context::from_parameters(input.parameters())?;
+    let input_index = stream.index();
+    let context = codec::Context::from_parameters(stream.parameters())?;
 
     let mut decoder = context.decoder().audio()?;
 
-    decoder.set_parameters(input.parameters())?;
+    decoder.set_parameters(stream.parameters())?;
 
     if decoder.channel_layout().is_empty() {
         decoder.set_channel_layout(ChannelLayout::default(decoder.channels() as i32));
     }
 
-    Ok((input_index, decoder))
+    Ok((input_index, decoder, stream))
 }
 
 #[derive(Debug, thiserror::Error)]

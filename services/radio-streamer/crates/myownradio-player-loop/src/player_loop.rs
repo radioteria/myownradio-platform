@@ -4,7 +4,7 @@ use myownradio_ffmpeg_utils::{
 };
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
-use tracing::warn;
+use tracing::{debug, warn};
 
 pub trait NowPlayingError: Debug + Send {}
 
@@ -90,20 +90,17 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
                     return Ok(packets);
                 }
                 Ok(None) => {
-                    // Adjust running time according to last packet's duration. If no packets produced,
-                    // use remaining track time. If no track, advance by 50ms and log an unexpected state warning.
-                    let duration = match (
-                        &transcoder.stats().last_encoded_packet_duration,
-                        &self.now_playing,
-                    ) {
+                    let stats = transcoder.stats();
+
+                    // Adjust running time for the last packet's duration or remaining track duration,
+                    // or for 50ms in worth case to prevent stuck on frozen time.
+                    let adv_duration = match (&stats.last_output_packet_duration, &self.now_playing)
+                    {
                         (Some(last_packet_duration), _) => last_packet_duration.into(),
                         (None, Some(current_track)) => current_track.remaining_duration(),
-                        _ => {
-                            warn!("Transcoder finished but no track is currently playing!");
-                            Duration::from_millis(50)
-                        }
+                        _ => Duration::from_millis(50),
                     };
-                    self.running_time.advance_by_duration(&duration);
+                    self.running_time.advance_by_duration(&adv_duration);
 
                     // If current transcoder has no more packets, close it and
                     // prepare for fetching the next track.
@@ -201,18 +198,6 @@ mod tests {
 
         fn curr_position(&self) -> Duration {
             self.position
-        }
-
-        fn next_url(&self) -> String {
-            String::from("tests/fixtures/sample-6s.mp3")
-        }
-
-        fn next_title(&self) -> String {
-            String::from("Sample Track")
-        }
-
-        fn next_duration(&self) -> Duration {
-            Duration::from_secs_f32(6.426122)
         }
     }
 

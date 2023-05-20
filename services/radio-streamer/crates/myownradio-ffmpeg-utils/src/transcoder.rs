@@ -80,14 +80,14 @@ pub enum TranscodingError {
 
 #[derive(Debug)]
 pub struct Stats {
-    pub first_decoded_packet_pts: Option<Timestamp>,
-    pub last_decoded_packet_pts: Option<Timestamp>,
-    pub last_decoded_packet_duration: Option<Timestamp>,
-    pub first_encoded_packet_pts: Option<Timestamp>,
-    pub last_encoded_packet_pts: Option<Timestamp>,
-    pub last_encoded_packet_duration: Option<Timestamp>,
-    pub decoded_packets_number: usize,
-    pub encoded_packets_number: usize,
+    pub first_input_packet_pts: Option<Timestamp>,
+    pub last_input_packet_pts: Option<Timestamp>,
+    pub last_input_packet_duration: Option<Timestamp>,
+    pub first_output_packet_pts: Option<Timestamp>,
+    pub last_output_packet_pts: Option<Timestamp>,
+    pub last_output_packet_duration: Option<Timestamp>,
+    pub input_packets_number: usize,
+    pub output_packets_number: usize,
 }
 
 pub struct AudioTranscoder {
@@ -126,14 +126,14 @@ impl AudioTranscoder {
         )?;
 
         let stats = Stats {
-            first_decoded_packet_pts: None,
-            last_decoded_packet_pts: None,
-            last_decoded_packet_duration: None,
-            first_encoded_packet_pts: None,
-            last_encoded_packet_pts: None,
-            last_encoded_packet_duration: None,
-            decoded_packets_number: 0,
-            encoded_packets_number: 0,
+            first_input_packet_pts: None,
+            last_input_packet_pts: None,
+            last_input_packet_duration: None,
+            first_output_packet_pts: None,
+            last_output_packet_pts: None,
+            last_output_packet_duration: None,
+            input_packets_number: 0,
+            output_packets_number: 0,
         };
 
         let input_time_base = (stream.time_base().0, stream.time_base().1);
@@ -169,7 +169,7 @@ impl AudioTranscoder {
                 trace!("Read encoded packets: {}", encoded_packets.len());
 
                 for pkt in &encoded_packets {
-                    self.update_stats_for_encoded_packet(pkt);
+                    self.update_stats_for_output_packet(pkt);
                 }
 
                 let prepared_packets: Vec<_> = encoded_packets
@@ -196,7 +196,7 @@ impl AudioTranscoder {
                 final_encoded_packets.append(&mut self.receive_encoded_packets()?);
 
                 for pkt in &final_encoded_packets {
-                    self.update_stats_for_encoded_packet(pkt);
+                    self.update_stats_for_output_packet(pkt);
                 }
 
                 let prepared_packets: Vec<_> = final_encoded_packets
@@ -359,35 +359,35 @@ impl AudioTranscoder {
     }
 
     fn update_stats_for_input_packet(&mut self, packet: &Packet) {
-        self.stats.decoded_packets_number += 1;
+        self.stats.input_packets_number += 1;
 
         let pts_timestamp = packet
             .pts()
             .map(|pts| Timestamp::new(pts, self.input_time_base));
         let dur_timestamp = Timestamp::new(packet.duration(), self.input_time_base);
 
-        if self.stats.first_decoded_packet_pts.is_none() {
-            self.stats.first_decoded_packet_pts = pts_timestamp.clone();
+        if self.stats.first_input_packet_pts.is_none() {
+            self.stats.first_input_packet_pts = pts_timestamp.clone();
         }
 
-        self.stats.last_decoded_packet_pts = pts_timestamp;
-        self.stats.last_decoded_packet_duration = Some(dur_timestamp);
+        self.stats.last_input_packet_pts = pts_timestamp;
+        self.stats.last_input_packet_duration = Some(dur_timestamp);
     }
 
-    fn update_stats_for_encoded_packet(&mut self, packet: &Packet) {
-        self.stats.encoded_packets_number += 1;
+    fn update_stats_for_output_packet(&mut self, packet: &Packet) {
+        self.stats.output_packets_number += 1;
 
         let pts_timestamp = packet
             .pts()
             .map(|pts| Timestamp::new(pts, self.output_time_base));
         let dur_timestamp = Timestamp::new(packet.duration(), self.output_time_base);
 
-        if self.stats.first_encoded_packet_pts.is_none() {
-            self.stats.first_encoded_packet_pts = pts_timestamp.clone();
+        if self.stats.first_output_packet_pts.is_none() {
+            self.stats.first_output_packet_pts = pts_timestamp.clone();
         }
 
-        self.stats.last_encoded_packet_pts = pts_timestamp;
-        self.stats.last_encoded_packet_duration = Some(dur_timestamp);
+        self.stats.last_output_packet_pts = pts_timestamp;
+        self.stats.last_output_packet_duration = Some(dur_timestamp);
     }
 }
 

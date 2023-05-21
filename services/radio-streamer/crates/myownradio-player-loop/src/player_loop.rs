@@ -4,7 +4,9 @@ use myownradio_ffmpeg_utils::{
 };
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
-use tracing::{debug, warn};
+use tracing::{debug, error, warn};
+
+const TRANSCODING_RETRIES_MAX: usize = 5;
 
 pub trait NowPlayingError: Debug + Send {}
 
@@ -42,6 +44,7 @@ pub struct PlayerLoop<C: NowPlayingClient> {
     initial_time: SystemTime,
     current_title: Option<String>,
     now_playing: Option<Box<dyn NowPlayingResponse>>,
+    transcoding_retry: usize,
 }
 
 impl<C: NowPlayingClient> PlayerLoop<C> {
@@ -55,6 +58,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
         let transcoder = None;
         let current_title = None;
         let now_playing = None;
+        let transcoding_retry = 0;
 
         Ok(Self {
             channel_id,
@@ -65,6 +69,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
             initial_time,
             current_title,
             now_playing,
+            transcoding_retry,
         })
     }
 
@@ -106,8 +111,20 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
                     // prepare for fetching the next track.
                     self.transcoder.take();
                 }
-                Err(error) => {
+                Err(error) if self.transcoding_retry >= TRANSCODING_RETRIES_MAX => {
                     return Err(PlayerLoopError::TranscodingError(error));
+                }
+                Err(error) => {
+                    warn!(?error, self.transcoding_retry, "Retrying transcoding");
+
+                    self.transcoding_retry += 1;
+
+                    self.running_time
+                        .advance_by_duration(&Duration::from_millis(25));
+
+                    self.restart();
+
+                    return self.receive_next_audio_packets();
                 }
             }
         }

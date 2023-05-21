@@ -55,7 +55,7 @@ impl RunningTime {
     /// time interval to be added to the current running time.
     pub(crate) fn advance_by_duration(&mut self, duration: &Duration) {
         self.time += *duration;
-        self.previous_pts = Some(*duration);
+        self.previous_pts = None;
     }
 
     /// Resets the previous timestamp value to `None`.

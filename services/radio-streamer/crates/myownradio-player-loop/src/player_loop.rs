@@ -4,9 +4,9 @@ use myownradio_ffmpeg_utils::{
 };
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
-use tracing::{debug, error, warn};
+use tracing::{debug, error, trace, warn};
 
-const TRANSCODING_RETRIES_MAX: usize = 5;
+const MAX_TRANSCODING_ATTEMPTS: usize = 5;
 
 pub trait NowPlayingError: Debug + Send {}
 
@@ -44,7 +44,7 @@ pub struct PlayerLoop<C: NowPlayingClient> {
     initial_time: SystemTime,
     current_title: Option<String>,
     now_playing: Option<Box<dyn NowPlayingResponse>>,
-    transcoding_retry: usize,
+    transcoding_attempts: usize,
 }
 
 impl<C: NowPlayingClient> PlayerLoop<C> {
@@ -69,7 +69,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
             initial_time,
             current_title,
             now_playing,
-            transcoding_retry,
+            transcoding_attempts: transcoding_retry,
         })
     }
 
@@ -90,11 +90,13 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
             // @todo Rename to `fetch_next_transcoded_packets`
             match transcoder.receive_next_transcoded_packets() {
                 Ok(Some(mut packets)) => {
+                    trace!("Received {} packets from transcoder", packets.len());
                     self.update_packet_timestamps(&mut packets);
 
                     return Ok(packets);
                 }
                 Ok(None) => {
+                    trace!("Received EOF from transcoder");
                     let stats = transcoder.stats();
 
                     // Adjust running time for the last packet's duration or remaining track duration,
@@ -105,19 +107,29 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
                         (None, Some(current_track)) => current_track.remaining_duration(),
                         _ => Duration::from_millis(50),
                     };
+                    debug!(
+                        "Advancing running time after transcoding complete by {:?}",
+                        adv_duration
+                    );
                     self.running_time.advance_by_duration(&adv_duration);
 
                     // If current transcoder has no more packets, close it and
                     // prepare for fetching the next track.
+                    debug!("Destroying completed transcoder");
                     self.transcoder.take();
                 }
-                Err(error) if self.transcoding_retry >= TRANSCODING_RETRIES_MAX => {
+                Err(error) if self.transcoding_attempts >= MAX_TRANSCODING_ATTEMPTS => {
                     return Err(PlayerLoopError::TranscodingError(error));
                 }
                 Err(error) => {
-                    warn!(?error, self.transcoding_retry, "Retrying transcoding");
+                    self.transcoding_attempts += 1;
 
-                    self.transcoding_retry += 1;
+                    warn!(
+                        ?error,
+                        "An error occurred while performing transcoding. Retry attempt {} of {}",
+                        self.transcoding_attempts,
+                        MAX_TRANSCODING_ATTEMPTS
+                    );
 
                     self.running_time
                         .advance_by_duration(&Duration::from_millis(25));
@@ -132,21 +144,22 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
         // If there is no current transcoder, fetch now playing information
         // for the current channel and create a new transcoder for the new
         // track and output format.
-        let player_time = self.initial_time + *self.running_time.time();
+        let clock_time = self.initial_time + *self.running_time.time();
+        debug!(?clock_time, "Fetching now playing object");
 
         let now_playing = self
             .api_client
-            .get_now_playing(&self.channel_id, &player_time)
+            .get_now_playing(&self.channel_id, &clock_time)
             .map_err(|error| PlayerLoopError::NowPlayingError(error))?;
         let now_playing = self.now_playing.insert(now_playing);
 
+        let url = now_playing.curr_url();
+        let position = now_playing.curr_position();
+
         self.running_time.reset_pts();
-        let transcoder = AudioTranscoder::create(
-            &now_playing.curr_url(),
-            &now_playing.curr_position(),
-            &self.output_format,
-        )
-        .map_err(|error| PlayerLoopError::TranscoderCreationError(error))?;
+
+        let transcoder = AudioTranscoder::create(url, position, &self.output_format)
+            .map_err(|error| PlayerLoopError::TranscoderCreationError(error))?;
         self.transcoder.replace(transcoder);
 
         self.receive_next_audio_packets()
@@ -154,6 +167,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
 
     /// Restarts the player loop by resetting the running time and clearing the transcoder.
     pub fn restart(&mut self) {
+        debug!("Restarting player loop");
         self.running_time.reset_pts();
         self.transcoder.take();
     }

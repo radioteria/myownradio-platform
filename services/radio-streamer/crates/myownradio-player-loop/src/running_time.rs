@@ -1,4 +1,5 @@
 use std::time::Duration;
+use tracing::log::{debug, trace};
 use tracing::warn;
 
 /// A struct for tracking the running time of an audio player loop.
@@ -44,6 +45,7 @@ impl RunningTime {
 
         let duration_since_previous =
             subtract_abs(*next_pts, self.previous_pts.unwrap_or(*next_pts));
+        trace!("Advance by {:?}", duration_since_previous);
         self.time += duration_since_previous;
         self.previous_pts = Some(*next_pts);
     }
@@ -54,6 +56,8 @@ impl RunningTime {
     /// by a specific duration. The `duration` parameter should represent the
     /// time interval to be added to the current running time.
     pub(crate) fn advance_by_duration(&mut self, duration: &Duration) {
+        debug!("Advance by {:?}", duration);
+
         self.time += *duration;
         self.previous_pts = None;
     }
@@ -63,6 +67,8 @@ impl RunningTime {
     /// This method should be called if the next incoming frame is expected
     /// to have a timestamp value of `Duration::ZERO`.
     pub(crate) fn reset_pts(&mut self) {
+        debug!("Reset previous pts");
+
         self.previous_pts = None;
     }
 }

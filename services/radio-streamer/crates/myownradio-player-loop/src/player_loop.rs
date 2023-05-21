@@ -1,4 +1,5 @@
 use crate::running_time::RunningTime;
+use crate::utils::threshold_minimum;
 use myownradio_ffmpeg_utils::{
     AudioTranscoder, OutputFormat, Packet, TranscoderCreationError, TranscodingError,
 };
@@ -154,11 +155,11 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
         let now_playing = self.now_playing.insert(now_playing);
 
         let url = now_playing.curr_url();
-        let position = now_playing.curr_position();
+        let position = threshold_minimum(&Duration::from_millis(150), *now_playing.curr_position());
 
         self.running_time.reset_pts();
 
-        let transcoder = AudioTranscoder::create(url, position, &self.output_format)
+        let transcoder = AudioTranscoder::create(url, &position, &self.output_format)
             .map_err(|error| PlayerLoopError::TranscoderCreationError(error))?;
         self.transcoder.replace(transcoder);
 

@@ -59,7 +59,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
         let transcoder = None;
         let current_title = None;
         let now_playing = None;
-        let transcoding_retry = 0;
+        let transcoding_attempts = 0;
 
         Ok(Self {
             channel_id,
@@ -70,7 +70,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
             initial_time,
             current_title,
             now_playing,
-            transcoding_attempts: transcoding_retry,
+            transcoding_attempts,
         })
     }
 

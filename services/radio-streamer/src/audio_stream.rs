@@ -59,13 +59,13 @@ impl AudioStream {
                 loop {
                     let mut lock = player_loop.lock().unwrap();
 
-                    match lock.receive_next_audio_packets() {
+                    let packets = match lock.receive_next_audio_packets() {
                         Ok(packets) => packets,
                         Err(error) => {
                             error!(?error, "Closing the player loop on reading audio packets");
                             return;
                         }
-                    }
+                    };
 
                     if let Some(title) = lock.current_title() {
                         if title != &previous_title {

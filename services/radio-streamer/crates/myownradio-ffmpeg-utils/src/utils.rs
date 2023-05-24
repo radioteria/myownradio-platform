@@ -5,12 +5,11 @@ use ffmpeg::frame::Audio;
 use ffmpeg_next::format::sample::Type::{Packed, Planar};
 use ffmpeg_next::format::Sample::I16;
 use ffmpeg_next::ChannelLayout;
-use std::fmt::Debug;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 use std::time::Duration;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Timestamp {
     value: i64,
     time_base: (i32, i32),
@@ -53,6 +52,16 @@ impl Into<Timestamp> for Duration {
 impl Default for Timestamp {
     fn default() -> Self {
         Timestamp::new(0, INTERNAL_TIME_BASE)
+    }
+}
+
+impl std::fmt::Debug for Timestamp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Timestamp({}, {}/{})",
+            self.value, self.time_base.0, self.time_base.1
+        )
     }
 }
 

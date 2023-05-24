@@ -6,7 +6,7 @@ MAINTAINER Roman Lakhtadyr <roman.lakhtadyr@gmail.com>
 ARG MAX_UPLOAD_FILESIZE=256
 ENV MAX_UPLOAD_FILESIZE=${MAX_UPLOAD_FILESIZE}
 
-RUN apk add curl-dev libpng-dev oniguruma-dev jpeg-dev freetype-dev
+RUN apk add git curl-dev libpng-dev oniguruma-dev jpeg-dev freetype-dev
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 	&& docker-php-ext-install -j$(nproc) gd pdo_mysql

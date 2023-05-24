@@ -13,6 +13,7 @@ use ffmpeg::format::Sample::I16;
 use ffmpeg::frame::Audio;
 use ffmpeg::{encoder, filter, Packet};
 use std::time::Duration;
+use tracing::log::warn;
 use tracing::{debug, trace};
 
 trait SamplingRate {
@@ -80,14 +81,14 @@ pub enum TranscodingError {
 
 #[derive(Debug)]
 pub struct Stats {
-    pub first_decoded_packet_pts: Option<Timestamp>,
-    pub last_decoded_packet_pts: Option<Timestamp>,
-    pub last_decoded_packet_duration: Option<Timestamp>,
-    pub first_encoded_packet_pts: Option<Timestamp>,
-    pub last_encoded_packet_pts: Option<Timestamp>,
-    pub last_encoded_packet_duration: Option<Timestamp>,
-    pub decoded_packets_number: usize,
-    pub encoded_packets_number: usize,
+    pub first_input_packet_pts: Option<Timestamp>,
+    pub last_input_packet_pts: Option<Timestamp>,
+    pub last_input_packet_duration: Option<Timestamp>,
+    pub first_output_packet_pts: Option<Timestamp>,
+    pub last_output_packet_pts: Option<Timestamp>,
+    pub last_output_packet_duration: Option<Timestamp>,
+    pub input_packets_number: usize,
+    pub output_packets_number: usize,
 }
 
 pub struct AudioTranscoder {
@@ -108,6 +109,12 @@ impl AudioTranscoder {
         offset: &Duration,
         output_format: &OutputFormat,
     ) -> Result<Self, TranscoderCreationError> {
+        debug!(
+            source_url,
+            ?offset,
+            ?output_format,
+            "Creating audio transcoder"
+        );
         let mut input = open_input(source_url, offset)?;
 
         let (input_index, decoder, stream) = setup_audio_decoder(&mut input)?;
@@ -126,14 +133,14 @@ impl AudioTranscoder {
         )?;
 
         let stats = Stats {
-            first_decoded_packet_pts: None,
-            last_decoded_packet_pts: None,
-            last_decoded_packet_duration: None,
-            first_encoded_packet_pts: None,
-            last_encoded_packet_pts: None,
-            last_encoded_packet_duration: None,
-            decoded_packets_number: 0,
-            encoded_packets_number: 0,
+            first_input_packet_pts: None,
+            last_input_packet_pts: None,
+            last_input_packet_duration: None,
+            first_output_packet_pts: None,
+            last_output_packet_pts: None,
+            last_output_packet_duration: None,
+            input_packets_number: 0,
+            output_packets_number: 0,
         };
 
         let input_time_base = (stream.time_base().0, stream.time_base().1);
@@ -161,15 +168,13 @@ impl AudioTranscoder {
     ) -> Result<Option<Vec<utils::Packet>>, TranscodingError> {
         match self.get_packet_from_input() {
             Some(packet) => {
-                trace!("Send 1 packet to decoder");
                 self.send_packet_to_decoder(&packet)?;
                 self.update_stats_for_input_packet(&packet);
 
                 let encoded_packets = self.receive_and_process_decoded_frames()?;
-                trace!("Read encoded packets: {}", encoded_packets.len());
 
                 for pkt in &encoded_packets {
-                    self.update_stats_for_encoded_packet(pkt);
+                    self.update_stats_for_output_packet(pkt);
                 }
 
                 let prepared_packets: Vec<_> = encoded_packets
@@ -183,20 +188,17 @@ impl AudioTranscoder {
             None => {
                 let mut final_encoded_packets = vec![];
 
-                trace!("Send EOF to decoder");
                 self.send_eof_to_decoder()?;
                 final_encoded_packets.append(&mut self.receive_and_process_decoded_frames()?);
 
-                trace!("Send flush to resampler");
                 self.flush_resampler()?;
                 final_encoded_packets.append(&mut self.get_and_process_resampled_frames()?);
 
-                trace!("Send EOF to encoder");
                 self.send_eof_to_encoder()?;
                 final_encoded_packets.append(&mut self.receive_encoded_packets()?);
 
                 for pkt in &final_encoded_packets {
-                    self.update_stats_for_encoded_packet(pkt);
+                    self.update_stats_for_output_packet(pkt);
                 }
 
                 let prepared_packets: Vec<_> = final_encoded_packets
@@ -230,10 +232,11 @@ impl AudioTranscoder {
 
         let mut decoded = Audio::empty();
         while self.decoder.receive_frame(&mut decoded).is_ok() {
-            trace!("Decoded 1 frame");
+            trace!("Received 1 frame from decoder");
+
             let timestamp = decoded.timestamp();
             decoded.set_pts(timestamp);
-            trace!("Send 1 frame to resampler");
+
             self.send_frame_to_resampler(&decoded)?;
             packets.append(&mut self.get_and_process_resampled_frames()?);
         }
@@ -253,7 +256,8 @@ impl AudioTranscoder {
             .samples(&mut resampled, 1024)
             .is_ok()
         {
-            trace!("Resampled 1 frame");
+            trace!("Received 1 frame from resampling filter");
+
             self.send_frame_to_encoder(&resampled)?;
             packets.append(&mut self.receive_encoded_packets()?);
         }
@@ -265,20 +269,30 @@ impl AudioTranscoder {
         while let Some((stream, mut pkt)) = self.input.packets().next() {
             if stream.index() == self.input_index {
                 pkt.rescale_ts(stream.time_base(), self.decoder.time_base());
+
+                trace!("Received packet from input");
                 return Some(pkt);
+            } else {
+                debug!("Skipping unrelated packet");
             }
         }
 
+        trace!("Received EOF from input");
         None
     }
 
     fn send_packet_to_decoder(&mut self, packet: &Packet) -> Result<(), ffmpeg_next::Error> {
+        trace!("Sending packet to decoder");
+
         self.decoder.send_packet(packet)?;
         Ok(())
     }
 
     fn send_eof_to_decoder(&mut self) -> Result<(), ffmpeg_next::Error> {
+        trace!("Sending EOF to decoder");
+
         self.decoder.send_eof()?;
+
         Ok(())
     }
 
@@ -292,10 +306,14 @@ impl AudioTranscoder {
             frames.push(frame.clone());
         }
 
+        trace!("Received {} frames from decoder", frames.len());
+
         Ok(frames)
     }
 
     fn send_frame_to_resampler(&mut self, frame: &Audio) -> Result<(), ffmpeg_next::Error> {
+        trace!("Sending frame to resampler");
+
         self.resampler
             .get("in")
             .expect("Unable to get 'in' pad on filter")
@@ -311,6 +329,8 @@ impl AudioTranscoder {
             .expect("Unable to get 'in' pad on filter")
             .source()
             .flush()?;
+
+        trace!("Flushed resampling filter");
 
         Ok(())
     }
@@ -330,18 +350,24 @@ impl AudioTranscoder {
             frames.push(buffer.clone());
         }
 
+        trace!("Received {} frames from resampling filter", frames.len());
+
         Ok(frames)
     }
 
     fn send_frame_to_encoder(&mut self, frame: &Audio) -> Result<(), ffmpeg_next::Error> {
-        trace!("Send 1 frame to encoder");
+        trace!("Sending audio frame to encoder");
+
         self.encoder.send_frame(frame)?;
+
         Ok(())
     }
 
     fn send_eof_to_encoder(&mut self) -> Result<(), ffmpeg_next::Error> {
-        trace!("Send EOF to encoder");
+        trace!("Sending EOF to encoder");
+
         self.encoder.send_eof()?;
+
         Ok(())
     }
 
@@ -350,44 +376,45 @@ impl AudioTranscoder {
 
         let mut buffer = Packet::empty();
         while self.encoder.receive_packet(&mut buffer).is_ok() {
-            trace!("Received 1 encoded packet");
             buffer.set_stream(0);
             packets.push(buffer.clone());
         }
+
+        trace!("Received {} encoded packets", packets.len());
 
         Ok(packets)
     }
 
     fn update_stats_for_input_packet(&mut self, packet: &Packet) {
-        self.stats.decoded_packets_number += 1;
+        self.stats.input_packets_number += 1;
 
         let pts_timestamp = packet
             .pts()
             .map(|pts| Timestamp::new(pts, self.input_time_base));
         let dur_timestamp = Timestamp::new(packet.duration(), self.input_time_base);
 
-        if self.stats.first_decoded_packet_pts.is_none() {
-            self.stats.first_decoded_packet_pts = pts_timestamp.clone();
+        if self.stats.first_input_packet_pts.is_none() {
+            self.stats.first_input_packet_pts = pts_timestamp.clone();
         }
 
-        self.stats.last_decoded_packet_pts = pts_timestamp;
-        self.stats.last_decoded_packet_duration = Some(dur_timestamp);
+        self.stats.last_input_packet_pts = pts_timestamp;
+        self.stats.last_input_packet_duration = Some(dur_timestamp);
     }
 
-    fn update_stats_for_encoded_packet(&mut self, packet: &Packet) {
-        self.stats.encoded_packets_number += 1;
+    fn update_stats_for_output_packet(&mut self, packet: &Packet) {
+        self.stats.output_packets_number += 1;
 
         let pts_timestamp = packet
             .pts()
             .map(|pts| Timestamp::new(pts, self.output_time_base));
         let dur_timestamp = Timestamp::new(packet.duration(), self.output_time_base);
 
-        if self.stats.first_encoded_packet_pts.is_none() {
-            self.stats.first_encoded_packet_pts = pts_timestamp.clone();
+        if self.stats.first_output_packet_pts.is_none() {
+            self.stats.first_output_packet_pts = pts_timestamp.clone();
         }
 
-        self.stats.last_encoded_packet_pts = pts_timestamp;
-        self.stats.last_encoded_packet_duration = Some(dur_timestamp);
+        self.stats.last_output_packet_pts = pts_timestamp;
+        self.stats.last_output_packet_duration = Some(dur_timestamp);
     }
 }
 

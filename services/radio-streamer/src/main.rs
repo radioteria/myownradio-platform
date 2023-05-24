@@ -25,6 +25,7 @@ use crate::metrics::Metrics;
 use crate::stream::StreamsRegistry;
 
 mod audio_formats;
+mod audio_stream;
 mod backend_client;
 mod config;
 mod http;

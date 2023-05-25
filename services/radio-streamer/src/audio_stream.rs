@@ -5,7 +5,7 @@ use crate::streams_registry::StreamsRegistry;
 use actix_web::web::Bytes;
 use futures::SinkExt;
 use myownradio_channel_utils::{Channel, ChannelClosed, TimedChannel};
-use myownradio_ffmpeg_utils::OutputFormat;
+use myownradio_ffmpeg_utils::{OutputFormat, Timestamp};
 use myownradio_player_loop::{
     NowPlayingClient, NowPlayingError, NowPlayingResponse, PlayerLoop, PlayerLoopError,
 };
@@ -19,8 +19,8 @@ const MAX_DURATION_BETWEEN_PACKETS: Duration = Duration::from_secs(1);
 
 #[derive(Debug, Clone)]
 pub(crate) enum AudioStreamMessage {
-    Bytes(Bytes),
-    TrackTitle(String),
+    Bytes(Bytes, Duration),
+    TrackTitle(String, Duration),
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -157,7 +157,10 @@ impl Inner {
                         if title != &previous_title {
                             let title = String::from(title);
                             if channel
-                                .send(AudioStreamMessage::TrackTitle(title.clone()))
+                                .send(AudioStreamMessage::TrackTitle(
+                                    title.clone(),
+                                    *lock.current_running_time(),
+                                ))
                                 .is_err()
                             {
                                 error!("Closing the player loop on sending AudioStreamMessage::TrackTitle");
@@ -170,7 +173,10 @@ impl Inner {
                     for packet in packets {
                         let bytes = Bytes::copy_from_slice(&packet.data());
 
-                        if channel.send(AudioStreamMessage::Bytes(bytes)).is_err() {
+                        if channel
+                            .send(AudioStreamMessage::Bytes(bytes, packet.pts_as_duration()))
+                            .is_err()
+                        {
                             error!("Closing the player loop on sending AudioStreamMessage::Bytes");
                             return;
                         }

@@ -274,7 +274,7 @@ pub(crate) async fn get_channel_audio_stream_v3(
 
             while let Some(message) = stream.next() {
                 match message {
-                    AudioStreamMessage::Bytes(bytes) => {
+                    AudioStreamMessage::Bytes(bytes, _) => {
                         match response_sender.try_send(bytes) {
                             Err(error) if error.is_disconnected() => {
                                 // Disconnected: drop the receiver
@@ -291,7 +291,7 @@ pub(crate) async fn get_channel_audio_stream_v3(
                             Ok(_) => (),
                         }
                     }
-                    AudioStreamMessage::TrackTitle(title) => {
+                    AudioStreamMessage::TrackTitle(title, _) => {
                         icy_muxer.send_track_title(title);
                     }
                 }

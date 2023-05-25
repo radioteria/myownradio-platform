@@ -1,8 +1,17 @@
+use std::fmt::{Display, Formatter};
 use std::iter::Iterator;
 
 /// Error type that is used to indicate that the channel is closed
 #[derive(Debug)]
 pub struct ChannelClosed;
+
+impl Display for ChannelClosed {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "ChannelClosed")
+    }
+}
+
+impl std::error::Error for ChannelClosed {}
 
 pub trait Channel<T>
 where

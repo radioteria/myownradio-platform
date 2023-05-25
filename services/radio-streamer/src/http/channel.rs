@@ -1,5 +1,6 @@
 use super::utils::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
 use crate::audio_formats::{AudioFormat, AudioFormats};
+use crate::audio_stream::AudioStreamMessage;
 use crate::backend_client::{BackendClient, GetChannelInfoError, GetNowPlayingError, NowPlaying};
 use crate::config::Config;
 use crate::stream::{StreamCreateError, StreamMessage, StreamsRegistry, StreamsRegistryExt};
@@ -237,6 +238,7 @@ pub(crate) async fn get_channel_audio_stream_v3(
     query_params: Query<GetChannelAudioStreamQueryParams>,
     logger: Data<Arc<Logger>>,
     client: Data<Arc<BackendClient>>,
+    streams_registry: Data<Arc<crate::streams_registry::StreamsRegistry>>,
 ) -> impl Responder {
     let channel_id = channel_id.into_inner();
     let format = query_params
@@ -249,68 +251,53 @@ pub(crate) async fn get_channel_audio_stream_v3(
         .get("icy-metadata")
         .filter(|v| v.to_str().unwrap() == "1")
         .is_some();
-    let initial_time = SystemTime::now() - START_BUFFER_TIME;
     let content_type = format.content_type;
 
     let (response_sender, response_receiver) = mpsc::channel(512);
     let icy_muxer = Arc::new(IcyMuxer::new());
+    let audio_channel = match streams_registry
+        .get_or_create_channel(&channel_id, &format.clone().into())
+        .await
+    {
+        Ok(stream) => stream,
+        Err(error) => {
+            return HttpResponse::ServiceUnavailable().finish();
+        }
+    };
 
     std::thread::spawn({
         let mut response_sender = response_sender;
         let icy_muxer = icy_muxer.clone();
 
         move || {
-            let result = PlayerLoop::create(
-                channel_id,
-                BackendClient::clone(&client),
-                format.into(),
-                initial_time.clone(),
-            );
+            let mut stream = audio_channel.subscribe().unwrap();
 
-            let mut player_loop = match result {
-                Ok(player_loop) => player_loop,
-                Err(error) => {
-                    return;
-                }
-            };
-
-            let mut previous_title = String::new();
-
-            while let Ok(packets) = player_loop.receive_next_audio_packets() {
-                if let Some(title) = player_loop.current_title() {
-                    if title != &previous_title {
-                        icy_muxer.send_track_title(title.to_string());
-                        previous_title = title.to_string();
+            while let Some(message) = stream.next() {
+                match message {
+                    AudioStreamMessage::Bytes(bytes) => {
+                        match response_sender.try_send(bytes) {
+                            Err(error) if error.is_disconnected() => {
+                                // Disconnected: drop the receiver
+                                return;
+                            }
+                            Err(error) if error.is_full() => {
+                                // Buffer is full: skip the remaining bytes
+                            }
+                            Err(error) => {
+                                warn!(logger, "Unable to send bytes to the client"; "error" => ?error);
+                                // Unexpected error: drop the receiver
+                                return;
+                            }
+                            Ok(_) => (),
+                        }
                     }
-                }
-
-                for packet in packets {
-                    let bytes = Bytes::copy_from_slice(&packet.data());
-                    match response_sender.try_send(bytes) {
-                        Err(error) if error.is_disconnected() => {
-                            // Disconnected: drop the receiver
-                            return;
-                        }
-                        Err(error) if error.is_full() => {
-                            // Buffer is full: skip the remaining bytes
-                        }
-                        Err(error) => {
-                            warn!(logger, "Unable to send bytes to the client"; "error" => ?error);
-                            // Unexpected error: drop the receiver
-                            return;
-                        }
-                        Ok(_) => (),
-                    }
-
-                    let sleep_dur = (initial_time + packet.pts_as_duration())
-                        .duration_since(SystemTime::now())
-                        .ok();
-
-                    if let Some(dur) = sleep_dur {
-                        std::thread::sleep(dur);
+                    AudioStreamMessage::TrackTitle(title) => {
+                        icy_muxer.send_track_title(title);
                     }
                 }
             }
+
+            drop(response_sender);
         }
     });
 

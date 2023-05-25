@@ -32,6 +32,7 @@ mod http;
 mod macros;
 mod metrics;
 mod stream;
+mod streams_registry;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -75,6 +76,9 @@ async fn main() -> Result<()> {
     let metrics = Arc::new(Metrics::new());
 
     let streams_registry = Arc::new(StreamsRegistry::new(&backend_client, &logger, &metrics));
+    let streams_registry2 = Arc::new(crate::streams_registry::StreamsRegistry::create(
+        BackendClient::clone(&backend_client),
+    ));
 
     info!("Starting application...");
 
@@ -124,6 +128,7 @@ async fn main() -> Result<()> {
                 .app_data(Data::new(logger.clone()))
                 .app_data(Data::new(metrics.clone()))
                 .app_data(Data::new(streams_registry.clone()))
+                .app_data(Data::new(streams_registry2.clone()))
                 .service(get_channel_audio_stream_v2)
                 .service(get_channel_audio_stream_v3)
                 .service(restart_channel_by_id_v2)

@@ -1,8 +1,10 @@
 use crate::channel::{Channel, ChannelClosed};
 use crate::timeout::{timer, TimerHandle};
 use std::iter::Iterator;
+use std::sync::mpsc::TrySendError;
 use std::sync::{mpsc, Arc, RwLock};
 use std::time::Duration;
+use tracing::debug;
 
 #[derive(Clone)]
 pub struct TimedChannel<T>
@@ -125,7 +127,10 @@ where
             .write()
             .expect("Failed to acquire write lock on txs");
 
-        txs.retain_mut(|tx| tx.try_send(t.clone()).is_ok());
+        txs.retain_mut(|tx| match tx.try_send(t.clone()) {
+            Ok(()) | Err(TrySendError::Full(_)) => true,
+            Err(_) => false,
+        });
 
         if txs.is_empty() && !self.timer_started() {
             self.start_timer();

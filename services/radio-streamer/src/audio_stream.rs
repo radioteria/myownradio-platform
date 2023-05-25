@@ -1,15 +1,15 @@
 use crate::backend_client::{
     BackendClient, ChannelInfo, GetChannelInfoError, GetNowPlayingError, NowPlaying,
 };
+use crate::streams_registry::StreamsRegistry;
 use actix_web::web::Bytes;
-use futures::channel::mpsc;
 use futures::SinkExt;
-use myownradio_channel_utils::{Channel, TimedChannel};
+use myownradio_channel_utils::{Channel, ChannelClosed, TimedChannel};
 use myownradio_ffmpeg_utils::OutputFormat;
 use myownradio_player_loop::{
     NowPlayingClient, NowPlayingError, NowPlayingResponse, PlayerLoop, PlayerLoopError,
 };
-use std::sync::{Arc, Mutex};
+use std::sync::{mpsc, Arc, Mutex};
 use std::thread::JoinHandle;
 use std::time::{Duration, SystemTime};
 use tracing::{error, warn};
@@ -31,11 +31,9 @@ pub(crate) enum CreateAudioStreamError {
     PlayerLoopError(#[from] PlayerLoopError),
 }
 
-struct AudioStream {
-    channel_info: ChannelInfo,
-    channel: TimedChannel<AudioStreamMessage>,
-    player_loop: Arc<Mutex<PlayerLoop<BackendClient>>>,
-    handle: JoinHandle<()>,
+#[derive(Clone)]
+pub(crate) struct AudioStream {
+    inner: Arc<Inner>,
 }
 
 impl AudioStream {
@@ -43,7 +41,42 @@ impl AudioStream {
         channel_id: &u32,
         output_format: &OutputFormat,
         backend_client: &BackendClient,
+        streams_registry: &StreamsRegistry,
     ) -> Result<Self, CreateAudioStreamError> {
+        let inner = Arc::new(
+            Inner::create(channel_id, output_format, backend_client, streams_registry).await?,
+        );
+
+        Ok(Self { inner })
+    }
+
+    pub(crate) fn restart(&self) {
+        self.inner.restart();
+    }
+
+    pub(crate) fn subscribe(
+        &self,
+    ) -> Result<impl Iterator<Item = AudioStreamMessage>, ChannelClosed> {
+        self.inner.subscribe()
+    }
+}
+
+struct Inner {
+    channel_info: ChannelInfo,
+    channel: TimedChannel<AudioStreamMessage>,
+    player_loop: Arc<Mutex<PlayerLoop<BackendClient>>>,
+    handle: JoinHandle<()>,
+}
+
+impl Inner {
+    async fn create(
+        channel_id: &u32,
+        output_format: &OutputFormat,
+        backend_client: &BackendClient,
+        streams_registry: &StreamsRegistry,
+    ) -> Result<Self, CreateAudioStreamError> {
+        let channel_id = *channel_id;
+
         impl NowPlayingResponse for NowPlaying {
             fn curr_url(&self) -> &str {
                 &self.current_track.url
@@ -84,15 +117,15 @@ impl AudioStream {
         }
 
         let initial_time = SystemTime::now() - START_BUFFER_TIME;
-        let channel = TimedChannel::new(Duration::from_secs(1), 0);
+        let channel = TimedChannel::new(Duration::from_secs(5), 16);
 
         let channel_info = backend_client
-            .get_channel_info(&(*channel_id as usize), None)
+            .get_channel_info(&(channel_id as usize), None)
             .await?;
 
         let backend_client = backend_client.clone();
         let player_loop = Arc::new(Mutex::new(PlayerLoop::create(
-            *channel_id,
+            channel_id,
             backend_client,
             output_format.clone(),
             initial_time.clone(),
@@ -100,9 +133,13 @@ impl AudioStream {
 
         let handle = std::thread::spawn({
             let player_loop = player_loop.clone();
-            let mut channel = channel.clone();
+            let channel = channel.clone();
+            let streams_registry = streams_registry.clone();
+            let output_format = output_format.clone();
 
             move || {
+                scopeguard::defer!(streams_registry.unregister(channel_id, output_format));
+
                 let mut previous_title = String::new();
 
                 loop {
@@ -123,7 +160,7 @@ impl AudioStream {
                                 .send(AudioStreamMessage::TrackTitle(title.clone()))
                                 .is_err()
                             {
-                                error!(?error, "Closing the player loop on sending AudioStreamMessage::TrackTitle");
+                                error!("Closing the player loop on sending AudioStreamMessage::TrackTitle");
                                 return;
                             };
                             previous_title = title;
@@ -132,11 +169,9 @@ impl AudioStream {
 
                     for packet in packets {
                         let bytes = Bytes::copy_from_slice(&packet.data());
+
                         if channel.send(AudioStreamMessage::Bytes(bytes)).is_err() {
-                            error!(
-                                ?error,
-                                "Closing the player loop on sending AudioStreamMessage::Bytes"
-                            );
+                            error!("Closing the player loop on sending AudioStreamMessage::Bytes");
                             return;
                         }
 
@@ -164,7 +199,11 @@ impl AudioStream {
         })
     }
 
-    pub(crate) fn restart(&self) {
+    fn restart(&self) {
         self.player_loop.lock().unwrap().restart();
+    }
+
+    fn subscribe(&self) -> Result<impl Iterator<Item = AudioStreamMessage>, ChannelClosed> {
+        self.channel.subscribe()
     }
 }

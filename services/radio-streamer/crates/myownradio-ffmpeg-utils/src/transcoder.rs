@@ -28,7 +28,7 @@ trait EncoderName {
     fn encoder_name(&self) -> &'static str;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, Hash, PartialEq)]
 pub enum OutputFormat {
     MP3 { bit_rate: usize, sampling_rate: u32 },
     AAC { bit_rate: usize, sampling_rate: u32 },

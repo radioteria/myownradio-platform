@@ -11,7 +11,7 @@ const MAX_TRANSCODING_ATTEMPTS: usize = 5;
 
 pub trait NowPlayingError: Debug + Send {}
 
-pub trait NowPlayingResponse {
+pub trait NowPlayingResponse: Send {
     fn curr_url(&self) -> &str;
     fn curr_title(&self) -> &str;
     fn curr_duration(&self) -> &Duration;
@@ -29,10 +29,13 @@ pub trait NowPlayingClient {
     ) -> Result<Box<dyn NowPlayingResponse>, Box<dyn NowPlayingError>>;
 }
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum PlayerLoopError {
+    #[error("NowPlayingError: {0:?}")]
     NowPlayingError(Box<dyn NowPlayingError>),
+    #[error("TranscoderCreationError: {0:?}")]
     TranscoderCreationError(TranscoderCreationError),
+    #[error("TranscodingError: {0:?}")]
     TranscodingError(TranscodingError),
 }
 

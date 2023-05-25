@@ -171,44 +171,44 @@ pub(crate) async fn get_channel_audio_stream_v2(
     }
 }
 
-impl NowPlayingResponse for NowPlaying {
-    fn curr_url(&self) -> &str {
-        &self.current_track.url
-    }
-
-    fn curr_title(&self) -> &str {
-        &self.current_track.title
-    }
-
-    fn curr_duration(&self) -> &Duration {
-        &self.current_track.duration
-    }
-
-    fn curr_position(&self) -> &Duration {
-        &self.current_track.offset
-    }
-}
-
-impl NowPlayingError for GetNowPlayingError {}
-
-impl NowPlayingClient for BackendClient {
-    fn get_now_playing(
-        &self,
-        channel_id: &u32,
-        time: &SystemTime,
-    ) -> Result<Box<dyn NowPlayingResponse>, Box<dyn NowPlayingError>> {
-        let runtime = actix_rt::Runtime::new().expect("Unable to create Runtime");
-
-        let channel_id = *channel_id as usize;
-
-        let future = BackendClient::get_now_playing(self, &channel_id, time);
-
-        runtime
-            .block_on(future)
-            .map(|value| Box::new(value) as Box<dyn NowPlayingResponse>)
-            .map_err(|error| Box::new(error) as Box<dyn NowPlayingError>)
-    }
-}
+// impl NowPlayingResponse for NowPlaying {
+//     fn curr_url(&self) -> &str {
+//         &self.current_track.url
+//     }
+//
+//     fn curr_title(&self) -> &str {
+//         &self.current_track.title
+//     }
+//
+//     fn curr_duration(&self) -> &Duration {
+//         &self.current_track.duration
+//     }
+//
+//     fn curr_position(&self) -> &Duration {
+//         &self.current_track.offset
+//     }
+// }
+//
+// impl NowPlayingError for GetNowPlayingError {}
+//
+// impl NowPlayingClient for BackendClient {
+//     fn get_now_playing(
+//         &self,
+//         channel_id: &u32,
+//         time: &SystemTime,
+//     ) -> Result<Box<dyn NowPlayingResponse>, Box<dyn NowPlayingError>> {
+//         let runtime = actix_rt::Runtime::new().expect("Unable to create Runtime");
+//
+//         let channel_id = *channel_id as usize;
+//
+//         let future = BackendClient::get_now_playing(self, &channel_id, time);
+//
+//         runtime
+//             .block_on(future)
+//             .map(|value| Box::new(value) as Box<dyn NowPlayingResponse>)
+//             .map_err(|error| Box::new(error) as Box<dyn NowPlayingError>)
+//     }
+// }
 
 const SAMPLING_RATE: u32 = 48_000;
 

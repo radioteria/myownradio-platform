@@ -1620,6 +1620,7 @@ dependencies = [
  "futures-lite",
  "lazy_static",
  "md5",
+ "myownradio-channel-utils",
  "myownradio-ffmpeg-utils",
  "myownradio-player-loop",
  "prometheus",

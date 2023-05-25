@@ -4,6 +4,7 @@ use crate::backend_client::{
 use actix_web::web::Bytes;
 use futures::channel::mpsc;
 use futures::SinkExt;
+use myownradio_channel_utils::{Channel, TimedChannel};
 use myownradio_ffmpeg_utils::OutputFormat;
 use myownradio_player_loop::{
     NowPlayingClient, NowPlayingError, NowPlayingResponse, PlayerLoop, PlayerLoopError,
@@ -32,7 +33,7 @@ pub(crate) enum CreateAudioStreamError {
 
 struct AudioStream {
     channel_info: ChannelInfo,
-    receiver: mpsc::Receiver<AudioStreamMessage>,
+    channel: TimedChannel<AudioStreamMessage>,
     player_loop: Arc<Mutex<PlayerLoop<BackendClient>>>,
     handle: JoinHandle<()>,
 }
@@ -83,7 +84,7 @@ impl AudioStream {
         }
 
         let initial_time = SystemTime::now() - START_BUFFER_TIME;
-        let (mut sender, receiver) = mpsc::channel(0);
+        let channel = TimedChannel::new(Duration::from_secs(1), 0);
 
         let channel_info = backend_client
             .get_channel_info(&(*channel_id as usize), None)
@@ -99,6 +100,7 @@ impl AudioStream {
 
         let handle = std::thread::spawn({
             let player_loop = player_loop.clone();
+            let mut channel = channel.clone();
 
             move || {
                 let mut previous_title = String::new();
@@ -117,8 +119,9 @@ impl AudioStream {
                     if let Some(title) = lock.current_title() {
                         if title != &previous_title {
                             let title = String::from(title);
-                            if let Err(error) =
-                                sender.try_send(AudioStreamMessage::TrackTitle(title.clone()))
+                            if channel
+                                .send(AudioStreamMessage::TrackTitle(title.clone()))
+                                .is_err()
                             {
                                 error!(?error, "Closing the player loop on sending AudioStreamMessage::TrackTitle");
                                 return;
@@ -129,7 +132,7 @@ impl AudioStream {
 
                     for packet in packets {
                         let bytes = Bytes::copy_from_slice(&packet.data());
-                        if let Err(error) = sender.try_send(AudioStreamMessage::Bytes(bytes)) {
+                        if channel.send(AudioStreamMessage::Bytes(bytes)).is_err() {
                             error!(
                                 ?error,
                                 "Closing the player loop on sending AudioStreamMessage::Bytes"
@@ -154,7 +157,7 @@ impl AudioStream {
         });
 
         Ok(Self {
-            receiver,
+            channel,
             handle,
             channel_info,
             player_loop,

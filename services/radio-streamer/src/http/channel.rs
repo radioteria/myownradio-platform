@@ -268,6 +268,7 @@ pub(crate) async fn get_channel_audio_stream_v3(
     std::thread::spawn({
         let mut response_sender = response_sender;
         let icy_muxer = icy_muxer.clone();
+        let audio_channel = audio_channel.clone();
 
         move || {
             let mut stream = audio_channel.subscribe().unwrap();
@@ -308,8 +309,8 @@ pub(crate) async fn get_channel_audio_stream_v3(
     if is_icy_enabled {
         response
             .insert_header(("icy-metadata", "1"))
-            .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)));
-        // .insert_header(("icy-name", "todo"));
+            .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)))
+            .insert_header(("icy-name", format!("{}", audio_channel.channel_info().name)));
 
         response.streaming::<_, actix_web::Error>(
             response_receiver

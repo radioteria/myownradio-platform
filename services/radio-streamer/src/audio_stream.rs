@@ -59,6 +59,10 @@ impl AudioStream {
     ) -> Result<impl Iterator<Item = AudioStreamMessage>, ChannelClosed> {
         self.inner.subscribe()
     }
+
+    pub(crate) fn channel_info(&self) -> &ChannelInfo {
+        self.inner.channel_info()
+    }
 }
 
 struct Inner {
@@ -211,5 +215,9 @@ impl Inner {
 
     fn subscribe(&self) -> Result<impl Iterator<Item = AudioStreamMessage>, ChannelClosed> {
         self.channel.subscribe()
+    }
+
+    fn channel_info(&self) -> &ChannelInfo {
+        &self.channel_info
     }
 }

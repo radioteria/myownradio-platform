@@ -4,7 +4,7 @@ use std::iter::Iterator;
 use std::sync::mpsc::TrySendError;
 use std::sync::{mpsc, Arc, RwLock};
 use std::time::Duration;
-use tracing::debug;
+use tracing::{debug, trace, warn};
 
 #[derive(Clone)]
 pub struct TimedChannel<T>
@@ -42,12 +42,16 @@ where
     /// let channel = TimedChannel::new(Duration::from_secs(60), 10);
     /// ```
     pub fn new(timeout: Duration, buffer: usize) -> Self {
+        let is_closed = Arc::new(RwLock::new(false));
+        let txs = Arc::new(RwLock::new(vec![]));
+        let timer_handle = Arc::new(RwLock::new(None));
+
         let channel = TimedChannel {
             timeout,
             buffer,
-            is_closed: Arc::new(RwLock::new(false)),
-            txs: Arc::new(RwLock::new(vec![])),
-            timer_handle: Arc::new(RwLock::new(None)),
+            is_closed,
+            txs,
+            timer_handle,
         };
 
         channel.start_timer();
@@ -62,12 +66,14 @@ where
     fn start_timer(&self) {
         assert!(self.timer_handle.read().unwrap().is_none());
 
+        debug!("Starting the channel close timer");
         let timer_handle = timer(
             {
                 let is_closed = self.is_closed.clone();
                 let timer_handle = self.timer_handle.clone();
 
                 move || {
+                    debug!("Closing timed out channel");
                     timer_handle.write().unwrap().take();
                     *is_closed.write().unwrap() = true;
                 }
@@ -81,6 +87,7 @@ where
     /// Stops the close timer for the channel if it's running.
     fn stop_timer(&self) {
         if let Some(handle) = self.timer_handle.write().unwrap().take() {
+            debug!("Cancelling the channel close timer");
             let _ = handle.cancel();
         }
     }
@@ -119,6 +126,7 @@ where
     /// Returns an error of type `ChannelClosed` if the channel is closed.
     fn send(&self, t: T) -> Result<(), ChannelClosed> {
         if self.is_closed() {
+            warn!("Attempt to send data to closed channel");
             return Err(ChannelClosed);
         }
 
@@ -127,12 +135,22 @@ where
             .write()
             .expect("Failed to acquire write lock on txs");
 
+        trace!("Sending data to {} subscriber(s)", txs.len());
+
         txs.retain_mut(|tx| match tx.try_send(t.clone()) {
-            Ok(()) | Err(TrySendError::Full(_)) => true,
-            Err(_) => false,
+            Ok(()) => true,
+            Err(TrySendError::Full(_)) => {
+                debug!("Dropping data on send attempt to full channel");
+                true
+            }
+            Err(TrySendError::Disconnected(_)) => {
+                debug!("Dropping disconnected subscriber");
+                false
+            }
         });
 
         if txs.is_empty() && !self.timer_started() {
+            debug!("No subscribers: starting the channel close timer");
             self.start_timer();
         }
 
@@ -162,12 +180,16 @@ where
     /// Returns an error of type `ChannelClosed` if the channel is closed.
     fn subscribe(&self) -> Result<Self::Iter, ChannelClosed> {
         if self.is_closed() {
+            warn!("Attempt to subscribe to closed channel");
             return Err(ChannelClosed);
         }
 
+        debug!("New subscriber");
         let (tx, rx) = mpsc::sync_channel(self.buffer);
 
-        self.stop_timer();
+        if self.timer_started() {
+            self.stop_timer();
+        }
 
         self.txs.write().unwrap().push(tx);
 
@@ -176,7 +198,10 @@ where
 
     /// Closes the channel and removes all subscribers
     fn close(&self) {
-        self.timer_handle.write().unwrap().take();
+        debug!("Closing channel");
+        if self.timer_started() {
+            self.stop_timer();
+        }
         *self.is_closed.write().unwrap() = true;
         self.txs.write().unwrap().clear();
     }

@@ -63,6 +63,15 @@ impl AudioStream {
     pub(crate) fn channel_info(&self) -> &ChannelInfo {
         self.inner.channel_info()
     }
+
+    pub(crate) fn current_title(&self) -> Option<String> {
+        self.inner
+            .player_loop
+            .lock()
+            .unwrap()
+            .current_title()
+            .map(ToString::to_string)
+    }
 }
 
 struct Inner {
@@ -121,7 +130,7 @@ impl Inner {
         }
 
         let initial_time = SystemTime::now() - START_BUFFER_TIME;
-        let channel = TimedChannel::new(Duration::from_secs(5), 16);
+        let channel = TimedChannel::new(Duration::from_secs(30), 16);
 
         let channel_info = backend_client
             .get_channel_info(&(channel_id as usize), None)

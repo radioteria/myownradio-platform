@@ -265,6 +265,10 @@ pub(crate) async fn get_channel_audio_stream_v3(
         }
     };
 
+    if let Some(title) = audio_channel.current_title() {
+        icy_muxer.send_track_title(title);
+    }
+
     std::thread::spawn({
         let mut response_sender = response_sender;
         let icy_muxer = icy_muxer.clone();

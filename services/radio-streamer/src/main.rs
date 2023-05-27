@@ -24,6 +24,7 @@ use crate::http::metrics::get_metrics;
 use crate::metrics::Metrics;
 use crate::stream::StreamsRegistry;
 
+mod app;
 mod audio_formats;
 mod audio_stream;
 mod backend_client;
@@ -33,6 +34,7 @@ mod macros;
 mod metrics;
 mod stream;
 mod streams_registry;
+mod types;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 

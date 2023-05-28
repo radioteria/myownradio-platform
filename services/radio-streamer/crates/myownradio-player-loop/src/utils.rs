@@ -2,22 +2,6 @@
 ///
 /// If `value` is less than `threshold`, the default value of `T` is returned.
 /// Otherwise, `value` is returned.
-///
-/// # Examples
-///
-/// ```
-/// use crate::threshold_minimum;
-///
-/// let threshold = 5;
-/// let value = 3;
-/// let result = threshold_minimum(&threshold, value);
-/// assert_eq!(result, 0); // Since `value` is less than `threshold`, the default value (0) is returned.
-///
-/// let threshold = 10;
-/// let value = 15;
-/// let result = threshold_minimum(&threshold, value);
-/// assert_eq!(result, 15); // Since `value` is greater than or equal to `threshold`, `value` is returned.
-/// ```
 pub(crate) fn threshold_minimum<T: PartialOrd + Default>(threshold: &T, value: T) -> T {
     if &value < threshold {
         T::default()

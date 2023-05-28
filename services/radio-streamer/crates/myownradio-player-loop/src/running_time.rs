@@ -1,6 +1,5 @@
 use std::time::Duration;
-use tracing::log::{debug, trace};
-use tracing::warn;
+use tracing::{debug, trace, warn};
 
 /// A struct for tracking the running time of an audio player loop.
 #[derive(Debug)]

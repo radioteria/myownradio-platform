@@ -1,7 +1,8 @@
 use crate::running_time::RunningTime;
+use crate::types::{NowPlaying, NowPlayingClient, NowPlayingError};
 use crate::utils::threshold_minimum;
 use myownradio_ffmpeg_utils::{
-    AudioTranscoder, OutputFormat, Packet, TranscoderCreationError, TranscodingError,
+    AudioTranscoderAsync, OutputFormat, Packet, TranscoderCreationError, TranscodingError,
 };
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
@@ -9,42 +10,25 @@ use tracing::{debug, error, trace, warn};
 
 const MAX_TRANSCODING_ATTEMPTS: usize = 5;
 
-pub trait NowPlayingError: Debug + Send {}
-
-pub trait NowPlayingResponse {
-    fn curr_url(&self) -> &str;
-    fn curr_title(&self) -> &str;
-    fn curr_duration(&self) -> &Duration;
-    fn curr_position(&self) -> &Duration;
-    fn remaining_duration(&self) -> Duration {
-        *self.curr_duration() - *self.curr_position()
-    }
-}
-
-pub trait NowPlayingClient {
-    fn get_now_playing(
-        &self,
-        channel_id: &u32,
-        time: &SystemTime,
-    ) -> Result<Box<dyn NowPlayingResponse>, Box<dyn NowPlayingError>>;
-}
-
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum PlayerLoopError {
-    NowPlayingError(Box<dyn NowPlayingError>),
-    TranscoderCreationError(TranscoderCreationError),
-    TranscodingError(TranscodingError),
+    #[error(transparent)]
+    NowPlayingError(#[from] NowPlayingError),
+    #[error(transparent)]
+    TranscoderCreationError(#[from] TranscoderCreationError),
+    #[error(transparent)]
+    TranscodingError(#[from] TranscodingError),
 }
 
 pub struct PlayerLoop<C: NowPlayingClient> {
     channel_id: u32,
     api_client: C,
-    transcoder: Option<AudioTranscoder>,
+    transcoder: Option<AudioTranscoderAsync>,
     output_format: OutputFormat,
     running_time: RunningTime,
     initial_time: SystemTime,
     current_title: Option<String>,
-    now_playing: Option<Box<dyn NowPlayingResponse>>,
+    now_playing: Option<NowPlaying>,
     transcoding_attempts: usize,
 }
 
@@ -59,7 +43,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
         let transcoder = None;
         let current_title = None;
         let now_playing = None;
-        let transcoding_retry = 0;
+        let transcoding_attempts = 0;
 
         Ok(Self {
             channel_id,
@@ -70,7 +54,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
             initial_time,
             current_title,
             now_playing,
-            transcoding_attempts: transcoding_retry,
+            transcoding_attempts,
         })
     }
 
@@ -86,84 +70,89 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
     ///
     /// Returns a `Result` containing the vector of received packets or an error.
     // @todo Rename to `process_next_audio_packets`
-    pub fn receive_next_audio_packets(&mut self) -> Result<Vec<Packet>, PlayerLoopError> {
-        if let Some(transcoder) = &mut self.transcoder {
-            // @todo Rename to `fetch_next_transcoded_packets`
-            match transcoder.receive_next_transcoded_packets() {
-                Ok(Some(mut packets)) => {
-                    trace!("Received {} packets from transcoder", packets.len());
-                    self.update_packet_timestamps(&mut packets);
+    pub async fn receive_next_audio_packets(&mut self) -> Result<Vec<Packet>, PlayerLoopError> {
+        loop {
+            if let Some(transcoder) = &mut self.transcoder {
+                // @todo Rename to `fetch_next_transcoded_packets`
+                match transcoder.receive_next_transcoded_packets().await {
+                    Ok(Some(mut packets)) => {
+                        trace!("Received {} packets from transcoder", packets.len());
+                        self.update_packet_timestamps(&mut packets);
 
-                    return Ok(packets);
-                }
-                Ok(None) => {
-                    trace!("Received EOF from transcoder");
-                    let stats = transcoder.stats();
+                        return Ok(packets);
+                    }
+                    Ok(None) => {
+                        trace!("Received EOF from transcoder");
+                        let stats = transcoder.stats();
 
-                    // Adjust running time for the last packet's duration or remaining track duration,
-                    // or for 50ms in worth case to prevent stuck on frozen time.
-                    let adv_duration = match (&stats.last_output_packet_duration, &self.now_playing)
-                    {
-                        (Some(last_packet_duration), _) => last_packet_duration.into(),
-                        (None, Some(current_track)) => current_track.remaining_duration(),
-                        _ => Duration::from_millis(50),
-                    };
-                    debug!(
-                        "Advancing running time after transcoding complete by {:?}",
-                        adv_duration
-                    );
-                    self.running_time.advance_by_duration(&adv_duration);
+                        // Adjust running time for the last packet's duration or remaining track duration,
+                        // or for 50ms in worth case to prevent stuck on frozen time.
+                        let adv_duration =
+                            match (&stats.last_output_packet_duration, &self.now_playing) {
+                                (Some(last_packet_duration), _) => last_packet_duration.into(),
+                                (None, Some(current_track)) => {
+                                    current_track.current.remaining_duration()
+                                }
+                                _ => Duration::from_millis(50),
+                            };
+                        debug!(
+                            "Advancing running time after transcoding complete by {:?}",
+                            adv_duration
+                        );
+                        self.running_time.advance_by_duration(&adv_duration);
 
-                    // If current transcoder has no more packets, close it and
-                    // prepare for fetching the next track.
-                    debug!("Destroying completed transcoder");
-                    self.transcoder.take();
-                }
-                Err(error) if self.transcoding_attempts >= MAX_TRANSCODING_ATTEMPTS => {
-                    return Err(PlayerLoopError::TranscodingError(error));
-                }
-                Err(error) => {
-                    self.transcoding_attempts += 1;
+                        // If current transcoder has no more packets, close it and
+                        // prepare for fetching the next track.
+                        debug!("Destroying completed transcoder");
 
-                    warn!(
-                        ?error,
-                        "An error occurred while performing transcoding. Retry attempt {} of {}",
-                        self.transcoding_attempts,
-                        MAX_TRANSCODING_ATTEMPTS
-                    );
+                        self.transcoder.take();
+                    }
+                    Err(error) if self.transcoding_attempts >= MAX_TRANSCODING_ATTEMPTS => {
+                        return Err(error.into());
+                    }
+                    Err(error) => {
+                        self.transcoding_attempts += 1;
 
-                    self.running_time
-                        .advance_by_duration(&Duration::from_millis(25));
+                        warn!(
+                            ?error,
+                            "An error occurred while performing transcoding. Retry attempt {} of {}",
+                            self.transcoding_attempts,
+                            MAX_TRANSCODING_ATTEMPTS
+                        );
 
-                    self.restart();
+                        self.running_time
+                            .advance_by_duration(&Duration::from_millis(25));
 
-                    return self.receive_next_audio_packets();
+                        self.restart();
+
+                        continue;
+                    }
                 }
             }
+
+            // If there is no current transcoder, fetch now playing information
+            // for the current channel and create a new transcoder for the new
+            // track and output format.
+            let clock_time = self.initial_time + *self.running_time.time();
+            debug!(?clock_time, "Fetching now playing object");
+
+            let now_playing = self
+                .api_client
+                .get_now_playing(&self.channel_id, &clock_time)
+                .await?;
+            let now_playing = self.now_playing.insert(now_playing);
+
+            let url = &now_playing.current.url;
+            let position =
+                threshold_minimum(&Duration::from_millis(150), now_playing.current.position);
+
+            self.running_time.reset_pts();
+
+            let transcoder =
+                AudioTranscoderAsync::create(url, &position, &self.output_format).await?;
+
+            self.transcoder.replace(transcoder);
         }
-
-        // If there is no current transcoder, fetch now playing information
-        // for the current channel and create a new transcoder for the new
-        // track and output format.
-        let clock_time = self.initial_time + *self.running_time.time();
-        debug!(?clock_time, "Fetching now playing object");
-
-        let now_playing = self
-            .api_client
-            .get_now_playing(&self.channel_id, &clock_time)
-            .map_err(|error| PlayerLoopError::NowPlayingError(error))?;
-        let now_playing = self.now_playing.insert(now_playing);
-
-        let url = now_playing.curr_url();
-        let position = threshold_minimum(&Duration::from_millis(150), *now_playing.curr_position());
-
-        self.running_time.reset_pts();
-
-        let transcoder = AudioTranscoder::create(url, &position, &self.output_format)
-            .map_err(|error| PlayerLoopError::TranscoderCreationError(error))?;
-        self.transcoder.replace(transcoder);
-
-        self.receive_next_audio_packets()
     }
 
     /// Restarts the player loop by resetting the running time and clearing the transcoder.
@@ -175,7 +164,9 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
 
     /// Get the title of the track that is being decoded.
     pub fn current_title(&self) -> Option<&str> {
-        self.now_playing.as_ref().map(|track| track.curr_title())
+        self.now_playing
+            .as_ref()
+            .map(|track| track.current.title.as_str())
     }
 
     /// Get the current running time value.
@@ -203,40 +194,11 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        NowPlayingError, NowPlayingResponse, PlayerLoop, PlayerLoopError, PlayerLoopEvent,
-        PlayerLoopIter, Title,
-    };
+    use crate::types::{CurrentTrack, NextTrack};
+    use crate::{NowPlayingError, PlayerLoop, PlayerLoopError};
     use myownradio_ffmpeg_utils::{OutputFormat, Packet, Timestamp};
     use std::sync::{Arc, Mutex};
     use std::time::{Duration, SystemTime};
-
-    struct MockClientResponse {
-        position: Duration,
-    }
-
-    impl NowPlayingResponse for MockClientResponse {
-        fn curr_url(&self) -> String {
-            String::from("tests/fixtures/sample-6s.mp3")
-        }
-
-        fn curr_title(&self) -> String {
-            String::from("Sample Track")
-        }
-
-        fn curr_duration(&self) -> Duration {
-            Duration::from_secs_f32(6.426122)
-        }
-
-        fn curr_position(&self) -> Duration {
-            self.position
-        }
-    }
-
-    #[derive(Debug)]
-    struct MockClientError;
-
-    impl NowPlayingError for MockClientError {}
 
     #[derive(Clone)]
     struct MockAPIClient {
@@ -251,37 +213,43 @@ mod tests {
         }
     }
 
+    #[trait_async::trait_async]
     impl NowPlayingClient for MockAPIClient {
-        fn get_now_playing(
+        async fn get_now_playing(
             &self,
             channel_id: &u32,
             time: &SystemTime,
-        ) -> Result<Box<dyn NowPlayingResponse>, Box<dyn NowPlayingError>> {
+        ) -> Result<NowPlaying, NowPlayingError> {
             let timeline_position_micros = time
                 .duration_since(SystemTime::UNIX_EPOCH)
                 .unwrap()
                 .as_micros();
 
+            let duration = Duration::from_secs_f32(6.426122);
             let duration_micros = 6426122;
             let track_position_micros = timeline_position_micros % duration_micros;
             let position = Duration::from_micros(track_position_micros as u64);
 
             self.calls.lock().unwrap().push((*channel_id, *time));
 
-            Ok(Box::new(MockClientResponse { position }))
+            Ok(NowPlaying {
+                current: CurrentTrack {
+                    title: String::from("Sample Track"),
+                    url: String::from("tests/fixtures/sample-6s.mp3"),
+                    duration,
+                    position,
+                },
+                next: NextTrack {
+                    title: String::from("Sample Track"),
+                    url: String::from("tests/fixtures/sample-6s.mp3"),
+                    duration,
+                },
+            })
         }
     }
 
-    impl Iterator for PlayerLoop<MockAPIClient> {
-        type Item = Result<Vec<Packet>, PlayerLoopError>;
-
-        fn next(&mut self) -> Option<Self::Item> {
-            Some(self.receive_next_audio_packets())
-        }
-    }
-
-    #[test]
-    fn test_create_player_loop() {
+    #[actix_rt::test]
+    async fn test_create_player_loop() {
         let api_client = MockAPIClient::new();
         let output_format = OutputFormat::MP3 {
             bit_rate: 128_000,
@@ -293,8 +261,8 @@ mod tests {
         assert!(result.is_ok());
     }
 
-    #[test]
-    fn test_receive_track_title() {
+    #[actix_rt::test]
+    async fn test_receive_track_title() {
         let api_client = MockAPIClient::new();
         let output_format = OutputFormat::MP3 {
             bit_rate: 128_000,
@@ -305,16 +273,13 @@ mod tests {
             PlayerLoop::create(123, api_client, output_format, initial_time).unwrap();
 
         assert!(player_loop.current_title().is_none());
-        assert!(player_loop.receive_next_audio_packets().is_ok());
+        assert!(player_loop.receive_next_audio_packets().await.is_ok());
         assert!(player_loop.current_title().is_some());
-        assert_eq!(
-            "Sample Track",
-            player_loop.current_title().unwrap().as_str()
-        );
+        assert_eq!("Sample Track", player_loop.current_title().unwrap());
     }
 
-    #[test]
-    fn test_restart_player_loop() {
+    #[actix_rt::test]
+    async fn test_restart_player_loop() {
         // Create a mock API client.
         let api_client = MockAPIClient::new();
 
@@ -335,19 +300,19 @@ mod tests {
         assert_eq!(0, api_client.calls.lock().unwrap().len());
 
         // Fetch the next set of audio packets from the player loop.
-        assert!(player_loop.receive_next_audio_packets().is_ok());
+        assert!(player_loop.receive_next_audio_packets().await.is_ok());
 
         // Check that the API client was called once.
         assert_eq!(1, api_client.calls.lock().unwrap().len());
 
         // Skip ahead in the current track by 500 milliseconds.
-        skip_packets(&mut player_loop, &Duration::from_millis(500));
+        skip_packets(&mut player_loop, &Duration::from_millis(500)).await;
 
         // Restart the player loop.
         player_loop.restart();
 
         // Skip ahead in the next track by 500 milliseconds.
-        skip_packets(&mut player_loop, &Duration::from_millis(500));
+        skip_packets(&mut player_loop, &Duration::from_millis(500)).await;
 
         // Check that the API client was called again after the player loop was restarted.
         assert_eq!(2, api_client.calls.lock().unwrap().len());
@@ -363,11 +328,11 @@ mod tests {
         );
     }
 
-    fn skip_packets(player_loop: &mut PlayerLoop<MockAPIClient>, amount: &Duration) {
+    async fn skip_packets(player_loop: &mut PlayerLoop<MockAPIClient>, amount: &Duration) {
         let current_time = *player_loop.current_running_time();
 
         while *player_loop.current_running_time() - current_time < *amount {
-            player_loop.receive_next_audio_packets().unwrap();
+            player_loop.receive_next_audio_packets().await.unwrap();
         }
     }
 }

@@ -23,16 +23,22 @@ impl AudioTranscoderAsync {
     /// # Errors
     ///
     /// Returns a `TranscoderCreationError` if the creation of the underlying `AudioTranscoder` fails.
-    pub fn create(
+    pub async fn create(
         source_url: &str,
         offset: &Duration,
         output_format: &OutputFormat,
     ) -> Result<Self, TranscoderCreationError> {
-        let transcoder = Arc::new(Mutex::new(AudioTranscoder::create(
-            source_url,
-            offset,
-            output_format,
-        )?));
+        let source_url = source_url.to_string();
+        let offset = offset.clone();
+        let output_format = output_format.clone();
+
+        let transcoder = Arc::new(Mutex::new(
+            actix_rt::task::spawn_blocking(move || {
+                AudioTranscoder::create(&source_url, &offset, &output_format)
+            })
+            .await
+            .expect("Unable to spawn blocking task")?,
+        ));
 
         Ok(Self { transcoder })
     }
@@ -100,7 +106,9 @@ mod tests {
             let mut actual_packets = 0;
             let mut actual_last_pts = 0;
 
-            let mut transcoder = AudioTranscoderAsync::create(test_file, &offset, &format).unwrap();
+            let mut transcoder = AudioTranscoderAsync::create(test_file, &offset, &format)
+                .await
+                .unwrap();
 
             while let Ok(Some(packets)) = transcoder.receive_next_transcoded_packets().await {
                 actual_packets += packets.len();

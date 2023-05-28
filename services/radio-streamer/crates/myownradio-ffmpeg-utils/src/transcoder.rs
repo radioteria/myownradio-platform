@@ -13,7 +13,6 @@ use ffmpeg::format::Sample::I16;
 use ffmpeg::frame::Audio;
 use ffmpeg::{encoder, filter, Packet};
 use std::time::Duration;
-use tracing::log::warn;
 use tracing::{debug, trace};
 
 trait SamplingRate {
@@ -79,7 +78,7 @@ pub enum TranscodingError {
     FFmpegError(#[from] ffmpeg_next::Error),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Stats {
     pub first_input_packet_pts: Option<Timestamp>,
     pub last_input_packet_pts: Option<Timestamp>,

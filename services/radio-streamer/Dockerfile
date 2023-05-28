@@ -89,6 +89,7 @@ ENV HOME=/rust
 
 WORKDIR /code
 
+RUN cargo install cargo-watch
 
 FROM base as pre-final
 

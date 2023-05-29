@@ -48,7 +48,7 @@ impl IcyMuxer {
 
         *bytes_remaining = ICY_METADATA_INTERVAL - (bytes_len - *bytes_remaining);
 
-        Bytes::from(buffer.into_bytes())
+        Bytes::from(buffer.as_bytes().to_vec())
     }
 
     fn make_metadata_bytes(&self) -> Vec<u8> {
@@ -68,6 +68,6 @@ impl IcyMuxer {
             }
         }
 
-        buffer.into_bytes()
+        buffer.as_bytes().to_vec()
     }
 }

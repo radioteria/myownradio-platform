@@ -35,6 +35,10 @@ path = "crates/myownradio-ffmpeg-utils"
 version = "0.1.0"
 path = "crates/myownradio-player-loop"
 
+[dependencies.myownradio-channel-utils]
+version = "0.1.0"
+path = "crates/myownradio-channel-utils"
+
 [dependencies.slog]
 version = "2.7.0"
 features = ["max_level_debug", "release_max_level_debug"]

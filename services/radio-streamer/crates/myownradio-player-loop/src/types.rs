@@ -39,7 +39,7 @@ pub enum NowPlayingError {
 pub trait NowPlayingClient {
     async fn get_now_playing(
         &self,
-        channel_id: &u32,
+        channel_id: &u64,
         time: &SystemTime,
     ) -> Result<NowPlaying, NowPlayingError>;
 }

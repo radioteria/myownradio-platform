@@ -56,7 +56,7 @@ class RadioStreamerService implements Injectable, SingletonInterface
         $queryParameters = implode("&", $f->zip($c)->getOrElse([]));
 
         return sprintf(
-            "%s/v2/listen/%d?%s",
+            "%s/v3/listen/%d?%s",
             $this->config->getRadioStreamerEndpoint(),
             $channelId,
             $queryParameters

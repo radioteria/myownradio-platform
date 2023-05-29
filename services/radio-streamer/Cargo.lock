@@ -336,13 +336,13 @@ checksum = "ecc7ab41815b3c653ccd2978ec3255c81349336702dfdf62ee6f7069b12a3aae"
 
 [[package]]
 name = "async-trait"
-version = "0.1.60"
+version = "0.1.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "677d1d8ab452a3936018a687b20e6f7cf5363d713b732b8884001317b0e48aa3"
+checksum = "b9ccdd8f2a161be9bd5c023df56f1b2a0bd1d83872ae53b71a84a12c9bf6e842"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 1.0.107",
+ "syn 2.0.14",
 ]
 
 [[package]]
@@ -1319,6 +1319,9 @@ dependencies = [
 name = "myownradio-channel-utils"
 version = "0.1.0"
 dependencies = [
+ "actix-rt",
+ "async-trait",
+ "futures",
  "thiserror",
  "tracing",
 ]
@@ -1622,6 +1625,7 @@ dependencies = [
  "futures-lite",
  "lazy_static",
  "md5",
+ "myownradio-channel-utils",
  "myownradio-ffmpeg-utils",
  "myownradio-player-loop",
  "prometheus",

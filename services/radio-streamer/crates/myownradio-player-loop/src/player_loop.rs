@@ -1,7 +1,5 @@
 use crate::running_time::RunningTime;
-use crate::types::{NowPlaying, NowPlayingClient, NowPlayingError};
-use crate::utils::threshold_minimum;
-use crate::CurrentTrack;
+use crate::types::{CurrentTrack, NowPlaying, NowPlayingClient, NowPlayingError};
 use myownradio_ffmpeg_utils::{
     AudioTranscoderAsync, OutputFormat, Packet, TranscoderCreationError, TranscodingError,
 };

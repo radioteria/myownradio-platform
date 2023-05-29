@@ -1,12 +1,11 @@
 use crate::audio_stream::AudioStreamMessage;
 use crate::backend_client::BackendClient;
 use myownradio_channel_utils::TimedMessage;
-use myownradio_player_loop::{NowPlayingClient, PlayerLoop};
 use std::time::{Duration, SystemTime};
 use tracing::error;
 
 #[async_trait::async_trait]
-impl NowPlayingClient for BackendClient {
+impl myownradio_player_loop::NowPlayingClient for BackendClient {
     async fn get_now_playing(
         &self,
         channel_id: &u64,

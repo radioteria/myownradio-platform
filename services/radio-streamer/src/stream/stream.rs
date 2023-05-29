@@ -14,7 +14,7 @@ use futures::{stream, SinkExt, StreamExt};
 use myownradio_ffmpeg_utils::{
     make_encoder, AudioEncoderError, EncoderMessage, Format, Frame, Timestamp,
 };
-use slog::{info, warn, Logger};
+use slog::{info, Logger};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};

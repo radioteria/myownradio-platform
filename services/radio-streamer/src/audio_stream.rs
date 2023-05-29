@@ -1,19 +1,14 @@
-use crate::backend_client::{
-    BackendClient, ChannelInfo, GetChannelInfoError, GetNowPlayingError, NowPlaying,
-};
-use crate::stream_compositor::StreamCompositor;
+use crate::backend_client::{BackendClient, ChannelInfo, GetChannelInfoError};
 use crate::types::ChannelId;
 use actix_rt::task::JoinHandle;
 use actix_web::web::Bytes;
-use async_trait::async_trait;
 use futures::lock::Mutex;
-use futures::{SinkExt, Stream};
+use futures::Stream;
 use myownradio_channel_utils::{Channel, ChannelClosed, ReplayChannel, TimedChannel};
-use myownradio_ffmpeg_utils::{OutputFormat, Timestamp};
-use myownradio_player_loop::{NowPlayingClient, NowPlayingError, PlayerLoop, PlayerLoopError};
-use std::future::Future;
+use myownradio_ffmpeg_utils::OutputFormat;
+use myownradio_player_loop::{PlayerLoop, PlayerLoopError};
 use std::ops::Deref;
-use std::sync::{mpsc, Arc, Weak};
+use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use tracing::{error, warn};
 

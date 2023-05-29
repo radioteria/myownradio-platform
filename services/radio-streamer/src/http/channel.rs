@@ -1,22 +1,19 @@
 use super::utils::icy_muxer::{IcyMuxer, ICY_METADATA_INTERVAL};
 use crate::audio_formats::{AudioFormat, AudioFormats};
 use crate::audio_stream::AudioStreamMessage;
-use crate::backend_client::{BackendClient, GetChannelInfoError, GetNowPlayingError, NowPlaying};
 use crate::config::Config;
 use crate::stream::{StreamCreateError, StreamMessage, StreamsRegistry, StreamsRegistryExt};
 use crate::stream_compositor::StreamCompositor;
 use crate::types::ChannelId;
-use actix_web::web::{Bytes, Data, Query};
+use actix_web::web::{Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use futures::channel::mpsc;
-use futures::executor::{block_on, LocalSpawner};
 use futures::{SinkExt, StreamExt};
 use myownradio_ffmpeg_utils::OutputFormat;
-use myownradio_player_loop::{NowPlayingClient, NowPlayingError, PlayerLoop};
 use serde::Deserialize;
-use slog::{debug, error, warn, Drain, Logger};
-use std::sync::{Arc, Mutex};
-use std::time::{Duration, SystemTime};
+use slog::{debug, error, warn, Logger};
+use std::sync::Arc;
+use std::time::Duration;
 
 #[get("/active")]
 pub(crate) async fn get_active_channel_ids(

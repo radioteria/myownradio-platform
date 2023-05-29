@@ -33,7 +33,10 @@ pub(crate) async fn restart_channel_by_id_v2(
     channel_id: web::Path<usize>,
     config: Data<Arc<Config>>,
     stream_registry: Data<Arc<StreamsRegistry>>,
+    stream_compositor: Data<StreamCompositor>,
 ) -> impl Responder {
+    let channel_id = channel_id.into_inner();
+
     let actual_token = match request.headers().get("token").and_then(|v| v.to_str().ok()) {
         Some(token) => token,
         None => {
@@ -46,6 +49,10 @@ pub(crate) async fn restart_channel_by_id_v2(
     }
 
     stream_registry.restart_stream(&channel_id);
+
+    stream_compositor
+        .restart_channel_streams(&channel_id.into())
+        .await;
 
     HttpResponse::Ok().finish()
 }

@@ -3,6 +3,7 @@ use crate::backend_client::{
 };
 use crate::stream_compositor::StreamCompositor;
 use crate::types::ChannelId;
+use actix_rt::task::JoinHandle;
 use actix_web::web::Bytes;
 use async_trait::async_trait;
 use futures::lock::Mutex;
@@ -13,7 +14,6 @@ use myownradio_player_loop::{NowPlayingClient, NowPlayingError, PlayerLoop, Play
 use std::future::Future;
 use std::ops::Deref;
 use std::sync::{mpsc, Arc, Weak};
-use std::thread::JoinHandle;
 use std::time::{Duration, SystemTime};
 use tracing::{error, warn};
 
@@ -38,6 +38,7 @@ pub(crate) struct AudioStream {
     channel_info: ChannelInfo,
     channel: Box<dyn Channel<AudioStreamMessage> + Sync + Send>,
     player_loop: Arc<Mutex<PlayerLoop<BackendClient>>>,
+    async_handle: JoinHandle<()>,
 }
 
 impl AudioStream {
@@ -63,7 +64,7 @@ impl AudioStream {
         )?;
         let player_loop = Arc::new(Mutex::new(player_loop));
 
-        actix_rt::spawn({
+        let async_handle = actix_rt::spawn({
             let player_loop = player_loop.clone();
             let channel = channel.clone();
 
@@ -133,6 +134,7 @@ impl AudioStream {
             channel,
             channel_info,
             player_loop,
+            async_handle,
         })
     }
 
@@ -156,5 +158,11 @@ impl AudioStream {
             .await
             .current_title()
             .map(ToString::to_string)
+    }
+}
+
+impl Drop for AudioStream {
+    fn drop(&mut self) {
+        self.async_handle.abort();
     }
 }

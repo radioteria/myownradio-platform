@@ -18,6 +18,12 @@ impl From<u64> for ChannelId {
     }
 }
 
+impl From<usize> for ChannelId {
+    fn from(channel_id: usize) -> Self {
+        Self(channel_id as u64)
+    }
+}
+
 impl Into<usize> for ChannelId {
     fn into(self) -> usize {
         self.0 as usize

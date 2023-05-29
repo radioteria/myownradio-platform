@@ -1,8 +1,8 @@
 use crate::channel::ChannelClosed;
 use crate::Channel;
-use std::iter::{Chain, Iterator};
-use std::sync::mpsc::Receiver;
-use std::sync::{mpsc, Mutex};
+use futures::{stream, StreamExt};
+use std::pin::Pin;
+use std::sync::Mutex;
 use std::time::Duration;
 use std::vec;
 use tracing::warn;
@@ -28,21 +28,20 @@ where
     replay_buffer: Mutex<Vec<T>>,
 }
 
+#[async_trait::async_trait]
 impl<C, T> Channel<T> for ReplayChannel<C, T>
 where
-    C: Channel<T>,
+    C: Channel<T> + Sync + Send,
     T: TimedMessage + Sync + Send + Clone + 'static,
 {
-    type Iter = Chain<vec::IntoIter<T>, C::Iter>;
-
     /// Sends an item to the inner channel and adds it to the replay buffer.
     ///
     /// # Errors
     ///
     /// Returns an error of type `ChannelClosed` if the channel is closed.
-    fn send(&self, t: T) -> Result<(), ChannelClosed> {
+    async fn send(&self, t: T) -> Result<(), ChannelClosed> {
         self.append_to_buffer(t.clone());
-        self.inner.send(t)
+        self.inner.send(t).await
     }
 
     /// Creates a subscriber for the channel.
@@ -53,7 +52,7 @@ where
     ///
     /// ```rust
     /// use std::time::Duration;
-    /// use myownradio_channel_utils::{Channel, ReplayChannel};
+    /// use myownradio_channel_utils::{Channel, ReplayChannel, TimedChannel};
     ///
     /// let channel = ReplayChannel::new(TimedChannel::new(Duration::from_secs(60), 10), Duration::from_secs(10));
     /// let receiver = channel.subscribe().unwrap();
@@ -62,11 +61,13 @@ where
     /// # Errors
     ///
     /// Returns an error of type `ChannelClosed` if the channel is closed.
-    fn subscribe(&self) -> Result<Self::Iter, ChannelClosed> {
-        let inner_iter = self.inner.subscribe()?.into_iter();
-        let replay_iter: vec::IntoIter<T> = self.replay_buffer.lock().unwrap().clone().into_iter();
+    fn subscribe(&self) -> Result<Pin<Box<dyn futures::Stream<Item = T>>>, ChannelClosed> {
+        let replay_buffer = self.replay_buffer.lock().unwrap().clone();
+        let replayed_items = stream::iter(replay_buffer);
 
-        Ok(replay_iter.chain(inner_iter))
+        let inner_stream = self.inner.subscribe()?;
+
+        Ok(Box::pin(replayed_items.chain(inner_stream)))
     }
 
     /// Closes the channel and removes all subscribers.
@@ -85,7 +86,7 @@ where
 
 impl<IN, T> ReplayChannel<IN, T>
 where
-    IN: Channel<T>,
+    IN: Channel<T> + Sync,
     T: TimedMessage + Clone + Sync + Send + 'static,
 {
     /// Create a new instance of `ReplayTimedChannel`.
@@ -124,6 +125,7 @@ where
         }
 
         guard.retain(|m| m.time().as_secs_f32() >= threshold_millis);
+
         guard.push(t);
     }
 }

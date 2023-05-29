@@ -21,7 +21,7 @@ pub enum PlayerLoopError {
 }
 
 pub struct PlayerLoop<C: NowPlayingClient> {
-    channel_id: u32,
+    channel_id: u64,
     api_client: C,
     transcoder: Option<AudioTranscoderAsync>,
     output_format: OutputFormat,
@@ -34,7 +34,7 @@ pub struct PlayerLoop<C: NowPlayingClient> {
 
 impl<C: NowPlayingClient> PlayerLoop<C> {
     pub fn create(
-        channel_id: u32,
+        channel_id: u64,
         api_client: C,
         output_format: OutputFormat,
         initial_time: SystemTime,

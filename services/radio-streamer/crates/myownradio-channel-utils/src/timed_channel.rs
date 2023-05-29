@@ -1,8 +1,9 @@
 use crate::channel::{Channel, ChannelClosed};
-use crate::timeout::{timer, TimerHandle};
+use actix_rt::task::JoinHandle;
+use futures::channel::mpsc;
 use std::iter::Iterator;
-use std::sync::mpsc::TrySendError;
-use std::sync::{mpsc, Arc, RwLock};
+use std::pin::Pin;
+use std::sync::{Arc, RwLock};
 use std::time::Duration;
 use tracing::{debug, trace, warn};
 
@@ -18,9 +19,9 @@ where
     /// Represents the state of the channel (open or closed).
     is_closed: Arc<RwLock<bool>>,
     /// Holds the list of senders for the channel.
-    txs: Arc<RwLock<Vec<mpsc::SyncSender<T>>>>,
+    txs: Arc<RwLock<Vec<mpsc::Sender<T>>>>,
     /// Holds the handle of the timer.
-    timer_handle: Arc<RwLock<Option<TimerHandle>>>,
+    timer_handle: Arc<RwLock<Option<JoinHandle<()>>>>,
 }
 
 impl<T> TimedChannel<T>
@@ -67,19 +68,21 @@ where
         assert!(self.timer_handle.read().unwrap().is_none());
 
         debug!("Starting the channel close timer");
-        let timer_handle = timer(
-            {
-                let is_closed = self.is_closed.clone();
-                let timer_handle = self.timer_handle.clone();
+        let timer_handle = actix_rt::spawn({
+            let timeout = self.timeout.clone();
+            let is_closed = self.is_closed.clone();
+            let timer_handle = self.timer_handle.clone();
+            let txs = self.txs.clone();
 
-                move || {
-                    debug!("Closing timed out channel");
-                    timer_handle.write().unwrap().take();
-                    *is_closed.write().unwrap() = true;
-                }
-            },
-            self.timeout,
-        );
+            async move {
+                actix_rt::time::sleep(timeout).await;
+
+                debug!("Closing timed out channel");
+                timer_handle.write().unwrap().take();
+                *is_closed.write().unwrap() = true;
+                txs.write().unwrap().clear();
+            }
+        });
 
         self.timer_handle.write().unwrap().replace(timer_handle);
     }
@@ -88,7 +91,7 @@ where
     fn stop_timer(&self) {
         if let Some(handle) = self.timer_handle.write().unwrap().take() {
             debug!("Cancelling the channel close timer");
-            let _ = handle.cancel();
+            let _ = handle.abort();
         }
     }
 
@@ -101,12 +104,11 @@ where
     }
 }
 
+#[async_trait::async_trait]
 impl<T> Channel<T> for TimedChannel<T>
 where
     T: Clone + Send + Sync + 'static,
 {
-    type Iter = mpsc::IntoIter<T>;
-
     /// Sends a message `t` of type `T` to all the subscribers of the channel.
     ///
     /// If the channel is closed, it returns an error of type `ChannelClosed`.
@@ -124,7 +126,7 @@ where
     /// # Errors
     ///
     /// Returns an error of type `ChannelClosed` if the channel is closed.
-    fn send(&self, t: T) -> Result<(), ChannelClosed> {
+    async fn send(&self, t: T) -> Result<(), ChannelClosed> {
         if self.is_closed() {
             warn!("Attempt to send data to closed channel");
             return Err(ChannelClosed);
@@ -139,12 +141,16 @@ where
 
         txs.retain_mut(|tx| match tx.try_send(t.clone()) {
             Ok(()) => true,
-            Err(TrySendError::Full(_)) => {
-                debug!("Dropping data on send attempt to full channel");
+            Err(error) if error.is_full() => {
+                debug!(?error, "Dropping data on send attempt to full channel");
                 true
             }
-            Err(TrySendError::Disconnected(_)) => {
-                debug!("Dropping disconnected subscriber");
+            Err(error) if error.is_disconnected() => {
+                debug!(?error, "Dropping disconnected subscriber");
+                false
+            }
+            Err(error) => {
+                warn!(?error, "Dropping subscriber on unknown send error");
                 false
             }
         });
@@ -178,14 +184,14 @@ where
     /// # Errors
     ///
     /// Returns an error of type `ChannelClosed` if the channel is closed.
-    fn subscribe(&self) -> Result<Self::Iter, ChannelClosed> {
+    fn subscribe(&self) -> Result<Pin<Box<dyn futures::Stream<Item = T>>>, ChannelClosed> {
         if self.is_closed() {
             warn!("Attempt to subscribe to closed channel");
             return Err(ChannelClosed);
         }
 
         debug!("New subscriber");
-        let (tx, rx) = mpsc::sync_channel(self.buffer);
+        let (tx, rx) = mpsc::channel(self.buffer);
 
         if self.timer_started() {
             self.stop_timer();
@@ -193,7 +199,7 @@ where
 
         self.txs.write().unwrap().push(tx);
 
-        Ok(rx.into_iter())
+        Ok(Box::pin(rx))
     }
 
     /// Closes the channel and removes all subscribers
@@ -202,6 +208,7 @@ where
         if self.timer_started() {
             self.stop_timer();
         }
+
         *self.is_closed.write().unwrap() = true;
         self.txs.write().unwrap().clear();
     }

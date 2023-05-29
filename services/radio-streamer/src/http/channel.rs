@@ -199,13 +199,15 @@ impl Into<OutputFormat> for AudioFormat {
 const START_BUFFER_TIME: Duration = Duration::from_millis(2500);
 
 #[derive(Deserialize, Clone)]
-pub struct GetChannelAudioStreamV3QueryParams {}
+pub struct GetChannelAudioStreamV3QueryParams {
+    format: Option<String>,
+}
 
 #[get("/v3/listen/{channel_id}")]
 pub(crate) async fn get_channel_audio_stream_v3(
     request: HttpRequest,
     channel_id: web::Path<u64>,
-    query_params: Query<GetChannelAudioStreamQueryParams>,
+    query_params: Query<GetChannelAudioStreamV3QueryParams>,
     stream_compositor: Data<StreamCompositor>,
 ) -> impl Responder {
     let channel_id: ChannelId = channel_id.into_inner().into();

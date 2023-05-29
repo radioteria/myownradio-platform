@@ -1,6 +1,7 @@
 use crate::running_time::RunningTime;
 use crate::types::{NowPlaying, NowPlayingClient, NowPlayingError};
 use crate::utils::threshold_minimum;
+use crate::CurrentTrack;
 use myownradio_ffmpeg_utils::{
     AudioTranscoderAsync, OutputFormat, Packet, TranscoderCreationError, TranscodingError,
 };
@@ -9,6 +10,7 @@ use std::time::{Duration, SystemTime};
 use tracing::{debug, error, trace, warn};
 
 const MAX_TRANSCODING_ATTEMPTS: usize = 5;
+const TRACK_POSITION_THRESHOLD: Duration = Duration::from_millis(150);
 
 #[derive(Debug, thiserror::Error)]
 pub enum PlayerLoopError {
@@ -27,8 +29,7 @@ pub struct PlayerLoop<C: NowPlayingClient> {
     output_format: OutputFormat,
     running_time: RunningTime,
     initial_time: SystemTime,
-    current_title: Option<String>,
-    now_playing: Option<NowPlaying>,
+    current_track: Option<CurrentTrack>,
     transcoding_attempts: usize,
 }
 
@@ -41,8 +42,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
     ) -> Result<Self, PlayerLoopError> {
         let running_time = RunningTime::new();
         let transcoder = None;
-        let current_title = None;
-        let now_playing = None;
+        let current_track = None;
         let transcoding_attempts = 0;
 
         Ok(Self {
@@ -52,8 +52,7 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
             output_format,
             running_time,
             initial_time,
-            current_title,
-            now_playing,
+            current_track,
             transcoding_attempts,
         })
     }
@@ -88,11 +87,9 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
                         // Adjust running time for the last packet's duration or remaining track duration,
                         // or for 50ms in worth case to prevent stuck on frozen time.
                         let adv_duration =
-                            match (&stats.last_output_packet_duration, &self.now_playing) {
+                            match (&stats.last_output_packet_duration, &self.current_track) {
                                 (Some(last_packet_duration), _) => last_packet_duration.into(),
-                                (None, Some(current_track)) => {
-                                    current_track.current.remaining_duration()
-                                }
+                                (None, Some(current_track)) => current_track.remaining_duration(),
                                 _ => Duration::from_millis(50),
                             };
                         debug!(
@@ -140,16 +137,18 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
                 .api_client
                 .get_now_playing(&self.channel_id, &clock_time)
                 .await?;
-            let now_playing = self.now_playing.insert(now_playing);
-
-            let url = &now_playing.current.url;
-            let position =
-                threshold_minimum(&Duration::from_millis(150), now_playing.current.position);
+            let current_track = self
+                .current_track
+                .insert(Self::get_current_track(now_playing));
 
             self.running_time.reset_pts();
 
-            let transcoder =
-                AudioTranscoderAsync::create(url, &position, &self.output_format).await?;
+            let transcoder = AudioTranscoderAsync::create(
+                &current_track.url,
+                &current_track.position,
+                &self.output_format,
+            )
+            .await?;
 
             self.transcoder.replace(transcoder);
         }
@@ -164,9 +163,9 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
 
     /// Get the title of the track that is being decoded.
     pub fn current_title(&self) -> Option<&str> {
-        self.now_playing
+        self.current_track
             .as_ref()
-            .map(|track| track.current.title.as_str())
+            .map(|track| track.title.as_str())
     }
 
     /// Get the current running time value.
@@ -188,6 +187,26 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
             // Update the PTS value of the packet based on the running time.
             packet.set_pts((*self.running_time.time()).into())
         }
+    }
+
+    fn get_current_track(now_playing: NowPlaying) -> CurrentTrack {
+        if now_playing.current.position <= TRACK_POSITION_THRESHOLD {
+            return CurrentTrack {
+                position: Duration::ZERO,
+                ..now_playing.current
+            };
+        }
+
+        if now_playing.current.remaining_duration() <= TRACK_POSITION_THRESHOLD {
+            return CurrentTrack {
+                url: now_playing.next.url,
+                title: now_playing.next.title,
+                position: Duration::ZERO,
+                duration: now_playing.next.duration,
+            };
+        }
+
+        now_playing.current
     }
 }
 

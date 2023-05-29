@@ -4,11 +4,13 @@ use crate::audio_stream::AudioStreamMessage;
 use crate::backend_client::{BackendClient, GetChannelInfoError, GetNowPlayingError, NowPlaying};
 use crate::config::Config;
 use crate::stream::{StreamCreateError, StreamMessage, StreamsRegistry, StreamsRegistryExt};
+use crate::stream_compositor::StreamCompositor;
+use crate::types::ChannelId;
 use actix_web::web::{Bytes, Data, Query};
 use actix_web::{get, web, HttpRequest, HttpResponse, Responder};
 use futures::channel::mpsc;
 use futures::executor::{block_on, LocalSpawner};
-use futures::StreamExt;
+use futures::{SinkExt, StreamExt};
 use myownradio_ffmpeg_utils::OutputFormat;
 use myownradio_player_loop::{NowPlayingClient, NowPlayingError, PlayerLoop};
 use serde::Deserialize;
@@ -192,15 +194,18 @@ impl Into<OutputFormat> for AudioFormat {
 
 const START_BUFFER_TIME: Duration = Duration::from_millis(2500);
 
+#[derive(Deserialize, Clone)]
+pub struct GetChannelAudioStreamV3QueryParams {}
+
 #[get("/v3/listen/{channel_id}")]
 pub(crate) async fn get_channel_audio_stream_v3(
     request: HttpRequest,
-    channel_id: web::Path<u32>,
+    channel_id: web::Path<u64>,
     query_params: Query<GetChannelAudioStreamQueryParams>,
-    logger: Data<Arc<Logger>>,
-    client: Data<Arc<BackendClient>>,
+    stream_compositor: Data<StreamCompositor>,
 ) -> impl Responder {
-    let channel_id = channel_id.into_inner();
+    let channel_id: ChannelId = channel_id.into_inner().into();
+
     let format = query_params
         .into_inner()
         .format
@@ -212,81 +217,77 @@ pub(crate) async fn get_channel_audio_stream_v3(
         .filter(|v| v.to_str().unwrap() == "1")
         .is_some();
     let content_type = format.content_type;
+    let output_format: OutputFormat = format.into();
 
-    // let (response_sender, response_receiver) = mpsc::channel(512);
-    // let icy_muxer = Arc::new(IcyMuxer::new());
+    let stream = match stream_compositor
+        .get_or_create_audio_stream(&channel_id, &output_format)
+        .await
+    {
+        Ok(audio_stream) => audio_stream,
+        Err(error) => {
+            tracing::error!(?error, "Unable to get audio stream");
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
 
-    todo!();
+    let channel_name = stream.channel_info().name.clone();
 
-    return HttpResponse::ServiceUnavailable().finish();
+    let audio_stream_messages = match stream.subscribe() {
+        Ok(audio_stream_messages) => audio_stream_messages,
+        Err(error) => {
+            tracing::error!(?error, "Unable to subscribe to audio stream messages");
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
 
-    // let audio_channel = match streams_registry
-    //     .get_or_create_channel(&channel_id, &format.clone().into())
-    //     .await
-    // {
-    //     Ok(stream) => stream,
-    //     Err(error) => {
-    //         return HttpResponse::ServiceUnavailable().finish();
-    //     }
-    // };
-    //
-    // if let Some(title) = audio_channel.current_title() {
-    //     icy_muxer.send_track_title(title);
-    // }
-    //
-    // std::thread::spawn({
-    //     let mut response_sender = response_sender;
-    //     let icy_muxer = icy_muxer.clone();
-    //     let audio_channel = audio_channel.clone();
-    //
-    //     move || {
-    //         let mut stream = audio_channel.subscribe().unwrap();
-    //
-    //         while let Some(message) = stream.next() {
-    //             match message {
-    //                 AudioStreamMessage::Buffer { bytes, .. } => {
-    //                     match response_sender.try_send(bytes) {
-    //                         Err(error) if error.is_disconnected() => {
-    //                             // Disconnected: drop the receiver
-    //                             return;
-    //                         }
-    //                         Err(error) if error.is_full() => {
-    //                             // Buffer is full: skip the remaining bytes
-    //                         }
-    //                         Err(error) => {
-    //                             warn!(logger, "Unable to send bytes to the client"; "error" => ?error);
-    //                             // Unexpected error: drop the receiver
-    //                             return;
-    //                         }
-    //                         Ok(_) => (),
-    //                     }
-    //                 }
-    //                 AudioStreamMessage::TrackTitle { title, .. } => {
-    //                     icy_muxer.send_track_title(title);
-    //                 }
-    //             }
-    //         }
-    //
-    //         drop(response_sender);
-    //     }
-    // });
-    //
-    // let mut response = HttpResponse::Ok();
-    //
-    // response.content_type(content_type).force_close();
-    //
-    // if is_icy_enabled {
-    //     response
-    //         .insert_header(("icy-metadata", "1"))
-    //         .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)))
-    //         .insert_header(("icy-name", format!("{}", audio_channel.channel_info().name)));
-    //
-    //     response.streaming::<_, actix_web::Error>(
-    //         response_receiver
-    //             .map(move |bytes| icy_muxer.handle_bytes(bytes))
-    //             .map(Ok),
-    //     )
-    // } else {
-    //     response.streaming::<_, actix_web::Error>(response_receiver.map(Ok))
-    // }
+    let icy_muxer = Arc::new(IcyMuxer::new());
+
+    if let Some(title) = stream.current_title().await {
+        icy_muxer.send_track_title(title);
+    }
+
+    let (response_sender, response_receiver) = mpsc::channel(32);
+
+    actix_rt::spawn({
+        let mut audio_stream_messages = audio_stream_messages;
+        let mut response_sender = response_sender;
+
+        let icy_muxer = icy_muxer.clone();
+
+        async move {
+            while let Some(msg) = audio_stream_messages.next().await {
+                match msg {
+                    AudioStreamMessage::Buffer { bytes, .. } => {
+                        if response_sender.send(bytes).await.is_err() {
+                            break;
+                        }
+                    }
+                    AudioStreamMessage::TrackTitle { title, .. } => {
+                        icy_muxer.send_track_title(title);
+                    }
+                }
+            }
+
+            drop(stream);
+        }
+    });
+
+    let mut response = HttpResponse::Ok();
+
+    response.content_type(content_type).force_close();
+
+    if is_icy_enabled {
+        response
+            .insert_header(("icy-metadata", "1"))
+            .insert_header(("icy-metaint", format!("{}", ICY_METADATA_INTERVAL)))
+            .insert_header(("icy-name", format!("{}", channel_name)));
+
+        response.streaming::<_, actix_web::Error>(
+            response_receiver
+                .map(move |bytes| icy_muxer.handle_bytes(bytes))
+                .map(Ok),
+        )
+    } else {
+        response.streaming::<_, actix_web::Error>(response_receiver.map(Ok))
+    }
 }

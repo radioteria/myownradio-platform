@@ -1,7 +1,7 @@
-use crate::app::App;
 use crate::backend_client::{
     BackendClient, ChannelInfo, GetChannelInfoError, GetNowPlayingError, NowPlaying,
 };
+use crate::stream_compositor::StreamCompositor;
 use crate::types::ChannelId;
 use actix_web::web::Bytes;
 use async_trait::async_trait;
@@ -145,5 +145,13 @@ impl AudioStream {
 
     pub(crate) fn channel_info(&self) -> &ChannelInfo {
         &self.channel_info
+    }
+
+    pub(crate) async fn current_title(&self) -> Option<String> {
+        self.player_loop
+            .lock()
+            .await
+            .current_title()
+            .map(ToString::to_string)
     }
 }

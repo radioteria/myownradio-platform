@@ -23,8 +23,8 @@ use crate::http::channel::{
 use crate::http::metrics::get_metrics;
 use crate::metrics::Metrics;
 use crate::stream::StreamsRegistry;
+use crate::stream_compositor::StreamCompositor;
 
-mod app;
 mod audio_formats;
 mod audio_stream;
 mod audio_stream_utils;
@@ -34,6 +34,7 @@ mod http;
 mod macros;
 mod metrics;
 mod stream;
+mod stream_compositor;
 mod types;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -78,6 +79,8 @@ async fn main() -> Result<()> {
     let metrics = Arc::new(Metrics::new());
 
     let streams_registry = Arc::new(StreamsRegistry::new(&backend_client, &logger, &metrics));
+
+    let app = StreamCompositor::create(backend_client.clone());
 
     info!("Starting application...");
 
@@ -127,6 +130,7 @@ async fn main() -> Result<()> {
                 .app_data(Data::new(logger.clone()))
                 .app_data(Data::new(metrics.clone()))
                 .app_data(Data::new(streams_registry.clone()))
+                .app_data(Data::new(app.clone()))
                 .service(get_channel_audio_stream_v2)
                 .service(get_channel_audio_stream_v3)
                 .service(restart_channel_by_id_v2)

@@ -7,7 +7,7 @@ use actix_web::web::Bytes;
 use async_trait::async_trait;
 use futures::lock::Mutex;
 use futures::{SinkExt, Stream};
-use myownradio_channel_utils::{Channel, ChannelClosed, TimedChannel};
+use myownradio_channel_utils::{Channel, ChannelClosed, ReplayChannel, TimedChannel};
 use myownradio_ffmpeg_utils::{OutputFormat, Timestamp};
 use myownradio_player_loop::{NowPlayingClient, NowPlayingError, PlayerLoop, PlayerLoopError};
 use std::future::Future;
@@ -36,7 +36,7 @@ pub(crate) enum CreateAudioStreamError {
 
 pub(crate) struct AudioStream {
     channel_info: ChannelInfo,
-    channel: TimedChannel<AudioStreamMessage>,
+    channel: Box<dyn Channel<AudioStreamMessage> + Sync + Send>,
     player_loop: Arc<Mutex<PlayerLoop<BackendClient>>>,
 }
 
@@ -51,7 +51,8 @@ impl AudioStream {
             .await?;
 
         let initial_time = SystemTime::now() - START_BUFFER_TIME;
-        let channel = TimedChannel::new(Duration::from_secs(30), 16);
+        let channel = TimedChannel::<AudioStreamMessage>::new(Duration::from_secs(30), 16);
+        let channel = ReplayChannel::new(channel, START_BUFFER_TIME);
 
         let backend_client = backend_client.clone();
         let player_loop = PlayerLoop::create(
@@ -125,6 +126,8 @@ impl AudioStream {
                 }
             }
         });
+
+        let channel = Box::new(channel);
 
         Ok(Self {
             channel,

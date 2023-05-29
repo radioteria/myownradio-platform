@@ -1,6 +1,8 @@
+use crate::audio_stream::AudioStreamMessage;
 use crate::backend_client::BackendClient;
-use myownradio_player_loop::{NowPlaying, NowPlayingClient, NowPlayingError, PlayerLoop};
-use std::time::SystemTime;
+use myownradio_channel_utils::TimedMessage;
+use myownradio_player_loop::{NowPlayingClient, PlayerLoop};
+use std::time::{Duration, SystemTime};
 use tracing::error;
 
 #[async_trait::async_trait]
@@ -9,7 +11,7 @@ impl NowPlayingClient for BackendClient {
         &self,
         channel_id: &u64,
         time: &SystemTime,
-    ) -> Result<NowPlaying, NowPlayingError> {
+    ) -> Result<myownradio_player_loop::NowPlaying, myownradio_player_loop::NowPlayingError> {
         let channel_id = *channel_id as usize;
 
         match BackendClient::get_now_playing(self, &channel_id, time).await {
@@ -28,8 +30,17 @@ impl NowPlayingClient for BackendClient {
             }),
             Err(error) => {
                 error!(?error, "Error happened on getting NowPlaying object");
-                Err(NowPlayingError::NonRetryable)
+                Err(myownradio_player_loop::NowPlayingError::NonRetryable)
             }
+        }
+    }
+}
+
+impl TimedMessage for AudioStreamMessage {
+    fn time(&self) -> Duration {
+        match self {
+            AudioStreamMessage::TrackTitle { pts, .. } => *pts,
+            AudioStreamMessage::Buffer { pts, .. } => *pts,
         }
     }
 }

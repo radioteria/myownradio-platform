@@ -2,7 +2,7 @@ use crate::channel::ChannelClosed;
 use crate::Channel;
 use futures::{stream, StreamExt};
 use std::pin::Pin;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::vec;
 use tracing::warn;
@@ -15,6 +15,7 @@ pub trait TimedMessage {
 /// A channel that maintains a replay buffer of items that have been sent through it.
 ///
 /// Items in the replay buffer are replayed to clients that are late to the channel.
+#[derive(Clone)]
 pub struct ReplayChannel<C, T>
 where
     C: Channel<T>,
@@ -25,7 +26,7 @@ where
     /// The duration of time to keep items in the replay buffer.
     replay_time: Duration,
     /// The replay buffer, which is a vec of items wrapped in a mutex to allow for concurrent access.
-    replay_buffer: Mutex<Vec<T>>,
+    replay_buffer: Arc<Mutex<Vec<T>>>,
 }
 
 #[async_trait::async_trait]
@@ -96,7 +97,7 @@ where
     /// * `inner` - The inner `TimedChannel` to wrap.
     /// * `replay_time` - The duration of time to keep items in the replay buffer.
     pub fn new(inner: IN, replay_time: Duration) -> Self {
-        let replay_buffer = Mutex::new(vec![]);
+        let replay_buffer = Arc::new(Mutex::new(vec![]));
 
         Self {
             inner,

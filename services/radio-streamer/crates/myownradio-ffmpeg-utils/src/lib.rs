@@ -1,13 +1,9 @@
-mod decoder;
-mod encoder;
 mod ffmpeg;
 mod generator;
 mod transcoder;
 mod transcoder_async;
 mod utils;
 
-pub use decoder::{decode_audio_file, AudioDecoderError, DecoderMessage};
-pub use encoder::{make_encoder, AudioEncoderError, EncoderMessage, Format};
 pub use ffmpeg_next::init;
 pub use generator::generate_silence;
 pub use transcoder::{AudioTranscoder, OutputFormat, TranscoderCreationError, TranscodingError};
@@ -16,9 +12,6 @@ pub use utils::{Frame, Packet, Timestamp};
 
 // The sampling rate used internally by the program, in Hz.
 const INTERNAL_SAMPLING_FREQUENCY: i64 = 48_000;
-
-// The number of bytes required to represent a single 16-bit stereo audio sample as four 8-bit integers.
-const INTERNAL_SAMPLE_SIZE: usize = 4;
 
 // The timebase used internally by the program, expressed as a ratio of time units.
 const INTERNAL_TIME_BASE: (i32, i32) = (1, 1000);

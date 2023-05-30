@@ -17,12 +17,10 @@ use tracing::{error, info};
 use crate::backend_client::BackendClient;
 use crate::config::{Config, LogFormat};
 use crate::http::channel::{
-    get_active_channel_ids, get_channel_audio_stream_v2, get_channel_audio_stream_v3,
-    restart_channel_by_id_v2,
+    get_active_channel_ids, get_channel_audio_stream_v3, restart_channel_by_id_v2,
 };
 use crate::http::metrics::get_metrics;
 use crate::metrics::Metrics;
-use crate::stream::StreamsRegistry;
 use crate::stream_compositor::StreamCompositor;
 
 mod audio_formats;
@@ -33,7 +31,6 @@ mod config;
 mod http;
 mod macros;
 mod metrics;
-mod stream;
 mod stream_compositor;
 mod types;
 
@@ -72,15 +69,10 @@ async fn main() -> Result<()> {
     env_logger::init();
     myownradio_ffmpeg_utils::init().expect("Unable to initialize FFmpeg");
 
-    let backend_client = Arc::new(BackendClient::new(
-        &config.mor_backend_url,
-        &logger.new(o!("scope" => "BackendClient")),
-    ));
+    let backend_client = Arc::new(BackendClient::new(&config.mor_backend_url));
     let metrics = Arc::new(Metrics::new());
 
-    let streams_registry = Arc::new(StreamsRegistry::new(&backend_client, &logger, &metrics));
-
-    let app = StreamCompositor::create(backend_client.clone());
+    let app = StreamCompositor::create(backend_client.clone(), metrics.clone());
 
     info!("Starting application...");
 
@@ -129,9 +121,7 @@ async fn main() -> Result<()> {
                 .app_data(Data::new(backend_client.clone()))
                 .app_data(Data::new(logger.clone()))
                 .app_data(Data::new(metrics.clone()))
-                .app_data(Data::new(streams_registry.clone()))
                 .app_data(Data::new(app.clone()))
-                .service(get_channel_audio_stream_v2)
                 .service(get_channel_audio_stream_v3)
                 .service(restart_channel_by_id_v2)
                 .service(get_active_channel_ids)

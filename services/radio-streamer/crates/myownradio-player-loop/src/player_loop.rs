@@ -210,14 +210,14 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
 mod tests {
     use super::*;
     use crate::types::{CurrentTrack, NextTrack};
-    use crate::{NowPlayingError, PlayerLoop, PlayerLoopError};
-    use myownradio_ffmpeg_utils::{OutputFormat, Packet, Timestamp};
+    use crate::{NowPlayingError, PlayerLoop};
+    use myownradio_ffmpeg_utils::OutputFormat;
     use std::sync::{Arc, Mutex};
     use std::time::{Duration, SystemTime};
 
     #[derive(Clone)]
     struct MockAPIClient {
-        calls: Arc<Mutex<Vec<(u32, SystemTime)>>>,
+        calls: Arc<Mutex<Vec<(u64, SystemTime)>>>,
     }
 
     impl MockAPIClient {
@@ -232,7 +232,7 @@ mod tests {
     impl NowPlayingClient for MockAPIClient {
         async fn get_now_playing(
             &self,
-            channel_id: &u32,
+            channel_id: &u64,
             time: &SystemTime,
         ) -> Result<NowPlaying, NowPlayingError> {
             let timeline_position_micros = time

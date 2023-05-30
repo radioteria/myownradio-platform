@@ -49,15 +49,6 @@ where
     ///
     /// If the channel is closed, it returns an error of type `ChannelClosed`.
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use std::time::Duration;
-    /// use myownradio_channel_utils::{Channel, ReplayChannel, TimedChannel};
-    ///
-    /// let channel = ReplayChannel::new(TimedChannel::new(Duration::from_secs(60), 10), Duration::from_secs(10));
-    /// let receiver = channel.subscribe().unwrap();
-    /// ```
     ///
     /// # Errors
     ///

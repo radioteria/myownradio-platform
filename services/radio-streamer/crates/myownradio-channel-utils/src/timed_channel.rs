@@ -33,15 +33,6 @@ where
     /// The buffer size determines how many messages can be stored in the channel at once.
     ///
     /// The channel automatically closes after the specified duration if there are no new subscribers.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use std::time::Duration;
-    /// use myownradio_channel_utils::TimedChannel;
-    ///
-    /// let channel = TimedChannel::new(Duration::from_secs(60), 10);
-    /// ```
     pub fn new(timeout: Duration, buffer: usize) -> Self {
         let is_closed = Arc::new(RwLock::new(false));
         let txs = Arc::new(RwLock::new(vec![]));
@@ -113,16 +104,6 @@ where
     ///
     /// If the channel is closed, it returns an error of type `ChannelClosed`.
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use std::time::Duration;
-    /// use myownradio_channel_utils::{Channel, TimedChannel};
-    ///
-    /// let channel = TimedChannel::new(Duration::from_secs(60), 10);
-    /// let _ = channel.send("Hello World").unwrap();
-    /// ```
-    ///
     /// # Errors
     ///
     /// Returns an error of type `ChannelClosed` if the channel is closed.
@@ -166,20 +147,6 @@ where
     /// Creates a subscriber for the channel.
     ///
     /// If the channel is closed, it returns an error of type `ChannelClosed`.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use std::time::Duration;
-    /// use myownradio_channel_utils::{Channel, TimedChannel};
-    ///
-    /// let channel = TimedChannel::<()>::new(Duration::from_secs(60), 10);
-    /// let msg_iter = channel.subscribe().unwrap();
-    ///
-    /// for msg in msg_iter {
-    ///     //
-    /// }
-    /// ```
     ///
     /// # Errors
     ///

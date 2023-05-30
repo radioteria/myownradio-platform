@@ -1,4 +1,5 @@
 use crate::backend_client::{BackendClient, ChannelInfo, GetChannelInfoError};
+use crate::metrics::Metrics;
 use crate::types::ChannelId;
 use actix_rt::task::JoinHandle;
 use actix_web::web::Bytes;
@@ -7,6 +8,7 @@ use futures::Stream;
 use myownradio_channel_utils::{Channel, ChannelClosed, ReplayChannel, TimedChannel};
 use myownradio_ffmpeg_utils::OutputFormat;
 use myownradio_player_loop::{PlayerLoop, PlayerLoopError};
+use scopeguard::defer;
 use std::ops::Deref;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
@@ -41,6 +43,7 @@ impl AudioStream {
         channel_id: &ChannelId,
         output_format: &OutputFormat,
         backend_client: &BackendClient,
+        metrics: &Metrics,
     ) -> Result<Self, CreateAudioStreamError> {
         let channel_info = backend_client
             .get_channel_info(&channel_id.clone().into(), None)
@@ -62,8 +65,13 @@ impl AudioStream {
         let async_handle = actix_rt::spawn({
             let player_loop = player_loop.clone();
             let channel = channel.clone();
+            let metrics = metrics.clone();
 
             async move {
+                metrics.inc_active_player_loops();
+
+                defer!(metrics.dec_active_player_loops());
+
                 let mut previous_title = String::new();
 
                 loop {

@@ -1,15 +1,11 @@
 use crate::VERSION;
 use actix_web::http::{Method, StatusCode};
-use prometheus::{
-    Encoder, Gauge, HistogramVec, IntCounterVec, IntGaugeVec, Opts, Registry, TextEncoder,
-};
+use prometheus::{Encoder, Gauge, HistogramVec, IntCounterVec, Opts, Registry, TextEncoder};
 use std::collections::HashMap;
 use std::time::Duration;
 
 #[derive(Clone)]
 pub struct Metrics {
-    active_decoders: Gauge,
-    active_encoders: IntGaugeVec,
     active_player_loops: Gauge,
     prometheus_registry: Registry,
     http_requests_total: IntCounterVec,
@@ -18,18 +14,6 @@ pub struct Metrics {
 
 impl Metrics {
     pub fn new() -> Self {
-        let active_decoders = Gauge::with_opts(Opts::new(
-            "active_decoders",
-            "Number of active decoder processes",
-        ))
-        .unwrap();
-
-        let active_encoders = IntGaugeVec::new(
-            Opts::new("active_encoders", "Number of active encoder processes"),
-            &["format"],
-        )
-        .unwrap();
-
         let active_player_loops = Gauge::with_opts(Opts::new(
             "active_player_loops",
             "Number of active player loops",
@@ -72,12 +56,6 @@ impl Metrics {
         }
 
         prometheus_registry
-            .register(Box::new(active_decoders.clone()))
-            .unwrap();
-        prometheus_registry
-            .register(Box::new(active_encoders.clone()))
-            .unwrap();
-        prometheus_registry
             .register(Box::new(active_player_loops.clone()))
             .unwrap();
         prometheus_registry
@@ -88,29 +66,11 @@ impl Metrics {
             .unwrap();
 
         Self {
-            active_decoders,
-            active_encoders,
             active_player_loops,
             prometheus_registry,
             http_requests_total,
             http_requests_duration_seconds,
         }
-    }
-
-    pub fn inc_active_decoders(&self) {
-        self.active_decoders.inc()
-    }
-
-    pub fn dec_active_decoders(&self) {
-        self.active_decoders.dec()
-    }
-
-    pub fn inc_active_encoders(&self, format: &str) {
-        self.active_encoders.with_label_values(&[format]).inc();
-    }
-
-    pub fn dec_active_encoders(&self, format: &str) {
-        self.active_encoders.with_label_values(&[format]).dec()
     }
 
     pub fn inc_active_player_loops(&self) {

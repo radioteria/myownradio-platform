@@ -1,10 +1,6 @@
 extern crate ffmpeg_next as ffmpeg;
 
-use crate::{INTERNAL_SAMPLE_SIZE, INTERNAL_SAMPLING_FREQUENCY, INTERNAL_TIME_BASE};
-use ffmpeg::frame::Audio;
-use ffmpeg_next::format::sample::Type::{Packed, Planar};
-use ffmpeg_next::format::Sample::I16;
-use ffmpeg_next::ChannelLayout;
+use crate::INTERNAL_TIME_BASE;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 use std::time::Duration;
@@ -152,61 +148,4 @@ impl DerefMut for Packet {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
-}
-
-pub(crate) fn convert_frame_to_planar(src_frame: Frame) -> Audio {
-    let pts = src_frame.pts_as_duration().as_millis() as i64;
-    let data_length = src_frame.data().len();
-    let data = src_frame.data();
-    let samples = data_length / INTERNAL_SAMPLE_SIZE;
-
-    let mut dst_frame = Audio::new(I16(Planar), samples, ChannelLayout::STEREO);
-
-    dst_frame.set_pts(Some(pts));
-    dst_frame.set_channels(2);
-    dst_frame.set_rate(INTERNAL_SAMPLING_FREQUENCY as u32);
-
-    let mut left_data: Vec<u8> = vec![];
-    let mut right_data: Vec<u8> = vec![];
-
-    for chunk in data.chunks_exact(4) {
-        left_data.push(chunk[0]);
-        left_data.push(chunk[1]);
-        right_data.push(chunk[2]);
-        right_data.push(chunk[3]);
-    }
-
-    let left_data = Box::into_raw(left_data.into_boxed_slice());
-    let right_data = Box::into_raw(right_data.into_boxed_slice());
-
-    unsafe {
-        (*dst_frame.as_mut_ptr()).linesize[0] = 1;
-
-        (*dst_frame.as_mut_ptr()).data[0] = left_data as *mut u8;
-        (*dst_frame.as_mut_ptr()).data[1] = right_data as *mut u8;
-    };
-
-    dst_frame
-}
-
-pub(crate) fn convert_frame_to_packed(src_frame: Frame) -> Audio {
-    let pts = src_frame.pts_as_duration().as_millis() as i64;
-    let data_length = src_frame.data().len();
-    let samples = data_length / INTERNAL_SAMPLE_SIZE;
-
-    let mut dst_frame = Audio::new(I16(Packed), samples, ChannelLayout::STEREO);
-
-    dst_frame.set_pts(Some(pts));
-    dst_frame.set_channels(2);
-    dst_frame.set_rate(INTERNAL_SAMPLING_FREQUENCY as u32);
-
-    let data = Box::into_raw(src_frame.data().as_ref().clone().into_boxed_slice());
-
-    unsafe {
-        (*dst_frame.as_mut_ptr()).linesize[0] = 1;
-
-        (*dst_frame.as_mut_ptr()).data[0] = data as *mut u8;
-    };
-
-    dst_frame
 }

@@ -1,5 +1,4 @@
 use std::fmt::{Display, Formatter};
-use std::iter::Iterator;
 use std::pin::Pin;
 
 /// Error type that is used to indicate that the channel is closed

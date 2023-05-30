@@ -10,9 +10,7 @@ use futures::channel::mpsc;
 use futures::{SinkExt, StreamExt};
 use myownradio_ffmpeg_utils::OutputFormat;
 use serde::Deserialize;
-use slog::{debug, error, warn, Logger};
 use std::sync::Arc;
-use std::time::Duration;
 
 #[get("/active")]
 pub(crate) async fn get_active_channel_ids() -> impl Responder {
@@ -63,8 +61,6 @@ impl Into<OutputFormat> for AudioFormat {
         }
     }
 }
-
-const START_BUFFER_TIME: Duration = Duration::from_millis(2500);
 
 #[derive(Deserialize, Clone)]
 pub struct GetChannelAudioStreamV3QueryParams {

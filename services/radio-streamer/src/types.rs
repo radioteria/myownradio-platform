@@ -1,4 +1,3 @@
-use std::fmt::{Display, Formatter};
 use std::ops::Deref;
 
 #[derive(Clone, Debug, PartialEq, Hash, Eq)]

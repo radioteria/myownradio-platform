@@ -2,7 +2,6 @@ extern crate serde_millis;
 
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-use slog::{error, Logger};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(5);
@@ -54,7 +53,6 @@ pub struct GetChannelInfoResponse {
 
 #[derive(Clone)]
 pub struct BackendClient {
-    logger: Logger,
     mor_backend_url: String,
 }
 
@@ -79,9 +77,8 @@ pub enum GetChannelInfoError {
 }
 
 impl BackendClient {
-    pub fn new(mor_backend_url: &str, logger: &Logger) -> Self {
+    pub fn new(mor_backend_url: &str) -> Self {
         Self {
-            logger: logger.clone(),
             mor_backend_url: mor_backend_url.to_string(),
         }
     }

@@ -7,7 +7,6 @@ use crate::ffmpeg::{
 use crate::{utils, Timestamp};
 use ffmpeg::decoder;
 use ffmpeg::format;
-use ffmpeg::format::context::input::PacketIter;
 use ffmpeg::format::sample::Type::{Packed, Planar};
 use ffmpeg::format::Sample::I16;
 use ffmpeg::frame::Audio;
@@ -231,14 +230,14 @@ impl AudioTranscoder {
 
         let mut decoded = Audio::empty();
         while self.decoder.receive_frame(&mut decoded).is_ok() {
-            trace!("Received 1 frame from decoder");
-
             let timestamp = decoded.timestamp();
             decoded.set_pts(timestamp);
 
             self.send_frame_to_resampler(&decoded)?;
             packets.append(&mut self.get_and_process_resampled_frames()?);
         }
+
+        trace!("Received {} frames from decoder", packets.len());
 
         Ok(packets)
     }
@@ -255,11 +254,11 @@ impl AudioTranscoder {
             .samples(&mut resampled, 1024)
             .is_ok()
         {
-            trace!("Received 1 frame from resampling filter");
-
             self.send_frame_to_encoder(&resampled)?;
             packets.append(&mut self.receive_encoded_packets()?);
         }
+
+        trace!("Received {} frames from resampling filter", packets.len());
 
         Ok(packets)
     }
@@ -295,21 +294,6 @@ impl AudioTranscoder {
         Ok(())
     }
 
-    fn receive_decoded_frames(&mut self) -> Result<Vec<Audio>, ffmpeg_next::Error> {
-        let mut frames = vec![];
-
-        let mut frame = Audio::empty();
-        while self.decoder.receive_frame(&mut frame).is_ok() {
-            let timestamp = frame.timestamp();
-            frame.set_pts(timestamp);
-            frames.push(frame.clone());
-        }
-
-        trace!("Received {} frames from decoder", frames.len());
-
-        Ok(frames)
-    }
-
     fn send_frame_to_resampler(&mut self, frame: &Audio) -> Result<(), ffmpeg_next::Error> {
         trace!("Sending frame to resampler");
 
@@ -332,26 +316,6 @@ impl AudioTranscoder {
         trace!("Flushed resampling filter");
 
         Ok(())
-    }
-
-    fn receive_resampled_frames(&mut self) -> Result<Vec<Audio>, ffmpeg_next::Error> {
-        let mut frames = vec![];
-
-        let mut buffer = Audio::empty();
-        while self
-            .resampler
-            .get("out")
-            .expect("Unable to get 'out' pad on filter")
-            .sink()
-            .samples(&mut buffer, 1024)
-            .is_ok()
-        {
-            frames.push(buffer.clone());
-        }
-
-        trace!("Received {} frames from resampling filter", frames.len());
-
-        Ok(frames)
     }
 
     fn send_frame_to_encoder(&mut self, frame: &Audio) -> Result<(), ffmpeg_next::Error> {

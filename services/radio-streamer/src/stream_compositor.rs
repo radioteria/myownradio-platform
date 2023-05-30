@@ -1,5 +1,6 @@
 use crate::audio_stream::{AudioStream, CreateAudioStreamError};
 use crate::backend_client::BackendClient;
+use crate::metrics::Metrics;
 use crate::types::ChannelId;
 use futures::lock::Mutex;
 use myownradio_ffmpeg_utils::OutputFormat;
@@ -11,6 +12,7 @@ use tracing::debug;
 #[derive(Clone)]
 pub(crate) struct StaticState {
     backend_client: Arc<BackendClient>,
+    metrics: Arc<Metrics>,
 }
 
 #[derive(Clone, Eq, Hash, PartialEq)]
@@ -34,8 +36,11 @@ pub(crate) enum GetOrCreateAudioStreamError {
 }
 
 impl StreamCompositor {
-    pub(crate) fn create(backend_client: Arc<BackendClient>) -> Self {
-        let static_state = Arc::new(StaticState { backend_client });
+    pub(crate) fn create(backend_client: Arc<BackendClient>, metrics: Arc<Metrics>) -> Self {
+        let static_state = Arc::new(StaticState {
+            backend_client,
+            metrics,
+        });
 
         let dynamic_state = Arc::new(DynamicState {
             channels: Arc::new(Mutex::new(HashMap::new())),
@@ -78,6 +83,7 @@ impl StreamCompositor {
                             channel_id,
                             output_format,
                             &self.static_state.backend_client,
+                            &self.static_state.metrics,
                         )
                         .await?,
                     );

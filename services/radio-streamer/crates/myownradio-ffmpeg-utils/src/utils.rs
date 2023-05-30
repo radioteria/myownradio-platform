@@ -38,10 +38,9 @@ impl Into<Duration> for &Timestamp {
     }
 }
 
-// @todo millis -> micros
 impl Into<Timestamp> for Duration {
     fn into(self) -> Timestamp {
-        Timestamp::new(self.as_millis() as i64, INTERNAL_TIME_BASE)
+        Timestamp::new(self.as_nanos() as i64, (1, 1_000_000_000))
     }
 }
 

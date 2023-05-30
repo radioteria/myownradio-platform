@@ -77,7 +77,7 @@ impl AudioStream {
                 loop {
                     let mut lock = player_loop.lock().await;
 
-                    let packets = match lock.receive_next_audio_packets().await {
+                    let packets = match lock.process_next_audio_packets().await {
                         Ok(packets) => packets,
                         Err(error) => {
                             error!(?error, "Closing the player loop on reading audio packets");

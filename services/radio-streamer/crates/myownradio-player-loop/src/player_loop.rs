@@ -66,11 +66,9 @@ impl<C: NowPlayingClient> PlayerLoop<C> {
     /// # Returns
     ///
     /// Returns a `Result` containing the vector of received packets or an error.
-    // @todo Rename to `process_next_audio_packets`
-    pub async fn receive_next_audio_packets(&mut self) -> Result<Vec<Packet>, PlayerLoopError> {
+    pub async fn process_next_audio_packets(&mut self) -> Result<Vec<Packet>, PlayerLoopError> {
         loop {
             if let Some(transcoder) = &mut self.transcoder {
-                // @todo Rename to `fetch_next_transcoded_packets`
                 match transcoder.receive_next_transcoded_packets().await {
                     Ok(Some(mut packets)) => {
                         trace!("Received {} packets from transcoder", packets.len());
@@ -290,7 +288,7 @@ mod tests {
             PlayerLoop::create(123, api_client, output_format, initial_time).unwrap();
 
         assert!(player_loop.current_title().is_none());
-        assert!(player_loop.receive_next_audio_packets().await.is_ok());
+        assert!(player_loop.process_next_audio_packets().await.is_ok());
         assert!(player_loop.current_title().is_some());
         assert_eq!("Sample Track", player_loop.current_title().unwrap());
     }
@@ -317,7 +315,7 @@ mod tests {
         assert_eq!(0, api_client.calls.lock().unwrap().len());
 
         // Fetch the next set of audio packets from the player loop.
-        assert!(player_loop.receive_next_audio_packets().await.is_ok());
+        assert!(player_loop.process_next_audio_packets().await.is_ok());
 
         // Check that the API client was called once.
         assert_eq!(1, api_client.calls.lock().unwrap().len());
@@ -349,7 +347,7 @@ mod tests {
         let current_time = *player_loop.current_running_time();
 
         while *player_loop.current_running_time() - current_time < *amount {
-            player_loop.receive_next_audio_packets().await.unwrap();
+            player_loop.process_next_audio_packets().await.unwrap();
         }
     }
 }

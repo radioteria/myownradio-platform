@@ -29,31 +29,3 @@ impl Into<usize> for ChannelId {
         self.0 as usize
     }
 }
-
-#[derive(Clone)]
-pub(crate) enum SampleRate {
-    Hz44100,
-    Hz48000,
-}
-
-impl Display for SampleRate {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{} Hz",
-            match self {
-                SampleRate::Hz44100 => 44100,
-                SampleRate::Hz48000 => 48000,
-            }
-        )
-    }
-}
-
-#[derive(Clone)]
-pub(crate) enum Bitrate {
-    Kbps64,
-    Kbps128,
-    Kbps192,
-    Kbps256,
-    Kbps320,
-}

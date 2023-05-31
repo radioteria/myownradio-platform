@@ -387,12 +387,10 @@ mod tests {
 
     use crate::transcoder::{AudioTranscoder, OutputFormat};
     use std::time::Duration;
-    use tracing::warn;
 
     #[ctor::ctor]
     fn init() {
         ffmpeg::init().expect("Unable to initialize FFmpeg");
-        // ffmpeg::log::set_level(ffmpeg::log::Level::Trace);
     }
 
     #[actix_rt::test]

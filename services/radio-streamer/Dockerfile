@@ -59,22 +59,9 @@ COPY Cargo.lock /code/Cargo.lock
 COPY Cargo.toml /code/Cargo.toml
 COPY crates /code/crates
 
-# Hack to make Cargo download and cache dependencies
 RUN \
-    mkdir src && \
-    echo "fn main() {}" > src/main.rs && \
-    cargo build --release && \
-    rm -rf src
-
-COPY src /code/src
-
-RUN \
-    # TODO: Next line is a workaround for https://github.com/rust-lang/cargo/issues/7969
-    touch src/main.rs && \
-    # cargo test --release && \
-    cargo build --release && \
-    mv target/release/radio-streamer radio-streamer && \
-    rm -rf target
+    cargo test --release && \
+    cargo build -p myownradio-radio-player --release
 
 
 FROM base as devenv
@@ -95,9 +82,9 @@ FROM base as pre-final
 
 USER nobody:nogroup
 
-COPY --from=build /code/radio-streamer /radio-streamer
+COPY --from=build /code/target/release/myownradio-radio-player /myownradio-radio-player
 
 FROM scratch
 COPY --from=pre-final / /
 
-CMD ["/radio-streamer"]
+CMD ["/myownradio-radio-player"]

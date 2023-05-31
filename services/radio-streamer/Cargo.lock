@@ -1352,6 +1352,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "myownradio-radio-player"
+version = "0.1.0"
+dependencies = [
+ "actix-cors",
+ "actix-rt",
+ "actix-web",
+ "async-broadcast",
+ "async-process",
+ "async-trait",
+ "bytebuffer",
+ "env_logger",
+ "envy",
+ "futures",
+ "futures-lite",
+ "lazy_static",
+ "md5",
+ "myownradio-channel-utils",
+ "myownradio-ffmpeg-utils",
+ "myownradio-player-loop",
+ "prometheus",
+ "regex",
+ "reqwest",
+ "scopeguard",
+ "serde",
+ "serde_json",
+ "serde_millis",
+ "slog",
+ "slog-json",
+ "slog-term",
+ "thiserror",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "native-tls"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1606,41 +1641,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4424af4bf778aae2051a77b60283332f386554255d722233d09fbfc7e30da2fc"
 dependencies = [
  "proc-macro2",
-]
-
-[[package]]
-name = "radio-streamer"
-version = "1.1.0"
-dependencies = [
- "actix-cors",
- "actix-rt",
- "actix-web",
- "async-broadcast",
- "async-process",
- "async-trait",
- "bytebuffer",
- "env_logger",
- "envy",
- "futures",
- "futures-lite",
- "lazy_static",
- "md5",
- "myownradio-channel-utils",
- "myownradio-ffmpeg-utils",
- "myownradio-player-loop",
- "prometheus",
- "regex",
- "reqwest",
- "scopeguard",
- "serde",
- "serde_json",
- "serde_millis",
- "slog",
- "slog-json",
- "slog-term",
- "thiserror",
- "tracing",
- "uuid",
 ]
 
 [[package]]

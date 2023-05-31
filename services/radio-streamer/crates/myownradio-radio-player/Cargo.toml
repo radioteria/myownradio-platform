@@ -1,0 +1,65 @@
+[package]
+name = "myownradio-radio-player"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-rt = "2.7.0"
+serde_json = "1.0.96"
+slog-json = "2.6.1"
+slog-term = "2.9.0"
+envy = "0.4.2"
+futures = "0.3.28"
+futures-lite = "1.12.0"
+async-process = "1.6.0"
+bytebuffer = "2.0.1"
+serde_millis = "0.1.1"
+async-broadcast = "0.5.0"
+scopeguard = "1.1.0"
+thiserror = "1.0.38"
+async-trait = "0.1.60"
+lazy_static = "1.4.0"
+regex = "1.7.0"
+md5 = "0.7.0"
+reqwest = { version = "0.11.17", features = ["blocking", "json"] }
+
+[dependencies.myownradio-ffmpeg-utils]
+version = "0.1.0"
+path = "../myownradio-ffmpeg-utils"
+
+[dependencies.myownradio-player-loop]
+version = "0.1.0"
+path = "../myownradio-player-loop"
+
+[dependencies.myownradio-channel-utils]
+version = "0.1.0"
+path = "../myownradio-channel-utils"
+
+[dependencies.slog]
+version = "2.7.0"
+features = ["max_level_debug", "release_max_level_debug"]
+
+[dependencies.actix-web]
+version = "4.2.1"
+features = ["rustls"]
+
+[dependencies.actix-cors]
+version = "0.6.4"
+
+[dependencies.uuid]
+version = "1.2.2"
+features = ["v4"]
+
+[dependencies.prometheus]
+version = "0.13.3"
+features = ["process"]
+
+[dependencies.serde]
+version = "1.0.163"
+features = ["derive"]
+
+[dependencies.tracing]
+version = "0.1.37"
+
+[dependencies.env_logger]
+version = "0.10.0"

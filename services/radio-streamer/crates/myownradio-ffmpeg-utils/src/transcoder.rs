@@ -12,7 +12,7 @@ use ffmpeg::format::Sample::I16;
 use ffmpeg::frame::Audio;
 use ffmpeg::{encoder, filter, Packet};
 use std::time::Duration;
-use tracing::{debug, trace};
+use tracing::{debug, trace, warn};
 
 trait SamplingRate {
     fn sampling_rate(&self) -> u32;
@@ -164,6 +164,11 @@ impl AudioTranscoder {
     pub fn receive_next_transcoded_packets(
         &mut self,
     ) -> Result<Option<Vec<utils::Packet>>, TranscodingError> {
+        if self.is_eof {
+            warn!("receive_next_transcoded_packets called after EOF");
+            return Ok(None);
+        }
+
         match self.get_packet_from_input() {
             Some(packet) => {
                 self.send_packet_to_decoder(&packet)?;
@@ -182,7 +187,6 @@ impl AudioTranscoder {
 
                 Ok(Some(prepared_packets))
             }
-            None if self.is_eof => Ok(None),
             None => {
                 let mut final_encoded_packets = vec![];
 

@@ -12,7 +12,7 @@ bench = false
 
 [dependencies.ffmpeg-next]
 git = "https://github.com/pyldin601/rust-ffmpeg.git"
-rev = "76636b3fa67d92f291e5c63ddd4812745a306817"
+rev = "67d02794cf8f339a9eb4036f7252b6c50388184c"
 
 [dependencies.iter_tools]
 version = "0.1.4"

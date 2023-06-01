@@ -11,7 +11,8 @@ include = ["/src", "/Cargo.toml"]
 bench = false
 
 [dependencies.ffmpeg-next]
-git = "https://github.com/pldin601/rust-ffmpeg.git"
+git = "https://github.com/pyldin601/rust-ffmpeg.git"
+rev = "67d02794cf8f339a9eb4036f7252b6c50388184c"
 
 [dependencies.iter_tools]
 version = "0.1.4"

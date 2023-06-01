@@ -40,7 +40,7 @@ version = "2.7.0"
 features = ["max_level_debug", "release_max_level_debug"]
 
 [dependencies.actix-web]
-version = "4.2.1"
+version = "4.3.1"
 features = ["rustls"]
 
 [dependencies.actix-cors]

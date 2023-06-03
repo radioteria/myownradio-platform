@@ -61,7 +61,7 @@ class PaymentModel {
             'subscribe' => 1,
             'subscribe_date_start' => 'now',
             'subscribe_periodicity' => $plan->getPlanPeriod(),
-            'server_url' => 'https://api.myownradio.biz/api/v3/payment'
+            'server_url' => 'https://api.radioter.io/api/v3/payment'
         ];
 
         $html = $liqpay->cnb_hyperlink($data);

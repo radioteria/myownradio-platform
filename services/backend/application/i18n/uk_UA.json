@@ -41,7 +41,7 @@
 
     "CMN_FILE_NOT_FOUND"                : "Файлу з ім’ям <b>%name%</b> не знайдено",
 
-    "EMAIL_REG_TITLE"                   : "Реєстрація у сервісі MyOwnRadio",
+    "EMAIL_REG_TITLE"                   : "Реєстрація у сервісі Radioterio",
     "EMAIL_REG_COMPLETED"               : "Ви успішного зареєструвалися у сервісі MyOwnRadio",
     "EMAIL_PASSWORD_RESET"              : "Відновлення паролю на сервісі MyOwnRadio",
     "EMAIL_QUEUE_FULL"                  : "Вибачте, але з вашої адреси було надіслано забагато листів. Зачекате годину та спробуйте ще.",

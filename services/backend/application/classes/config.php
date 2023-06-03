@@ -1,7 +1,8 @@
 <?php
 
 return [
-    "application_title" => "MyOwnRadio - your own free web radio station",
+    "application_title" => "Radioterio - your own free web radio station",
+    // @todo Check and get rid of that
     "application_content" => "/var/apps/myownradio.biz/",
     "api" => [
         "streams_per_request_max" => 50,

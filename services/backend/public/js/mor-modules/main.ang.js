@@ -3,7 +3,7 @@
  */
 const { default: mobxAngular } = require('mobx-angularjs');
 
-var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
+var SITE_TITLE =  "Radioterio - Your own web radio station";
 
 (function () {
 
@@ -26,7 +26,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
     }]);
 
     var settings = {
-        REST_LOCATION: "http://myownradio.biz/api/v2",
+        REST_LOCATION: "http://radioter.io/api/v2",
         STREAMS_PER_PAGE: 50
     };
 
@@ -298,7 +298,7 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
 
     md.constant("ROUTES", routes);
     md.constant("SETTINGS", settings);
-    md.constant("SITE_TITLE", "MyOwnRadio - Your own web radio station");
+    md.constant("SITE_TITLE", "Radioterio - Your own web radio station");
 
     md.config([
         '$routeProvider', '$locationProvider', 'ROUTES', 'cfpLoadingBarProvider',
@@ -310,7 +310,8 @@ var SITE_TITLE =  "MyOwnRadio - Your own web radio station";
             $locationProvider.html5Mode(true).hashPrefix('!');
             $sceDelegateProvider.resourceUrlWhitelist([
                 'self',
-                'http://myownradio.biz:7778/**'
+                // @todo Get rid
+                'http://radioter.io:7778/**'
             ]);
 
             for (key in ROUTES) {

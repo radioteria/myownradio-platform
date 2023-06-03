@@ -248,7 +248,7 @@ class InputValidator implements Injectable {
             throw new ControllerException(I18n::tr("VALIDATOR_CODE_INVALID"));
         }
 
-        if (md5($object['email'] . "@myownradio.biz@" . $object['email']) !== $object['code']) {
+        if (md5($object['email'] . "@radioter.io@" . $object['email']) !== $object['code']) {
             throw new ControllerException(I18n::tr("VALIDATOR_CODE_MATCH"));
         }
 

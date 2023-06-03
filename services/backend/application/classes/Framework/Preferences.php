@@ -19,7 +19,7 @@ class Preferences implements Injectable, SingletonInterface {
     private static $config = [
         'invalid' => [
             'login' => ['admin', 'adm', 'root'],
-            'domain' => ['localhost', 'myownradio.biz', '127.0.0.1']
+            'domain' => ['localhost', 'radioter.io', 'myownradio.biz', '127.0.0.1']
         ]
     ];
 

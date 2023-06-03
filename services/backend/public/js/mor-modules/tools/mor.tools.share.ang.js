@@ -4,7 +4,7 @@
     tools.controller("StreamShareController", ["$scope", "$timeout", function ($scope, $timeout) {
 
         $scope.$watch("maxSize", function (width) {
-            $scope.code = '<iframe src="https://myownradio.biz/widget/?stream_id=' + $scope.streamObject.sid +
+            $scope.code = '<iframe src="https://radioter.io/widget/?stream_id=' + $scope.streamObject.sid +
                 '" width="' + $scope.embed.maxSize + '" height="' + $scope.embed.maxSize + '"></iframe>';
         });
 
@@ -34,7 +34,7 @@
                         var scope = $scope.$new();
                         var key = scope.shareObject.permalink || scope.shareObject.sid;
                         scope.streamObject = $scope.shareObject;
-                        scope.streamObject.url = "https://myownradio.biz/streams/" + key;
+                        scope.streamObject.url = "https://radioter.io/streams/" + key;
                         scope.tr = $rootScope.tr;
                         ngDialog.open({
                             templateUrl: "/views/blocks/share.html",

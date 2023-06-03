@@ -24,7 +24,7 @@ class LettersModel {
         $config = Config::getInstance();
 
         $domain = $config->getWebServerOwnAddress();
-        $code = md5($email . "@myownradio.biz@" . $email);
+        $code = md5($email . "@radioter.io@" . $email);
         $confirm = base64_encode(json_encode(['email' => $email, 'code' => $code, 'domain' => $domain]));
 
         $template = new Template("locale/{$i18n->getLocale()}.reg.request.mail.tmpl");

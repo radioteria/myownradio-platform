@@ -17,7 +17,7 @@ class Defaults {
     const REDIS_ELEMENTS_KEY = "MOR2:Elements";
     const REDIS_OBJECTS_KEY = "MOR2:Objects";
 
-    const SITE_TITLE = "MyOwnRadio - Your own web radio station";
+    const SITE_TITLE = "Radioterio - Your own web radio station";
 
     const HASHING_ALGORITHM = "sha512";
     const SCHEDULE_TIME_SHIFT = 5000;

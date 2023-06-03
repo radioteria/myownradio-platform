@@ -24,7 +24,7 @@ class DoDashboard implements Controller {
         }
 
         extract([
-            "title" => "Your Dashboard on MyOwnRadio - Your own web radio station",
+            "title" => "Your Dashboard on Radioterio - Your own web radio station",
             "assets" => json_decode(file_get_contents($config->getAssetsManifestUrl()), true)
         ]);
 

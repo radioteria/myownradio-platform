@@ -48,9 +48,9 @@
 
     "CMN_FILE_NOT_FOUND"                : "File <b>%name%</b> not found",
 
-    "EMAIL_REG_TITLE"                   : "Registration on MyOwnRadio service",
-    "EMAIL_REG_COMPLETED"               : "Successfully registered on MyOwnRadio service",
-    "EMAIL_PASSWORD_RESET"              : "Reset password on MyOwnRadio service",
+    "EMAIL_REG_TITLE"                   : "Registration on Radioterio",
+    "EMAIL_REG_COMPLETED"               : "Successfully registered on Radioterio",
+    "EMAIL_PASSWORD_RESET"              : "Reset password on Radioterio",
     "EMAIL_QUEUE_FULL"                  : "Sorry, but too many letters has been sent from your address. Wait for one hour and try again.",
 
     "UPLOAD_FILE_BROKEN"                : "File <b>%0%</b> appears to be broken",
@@ -212,7 +212,7 @@
     "FR_MY_BOOKMARKS"                   : "My Bookmarks",
     "FR_MY_STREAMS"                     : "My Streams",
 
-    "FR_BROWSE_CHANNELS_DESCRIPTION"    : "Browse radio stations which are up and streaming now on MyOwnRadio",
+    "FR_BROWSE_CHANNELS_DESCRIPTION"    : "Browse radio stations which are up and streaming now on Radioterio",
     "FR_NO_STREAMS_CREATE_NEW"          : "No streams found for your request. May be you want to <a href=\"/profile/new-stream\">create</a> your own?",
     "FR_NO_STREAMS_BY_USER"             : "This user has no public streams.",
 
@@ -222,7 +222,7 @@
     "FR_AJAX_BUSY"                      : "Working...",
 
     "FR_CONGRATULATIONS"                : "Congratulations",
-    "FR_REG_COMPLETED_TEXT"             : "You are successfully registered on <a href=\"/\">MyOwnRadio</a>.<br>Now you can proceed to login into service!",
+    "FR_REG_COMPLETED_TEXT"             : "You are successfully registered on <a href=\"/\">Radioterio</a>.<br>Now you can proceed to login into service!",
     "FR_REG_LETTER_SENT"                : "We sent to your email address a letter with further steps to continue registration.<br>Please check your mailbox in a few minutes for letter and follow confirmation link in it.",
     "FR_PASSWORD_RESET_SENT"            : "We sent to your email address a letter with further steps to reset your password.<br>Please check your mailbox for letter and follow confirmation link in it.",
     "FR_PASSWORD_SUCCESS"               : "You're successfully changed your password. Now you can proceed to login with your new credentials.",
@@ -232,7 +232,7 @@
     "FR_PASSWORD_MISMATCH"              : "Entered password must match previous",
     "FR_I_FORGOT_MY_PASSWORD"           : "I forgot my current password",
 
-    "FR_SIGN_UP_WELCOME"                : "To begin registration on <a href='/'>MyOwnRadio</a> please enter your email in to the field below:",
+    "FR_SIGN_UP_WELCOME"                : "To begin registration on <a href='/'>Radioterio</a> please enter your email in to the field below:",
     "FR_SIGN_UP_COMPLETE_WELCOME"       : "To complete registration please fill the following fields:",
 
     "FR_PROFILE_MY"                     : "My Profile",
@@ -399,7 +399,7 @@
         "other" : "streams"
     },
 
-    "FR_CHANNELS_BY_CATEGORY_TITLE": "What's recently updated on <b>MyOwnRadio</b>",
+    "FR_CHANNELS_BY_CATEGORY_TITLE": "What's recently updated on <b>Radioterio</b>",
 
     "FR_CHANNELS_BY_RECENT_TITLE": {
         "1"     : "<b>1</b> radio station in category <b>%category_name%</b>",
@@ -437,8 +437,8 @@
         "other" : "This radio station played %% times"
     },
 
-    "FR_CHANNELS_BY_POPULAR_TITLE"  : "What's popular on <b>MyOwnRadio</b>",
-    "FR_CHANNELS_BY_NEW_TITLE"      : "Newest radio stations on <b>MyOwnRadio</b>",
+    "FR_CHANNELS_BY_POPULAR_TITLE"  : "What's popular on <b>Radioterio</b>",
+    "FR_CHANNELS_BY_NEW_TITLE"      : "Newest radio stations on <b>Radioterio</b>",
 
     "FR_NO_STREAMS_BOOKMARKS"    : "You have no bookmarked radio stations.",
 

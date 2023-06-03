@@ -4,8 +4,8 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: *");
 
 define("NEW_DIR_RIGHTS", 0770);
-define("REG_MAIL", 'no-reply@myownradio.biz');
-define("REG_NAME", "The MyOwnRadio Team");
+define("REG_MAIL", 'no-reply@radioter.io');
+define("REG_NAME", "The Radioterio Team");
 
 define("START_TIME", microtime(true));
 

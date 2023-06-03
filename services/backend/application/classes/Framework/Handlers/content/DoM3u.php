@@ -38,7 +38,7 @@ class DoM3u implements Controller {
         $template->addVariable("client_id", $clientId);
 
         header("Content-Type: audio/mpegurl");
-        header("Content-Disposition: attachment; filename=" . $stream->getName() . " on MYOWNRADIO.BIZ.m3u");
+        header("Content-Disposition: attachment; filename=" . $stream->getName() . " on Radioterio.m3u");
 
         echo $template->render();
 

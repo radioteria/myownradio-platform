@@ -12,8 +12,10 @@ class Folders implements Injectable, SingletonInterface {
     use Singleton;
 
     /* Common constants */
-    const MOR_REST_DOMAIN = "https://myownradio.biz";
+    const MOR_REST_DOMAIN = "https://radioter.io";
+    // @todo Check and ge rid of
     const MOR_HEAP_FOLDER = "/var/apps/myownradio.biz/storage/legacy/heap";
+    // @todo Check and ge rid of
     const MOR_CONTENT_FOLDER = "/var/apps/myownradio.biz/storage/legacy/content";
 
     /* Specific constants: URL */
@@ -107,12 +109,14 @@ class Folders implements Injectable, SingletonInterface {
         return sprintf("%s/ui_%d", self::MOR_CONTENT_FOLDER, $user->getID());
     }
 
+    // @todo Check and get rid
     function genStreamUrl($id) {
-        return sprintf("http://stream1.myownradio.biz:7778/audio?s=%d", $id);
+        return sprintf("http://stream1.radioter.io:7778/audio?s=%d", $id);
     }
 
+    // @todo Check and get rid
     function genStreamPageUrl($id) {
-        return sprintf("//myownradio.biz/streams/%s", $id["key"]);
+        return sprintf("//radioter.io/streams/%s", $id["key"]);
     }
 
 

@@ -24,8 +24,8 @@ class Config implements Injectable, SingletonInterface
     private string $smtpPassword;
     private int $smtpPort;
 
-    private string $emailSenderEmail = "noreply@myownradio.biz";
-    private string $emailSenderName = "myownradio.biz";
+    private string $emailSenderEmail = "noreply@radioter.io";
+    private string $emailSenderName = "Radioterio";
 
     private string $webServerOwnAddress;
     private string $fileServerOwnAddress;

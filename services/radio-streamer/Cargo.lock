@@ -1329,6 +1329,8 @@ name = "myownradio-channel-bot"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "thiserror",
+ "tracing",
 ]
 
 [[package]]

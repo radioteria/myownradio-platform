@@ -10,7 +10,7 @@ use myownradio_ffmpeg_utils::OutputFormat;
 use myownradio_player_loop::{PlayerLoop, PlayerLoopError};
 use scopeguard::defer;
 use std::ops::Deref;
-use std::sync::Arc;
+use std::sync::{Arc, Weak};
 use std::time::{Duration, SystemTime};
 use tracing::{error, warn};
 
@@ -33,7 +33,7 @@ pub(crate) enum CreateAudioStreamError {
 
 pub(crate) struct AudioStream {
     channel_info: ChannelInfo,
-    channel: Box<dyn Channel<AudioStreamMessage> + Sync + Send>,
+    weak_channel: Weak<dyn Channel<AudioStreamMessage> + Sync + Send>,
     player_loop: Arc<Mutex<PlayerLoop<BackendClient>>>,
     async_handle: JoinHandle<()>,
 }
@@ -50,8 +50,9 @@ impl AudioStream {
             .await?;
 
         let initial_time = SystemTime::now() - START_BUFFER_TIME;
-        let channel = TimedChannel::<AudioStreamMessage>::new(Duration::from_secs(30), 16);
-        let channel = ReplayChannel::new(channel, START_BUFFER_TIME);
+
+        let timed_channel = TimedChannel::new(Duration::from_secs(30), 16);
+        let replay_channel = Arc::new(ReplayChannel::new(timed_channel, START_BUFFER_TIME));
 
         let backend_client = backend_client.clone();
         let player_loop = PlayerLoop::create(
@@ -64,7 +65,7 @@ impl AudioStream {
 
         let async_handle = actix_rt::spawn({
             let player_loop = player_loop.clone();
-            let channel = channel.clone();
+            let channel = Arc::clone(&replay_channel);
             let metrics = metrics.clone();
 
             async move {
@@ -131,10 +132,10 @@ impl AudioStream {
             }
         });
 
-        let channel = Box::new(channel);
+        let weak_channel = Arc::downgrade(&replay_channel);
 
         Ok(Self {
-            channel,
+            weak_channel,
             channel_info,
             player_loop,
             async_handle,
@@ -148,7 +149,10 @@ impl AudioStream {
     pub(crate) fn subscribe(
         &self,
     ) -> Result<impl Stream<Item = AudioStreamMessage>, ChannelClosed> {
-        self.channel.subscribe()
+        match self.weak_channel.upgrade() {
+            Some(channel) => Ok(channel.subscribe()?),
+            None => Err(ChannelClosed),
+        }
     }
 
     pub(crate) fn channel_info(&self) -> &ChannelInfo {

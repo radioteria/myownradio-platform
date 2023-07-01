@@ -40,7 +40,7 @@ RUN \
       --enable-filter=aresample \
       --enable-encoder=libmp3lame,libfdk_aac \
       --enable-muxer=mp3,adts \
-      --enable-decoder=flac,pcm_*,aac,mp3,vorbis \
+      --enable-decoder=flac,pcm_*,aac,mp3,vorbis,alac \
       --enable-demuxer=flac,wav,aac,mov,mp4,m4a,3gp,3g2,mj2,mp3,ogg,pcm_s16le \
       --enable-protocol=file,pipe,http,https,tls \
       && make install \

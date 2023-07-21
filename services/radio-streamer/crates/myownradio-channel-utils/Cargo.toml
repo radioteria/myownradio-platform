@@ -14,7 +14,7 @@ version = "1.0.40"
 version = "0.1.37"
 
 [dependencies.async-trait]
-version = "0.1.68"
+version = "0.1.72"
 
 [dependencies.futures]
 version = "0.3.28"

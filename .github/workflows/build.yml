@@ -25,7 +25,7 @@ jobs:
     name: Build and push
     uses: pldin601/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@build
     with:
-      DOCKER_IMAGE_TAG: ${{ needs.get_build.outputs.build_id }}
+      DOCKER_IMAGE_TAG: ${{ github.event.client_payload.release || needs.get_build.outputs.build_id }}
       DOCKER_IMAGE_NAME: ${{ github.event.client_payload.image_name }}
       WORKFLOW_CHECKOUT: build # Should be the same as the ref used in "uses" expression.
       AWS_REGION: eu-west-2

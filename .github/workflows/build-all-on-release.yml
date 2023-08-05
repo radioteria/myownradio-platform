@@ -1,0 +1,64 @@
+name: build all services images
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  main:
+    name: Main
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger "pldin601/myownradio-backend-nginx" build
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: build-image
+          client-payload: |
+            {
+              "image_name": "pldin601/myownradio-backend-nginx",
+              "dockerfile": "images/backend-nginx/Dockerfile",
+              "context": "services/backend",
+              "token": "${{ secrets.REPO_ACCESS_TOKEN }}",
+              "release": "${{ github.event.release.tag_name }}"
+            }
+      - name: Trigger "pldin601/myownradio-backend-php" build
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: build-image
+          client-payload: |
+            {
+              "image_name": "pldin601/myownradio-backend-php",
+              "dockerfile": "images/backend-php/Dockerfile",
+              "context": "services/backend",
+              "token": "${{ secrets.REPO_ACCESS_TOKEN }}",
+              "release": "${{ github.event.release.tag_name }}"
+            }
+      - name: Trigger "myownradio-radio-manager-backend" build
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: build-image
+          client-payload: |
+            {
+              "image_name": "pldin601/myownradio-radio-manager-backend",
+              "dockerfile": "services/radio-manager-backend/Dockerfile",
+              "context": "services/radio-manager-backend",
+              "token": "${{ secrets.REPO_ACCESS_TOKEN }}",
+              "release": "${{ github.event.release.tag_name }}"
+            }
+      - name: trigger "pldin601/myownradio-radio-streamer" build
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: build-image
+          client-payload: |
+            {
+              "image_name": "pldin601/myownradio-radio-streamer",
+              "dockerfile": "services/radio-streamer/Dockerfile",
+              "context": "services/radio-streamer",
+              "token": "${{ secrets.REPO_ACCESS_TOKEN }}",
+              "release": "${{ github.event.release.tag_name }}"
+            }

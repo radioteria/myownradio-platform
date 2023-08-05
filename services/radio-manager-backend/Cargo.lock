@@ -1825,7 +1825,7 @@ dependencies = [
 
 [[package]]
 name = "radio-manager-backend"
-version = "0.0.1"
+version = "2.0.0"
 dependencies = [
  "actix-http",
  "actix-multipart",

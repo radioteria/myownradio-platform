@@ -1,6 +1,6 @@
 [package]
 name = "radio-manager-backend"
-version = "0.0.1"
+version = "2.0.0"
 authors = ["Roman Lakhtadyr <roman.lakhtadyr@gmail.com>"]
 edition = "2021"
 

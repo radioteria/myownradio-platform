@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: ${{ github.event.client_payload.image_name }}
-      BUILD_ID: ${{ needs.get_build.outputs.build_id }}
+      BUILD_ID: ${{ github.event.client_payload.release || needs.get_build.outputs.build_id }}
     steps:
       - name: Leave a comment
         uses: peter-evans/commit-comment@v1

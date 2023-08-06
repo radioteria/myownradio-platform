@@ -1,4 +1,5 @@
 import cn from "classnames";
+import { config } from "@/config";
 
 export default function Home() {
   return (

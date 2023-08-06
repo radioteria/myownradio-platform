@@ -62,3 +62,16 @@ jobs:
               "token": "${{ secrets.REPO_ACCESS_TOKEN }}",
               "release": "${{ github.event.release.tag_name }}"
             }
+      - name: trigger "pldin601/myownradio-radiomanager-frontend" build
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: build-image
+          client-payload: |
+            {
+              "image_name": "pldin601/myownradio-radiomanager-frontend",
+              "dockerfile": "services/radiomanager-frontend/Dockerfile",
+              "context": "services/radiomanager-frontend",
+              "token": "${{ secrets.REPO_ACCESS_TOKEN }}",
+              "release": "${{ github.event.release.tag_name }}"
+            }

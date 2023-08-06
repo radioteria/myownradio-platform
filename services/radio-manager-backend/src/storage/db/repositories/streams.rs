@@ -82,14 +82,12 @@ pub(crate) async fn get_user_streams_by_user_id(
 
     builder.push(" WHERE `r_streams`.`uid` = ");
     builder.push_bind(user_id.deref());
-    builder.push(" LIMIT 1");
 
     let query = builder.build_query_as();
 
     trace!("Running SQL query: {}", query.sql());
 
     let stream = query
-        .bind(user_id.deref())
         .fetch_all(connection.deref_mut())
         .await?;
 

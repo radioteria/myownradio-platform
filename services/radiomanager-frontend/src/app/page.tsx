@@ -1,17 +1,26 @@
-export default function Home() {
+import cn from 'classnames'
+import { getChannels } from '@/api'
+
+export default async function Home() {
+  const channels = await getChannels()
+
   return (
-    <main className={"flex h-screen"}>
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <nav className="flex h-24 bg-slate-800 text-gray-100">
-          <div className="flex">TODO: Menu</div>
+    <main className={cn('flex h-screen')}>
+      <div className={cn('flex-1 flex flex-col overflow-hidden')}>
+        <nav className={cn('flex h-16 bg-slate-800 text-gray-100')}>
+          <div className={cn('flex')}>TODO: Menu</div>
         </nav>
-        <div className={"flex h-full"}>
-          <aside className={"flex w-64 h-full bg-slate-300"}>
-            TODO: Sidebar
+        <div className={cn('flex h-full')}>
+          <aside className={cn('flex w-64 h-full from-gray-300 to-gray-100 bg-gradient-to-b')}>
+            TODO: Sidebar {channels?.length}
           </aside>
-          <div className={"flex flex-col w-full"}>TODO: Content</div>
+          <div className={cn('flex flex-col w-full')}>
+            <div>
+              <h3 className={cn('text-xl')}>All tracks</h3>
+            </div>
+          </div>
         </div>
       </div>
     </main>
-  );
+  )
 }

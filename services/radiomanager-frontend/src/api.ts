@@ -1,23 +1,29 @@
-import { config } from '@/config'
 import z from 'zod'
+import { cookies } from 'next/headers'
+import { config } from '@/config'
 
-const radioManagerBackendUrl = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
+const SESSION_COOKIE_NAME = 'secure_session'
+const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
 
-export const RadioManagerResponse = <T>(data: z.ZodType<T>) =>
-  z.object({
-    code: z.literal(1),
-    message: z.literal('OK'),
-    data,
-  })
-
-export const ChannelSchema = z.object({})
+const ChannelSchema = z.object({})
 export type IChannel = z.infer<typeof ChannelSchema>
 
-export const GetChannelsResponseSchema = RadioManagerResponse(z.array(ChannelSchema))
+function getSessionCookieHeader(): string {
+  const sessionCookie = cookies().get(SESSION_COOKIE_NAME)
+
+  return `${sessionCookie?.name}=${sessionCookie?.value};`
+}
+
+export const GetChannelsSchema = z.object({
+  message: z.literal('OK'),
+  code: z.literal(1),
+  data: z.array(ChannelSchema),
+})
 
 export async function getChannels(): Promise<readonly IChannel[]> {
-  const response = await fetch(`${radioManagerBackendUrl}/radio-manager/api/v0/streams/`)
-  const json = await response.json()
+  const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/`
 
-  return GetChannelsResponseSchema.parse(json).data
+  return await fetch(url, { headers: { Cookie: getSessionCookieHeader() } })
+    .then((res) => res.json())
+    .then((json) => GetChannelsSchema.parse(json).data)
 }

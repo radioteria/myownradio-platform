@@ -1,6 +1,9 @@
 import cn from 'classnames'
+import { getChannels } from '@/api'
 
-export default function Home() {
+export default async function Home() {
+  const channels = await getChannels()
+
   return (
     <main className={cn('flex h-screen')}>
       <div className={cn('flex-1 flex flex-col overflow-hidden')}>
@@ -9,7 +12,7 @@ export default function Home() {
         </nav>
         <div className={cn('flex h-full')}>
           <aside className={cn('flex w-64 h-full from-gray-300 to-gray-100 bg-gradient-to-b')}>
-            TODO: Sidebar
+            TODO: Sidebar {channels?.length}
           </aside>
           <div className={cn('flex flex-col w-full')}>
             <div>

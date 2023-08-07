@@ -10,4 +10,6 @@ function fromEnv(env: { [k: string]: string | undefined }): IConfig {
   return ConfigSchema.parse(env)
 }
 
-export const config = fromEnv(process.env)
+export const config = fromEnv({
+  NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL: process.env.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL,
+})

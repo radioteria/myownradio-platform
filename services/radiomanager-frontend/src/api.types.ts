@@ -58,12 +58,30 @@ export const UserStream = z.object({
 })
 export type UserStream = z.infer<typeof UserStream>
 
+export const UserTrack = z.object({
+  tid: z.number(),
+  filename: z.string(),
+  artist: z.string().optional(),
+  title: z.string(),
+  album: z.string().optional(),
+  track_number: z.string().optional(),
+  genre: z.string().optional(),
+  date: z.string().optional(),
+  buy: z.nullable(z.any()),
+  duration: z.number(),
+  color: z.number(),
+  can_be_shared: z.number().int(),
+  likes: z.number().int(),
+  dislikes: z.number().int(),
+})
+
 export const SelfResponseSchema = z.object({
   code: z.literal(1),
   message: z.literal('OK'),
   data: z.object({
     user: UserSchema,
     streams: z.array(UserStream),
+    tracks: z.array(UserTrack),
     client_id: z.string(),
   }),
 })

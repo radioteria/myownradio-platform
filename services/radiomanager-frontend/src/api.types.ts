@@ -28,7 +28,8 @@ const UserSchema = z.object({
   tracks_duration: z.number(),
   plan_expires: z.number().nullable(),
   avatar_url: z.string(),
-  key: z.number(),
+  // TODO string or number
+  key: z.union([z.string(), z.number()]),
   plan_data: PlanDataSchema,
 })
 export type UserSchema = z.infer<typeof UserSchema>

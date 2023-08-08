@@ -9,6 +9,7 @@
 namespace Framework\Handlers\api\v2;
 
 
+use API\REST\TrackCollection;
 use Framework\Controller;
 use Framework\Models\AuthUserModel;
 use Framework\Models\UsersModel;
@@ -21,7 +22,12 @@ use REST\Users;
 
 class DoSelf implements Controller {
 
-    public function doGet(AuthUserModel $userModel, JsonResponse $response, Streams $streams, Users $users) {
+    public function doGet(AuthUserModel $userModel,
+                          JsonResponse $response,
+                          Streams $streams,
+                          Users $users,
+                          TrackCollection $trackCollection
+    ) {
         $userId = $userModel->getID();
 
         $response->setHeaders([
@@ -31,6 +37,7 @@ class DoSelf implements Controller {
         $response->setData([
             'user'      => $users->getUserByID($userModel->getID(), true),
             'streams'   => $streams->getByUser($userModel->getID()),
+            'tracks'    => $trackCollection->getTracksFromLibrary(),
             'client_id' => $userModel->getClientId()
         ]);
         

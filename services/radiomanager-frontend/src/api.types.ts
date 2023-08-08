@@ -52,7 +52,8 @@ export const UserStream = z.object({
   tracks_duration: z.number(),
   bookmarked: z.boolean(),
   cover_url: z.string(),
-  key: z.string(),
+  // TODO string or number
+  key: z.union([z.string(), z.number()]),
   hashtags_array: z.array(z.string()).nullable(),
   url: z.string(),
 })

@@ -1,22 +1,22 @@
 import cn from 'classnames'
-import { getChannels } from '@/api'
+import { getSelf } from '@/api'
 
 export default async function Home() {
-  const channels = await getChannels()
+  const self = await getSelf()
 
   return (
     <main className={cn('flex h-screen')}>
       <div className={cn('flex-1 flex flex-col overflow-hidden')}>
         <nav className={cn('flex h-16 bg-slate-800 text-gray-100')}>
-          <div className={cn('flex')}>TODO: Menu</div>
+          <div className={cn('flex')}>Hello, {self.user.name || self.user.login}</div>
         </nav>
         <div className={cn('flex h-full')}>
           <aside className={cn('flex w-64 h-full from-gray-300 to-gray-100 bg-gradient-to-b')}>
-            TODO: Sidebar {channels?.length}
+            All Channels ({self.streams.length})
           </aside>
           <div className={cn('flex flex-col w-full')}>
             <div>
-              <h3 className={cn('text-xl')}>All tracks</h3>
+              <h3 className={cn('text-xl')}>All tracks ({self.user.tracks_count})</h3>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import z from 'zod'
 import { cookies } from 'next/headers'
 import { config } from '@/config'
+import { SelfResponseSchema } from '@/api.types'
 
 const SESSION_COOKIE_NAME = 'secure_session'
 const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
@@ -26,4 +27,12 @@ export async function getChannels(): Promise<readonly IChannel[]> {
   return await fetch(url, { headers: { Cookie: getSessionCookieHeader() } })
     .then((res) => res.json())
     .then((json) => GetChannelsSchema.parse(json).data)
+}
+
+export async function getSelf(): Promise<SelfResponseSchema['data']> {
+  const url = `${BACKEND_BASE_URL}/api/v2/self`
+
+  return await fetch(url, { headers: { Cookie: getSessionCookieHeader() } })
+    .then((res) => res.json())
+    .then((json) => SelfResponseSchema.parse(json).data)
 }

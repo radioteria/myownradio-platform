@@ -3,8 +3,7 @@
 namespace Framework\Services;
 
 use Exception;
-use \Firebase\JWT\JWT;
-
+use \Firebase\JWT\{JWT, Key};
 use Framework\Injector\Injectable;
 use Tools\Optional;
 use Tools\Singleton;
@@ -32,10 +31,10 @@ class HttpSession implements Injectable
 
         if (array_key_exists(self::SESSION_COOKIE_NAME, $_COOKIE)) {
             try {
+                $jwtKey = new Key($key, 'HS256');
                 $decodedSessionData = JWT::decode(
-                    $_COOKIE[self::SESSION_COOKIE_NAME], $key, ['HS256']
+                    $_COOKIE[self::SESSION_COOKIE_NAME], $jwtKey, ['HS256']
                 );
-
 
                 $this->sessionId = $decodedSessionData->id ?? uniqid();
                 $this->session = (array) $decodedSessionData->data ?? [];

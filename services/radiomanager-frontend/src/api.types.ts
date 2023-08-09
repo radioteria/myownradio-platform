@@ -12,7 +12,7 @@ const PlanDataSchema = z.object({
   min_track_length: z.number(),
   max_listeners: z.number(),
 })
-export type PlanDataSchema = z.infer<typeof PlanDataSchema>
+export type PlanData = z.infer<typeof PlanDataSchema>
 
 const UserSchema = z.object({
   uid: z.number(),
@@ -32,9 +32,9 @@ const UserSchema = z.object({
   key: z.union([z.string(), z.number()]),
   plan_data: PlanDataSchema,
 })
-export type UserSchema = z.infer<typeof UserSchema>
+export type User = z.infer<typeof UserSchema>
 
-export const UserStream = z.object({
+export const UserStreamSchema = z.object({
   sid: z.number(),
   uid: z.number(),
   name: z.string(),
@@ -58,9 +58,9 @@ export const UserStream = z.object({
   hashtags_array: z.array(z.string()).nullable(),
   url: z.string(),
 })
-export type UserStream = z.infer<typeof UserStream>
+export type UserStream = z.infer<typeof UserStreamSchema>
 
-export const UserTrack = z.object({
+export const UserTrackSchema = z.object({
   tid: z.number(),
   filename: z.string(),
   artist: z.string().optional(),
@@ -78,14 +78,15 @@ export const UserTrack = z.object({
   likes: z.number().int(),
   dislikes: z.number().int(),
 })
+export type UserTrack = z.infer<typeof UserTrackSchema>
 
 export const SelfResponseSchema = z.object({
   code: z.literal(1),
   message: z.literal('OK'),
   data: z.object({
     user: UserSchema,
-    streams: z.array(UserStream),
-    tracks: z.array(UserTrack),
+    streams: z.array(UserStreamSchema),
+    tracks: z.array(UserTrackSchema),
     client_id: z.string(),
   }),
 })

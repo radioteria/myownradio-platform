@@ -29,10 +29,16 @@ export async function getChannels(): Promise<readonly IChannel[]> {
     .then((json) => GetChannelsSchema.parse(json).data)
 }
 
-export async function getSelf(): Promise<SelfResponseSchema['data']> {
+export async function getSelf(): Promise<SelfResponseSchema['data'] | null> {
   const url = `${BACKEND_BASE_URL}/api/v2/self`
 
   return await fetch(url, { headers: { Cookie: getSessionCookieHeader() } })
     .then((res) => res.json())
-    .then((json) => SelfResponseSchema.parse(json).data)
+    .then((json) => {
+      try {
+        return SelfResponseSchema.parse(json).data
+      } catch (error) {
+        return null
+      }
+    })
 }

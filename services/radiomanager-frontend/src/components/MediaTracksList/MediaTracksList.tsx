@@ -1,8 +1,8 @@
 import cn from 'classnames'
-import { UserTrackSchema } from '@/api.types'
+import { UserTrack } from '@/api.types'
 
 interface Props {
-  tracks: readonly UserTrackSchema[]
+  tracks: readonly UserTrack[]
   tracksCount: number
 }
 

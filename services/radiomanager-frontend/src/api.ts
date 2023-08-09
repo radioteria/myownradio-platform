@@ -4,6 +4,8 @@ import { config } from '@/config'
 import {
   ChannelTracksResponse,
   ChannelTracksResponseSchema,
+  NowPlayingResponse,
+  NowPlayingResponseSchema,
   SelfResponse,
   SelfResponseSchema,
 } from '@/api.types'
@@ -54,4 +56,19 @@ export async function getChannelTracks(channelId: number): Promise<ChannelTracks
   return await fetch(url, { headers: { Cookie: getSessionCookieHeader() } })
     .then((res) => res.json())
     .then((json) => ChannelTracksResponseSchema.parse(json).data)
+}
+
+export async function getNowPlaying(
+  channelId: number,
+  timestamp: number,
+): Promise<NowPlayingResponse['data']> {
+  const url = new URL(
+    `${BACKEND_BASE_URL}/radio-manager/api/pub/v0/streams/${channelId}/now-playing`,
+  )
+
+  url.searchParams.set('ts', String(timestamp))
+
+  return await fetch(url.toString(), { headers: { Cookie: getSessionCookieHeader() } })
+    .then((res) => res.json())
+    .then((json) => NowPlayingResponseSchema.parse(json).data)
 }

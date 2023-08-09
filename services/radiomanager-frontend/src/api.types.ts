@@ -1,115 +1,128 @@
 import z from 'zod'
+import camelKeys from 'camelcase-keys'
 
-const PlanDataSchema = z.object({
-  plan_id: z.number(),
-  plan_name: z.string(),
-  plan_duration: z.number().nullable(),
-  plan_period: z.string().nullable(),
-  plan_value: z.number(),
-  limit_id: z.number(),
-  streams_max: z.number().nullable(),
-  time_max: z.number(),
-  min_track_length: z.number(),
-  max_listeners: z.number(),
-})
+const PlanDataSchema = z
+  .object({
+    plan_id: z.number(),
+    plan_name: z.string(),
+    plan_duration: z.number().nullable(),
+    plan_period: z.string().nullable(),
+    plan_value: z.number(),
+    limit_id: z.number(),
+    streams_max: z.number().nullable(),
+    time_max: z.number(),
+    min_track_length: z.number(),
+    max_listeners: z.number(),
+  })
+  .transform((v) => camelKeys(v))
 export type PlanData = z.infer<typeof PlanDataSchema>
 
-const UserSchema = z.object({
-  uid: z.number(),
-  name: z.string(),
-  permalink: z.string().nullable(),
-  avatar: z.string(),
-  streams_count: z.number(),
-  tracks_count: z.number(),
-  info: z.number().nullable(),
-  plan_id: z.number(),
-  country_id: z.number().nullable(),
-  login: z.string(),
-  tracks_duration: z.number(),
-  plan_expires: z.number().nullable(),
-  avatar_url: z.string(),
-  // TODO string or number
-  key: z.union([z.string(), z.number()]),
-  plan_data: PlanDataSchema,
-})
+const UserSchema = z
+  .object({
+    uid: z.number(),
+    name: z.string(),
+    permalink: z.string().nullable(),
+    avatar: z.string(),
+    streams_count: z.number(),
+    tracks_count: z.number(),
+    info: z.number().nullable(),
+    plan_id: z.number(),
+    country_id: z.number().nullable(),
+    login: z.string(),
+    tracks_duration: z.number(),
+    plan_expires: z.number().nullable(),
+    avatar_url: z.string(),
+    // TODO string or number
+    key: z.union([z.string(), z.number()]),
+    plan_data: PlanDataSchema,
+  })
+  .transform((v) => camelKeys(v))
 export type User = z.infer<typeof UserSchema>
 
-export const UserStreamSchema = z.object({
-  sid: z.number(),
-  uid: z.number(),
-  name: z.string(),
-  permalink: z.string(),
-  info: z.string().optional(),
-  hashtags: z.string().optional(),
-  category: z.number(),
-  status: z.number(),
-  access: z.enum(['PUBLIC', 'UNLISTED', 'PRIVATE'] as const),
-  cover: z.string(),
-  cover_background: z.string().nullable(),
-  created: z.number(),
-  bookmarks_count: z.number(),
-  listeners_count: z.number(),
-  tracks_count: z.number(),
-  tracks_duration: z.number(),
-  bookmarked: z.boolean(),
-  cover_url: z.string(),
-  // TODO string or number
-  key: z.union([z.string(), z.number()]),
-  hashtags_array: z.array(z.string()).nullable(),
-  url: z.string(),
-})
+export const UserStreamSchema = z
+  .object({
+    sid: z.number(),
+    uid: z.number(),
+    name: z.string(),
+    permalink: z.string(),
+    info: z.string().optional(),
+    hashtags: z.string().optional(),
+    category: z.number(),
+    status: z.number(),
+    access: z.enum(['PUBLIC', 'UNLISTED', 'PRIVATE'] as const),
+    cover: z.string(),
+    cover_background: z.string().nullable(),
+    created: z.number(),
+    bookmarks_count: z.number(),
+    listeners_count: z.number(),
+    tracks_count: z.number(),
+    tracks_duration: z.number(),
+    bookmarked: z.boolean(),
+    cover_url: z.string(),
+    // TODO string or number
+    key: z.union([z.string(), z.number()]),
+    hashtags_array: z.array(z.string()).nullable(),
+    url: z.string(),
+  })
+  .transform((v) => camelKeys(v))
 export type UserStream = z.infer<typeof UserStreamSchema>
 
-export const UserTrackSchema = z.object({
-  tid: z.number(),
-  filename: z.string(),
-  artist: z.string().optional(),
-  title: z.string(),
-  album: z.string().optional(),
-  // TODO string or number
-  track_number: z.union([z.string(), z.number()]).optional(),
-  genre: z.string().optional(),
-  // TODO string or number
-  date: z.union([z.string(), z.number()]).optional(),
-  buy: z.nullable(z.any()),
-  duration: z.number(),
-  color: z.number(),
-  can_be_shared: z.number().int(),
-  likes: z.number().int(),
-  dislikes: z.number().int(),
-})
+export const UserTrackSchema = z
+  .object({
+    tid: z.number(),
+    filename: z.string(),
+    artist: z.string().optional(),
+    title: z.string(),
+    album: z.string().optional(),
+    // TODO string or number
+    track_number: z.union([z.string(), z.number()]).optional(),
+    genre: z.string().optional(),
+    // TODO string or number
+    date: z.union([z.string(), z.number()]).optional(),
+    buy: z.nullable(z.any()),
+    duration: z.number(),
+    color: z.number(),
+    can_be_shared: z.number().int(),
+    likes: z.number().int(),
+    dislikes: z.number().int(),
+  })
+  .transform((v) => camelKeys(v))
 export type UserTrack = z.infer<typeof UserTrackSchema>
 
-export const UserChannelTrackSchema = z.object({
-  t_order: z.number(),
-  unique_id: z.string(),
-  time_offset: z.number().nullable(),
-  album: z.string(),
-  artist: z.string(),
-  buy: z.string().nullable(),
-  can_be_shared: z.boolean(),
-  color: z.number().nullable(),
-  cue: z.string().nullable(),
-  date: z.string(),
-  duration: z.number(),
-  filename: z.string(),
-  genre: z.string(),
-  is_new: z.boolean(),
-  tid: z.number(),
-  title: z.string(),
-  track_number: z.string(),
-})
+export const UserChannelTrackSchema = z
+  .object({
+    t_order: z.number(),
+    unique_id: z.string(),
+    time_offset: z.number().nullable(),
+    album: z.string(),
+    artist: z.string(),
+    buy: z.string().nullable(),
+    can_be_shared: z.boolean(),
+    color: z.number().nullable(),
+    cue: z.string().nullable(),
+    date: z.string(),
+    duration: z.number(),
+    filename: z.string(),
+    genre: z.string(),
+    is_new: z.boolean(),
+    tid: z.number(),
+    title: z.string(),
+    track_number: z.string(),
+  })
+  .transform((v) => camelKeys(v))
 export type UserChannelTrack = z.infer<typeof UserChannelTrackSchema>
 
 export const SelfResponseSchema = z.object({
   code: z.literal(1),
   message: z.literal('OK'),
-  data: z.object({
-    user: UserSchema,
-    streams: z.array(UserStreamSchema),
-    tracks: z.array(UserTrackSchema),
-    client_id: z.string(),
-  }),
+  data: z
+    .object({
+      user: UserSchema,
+      streams: z.array(UserStreamSchema),
+      tracks: z.array(UserTrackSchema),
+      client_id: z.string(),
+    })
+    .transform((v) => camelKeys(v)),
 })
 export type SelfResponse = z.infer<typeof SelfResponseSchema>
 
@@ -119,3 +132,26 @@ export const ChannelTracksResponseSchema = z.object({
   data: z.array(UserChannelTrackSchema),
 })
 export type ChannelTracksResponse = z.infer<typeof ChannelTracksResponseSchema>
+
+export const NowPlayingResponseSchema = z.object({
+  code: z.literal(1),
+  message: z.literal('OK'),
+  data: z
+    .object({
+      current_track: z.object({
+        duration: z.number(),
+        offset: z.number(),
+        title: z.string(),
+        url: z.string(),
+      }),
+      next_track: z.object({
+        duration: z.number(),
+        title: z.string(),
+        url: z.string(),
+      }),
+      playlist_position: z.number(),
+      time: z.number(),
+    })
+    .transform((v) => camelKeys(v)),
+})
+export type NowPlayingResponse = z.infer<typeof NowPlayingResponseSchema>

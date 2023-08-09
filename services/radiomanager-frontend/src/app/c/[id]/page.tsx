@@ -1,5 +1,5 @@
 import cn from 'classnames'
-import { getChannelTracks, getSelf } from '@/api'
+import { getChannelTracks, getNowPlaying, getSelf } from '@/api'
 import { Sidebar } from '@/components/Sidebar/Sidebar'
 import { Header } from '@/components/Header/Header'
 import { ChannelTracksList } from '@/components/ChannelTracksList/ChannelTracksList'
@@ -22,7 +22,11 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
             <Sidebar channels={self.streams} />
           </aside>
           <div className={cn('flex flex-col flex-1')}>
-            <ChannelTracksList tracks={channelTracks} tracksCount={channelTracks.length} />
+            <ChannelTracksList
+              channelId={+id}
+              tracks={channelTracks}
+              tracksCount={channelTracks.length}
+            />
           </div>
         </div>
       </div>

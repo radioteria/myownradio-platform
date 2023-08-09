@@ -5,6 +5,7 @@ import { Duration } from '@/components/Duration/Duration'
 interface Props {
   tracks: readonly UserChannelTrack[]
   tracksCount: number
+  channelId: number
 }
 
 export const ChannelTracksList: React.FC<Props> = ({ tracks, tracksCount }) => {

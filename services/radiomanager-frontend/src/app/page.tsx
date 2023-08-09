@@ -14,14 +14,14 @@ export default async function Home() {
   return (
     <main className={cn('flex h-screen')}>
       <div className={cn('flex-1 flex flex-col overflow-hidden')}>
-        <nav className={cn('h-16 bg-slate-800 text-gray-100')}>
+        <nav className={cn('h-16 bg-slate-800 text-gray-100 items-center')}>
           <Header user={self.user} />
         </nav>
         <div className={cn('flex h-full')}>
           <aside className={cn('w-64 h-full from-gray-300 to-gray-100 bg-gradient-to-b')}>
             <Sidebar channels={self.streams} />
           </aside>
-          <div className={cn('flex flex-col w-full')}>
+          <div className={cn('flex flex-col flex-1')}>
             <MediaTracksList tracks={self.tracks} tracksCount={self.user.tracks_count} />
           </div>
         </div>

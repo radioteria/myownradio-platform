@@ -8,7 +8,7 @@ interface Props {
   channelId: number
 }
 
-export const ChannelTracksList: React.FC<Props> = ({ tracks, tracksCount }) => {
+export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
   return (
     <section>
       <ul className={'mt-8'}>

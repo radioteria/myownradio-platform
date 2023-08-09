@@ -155,3 +155,4 @@ export const NowPlayingResponseSchema = z.object({
     .transform((v) => camelKeys(v)),
 })
 export type NowPlayingResponse = z.infer<typeof NowPlayingResponseSchema>
+export type NowPlaying = NowPlayingResponse['data']

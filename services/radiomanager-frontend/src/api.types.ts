@@ -80,6 +80,27 @@ export const UserTrackSchema = z.object({
 })
 export type UserTrack = z.infer<typeof UserTrackSchema>
 
+export const UserChannelTrackSchema = z.object({
+  t_order: z.number(),
+  unique_id: z.string(),
+  time_offset: z.number().nullable(),
+  album: z.string(),
+  artist: z.string(),
+  buy: z.string().nullable(),
+  can_be_shared: z.boolean(),
+  color: z.number().nullable(),
+  cue: z.string().nullable(),
+  date: z.string(),
+  duration: z.number(),
+  filename: z.string(),
+  genre: z.string(),
+  is_new: z.boolean(),
+  tid: z.number(),
+  title: z.string(),
+  track_number: z.string(),
+})
+export type UserChannelTrack = z.infer<typeof UserChannelTrackSchema>
+
 export const SelfResponseSchema = z.object({
   code: z.literal(1),
   message: z.literal('OK'),
@@ -90,4 +111,11 @@ export const SelfResponseSchema = z.object({
     client_id: z.string(),
   }),
 })
-export type SelfResponseSchema = z.infer<typeof SelfResponseSchema>
+export type SelfResponse = z.infer<typeof SelfResponseSchema>
+
+export const ChannelTracksResponseSchema = z.object({
+  code: z.literal(1),
+  message: z.literal('OK'),
+  data: z.array(UserChannelTrackSchema),
+})
+export type ChannelTracksResponse = z.infer<typeof ChannelTracksResponseSchema>

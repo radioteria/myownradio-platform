@@ -1,5 +1,6 @@
 import cn from 'classnames'
 import { UserStream } from '@/api.types'
+import Link from 'next/link'
 
 interface Props {
   channels: readonly UserStream[]
@@ -11,7 +12,9 @@ export const Sidebar: React.FC<Props> = ({ channels }) => {
       <h3 className={cn('text-xl')}>All Channels ({channels.length})</h3>
       <ul>
         {channels.map((stream) => (
-          <li key={stream.sid}>{stream.name}</li>
+          <li key={stream.sid}>
+            <Link href={`/c/${stream.sid}`}>{stream.name}</Link>
+          </li>
         ))}
       </ul>
     </div>

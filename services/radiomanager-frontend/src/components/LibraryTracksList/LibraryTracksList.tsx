@@ -1,13 +1,12 @@
-import cn from 'classnames'
-import { UserChannelTrack } from '@/api.types'
+import { UserTrack } from '@/api.types'
 import { Duration } from '@/components/Duration/Duration'
 
 interface Props {
-  tracks: readonly UserChannelTrack[]
+  tracks: readonly UserTrack[]
   tracksCount: number
 }
 
-export const ChannelMediaTracksList: React.FC<Props> = ({ tracks, tracksCount }) => {
+export const LibraryTracksList: React.FC<Props> = ({ tracks, tracksCount }) => {
   return (
     <section>
       <ul className={'mt-8'}>

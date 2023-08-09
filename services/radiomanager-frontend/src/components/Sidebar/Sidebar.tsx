@@ -1,8 +1,8 @@
 import cn from 'classnames'
-import { UserStreamSchema } from '@/api.types'
+import { UserStream } from '@/api.types'
 
 interface Props {
-  channels: readonly UserStreamSchema[]
+  channels: readonly UserStream[]
 }
 
 export const Sidebar: React.FC<Props> = ({ channels }) => {

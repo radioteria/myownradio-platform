@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { clamp, scale } from '@/utils/math'
 
 interface Props {
   timestamp: number
@@ -6,17 +7,16 @@ interface Props {
   duration: number
 }
 
-const SYNC_INTERVAL = 250
+const ANIMATION_DURATION = 250
 
 export const ProgressOverlay: React.FC<Props> = ({ timestamp, position, duration }) => {
-  const [percent, setPercent] = useState(position)
+  const [percent, setPercent] = useState(scale(position, duration, 100))
 
   useEffect(() => {
     let intervalId = window.setInterval(() => {
-      const now = Date.now()
-      const reactivePosition = now - timestamp + position
-      setPercent((100 / duration) * Math.min(reactivePosition, duration))
-    }, SYNC_INTERVAL)
+      const reactivePosition = Date.now() - timestamp + position
+      setPercent(scale(clamp(0, reactivePosition, duration), duration, 100))
+    }, ANIMATION_DURATION)
 
     return () => {
       window.clearInterval(intervalId)
@@ -30,7 +30,7 @@ export const ProgressOverlay: React.FC<Props> = ({ timestamp, position, duration
         style={{
           width: `${percent}%`,
           transitionProperty: 'width',
-          transitionDuration: `${SYNC_INTERVAL}ms`,
+          transitionDuration: `${ANIMATION_DURATION}ms`,
           transitionTimingFunction: 'linear',
         }}
       />

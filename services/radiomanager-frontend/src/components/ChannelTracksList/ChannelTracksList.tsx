@@ -28,7 +28,6 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
 
         {tracks.map((track, index) => {
           const isCurrentTrack = nowPlaying?.playlistPosition === index + 1
-          const currentTrack = nowPlaying?.currentTrack
 
           return (
             <li
@@ -37,12 +36,12 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
                 'bg-slate-600 text-gray-300': isCurrentTrack,
               })}
             >
-              {isCurrentTrack && (
+              {isCurrentTrack && nowPlaying && (
                 <div className={cn('h-full w-full bg-slate-800 absolute')}>
                   <ProgressOverlay
-                    position={currentTrack?.offset ?? 0}
-                    duration={currentTrack?.duration ?? 0}
-                    timestamp={nowPlaying?.time ?? 0}
+                    position={nowPlaying.currentTrack.offset}
+                    duration={nowPlaying.currentTrack.duration}
+                    timestamp={nowPlaying.time}
                   />
                 </div>
               )}

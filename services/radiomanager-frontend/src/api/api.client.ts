@@ -1,5 +1,4 @@
 import z from 'zod'
-import { cookies } from 'next/headers'
 import { config } from '@/config'
 import {
   ChannelTracksResponse,
@@ -8,19 +7,13 @@ import {
   NowPlayingResponseSchema,
   SelfResponse,
   SelfResponseSchema,
-} from '@/api.types'
+} from '@/api/api.types'
+import { isomorphicFetch } from '@/api/api.isomorphicFetch'
 
-const SESSION_COOKIE_NAME = 'secure_session'
 const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
 
 const ChannelSchema = z.object({})
 export type IChannel = z.infer<typeof ChannelSchema>
-
-function getSessionCookieHeader(): string {
-  const sessionCookie = cookies().get(SESSION_COOKIE_NAME)
-
-  return `${sessionCookie?.name}=${sessionCookie?.value};`
-}
 
 export const GetChannelsSchema = z.object({
   message: z.literal('OK'),
@@ -31,7 +24,7 @@ export const GetChannelsSchema = z.object({
 export async function getChannels(): Promise<readonly IChannel[]> {
   const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/`
 
-  return await fetch(url, { headers: { Cookie: getSessionCookieHeader() } })
+  return await isomorphicFetch(url)
     .then((res) => res.json())
     .then((json) => GetChannelsSchema.parse(json).data)
 }
@@ -39,7 +32,7 @@ export async function getChannels(): Promise<readonly IChannel[]> {
 export async function getSelf(): Promise<SelfResponse['data'] | null> {
   const url = `${BACKEND_BASE_URL}/api/v2/self`
 
-  return await fetch(url, { headers: { Cookie: getSessionCookieHeader() } })
+  return await isomorphicFetch(url)
     .then((res) => res.json())
     .then((json) => {
       try {
@@ -53,7 +46,7 @@ export async function getSelf(): Promise<SelfResponse['data'] | null> {
 export async function getChannelTracks(channelId: number): Promise<ChannelTracksResponse['data']> {
   const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/tracks/`
 
-  return await fetch(url, { headers: { Cookie: getSessionCookieHeader() } })
+  return await isomorphicFetch(url)
     .then((res) => res.json())
     .then((json) => ChannelTracksResponseSchema.parse(json).data)
 }
@@ -68,7 +61,7 @@ export async function getNowPlaying(
 
   url.searchParams.set('ts', String(timestamp))
 
-  return await fetch(url.toString(), { headers: { Cookie: getSessionCookieHeader() } })
+  return await isomorphicFetch(url.toString())
     .then((res) => res.json())
     .then((json) => NowPlayingResponseSchema.parse(json).data)
 }

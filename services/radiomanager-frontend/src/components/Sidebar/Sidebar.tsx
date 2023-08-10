@@ -1,5 +1,5 @@
 import cn from 'classnames'
-import { UserStream } from '@/api.types'
+import { UserStream } from '@/api/api.types'
 import Link from 'next/link'
 
 interface Props {

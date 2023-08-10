@@ -1,4 +1,4 @@
-import { UserTrack } from '@/api.types'
+import { UserTrack } from '@/api/api.types'
 import { Duration } from '@/components/Duration/Duration'
 
 interface Props {

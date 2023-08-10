@@ -1,6 +1,9 @@
+'use client'
+
 import cn from 'classnames'
-import { UserChannelTrack } from '@/api.types'
+import { UserChannelTrack } from '@/api/api.types'
 import { Duration } from '@/components/Duration/Duration'
+import { useNowPlaying } from '@/hooks/useNowPlaying'
 
 interface Props {
   tracks: readonly UserChannelTrack[]
@@ -9,6 +12,8 @@ interface Props {
 }
 
 export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
+  const nowPlaying = useNowPlaying(channelId)
+
   return (
     <section>
       <ul className={'mt-8'}>
@@ -21,8 +26,13 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
           <div className="p-2 w-20 flex-shrink-0 text-right">⏱</div>
         </li>
 
-        {tracks.map((track) => (
-          <li key={track.tid} className={'flex border-gray-800'}>
+        {tracks.map((track, index) => (
+          <li
+            key={track.tid}
+            className={cn('flex border-gray-800 bg', {
+              'bg-slate-800 text-gray-300': nowPlaying?.playlistPosition === index + 1,
+            })}
+          >
             <div className="p-3 w-8 flex-shrink-0">▶️</div>
             <div className="p-3 w-8 flex-shrink-0">❤️</div>
             <div className="p-3 w-full">{track.title || track.filename}</div>

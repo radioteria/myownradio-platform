@@ -1,5 +1,5 @@
 import cn from 'classnames'
-import { getChannelTracks, getNowPlaying, getSelf } from '@/api'
+import { getChannelTracks, getNowPlaying, getSelf } from '@/api/api.client'
 import { Sidebar } from '@/components/Sidebar/Sidebar'
 import { Header } from '@/components/Header/Header'
 import { ChannelTracksList } from '@/components/ChannelTracksList/ChannelTracksList'

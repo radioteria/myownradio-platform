@@ -1,7 +1,7 @@
 import cn from 'classnames'
-import { getSelf } from '@/api'
+import { getSelf } from '@/api/api.client'
 import { Sidebar } from '@/components/Sidebar/Sidebar'
-import { MediaTracksList } from '@/components/MediaTracksList/MediaTracksList'
+import { LibraryTracksList } from '@/components/LibraryTracksList/LibraryTracksList'
 import { Header } from '@/components/Header/Header'
 
 export default async function Home() {
@@ -22,7 +22,7 @@ export default async function Home() {
             <Sidebar channels={self.streams} />
           </aside>
           <div className={cn('flex flex-col flex-1')}>
-            <MediaTracksList tracks={self.tracks} tracksCount={self.user.tracks_count} />
+            <LibraryTracksList tracks={self.tracks} tracksCount={self.user.tracksCount} />
           </div>
         </div>
       </div>

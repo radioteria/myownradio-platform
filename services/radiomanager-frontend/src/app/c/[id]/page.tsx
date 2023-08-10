@@ -1,8 +1,8 @@
 import cn from 'classnames'
-import { getChannelTracks, getSelf } from '@/api'
+import { getChannelTracks, getNowPlaying, getSelf } from '@/api/api.client'
 import { Sidebar } from '@/components/Sidebar/Sidebar'
 import { Header } from '@/components/Header/Header'
-import { ChannelMediaTracksList } from '@/components/ChannelMediaTracksList/ChannelMediaTracksList'
+import { ChannelTracksList } from '@/components/ChannelTracksList/ChannelTracksList'
 
 export default async function UserChannel({ params: { id } }: { params: { id: string } }) {
   const [self, channelTracks] = await Promise.all([getSelf(), getChannelTracks(+id)])
@@ -22,7 +22,11 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
             <Sidebar channels={self.streams} />
           </aside>
           <div className={cn('flex flex-col flex-1')}>
-            <ChannelMediaTracksList tracks={channelTracks} tracksCount={channelTracks.length} />
+            <ChannelTracksList
+              channelId={+id}
+              tracks={channelTracks}
+              tracksCount={channelTracks.length}
+            />
           </div>
         </div>
       </div>

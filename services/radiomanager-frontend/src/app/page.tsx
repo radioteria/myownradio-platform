@@ -21,7 +21,7 @@ export default async function Home() {
           <aside className={cn('w-64 h-full from-gray-300 to-gray-100 bg-gradient-to-b')}>
             <Sidebar channels={self.streams} />
           </aside>
-          <div className={cn('flex flex-col flex-1')}>
+          <div className={cn('flex flex-col flex-1 overflow-y-auto')}>
             <LibraryTracksList tracks={self.tracks} tracksCount={self.user.tracksCount} />
           </div>
         </div>

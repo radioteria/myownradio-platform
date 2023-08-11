@@ -44,11 +44,13 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
                 </div>
               )}
               <div className="p-2 w-8 flex-shrink-0 z-10">▶️</div>
-              <div className="p-2 w-full z-10">
-                <div>{track.title || track.filename}</div>
-                {track.artist && <div className={'text-xs'}>{track.artist}</div>}
+              <div className="p-2 w-full z-10 text-ellipsis overflow-hidden">
+                <div className={'whitespace-nowrap'}>{track.title || track.filename}</div>
+                {track.artist && <div className={'text-xs whitespace-nowrap'}>{track.artist}</div>}
               </div>
-              <div className="p-2 w-full z-10 hidden xl:block">{track.album}</div>
+              <div className="p-2 w-full z-10 text-ellipsis overflow-hidden whitespace-nowrap hidden xl:block">
+                {track.album}
+              </div>
               <div className="p-2 w-20 flex-shrink-0 text-right z-10">
                 <Duration millis={track.duration} />
               </div>

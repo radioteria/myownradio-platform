@@ -19,21 +19,23 @@ const widthKeyframes = css`
   }
 `
 
-interface CSSProperties extends React.CSSProperties {
-  '--scale': number
-}
-
 export const ProgressOverlay: React.FC<Props> = ({ position, duration }) => {
   const animationDuration = duration - position
   const initialScale = (1 / duration) * position
 
-  const style: CSSProperties = {
-    '--scale': initialScale,
-  }
-
   return (
-    <div className={'h-full w-full'} style={style}>
-      <style jsx>{widthKeyframes}</style>
+    <div className={'h-full w-full'}>
+      <style jsx>{`
+        @keyframes scale {
+          0% {
+            transform: scale(${initialScale}, 1);
+          }
+
+          100% {
+            transform: scale(1, 1);
+          }
+        }
+      `}</style>
       <div
         key={`k-${position}`}
         className={'h-full w-full origin-left bg-slate-600'}

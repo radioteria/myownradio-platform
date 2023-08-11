@@ -1,37 +1,46 @@
-import { useEffect, useState } from 'react'
-import { clamp, scale } from '@/utils/math'
+import { scale } from '@/utils/math'
+import css from 'styled-jsx/css'
+import React from 'react'
 
 interface Props {
-  timestamp: number
   position: number
   duration: number
 }
 
-const ANIMATION_DURATION = 250
-
-export const ProgressOverlay: React.FC<Props> = ({ timestamp, position, duration }) => {
-  const [percent, setPercent] = useState(scale(position, duration, 100))
-
-  useEffect(() => {
-    let intervalId = window.setInterval(() => {
-      const reactivePosition = Date.now() - timestamp + position
-      setPercent(scale(clamp(0, reactivePosition, duration), duration, 100))
-    }, ANIMATION_DURATION)
-
-    return () => {
-      window.clearInterval(intervalId)
+const widthKeyframes = css`
+  @keyframes width {
+    0% {
+      width: var(--width);
     }
-  }, [position, timestamp, duration])
+
+    100% {
+      width: 100%;
+    }
+  }
+`
+
+interface CSSProperties extends React.CSSProperties {
+  '--width': string
+}
+
+export const ProgressOverlay: React.FC<Props> = ({ position, duration }) => {
+  const timeToAnimate = duration - position
+  const initialPositionPercent = scale(position, duration, 100)
+
+  const style: CSSProperties = {
+    '--width': `${initialPositionPercent}%`,
+  }
 
   return (
-    <div className={'h-full w-full'}>
+    <div className={'h-full w-full'} style={style}>
+      <style jsx>{widthKeyframes}</style>
       <div
+        key={`k-${position}`}
         className={'h-full bg-slate-600'}
         style={{
-          width: `${percent}%`,
-          transitionProperty: 'width',
-          transitionDuration: `${ANIMATION_DURATION}ms`,
-          transitionTimingFunction: 'linear',
+          animation: 'width',
+          animationDuration: `${timeToAnimate}ms`,
+          animationTimingFunction: 'linear',
         }}
       />
     </div>

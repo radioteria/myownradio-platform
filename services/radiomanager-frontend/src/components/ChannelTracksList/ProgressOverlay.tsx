@@ -10,25 +10,25 @@ interface Props {
 const widthKeyframes = css`
   @keyframes width {
     0% {
-      width: var(--width);
+      transform: scale(var(--width), 1);
     }
 
     100% {
-      width: 100%;
+      transform: scale(1, 1);
     }
   }
 `
 
 interface CSSProperties extends React.CSSProperties {
-  '--width': string
+  '--width': number
 }
 
 export const ProgressOverlay: React.FC<Props> = ({ position, duration }) => {
   const timeToAnimate = duration - position
-  const initialPositionPercent = scale(position, duration, 100)
+  const initialPositionPercent = (1 / duration) * position
 
   const style: CSSProperties = {
-    '--width': `${initialPositionPercent}%`,
+    '--width': initialPositionPercent,
   }
 
   return (
@@ -36,7 +36,7 @@ export const ProgressOverlay: React.FC<Props> = ({ position, duration }) => {
       <style jsx>{widthKeyframes}</style>
       <div
         key={`k-${position}`}
-        className={'h-full bg-slate-600'}
+        className={'h-full w-full origin-left bg-slate-600'}
         style={{
           animation: 'width',
           animationDuration: `${timeToAnimate}ms`,

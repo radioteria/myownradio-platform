@@ -17,12 +17,11 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
 
   return (
     <section>
-      <ul className={'mt-8'}>
-        <li className="flex text-gray-600">
+      <ul className={'mt-2'}>
+        <li className="flex text-gray-600 h-12">
           <div className="p-2 w-8 flex-shrink-0"></div>
           <div className="p-2 w-full">Title</div>
-          <div className="p-2 w-full">Artist</div>
-          <div className="p-2 w-full">Album</div>
+          <div className="p-2 w-full hidden xl:block">Album</div>
           <div className="p-2 w-20 flex-shrink-0 text-right">⏱</div>
         </li>
 
@@ -32,7 +31,7 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
           return (
             <li
               key={track.tid}
-              className={cn('flex border-gray-800 relative', {
+              className={cn('flex items-center border-gray-800 relative h-12', {
                 'bg-slate-600 text-gray-300': isCurrentTrack,
               })}
             >
@@ -44,11 +43,13 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
                   />
                 </div>
               )}
-              <div className="p-3 w-8 flex-shrink-0 z-10">▶️</div>
-              <div className="p-3 w-full z-10">{track.title || track.filename}</div>
-              <div className="p-3 w-full z-10">{track.artist}</div>
-              <div className="p-3 w-full z-10">{track.album}</div>
-              <div className="p-3 w-20 flex-shrink-0 text-right z-10">
+              <div className="p-2 w-8 flex-shrink-0 z-10">▶️</div>
+              <div className="p-2 w-full z-10">
+                <div>{track.title || track.filename}</div>
+                {track.artist && <div className={'text-xs'}>{track.artist}</div>}
+              </div>
+              <div className="p-2 w-full z-10 hidden xl:block">{track.album}</div>
+              <div className="p-2 w-20 flex-shrink-0 text-right z-10">
                 <Duration millis={track.duration} />
               </div>
             </li>

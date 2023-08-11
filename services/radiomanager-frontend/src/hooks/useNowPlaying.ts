@@ -10,18 +10,22 @@ export function useNowPlaying(channelId: number) {
     let removed = false
 
     const check = () => {
-      getNowPlaying(channelId, Date.now()).then((np) => {
-        if (removed) {
-          return
-        }
+      getNowPlaying(channelId, Date.now())
+        .then((np) => {
+          if (removed) {
+            return null
+          }
 
-        setNowPlaying(np)
+          setNowPlaying(np)
 
-        timeoutId = window.setTimeout(
-          check,
-          Math.min(5_000, np.currentTrack.duration - np.currentTrack.offset),
-        )
-      })
+          return Math.min(5_000, np.currentTrack.duration - np.currentTrack.offset)
+        })
+        .catch(() => 5_000)
+        .then((timeout) => {
+          if (timeout && !removed) {
+            timeoutId = window.setTimeout(check, Math.min(5_000, timeout))
+          }
+        })
     }
 
     check()

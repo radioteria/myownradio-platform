@@ -18,7 +18,7 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
           <Header user={self.user} />
         </nav>
         <div className={cn('flex h-full')}>
-          <aside className={cn('w-64 h-full from-gray-300 to-gray-100 bg-gradient-to-b')}>
+          <aside className={cn('w-64 h-full from-gray-300 to-gray-100 bg-gradient-to-b shadow-md')}>
             <Sidebar channels={self.streams} />
           </aside>
           <div className={cn('flex flex-col flex-1 overflow-y-auto')}>
@@ -28,12 +28,8 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
               tracksCount={channelTracks.length}
             />
           </div>
-
           <div
-            className={cn(
-              'from-gray-200 to-gray-50 bg-gradient-to-b',
-              'flex-col w-96 shadow-md relative',
-            )}
+            className={cn('from-gray-200 to-gray-50 bg-gradient-to-b', 'flex-col w-96 shadow-md')}
           >
             <div className={'bg-black aspect-video text-white flex items-center justify-center'}>
               OFFLINE

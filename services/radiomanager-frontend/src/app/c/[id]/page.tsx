@@ -28,6 +28,18 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
               tracksCount={channelTracks.length}
             />
           </div>
+
+          <div
+            className={cn(
+              'from-gray-200 to-gray-50 bg-gradient-to-b',
+              'flex-col w-96 shadow-md relative',
+            )}
+          >
+            <div className={'bg-black aspect-video text-white flex items-center justify-center'}>
+              OFFLINE
+            </div>
+            <div>TODO</div>
+          </div>
         </div>
       </div>
     </main>

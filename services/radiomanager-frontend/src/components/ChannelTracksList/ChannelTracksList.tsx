@@ -41,7 +41,6 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
                   <ProgressOverlay
                     position={nowPlaying.currentTrack.offset}
                     duration={nowPlaying.currentTrack.duration}
-                    timestamp={nowPlaying.time}
                   />
                 </div>
               )}

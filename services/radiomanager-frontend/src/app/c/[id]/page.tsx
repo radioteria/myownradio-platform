@@ -5,7 +5,8 @@ import { Header } from '@/components/Header/Header'
 import { ChannelTracksList } from '@/components/ChannelTracksList/ChannelTracksList'
 
 export default async function UserChannel({ params: { id } }: { params: { id: string } }) {
-  const [self, channelTracks] = await Promise.all([getSelf(), getChannelTracks(+id)])
+  const channelId = Number(id)
+  const [self, channelTracks] = await Promise.all([getSelf(), getChannelTracks(channelId)])
 
   if (!self) {
     return <h1>Unauthorized</h1>
@@ -19,11 +20,11 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
         </nav>
         <div className={cn('flex h-full')}>
           <aside className={cn('w-64 h-full from-gray-300 to-gray-100 bg-gradient-to-b shadow-md')}>
-            <Sidebar channels={self.streams} />
+            <Sidebar channels={self.streams} channelId={channelId} />
           </aside>
           <div className={cn('flex flex-col flex-1 overflow-y-auto')}>
             <ChannelTracksList
-              channelId={+id}
+              channelId={channelId}
               tracks={channelTracks}
               tracksCount={channelTracks.length}
             />

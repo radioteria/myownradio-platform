@@ -17,12 +17,12 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
 
   return (
     <section>
-      <ul className={'mt-2'}>
+      <ul>
         <li className="flex text-gray-600 h-12">
-          <div className="p-2 w-8 flex-shrink-0"></div>
-          <div className="p-2 w-full">Title</div>
-          <div className="p-2 w-full hidden xl:block">Album</div>
-          <div className="p-2 w-20 flex-shrink-0 text-right">⏱</div>
+          <div className="pl-4 pr-2 py-4 w-8 flex-shrink-0"></div>
+          <div className="px-2 py-4 w-full">Title</div>
+          <div className="px-2 py-4 w-full hidden xl:block">Album</div>
+          <div className="pl-2 pr-4 py-4 w-20 flex-shrink-0 text-right">⏱</div>
         </li>
 
         {tracks.map((track, index) => {
@@ -43,7 +43,7 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
                   />
                 </div>
               )}
-              <div className="p-2 w-8 flex-shrink-0 z-10">▶️</div>
+              <div className="p-2 pl-4 w-8 flex-shrink-0 z-10">▶️</div>
               <div className="p-2 w-full z-10 text-ellipsis overflow-hidden">
                 <div className={'whitespace-nowrap'}>{track.title || track.filename}</div>
                 {track.artist && <div className={'text-xs whitespace-nowrap'}>{track.artist}</div>}
@@ -51,7 +51,7 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
               <div className="p-2 w-full z-10 text-ellipsis overflow-hidden whitespace-nowrap hidden xl:block">
                 {track.album}
               </div>
-              <div className="p-2 w-20 flex-shrink-0 text-right z-10">
+              <div className="p-2 pr-4 w-20 flex-shrink-0 text-right z-10">
                 <Duration millis={track.duration} />
               </div>
             </li>

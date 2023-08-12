@@ -28,7 +28,7 @@ export const Sidebar: React.FC<Props> = ({ channels, activeItem }) => {
             <li
               key={channel.sid}
               className={cn('px-4 py-2', 'text-ellipsis overflow-hidden', {
-                'bg-slate-500 text-gray-50': activeChannelId,
+                'bg-slate-500 text-gray-50': activeChannelId === channel.sid,
               })}
             >
               <Link href={`/c/${channel.sid}`}>{channel.name}</Link>

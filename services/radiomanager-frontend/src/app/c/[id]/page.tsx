@@ -20,7 +20,7 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
         </nav>
         <div className={cn('flex h-full')}>
           <aside className={cn('w-64 h-full from-gray-300 to-gray-100 bg-gradient-to-b shadow-md')}>
-            <Sidebar channels={self.streams} channelId={channelId} />
+            <Sidebar channels={self.streams} activeItem={['channel', channelId]} />
           </aside>
           <div className={cn('flex flex-col flex-1 overflow-y-auto')}>
             <ChannelTracksList

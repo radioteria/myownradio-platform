@@ -19,7 +19,7 @@ export default async function Home() {
         </nav>
         <div className={cn('flex h-full')}>
           <aside className={cn('w-64 h-full from-gray-300 to-gray-100 bg-gradient-to-b')}>
-            <Sidebar channels={self.streams} />
+            <Sidebar channels={self.streams} activeItem={['library']} />
           </aside>
           <div className={cn('flex flex-col flex-1 overflow-y-auto')}>
             <LibraryTracksList tracks={self.tracks} tracksCount={self.user.tracksCount} />

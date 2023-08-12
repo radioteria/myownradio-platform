@@ -18,21 +18,37 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
         <nav className={cn('h-16 bg-slate-800 text-gray-100 items-center')}>
           <Header user={self.user} />
         </nav>
-        <div className={cn('flex h-full')}>
-          <aside className={cn('w-64 h-full from-gray-300 to-gray-100 bg-gradient-to-b shadow-md')}>
-            <Sidebar channels={self.streams} activeItem={['channel', channelId]} />
+        <div className={cn('flex h-full p-1')}>
+          <aside className={cn('w-64 h-full p-1')}>
+            <div
+              className={cn(
+                'w-full h-full rounded-lg',
+                'from-gray-300 to-gray-100 bg-gradient-to-b',
+              )}
+            >
+              <Sidebar channels={self.streams} activeItem={['channel', channelId]} />
+            </div>
           </aside>
-          <div className={cn('flex flex-col flex-1 overflow-y-auto')}>
-            <ChannelTracksList
-              channelId={channelId}
-              tracks={channelTracks}
-              tracksCount={channelTracks.length}
-            />
+          <div className={cn('flex flex-col flex-1 p-1')}>
+            <div
+              className={cn(
+                'w-full h-full rounded-lg overflow-y-auto',
+                'from-gray-300 to-gray-100 bg-gradient-to-b',
+              )}
+            >
+              <ChannelTracksList
+                channelId={channelId}
+                tracks={channelTracks}
+                tracksCount={channelTracks.length}
+              />
+            </div>
           </div>
-          <div
-            className={cn('from-gray-200 to-gray-50 bg-gradient-to-b', 'flex-col w-96 shadow-md')}
-          >
-            <div className={'bg-black aspect-video text-white flex items-center justify-center'}>
+          <div className={cn('flex-col w-96 p-1')}>
+            <div
+              className={
+                'bg-black aspect-video text-white flex items-center justify-center rounded-lg'
+              }
+            >
               OFFLINE
             </div>
             <div>TODO</div>

@@ -14,6 +14,7 @@ export const Sidebar: React.FC<Props> = ({ channels, activeItem }) => {
 
   return (
     <div className={'py-0'}>
+      <h3 className={'text-md text-gray-900 px-4 py-4'}>Library</h3>
       <ul>
         <li
           className={cn('px-4 py-2', 'text-ellipsis overflow-hidden', {

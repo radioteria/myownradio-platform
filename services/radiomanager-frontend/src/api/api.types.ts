@@ -71,8 +71,10 @@ export const UserTrackSchema = z
   .object({
     tid: z.number(),
     filename: z.string(),
+    // TODO should not be optional
     artist: z.string().optional(),
     title: z.string(),
+    // TODO should not be optional
     album: z.string().optional(),
     // TODO string or number
     track_number: z.union([z.string(), z.number()]).optional(),

@@ -13,11 +13,11 @@ interface Props {
 export const Header: React.FC<Props> = ({ user }) => {
   return (
     <div className={cn('flex justify-between items-center h-full')}>
-      <div className={cn('flex items-center')}>
+      <div className={cn('flex items-center pl-4')}>
         <Image src={Logo.src} alt={'logo'} width={40} height={40} />
         <span className={cn(logoFont.className, 'text-[32px] mt-1')}>RADIOTERIO</span>
       </div>
-      <nav>Hello, {user.name || user.login}</nav>
+      <nav className={'pr-4'}>Hello, {user.name || user.login}</nav>
     </div>
   )
 }

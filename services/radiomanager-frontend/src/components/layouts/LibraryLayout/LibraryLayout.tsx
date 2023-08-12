@@ -33,16 +33,6 @@ export const LibraryLayout: React.FC<Props> = ({ header, sidebar, content, right
               )}
             >
               {content}
-              {content}
-              {content}
-              {content}
-              {content}
-              {content}
-              {content}
-              {content}
-              {content}
-              {content}
-              {content}
             </div>
           </div>
           {rightSidebar && <div className={cn('flex-col w-96 p-1')}>{rightSidebar}</div>}

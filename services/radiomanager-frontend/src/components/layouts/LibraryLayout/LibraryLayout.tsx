@@ -9,10 +9,12 @@ interface Props {
 
 export const LibraryLayout: React.FC<Props> = ({ header, sidebar, content, rightSidebar }) => {
   return (
-    <main className={cn('flex h-screen')}>
-      <div className={cn('flex-1 flex flex-col overflow-hidden')}>
-        <nav className={cn('h-16 bg-slate-800 text-gray-100 items-center')}>{header}</nav>
-        <div className={cn('flex h-full p-1')}>
+    <main className={cn('flex h-screen w-screen')}>
+      <div className={cn('flex flex-1 flex-col')}>
+        <nav className={cn('h-16 bg-slate-800 text-gray-100 items-center overflow-hidden')}>
+          {header}
+        </nav>
+        <div className={cn('flex-1 h-full flex p-1 overflow-hidden')}>
           <aside className={cn('w-64 h-full p-1')}>
             <div
               className={cn(

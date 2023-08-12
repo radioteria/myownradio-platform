@@ -18,7 +18,7 @@ export const LibraryLayout: React.FC<Props> = ({ header, sidebar, content, right
           <aside className={cn('w-64 h-full p-1')}>
             <div
               className={cn(
-                'w-full h-full rounded-lg',
+                'w-full h-full rounded-lg overflow-y-auto',
                 'from-gray-300 to-gray-100 bg-gradient-to-b',
               )}
             >

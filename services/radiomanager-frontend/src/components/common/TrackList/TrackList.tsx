@@ -37,7 +37,7 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
         return (
           <li
             key={track.trackId}
-            className={cn('flex items-center border-gray-800 relative h-12', {
+            className={cn('flex items-center border-gray-800 h-12 relative', {
               'bg-slate-600 text-gray-300': isCurrentTrack,
             })}
           >
@@ -50,13 +50,11 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
               </div>
             )}
             <div className="p-2 pl-4 w-8 flex-shrink-0 z-10">▶️</div>
-            <div className="p-2 w-full z-10 text-ellipsis overflow-hidden">
-              <div className={'whitespace-nowrap'}>{track.title}</div>
-              {track.artist && <div className={'text-xs whitespace-nowrap'}>{track.artist}</div>}
+            <div className="p-2 w-full z-10 min-w-0">
+              <div className={'truncate'}>{track.title}</div>
+              {track.artist && <div className={'text-xs truncate'}>{track.artist}</div>}
             </div>
-            <div className="p-2 w-full z-10 text-ellipsis overflow-hidden whitespace-nowrap hidden xl:block">
-              {track.album}
-            </div>
+            <div className="p-2 w-full z-10 truncate hidden xl:block">{track.album}</div>
             <div className="p-2 pr-4 w-20 flex-shrink-0 text-right z-10">
               <Duration millis={track.duration} />
             </div>

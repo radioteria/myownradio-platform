@@ -21,7 +21,9 @@ export const Sidebar: React.FC<Props> = ({ channels, activeItem }) => {
             'bg-slate-500 text-gray-50': activeItem?.[0] === 'library',
           })}
         >
-          <Link href={`/`}>All Tracks</Link>
+          <Link className={'block'} href={`/`}>
+            All Tracks
+          </Link>
         </li>
 
         {channels.map((channel) => {
@@ -32,7 +34,9 @@ export const Sidebar: React.FC<Props> = ({ channels, activeItem }) => {
                 'bg-slate-500 text-gray-50': activeChannelId === channel.sid,
               })}
             >
-              <Link href={`/c/${channel.sid}`}>{channel.name}</Link>
+              <Link className={'block truncate'} href={`/c/${channel.sid}`}>
+                {channel.name}
+              </Link>
             </li>
           )
         })}

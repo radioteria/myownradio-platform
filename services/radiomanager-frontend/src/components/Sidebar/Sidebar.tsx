@@ -34,7 +34,7 @@ export const Sidebar: React.FC<Props> = ({ channels, activeItem }) => {
                 'bg-slate-500 text-gray-50': activeChannelId === channel.sid,
               })}
             >
-              <Link className={'block'} href={`/c/${channel.sid}`}>
+              <Link className={'block truncate max-w-0'} href={`/c/${channel.sid}`}>
                 {channel.name}
               </Link>
             </li>

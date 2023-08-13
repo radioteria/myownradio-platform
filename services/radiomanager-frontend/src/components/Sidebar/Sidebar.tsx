@@ -26,6 +26,8 @@ export const Sidebar: React.FC<Props> = ({ channels, activeItem }) => {
           </Link>
         </li>
 
+        <li className={'py-2'} />
+
         {channels.map((channel) => {
           return (
             <li

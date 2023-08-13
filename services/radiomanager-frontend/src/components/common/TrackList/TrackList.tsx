@@ -54,7 +54,9 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
               <div className={'truncate'}>{track.title}</div>
               {track.artist && <div className={'text-xs truncate'}>{track.artist}</div>}
             </div>
-            <div className="p-2 w-full z-10 truncate hidden xl:block">{track.album}</div>
+            {track.album && (
+              <div className="p-2 w-full z-10 truncate hidden xl:block">{track.album}</div>
+            )}
             <div className="p-2 pr-4 w-20 flex-shrink-0 text-right z-10">
               <Duration millis={track.duration} />
             </div>

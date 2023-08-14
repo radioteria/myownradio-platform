@@ -42,8 +42,9 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
           <li
             key={track.trackId}
             className={cn([
-              'flex items-center border-gray-800 h-12 relative',
+              'flex items-center border-gray-800 h-12 relative cursor-pointer',
               { 'bg-slate-600 text-gray-300': isCurrentTrack },
+              { 'hover:bg-gray-300': !isCurrentTrack },
               'group',
             ])}
           >

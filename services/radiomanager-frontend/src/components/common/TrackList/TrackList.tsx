@@ -27,12 +27,12 @@ interface Props {
 export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
   return (
     <ul>
-      <li className="flex text-gray-600 h-12">
+      <li className="flex text-gray-500 h-12">
         <div className="pl-4 pr-2 py-4 w-12 flex-shrink-0 text-right">#</div>
         <div className="px-2 py-4 w-full">Title</div>
         <div className="px-2 py-4 w-full hidden xl:block">Album</div>
         <div className="px-2 py-4 w-20 flex-shrink-0 text-right">⏱</div>
-        <div className="pl-2 pr-4 py-4 w-8 flex-shrink-0 text-right" />
+        <div className="pl-2 pr-4 py-4 w-10 flex-shrink-0 text-right" />
       </li>
 
       {tracks.map((track, index) => {
@@ -42,8 +42,9 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
           <li
             key={track.trackId}
             className={cn([
-              'flex items-center border-gray-800 h-12 relative',
+              'flex items-center border-gray-800 h-12 relative cursor-pointer',
               { 'bg-slate-600 text-gray-300': isCurrentTrack },
+              { 'hover:bg-gray-300': !isCurrentTrack },
               'group',
             ])}
           >
@@ -70,11 +71,11 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
             </div>
             <div
               className={cn([
-                'p-2 pr-4 w-8 flex-shrink-0 text-right z-10 cursor-pointer',
+                'p-2 pr-4 w-10 flex-shrink-0 text-right z-10 cursor-pointer',
                 'opacity-0 group-hover:opacity-100 transition-[opacity]',
               ])}
             >
-              <ThreeDots size={12} />
+              <ThreeDots size={14} />
             </div>
           </li>
         )

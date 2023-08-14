@@ -41,9 +41,11 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
         return (
           <li
             key={track.trackId}
-            className={cn('flex items-center border-gray-800 h-12 relative', {
-              'bg-slate-600 text-gray-300': isCurrentTrack,
-            })}
+            className={cn([
+              'flex items-center border-gray-800 h-12 relative',
+              { 'bg-slate-600 text-gray-300': isCurrentTrack },
+              'group',
+            ])}
           >
             {isCurrentTrack && currentTrack && (
               <div className={cn('h-full w-full bg-slate-800 absolute')}>
@@ -66,7 +68,12 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
             <div className="p-2 w-20 flex-shrink-0 text-right z-10">
               <Duration millis={track.duration} />
             </div>
-            <div className="p-2 pr-4 w-14 flex-shrink-0 text-right z-10 cursor-pointer">
+            <div
+              className={cn([
+                'p-2 pr-4 w-14 flex-shrink-0 text-right z-10 cursor-pointer',
+                'opacity-0 group-hover:opacity-100 transition-[opacity]',
+              ])}
+            >
               <ThreeDots size={12} />
             </div>
           </li>

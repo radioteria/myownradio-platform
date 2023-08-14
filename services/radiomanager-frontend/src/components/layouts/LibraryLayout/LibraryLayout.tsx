@@ -19,7 +19,7 @@ export const LibraryLayout: React.FC<Props> = ({ header, sidebar, content, right
             <div
               className={cn(
                 'w-full h-full rounded-lg overflow-y-auto',
-                'from-gray-300 to-gray-100 bg-gradient-to-b',
+                'from-gray-200 to-gray-50 bg-gradient-to-b',
               )}
             >
               {sidebar}
@@ -29,7 +29,7 @@ export const LibraryLayout: React.FC<Props> = ({ header, sidebar, content, right
             <div
               className={cn(
                 'w-full h-full rounded-lg overflow-y-auto',
-                'from-gray-300 to-gray-100 bg-gradient-to-b',
+                'from-gray-200 to-gray-50 bg-gradient-to-b',
               )}
             >
               {content}

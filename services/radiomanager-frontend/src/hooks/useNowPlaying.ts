@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useReducer, useState } from 'react'
 import { getNowPlaying } from '@/api/api.client'
 import { NowPlaying } from '@/api/api.types'
 
+const UPDATE_INTERVAL = 5_000
+
 export function useNowPlaying(channelId: number) {
   const [nowPlaying, setNowPlaying] = useState<null | NowPlaying>(null)
+  const [updated, update] = useReducer((x) => x + 1, 0)
 
   useEffect(() => {
     let timeoutId: null | number = null
@@ -18,9 +21,9 @@ export function useNowPlaying(channelId: number) {
 
           setNowPlaying(np)
 
-          return Math.min(5_000, np.currentTrack.duration - np.currentTrack.offset)
+          return Math.min(UPDATE_INTERVAL, np.currentTrack.duration - np.currentTrack.offset)
         })
-        .catch(() => 5_000)
+        .catch(() => UPDATE_INTERVAL)
         .then((timeout) => {
           if (timeout && !removed) {
             timeoutId = window.setTimeout(check, Math.min(5_000, timeout))
@@ -34,7 +37,7 @@ export function useNowPlaying(channelId: number) {
       removed = true
       timeoutId && window.clearTimeout(timeoutId)
     }
-  }, [channelId])
+  }, [channelId, updated])
 
-  return nowPlaying
+  return { nowPlaying, update }
 }

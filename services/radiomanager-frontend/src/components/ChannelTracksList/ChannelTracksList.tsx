@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
-  const nowPlaying = useNowPlaying(channelId)
+  const { nowPlaying } = useNowPlaying(channelId)
 
   return (
     <section>

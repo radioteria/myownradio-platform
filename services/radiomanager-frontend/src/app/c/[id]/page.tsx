@@ -3,6 +3,7 @@ import { Sidebar } from '@/components/Sidebar/Sidebar'
 import { Header } from '@/components/Header/Header'
 import { ChannelTracksList } from '@/components/ChannelTracksList/ChannelTracksList'
 import { LibraryLayout } from '@/components/layouts/LibraryLayout'
+import { StreamOverlay } from '@/components/StreamOverlay'
 
 export default async function UserChannel({ params: { id } }: { params: { id: string } }) {
   const channelId = Number(id)
@@ -25,13 +26,7 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
       }
       rightSidebar={
         <>
-          <div
-            className={
-              'bg-black aspect-video text-white flex items-center justify-center rounded-lg'
-            }
-          >
-            OFFLINE
-          </div>
+          <StreamOverlay channelId={channelId} />
           <div>TODO</div>
         </>
       }

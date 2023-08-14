@@ -8,14 +8,14 @@ const AnimatedBars: React.FC<Props> = ({ size }) => {
       <svg
         width={size}
         style={{ display: 'inline' }}
-        viewBox="0 0 14 16"
+        viewBox="0 0 15 16"
         xmlns="http://www.w3.org/2000/svg"
         fill={'currentcolor'}
       >
-        <rect className="bar bar1" x="0" y="16" width="2" height="0" />
-        <rect className="bar bar2" x="4" y="16" width="2" height="0" />
-        <rect className="bar bar3" x="8" y="16" width="2" height="0" />
-        <rect className="bar bar4" x="12" y="16" width="2" height="0" />
+        <rect className="bar bar1" x="0" y="16" width="3" height="0" />
+        <rect className="bar bar2" x="4" y="16" width="3" height="0" />
+        <rect className="bar bar3" x="8" y="16" width="3" height="0" />
+        <rect className="bar bar4" x="12" y="16" width="3" height="0" />
       </svg>
       <style jsx>{`
         .bar {

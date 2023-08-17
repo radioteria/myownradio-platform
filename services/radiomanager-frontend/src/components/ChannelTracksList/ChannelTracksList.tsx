@@ -3,6 +3,7 @@
 import { UserChannelTrack } from '@/api/api.types'
 import { useNowPlaying } from '@/hooks/useNowPlaying'
 import { TrackList } from '@/components/common/TrackList'
+import { useContextMenu } from '@/modules/ContextMenu'
 
 interface Props {
   tracks: readonly UserChannelTrack[]
@@ -12,9 +13,21 @@ interface Props {
 
 export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
   const { nowPlaying } = useNowPlaying(channelId)
+  const contextMenu = useContextMenu()
 
   return (
-    <section>
+    <section
+      onContextMenu={(ev) => {
+        contextMenu.show({
+          position: {
+            x: ev.clientX,
+            y: ev.clientY,
+          },
+          menuItems: [],
+        })
+        ev.preventDefault()
+      }}
+    >
       <TrackList
         tracks={tracks.map((track, index) => ({
           trackId: track.tid,

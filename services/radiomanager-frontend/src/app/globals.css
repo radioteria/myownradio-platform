@@ -17,3 +17,7 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+.outline-none {
+    outline: none;
+}

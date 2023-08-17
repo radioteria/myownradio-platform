@@ -84,7 +84,7 @@ export const TrackListItem: React.FC<Props> = ({
         <div
           className={cn([
             'p-2 pr-4 w-10 flex-shrink-0 text-right z-10 cursor-pointer',
-            'opacity-0 group-hover:opacity-100 transition-[opacity]',
+            'opacity-0 group-hover:opacity-100',
           ])}
         >
           <span

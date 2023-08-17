@@ -5,6 +5,7 @@ import AnimatedBars from '@/icons/AnimatedBars'
 import { ThreeDots } from '@/icons/ThreeDots'
 import { TrackItem, CurrentTrack } from './types'
 import { TrackListItem } from '@/components/common/TrackList/TrackListItem'
+import { useState } from 'react'
 
 interface Props {
   tracks: readonly TrackItem[]
@@ -12,6 +13,8 @@ interface Props {
 }
 
 export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null)
+
   return (
     <ul>
       <li className="flex text-gray-500 h-12">
@@ -23,7 +26,20 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
       </li>
 
       {tracks.map((track, index) => {
-        return <TrackListItem key={index} track={track} currentTrack={currentTrack} index={index} />
+        return (
+          <TrackListItem
+            key={index}
+            track={track}
+            currentTrack={currentTrack}
+            index={index}
+            isSelected={lastSelectedIndex === index}
+            onSelect={() => {
+              setLastSelectedIndex(index)
+            }}
+            onRemoveFromLibrary={() => {}}
+            onRemoveFromChannel={() => {}}
+          />
+        )
       })}
     </ul>
   )

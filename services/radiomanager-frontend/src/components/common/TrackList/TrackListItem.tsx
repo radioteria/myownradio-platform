@@ -11,9 +11,19 @@ interface Props {
   track: TrackItem
   currentTrack: CurrentTrack | null
   index: number
+  onSelect: () => void
+  onRemoveFromLibrary: () => void
+  onRemoveFromChannel?: () => void
+  isSelected: boolean
 }
 
-export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) => {
+export const TrackListItem: React.FC<Props> = ({
+  track,
+  currentTrack,
+  index,
+  onSelect,
+  isSelected,
+}) => {
   const isCurrentTrack = currentTrack?.index === index
   const contextMenu = useContextMenu()
 
@@ -33,6 +43,7 @@ export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) =
         },
       ],
     })
+    onSelect()
   }
 
   return (
@@ -46,9 +57,11 @@ export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) =
         className={cn([
           'flex items-center border-gray-800 h-12 relative cursor-pointer',
           { 'bg-slate-600 text-gray-300': isCurrentTrack },
-          { 'hover:bg-gray-300': !isCurrentTrack },
+          { 'bg-gray-400': isSelected },
+          { 'hover:bg-gray-300': !isCurrentTrack && !isSelected },
           'group',
         ])}
+        onClick={() => onSelect()}
       >
         {isCurrentTrack && currentTrack && (
           <div className={cn('h-full w-full bg-slate-800 absolute')}>

@@ -1,5 +1,6 @@
 import { FocusEvent, useEffect, useRef } from 'react'
 import { MenuContext, MenuItemType } from '@/modules/ContextMenu'
+import { useInViewport } from '@/hooks/useInViewport'
 
 interface Props {
   context: MenuContext
@@ -11,6 +12,8 @@ export const ContextMenuComponent: React.FC<Props> = ({
   context: { position, menuItems },
 }) => {
   const menuRef = useRef<HTMLDivElement | null>(null)
+
+  useInViewport(menuRef)
 
   useEffect(() => {
     menuRef.current?.focus()
@@ -34,7 +37,10 @@ export const ContextMenuComponent: React.FC<Props> = ({
             switch (menuItem.type) {
               case MenuItemType.Item:
                 return (
-                  <li key={index} className={'px-4 py-2 hover:bg-gray-600 text-gray-200 pointer'}>
+                  <li
+                    key={index}
+                    className={'px-4 py-2 hover:bg-gray-600 text-gray-200 pointer truncate'}
+                  >
                     {menuItem.label}
                   </li>
                 )

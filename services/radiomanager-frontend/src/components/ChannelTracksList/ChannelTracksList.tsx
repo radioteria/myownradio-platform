@@ -3,7 +3,7 @@
 import { UserChannelTrack } from '@/api/api.types'
 import { useNowPlaying } from '@/hooks/useNowPlaying'
 import { TrackList } from '@/components/common/TrackList'
-import { useContextMenu } from '@/modules/ContextMenu'
+import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 
 interface Props {
   tracks: readonly UserChannelTrack[]
@@ -23,7 +23,18 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
             x: ev.clientX,
             y: ev.clientY,
           },
-          menuItems: [],
+          menuItems: [
+            {
+              type: MenuItemType.Item,
+              label: 'Remove from channel',
+              onClick() {},
+            },
+            {
+              type: MenuItemType.Item,
+              label: 'Remove from library',
+              onClick() {},
+            },
+          ],
         })
         ev.preventDefault()
       }}

@@ -21,11 +21,10 @@ export const ContextMenuComponent: React.FC<Props> = ({
       tabIndex={0}
       ref={menuRef}
       onBlur={onBlur}
-      className={'bg-gray-300 py-2 px-2 outline-none rounded-sm'}
+      className={'bg-gray-700 py-2 outline-none rounded-md fixed text-sm'}
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
-        position: 'fixed',
         zIndex: 99999999,
       }}
     >
@@ -35,7 +34,7 @@ export const ContextMenuComponent: React.FC<Props> = ({
             switch (menuItem.type) {
               case MenuItemType.Item:
                 return (
-                  <li key={index} className={'p-1 hover:bg-red-500'}>
+                  <li key={index} className={'px-4 py-2 hover:bg-gray-600 text-gray-200 pointer'}>
                     {menuItem.label}
                   </li>
                 )

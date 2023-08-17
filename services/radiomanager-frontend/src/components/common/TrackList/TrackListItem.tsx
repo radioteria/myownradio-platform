@@ -5,6 +5,7 @@ import AnimatedBars from '@/icons/AnimatedBars'
 import { Duration } from '@/components/Duration/Duration'
 import { ThreeDots } from '@/icons/ThreeDots'
 import { useState } from 'react'
+import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 
 interface Props {
   track: TrackItem
@@ -14,11 +15,33 @@ interface Props {
 
 export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) => {
   const isCurrentTrack = currentTrack?.index === index
-  const [isDropdownVisible, setDropdownVisible] = useState(false)
+  const contextMenu = useContextMenu()
+
+  function showMenu(position: { x: number; y: number }) {
+    contextMenu.show({
+      position,
+      menuItems: [
+        {
+          type: MenuItemType.Item,
+          label: 'Remove from channel',
+          onClick() {},
+        },
+        {
+          type: MenuItemType.Item,
+          label: 'Remove from library',
+          onClick() {},
+        },
+      ],
+    })
+  }
 
   return (
     <>
       <li
+        onContextMenu={(ev) => {
+          ev.preventDefault()
+          showMenu({ x: ev.clientX, y: ev.clientY })
+        }}
         key={track.trackId}
         className={cn([
           'flex items-center border-gray-800 h-12 relative cursor-pointer',
@@ -51,7 +74,17 @@ export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) =
             'opacity-0 group-hover:opacity-100 transition-[opacity]',
           ])}
         >
-          <ThreeDots size={14} />
+          <span
+            onClick={(ev) => {
+              ev.preventDefault()
+              showMenu({
+                x: ev.clientX,
+                y: ev.clientY,
+              })
+            }}
+          >
+            <ThreeDots size={14} />
+          </span>
         </div>
       </li>
     </>

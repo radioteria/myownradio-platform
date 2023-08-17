@@ -13,32 +13,9 @@ interface Props {
 
 export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
   const { nowPlaying } = useNowPlaying(channelId)
-  const contextMenu = useContextMenu()
 
   return (
-    <section
-      onContextMenu={(ev) => {
-        contextMenu.show({
-          position: {
-            x: ev.clientX,
-            y: ev.clientY,
-          },
-          menuItems: [
-            {
-              type: MenuItemType.Item,
-              label: 'Remove from channel',
-              onClick() {},
-            },
-            {
-              type: MenuItemType.Item,
-              label: 'Remove from library',
-              onClick() {},
-            },
-          ],
-        })
-        ev.preventDefault()
-      }}
-    >
+    <section>
       <TrackList
         tracks={tracks.map((track, index) => ({
           trackId: track.tid,

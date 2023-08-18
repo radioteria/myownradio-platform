@@ -1,6 +1,6 @@
 import { FocusEvent, useEffect, useRef } from 'react'
 import { MenuContext, MenuItemType } from '@/modules/ContextMenu'
-import { useInViewport } from '@/hooks/useInViewport'
+import { useMenuPosition } from '@/modules/ContextMenu/hooks/useMenuPosition'
 
 interface Props {
   context: MenuContext
@@ -12,8 +12,8 @@ export const ContextMenuComponent: React.FC<Props> = ({
   context: { position, menuItems },
 }) => {
   const menuRef = useRef<HTMLDivElement | null>(null)
-
-  useInViewport(menuRef)
+  // TODO Fix position jumping
+  const actualPosition = useMenuPosition(menuRef, position)
 
   useEffect(() => {
     menuRef.current?.focus()
@@ -26,8 +26,8 @@ export const ContextMenuComponent: React.FC<Props> = ({
       onBlur={onBlur}
       className={'bg-gray-700 py-2 outline-none rounded-md fixed text-sm'}
       style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
+        left: `${actualPosition.x}px`,
+        top: `${actualPosition.y}px`,
         zIndex: 99999999,
       }}
     >

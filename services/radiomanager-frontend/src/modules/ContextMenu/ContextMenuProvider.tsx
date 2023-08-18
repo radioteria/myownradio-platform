@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from 'react'
 import { ContextMenuService, MenuContext } from '@/modules/ContextMenu/ContextMenuTypes'
 import { ContextMenuComponent } from '@/modules/ContextMenu/ContextMenuComponent'
+import { createPortal } from 'react-dom'
 
 export const ContextMenuContext = createContext<ContextMenuService | null>(null)
 
@@ -26,7 +27,15 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   return (
     <ContextMenuContext.Provider value={contextMenuService}>
-      {context && <ContextMenuComponent context={context} onBlur={() => setContext(null)} />}
+      {context &&
+        (context.portalElement ? (
+          createPortal(
+            <ContextMenuComponent context={context} onBlur={() => setContext(null)} />,
+            context.portalElement,
+          )
+        ) : (
+          <ContextMenuComponent context={context} onBlur={() => setContext(null)} />
+        ))}
       {children}
     </ContextMenuContext.Provider>
   )

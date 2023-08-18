@@ -4,7 +4,7 @@ import { ProgressOverlay } from '@/components/ChannelTracksList/ProgressOverlay'
 import AnimatedBars from '@/icons/AnimatedBars'
 import { Duration } from '@/components/Duration/Duration'
 import { ThreeDots } from '@/icons/ThreeDots'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 
 interface Props {
@@ -25,11 +25,13 @@ export const TrackListItem: React.FC<Props> = ({
   isSelected,
 }) => {
   const isCurrentTrack = currentTrack?.index === index
+  const portalRef = useRef<HTMLDivElement | null>(null)
   const contextMenu = useContextMenu()
 
   function showMenu(position: { x: number; y: number }) {
     contextMenu.show({
       position,
+      portalElement: portalRef.current ?? undefined,
       menuItems: [
         {
           type: MenuItemType.Item,
@@ -63,6 +65,7 @@ export const TrackListItem: React.FC<Props> = ({
         ])}
         onClick={() => onSelect()}
       >
+        <div ref={portalRef} />
         {isCurrentTrack && currentTrack && (
           <div className={cn('h-full w-full bg-slate-800 absolute')}>
             <ProgressOverlay position={currentTrack.position} duration={currentTrack.duration} />

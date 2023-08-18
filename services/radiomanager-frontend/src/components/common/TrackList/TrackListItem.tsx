@@ -56,6 +56,13 @@ export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) =
         'group',
       ])}
       onBlur={() => setHoverLocked(false)}
+      onContextMenu={(ev) => {
+        ev.preventDefault()
+        showMenu({
+          x: ev.clientX,
+          y: ev.clientY,
+        })
+      }}
     >
       <div ref={portalRef} />
       {isCurrentTrack && currentTrack && (

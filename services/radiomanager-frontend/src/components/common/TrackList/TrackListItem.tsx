@@ -55,7 +55,6 @@ export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) =
         { 'bg-gray-300': !isCurrentTrack && isHoverLocked },
         'group',
       ])}
-      onBlur={() => setHoverLocked(false)}
       onContextMenu={(ev) => {
         ev.preventDefault()
         showMenu({

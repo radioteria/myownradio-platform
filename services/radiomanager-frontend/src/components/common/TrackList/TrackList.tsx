@@ -1,11 +1,10 @@
-import cn from 'classnames'
-import { Duration } from '@/components/Duration/Duration'
-import { ProgressOverlay } from '@/components/ChannelTracksList/ProgressOverlay'
-import AnimatedBars from '@/icons/AnimatedBars'
-import { ThreeDots } from '@/icons/ThreeDots'
 import { TrackItem, CurrentTrack } from './types'
 import { TrackListItem } from '@/components/common/TrackList/TrackListItem'
-import { useState } from 'react'
+
+interface ListItem {
+  track: TrackItem
+  isSelected: boolean
+}
 
 interface Props {
   tracks: readonly TrackItem[]
@@ -13,10 +12,8 @@ interface Props {
 }
 
 export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
-  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null)
-
   return (
-    <ul tabIndex={0} onBlur={() => setLastSelectedIndex(null)}>
+    <ul>
       <li className="flex text-gray-500 h-12">
         <div className="pl-4 pr-2 py-4 w-12 flex-shrink-0 text-right">#</div>
         <div className="px-2 py-4 w-full">Title</div>
@@ -32,10 +29,6 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
             track={track}
             currentTrack={currentTrack}
             index={index}
-            isSelected={lastSelectedIndex === index}
-            onSelect={() => {
-              setLastSelectedIndex(index)
-            }}
             onRemoveFromLibrary={() => {}}
             onRemoveFromChannel={() => {}}
           />

@@ -51,8 +51,8 @@ export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) =
       className={cn([
         'flex items-center border-gray-800 h-12 relative cursor-pointer',
         { 'bg-slate-600 text-gray-300': isCurrentTrack },
-        { 'hover:bg-gray-300': !isCurrentTrack },
-        { 'bg-gray-300': !isCurrentTrack && isHoverLocked },
+        { 'hover:bg-gray-300': !isCurrentTrack && !isHoverLocked },
+        { 'bg-gray-400': !isCurrentTrack && isHoverLocked },
         'group',
       ])}
       onContextMenu={(ev) => {

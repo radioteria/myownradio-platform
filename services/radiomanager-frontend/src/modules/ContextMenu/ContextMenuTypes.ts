@@ -24,4 +24,5 @@ export interface MenuContext {
     readonly y: number
   }
   menuItems: readonly MenuItem[]
+  portalElement?: HTMLElement
 }

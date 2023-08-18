@@ -1,29 +1,21 @@
-import { CurrentTrack, TrackItem } from './types'
 import cn from 'classnames'
+import { useRef } from 'react'
 import { ProgressOverlay } from '@/components/ChannelTracksList/ProgressOverlay'
 import AnimatedBars from '@/icons/AnimatedBars'
 import { Duration } from '@/components/Duration/Duration'
 import { ThreeDots } from '@/icons/ThreeDots'
-import { useRef, useState } from 'react'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
+import { CurrentTrack, TrackItem } from './types'
 
 interface Props {
   track: TrackItem
   currentTrack: CurrentTrack | null
   index: number
-  onSelect: () => void
   onRemoveFromLibrary: () => void
   onRemoveFromChannel?: () => void
-  isSelected: boolean
 }
 
-export const TrackListItem: React.FC<Props> = ({
-  track,
-  currentTrack,
-  index,
-  onSelect,
-  isSelected,
-}) => {
+export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) => {
   const isCurrentTrack = currentTrack?.index === index
   const portalRef = useRef<HTMLDivElement | null>(null)
   const contextMenu = useContextMenu()
@@ -45,25 +37,18 @@ export const TrackListItem: React.FC<Props> = ({
         },
       ],
     })
-    onSelect()
   }
 
   return (
     <>
       <li
-        onContextMenu={(ev) => {
-          ev.preventDefault()
-          showMenu({ x: ev.clientX, y: ev.clientY })
-        }}
         key={track.trackId}
         className={cn([
           'flex items-center border-gray-800 h-12 relative cursor-pointer',
           { 'bg-slate-600 text-gray-300': isCurrentTrack },
-          { 'bg-gray-400': isSelected },
-          { 'hover:bg-gray-300': !isCurrentTrack && !isSelected },
+          { 'hover:bg-gray-300': !isCurrentTrack },
           'group',
         ])}
-        onClick={() => onSelect()}
       >
         <div ref={portalRef} />
         {isCurrentTrack && currentTrack && (

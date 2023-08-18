@@ -50,9 +50,9 @@ export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) =
       key={track.trackId}
       className={cn([
         'flex items-center border-gray-800 h-12 relative cursor-pointer',
-        { 'bg-slate-600 text-gray-300': isCurrentTrack },
-        { 'hover:bg-gray-300': !isCurrentTrack && !isHoverLocked },
-        { 'bg-gray-400': !isCurrentTrack && isHoverLocked },
+        { 'bg-morblue-600 text-gray-300': isCurrentTrack },
+        { 'hover:bg-morblue-100': !isCurrentTrack && !isHoverLocked },
+        { 'bg-morblue-200': !isCurrentTrack && isHoverLocked },
         'group',
       ])}
       onContextMenu={(ev) => {
@@ -65,7 +65,7 @@ export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) =
     >
       <div ref={portalRef} />
       {isCurrentTrack && currentTrack && (
-        <div className={cn('h-full w-full bg-slate-800 absolute')}>
+        <div className={cn('h-full w-full bg-morblue-300 absolute')}>
           <ProgressOverlay position={currentTrack.position} duration={currentTrack.duration} />
         </div>
       )}
@@ -84,6 +84,7 @@ export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) =
         className={cn([
           'p-2 pr-4 w-10 flex-shrink-0 text-right z-10 cursor-pointer',
           'opacity-0 group-hover:opacity-100',
+          { 'opacity-100': isHoverLocked },
         ])}
       >
         <span

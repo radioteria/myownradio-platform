@@ -14,7 +14,7 @@ interface Props {
 export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
   return (
     <ul>
-      <li className="flex text-gray-500 h-12">
+      <li className="flex text-gray-500">
         <div className="pl-4 pr-2 py-4 w-12 flex-shrink-0 text-right">#</div>
         <div className="px-2 py-4 w-full">Title</div>
         <div className="px-2 py-4 w-full hidden xl:block">Album</div>

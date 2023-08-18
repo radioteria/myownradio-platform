@@ -18,7 +18,7 @@ export const Sidebar: React.FC<Props> = ({ channels, activeItem }) => {
       <ul>
         <li
           className={cn('px-4 py-2', 'text-ellipsis overflow-hidden', {
-            'bg-slate-500 text-gray-50': activeItem?.[0] === 'library',
+            'bg-morblue-400 text-gray-50': activeItem?.[0] === 'library',
           })}
         >
           <Link className={'block'} href={`/`}>
@@ -33,7 +33,7 @@ export const Sidebar: React.FC<Props> = ({ channels, activeItem }) => {
             <li
               key={channel.sid}
               className={cn('px-4 py-2', 'text-ellipsis overflow-hidden', {
-                'bg-slate-500 text-gray-50': activeChannelId === channel.sid,
+                'bg-morblue-400 text-gray-50': activeChannelId === channel.sid,
               })}
             >
               <Link className={'block truncate'} href={`/c/${channel.sid}`}>

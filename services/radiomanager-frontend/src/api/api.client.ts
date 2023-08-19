@@ -62,3 +62,6 @@ export async function getNowPlaying(channelId: number, timestamp: number) {
     .then((res) => res.json())
     .then((json) => NowPlayingResponseSchema.parse(json).data)
 }
+
+// Get Chunk
+// http://localhost:40180/getchunk/380

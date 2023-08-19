@@ -6,6 +6,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { StreamOverlay } from '@/components/StreamOverlay'
 import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { ChannelTracksList } from './ChannelTracksList'
+import { ChannelControls } from './ChannelControls'
 import { NowPlayingProvider } from '@/modules/NowPlaying'
 
 interface Props {
@@ -36,7 +37,7 @@ export const ChannelPage: React.FC<Props> = ({
         rightSidebar={
           <>
             <StreamOverlay channelId={channelId} />
-            <div>TODO</div>
+            <ChannelControls channelId={channelId} />
           </>
         }
       />

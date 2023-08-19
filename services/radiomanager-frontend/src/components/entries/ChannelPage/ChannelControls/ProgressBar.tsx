@@ -1,6 +1,6 @@
-import { scale } from '@/utils/math'
 import css from 'styled-jsx/css'
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Duration } from '@/components/Duration/Duration'
 
 interface Props {
   position: number
@@ -19,12 +19,12 @@ const widthKeyframes = css`
   }
 `
 
-export const ProgressOverlay: React.FC<Props> = ({ position, duration }) => {
+export const ProgressBar: React.FC<Props> = ({ position, duration }) => {
   const animationDuration = duration - position
   const initialScale = (1 / duration) * position
 
   return (
-    <div className={'h-full w-full'}>
+    <div className={'h-2 bg-gray-400 rounded-md relative overflow-hidden flex-1 mx-2'}>
       <style jsx>{`
         @keyframes scale {
           0% {

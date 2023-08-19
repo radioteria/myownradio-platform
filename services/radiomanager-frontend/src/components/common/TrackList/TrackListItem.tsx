@@ -1,6 +1,6 @@
 import cn from 'classnames'
 import { useRef } from 'react'
-import { ProgressOverlay } from '@/components/ChannelTracksList/ProgressOverlay'
+import { ProgressOverlay } from '@/components/entries/ChannelPage/ChannelTracksList/ProgressOverlay'
 import AnimatedBars from '@/icons/AnimatedBars'
 import { Duration } from '@/components/Duration/Duration'
 import { ThreeDots } from '@/icons/ThreeDots'

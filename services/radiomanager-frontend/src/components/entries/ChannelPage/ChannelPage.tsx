@@ -1,11 +1,11 @@
 'use client'
 
-import { Header } from '@/components/Header/Header'
-import { Sidebar } from '@/components/Sidebar/Sidebar'
-import { ChannelTracksList } from '@/components/ChannelTracksList/ChannelTracksList'
+import { User, UserChannelTrack, UserChannel } from '@/api/api.types'
+import { Header } from '@/components/Header'
+import { Sidebar } from '@/components/Sidebar'
 import { StreamOverlay } from '@/components/StreamOverlay'
 import { LibraryLayout } from '@/components/layouts/LibraryLayout'
-import { User, UserChannelTrack, UserChannel } from '@/api/api.types'
+import { ChannelTracksList } from './ChannelTracksList'
 
 interface Props {
   channelId: number

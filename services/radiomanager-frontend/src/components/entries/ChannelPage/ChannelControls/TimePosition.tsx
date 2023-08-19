@@ -7,7 +7,7 @@ interface Props {
   progressBar: ReactNode
 }
 
-export const PlayerProgress: React.FC<Props> = ({ position, duration, progressBar }) => {
+export const TimePosition: React.FC<Props> = ({ position, duration, progressBar }) => {
   const updatedAt = useMemo(() => Date.now(), [position])
   const [positionProgress, setPositionProgress] = useState(position)
 

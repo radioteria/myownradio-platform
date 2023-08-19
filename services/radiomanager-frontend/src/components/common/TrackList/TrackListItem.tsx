@@ -1,5 +1,5 @@
 import cn from 'classnames'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { ProgressOverlay } from '@/components/ChannelTracksList/ProgressOverlay'
 import AnimatedBars from '@/icons/AnimatedBars'
 import { Duration } from '@/components/Duration/Duration'
@@ -13,14 +13,21 @@ interface Props {
   index: number
   onRemoveFromLibrary: () => void
   onRemoveFromChannel?: () => void
+
+  isSelected: boolean
+  onSelect: () => void
 }
 
-export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) => {
+export const TrackListItem: React.FC<Props> = ({
+  track,
+  currentTrack,
+  index,
+  isSelected,
+  onSelect,
+}) => {
   const isCurrentTrack = currentTrack?.index === index
   const portalRef = useRef<HTMLDivElement | null>(null)
   const contextMenu = useContextMenu()
-
-  const [isActive, setIsActive] = useState(false)
 
   function showMenu(position: { x: number; y: number }) {
     contextMenu.show(
@@ -40,21 +47,25 @@ export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) =
           },
         ],
       },
-      () => setIsActive(false),
+      () => {},
     )
-    setIsActive(true)
   }
 
   return (
     <li
+      tabIndex={-1}
       key={track.trackId}
       className={cn([
         'flex items-center border-gray-800 h-12 relative cursor-pointer',
         { 'bg-morblue-600 text-gray-300': isCurrentTrack },
-        { 'hover:bg-morblue-100': !isCurrentTrack && !isActive },
-        { 'bg-morblue-200': !isCurrentTrack && isActive },
+        { 'hover:bg-morblue-100': !isCurrentTrack && !isSelected },
+        { 'bg-morblue-200': !isCurrentTrack && isSelected },
         'group',
       ])}
+      onClick={(ev) => {
+        ev.preventDefault()
+        onSelect()
+      }}
       onContextMenu={(ev) => {
         ev.preventDefault()
         showMenu({
@@ -84,10 +95,10 @@ export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) =
         className={cn([
           'p-2 pr-4 w-10 flex-shrink-0 text-right z-10 cursor-pointer',
           'opacity-0 group-hover:opacity-100',
-          { 'opacity-100': isActive },
+          { 'opacity-100': isSelected },
         ])}
       >
-        <span
+        <button
           onClick={(ev) => {
             ev.preventDefault()
             showMenu({
@@ -97,7 +108,7 @@ export const TrackListItem: React.FC<Props> = ({ track, currentTrack, index }) =
           }}
         >
           <ThreeDots size={14} />
-        </span>
+        </button>
       </div>
     </li>
   )

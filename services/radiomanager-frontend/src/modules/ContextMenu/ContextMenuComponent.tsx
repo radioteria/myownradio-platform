@@ -21,7 +21,7 @@ export const ContextMenuComponent: React.FC<Props> = ({
 
   return (
     <div
-      tabIndex={0}
+      tabIndex={-1}
       ref={menuRef}
       onBlur={onBlur}
       className={'bg-morblue-400 py-2 outline-none rounded-md fixed text-sm'}

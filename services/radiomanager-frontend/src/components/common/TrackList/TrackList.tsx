@@ -16,7 +16,7 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
   useClickOutside(listRef, () => selector.reset())
 
   return (
-    <ul ref={listRef}>
+    <ul ref={listRef} className={'h-full'}>
       <li className="flex text-gray-500">
         <div className="pl-4 pr-2 py-4 w-12 flex-shrink-0 text-right">#</div>
         <div className="px-2 py-4 w-full">Title</div>

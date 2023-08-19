@@ -15,7 +15,7 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
   const { nowPlaying } = useNowPlaying(channelId)
 
   return (
-    <section>
+    <section className={'h-full'}>
       <TrackList
         tracks={tracks.map((track, index) => ({
           trackId: track.tid,

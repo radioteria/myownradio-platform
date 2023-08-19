@@ -3,7 +3,7 @@
 import { UserChannelTrack } from '@/api/api.types'
 import { useNowPlaying } from '@/hooks/useNowPlaying'
 import { TrackList } from '@/components/common/TrackList'
-import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
+import { useMemo } from 'react'
 
 interface Props {
   tracks: readonly UserChannelTrack[]
@@ -12,18 +12,23 @@ interface Props {
 }
 
 export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
+  const memoizedTracks = useMemo(
+    () =>
+      tracks.map((track, index) => ({
+        trackId: track.tid,
+        title: track.title || track.filename,
+        artist: track.artist,
+        album: track.album,
+        duration: track.duration,
+      })),
+    [tracks],
+  )
   const { nowPlaying } = useNowPlaying(channelId)
 
   return (
     <section className={'h-full'}>
       <TrackList
-        tracks={tracks.map((track, index) => ({
-          trackId: track.tid,
-          title: track.title || track.filename,
-          artist: track.artist,
-          album: track.album,
-          duration: track.duration,
-        }))}
+        tracks={memoizedTracks}
         currentTrack={
           nowPlaying
             ? {

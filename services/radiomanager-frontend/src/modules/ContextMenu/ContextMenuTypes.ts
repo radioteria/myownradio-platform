@@ -1,5 +1,5 @@
 export interface ContextMenuService {
-  show(ctx: MenuContext, onHide: () => void): void
+  show(ctx: MenuContext): void
   hide(): void
 }
 

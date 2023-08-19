@@ -1,7 +1,6 @@
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { ProgressBar } from './ProgressBar'
 import { PlayerProgress } from './PlayerProgress'
-import { PlayIcon } from './icons/PlayIcon'
 import { PrevIcon } from './icons/PrevIcon'
 import { NextIcon } from './icons/NextIcon'
 import { PauseIcon } from './icons/PauseIcon'

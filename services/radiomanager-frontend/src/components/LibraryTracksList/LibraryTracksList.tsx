@@ -23,7 +23,7 @@ export const LibraryTracksList: React.FC<Props> = ({ tracks, tracksCount }) => {
   )
 
   return (
-    <section>
+    <section className={'h-full'}>
       <TrackList tracks={memoizedTracks} currentTrack={null} />
     </section>
   )

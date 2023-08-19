@@ -38,7 +38,7 @@ export const ProgressOverlay: React.FC<Props> = ({ position, duration }) => {
       `}</style>
       <div
         key={`k-${position}`}
-        className={'h-full w-full origin-left bg-slate-600'}
+        className={'h-full w-full origin-left bg-morblue-800'}
         style={{
           animation: 'scale',
           animationDuration: `${animationDuration}ms`,

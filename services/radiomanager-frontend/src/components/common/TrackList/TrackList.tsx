@@ -1,10 +1,8 @@
+import { useRef } from 'react'
 import { TrackItem, CurrentTrack } from './types'
 import { TrackListItem } from '@/components/common/TrackList/TrackListItem'
-
-interface ListItem {
-  track: TrackItem
-  isSelected: boolean
-}
+import { useListItemSelector } from '@/hooks/useListItemSelector'
+import { useClickOutside } from '@/hooks/useClickOutside'
 
 interface Props {
   tracks: readonly TrackItem[]
@@ -12,9 +10,14 @@ interface Props {
 }
 
 export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
+  const listRef = useRef(null)
+  const selector = useListItemSelector(tracks)
+
+  useClickOutside(listRef, () => selector.reset())
+
   return (
-    <ul>
-      <li className="flex text-gray-500 h-12">
+    <ul ref={listRef}>
+      <li className="flex text-gray-500">
         <div className="pl-4 pr-2 py-4 w-12 flex-shrink-0 text-right">#</div>
         <div className="px-2 py-4 w-full">Title</div>
         <div className="px-2 py-4 w-full hidden xl:block">Album</div>
@@ -22,15 +25,17 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
         <div className="pl-2 pr-4 py-4 w-10 flex-shrink-0 text-right" />
       </li>
 
-      {tracks.map((track, index) => {
+      {selector.listItems.map((listItem, index) => {
         return (
           <TrackListItem
             key={index}
-            track={track}
+            track={listItem.item}
             currentTrack={currentTrack}
             index={index}
             onRemoveFromLibrary={() => {}}
             onRemoveFromChannel={() => {}}
+            isSelected={listItem.isSelected}
+            onSelect={() => selector.selectOnly(index)}
           />
         )
       })}

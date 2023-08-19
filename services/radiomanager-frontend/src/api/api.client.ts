@@ -21,7 +21,7 @@ export const GetChannelsSchema = z.object({
   data: z.array(ChannelSchema),
 })
 
-export async function getChannels(): Promise<readonly IChannel[]> {
+export async function getChannels() {
   const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/`
 
   return await isomorphicFetch(url)
@@ -29,7 +29,7 @@ export async function getChannels(): Promise<readonly IChannel[]> {
     .then((json) => GetChannelsSchema.parse(json).data)
 }
 
-export async function getSelf(): Promise<SelfResponse['data'] | null> {
+export async function getSelf() {
   const url = `${BACKEND_BASE_URL}/api/v2/self`
 
   return await isomorphicFetch(url)
@@ -43,7 +43,7 @@ export async function getSelf(): Promise<SelfResponse['data'] | null> {
     })
 }
 
-export async function getChannelTracks(channelId: number): Promise<ChannelTracksResponse['data']> {
+export async function getChannelTracks(channelId: number) {
   const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/tracks/`
 
   return await isomorphicFetch(url)
@@ -51,10 +51,7 @@ export async function getChannelTracks(channelId: number): Promise<ChannelTracks
     .then((json) => ChannelTracksResponseSchema.parse(json).data)
 }
 
-export async function getNowPlaying(
-  channelId: number,
-  timestamp: number,
-): Promise<NowPlayingResponse['data']> {
+export async function getNowPlaying(channelId: number, timestamp: number) {
   const url = new URL(
     `${BACKEND_BASE_URL}/radio-manager/api/pub/v0/streams/${channelId}/now-playing`,
   )

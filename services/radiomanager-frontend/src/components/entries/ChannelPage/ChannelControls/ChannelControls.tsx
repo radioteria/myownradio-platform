@@ -11,7 +11,7 @@ export const ChannelControls: React.FC<Props> = ({ channelId }) => {
 
   return (
     <div className={'bg-gray-200 rounded-lg mt-2 text-center'}>
-      <div className={'truncate p-2'}>{nowPlaying?.currentTrack.title}</div>
+      <div className={'truncate px-2 pt-2 text-xs'}>{nowPlaying?.currentTrack.title}</div>
 
       {nowPlaying && (
         <div className={'p-2'}>

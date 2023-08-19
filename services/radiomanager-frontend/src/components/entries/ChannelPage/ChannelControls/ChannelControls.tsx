@@ -1,6 +1,6 @@
 import { useNowPlaying } from '@/modules/NowPlaying'
-import { ProgressBar } from '@/components/entries/ChannelPage/ChannelControls/ProgressBar'
-import { PlayerProgress } from '@/components/entries/ChannelPage/ChannelControls/PlayerProgress'
+import { ProgressBar } from './ProgressBar'
+import { PlayerProgress } from './PlayerProgress'
 
 interface Props {
   readonly channelId: number

@@ -1,23 +1,9 @@
-import css from 'styled-jsx/css'
-import React, { useEffect, useMemo, useState } from 'react'
-import { Duration } from '@/components/Duration/Duration'
+import React from 'react'
 
 interface Props {
   position: number
   duration: number
 }
-
-const widthKeyframes = css`
-  @keyframes scale {
-    0% {
-      transform: scale(var(--scale), 1);
-    }
-
-    100% {
-      transform: scale(1, 1);
-    }
-  }
-`
 
 export const ProgressBar: React.FC<Props> = ({ position, duration }) => {
   const animationDuration = duration - position

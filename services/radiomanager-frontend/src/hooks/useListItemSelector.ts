@@ -57,11 +57,19 @@ export const useListItemSelector = <I>(initialItems: readonly I[]) => {
   const selectTo = (endIndex: number) => {
     const startIndex = cursor ?? 0
 
-    setListItems((items) =>
-      items.map((item, index) => {
-        return startIndex <= index && index <= endIndex ? { ...item, isSelected: true } : item
-      }),
-    )
+    setListItems((items) => {
+      return items.map((item, index) => {
+        return endIndex > startIndex
+          ? {
+              ...item,
+              isSelected: startIndex <= index && index <= endIndex,
+            }
+          : {
+              ...item,
+              isSelected: endIndex <= index && index <= startIndex,
+            }
+      })
+    })
   }
 
   const reset = () => {

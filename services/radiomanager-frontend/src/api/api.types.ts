@@ -65,7 +65,7 @@ export const UserStreamSchema = z
     url: z.string(),
   })
   .transform((v) => camelKeys(v))
-export type UserStream = z.infer<typeof UserStreamSchema>
+export type UserChannel = z.infer<typeof UserStreamSchema>
 
 export const UserTrackSchema = z
   .object({

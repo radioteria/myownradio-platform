@@ -1,11 +1,11 @@
 import cn from 'classnames'
-import { UserStream } from '@/api/api.types'
+import { UserChannel } from '@/api/api.types'
 import Link from 'next/link'
 
 type ActiveItem = readonly ['channel', number] | readonly ['library']
 
 interface Props {
-  channels: readonly UserStream[]
+  channels: readonly UserChannel[]
   activeItem: ActiveItem | null
 }
 

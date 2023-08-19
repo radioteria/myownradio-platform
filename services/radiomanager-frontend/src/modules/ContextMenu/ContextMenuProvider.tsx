@@ -17,20 +17,13 @@ export const useContextMenu = (): ContextMenuService => {
 
 export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [context, setContext] = useState<MenuContext | null>(null)
-  const onHideRef = useRef<null | (() => void)>(null)
 
   const hide = () => {
     setContext(null)
-
-    if (onHideRef.current) {
-      onHideRef.current()
-      onHideRef.current = null
-    }
   }
 
   const contextMenuService: ContextMenuService = {
-    show(ctx, onHide) {
-      onHideRef.current = onHide
+    show(ctx) {
       setContext(ctx)
     },
     hide() {

@@ -1,6 +1,6 @@
 import cn from 'classnames'
 import { useRef } from 'react'
-import { ProgressOverlay } from '@/components/ChannelTracksList/ProgressOverlay'
+import { ProgressBar } from '@/components/entries/ChannelPage/ChannelControls/ProgressBar'
 import AnimatedBars from '@/icons/AnimatedBars'
 import { Duration } from '@/components/Duration/Duration'
 import { ThreeDots } from '@/icons/ThreeDots'
@@ -30,36 +30,31 @@ export const TrackListItem: React.FC<Props> = ({
   const contextMenu = useContextMenu()
 
   function showMenu(position: { x: number; y: number }) {
-    contextMenu.show(
-      {
-        position,
-        portalElement: portalRef.current ?? undefined,
-        menuItems: [
-          {
-            type: MenuItemType.Item,
-            label: 'Remove from channel',
-            onClick() {},
-          },
-          {
-            type: MenuItemType.Item,
-            label: 'Remove from library',
-            onClick() {},
-          },
-        ],
-      },
-      () => {},
-    )
+    contextMenu.show({
+      position,
+      portalElement: portalRef.current ?? undefined,
+      menuItems: [
+        {
+          type: MenuItemType.Item,
+          label: 'Remove from channel',
+          onClick() {},
+        },
+        {
+          type: MenuItemType.Item,
+          label: 'Remove from library',
+          onClick() {},
+        },
+      ],
+    })
   }
 
   return (
     <li
-      tabIndex={-1}
       key={track.trackId}
       className={cn([
         'flex items-center border-gray-800 h-12 relative cursor-pointer',
-        { 'bg-morblue-600 text-gray-300': isCurrentTrack },
-        { 'hover:bg-morblue-100': !isCurrentTrack && !isSelected },
-        { 'bg-morblue-200': !isCurrentTrack && isSelected },
+        { 'bg-morblue-600 text-gray-300': isSelected },
+        { 'hover:bg-morblue-100': !isSelected },
         'group',
       ])}
       onClick={(ev) => {
@@ -68,18 +63,10 @@ export const TrackListItem: React.FC<Props> = ({
       }}
       onContextMenu={(ev) => {
         ev.preventDefault()
-        showMenu({
-          x: ev.clientX,
-          y: ev.clientY,
-        })
+        showMenu({ x: ev.clientX, y: ev.clientY })
       }}
     >
       <div ref={portalRef} />
-      {isCurrentTrack && currentTrack && (
-        <div className={cn('h-full w-full bg-morblue-300 absolute')}>
-          <ProgressOverlay position={currentTrack.position} duration={currentTrack.duration} />
-        </div>
-      )}
       <div className="p-2 pl-4 w-12 flex-shrink-0 z-10 text-right">
         {isCurrentTrack ? <AnimatedBars size={12} /> : <>{index + 1}</>}
       </div>
@@ -101,10 +88,7 @@ export const TrackListItem: React.FC<Props> = ({
         <button
           onClick={(ev) => {
             ev.preventDefault()
-            showMenu({
-              x: ev.clientX,
-              y: ev.clientY,
-            })
+            showMenu({ x: ev.clientX, y: ev.clientY })
           }}
         >
           <ThreeDots size={14} />

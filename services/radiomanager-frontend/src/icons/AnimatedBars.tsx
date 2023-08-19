@@ -4,7 +4,7 @@ interface Props {
 
 const AnimatedBars: React.FC<Props> = ({ size }) => {
   return (
-    <div>
+    <>
       <svg
         width={size}
         style={{ display: 'inline' }}
@@ -38,10 +38,6 @@ const AnimatedBars: React.FC<Props> = ({ size }) => {
           animation-delay: 500ms;
         }
 
-        .bar5 {
-          animation-delay: 100ms;
-        }
-
         @keyframes growBar {
           from {
             height: 0;
@@ -53,7 +49,7 @@ const AnimatedBars: React.FC<Props> = ({ size }) => {
           }
         }
       `}</style>
-    </div>
+    </>
   )
 }
 

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { RefObject, useCallback, useEffect, useState } from 'react'
+import { useHotkey } from '@/hooks/useHotkey'
 
 interface ListItem<I> {
   item: I
@@ -32,6 +33,15 @@ export const useListItemSelector = <I>(initialItems: readonly I[]) => {
     setListItems((items) =>
       items.map((item, index) => {
         return selectIndex === index ? { ...item, isSelected: true } : item
+      }),
+    )
+  }
+
+  const toggle = (selectIndex: number) => {
+    setCursor(selectIndex)
+    setListItems((items) =>
+      items.map((item, index) => {
+        return selectIndex === index ? { ...item, isSelected: !item.isSelected } : item
       }),
     )
   }
@@ -77,5 +87,5 @@ export const useListItemSelector = <I>(initialItems: readonly I[]) => {
     setListItems((items) => items.map(({ item }) => makeListItem(item)))
   }
 
-  return { listItems, select, selectOnly, discard, selectTo, reset }
+  return { listItems, select, selectOnly, discard, selectTo, reset, toggle }
 }

@@ -18,7 +18,7 @@ export const Duration: React.FC<Props> = ({ millis }) => {
   const seconds = totalSeconds % 60
 
   // Convert each component to string and pad with 0 if necessary
-  const paddedMinutes = String(minutes).padStart(2, '0')
+  const paddedMinutes = String(minutes).padStart(hours > 0 ? 2 : 1, '0')
   const paddedSeconds = String(seconds).padStart(2, '0')
 
   // Return the formatted string, with optional hours segment

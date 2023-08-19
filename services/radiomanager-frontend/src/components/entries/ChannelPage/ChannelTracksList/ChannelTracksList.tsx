@@ -1,9 +1,9 @@
 'use client'
 
 import { UserChannelTrack } from '@/api/api.types'
-import { useNowPlaying } from '@/hooks/useNowPlaying'
 import { TrackList } from '@/components/common/TrackList'
 import { useMemo } from 'react'
+import { useNowPlaying } from '@/modules/NowPlaying'
 
 interface Props {
   tracks: readonly UserChannelTrack[]
@@ -23,7 +23,7 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
       })),
     [tracks],
   )
-  const { nowPlaying } = useNowPlaying(channelId)
+  const { nowPlaying } = useNowPlaying()
 
   return (
     <section className={'h-full'}>

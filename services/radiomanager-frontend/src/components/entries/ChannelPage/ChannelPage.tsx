@@ -6,6 +6,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { StreamOverlay } from '@/components/StreamOverlay'
 import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { ChannelTracksList } from './ChannelTracksList'
+import { NowPlayingProvider } from '@/modules/NowPlaying'
 
 interface Props {
   channelId: number
@@ -21,22 +22,24 @@ export const ChannelPage: React.FC<Props> = ({
   userChannels,
 }) => {
   return (
-    <LibraryLayout
-      header={<Header user={user} />}
-      sidebar={<Sidebar channels={userChannels} activeItem={['channel', channelId]} />}
-      content={
-        <ChannelTracksList
-          channelId={channelId}
-          tracks={userChannelTracks}
-          tracksCount={userChannelTracks.length}
-        />
-      }
-      rightSidebar={
-        <>
-          <StreamOverlay channelId={channelId} />
-          <div>TODO</div>
-        </>
-      }
-    />
+    <NowPlayingProvider channelId={channelId}>
+      <LibraryLayout
+        header={<Header user={user} />}
+        sidebar={<Sidebar channels={userChannels} activeItem={['channel', channelId]} />}
+        content={
+          <ChannelTracksList
+            channelId={channelId}
+            tracks={userChannelTracks}
+            tracksCount={userChannelTracks.length}
+          />
+        }
+        rightSidebar={
+          <>
+            <StreamOverlay channelId={channelId} />
+            <div>TODO</div>
+          </>
+        }
+      />
+    </NowPlayingProvider>
   )
 }

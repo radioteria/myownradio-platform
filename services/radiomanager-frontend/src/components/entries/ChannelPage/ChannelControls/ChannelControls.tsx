@@ -4,6 +4,7 @@ import { PlayerProgress } from './PlayerProgress'
 import { PlayIcon } from './icons/PlayIcon'
 import { PrevIcon } from './icons/PrevIcon'
 import { NextIcon } from './icons/NextIcon'
+import { PauseIcon } from './icons/PauseIcon'
 
 interface Props {
   readonly channelId: number
@@ -35,7 +36,7 @@ export const ChannelControls: React.FC<Props> = ({ channelId }) => {
 
       <div className={'flex items-center justify-center gap-8'}>
         <PrevIcon size={28} />
-        <PlayIcon size={48} />
+        <PauseIcon size={48} />
         <NextIcon size={28} />
       </div>
     </div>

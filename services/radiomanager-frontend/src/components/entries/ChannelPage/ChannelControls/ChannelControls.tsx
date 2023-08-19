@@ -1,7 +1,6 @@
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { ProgressBar } from './ProgressBar'
-import { PlayerProgress } from './PlayerProgress'
-import { PlayIcon } from './icons/PlayIcon'
+import { TimePosition } from './TimePosition'
 import { PrevIcon } from './icons/PrevIcon'
 import { NextIcon } from './icons/NextIcon'
 import { PauseIcon } from './icons/PauseIcon'
@@ -21,7 +20,7 @@ export const ChannelControls: React.FC<Props> = ({ channelId }) => {
 
       <div className={'h-4 mb-2'}>
         {nowPlaying && (
-          <PlayerProgress
+          <TimePosition
             position={nowPlaying?.currentTrack.offset}
             duration={nowPlaying?.currentTrack.duration}
             progressBar={

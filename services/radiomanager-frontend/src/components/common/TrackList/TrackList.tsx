@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { TrackItem, CurrentTrack } from './types'
 import { TrackListItem } from '@/components/common/TrackList/TrackListItem'
-import { useListItemSelector } from '@/components/common/TrackList/hooks/useListItemSelector'
+import { useListItemSelector } from '@/hooks/useListItemSelector'
 import { useClickOutside } from '@/hooks/useClickOutside'
 
 interface Props {

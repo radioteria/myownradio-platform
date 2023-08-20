@@ -9,6 +9,7 @@ import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { ChannelTracksList, toChannelTrackEntry } from './ChannelTracksList'
 import { ChannelControls } from './ChannelControls'
 import { NowPlayingProvider } from '@/modules/NowPlaying'
+import { getChannelTracks, ITEMS_PER_REQUEST_LIMIT } from '@/api/api.client'
 
 interface Props {
   channelId: number
@@ -35,7 +36,17 @@ export const ChannelPage: React.FC<Props> = ({
   }, [])
 
   const [canInfinitelyScroll, setCanInfinitelyScroll] = useState(true)
-  const handleInfinityScroll = useCallback(() => {}, [])
+
+  const handleInfiniteScroll = () => {
+    getChannelTracks(channelId, trackEntries.length).then((tracks) => {
+      const newEntries = tracks.map(toChannelTrackEntry)
+      setTrackEntries((entries) => [...entries, ...newEntries])
+
+      if (ITEMS_PER_REQUEST_LIMIT > newEntries.length) {
+        setCanInfinitelyScroll(false)
+      }
+    })
+  }
 
   return (
     <NowPlayingProvider channelId={channelId}>
@@ -48,7 +59,7 @@ export const ChannelPage: React.FC<Props> = ({
             tracks={trackEntries}
             tracksCount={userChannelTracks.length}
             canInfinitelyScroll={canInfinitelyScroll}
-            onInfinityScroll={handleInfinityScroll}
+            onInfiniteScroll={handleInfiniteScroll}
           />
         }
         rightSidebar={

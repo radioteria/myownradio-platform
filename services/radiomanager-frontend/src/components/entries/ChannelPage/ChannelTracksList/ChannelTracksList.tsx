@@ -3,6 +3,7 @@
 import { TrackList } from '@/components/common/TrackList'
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { UserChannelTrack } from '@/api/api.types'
+import { InfiniteScroll } from '@/components/common/InfiniteScroll/InfiniteScroll'
 
 interface ChannelTrackEntry {
   trackId: number
@@ -25,10 +26,10 @@ interface Props {
   readonly tracksCount: number
   readonly channelId: number
   readonly canInfinitelyScroll: boolean
-  readonly onInfinityScroll: () => void
+  readonly onInfiniteScroll: () => void
 }
 
-export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
+export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId, onInfiniteScroll }) => {
   const { nowPlaying } = useNowPlaying()
   const currentTrack = nowPlaying
     ? {
@@ -41,6 +42,9 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {
   return (
     <section className={'h-full'}>
       <TrackList tracks={tracks} currentTrack={currentTrack} />
+      <InfiniteScroll key={tracks.length} offset={200} onReach={onInfiniteScroll}>
+        <div className={'text-center p-2'}>Loading...</div>
+      </InfiniteScroll>
     </section>
   )
 }

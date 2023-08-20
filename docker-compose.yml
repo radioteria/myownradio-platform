@@ -139,8 +139,7 @@ services:
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowmethods=GET
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowheaders=*
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolalloworiginlist=http://localhost:3000
-      - traefik.http.middlewares.corsRadioManager.headers.accesscontrolmaxage=100
-      - traefik.http.middlewares.corsRadioManager.headers.addvaryheader=true
+      - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowcredentials=true
 volumes:
   mysql-data:
     driver: local

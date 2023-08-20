@@ -4,6 +4,7 @@ import { TrackList } from '@/components/common/TrackList'
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { UserChannelTrack } from '@/api/api.types'
 import { InfiniteScroll } from '@/components/common/InfiniteScroll/InfiniteScroll'
+import AnimatedBars from '@/icons/AnimatedBars'
 
 interface ChannelTrackEntry {
   trackId: number
@@ -29,7 +30,12 @@ interface Props {
   readonly onInfiniteScroll: () => void
 }
 
-export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId, onInfiniteScroll }) => {
+export const ChannelTracksList: React.FC<Props> = ({
+  tracks,
+  channelId,
+  canInfinitelyScroll,
+  onInfiniteScroll,
+}) => {
   const { nowPlaying } = useNowPlaying()
   const currentTrack = nowPlaying
     ? {
@@ -42,9 +48,13 @@ export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId, onInfini
   return (
     <section className={'h-full'}>
       <TrackList tracks={tracks} currentTrack={currentTrack} />
-      <InfiniteScroll key={tracks.length} offset={200} onReach={onInfiniteScroll}>
-        <div className={'text-center p-2'}>Loading...</div>
-      </InfiniteScroll>
+      {canInfinitelyScroll && (
+        <InfiniteScroll key={tracks.length} offset={200} onReach={onInfiniteScroll}>
+          <div className={'text-center p-2'}>
+            <AnimatedBars size={32} />
+          </div>
+        </InfiniteScroll>
+      )}
     </section>
   )
 }

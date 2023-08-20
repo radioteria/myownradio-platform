@@ -15,7 +15,7 @@ const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
 const ChannelSchema = z.object({})
 export type IChannel = z.infer<typeof ChannelSchema>
 
-export const ITEMS_PER_REQUEST_LIMIT = 50
+export const MAX_TRACKS_PER_REQUEST = 50
 
 export const GetChannelsSchema = z.object({
   message: z.literal('OK'),
@@ -46,7 +46,7 @@ export async function getSelf() {
 }
 
 export async function getChannelTracks(channelId: number, offset = 0) {
-  const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/tracks/?offset=${offset}&limit=${ITEMS_PER_REQUEST_LIMIT}`
+  const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/tracks/?offset=${offset}&limit=${MAX_TRACKS_PER_REQUEST}`
 
   return await isomorphicFetch(url)
     .then((res) => res.json())

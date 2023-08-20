@@ -14,6 +14,7 @@ export const isomorphicFetch = (
         Cookie: `${sessionCookie.name}=${sessionCookie.value}`,
         ...(init?.headers ?? {}),
       }
+
       return fetch(input, {
         credentials: 'include',
         cache: 'no-store',
@@ -23,5 +24,8 @@ export const isomorphicFetch = (
     }
   }
 
-  return fetch(input, init)
+  return fetch(input, {
+    credentials: 'include',
+    ...init,
+  })
 }

@@ -15,8 +15,7 @@ function sendAsMp3Stream($url, $position)
 {
     $program = config('services.ffmpeg_cmd') . ' ' . config('services.ffmpeg.preview_args');
 
-    $urlHttp = str_replace('https', 'http', $url);
-    $command = sprintf($program, $position, escapeshellarg($urlHttp));
+    $command = sprintf($program, $position, escapeshellarg($url));
 
     $proc = popen($command, "r");
 

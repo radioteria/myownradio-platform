@@ -1,11 +1,12 @@
 'use client'
 
+import { useCallback, useState } from 'react'
 import { User, UserChannelTrack, UserChannel } from '@/api/api.types'
 import { Header } from '@/components/Header'
 import { Sidebar } from '@/components/Sidebar'
 import { StreamOverlay } from '@/components/StreamOverlay'
 import { LibraryLayout } from '@/components/layouts/LibraryLayout'
-import { ChannelTracksList } from './ChannelTracksList'
+import { ChannelTracksList, toChannelTrackEntry } from './ChannelTracksList'
 import { ChannelControls } from './ChannelControls'
 import { NowPlayingProvider } from '@/modules/NowPlaying'
 
@@ -22,6 +23,17 @@ export const ChannelPage: React.FC<Props> = ({
   userChannelTracks,
   userChannels,
 }) => {
+  const initialTrackEntries = userChannelTracks.map(toChannelTrackEntry)
+  const [trackEntries, setTrackEntries] = useState(initialTrackEntries)
+
+  const addTrackEntry = useCallback((track: UserChannelTrack) => {
+    setTrackEntries((entries) => [...entries, toChannelTrackEntry(track)])
+  }, [])
+
+  const removeTrackEntry = useCallback((indexToRemove: number) => {
+    setTrackEntries((entries) => entries.filter((_, index) => index !== indexToRemove))
+  }, [])
+
   return (
     <NowPlayingProvider channelId={channelId}>
       <LibraryLayout
@@ -30,7 +42,7 @@ export const ChannelPage: React.FC<Props> = ({
         content={
           <ChannelTracksList
             channelId={channelId}
-            tracks={userChannelTracks}
+            tracks={trackEntries}
             tracksCount={userChannelTracks.length}
           />
         }

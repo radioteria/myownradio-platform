@@ -34,6 +34,9 @@ export const ChannelPage: React.FC<Props> = ({
     setTrackEntries((entries) => entries.filter((_, index) => index !== indexToRemove))
   }, [])
 
+  const [canInfinitelyScroll, setCanInfinitelyScroll] = useState(true)
+  const handleInfinityScroll = useCallback(() => {}, [])
+
   return (
     <NowPlayingProvider channelId={channelId}>
       <LibraryLayout
@@ -44,6 +47,8 @@ export const ChannelPage: React.FC<Props> = ({
             channelId={channelId}
             tracks={trackEntries}
             tracksCount={userChannelTracks.length}
+            canInfinitelyScroll={canInfinitelyScroll}
+            onInfinityScroll={handleInfinityScroll}
           />
         }
         rightSidebar={

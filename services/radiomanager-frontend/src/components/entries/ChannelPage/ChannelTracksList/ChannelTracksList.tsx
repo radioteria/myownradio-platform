@@ -21,9 +21,11 @@ export const toChannelTrackEntry = (track: UserChannelTrack): ChannelTrackEntry 
 })
 
 interface Props {
-  tracks: readonly ChannelTrackEntry[]
-  tracksCount: number
-  channelId: number
+  readonly tracks: readonly ChannelTrackEntry[]
+  readonly tracksCount: number
+  readonly channelId: number
+  readonly canInfinitelyScroll: boolean
+  readonly onInfinityScroll: () => void
 }
 
 export const ChannelTracksList: React.FC<Props> = ({ tracks, channelId }) => {

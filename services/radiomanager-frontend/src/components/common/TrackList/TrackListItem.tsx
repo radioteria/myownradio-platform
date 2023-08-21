@@ -54,8 +54,6 @@ export const TrackListItem: React.FC<Props> = ({
       className={cn([
         'flex items-center border-gray-800 h-12 relative cursor-pointer',
         { 'bg-morblue-600 text-gray-300': isSelected },
-        { 'hover:bg-morblue-100': !isSelected },
-        'group',
       ])}
       onClick={(ev) => {
         ev.preventDefault()
@@ -81,7 +79,7 @@ export const TrackListItem: React.FC<Props> = ({
       <div
         className={cn([
           'p-2 pr-4 w-10 flex-shrink-0 text-right z-10 cursor-pointer',
-          'opacity-0 group-hover:opacity-100',
+          { 'opacity-0': !isSelected },
           { 'opacity-100': isSelected },
         ])}
       >

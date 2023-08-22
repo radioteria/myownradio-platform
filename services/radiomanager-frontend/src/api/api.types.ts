@@ -84,9 +84,10 @@ export const UserTrackSchema = z
     buy: z.nullable(z.any()),
     duration: z.number(),
     color: z.number(),
-    can_be_shared: z.number().int(),
-    likes: z.number().int(),
-    dislikes: z.number().int(),
+    // TODO Get rid of:
+    // can_be_shared: z.number().int(),
+    // likes: z.number().int(),
+    // dislikes: z.number().int(),
   })
   .transform((v) => camelKeys(v))
 export type UserTrack = z.infer<typeof UserTrackSchema>
@@ -134,6 +135,13 @@ export const ChannelTracksResponseSchema = z.object({
   data: z.array(UserChannelTrackSchema),
 })
 export type ChannelTracksResponse = z.infer<typeof ChannelTracksResponseSchema>
+
+export const LibraryTracksResponseSchema = z.object({
+  code: z.literal(1),
+  message: z.literal('OK'),
+  data: z.array(UserTrackSchema),
+})
+export type LibraryTracksResponse = z.infer<typeof LibraryTracksResponseSchema>
 
 export const NowPlayingResponseSchema = z.object({
   code: z.literal(1),

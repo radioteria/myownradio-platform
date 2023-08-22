@@ -26,3 +26,8 @@ export enum UploadingStatus {
 export interface UploadingState {
   status: UploadingStatus
 }
+
+export interface QueueItem {
+  channelId?: number
+  file: File
+}

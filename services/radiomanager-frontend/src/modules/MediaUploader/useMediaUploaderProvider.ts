@@ -14,6 +14,8 @@ export const useMediaUploaderProvider = (): MediaUploader => {
     status: UploadingStatus.IDLE,
   })
 
+  const [queue, setQueue] = useState<readonly File[]>([])
+
   const upload = useCallback(() => {}, [])
   const abort = useCallback(() => {}, [])
 

@@ -88,6 +88,7 @@ export async function uploadTrackToLibrary(file: File, abortSignal: AbortSignal)
     signal: abortSignal,
     method: 'POST',
     body: form,
+    credentials: 'include',
   })
     .then((res) => res.json())
     .then((json) => UploadTrackResponseSchema.parse(json).data)
@@ -112,6 +113,7 @@ export async function uploadTrackToChannel(
     signal: abortSignal,
     method: 'POST',
     body: form,
+    credentials: 'include',
   })
     .then((res) => res.json())
     .then((json) => UploadTrackResponseSchema.parse(json).data)

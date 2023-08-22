@@ -1,17 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import {
-  QueueItem,
-  UploadedTrack,
-  UploadedTrackType,
-  UploadingState,
-  UploadingStatus,
-} from './MediaUploaderTypes'
+import { QueueItem, UploadedTrack, UploadedTrackType, UploadErrorItem } from './MediaUploaderTypes'
 import { uploadTrackToChannel, uploadTrackToLibrary } from '@/api/api.client'
 
 export interface MediaUploader {
   readonly uploadQueue: readonly QueueItem[]
+  readonly uploadErrors: readonly UploadErrorItem[]
   readonly lastUploadedTrack: UploadedTrack | null
-  readonly uploadingState: UploadingState
   readonly upload: (file: File, channelId?: number) => void
   readonly abort: () => void
 }
@@ -20,11 +14,8 @@ const isAborted = (error: Error) => error instanceof DOMException && error.name 
 
 export const useMediaUploaderProvider = (): MediaUploader => {
   const [lastUploadedTrack, setLastUploadedTrack] = useState<UploadedTrack | null>(null)
-  const [uploadingState, setUploadingState] = useState<UploadingState>({
-    status: UploadingStatus.IDLE,
-  })
-
   const [uploadQueue, setUploadQueue] = useState<readonly QueueItem[]>([])
+  const [uploadErrors, setUploadErrors] = useState<readonly UploadErrorItem[]>([])
 
   let unmountedRef = useRef(false)
 
@@ -71,7 +62,19 @@ export const useMediaUploaderProvider = (): MediaUploader => {
           setUploadQueue(restQueueItems)
         })
         .catch((error) => {
-          setUploadQueue(isAborted(error) ? [] : restQueueItems)
+          if (isAborted(error)) {
+            setUploadQueue([])
+            return
+          }
+
+          setUploadQueue(restQueueItems)
+          setUploadErrors((errors) => [
+            ...errors,
+            {
+              queueItem: { channelId, file },
+              error,
+            },
+          ])
         })
     }
 
@@ -89,8 +92,8 @@ export const useMediaUploaderProvider = (): MediaUploader => {
 
   return {
     uploadQueue,
+    uploadErrors,
     lastUploadedTrack,
-    uploadingState,
     upload,
     abort,
   }

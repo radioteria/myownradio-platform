@@ -1,7 +1,7 @@
 'use client'
 
 import { User, UserChannel, UserTrack } from '@/api/api.types'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getLibraryTracks, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
 import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { Header } from '@/components/Header'
@@ -11,7 +11,6 @@ import {
   toLibraryTrackEntry,
 } from '@/components/LibraryTracksList/LibraryTracksList'
 import { MediaUploaderProvider, useMediaUploader } from '@/modules/MediaUploader'
-import useFileSelect from '@/hooks/useFileSelect'
 
 interface Props {
   user: User
@@ -24,12 +23,21 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
   const [trackEntries, setTrackEntries] = useState(initialTrackEntries)
 
   const addTrackEntry = useCallback((track: UserTrack) => {
-    setTrackEntries((entries) => [...entries, toLibraryTrackEntry(track)])
+    setTrackEntries((entries) => [toLibraryTrackEntry(track), ...entries])
   }, [])
 
   const removeTrackEntry = useCallback((indexToRemove: number) => {
     setTrackEntries((entries) => entries.filter((_, index) => index !== indexToRemove))
   }, [])
+
+  const { lastUploadedTrack } = useMediaUploader()
+  useEffect(() => {
+    if (!lastUploadedTrack) {
+      return
+    }
+
+    addTrackEntry(lastUploadedTrack.track)
+  }, [lastUploadedTrack, addTrackEntry])
 
   const initialCanInfinitelyScroll = initialTrackEntries.length === MAX_TRACKS_PER_REQUEST
   const [canInfinitelyScroll, setCanInfinitelyScroll] = useState(initialCanInfinitelyScroll)
@@ -43,9 +51,6 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
       }
     })
   }
-
-  const {} = useMediaUploader()
-  const select = useFileSelect('', (files) => {})
 
   return (
     <LibraryLayout

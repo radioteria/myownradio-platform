@@ -31,3 +31,8 @@ export interface QueueItem {
   channelId?: number
   file: File
 }
+
+export interface UploadErrorItem {
+  error: Error
+  queueItem: QueueItem
+}

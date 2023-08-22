@@ -61,7 +61,12 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.backend.rule=PathPrefix(`/`)
+      - traefik.http.routers.backend.middlewares=corsBackend
       - traefik.http.services.backend.loadbalancer.server.port=80
+      - traefik.http.middlewares.corsBackend.headers.accesscontrolallowmethods=GET,POST
+      - traefik.http.middlewares.corsBackend.headers.accesscontrolallowheaders=*
+      - traefik.http.middlewares.corsBackend.headers.accesscontrolalloworiginlist=http://localhost:3000
+      - traefik.http.middlewares.corsBackend.headers.accesscontrolallowcredentials=true
   backend-php-fpm:
     depends_on:
       - db
@@ -136,7 +141,7 @@ services:
       - traefik.http.middlewares.forwardauthRadioManager.forwardauth.address=http://backend-nginx:80/api/v2/me
       - traefik.http.middlewares.forwardauthRadioManager.forwardauth.authResponseHeaders=user-id
       - traefik.http.middlewares.forwardauthRadioManager.forwardauth.trustForwardHeader=false
-      - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowmethods=GET
+      - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowmethods=GET,POST
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowheaders=*
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolalloworiginlist=http://localhost:3000
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowcredentials=true

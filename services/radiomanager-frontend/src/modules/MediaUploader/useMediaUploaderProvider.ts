@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { QueueItem, UploadedTrack, UploadingState, UploadingStatus } from './MediaUploaderTypes'
+import {
+  QueueItem,
+  UploadedTrack,
+  UploadedTrackType,
+  UploadingState,
+  UploadingStatus,
+} from './MediaUploaderTypes'
 import { uploadTrackToChannel, uploadTrackToLibrary } from '@/api/api.client'
 
 export interface MediaUploader {
@@ -22,28 +28,41 @@ export const useMediaUploaderProvider = (): MediaUploader => {
 
   let unmountedRef = useRef(false)
 
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       unmountedRef.current = true
-    }
-  }, [])
+    },
+    [],
+  )
 
   useEffect(() => {
     if (uploadQueue.length === 0) {
       return
     }
 
-    const [queueItem, ...restQueueItems] = uploadQueue
+    const [{ channelId, file }, ...restQueueItems] = uploadQueue
     const abortController = new AbortController()
 
-    const promise = queueItem.channelId
-      ? uploadTrackToChannel(queueItem.channelId, queueItem.file).then(() => {
-          // TODO Proper uploaded media handling
-          setLastUploadedTrack(null)
+    // Unify track prototypes
+    const promise = channelId
+      ? uploadTrackToChannel(channelId, file, abortController.signal).then((uploadedTrack) => {
+          setLastUploadedTrack({
+            channelId,
+            type: UploadedTrackType.CHANNEL,
+            track: {
+              ...uploadedTrack,
+              artist: uploadedTrack.artist ?? '',
+              album: uploadedTrack.album ?? '',
+              genre: uploadedTrack.genre ?? '',
+              trackNumber: String(uploadedTrack.trackNumber),
+            },
+          })
         })
-      : uploadTrackToLibrary(queueItem.file).then(() => {
-          // TODO Proper uploaded media handling
-          setLastUploadedTrack(null)
+      : uploadTrackToLibrary(file, abortController.signal).then((uploadedTrack) => {
+          setLastUploadedTrack({
+            type: UploadedTrackType.LIBRARY,
+            track: uploadedTrack,
+          })
         })
 
     if (!unmountedRef.current) {

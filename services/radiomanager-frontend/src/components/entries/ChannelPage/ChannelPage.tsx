@@ -51,27 +51,33 @@ export const ChannelPage: React.FC<Props> = ({
   }
 
   return (
-    <MediaUploaderProvider>
-      <NowPlayingProvider channelId={channelId}>
-        <LibraryLayout
-          header={<Header user={user} />}
-          sidebar={<Sidebar channels={userChannels} activeItem={['channel', channelId]} />}
-          content={
-            <ChannelTracksList
-              channelId={channelId}
-              tracks={trackEntries}
-              tracksCount={userChannelTracks.length}
-              canInfinitelyScroll={canInfinitelyScroll}
-              onInfiniteScroll={handleInfiniteScroll}
-            />
-          }
-          rightSidebar={
-            <>
-              <StreamOverlay channelId={channelId} />
-              <ChannelControls channelId={channelId} />
-            </>
-          }
+    <LibraryLayout
+      header={<Header user={user} />}
+      sidebar={<Sidebar channels={userChannels} activeItem={['channel', channelId]} />}
+      content={
+        <ChannelTracksList
+          channelId={channelId}
+          tracks={trackEntries}
+          tracksCount={userChannelTracks.length}
+          canInfinitelyScroll={canInfinitelyScroll}
+          onInfiniteScroll={handleInfiniteScroll}
         />
+      }
+      rightSidebar={
+        <>
+          <StreamOverlay channelId={channelId} />
+          <ChannelControls channelId={channelId} />
+        </>
+      }
+    />
+  )
+}
+
+export const ChannelPageWithProviders: React.FC<Props> = (props) => {
+  return (
+    <MediaUploaderProvider>
+      <NowPlayingProvider channelId={props.channelId}>
+        <ChannelPage {...props} />
       </NowPlayingProvider>
     </MediaUploaderProvider>
   )

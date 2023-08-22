@@ -8,7 +8,6 @@ import {
   UserTrackSchema,
 } from '@/api/api.types'
 import { isomorphicFetch } from '@/api/api.isomorphicFetch'
-import { FormData } from 'next/dist/compiled/@edge-runtime/primitives'
 
 const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
 

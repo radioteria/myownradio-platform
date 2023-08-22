@@ -11,6 +11,7 @@ import {
   toLibraryTrackEntry,
 } from '@/components/LibraryTracksList/LibraryTracksList'
 import { MediaUploaderProvider, useMediaUploader } from '@/modules/MediaUploader'
+import useFileSelect from '@/hooks/useFileSelect'
 
 interface Props {
   user: User
@@ -43,21 +44,30 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
     })
   }
 
+  const {} = useMediaUploader()
+  const select = useFileSelect('', (files) => {})
+
+  return (
+    <LibraryLayout
+      header={<Header user={user} />}
+      sidebar={<Sidebar channels={userChannels} activeItem={['library']} />}
+      content={
+        <LibraryTracksList
+          tracks={trackEntries}
+          tracksCount={userTracks.length}
+          canInfinitelyScroll={canInfinitelyScroll}
+          onInfiniteScroll={handleInfiniteScroll}
+        />
+      }
+      rightSidebar={null}
+    />
+  )
+}
+
+export const LibraryPageWithProviders: React.FC<Props> = (props) => {
   return (
     <MediaUploaderProvider>
-      <LibraryLayout
-        header={<Header user={user} />}
-        sidebar={<Sidebar channels={userChannels} activeItem={['library']} />}
-        content={
-          <LibraryTracksList
-            tracks={trackEntries}
-            tracksCount={userTracks.length}
-            canInfinitelyScroll={canInfinitelyScroll}
-            onInfiniteScroll={handleInfiniteScroll}
-          />
-        }
-        rightSidebar={null}
-      />
+      <LibraryPage {...props} />
     </MediaUploaderProvider>
   )
 }

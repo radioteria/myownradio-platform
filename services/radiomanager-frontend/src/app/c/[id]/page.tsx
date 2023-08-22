@@ -1,4 +1,4 @@
-import { ChannelPage } from '@/components/entries/ChannelPage'
+import { ChannelPageWithProviders } from '@/components/entries/ChannelPage'
 import { getChannelTracks, getSelf } from '@/api/api.client'
 
 export default async function UserChannel({ params: { id } }: { params: { id: string } }) {
@@ -10,7 +10,7 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
   }
 
   return (
-    <ChannelPage
+    <ChannelPageWithProviders
       channelId={channelId}
       user={self.user}
       userChannelTracks={channelTracks}

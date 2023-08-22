@@ -7,16 +7,14 @@ interface Options {
   shiftKey?: boolean
 }
 
-export const useHotkey = <T>(
+export const useHotkey = <T extends string>(
   ref: RefObject<HTMLElement>,
-  key: string,
+  key: T,
   cb: () => void,
   options?: Options,
 ) => {
   useEffect(() => {
     const current = ref.current
-
-    console.log('init')
 
     if (!current) {
       return

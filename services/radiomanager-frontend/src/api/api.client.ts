@@ -71,5 +71,9 @@ export async function getNowPlaying(channelId: number, timestamp: number) {
     .then((json) => NowPlayingResponseSchema.parse(json).data)
 }
 
+export async function uploadTrackToLibrary(file: File) {}
+
+export async function uploadTrackToChannel(channelId: number, file: File) {}
+
 // Get Chunk
 // http://localhost:40180/getchunk/380

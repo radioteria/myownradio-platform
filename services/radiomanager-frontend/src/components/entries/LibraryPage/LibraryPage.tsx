@@ -1,7 +1,7 @@
 'use client'
 
 import { User, UserChannel, UserTrack } from '@/api/api.types'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { getLibraryTracks, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
 import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { Header } from '@/components/Header'
@@ -10,6 +10,7 @@ import {
   LibraryTracksList,
   toLibraryTrackEntry,
 } from '@/components/LibraryTracksList/LibraryTracksList'
+import { MediaUploaderProvider, useMediaUploader } from '@/modules/MediaUploader'
 
 interface Props {
   user: User
@@ -18,7 +19,7 @@ interface Props {
 }
 
 export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels }) => {
-  const initialTrackEntries = userTracks.map(toLibraryTrackEntry)
+  const initialTrackEntries = useMemo(() => userTracks.map(toLibraryTrackEntry), [userTracks])
   const [trackEntries, setTrackEntries] = useState(initialTrackEntries)
 
   const addTrackEntry = useCallback((track: UserTrack) => {
@@ -31,7 +32,6 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
 
   const initialCanInfinitelyScroll = initialTrackEntries.length === MAX_TRACKS_PER_REQUEST
   const [canInfinitelyScroll, setCanInfinitelyScroll] = useState(initialCanInfinitelyScroll)
-
   const handleInfiniteScroll = () => {
     getLibraryTracks(trackEntries.length).then((tracks) => {
       const newEntries = tracks.map(toLibraryTrackEntry)
@@ -44,18 +44,20 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
   }
 
   return (
-    <LibraryLayout
-      header={<Header user={user} />}
-      sidebar={<Sidebar channels={userChannels} activeItem={['library']} />}
-      content={
-        <LibraryTracksList
-          tracks={trackEntries}
-          tracksCount={userTracks.length}
-          canInfinitelyScroll={canInfinitelyScroll}
-          onInfiniteScroll={handleInfiniteScroll}
-        />
-      }
-      rightSidebar={null}
-    />
+    <MediaUploaderProvider>
+      <LibraryLayout
+        header={<Header user={user} />}
+        sidebar={<Sidebar channels={userChannels} activeItem={['library']} />}
+        content={
+          <LibraryTracksList
+            tracks={trackEntries}
+            tracksCount={userTracks.length}
+            canInfinitelyScroll={canInfinitelyScroll}
+            onInfiniteScroll={handleInfiniteScroll}
+          />
+        }
+        rightSidebar={null}
+      />
+    </MediaUploaderProvider>
   )
 }

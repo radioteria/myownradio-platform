@@ -1,11 +1,9 @@
 import z from 'zod'
 import { config } from '@/config'
 import {
-  ChannelTracksResponse,
   ChannelTracksResponseSchema,
-  NowPlayingResponse,
+  LibraryTracksResponseSchema,
   NowPlayingResponseSchema,
-  SelfResponse,
   SelfResponseSchema,
 } from '@/api/api.types'
 import { isomorphicFetch } from '@/api/api.isomorphicFetch'
@@ -43,6 +41,14 @@ export async function getSelf() {
         return null
       }
     })
+}
+
+export async function getLibraryTracks(offset = 0) {
+  const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/?offset=${offset}&limit=${MAX_TRACKS_PER_REQUEST}`
+
+  return await isomorphicFetch(url)
+    .then((res) => res.json())
+    .then((json) => LibraryTracksResponseSchema.parse(json).data)
 }
 
 export async function getChannelTracks(channelId: number, offset = 0) {

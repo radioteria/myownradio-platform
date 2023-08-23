@@ -12,6 +12,7 @@ import { NowPlayingProvider } from '@/modules/NowPlaying'
 import { getChannelTracks, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
 import { useMediaUploader } from '@/modules/MediaUploader'
 import { UploadedTrackType } from '@/modules/MediaUploader/MediaUploaderTypes'
+import { MediaUploader } from '@/components/common/MediaUploader/MediaUploader'
 
 interface Props {
   channelId: number
@@ -81,25 +82,28 @@ export const ChannelPage: React.FC<Props> = ({
   }, [lastUploadedTrack, addTrackEntry, canInfinitelyScroll, channelId])
 
   return (
-    <LibraryLayout
-      header={<Header user={user} />}
-      sidebar={<Sidebar channels={userChannels} activeItem={['channel', channelId]} />}
-      content={
-        <ChannelTracksList
-          channelId={channelId}
-          tracks={trackEntries}
-          tracksCount={userChannelTracks.length}
-          canInfinitelyScroll={canInfinitelyScroll}
-          onInfiniteScroll={handleInfiniteScroll}
-        />
-      }
-      rightSidebar={
-        <>
-          <StreamOverlay channelId={channelId} />
-          <ChannelControls channelId={channelId} />
-        </>
-      }
-    />
+    <>
+      <LibraryLayout
+        header={<Header user={user} />}
+        sidebar={<Sidebar channels={userChannels} activeItem={['channel', channelId]} />}
+        content={
+          <ChannelTracksList
+            channelId={channelId}
+            tracks={trackEntries}
+            tracksCount={userChannelTracks.length}
+            canInfinitelyScroll={canInfinitelyScroll}
+            onInfiniteScroll={handleInfiniteScroll}
+          />
+        }
+        rightSidebar={
+          <>
+            <StreamOverlay channelId={channelId} />
+            <ChannelControls channelId={channelId} />
+          </>
+        }
+      />
+      <MediaUploader targetChannelId={channelId} />
+    </>
   )
 }
 

@@ -10,7 +10,9 @@ const ACCEPT_CONTENT_TYPES = 'audio/*'
 
 export const MediaUploader: React.FC<Props> = ({ targetChannelId }) => {
   const { upload, uploadQueue, uploadErrors, uploadedTracks, currentQueueItem } = useMediaUploader()
-  const select = useFileSelect(ACCEPT_CONTENT_TYPES, (files) => files.forEach((f) => upload(f)))
+  const select = useFileSelect(ACCEPT_CONTENT_TYPES, (files) =>
+    files.forEach((f) => upload(f, targetChannelId)),
+  )
 
   const uploadProgressTotal = uploadedTracks.length + uploadErrors.length + uploadQueue.length
   const uploadProgress = uploadProgressTotal - uploadQueue.length
@@ -19,7 +21,11 @@ export const MediaUploader: React.FC<Props> = ({ targetChannelId }) => {
   const numberOfUploadedTracks = uploadedTracks.length
 
   if (!currentQueueItem) {
-    return null
+    return (
+      <div className={'fixed z-20 bottom-4 left-4 rounded-lg bg-gray-200 shadow p-2'}>
+        <button onClick={select}>Upload...</button>
+      </div>
+    )
   }
 
   return (

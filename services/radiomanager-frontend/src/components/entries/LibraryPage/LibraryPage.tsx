@@ -10,8 +10,7 @@ import {
   LibraryTracksList,
   toLibraryTrackEntry,
 } from '@/components/LibraryTracksList/LibraryTracksList'
-import { MediaUploaderProvider, useMediaUploader } from '@/modules/MediaUploader'
-import { Simulate } from 'react-dom/test-utils'
+import { useMediaUploader } from '@/modules/MediaUploader'
 import { MediaUploader } from '@/components/common/MediaUploader/MediaUploader'
 
 interface Props {
@@ -66,15 +65,11 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
           onInfiniteScroll={handleInfiniteScroll}
         />
       }
-      rightSidebar={<MediaUploader />}
+      rightSidebar={null}
     />
   )
 }
 
 export const LibraryPageWithProviders: React.FC<Props> = (props) => {
-  return (
-    <MediaUploaderProvider>
-      <LibraryPage {...props} />
-    </MediaUploaderProvider>
-  )
+  return <LibraryPage {...props} />
 }

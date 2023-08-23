@@ -1,1 +1,1 @@
-export * from './MediaUploaderProvider'
+export * from './useMediaUploader'

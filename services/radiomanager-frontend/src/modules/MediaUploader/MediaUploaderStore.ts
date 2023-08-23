@@ -1,4 +1,5 @@
-import { atom, getDefaultStore } from 'jotai/index'
+import { atom, getDefaultStore } from 'jotai'
+import PQueue from 'p-queue'
 import {
   QueueItem,
   UploadedTrack,
@@ -7,13 +8,16 @@ import {
 } from '@/modules/MediaUploader/MediaUploaderTypes'
 import { uploadTrackToChannel, uploadTrackToLibrary } from '@/api/api.client'
 
+const uploadPromiseQueue = new PQueue({ concurrency: 1 })
+
 const isAborted = (error: unknown) => error instanceof DOMException && error.name === 'AbortError'
 
-export const makeMediaUploaderStore = () => {
+export const createMediaUploaderStore = () => {
   const uploadQueueAtom = atom<readonly QueueItem[]>([])
   const uploadErrorsAtom = atom<readonly UploadErrorItem[]>([])
   const uploadedTracksAtom = atom<readonly UploadedTrack[]>([])
   const lastUploadedTrackAtom = atom<UploadedTrack | null>(null)
+  const currentQueueItemAtom = atom<QueueItem | null>(null)
 
   const uploaderStore = getDefaultStore()
 
@@ -21,15 +25,16 @@ export const makeMediaUploaderStore = () => {
     uploaderStore.set(uploadQueueAtom, [...uploaderStore.get(uploadQueueAtom), item])
   }
 
-  const peekInQueue = (): QueueItem | null => {
-    const [headItem] = uploaderStore.get(uploadQueueAtom)
+  const popFromQueue = (): QueueItem | null => {
+    const [head, ...rest] = uploaderStore.get(uploadQueueAtom)
 
-    return headItem ?? null
-  }
+    if (!head) {
+      return null
+    }
 
-  const popFromQueue = () => {
-    const [_head, ...rest] = uploaderStore.get(uploadQueueAtom)
     uploaderStore.set(uploadQueueAtom, rest)
+
+    return head
   }
 
   const resetItemsQueue = () => {
@@ -51,6 +56,10 @@ export const makeMediaUploaderStore = () => {
     uploaderStore.set(lastUploadedTrackAtom, track)
   }
 
+  const setCurrentQueueItem = (item: QueueItem | null) => {
+    uploaderStore.set(currentQueueItemAtom, item)
+  }
+
   let abortController: AbortController | null = null
 
   const abort = () => {
@@ -63,61 +72,58 @@ export const makeMediaUploaderStore = () => {
     addItemToQueue(queueItem)
   }
 
-  let isUploading = false
+  uploaderStore.sub(uploadQueueAtom, () =>
+    uploadPromiseQueue.add(async () => {
+      const nextQueueItem = popFromQueue()
 
-  uploaderStore.sub(uploadQueueAtom, async () => {
-    const nextQueueItem = peekInQueue()
-
-    if (!nextQueueItem || isUploading) {
-      return
-    }
-
-    const { channelId, file } = nextQueueItem
-
-    abortController = new AbortController()
-
-    isUploading = true
-
-    // Unify track prototypes
-    const promise = channelId
-      ? uploadTrackToChannel(channelId, file, abortController.signal).then((track) => ({
-          channelId,
-          type: UploadedTrackType.CHANNEL as const,
-          track: {
-            ...track,
-            artist: track.artist ?? '',
-            album: track.album ?? '',
-            genre: track.genre ?? '',
-            trackNumber: String(track.trackNumber),
-          },
-        }))
-      : uploadTrackToLibrary(file, abortController.signal).then((track) => ({
-          type: UploadedTrackType.LIBRARY as const,
-          track,
-        }))
-
-    try {
-      const uploadedTrack = await promise
-
-      popFromQueue()
-      setLastUploadedTrack(uploadedTrack)
-      addUploadedTrack(uploadedTrack)
-    } catch (error) {
-      if (isAborted(error)) {
-        resetItemsQueue()
+      if (!nextQueueItem) {
+        setCurrentQueueItem(null)
         return
       }
 
-      popFromQueue()
-      addUploadError(error, nextQueueItem)
-    } finally {
-      isUploading = false
-    }
-  })
+      setCurrentQueueItem(nextQueueItem)
+
+      abortController = new AbortController()
+
+      try {
+        const { channelId, file } = nextQueueItem
+
+        const uploadedTrack = channelId
+          ? await uploadTrackToChannel(channelId, file, abortController.signal).then((track) => ({
+              channelId,
+              type: UploadedTrackType.CHANNEL as const,
+              track: {
+                ...track,
+                artist: track.artist ?? '',
+                album: track.album ?? '',
+                genre: track.genre ?? '',
+                trackNumber: String(track.trackNumber),
+              },
+            }))
+          : await uploadTrackToLibrary(file, abortController.signal).then((track) => ({
+              type: UploadedTrackType.LIBRARY as const,
+              track,
+            }))
+
+        setLastUploadedTrack(uploadedTrack)
+        addUploadedTrack(uploadedTrack)
+      } catch (error) {
+        if (isAborted(error)) {
+          resetItemsQueue()
+          return
+        }
+
+        addUploadError(error, nextQueueItem)
+      } finally {
+        abortController = null
+      }
+    }),
+  )
 
   return {
     upload,
     abort,
+    currentQueueItemAtom,
     uploadQueueAtom,
     uploadErrorsAtom,
     lastUploadedTrackAtom,

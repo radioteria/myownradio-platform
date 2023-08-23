@@ -24,15 +24,15 @@ export enum UploadingStatus {
 }
 
 export interface UploadingState {
-  status: UploadingStatus
+  readonly status: UploadingStatus
 }
 
 export interface QueueItem {
-  channelId?: number
-  file: File
+  readonly channelId?: number
+  readonly file: File
 }
 
 export interface UploadErrorItem {
-  error: unknown
-  queueItem: QueueItem
+  readonly error: unknown
+  readonly queueItem: QueueItem
 }

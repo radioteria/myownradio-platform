@@ -54,19 +54,22 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
   }
 
   return (
-    <LibraryLayout
-      header={<Header user={user} />}
-      sidebar={<Sidebar channels={userChannels} activeItem={['library']} />}
-      content={
-        <LibraryTracksList
-          tracks={trackEntries}
-          tracksCount={userTracks.length}
-          canInfinitelyScroll={canInfinitelyScroll}
-          onInfiniteScroll={handleInfiniteScroll}
-        />
-      }
-      rightSidebar={null}
-    />
+    <>
+      <LibraryLayout
+        header={<Header user={user} />}
+        sidebar={<Sidebar channels={userChannels} activeItem={['library']} />}
+        content={
+          <LibraryTracksList
+            tracks={trackEntries}
+            tracksCount={userTracks.length}
+            canInfinitelyScroll={canInfinitelyScroll}
+            onInfiniteScroll={handleInfiniteScroll}
+          />
+        }
+        rightSidebar={null}
+      />
+      <MediaUploader />
+    </>
   )
 }
 

@@ -7,6 +7,7 @@ export interface MediaUploader {
   readonly uploadErrors: readonly UploadErrorItem[]
   readonly currentQueueItem: QueueItem | null
   readonly lastUploadedTrack: UploadedTrack | null
+  readonly uploadedTracks: readonly UploadedTrack[]
   readonly upload: (file: File, channelId?: number) => void
   readonly abort: () => void
 }
@@ -18,6 +19,7 @@ export const useMediaUploader = (): MediaUploader => {
   const [uploadQueue] = useAtom(store.uploadQueueAtom)
   const [uploadErrors] = useAtom(store.uploadErrorsAtom)
   const [currentQueueItem] = useAtom(store.currentQueueItemAtom)
+  const [uploadedTracks] = useAtom(store.uploadedTracksAtom)
 
   const { upload, abort } = store
 
@@ -26,6 +28,7 @@ export const useMediaUploader = (): MediaUploader => {
     uploadErrors,
     lastUploadedTrack,
     currentQueueItem,
+    uploadedTracks,
     upload,
     abort,
   }

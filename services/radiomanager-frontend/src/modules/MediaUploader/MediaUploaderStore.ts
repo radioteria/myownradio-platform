@@ -127,5 +127,6 @@ export const createMediaUploaderStore = () => {
     uploadQueueAtom,
     uploadErrorsAtom,
     lastUploadedTrackAtom,
+    uploadedTracksAtom,
   }
 }

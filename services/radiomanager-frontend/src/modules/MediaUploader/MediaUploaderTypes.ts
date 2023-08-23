@@ -33,6 +33,6 @@ export interface QueueItem {
 }
 
 export interface UploadErrorItem {
-  error: Error
+  error: unknown
   queueItem: QueueItem
 }

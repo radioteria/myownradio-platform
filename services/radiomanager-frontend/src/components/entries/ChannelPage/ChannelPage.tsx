@@ -1,7 +1,7 @@
 'use client'
 
-import { useCallback, useState } from 'react'
-import { User, UserChannelTrack, UserChannel } from '@/api/api.types'
+import { useCallback, useEffect, useState } from 'react'
+import { User, UserChannel, UserChannelTrack } from '@/api/api.types'
 import { Header } from '@/components/Header'
 import { Sidebar } from '@/components/Sidebar'
 import { StreamOverlay } from '@/components/StreamOverlay'
@@ -10,6 +10,9 @@ import { ChannelTracksList, toChannelTrackEntry } from './ChannelTracksList'
 import { ChannelControls } from './ChannelControls'
 import { NowPlayingProvider } from '@/modules/NowPlaying'
 import { getChannelTracks, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
+import { useMediaUploader } from '@/modules/MediaUploader'
+import { UploadedTrackType } from '@/modules/MediaUploader/MediaUploaderTypes'
+import { MediaUploader } from '@/components/common/MediaUploader/MediaUploader'
 
 interface Props {
   channelId: number
@@ -49,8 +52,37 @@ export const ChannelPage: React.FC<Props> = ({
     })
   }
 
+  const { lastUploadedTrack } = useMediaUploader()
+  useEffect(() => {
+    if (!lastUploadedTrack) {
+      return
+    }
+
+    // The last uploaded track is not related to that channel
+    if (
+      lastUploadedTrack.type === UploadedTrackType.CHANNEL &&
+      lastUploadedTrack.channelId !== channelId
+    ) {
+      return
+    }
+
+    // We didn't scroll to the end of the list yet
+    if (canInfinitelyScroll) {
+      return
+    }
+
+    // TODO Fix track typing mess
+    addTrackEntry({
+      ...lastUploadedTrack.track,
+      album: lastUploadedTrack.track.album ?? '',
+      artist: lastUploadedTrack.track.artist ?? '',
+      genre: lastUploadedTrack.track.genre ?? '',
+      trackNumber: String(lastUploadedTrack.track.trackNumber),
+    })
+  }, [lastUploadedTrack, addTrackEntry, canInfinitelyScroll, channelId])
+
   return (
-    <NowPlayingProvider channelId={channelId}>
+    <>
       <LibraryLayout
         header={<Header user={user} />}
         sidebar={<Sidebar channels={userChannels} activeItem={['channel', channelId]} />}
@@ -70,6 +102,15 @@ export const ChannelPage: React.FC<Props> = ({
           </>
         }
       />
+      <MediaUploader targetChannelId={channelId} />
+    </>
+  )
+}
+
+export const ChannelPageWithProviders: React.FC<Props> = (props) => {
+  return (
+    <NowPlayingProvider channelId={props.channelId}>
+      <ChannelPage {...props} />
     </NowPlayingProvider>
   )
 }

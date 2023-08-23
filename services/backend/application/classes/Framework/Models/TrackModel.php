@@ -205,7 +205,11 @@ class TrackModel extends Model implements SingletonInterface {
         $db = Database::getInstance()->connect();
 
         error_log(sprintf("User #%d is deleting track %s", $this->getUserID(), $this->getFileName()));
-        FSFile::deleteLink($this->object->getFileId());
+        try {
+            FSFile::deleteLink($this->object->getFileId());
+        } catch (\Exception $exception) {
+            error_log($exception);
+        }
 
         $db->beginTransaction();
 

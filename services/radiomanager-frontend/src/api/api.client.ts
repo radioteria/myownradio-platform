@@ -5,6 +5,7 @@ import {
   LibraryTracksResponseSchema,
   NowPlayingResponseSchema,
   SelfResponseSchema,
+  UserTrackSchema,
 } from '@/api/api.types'
 import { isomorphicFetch } from '@/api/api.isomorphicFetch'
 
@@ -69,6 +70,59 @@ export async function getNowPlaying(channelId: number, timestamp: number) {
   return await isomorphicFetch(url.toString())
     .then((res) => res.json())
     .then((json) => NowPlayingResponseSchema.parse(json).data)
+}
+
+const UploadTrackResponseSchema = z.object({
+  code: z.literal(1),
+  message: z.literal('OK'),
+  data: z.object({
+    tracks: z.array(UserTrackSchema),
+  }),
+})
+
+export async function uploadTrackToLibrary(file: File, abortSignal: AbortSignal) {
+  const form = new FormData()
+  form.set('file', file)
+
+  const { tracks } = await fetch(`${BACKEND_BASE_URL}/api/v2/track/upload`, {
+    signal: abortSignal,
+    method: 'POST',
+    body: form,
+    credentials: 'include',
+  })
+    .then((res) => res.json())
+    .then((json) => UploadTrackResponseSchema.parse(json).data)
+
+  if (tracks.length === 0) {
+    throw new Error('Unable to upload track to library')
+  }
+
+  return tracks[0]
+}
+
+export async function uploadTrackToChannel(
+  channelId: number,
+  file: File,
+  abortSignal: AbortSignal,
+) {
+  const form = new FormData()
+  form.set('file', file)
+  form.set('stream_id', String(channelId))
+
+  const { tracks } = await fetch(`${BACKEND_BASE_URL}/api/v2/track/upload`, {
+    signal: abortSignal,
+    method: 'POST',
+    body: form,
+    credentials: 'include',
+  })
+    .then((res) => res.json())
+    .then((json) => UploadTrackResponseSchema.parse(json).data)
+
+  if (tracks.length === 0) {
+    throw new Error('Unable to upload track to channel')
+  }
+
+  return tracks[0]
 }
 
 // Get Chunk

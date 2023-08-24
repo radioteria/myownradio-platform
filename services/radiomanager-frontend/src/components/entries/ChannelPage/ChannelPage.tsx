@@ -10,9 +10,8 @@ import { ChannelTracksList, toChannelTrackEntry } from './ChannelTracksList'
 import { ChannelControls } from './ChannelControls'
 import { NowPlayingProvider } from '@/modules/NowPlaying'
 import { getChannelTracks, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
-import { useMediaUploader } from '@/modules/MediaUploader'
+import { useMediaUploader, MediaUploaderComponent } from '@/modules/MediaUploader'
 import { UploadedTrackType } from '@/modules/MediaUploader/MediaUploaderTypes'
-import { MediaUploader } from '@/components/common/MediaUploader/MediaUploader'
 
 interface Props {
   channelId: number
@@ -102,7 +101,7 @@ export const ChannelPage: React.FC<Props> = ({
           </>
         }
       />
-      <MediaUploader targetChannelId={channelId} />
+      <MediaUploaderComponent targetChannelId={channelId} />
     </>
   )
 }

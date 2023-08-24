@@ -1,4 +1,4 @@
-import { useMediaUploader } from '@/modules/MediaUploader'
+import { useMediaUploader } from '@/modules/MediaUploader/index'
 import useFileSelect from '@/hooks/useFileSelect'
 import { scale } from '@/utils/math'
 
@@ -8,17 +8,16 @@ interface Props {
 
 const ACCEPT_CONTENT_TYPES = 'audio/*'
 
-export const MediaUploader: React.FC<Props> = ({ targetChannelId }) => {
-  const { upload, uploadQueue, uploadErrors, uploadedTracks, currentQueueItem } = useMediaUploader()
+export const MediaUploaderComponent: React.FC<Props> = ({ targetChannelId }) => {
+  const { upload, uploadQueue, uploadResults, currentQueueItem } = useMediaUploader()
   const select = useFileSelect(ACCEPT_CONTENT_TYPES, (files) =>
     files.forEach((f) => upload(f, targetChannelId)),
   )
 
-  const uploadProgressTotal = uploadedTracks.length + uploadErrors.length + uploadQueue.length
-  const uploadProgress = uploadProgressTotal - uploadQueue.length
-  const uploadProgressPercent = scale(uploadProgress, uploadProgressTotal, 100)
-
-  const numberOfUploadedTracks = uploadedTracks.length
+  const totalNumberOfUploads =
+    uploadResults.length + uploadQueue.length + (currentQueueItem ? 1 : 0)
+  const uploadsProgressPercent = scale(uploadResults.length, totalNumberOfUploads, 100)
+  const numberOfUploadedTracks = uploadResults.length
 
   if (!currentQueueItem) {
     return (
@@ -30,17 +29,19 @@ export const MediaUploader: React.FC<Props> = ({ targetChannelId }) => {
 
   return (
     <div className={'fixed w-96 z-20 bottom-4 left-4 rounded-lg bg-gray-200 shadow p-2'}>
-      <div className={'text-xs'}>Uploading...</div>
-      <div className={'bg-gray-200 h-2 rounded my-2 relative'}>
+      <div className={'text-xs truncate'}>
+        Uploading <b>{currentQueueItem.file.name}</b>...
+      </div>
+      <div className={'bg-gray-300 h-2 rounded my-2 relative'}>
         <div
           className={'h-2 rounded bg-orange-400 transition-width duration-300'}
           style={{
-            width: `${uploadProgressPercent}%`,
+            width: `${uploadsProgressPercent}%`,
           }}
         />
       </div>
       <div className={'text-xs'}>
-        Uploaded <b>{numberOfUploadedTracks}</b> of <b>{uploadProgressTotal}</b> file(s)
+        Uploaded <b>{numberOfUploadedTracks}</b> of <b>{totalNumberOfUploads}</b> file(s)
       </div>
     </div>
   )

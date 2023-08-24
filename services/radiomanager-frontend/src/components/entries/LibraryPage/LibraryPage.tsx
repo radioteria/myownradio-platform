@@ -10,8 +10,7 @@ import {
   LibraryTracksList,
   toLibraryTrackEntry,
 } from '@/components/LibraryTracksList/LibraryTracksList'
-import { useMediaUploader } from '@/modules/MediaUploader'
-import { MediaUploader } from '@/components/common/MediaUploader/MediaUploader'
+import { useMediaUploader, MediaUploaderComponent } from '@/modules/MediaUploader'
 
 interface Props {
   user: User
@@ -68,7 +67,7 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
         }
         rightSidebar={null}
       />
-      <MediaUploader />
+      <MediaUploaderComponent />
     </>
   )
 }

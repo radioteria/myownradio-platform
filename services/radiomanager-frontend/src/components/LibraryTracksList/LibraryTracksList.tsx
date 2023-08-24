@@ -25,12 +25,14 @@ interface Props {
   readonly tracks: readonly LibraryTrackEntry[]
   readonly canInfinitelyScroll: boolean
   readonly onInfiniteScroll: () => void
+  readonly onDeleteTracks: (trackIds: readonly number[]) => void
 }
 
 export const LibraryTracksList: React.FC<Props> = ({
   tracks,
   canInfinitelyScroll,
   onInfiniteScroll,
+  onDeleteTracks,
 }) => {
   return (
     <section className={'h-full'}>

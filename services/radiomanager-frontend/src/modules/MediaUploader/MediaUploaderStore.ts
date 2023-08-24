@@ -7,6 +7,7 @@ import {
   UploadErrorItem,
 } from '@/modules/MediaUploader/MediaUploaderTypes'
 import { uploadTrackToChannel, uploadTrackToLibrary } from '@/api/api.client'
+import { popFromArrayAtom, pushToArrayAtom } from '@/modules/MediaUploader/MediaUploaderStore.utils'
 
 const uploadPromiseQueue = new PQueue({ concurrency: 1 })
 
@@ -21,35 +22,16 @@ export const createMediaUploaderStore = () => {
 
   const uploaderStore = getDefaultStore()
 
-  const addItemToQueue = (item: QueueItem) => {
-    uploaderStore.set(uploadQueueAtom, [...uploaderStore.get(uploadQueueAtom), item])
-  }
-
-  const popFromQueue = (): QueueItem | null => {
-    const [head, ...rest] = uploaderStore.get(uploadQueueAtom)
-
-    if (!head) {
-      return null
-    }
-
-    uploaderStore.set(uploadQueueAtom, rest)
-
-    return head
-  }
-
-  const resetItemsQueue = () => {
-    uploaderStore.set(uploadQueueAtom, [])
-  }
+  const addItemToQueue = (item: QueueItem) => pushToArrayAtom(uploadQueueAtom, item, uploaderStore)
+  const popFromQueue = (): QueueItem | null => popFromArrayAtom(uploadQueueAtom, uploaderStore)
+  const resetItemsQueue = () => uploaderStore.set(uploadQueueAtom, [])
 
   const addUploadError = (error: unknown, queueItem: QueueItem) => {
-    uploaderStore.set(uploadErrorsAtom, [
-      ...uploaderStore.get(uploadErrorsAtom),
-      { queueItem, error },
-    ])
+    pushToArrayAtom(uploadErrorsAtom, { queueItem, error }, uploaderStore)
   }
 
   const addUploadedTrack = (track: UploadedTrack) => {
-    uploaderStore.set(uploadedTracksAtom, [...uploaderStore.get(uploadedTracksAtom), track])
+    pushToArrayAtom(uploadedTracksAtom, track, uploaderStore)
   }
 
   const setLastUploadedTrack = (track: UploadedTrack | null) => {

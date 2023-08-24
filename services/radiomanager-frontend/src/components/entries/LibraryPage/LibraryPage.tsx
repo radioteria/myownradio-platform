@@ -2,7 +2,7 @@
 
 import { User, UserChannel, UserTrack } from '@/api/api.types'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { getLibraryTracks, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
+import { getLibraryTracks, deleteTracksById, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
 import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { Header } from '@/components/Header'
 import { Sidebar } from '@/components/Sidebar'
@@ -49,6 +49,18 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
       if (MAX_TRACKS_PER_REQUEST > newEntries.length) {
         setCanInfinitelyScroll(newEntries.length === MAX_TRACKS_PER_REQUEST)
       }
+    })
+  }
+
+  const deleteTracks = (trackIds: readonly number[]) => {
+    const idsSet = new Set(trackIds)
+    const updatedTrackEntries = trackEntries.filter(({ trackId }) => !idsSet.has(trackId))
+
+    setTrackEntries(updatedTrackEntries)
+
+    deleteTracksById(trackIds).catch((error) => {
+      // Restore tracks after unsuccessful delete
+      setTrackEntries(trackEntries)
     })
   }
 

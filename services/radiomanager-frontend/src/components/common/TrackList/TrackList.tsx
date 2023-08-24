@@ -3,14 +3,14 @@ import { TrackItem, CurrentTrack } from './types'
 import { TrackListItem } from '@/components/common/TrackList/TrackListItem'
 import { useListItemSelector } from '@/hooks/useListItemSelector'
 import { useClickOutside } from '@/hooks/useClickOutside'
-import { useHotkey } from '@/hooks/useHotkey'
 
 interface Props {
-  tracks: readonly TrackItem[]
-  currentTrack: CurrentTrack | null
+  readonly tracks: readonly TrackItem[]
+  readonly currentTrack: CurrentTrack | null
+  readonly onThreeDotsClick: (trackIndex: number) => void
 }
 
-export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
+export const TrackList: React.FC<Props> = ({ tracks, currentTrack, onThreeDotsClick }) => {
   const listRef = useRef(null)
   const selector = useListItemSelector(tracks)
 
@@ -37,6 +37,7 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack }) => {
             onRemoveFromChannel={() => {}}
             isSelected={listItem.isSelected}
             onSelect={() => selector.selectOnly(index)}
+            onThreeDotsClick={() => onThreeDotsClick(index)}
           />
         )
       })}

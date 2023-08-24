@@ -1,10 +1,7 @@
 import cn from 'classnames'
-import { useRef } from 'react'
-import { ProgressBar } from '@/components/entries/ChannelPage/ChannelControls/ProgressBar'
 import AnimatedBars from '@/icons/AnimatedBars'
 import { Duration } from '@/components/Duration/Duration'
 import { ThreeDots } from '@/icons/ThreeDots'
-import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 import { CurrentTrack, TrackItem } from './types'
 
 interface Props {
@@ -16,6 +13,7 @@ interface Props {
 
   isSelected: boolean
   onSelect: () => void
+  onThreeDotsClick: () => void
 }
 
 export const TrackListItem: React.FC<Props> = ({
@@ -24,29 +22,9 @@ export const TrackListItem: React.FC<Props> = ({
   index,
   isSelected,
   onSelect,
+  onThreeDotsClick,
 }) => {
   const isCurrentTrack = currentTrack?.index === index
-  const portalRef = useRef<HTMLDivElement | null>(null)
-  const contextMenu = useContextMenu()
-
-  function showMenu(position: { x: number; y: number }) {
-    contextMenu.show({
-      position,
-      portalElement: portalRef.current ?? undefined,
-      menuItems: [
-        {
-          type: MenuItemType.Item,
-          label: 'Remove from channel',
-          onClick() {},
-        },
-        {
-          type: MenuItemType.Item,
-          label: 'Remove from library',
-          onClick() {},
-        },
-      ],
-    })
-  }
 
   return (
     <li
@@ -59,12 +37,7 @@ export const TrackListItem: React.FC<Props> = ({
         ev.preventDefault()
         onSelect()
       }}
-      onContextMenu={(ev) => {
-        ev.preventDefault()
-        showMenu({ x: ev.clientX, y: ev.clientY })
-      }}
     >
-      <div ref={portalRef} />
       <div className="p-2 pl-4 w-12 flex-shrink-0 z-10 text-right">
         {isCurrentTrack ? <AnimatedBars size={12} /> : <>{index + 1}</>}
       </div>
@@ -83,12 +56,7 @@ export const TrackListItem: React.FC<Props> = ({
           { 'opacity-100': isSelected },
         ])}
       >
-        <button
-          onClick={(ev) => {
-            ev.preventDefault()
-            showMenu({ x: ev.clientX, y: ev.clientY })
-          }}
-        >
+        <button onClick={onThreeDotsClick}>
           <ThreeDots size={14} />
         </button>
       </div>

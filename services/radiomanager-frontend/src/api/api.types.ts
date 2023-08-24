@@ -95,7 +95,7 @@ export type UserTrack = z.infer<typeof UserTrackSchema>
 export const UserChannelTrackSchema = z
   .object({
     // t_order: z.number(),
-    // unique_id: z.string(),
+    unique_id: z.string(),
     // time_offset: z.number().nullable(),
     album: z.string(),
     artist: z.string(),

@@ -5,6 +5,7 @@ import AnimatedBars from '@/icons/AnimatedBars'
 
 interface LibraryTrackEntry {
   trackId: number
+  channelTrackId: null
   title: string
   artist: string
   album: string
@@ -13,6 +14,7 @@ interface LibraryTrackEntry {
 
 export const toLibraryTrackEntry = (track: UserTrack): LibraryTrackEntry => ({
   trackId: track.tid,
+  channelTrackId: null,
   title: track.title || track.filename,
   artist: track.artist ?? '',
   album: track.album ?? '',
@@ -21,20 +23,18 @@ export const toLibraryTrackEntry = (track: UserTrack): LibraryTrackEntry => ({
 
 interface Props {
   readonly tracks: readonly LibraryTrackEntry[]
-  readonly tracksCount: number
   readonly canInfinitelyScroll: boolean
   readonly onInfiniteScroll: () => void
 }
 
 export const LibraryTracksList: React.FC<Props> = ({
   tracks,
-  tracksCount,
   canInfinitelyScroll,
   onInfiniteScroll,
 }) => {
   return (
     <section className={'h-full'}>
-      <TrackList tracks={tracks} currentTrack={null} />
+      <TrackList tracks={tracks} currentTrack={null} onThreeDotsClick={() => {}} />
       {canInfinitelyScroll && (
         <InfiniteScroll key={tracks.length} offset={200} onReach={onInfiniteScroll}>
           <div className={'text-center p-2'}>

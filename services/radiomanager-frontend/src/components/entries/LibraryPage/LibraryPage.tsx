@@ -60,7 +60,6 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
         content={
           <LibraryTracksList
             tracks={trackEntries}
-            tracksCount={userTracks.length}
             canInfinitelyScroll={canInfinitelyScroll}
             onInfiniteScroll={handleInfiniteScroll}
           />

@@ -1,6 +1,8 @@
 import { useMediaUploader } from '@/modules/MediaUploader/index'
 import useFileSelect from '@/hooks/useFileSelect'
 import { scale } from '@/utils/math'
+import { UploadMediaFileIcon } from '@/modules/MediaUploader/icons/UploadMediaFileIcon'
+import cn from 'classnames'
 
 interface Props {
   readonly targetChannelId?: number
@@ -21,8 +23,15 @@ export const MediaUploaderComponent: React.FC<Props> = ({ targetChannelId }) => 
 
   if (!currentQueueItem) {
     return (
-      <div className={'fixed z-20 bottom-4 left-4 rounded-lg bg-gray-200 shadow p-2'}>
-        <button onClick={select}>Upload...</button>
+      <div
+        className={cn([
+          'fixed z-20 bottom-4 left-4 rounded-lg bg-gray-200 shadow p-2',
+          'opacity-70 hover:opacity-100 transition-opacity duration-300',
+        ])}
+      >
+        <button onClick={select} title={'Upload media file...'}>
+          <UploadMediaFileIcon className={'w-10'} />
+        </button>
       </div>
     )
   }

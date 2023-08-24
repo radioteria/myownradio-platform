@@ -1,6 +1,6 @@
 import { useAtom } from 'jotai'
 import { MediaUploadQueueItem, MediaUploadResult, UploadedMediaTrack } from './MediaUploaderTypes'
-import { createMediaUploaderStore } from './MediaUploaderStore'
+import { MediaUploaderStore } from './MediaUploaderStore'
 
 export interface MediaUploader {
   readonly uploadQueue: readonly MediaUploadQueueItem[]
@@ -11,7 +11,7 @@ export interface MediaUploader {
   readonly abort: () => void
 }
 
-const store = createMediaUploaderStore()
+const store = new MediaUploaderStore()
 
 export const useMediaUploader = (): MediaUploader => {
   const [lastUploadedTrack] = useAtom(store.lastUploadedTrackAtom)

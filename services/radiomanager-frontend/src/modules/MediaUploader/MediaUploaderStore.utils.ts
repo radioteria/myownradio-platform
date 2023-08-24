@@ -12,7 +12,7 @@ export const pushToArrayAtom = <Value>(
   set(atom, newItems)
 }
 
-export const popFromArrayAtom = <Value>(
+export const shiftFromArrayAtom = <Value>(
   atom: PrimitiveAtom<readonly Value[]>,
   { get, set }: Store,
 ) => {

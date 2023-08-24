@@ -125,5 +125,26 @@ export async function uploadTrackToChannel(
   return tracks[0]
 }
 
+export async function deleteTracksById(trackIds: readonly number[]) {
+  const form = new FormData()
+  form.set('track_id', trackIds.join(','))
+
+  await fetch(`${BACKEND_BASE_URL}/api/v2/track/delete`, {
+    method: 'POST',
+    body: form,
+  })
+}
+
+export async function deleteTracksFromChannelById(uniqueIds: readonly string[], channelId: number) {
+  const form = new FormData()
+  form.set('stream_id', String(channelId))
+  form.set('unique_ids', uniqueIds.join(','))
+
+  await fetch(`${BACKEND_BASE_URL}/api/v2/stream/removeTracks`, {
+    method: 'POST',
+    body: form,
+  })
+}
+
 // Get Chunk
 // http://localhost:40180/getchunk/380

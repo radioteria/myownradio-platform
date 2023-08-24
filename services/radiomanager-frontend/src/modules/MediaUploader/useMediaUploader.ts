@@ -13,6 +13,8 @@ export interface MediaUploader {
 
 const store = new MediaUploaderStore()
 
+store.init()
+
 export const useMediaUploader = (): MediaUploader => {
   const [lastUploadedTrack] = useAtom(store.lastUploadedTrackAtom)
   const [uploadQueue] = useAtom(store.uploadQueueAtom)

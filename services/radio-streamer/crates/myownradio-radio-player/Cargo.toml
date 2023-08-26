@@ -55,7 +55,7 @@ version = "0.13.3"
 features = ["process"]
 
 [dependencies.serde]
-version = "1.0.163"
+version = "1.0.188"
 features = ["derive"]
 
 [dependencies.tracing]

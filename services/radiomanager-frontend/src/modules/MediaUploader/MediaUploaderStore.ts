@@ -103,6 +103,7 @@ export class MediaUploaderStore {
                 type: UploadedTrackType.CHANNEL as const,
                 track: {
                   ...track,
+                  uniqueId: track.uniqueId,
                   artist: track.artist ?? '',
                   album: track.album ?? '',
                   genre: track.genre ?? '',

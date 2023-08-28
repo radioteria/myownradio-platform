@@ -59,25 +59,18 @@ export const ChannelPage: React.FC<Props> = ({
 
     // The last uploaded track is not related to that channel
     if (
-      lastUploadedTrack.type === UploadedTrackType.CHANNEL &&
+      lastUploadedTrack.type !== UploadedTrackType.CHANNEL ||
       lastUploadedTrack.channelId !== channelId
     ) {
       return
     }
 
-    // We didn't scroll to the end of the list yet
+    // We haven't scrolled to the end of the tracks list
     if (canInfinitelyScroll) {
       return
     }
 
-    // TODO Fix track typing mess
-    addTrackEntry({
-      ...lastUploadedTrack.track,
-      album: lastUploadedTrack.track.album ?? '',
-      artist: lastUploadedTrack.track.artist ?? '',
-      genre: lastUploadedTrack.track.genre ?? '',
-      trackNumber: String(lastUploadedTrack.track.trackNumber),
-    })
+    addTrackEntry(lastUploadedTrack.track)
   }, [lastUploadedTrack, addTrackEntry, canInfinitelyScroll, channelId])
 
   const handleDeleteTracks = (trackIds: readonly number[]) => {

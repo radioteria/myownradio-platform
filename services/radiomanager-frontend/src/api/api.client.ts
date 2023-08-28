@@ -100,6 +100,14 @@ export async function uploadTrackToLibrary(file: File, abortSignal: AbortSignal)
   return tracks[0]
 }
 
+const UploadTrackToChannelResponseSchema = z.object({
+  code: z.literal(1),
+  message: z.literal('OK'),
+  data: z.object({
+    tracks: z.intersection(z.array(UserTrackSchema), z.array(z.object({ uniqueId: z.string() }))),
+  }),
+})
+
 export async function uploadTrackToChannel(
   channelId: number,
   file: File,
@@ -116,7 +124,7 @@ export async function uploadTrackToChannel(
     credentials: 'include',
   })
     .then((res) => res.json())
-    .then((json) => UploadTrackResponseSchema.parse(json).data)
+    .then((json) => UploadTrackToChannelResponseSchema.parse(json).data)
 
   if (tracks.length === 0) {
     throw new Error('Unable to upload track to channel')

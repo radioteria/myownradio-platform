@@ -2,7 +2,6 @@ import { UserTrack } from '@/api/api.types'
 import { TracksList } from '@/components/common/TrackList'
 import { InfiniteScroll } from '@/components/common/InfiniteScroll/InfiniteScroll'
 import AnimatedBars from '@/icons/AnimatedBars'
-import { TrackItem } from '@/components/common/TrackList/types'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 import { useRef } from 'react'
 
@@ -41,7 +40,7 @@ export const LibraryTracksList: React.FC<Props> = ({
   const contextMenuRef = useRef(null)
 
   const handleTracksListMenu = (
-    selectedTracks: readonly TrackItem[],
+    selectedTracks: readonly LibraryTrackEntry[],
     event: React.MouseEvent<HTMLElement>,
   ) => {
     contextMenu.show({

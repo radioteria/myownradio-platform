@@ -5,22 +5,22 @@ import { isModifierKeyPressed } from './helpers'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useListItemSelector } from '@/hooks/useListItemSelector'
 
-interface Props {
-  readonly tracks: readonly TrackItem[]
+interface Props<Item extends TrackItem> {
+  readonly tracks: readonly Item[]
   readonly currentTrack: CurrentTrack | null
   readonly onTracksListMenu: (
-    selectedTracks: readonly TrackItem[],
+    selectedTracks: readonly Item[],
     event: React.MouseEvent<HTMLElement>,
   ) => void
   readonly contextMenuRef: MutableRefObject<null>
 }
 
-export const TrackList: React.FC<Props> = ({
+export function TrackList<Item extends TrackItem>({
   tracks,
   currentTrack,
   onTracksListMenu,
   contextMenuRef,
-}) => {
+}: Props<Item>) {
   const listRef = useRef(null)
   const selector = useListItemSelector(tracks)
 

@@ -9,7 +9,7 @@ import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { ChannelTracksList, toChannelTrackEntry } from './ChannelTracksList'
 import { ChannelControls } from './ChannelControls'
 import { NowPlayingProvider } from '@/modules/NowPlaying'
-import { getChannelTracks, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
+import { deleteTracksById, getChannelTracks, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
 import { useMediaUploader, MediaUploaderComponent } from '@/modules/MediaUploader'
 import { UploadedTrackType } from '@/modules/MediaUploader/MediaUploaderTypes'
 
@@ -80,6 +80,18 @@ export const ChannelPage: React.FC<Props> = ({
     })
   }, [lastUploadedTrack, addTrackEntry, canInfinitelyScroll, channelId])
 
+  const handleDeleteTracks = (trackIds: readonly number[]) => {
+    const idsSet = new Set(trackIds)
+    const updatedTrackEntries = trackEntries.filter(({ trackId }) => !idsSet.has(trackId))
+
+    setTrackEntries(updatedTrackEntries)
+
+    deleteTracksById(trackIds).catch((error) => {
+      // Restore tracks after unsuccessful delete
+      setTrackEntries(trackEntries)
+    })
+  }
+
   return (
     <>
       <LibraryLayout
@@ -92,6 +104,7 @@ export const ChannelPage: React.FC<Props> = ({
             tracksCount={userChannelTracks.length}
             canInfinitelyScroll={canInfinitelyScroll}
             onInfiniteScroll={handleInfiniteScroll}
+            onThreeDotsClick={() => {}}
           />
         }
         rightSidebar={

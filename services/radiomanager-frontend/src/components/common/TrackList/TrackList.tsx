@@ -27,9 +27,7 @@ export const TrackList: React.FC<Props> = ({ tracks, currentTrack, onTracksListM
 
   const handleTreeDotsClick = (itemIndex: number, event: React.MouseEvent<HTMLElement>) => {
     selector.selectOnly(itemIndex)
-    const selectedTracks = selector.listItems
-      .filter(({ isSelected }) => isSelected)
-      .map(({ item }) => item)
+    const selectedTracks = tracks.filter((_, index) => index === itemIndex)
     onTracksListMenu(selectedTracks)
   }
 

@@ -38,7 +38,7 @@ export const TrackListItem: React.FC<Props> = ({
     <li
       key={track.trackId}
       className={cn([
-        'flex items-center border-gray-800 h-12 relative cursor-pointer',
+        'flex items-center border-gray-800 h-12 relative cursor-pointer select-none',
         { 'bg-morblue-600 text-gray-300': isSelected },
       ])}
       onClick={handleClick}

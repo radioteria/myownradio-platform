@@ -8,7 +8,7 @@ import { StreamOverlay } from '@/components/StreamOverlay'
 import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { ChannelTracksList, toChannelTrackEntry } from './ChannelTracksList'
 import { ChannelControls } from './ChannelControls'
-import { NowPlayingProvider } from '@/modules/NowPlaying'
+import { NowPlayingProvider, useNowPlaying } from '@/modules/NowPlaying'
 import {
   deleteTracksById,
   getChannelTracks,
@@ -74,16 +74,22 @@ export const ChannelPage: React.FC<Props> = ({
     addTrackEntry(lastUploadedTrack.track)
   }, [lastUploadedTrack, addTrackEntry, canInfinitelyScroll, channelId])
 
+  const { update: refreshNowPlaying } = useNowPlaying()
+
   const handleDeletingTracks = (trackIds: readonly number[]) => {
     const idsSet = new Set(trackIds)
     const updatedTrackEntries = trackEntries.filter(({ trackId }) => !idsSet.has(trackId))
 
     setTrackEntries(updatedTrackEntries)
 
-    deleteTracksById(trackIds).catch((error) => {
-      // Restore tracks after unsuccessful delete
-      setTrackEntries(trackEntries)
-    })
+    deleteTracksById(trackIds)
+      .then(() => {
+        refreshNowPlaying()
+      })
+      .catch((error) => {
+        // Restore tracks after unsuccessful delete
+        setTrackEntries(trackEntries)
+      })
   }
 
   const handleRemovingTracksFromChannel = (uniqueIds: readonly string[]) => {
@@ -92,10 +98,14 @@ export const ChannelPage: React.FC<Props> = ({
 
     setTrackEntries(updatedTrackEntries)
 
-    removeTracksFromChannelById(uniqueIds, channelId).catch((error) => {
-      // Restore tracks after unsuccessful delete
-      setTrackEntries(trackEntries)
-    })
+    removeTracksFromChannelById(uniqueIds, channelId)
+      .then(() => {
+        refreshNowPlaying()
+      })
+      .catch((error) => {
+        // Restore tracks after unsuccessful delete
+        setTrackEntries(trackEntries)
+      })
   }
 
   return (

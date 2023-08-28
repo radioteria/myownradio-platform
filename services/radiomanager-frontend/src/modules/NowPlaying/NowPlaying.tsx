@@ -17,7 +17,7 @@ export const useNowPlaying = () => {
   return ctx
 }
 
-const UPDATE_INTERVAL = 5_000
+const UPDATE_INTERVAL = 10_000
 
 interface Props {
   readonly channelId: number

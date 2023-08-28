@@ -7,7 +7,6 @@ import { useRef } from 'react'
 
 interface LibraryTrackEntry {
   trackId: number
-  channelTrackId: null
   title: string
   artist: string
   album: string
@@ -16,7 +15,6 @@ interface LibraryTrackEntry {
 
 export const toLibraryTrackEntry = (track: UserTrack): LibraryTrackEntry => ({
   trackId: track.tid,
-  channelTrackId: null,
   title: track.title || track.filename,
   artist: track.artist ?? '',
   album: track.album ?? '',

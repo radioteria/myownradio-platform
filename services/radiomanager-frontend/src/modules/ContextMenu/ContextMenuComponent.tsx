@@ -26,7 +26,7 @@ export const ContextMenuComponent: React.FC<Props> = ({
       tabIndex={-1}
       ref={menuRef}
       onBlur={onBlur}
-      className={'bg-morblue-400 py-2 outline-none rounded-md fixed text-sm'}
+      className={'bg-morblue-400 py-2 outline-none rounded-md fixed text-sm cursor-pointer'}
       style={{
         left: `${actualPosition.x}px`,
         top: `${actualPosition.y}px`,

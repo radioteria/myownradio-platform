@@ -9,7 +9,12 @@ import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { ChannelTracksList, toChannelTrackEntry } from './ChannelTracksList'
 import { ChannelControls } from './ChannelControls'
 import { NowPlayingProvider } from '@/modules/NowPlaying'
-import { deleteTracksById, getChannelTracks, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
+import {
+  deleteTracksById,
+  getChannelTracks,
+  MAX_TRACKS_PER_REQUEST,
+  removeTracksFromChannelById,
+} from '@/api/api.client'
 import { useMediaUploader, MediaUploaderComponent } from '@/modules/MediaUploader'
 import { UploadedTrackType } from '@/modules/MediaUploader/MediaUploaderTypes'
 
@@ -31,10 +36,6 @@ export const ChannelPage: React.FC<Props> = ({
 
   const addTrackEntry = useCallback((track: UserChannelTrack) => {
     setTrackEntries((entries) => [...entries, toChannelTrackEntry(track)])
-  }, [])
-
-  const removeTrackEntry = useCallback((indexToRemove: number) => {
-    setTrackEntries((entries) => entries.filter((_, index) => index !== indexToRemove))
   }, [])
 
   const initialCanInfinitelyScroll = initialTrackEntries.length === MAX_TRACKS_PER_REQUEST
@@ -73,13 +74,25 @@ export const ChannelPage: React.FC<Props> = ({
     addTrackEntry(lastUploadedTrack.track)
   }, [lastUploadedTrack, addTrackEntry, canInfinitelyScroll, channelId])
 
-  const handleDeleteTracks = (trackIds: readonly number[]) => {
+  const handleDeletingTracks = (trackIds: readonly number[]) => {
     const idsSet = new Set(trackIds)
     const updatedTrackEntries = trackEntries.filter(({ trackId }) => !idsSet.has(trackId))
 
     setTrackEntries(updatedTrackEntries)
 
     deleteTracksById(trackIds).catch((error) => {
+      // Restore tracks after unsuccessful delete
+      setTrackEntries(trackEntries)
+    })
+  }
+
+  const handleRemovingTracksFromChannel = (uniqueIds: readonly string[]) => {
+    const idsSet = new Set(uniqueIds)
+    const updatedTrackEntries = trackEntries.filter(({ uniqueId }) => !idsSet.has(uniqueId))
+
+    setTrackEntries(updatedTrackEntries)
+
+    removeTracksFromChannelById(uniqueIds, channelId).catch((error) => {
       // Restore tracks after unsuccessful delete
       setTrackEntries(trackEntries)
     })
@@ -94,10 +107,10 @@ export const ChannelPage: React.FC<Props> = ({
           <ChannelTracksList
             channelId={channelId}
             tracks={trackEntries}
-            tracksCount={userChannelTracks.length}
             canInfinitelyScroll={canInfinitelyScroll}
             onInfiniteScroll={handleInfiniteScroll}
-            onThreeDotsClick={() => {}}
+            onDeleteTracks={handleDeletingTracks}
+            onRemoveTracksFromChannel={handleRemovingTracksFromChannel}
           />
         }
         rightSidebar={

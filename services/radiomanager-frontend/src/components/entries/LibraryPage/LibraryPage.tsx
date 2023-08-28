@@ -52,7 +52,7 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
     })
   }
 
-  const handleDeleteTracks = (trackIds: readonly number[]) => {
+  const handleDeletingTracks = (trackIds: readonly number[]) => {
     const idsSet = new Set(trackIds)
     const updatedTrackEntries = trackEntries.filter(({ trackId }) => !idsSet.has(trackId))
 
@@ -74,7 +74,7 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
             tracks={trackEntries}
             canInfinitelyScroll={canInfinitelyScroll}
             onInfiniteScroll={handleInfiniteScroll}
-            onDeleteTracks={handleDeleteTracks}
+            onDeleteTracks={handleDeletingTracks}
           />
         }
         rightSidebar={null}

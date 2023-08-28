@@ -51,7 +51,7 @@ export const LibraryTracksList: React.FC<Props> = ({
             onDeleteTracks(selectedTracks.map(({ trackId }) => trackId))
           },
           type: MenuItemType.Item,
-          label: 'Delete track(s)',
+          label: 'Remove from your library',
         },
       ],
       portalElement: contextMenuRef?.current ?? undefined,

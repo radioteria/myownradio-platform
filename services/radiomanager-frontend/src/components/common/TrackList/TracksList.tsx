@@ -15,7 +15,7 @@ interface Props<Item extends TrackItem> {
   readonly contextMenuRef: MutableRefObject<null>
 }
 
-export function TrackList<Item extends TrackItem>({
+export function TracksList<Item extends TrackItem>({
   tracks,
   currentTrack,
   onTracksListMenu,

@@ -1,4 +1,4 @@
-import { TrackList } from '@/components/common/TrackList'
+import { TracksList } from '@/components/common/TrackList'
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { UserChannelTrack } from '@/api/api.types'
 import { InfiniteScroll } from '@/components/common/InfiniteScroll/InfiniteScroll'
@@ -49,7 +49,7 @@ export const ChannelTracksList: React.FC<Props> = ({
 
   return (
     <section className={'h-full'}>
-      <TrackList tracks={tracks} currentTrack={currentTrack} onThreeDotsClick={onThreeDotsClick} />
+      <TracksList tracks={tracks} currentTrack={currentTrack} onThreeDotsClick={onThreeDotsClick} />
       {canInfinitelyScroll && (
         <InfiniteScroll key={tracks.length} offset={200} onReach={onInfiniteScroll}>
           <div className={'text-center p-2'}>

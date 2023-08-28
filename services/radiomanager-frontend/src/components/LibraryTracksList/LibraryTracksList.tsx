@@ -1,5 +1,5 @@
 import { UserTrack } from '@/api/api.types'
-import { TrackList } from '@/components/common/TrackList'
+import { TracksList } from '@/components/common/TrackList'
 import { InfiniteScroll } from '@/components/common/InfiniteScroll/InfiniteScroll'
 import AnimatedBars from '@/icons/AnimatedBars'
 import { TrackItem } from '@/components/common/TrackList/types'
@@ -64,7 +64,7 @@ export const LibraryTracksList: React.FC<Props> = ({
 
   return (
     <section className={'h-full'}>
-      <TrackList
+      <TracksList
         tracks={tracks}
         currentTrack={null}
         onTracksListMenu={handleTracksListMenu}

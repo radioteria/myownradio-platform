@@ -1,19 +1,20 @@
 import cn from 'classnames'
-import AnimatedBars from '@/icons/AnimatedBars'
-import { Duration } from '@/components/Duration/Duration'
+import React from 'react'
+import { AnimatedBars } from '@/icons/AnimatedBars'
 import { ThreeDots } from '@/icons/ThreeDots'
+import { Duration } from '@/components/Duration/Duration'
 import { CurrentTrack, TrackItem } from './types'
 
 interface Props {
   track: TrackItem
   currentTrack: CurrentTrack | null
   index: number
-  onRemoveFromLibrary: () => void
-  onRemoveFromChannel?: () => void
 
   isSelected: boolean
-  onSelect: () => void
-  onThreeDotsClick: () => void
+  isMainSelected: boolean
+  onSelect: (event: React.MouseEvent<HTMLElement>) => void
+
+  onThreeDotsClick: (event: React.MouseEvent<HTMLElement>) => void
 }
 
 export const TrackListItem: React.FC<Props> = ({
@@ -21,10 +22,17 @@ export const TrackListItem: React.FC<Props> = ({
   currentTrack,
   index,
   isSelected,
+  isMainSelected,
   onSelect,
   onThreeDotsClick,
 }) => {
   const isCurrentTrack = currentTrack?.index === index
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault()
+
+    onSelect(event)
+  }
 
   return (
     <li
@@ -33,10 +41,7 @@ export const TrackListItem: React.FC<Props> = ({
         'flex items-center border-gray-800 h-12 relative cursor-pointer',
         { 'bg-morblue-600 text-gray-300': isSelected },
       ])}
-      onClick={(ev) => {
-        ev.preventDefault()
-        onSelect()
-      }}
+      onClick={handleClick}
     >
       <div className="p-2 pl-4 w-12 flex-shrink-0 z-10 text-right">
         {isCurrentTrack ? <AnimatedBars size={12} /> : <>{index + 1}</>}
@@ -52,8 +57,8 @@ export const TrackListItem: React.FC<Props> = ({
       <div
         className={cn([
           'p-2 pr-4 w-10 flex-shrink-0 text-right z-10 cursor-pointer',
-          { 'opacity-0': !isSelected },
-          { 'opacity-100': isSelected },
+          { 'opacity-0': !isMainSelected },
+          { 'opacity-100': isMainSelected },
         ])}
       >
         <button onClick={onThreeDotsClick}>

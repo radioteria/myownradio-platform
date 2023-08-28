@@ -1,6 +1,5 @@
 export interface TrackItem {
   trackId: number
-  channelTrackId: string | null
   title: string
   artist: string | null
   album: string

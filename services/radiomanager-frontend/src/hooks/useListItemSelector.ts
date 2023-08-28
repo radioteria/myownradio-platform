@@ -87,5 +87,5 @@ export const useListItemSelector = <I>(initialItems: readonly I[]) => {
     setListItems((items) => items.map(({ item }) => makeListItem(item)))
   }
 
-  return { listItems, select, selectOnly, discard, selectTo, reset, toggle }
+  return { listItems, select, selectOnly, discard, selectTo, reset, toggle, cursor }
 }

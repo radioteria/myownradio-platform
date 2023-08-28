@@ -2,7 +2,7 @@ interface Props {
   size: number
 }
 
-const AnimatedBars: React.FC<Props> = ({ size }) => {
+export const AnimatedBars: React.FC<Props> = ({ size }) => {
   return (
     <>
       <svg

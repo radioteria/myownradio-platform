@@ -143,14 +143,18 @@ class TracksModel implements Injectable, SingletonInterface
             throw new ControllerException(I18n::tr("UPLOAD_NO_SERVERS", [$file["name"]]));
         }
 
-        $this->addToStream($track, $addToStream, $upNext);
+        $uniqueId = $this->addToStream($track, $addToStream, $upNext);
 
         error_log(sprintf("User #%d uploaded new track: %s (upload time left: %d seconds)",
             $track->getUserID(), $track->getFileName(), $uploadTimeLeft / 1000));
 
-        return Playlist::getInstance()->getOneTrack($track->getID());
+        $uploadedTrack = Playlist::getInstance()->getOneTrack($track->getID());
 
+        $uniqueId->then(function ($uniqueId) use (&$uploadedTrack) {
+            $uploadedTrack['unique_id'] = $uniqueId;
+        });
 
+        return $uploadedTrack;
     }
 
     /**
@@ -173,9 +177,10 @@ class TracksModel implements Injectable, SingletonInterface
 
     private function addToStream(Track $track, Optional $stream, $upNext = false)
     {
-
-        $stream->then(function ($stream_id) use ($track, $upNext) {
-            (new PlaylistModel($stream_id))->addTracks($track->getID(), $upNext);
+        return $stream->map(function ($stream_id) use ($track, $upNext) {
+            $uniqueIds = [];
+            (new PlaylistModel($stream_id))->addTracks($track->getID(), $upNext, $uniqueIds);
+            return $uniqueIds[0];
         });
 
     }

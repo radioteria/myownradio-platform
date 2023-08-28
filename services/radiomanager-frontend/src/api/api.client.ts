@@ -125,17 +125,32 @@ export async function uploadTrackToChannel(
   return tracks[0]
 }
 
+const DeleteTracksResponseSchema = z.object({
+  code: z.literal(1),
+  message: z.literal('OK'),
+  data: z.null(),
+})
+
 export async function deleteTracksById(trackIds: readonly number[]) {
   const form = new FormData()
   form.set('track_id', trackIds.join(','))
 
-  await fetch(`${BACKEND_BASE_URL}/api/v2/track/delete`, {
+  const nullResult = await fetch(`${BACKEND_BASE_URL}/api/v2/track/delete`, {
     method: 'POST',
     body: form,
+    credentials: 'include',
   })
+    .then((res) => res.json())
+    .then((json) => DeleteTracksResponseSchema.parse(json).data)
 }
 
-export async function deleteTracksFromChannelById(uniqueIds: readonly string[], channelId: number) {
+const RemoveTracksFromChannelResponseSchema = z.object({
+  code: z.literal(1),
+  message: z.literal('OK'),
+  data: z.null(),
+})
+
+export async function removeTracksFromChannelById(uniqueIds: readonly string[], channelId: number) {
   const form = new FormData()
   form.set('stream_id', String(channelId))
   form.set('unique_ids', uniqueIds.join(','))
@@ -143,7 +158,10 @@ export async function deleteTracksFromChannelById(uniqueIds: readonly string[], 
   await fetch(`${BACKEND_BASE_URL}/api/v2/stream/removeTracks`, {
     method: 'POST',
     body: form,
+    credentials: 'include',
   })
+    .then((res) => res.json())
+    .then((json) => RemoveTracksFromChannelResponseSchema.parse(json).data)
 }
 
 // Get Chunk

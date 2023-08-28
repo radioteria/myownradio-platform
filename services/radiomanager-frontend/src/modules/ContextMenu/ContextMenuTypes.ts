@@ -12,7 +12,7 @@ export type MenuItem =
   | {
       type: MenuItemType.Item
       label: string
-      onClick: () => void
+      onClick: (event: React.MouseEvent<HTMLElement>) => void
     }
   | {
       type: MenuItemType.Separator

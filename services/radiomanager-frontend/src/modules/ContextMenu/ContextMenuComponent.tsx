@@ -1,14 +1,16 @@
-import { FocusEvent, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { MenuContext, MenuItemType } from '@/modules/ContextMenu'
 import { useMenuPosition } from '@/modules/ContextMenu/hooks/useMenuPosition'
 
 interface Props {
   context: MenuContext
-  onBlur: (ev: FocusEvent<HTMLDivElement>) => void
+  onBlur: (ev: React.FocusEvent<HTMLElement>) => void
+  onClick: (ev: React.MouseEvent<HTMLElement>) => void
 }
 
 export const ContextMenuComponent: React.FC<Props> = ({
   onBlur,
+  onClick,
   context: { position, menuItems },
 }) => {
   const menuRef = useRef<HTMLDivElement | null>(null)
@@ -24,7 +26,7 @@ export const ContextMenuComponent: React.FC<Props> = ({
       tabIndex={-1}
       ref={menuRef}
       onBlur={onBlur}
-      className={'bg-morblue-400 py-2 outline-none rounded-md fixed text-sm'}
+      className={'bg-morblue-400 py-2 outline-none rounded-md fixed text-sm cursor-pointer'}
       style={{
         left: `${actualPosition.x}px`,
         top: `${actualPosition.y}px`,
@@ -40,6 +42,10 @@ export const ContextMenuComponent: React.FC<Props> = ({
                   <li
                     key={index}
                     className={'px-4 py-2 hover:bg-morblue-300 text-gray-200 pointer truncate'}
+                    onClick={(event) => {
+                      menuItem.onClick(event)
+                      onClick(event)
+                    }}
                   >
                     {menuItem.label}
                   </li>

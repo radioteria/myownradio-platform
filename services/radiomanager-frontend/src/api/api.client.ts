@@ -100,6 +100,14 @@ export async function uploadTrackToLibrary(file: File, abortSignal: AbortSignal)
   return tracks[0]
 }
 
+const UploadTrackToChannelResponseSchema = z.object({
+  code: z.literal(1),
+  message: z.literal('OK'),
+  data: z.object({
+    tracks: z.intersection(z.array(UserTrackSchema), z.array(z.object({ uniqueId: z.string() }))),
+  }),
+})
+
 export async function uploadTrackToChannel(
   channelId: number,
   file: File,
@@ -116,13 +124,52 @@ export async function uploadTrackToChannel(
     credentials: 'include',
   })
     .then((res) => res.json())
-    .then((json) => UploadTrackResponseSchema.parse(json).data)
+    .then((json) => UploadTrackToChannelResponseSchema.parse(json).data)
 
   if (tracks.length === 0) {
     throw new Error('Unable to upload track to channel')
   }
 
   return tracks[0]
+}
+
+const DeleteTracksResponseSchema = z.object({
+  code: z.literal(1),
+  message: z.literal('OK'),
+  data: z.null(),
+})
+
+export async function deleteTracksById(trackIds: readonly number[]) {
+  const form = new FormData()
+  form.set('track_id', trackIds.join(','))
+
+  const nullResult = await fetch(`${BACKEND_BASE_URL}/api/v2/track/delete`, {
+    method: 'POST',
+    body: form,
+    credentials: 'include',
+  })
+    .then((res) => res.json())
+    .then((json) => DeleteTracksResponseSchema.parse(json).data)
+}
+
+const RemoveTracksFromChannelResponseSchema = z.object({
+  code: z.literal(1),
+  message: z.literal('OK'),
+  data: z.null(),
+})
+
+export async function removeTracksFromChannelById(uniqueIds: readonly string[], channelId: number) {
+  const form = new FormData()
+  form.set('stream_id', String(channelId))
+  form.set('unique_ids', uniqueIds.join(','))
+
+  await fetch(`${BACKEND_BASE_URL}/api/v2/stream/removeTracks`, {
+    method: 'POST',
+    body: form,
+    credentials: 'include',
+  })
+    .then((res) => res.json())
+    .then((json) => RemoveTracksFromChannelResponseSchema.parse(json).data)
 }
 
 // Get Chunk

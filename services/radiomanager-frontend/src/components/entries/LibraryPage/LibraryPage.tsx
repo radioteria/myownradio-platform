@@ -2,7 +2,7 @@
 
 import { User, UserChannel, UserTrack } from '@/api/api.types'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { getLibraryTracks, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
+import { getLibraryTracks, deleteTracksById, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
 import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { Header } from '@/components/Header'
 import { Sidebar } from '@/components/Sidebar'
@@ -10,8 +10,7 @@ import {
   LibraryTracksList,
   toLibraryTrackEntry,
 } from '@/components/LibraryTracksList/LibraryTracksList'
-import { useMediaUploader } from '@/modules/MediaUploader'
-import { MediaUploader } from '@/components/common/MediaUploader/MediaUploader'
+import { useMediaUploader, MediaUploaderComponent } from '@/modules/MediaUploader'
 
 interface Props {
   user: User
@@ -53,6 +52,18 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
     })
   }
 
+  const handleDeletingTracks = (trackIds: readonly number[]) => {
+    const idsSet = new Set(trackIds)
+    const updatedTrackEntries = trackEntries.filter(({ trackId }) => !idsSet.has(trackId))
+
+    setTrackEntries(updatedTrackEntries)
+
+    deleteTracksById(trackIds).catch((error) => {
+      // Restore tracks after unsuccessful delete
+      setTrackEntries(trackEntries)
+    })
+  }
+
   return (
     <>
       <LibraryLayout
@@ -61,14 +72,14 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
         content={
           <LibraryTracksList
             tracks={trackEntries}
-            tracksCount={userTracks.length}
             canInfinitelyScroll={canInfinitelyScroll}
             onInfiniteScroll={handleInfiniteScroll}
+            onDeleteTracks={handleDeletingTracks}
           />
         }
         rightSidebar={null}
       />
-      <MediaUploader />
+      <MediaUploaderComponent />
     </>
   )
 }

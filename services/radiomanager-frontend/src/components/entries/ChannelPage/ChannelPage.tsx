@@ -9,10 +9,14 @@ import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { ChannelTracksList, toChannelTrackEntry } from './ChannelTracksList'
 import { ChannelControls } from './ChannelControls'
 import { NowPlayingProvider } from '@/modules/NowPlaying'
-import { getChannelTracks, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
-import { useMediaUploader } from '@/modules/MediaUploader'
+import {
+  deleteTracksById,
+  getChannelTracks,
+  MAX_TRACKS_PER_REQUEST,
+  removeTracksFromChannelById,
+} from '@/api/api.client'
+import { useMediaUploader, MediaUploaderComponent } from '@/modules/MediaUploader'
 import { UploadedTrackType } from '@/modules/MediaUploader/MediaUploaderTypes'
-import { MediaUploader } from '@/components/common/MediaUploader/MediaUploader'
 
 interface Props {
   channelId: number
@@ -32,10 +36,6 @@ export const ChannelPage: React.FC<Props> = ({
 
   const addTrackEntry = useCallback((track: UserChannelTrack) => {
     setTrackEntries((entries) => [...entries, toChannelTrackEntry(track)])
-  }, [])
-
-  const removeTrackEntry = useCallback((indexToRemove: number) => {
-    setTrackEntries((entries) => entries.filter((_, index) => index !== indexToRemove))
   }, [])
 
   const initialCanInfinitelyScroll = initialTrackEntries.length === MAX_TRACKS_PER_REQUEST
@@ -60,26 +60,43 @@ export const ChannelPage: React.FC<Props> = ({
 
     // The last uploaded track is not related to that channel
     if (
-      lastUploadedTrack.type === UploadedTrackType.CHANNEL &&
+      lastUploadedTrack.type !== UploadedTrackType.CHANNEL ||
       lastUploadedTrack.channelId !== channelId
     ) {
       return
     }
 
-    // We didn't scroll to the end of the list yet
+    // We haven't scrolled to the end of the tracks list
     if (canInfinitelyScroll) {
       return
     }
 
-    // TODO Fix track typing mess
-    addTrackEntry({
-      ...lastUploadedTrack.track,
-      album: lastUploadedTrack.track.album ?? '',
-      artist: lastUploadedTrack.track.artist ?? '',
-      genre: lastUploadedTrack.track.genre ?? '',
-      trackNumber: String(lastUploadedTrack.track.trackNumber),
-    })
+    addTrackEntry(lastUploadedTrack.track)
   }, [lastUploadedTrack, addTrackEntry, canInfinitelyScroll, channelId])
+
+  const handleDeletingTracks = (trackIds: readonly number[]) => {
+    const idsSet = new Set(trackIds)
+    const updatedTrackEntries = trackEntries.filter(({ trackId }) => !idsSet.has(trackId))
+
+    setTrackEntries(updatedTrackEntries)
+
+    deleteTracksById(trackIds).catch((error) => {
+      // Restore tracks after unsuccessful delete
+      setTrackEntries(trackEntries)
+    })
+  }
+
+  const handleRemovingTracksFromChannel = (uniqueIds: readonly string[]) => {
+    const idsSet = new Set(uniqueIds)
+    const updatedTrackEntries = trackEntries.filter(({ uniqueId }) => !idsSet.has(uniqueId))
+
+    setTrackEntries(updatedTrackEntries)
+
+    removeTracksFromChannelById(uniqueIds, channelId).catch((error) => {
+      // Restore tracks after unsuccessful delete
+      setTrackEntries(trackEntries)
+    })
+  }
 
   return (
     <>
@@ -90,9 +107,10 @@ export const ChannelPage: React.FC<Props> = ({
           <ChannelTracksList
             channelId={channelId}
             tracks={trackEntries}
-            tracksCount={userChannelTracks.length}
             canInfinitelyScroll={canInfinitelyScroll}
             onInfiniteScroll={handleInfiniteScroll}
+            onDeleteTracks={handleDeletingTracks}
+            onRemoveTracksFromChannel={handleRemovingTracksFromChannel}
           />
         }
         rightSidebar={
@@ -102,7 +120,7 @@ export const ChannelPage: React.FC<Props> = ({
           </>
         }
       />
-      <MediaUploader targetChannelId={channelId} />
+      <MediaUploaderComponent targetChannelId={channelId} />
     </>
   )
 }

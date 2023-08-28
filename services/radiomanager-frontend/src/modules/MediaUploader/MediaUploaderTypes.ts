@@ -16,23 +16,28 @@ interface UploadedChannelTrack {
   readonly track: UserChannelTrack
 }
 
-export type UploadedTrack = UploadedLibraryTrack | UploadedChannelTrack
+export type UploadedMediaTrack = UploadedLibraryTrack | UploadedChannelTrack
 
-export enum UploadingStatus {
-  IDLE = 'IDLE',
-  UPLOADING = 'UPLOADING',
-}
-
-export interface UploadingState {
-  readonly status: UploadingStatus
-}
-
-export interface QueueItem {
+export interface MediaUploadQueueItem {
   readonly channelId?: number
   readonly file: File
 }
 
-export interface UploadErrorItem {
-  readonly error: unknown
-  readonly queueItem: QueueItem
+export enum MediaUploadResultStatus {
+  UPLOADED,
+  FAILED,
 }
+
+interface MediaUploadSuccessfulResult {
+  readonly status: MediaUploadResultStatus.UPLOADED
+  readonly queueItem: MediaUploadQueueItem
+  readonly uploadedTrack: UploadedMediaTrack
+}
+
+interface MediaUploadFailedResult {
+  readonly status: MediaUploadResultStatus.FAILED
+  readonly queueItem: MediaUploadQueueItem
+  readonly error: unknown
+}
+
+export type MediaUploadResult = MediaUploadSuccessfulResult | MediaUploadFailedResult

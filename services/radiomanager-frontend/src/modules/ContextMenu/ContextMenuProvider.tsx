@@ -35,16 +35,20 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
     hide()
   }
 
+  const handleClick = () => {
+    hide()
+  }
+
   return (
     <ContextMenuContext.Provider value={contextMenuService}>
       {context &&
         (context.portalElement ? (
           createPortal(
-            <ContextMenuComponent context={context} onBlur={handleBlur} />,
+            <ContextMenuComponent context={context} onBlur={handleBlur} onClick={handleClick} />,
             context.portalElement,
           )
         ) : (
-          <ContextMenuComponent context={context} onBlur={handleBlur} />
+          <ContextMenuComponent context={context} onBlur={handleBlur} onClick={handleClick} />
         ))}
       {children}
     </ContextMenuContext.Provider>

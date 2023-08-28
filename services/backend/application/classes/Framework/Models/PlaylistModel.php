@@ -98,12 +98,13 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface
     /**
      * @param $tracks
      * @param bool $upNext
+     * @param array $uniqueIds
      * @return $this
      */
-    public function addTracks($tracks, $upNext = false)
+    public function addTracks($tracks, bool $upNext = false, array &$uniqueIds = [])
     {
 
-        $this->doAtomic(function () use (&$tracks, &$upNext) {
+        $this->doAtomic(function () use (&$tracks, &$upNext, &$uniqueIds) {
 
             $tracksToAdd = explode(",", $tracks);
             $initialPosition = $this->tracks_count;
@@ -118,7 +119,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface
             foreach ($tracksToAdd as $track) {
 
                 Track::getByID($track)
-                    ->then(function ($trackObject) use (&$initialPosition, &$initialTimeOffset, &$nowPlaying) {
+                    ->then(function ($trackObject) use (&$initialPosition, &$initialTimeOffset, &$nowPlaying, &$uniqueIds) {
 
                         /** @var Track $trackObject */
 
@@ -153,6 +154,7 @@ class PlaylistModel extends Model implements \Countable, SingletonInterface
 
                         $initialTimeOffset += $trackObject->getDuration();
 
+                        $uniqueIds[] = $uniqueID;
                     });
 
             }

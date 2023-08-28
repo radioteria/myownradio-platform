@@ -4,7 +4,7 @@ import { getNowPlaying } from '@/api/api.client'
 
 const NowPlayingContext = createContext<{
   nowPlaying: NowPlaying | null
-  update: () => void
+  refresh: () => void
 } | null>(null)
 
 export const useNowPlaying = () => {
@@ -26,7 +26,7 @@ interface Props {
 
 export const NowPlayingProvider: React.FC<Props> = ({ channelId, children }) => {
   const [nowPlaying, setNowPlaying] = useState<null | NowPlaying>(null)
-  const [updated, update] = useReducer((x) => x + 1, 0)
+  const [refreshed, refresh] = useReducer((x) => x + 1, 0)
 
   useEffect(() => {
     let timeoutId: null | number = null
@@ -64,10 +64,10 @@ export const NowPlayingProvider: React.FC<Props> = ({ channelId, children }) => 
         window.clearTimeout(timeoutId)
       }
     }
-  }, [channelId, updated])
+  }, [channelId, refreshed])
 
   return (
-    <NowPlayingContext.Provider value={{ nowPlaying, update }}>
+    <NowPlayingContext.Provider value={{ nowPlaying, refresh }}>
       {children}
     </NowPlayingContext.Provider>
   )

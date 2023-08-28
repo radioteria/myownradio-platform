@@ -74,7 +74,7 @@ export const ChannelPage: React.FC<Props> = ({
     addTrackEntry(lastUploadedTrack.track)
   }, [lastUploadedTrack, addTrackEntry, canInfinitelyScroll, channelId])
 
-  const { update: refreshNowPlaying } = useNowPlaying()
+  const { refresh: refreshNowPlaying } = useNowPlaying()
 
   const handleDeletingTracks = (trackIds: readonly number[]) => {
     const idsSet = new Set(trackIds)

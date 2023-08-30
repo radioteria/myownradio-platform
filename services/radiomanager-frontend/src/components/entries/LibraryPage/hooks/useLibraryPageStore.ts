@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
 import { toLibraryTrackEntry } from '@/components/LibraryTracksList/LibraryTracksList'
-import { UserTrack } from '@/api/api.types'
-import { deleteTracksById, getLibraryTracks, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
+import { deleteTracksById, getLibraryTracks, MAX_TRACKS_PER_REQUEST } from '@/api'
 import { useHandleLibraryLastUploadedTrack } from './useHandleLibraryLastUploadedTrack'
+
+import type { UserTrack } from '@/api'
 
 export const useLibraryPageStore = (initialUserTracks: readonly UserTrack[]) => {
   const initialTrackEntries = useMemo(

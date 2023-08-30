@@ -1,14 +1,15 @@
 import { useCallback, useState } from 'react'
 import { toChannelTrackEntry } from '@/components/entries/ChannelPage/ChannelTracksList'
-import { UserChannelTrack } from '@/api/api.types'
 import {
+  MAX_TRACKS_PER_REQUEST,
   deleteTracksById,
   getChannelTracks,
-  MAX_TRACKS_PER_REQUEST,
   removeTracksFromChannelById,
-} from '@/api/api.client'
+} from '@/api'
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { useHandleChannelLastUploadedTrack } from './useHandleChannelLastUploadedTrack'
+
+import type { UserChannelTrack } from '@/api'
 
 export const useChannelPageStore = (
   channelId: number,

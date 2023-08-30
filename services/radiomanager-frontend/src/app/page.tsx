@@ -1,4 +1,4 @@
-import { getSelf } from '@/api/api.client'
+import { getSelf } from '@/api/httpClient'
 import { LibraryPageWithProviders } from '@/components/entries/LibraryPage'
 
 export default async function Home() {

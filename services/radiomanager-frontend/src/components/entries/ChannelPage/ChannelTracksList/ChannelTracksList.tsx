@@ -1,6 +1,6 @@
 import { TracksList } from '@/components/common/TrackList'
 import { useNowPlaying } from '@/modules/NowPlaying'
-import { UserChannelTrack } from '@/api/api.types'
+import { UserChannelTrack } from '@/api/apiTypes'
 import { InfiniteScroll } from '@/components/common/InfiniteScroll/InfiniteScroll'
 import AnimatedBars from '@/icons/AnimatedBars'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'

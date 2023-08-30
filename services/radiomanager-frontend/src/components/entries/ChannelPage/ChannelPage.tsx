@@ -1,6 +1,6 @@
 'use client'
 
-import { User, UserChannel, UserChannelTrack } from '@/api/api.types'
+import { User, UserChannel, UserChannelTrack } from '@/api/apiTypes'
 import { Header } from '@/components/Header'
 import { Sidebar } from '@/components/Sidebar'
 import { StreamOverlay } from '@/components/StreamOverlay'

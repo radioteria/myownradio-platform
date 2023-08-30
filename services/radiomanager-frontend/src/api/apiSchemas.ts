@@ -1,5 +1,5 @@
 import z from 'zod'
-import { ChannelSchema, UserChannelTrackSchema, UserTrackSchema } from './api.types'
+import { ChannelSchema, UserChannelTrackSchema, UserTrackSchema } from './apiTypes'
 import camelcaseKeys from 'camelcase-keys'
 
 export const GetChannelsSchema = z.object({

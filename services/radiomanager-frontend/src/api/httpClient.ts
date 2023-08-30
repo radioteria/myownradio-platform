@@ -4,15 +4,15 @@ import {
   LibraryTracksResponseSchema,
   NowPlayingResponseSchema,
   SelfResponseSchema,
-} from './api.types'
-import { isomorphicFetch } from './api.isomorphicFetch'
+} from './apiTypes'
+import { isomorphicFetch } from './isomorphicFetch'
 import {
   DeleteTracksResponseSchema,
   GetChannelsSchema,
   RemoveTracksFromChannelResponseSchema,
   UploadTrackResponseSchema,
   UploadTrackToChannelResponseSchema,
-} from './api.schemas'
+} from './apiSchemas'
 
 const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
 

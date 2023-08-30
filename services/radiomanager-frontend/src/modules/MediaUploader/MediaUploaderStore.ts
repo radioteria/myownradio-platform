@@ -7,7 +7,7 @@ import {
   UploadedMediaTrack,
   UploadedTrackType,
 } from './MediaUploaderTypes'
-import { uploadTrackToChannel, uploadTrackToLibrary } from '@/api/api.client'
+import { uploadTrackToChannel, uploadTrackToLibrary } from '@/api'
 import { shiftFromArrayAtom, pushToArrayAtom } from './MediaUploaderStore.utils'
 
 const isAbortedUploadError = (error: unknown) =>

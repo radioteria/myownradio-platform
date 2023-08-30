@@ -109,7 +109,6 @@ export const SelfResponseSchema = z.object({
     .object({
       user: UserSchema,
       streams: z.array(UserStreamSchema),
-      tracks: z.array(UserTrackSchema),
       client_id: z.string(),
     })
     .transform((v) => camelKeys(v)),

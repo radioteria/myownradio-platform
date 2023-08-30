@@ -1,8 +1,8 @@
-import { getSelf } from '@/api'
+import { getLibraryTracks, getSelf } from '@/api'
 import { LibraryPageWithProviders } from '@/components/entries/LibraryPage'
 
-export default async function Home() {
-  const self = await getSelf()
+export default async function Library() {
+  const [self, tracks] = await Promise.all([getSelf(), getLibraryTracks()])
 
   if (!self) {
     return <h1>Unauthorized</h1>
@@ -11,8 +11,9 @@ export default async function Home() {
   return (
     <LibraryPageWithProviders
       user={self.user}
-      userTracks={self.tracks}
+      userTracks={tracks}
       userChannels={self.streams}
+      filterUnusedTracks={false}
     />
   )
 }

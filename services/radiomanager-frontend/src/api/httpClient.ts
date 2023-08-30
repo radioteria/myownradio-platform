@@ -12,7 +12,7 @@ import {
   RemoveTracksFromChannelResponseSchema,
   UploadTrackResponseSchema,
   UploadTrackToChannelResponseSchema,
-} from './apiSchemas'
+} from './httpSchemas'
 
 const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
 

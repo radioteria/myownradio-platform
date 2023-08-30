@@ -8,6 +8,7 @@ import {
   UserTrackSchema,
 } from '@/api/api.types'
 import { isomorphicFetch } from '@/api/api.isomorphicFetch'
+import camelcaseKeys from 'camelcase-keys'
 
 const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
 
@@ -104,7 +105,16 @@ const UploadTrackToChannelResponseSchema = z.object({
   code: z.literal(1),
   message: z.literal('OK'),
   data: z.object({
-    tracks: z.intersection(z.array(UserTrackSchema), z.array(z.object({ uniqueId: z.string() }))),
+    tracks: z.intersection(
+      z.array(UserTrackSchema),
+      z.array(
+        z
+          .object({
+            unique_id: z.string(),
+          })
+          .transform((obj) => camelcaseKeys(obj)),
+      ),
+    ),
   }),
 })
 

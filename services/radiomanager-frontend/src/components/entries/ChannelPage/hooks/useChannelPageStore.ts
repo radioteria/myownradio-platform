@@ -37,8 +37,6 @@ export const useChannelPageStore = (
     })
   }
 
-  useHandleChannelLastUploadedTrack(channelId, canInfinitelyScroll, addTrackEntry)
-
   const handleDeletingTracks = (trackIds: readonly number[]) => {
     const idsSet = new Set(trackIds)
     const updatedTrackEntries = trackEntries.filter(({ trackId }) => !idsSet.has(trackId))
@@ -70,6 +68,8 @@ export const useChannelPageStore = (
         setTrackEntries(trackEntries)
       })
   }
+
+  useHandleChannelLastUploadedTrack(channelId, canInfinitelyScroll, addTrackEntry)
 
   return {
     trackEntries,

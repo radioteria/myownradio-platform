@@ -6,6 +6,7 @@ export const useHandleLibraryLastUploadedTrack = (
   onLastUploadedTrack: (track: UserTrack) => void,
 ) => {
   const { lastUploadedTrack } = useMediaUploader()
+
   useEffect(() => {
     if (!lastUploadedTrack) {
       return

@@ -41,7 +41,20 @@ export async function getSelf() {
 }
 
 export async function getLibraryTracks(offset = 0) {
-  const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/?offset=${offset}&limit=${MAX_TRACKS_PER_REQUEST}`
+  const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/`)
+  url.searchParams.set('offset', String(offset))
+  url.searchParams.set('limit', String(MAX_TRACKS_PER_REQUEST))
+
+  return await isomorphicFetch(url)
+    .then((res) => res.json())
+    .then((json) => LibraryTracksResponseSchema.parse(json).data)
+}
+
+export async function getUnusedLibraryTracks(offset = 0) {
+  const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/`)
+  url.searchParams.set('unused', 'true')
+  url.searchParams.set('offset', String(offset))
+  url.searchParams.set('limit', String(MAX_TRACKS_PER_REQUEST))
 
   return await isomorphicFetch(url)
     .then((res) => res.json())
@@ -49,7 +62,9 @@ export async function getLibraryTracks(offset = 0) {
 }
 
 export async function getChannelTracks(channelId: number, offset = 0) {
-  const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/tracks/?offset=${offset}&limit=${MAX_TRACKS_PER_REQUEST}`
+  const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/tracks/`)
+  url.searchParams.set('offset', String(offset))
+  url.searchParams.set('limit', String(MAX_TRACKS_PER_REQUEST))
 
   return await isomorphicFetch(url)
     .then((res) => res.json())

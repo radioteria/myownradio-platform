@@ -2,7 +2,11 @@ import cn from 'classnames'
 import { UserChannel } from '@/api'
 import Link from 'next/link'
 
-type ActiveItem = readonly ['channel', number] | readonly ['library'] | readonly ['unused']
+type ActiveItem =
+  | readonly ['channel', number]
+  | readonly ['library']
+  | readonly ['unused']
+  | readonly ['upload']
 
 interface Props {
   channels: readonly UserChannel[]

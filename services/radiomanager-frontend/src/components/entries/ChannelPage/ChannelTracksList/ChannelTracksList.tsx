@@ -57,6 +57,10 @@ export const ChannelTracksList: React.FC<Props> = ({
     selectedTracks: readonly ChannelTrackEntry[],
     event: React.MouseEvent<HTMLElement>,
   ) => {
+    if (selectedTracks.length === 0) {
+      return
+    }
+
     contextMenu.show({
       menuItems: [
         {

@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
+import cn from 'classnames'
 import { MenuContext, MenuItemType } from '@/modules/ContextMenu'
 import { useMenuPosition } from '@/modules/ContextMenu/hooks/useMenuPosition'
+import styles from './ContextMenuComponent.module.css'
 
 interface Props {
   context: MenuContext
@@ -26,7 +28,10 @@ export const ContextMenuComponent: React.FC<Props> = ({
       tabIndex={-1}
       ref={menuRef}
       onBlur={onBlur}
-      className={'bg-morblue-400 py-2 outline-none rounded-md fixed text-sm cursor-pointer'}
+      className={cn([
+        'bg-morblue-400 py-2 outline-none rounded-md fixed text-sm cursor-pointer',
+        styles.menuAnimation,
+      ])}
       style={{
         left: `${actualPosition.x}px`,
         top: `${actualPosition.y}px`,

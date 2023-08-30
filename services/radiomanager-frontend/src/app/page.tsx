@@ -9,11 +9,6 @@ export default async function Library() {
   }
 
   return (
-    <LibraryPageWithProviders
-      user={self.user}
-      userTracks={tracks}
-      userChannels={self.streams}
-      filterUnusedTracks={false}
-    />
+    <LibraryPageWithProviders user={self.user} userTracks={tracks} userChannels={self.streams} />
   )
 }

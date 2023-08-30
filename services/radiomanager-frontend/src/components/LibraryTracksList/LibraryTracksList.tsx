@@ -1,4 +1,4 @@
-import { UserTrack } from '@/api/apiTypes'
+import { UserTrack } from '@/api'
 import { TracksList } from '@/components/common/TrackList'
 import { InfiniteScroll } from '@/components/common/InfiniteScroll/InfiniteScroll'
 import AnimatedBars from '@/icons/AnimatedBars'

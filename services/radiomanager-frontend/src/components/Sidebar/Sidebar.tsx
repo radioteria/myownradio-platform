@@ -1,5 +1,5 @@
 import cn from 'classnames'
-import { UserChannel } from '@/api/apiTypes'
+import { UserChannel } from '@/api'
 import Link from 'next/link'
 
 type ActiveItem = readonly ['channel', number] | readonly ['library']

@@ -1,6 +1,6 @@
 'use client'
 
-import { User, UserChannel, UserTrack } from '@/api/apiTypes'
+import { User, UserChannel, UserTrack } from '@/api'
 import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { Header } from '@/components/Header'
 import { Sidebar } from '@/components/Sidebar'

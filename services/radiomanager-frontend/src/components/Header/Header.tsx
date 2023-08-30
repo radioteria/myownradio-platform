@@ -1,5 +1,5 @@
 import cn from 'classnames'
-import { User } from '@/api/apiTypes'
+import { User } from '@/api'
 import Local from 'next/font/local'
 import Image from 'next/image'
 import Logo from './logo.png'

@@ -1,4 +1,4 @@
-import { UserChannelTrack, UserTrack } from '@/api/apiTypes'
+import { UserChannelTrack, UserTrack } from '@/api'
 
 export enum UploadedTrackType {
   LIBRARY = 'LIBRARY',

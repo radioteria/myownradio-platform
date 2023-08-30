@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useMediaUploader } from '@/modules/MediaUploader'
 import { UploadedTrackType } from '@/modules/MediaUploader/MediaUploaderTypes'
-import { UserChannelTrack } from '@/api/apiTypes'
+import { UserChannelTrack } from '@/api'
 
 export const useHandleChannelLastUploadedTrack = (
   channelId: number,

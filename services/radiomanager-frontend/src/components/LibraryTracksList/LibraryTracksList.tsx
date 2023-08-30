@@ -41,6 +41,10 @@ export const LibraryTracksList: React.FC<Props> = ({
     selectedTracks: readonly LibraryTrackEntry[],
     event: React.MouseEvent<HTMLElement>,
   ) => {
+    if (selectedTracks.length === 0) {
+      return
+    }
+
     contextMenu.show({
       menuItems: [
         {

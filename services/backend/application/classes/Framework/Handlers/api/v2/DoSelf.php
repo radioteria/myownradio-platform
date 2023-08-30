@@ -25,8 +25,7 @@ class DoSelf implements Controller {
     public function doGet(AuthUserModel $userModel,
                           JsonResponse $response,
                           Streams $streams,
-                          Users $users,
-                          TrackCollection $trackCollection
+                          Users $users
     ) {
         $userId = $userModel->getID();
 
@@ -37,7 +36,6 @@ class DoSelf implements Controller {
         $response->setData([
             'user'      => $users->getUserByID($userModel->getID(), true),
             'streams'   => $streams->getByUser($userModel->getID()),
-            'tracks'    => $trackCollection->getTracksFromLibrary(),
             'client_id' => $userModel->getClientId()
         ]);
         

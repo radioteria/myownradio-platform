@@ -1,6 +1,5 @@
 import { createContext, ReactNode, useContext, useEffect, useReducer, useState } from 'react'
-import { NowPlaying } from '@/api/api.types'
-import { getNowPlaying } from '@/api/api.client'
+import { NowPlaying, getNowPlaying } from '@/api'
 
 const NowPlayingContext = createContext<{
   nowPlaying: NowPlaying | null

@@ -1,27 +1,22 @@
-import z from 'zod'
 import { config } from '@/config'
 import {
   ChannelTracksResponseSchema,
   LibraryTracksResponseSchema,
   NowPlayingResponseSchema,
   SelfResponseSchema,
-  UserTrackSchema,
-} from '@/api/api.types'
-import { isomorphicFetch } from '@/api/api.isomorphicFetch'
-import camelcaseKeys from 'camelcase-keys'
+} from './apiTypes'
+import { isomorphicFetch } from './isomorphicFetch'
+import {
+  DeleteTracksResponseSchema,
+  GetChannelsSchema,
+  RemoveTracksFromChannelResponseSchema,
+  UploadTrackResponseSchema,
+  UploadTrackToChannelResponseSchema,
+} from './httpSchemas'
 
 const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
 
-const ChannelSchema = z.object({})
-export type IChannel = z.infer<typeof ChannelSchema>
-
 export const MAX_TRACKS_PER_REQUEST = 50
-
-export const GetChannelsSchema = z.object({
-  message: z.literal('OK'),
-  code: z.literal(1),
-  data: z.array(ChannelSchema),
-})
 
 export async function getChannels() {
   const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/`
@@ -46,7 +41,20 @@ export async function getSelf() {
 }
 
 export async function getLibraryTracks(offset = 0) {
-  const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/?offset=${offset}&limit=${MAX_TRACKS_PER_REQUEST}`
+  const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/`)
+  url.searchParams.set('offset', String(offset))
+  url.searchParams.set('limit', String(MAX_TRACKS_PER_REQUEST))
+
+  return await isomorphicFetch(url)
+    .then((res) => res.json())
+    .then((json) => LibraryTracksResponseSchema.parse(json).data)
+}
+
+export async function getUnusedLibraryTracks(offset = 0) {
+  const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/`)
+  url.searchParams.set('unused', 'true')
+  url.searchParams.set('offset', String(offset))
+  url.searchParams.set('limit', String(MAX_TRACKS_PER_REQUEST))
 
   return await isomorphicFetch(url)
     .then((res) => res.json())
@@ -54,7 +62,9 @@ export async function getLibraryTracks(offset = 0) {
 }
 
 export async function getChannelTracks(channelId: number, offset = 0) {
-  const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/tracks/?offset=${offset}&limit=${MAX_TRACKS_PER_REQUEST}`
+  const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/tracks/`)
+  url.searchParams.set('offset', String(offset))
+  url.searchParams.set('limit', String(MAX_TRACKS_PER_REQUEST))
 
   return await isomorphicFetch(url)
     .then((res) => res.json())
@@ -72,14 +82,6 @@ export async function getNowPlaying(channelId: number, timestamp: number) {
     .then((res) => res.json())
     .then((json) => NowPlayingResponseSchema.parse(json).data)
 }
-
-const UploadTrackResponseSchema = z.object({
-  code: z.literal(1),
-  message: z.literal('OK'),
-  data: z.object({
-    tracks: z.array(UserTrackSchema),
-  }),
-})
 
 export async function uploadTrackToLibrary(file: File, abortSignal: AbortSignal) {
   const form = new FormData()
@@ -100,23 +102,6 @@ export async function uploadTrackToLibrary(file: File, abortSignal: AbortSignal)
 
   return tracks[0]
 }
-
-const UploadTrackToChannelResponseSchema = z.object({
-  code: z.literal(1),
-  message: z.literal('OK'),
-  data: z.object({
-    tracks: z.intersection(
-      z.array(UserTrackSchema),
-      z.array(
-        z
-          .object({
-            unique_id: z.string(),
-          })
-          .transform((obj) => camelcaseKeys(obj)),
-      ),
-    ),
-  }),
-})
 
 export async function uploadTrackToChannel(
   channelId: number,
@@ -143,12 +128,6 @@ export async function uploadTrackToChannel(
   return tracks[0]
 }
 
-const DeleteTracksResponseSchema = z.object({
-  code: z.literal(1),
-  message: z.literal('OK'),
-  data: z.null(),
-})
-
 export async function deleteTracksById(trackIds: readonly number[]) {
   const form = new FormData()
   form.set('track_id', trackIds.join(','))
@@ -161,12 +140,6 @@ export async function deleteTracksById(trackIds: readonly number[]) {
     .then((res) => res.json())
     .then((json) => DeleteTracksResponseSchema.parse(json).data)
 }
-
-const RemoveTracksFromChannelResponseSchema = z.object({
-  code: z.literal(1),
-  message: z.literal('OK'),
-  data: z.null(),
-})
 
 export async function removeTracksFromChannelById(uniqueIds: readonly string[], channelId: number) {
   const form = new FormData()
@@ -181,6 +154,3 @@ export async function removeTracksFromChannelById(uniqueIds: readonly string[], 
     .then((res) => res.json())
     .then((json) => RemoveTracksFromChannelResponseSchema.parse(json).data)
 }
-
-// Get Chunk
-// http://localhost:40180/getchunk/380

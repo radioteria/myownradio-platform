@@ -1,8 +1,8 @@
 import cn from 'classnames'
-import { UserChannel } from '@/api/api.types'
+import { UserChannel } from '@/api'
 import Link from 'next/link'
 
-type ActiveItem = readonly ['channel', number] | readonly ['library']
+type ActiveItem = readonly ['channel', number] | readonly ['library'] | readonly ['unused']
 
 interface Props {
   channels: readonly UserChannel[]
@@ -25,8 +25,18 @@ export const Sidebar: React.FC<Props> = ({ channels, activeItem }) => {
             All Tracks
           </Link>
         </li>
+        <li
+          className={cn('px-4 py-2', 'text-ellipsis overflow-hidden', {
+            'bg-morblue-400 text-gray-50': activeItem?.[0] === 'unused',
+          })}
+        >
+          <Link className={'block'} href={`/unused`}>
+            Unused Tracks
+          </Link>
+        </li>
 
         <li className={'py-2'} />
+        <h3 className={'text-md text-gray-500 px-4 py-4'}>CHANNELS</h3>
 
         {channels.map((channel) => {
           return (

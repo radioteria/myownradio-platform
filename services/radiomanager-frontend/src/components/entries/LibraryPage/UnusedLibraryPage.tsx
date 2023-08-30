@@ -14,14 +14,16 @@ interface Props {
   readonly userChannels: readonly UserChannel[]
 }
 
-export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels }) => {
-  const libraryPageStore = useLibraryPageStore(userTracks)
+export const UnusedLibraryPage: React.FC<Props> = ({ user, userTracks, userChannels }) => {
+  const libraryPageStore = useLibraryPageStore(userTracks, {
+    filterUnusedTracks: true,
+  })
 
   return (
     <>
       <LibraryLayout
         header={<Header user={user} />}
-        sidebar={<Sidebar channels={userChannels} activeItem={['library']} />}
+        sidebar={<Sidebar channels={userChannels} activeItem={['unused']} />}
         content={
           <LibraryTracksList
             tracks={libraryPageStore.trackEntries}
@@ -37,6 +39,6 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
   )
 }
 
-export const LibraryPageWithProviders: React.FC<Props> = (props) => {
-  return <LibraryPage {...props} />
+export const UnusedLibraryPageWithProviders: React.FC<Props> = (props) => {
+  return <UnusedLibraryPage {...props} />
 }

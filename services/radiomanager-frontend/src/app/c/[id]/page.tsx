@@ -1,5 +1,5 @@
 import { ChannelPageWithProviders } from '@/components/entries/ChannelPage'
-import { getChannelTracks, getSelf } from '@/api/api.client'
+import { getChannelTracks, getSelf } from '@/api'
 
 export default async function UserChannel({ params: { id } }: { params: { id: string } }) {
   const channelId = Number(id)

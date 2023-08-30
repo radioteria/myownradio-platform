@@ -93,25 +93,12 @@ export const UserTrackSchema = z
 export type UserTrack = z.infer<typeof UserTrackSchema>
 
 export const UserChannelTrackSchema = z
-  .object({
-    // t_order: z.number(),
-    unique_id: z.string(),
-    // time_offset: z.number().nullable(),
-    album: z.string(),
-    artist: z.string(),
-    // buy: z.string().nullable(),
-    // can_be_shared: z.boolean(),
-    // color: z.number().nullable(),
-    // cue: z.string().nullable(),
-    // date: z.string(),
-    duration: z.number(),
-    filename: z.string(),
-    genre: z.string(),
-    // is_new: z.boolean(),
-    tid: z.number(),
-    title: z.string(),
-    track_number: z.string(),
-  })
+  .intersection(
+    UserTrackSchema,
+    z.object({
+      unique_id: z.string(),
+    }),
+  )
   .transform((v) => camelKeys(v))
 export type UserChannelTrack = z.infer<typeof UserChannelTrackSchema>
 
@@ -122,7 +109,6 @@ export const SelfResponseSchema = z.object({
     .object({
       user: UserSchema,
       streams: z.array(UserStreamSchema),
-      tracks: z.array(UserTrackSchema),
       client_id: z.string(),
     })
     .transform((v) => camelKeys(v)),
@@ -166,3 +152,6 @@ export const NowPlayingResponseSchema = z.object({
 })
 export type NowPlayingResponse = z.infer<typeof NowPlayingResponseSchema>
 export type NowPlaying = NowPlayingResponse['data']
+
+export const ChannelSchema = z.object({})
+export type Channel = z.infer<typeof ChannelSchema>

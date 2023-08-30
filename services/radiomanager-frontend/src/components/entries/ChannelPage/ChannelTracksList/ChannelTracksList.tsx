@@ -1,10 +1,10 @@
+import { useRef } from 'react'
+import { UserChannelTrack } from '@/api'
 import { TracksList } from '@/components/common/TrackList'
 import { useNowPlaying } from '@/modules/NowPlaying'
-import { UserChannelTrack } from '@/api/api.types'
 import { InfiniteScroll } from '@/components/common/InfiniteScroll/InfiniteScroll'
 import AnimatedBars from '@/icons/AnimatedBars'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
-import { useRef } from 'react'
 
 interface ChannelTrackEntry {
   trackId: number
@@ -19,8 +19,8 @@ export const toChannelTrackEntry = (track: UserChannelTrack): ChannelTrackEntry 
   trackId: track.tid,
   uniqueId: track.uniqueId,
   title: track.title || track.filename,
-  artist: track.artist,
-  album: track.album,
+  artist: track.artist ?? '',
+  album: track.album ?? '',
   duration: track.duration,
 })
 
@@ -61,17 +61,17 @@ export const ChannelTracksList: React.FC<Props> = ({
       menuItems: [
         {
           onClick: () => {
-            onDeleteTracks(selectedTracks.map(({ trackId }) => trackId))
-          },
-          type: MenuItemType.Item,
-          label: 'Remove from your library',
-        },
-        {
-          onClick: () => {
             onRemoveTracksFromChannel(selectedTracks.map(({ uniqueId }) => uniqueId))
           },
           type: MenuItemType.Item,
           label: 'Remove from this channel',
+        },
+        {
+          onClick: () => {
+            onDeleteTracks(selectedTracks.map(({ trackId }) => trackId))
+          },
+          type: MenuItemType.Item,
+          label: 'Remove from your library',
         },
       ],
       portalElement: contextMenuRef?.current ?? undefined,

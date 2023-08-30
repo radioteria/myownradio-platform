@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { UserTrack } from '@/api/api.types'
+import { UserTrack } from '@/api'
 import { useMediaUploader } from '@/modules/MediaUploader'
 
 export const useHandleLibraryLastUploadedTrack = (

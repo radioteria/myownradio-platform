@@ -1,10 +1,23 @@
 import { useCallback, useMemo, useState } from 'react'
 import { toLibraryTrackEntry } from '@/components/LibraryTracksList/LibraryTracksList'
-import { UserTrack } from '@/api/api.types'
-import { deleteTracksById, getLibraryTracks, MAX_TRACKS_PER_REQUEST } from '@/api/api.client'
+import {
+  deleteTracksById,
+  getLibraryTracks,
+  getUnusedLibraryTracks,
+  MAX_TRACKS_PER_REQUEST,
+} from '@/api'
 import { useHandleLibraryLastUploadedTrack } from './useHandleLibraryLastUploadedTrack'
 
-export const useLibraryPageStore = (initialUserTracks: readonly UserTrack[]) => {
+import type { UserTrack } from '@/api'
+
+interface StoreConfig {
+  readonly filterUnusedTracks?: boolean
+}
+
+export const useLibraryPageStore = (
+  initialUserTracks: readonly UserTrack[],
+  config?: StoreConfig,
+) => {
   const initialTrackEntries = useMemo(
     () => initialUserTracks.map(toLibraryTrackEntry),
     [initialUserTracks],
@@ -20,7 +33,11 @@ export const useLibraryPageStore = (initialUserTracks: readonly UserTrack[]) => 
   const initialCanInfinitelyScroll = initialTrackEntries.length === MAX_TRACKS_PER_REQUEST
   const [canInfinitelyScroll, setCanInfinitelyScroll] = useState(initialCanInfinitelyScroll)
   const handleInfiniteScroll = () => {
-    getLibraryTracks(trackEntries.length).then((tracks) => {
+    const promise = config?.filterUnusedTracks
+      ? getUnusedLibraryTracks(trackEntries.length)
+      : getLibraryTracks(trackEntries.length)
+
+    promise.then((tracks) => {
       const newEntries = tracks.map(toLibraryTrackEntry)
       setTrackEntries((entries) => [...entries, ...newEntries])
 

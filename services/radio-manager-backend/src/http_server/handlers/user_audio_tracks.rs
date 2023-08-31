@@ -9,6 +9,7 @@ use crate::storage::db::repositories::user_stream_tracks::{
 use crate::storage::db::repositories::user_tracks::{
     delete_user_track, get_single_user_track, get_user_tracks, GetUserTracksParams,
 };
+use crate::storage::db::row_utils::GetFilePath;
 use crate::storage::fs::utils::GetPath;
 use crate::storage::fs::FileSystem;
 use crate::utils::TeeResultUtils;
@@ -246,4 +247,30 @@ pub(crate) async fn delete_audio_track<FS: FileSystem>(
     connection.commit().await?;
 
     Ok(HttpResponse::Ok().finish())
+}
+
+pub(crate) async fn transcode_audio_track<FS: FileSystem>(
+    user_id: UserId,
+    path: Path<TrackId>,
+    mysql_client: Data<MySqlClient>,
+    file_system: Data<FS>,
+) -> Response {
+    let mut connection = mysql_client.connection().await?;
+
+    let track_id = path.into_inner();
+    let track_row = match get_single_user_track(&mut connection, &track_id)
+        .await
+        .tee_err(|error| error!(?error, "Unable to get user track from database"))?
+    {
+        Some(track_row) => track_row,
+        None => return Ok(HttpResponse::NotFound().finish()),
+    };
+
+    if track_row.track.uid != user_id {
+        return Ok(HttpResponse::Forbidden().finish());
+    }
+
+    let source_url = track_row.get_file_path();
+
+    todo!("Transcode audio file");
 }

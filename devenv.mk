@@ -19,6 +19,7 @@ devenv: prepare-devenv stop
 				-v "$(PWD)":/code \
 				--env-file "$(PWD)/.env" \
 				--env "HOME=/tmp" \
+				--label-file "$(PWD)/.devenv-labels" \
 				--workdir=/code \
 				$(SERVICE_NAME)-dev bash
 

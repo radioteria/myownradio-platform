@@ -1,5 +1,9 @@
+use crate::config::Config;
 use crate::data_structures::{SortingColumn, SortingOrder, StreamId, TrackId, UserId};
 use crate::http_server::response::Response;
+use crate::services::ffmpeg_service::{
+    transcode_audio_file, AudioChannels, AudioCodec, AudioContainer, TranscodeAudioFileFormat,
+};
 use crate::storage::db::repositories::streams::{
     get_single_stream_by_id, get_user_streams_having_track,
 };
@@ -14,9 +18,11 @@ use crate::storage::fs::utils::GetPath;
 use crate::storage::fs::FileSystem;
 use crate::utils::TeeResultUtils;
 use crate::MySqlClient;
-use actix_web::web::{Data, Form, Path};
+use actix_web::web::{Data, Form, Json, Path, Query};
 use actix_web::{web, HttpResponse};
+use futures::channel::mpsc;
 use serde::Deserialize;
+use std::time::Duration;
 use tracing::error;
 
 #[derive(Deserialize)]
@@ -249,11 +255,20 @@ pub(crate) async fn delete_audio_track<FS: FileSystem>(
     Ok(HttpResponse::Ok().finish())
 }
 
-pub(crate) async fn transcode_audio_track<FS: FileSystem>(
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct TranscodeAudioTrackQuery {
+    #[serde(default)]
+    #[serde(with = "serde_millis")]
+    pub(crate) initial_position: Duration,
+}
+
+pub(crate) async fn transcode_audio_track(
     user_id: UserId,
     path: Path<TrackId>,
     mysql_client: Data<MySqlClient>,
-    file_system: Data<FS>,
+    config: Data<Config>,
+    json: Query<TranscodeAudioTrackQuery>,
 ) -> Response {
     let mut connection = mysql_client.connection().await?;
 
@@ -270,7 +285,37 @@ pub(crate) async fn transcode_audio_track<FS: FileSystem>(
         return Ok(HttpResponse::Forbidden().finish());
     }
 
-    let source_url = track_row.get_file_path();
+    let source_path = track_row.get_file_path();
+    let source_url = format!("{}audio/{}", config.file_server_endpoint, source_path);
 
-    todo!("Transcode audio file");
+    let (response_tx, response_rx) = mpsc::channel(32);
+
+    actix_rt::spawn({
+        async move {
+            if let Err(error) = transcode_audio_file(
+                &source_url,
+                response_tx,
+                json.initial_position,
+                TranscodeAudioFileFormat {
+                    container: AudioContainer::Adts,
+                    codec: AudioCodec::Aac,
+                    channels: AudioChannels::Stereo,
+                    bitrate: 256_000,
+                    sampling_rate: 48_000,
+                },
+            )
+            .await
+            {
+                error!(?error, "Error occurred while transcoding audio");
+            }
+        }
+    });
+
+    use futures::StreamExt;
+
+    let mut response = HttpResponse::Ok();
+
+    response.content_type("audio/aac").force_close();
+
+    Ok(response.streaming::<_, actix_web::Error>(response_rx.map(Ok)))
 }

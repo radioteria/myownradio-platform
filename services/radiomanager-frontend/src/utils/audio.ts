@@ -23,6 +23,6 @@ export function isAudioStopped(htmlAudioElement: HTMLAudioElement) {
 }
 
 export function advanceAudio(htmlAudioElement: HTMLAudioElement, amountSeconds: number) {
-  debug('Advancing audio: %f', amountSeconds)
+  debug('Advancing audio: %f', amountSeconds.toPrecision(2))
   htmlAudioElement.currentTime += amountSeconds
 }

@@ -1,6 +1,6 @@
 import { MutableRefObject, useEffect, useRef } from 'react'
 import makeDebug from 'debug'
-import { useNowPlaying } from '@/modules/NowPlaying'
+import { useNowPlaying, usePlaybackPosition } from '@/modules/NowPlaying'
 import { advanceAudio, isAudioStopped, playAudio, stopAudio } from '@/utils/audio'
 import { BACKEND_BASE_URL } from '@/api'
 
@@ -11,58 +11,46 @@ export const useChannelPlayer = (
   isStopped: boolean,
 ) => {
   const { nowPlaying } = useNowPlaying()
+  const playbackPosition = usePlaybackPosition()
 
   const currentAudioOffsetRef = useRef(0)
-  const currentTrackIdRef = useRef(0)
 
-  const currentTrackId = nowPlaying?.currentTrack.track_id
-  const currentTrackOffset = nowPlaying?.currentTrack.offset
+  const currentTrackId = nowPlaying?.currentTrack.track_id ?? null
 
-  // Stop Effect
+  // Start / Stop Playback Effect
   useEffect(() => {
-    if (
-      audioRef.current &&
-      (nowPlaying === null || isStopped) &&
-      !isAudioStopped(audioRef.current)
-    ) {
-      stopAudio(audioRef.current)
-      currentTrackIdRef.current = 0
+    const audioElement = audioRef.current
+    if (!audioElement || isStopped) return
+    if (playbackPosition === null || currentTrackId === null) return
+
+    const url = new URL(
+      `${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${currentTrackId}/transcode`,
+    )
+    url.searchParams.set('initialPosition', String(playbackPosition))
+
+    playAudio(audioElement, url.toString())
+    currentAudioOffsetRef.current = playbackPosition
+
+    return () => {
+      stopAudio(audioElement)
     }
-  }, [nowPlaying, audioRef, isStopped])
-
-  // Play Effect
-  useEffect(() => {
-    if (isStopped || !currentTrackId || !currentTrackOffset || !audioRef.current) {
-      return
-    }
-
-    if (currentTrackIdRef.current !== currentTrackId) {
-      const url = new URL(
-        `${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${currentTrackId}/transcode`,
-      )
-      url.searchParams.set('initialPosition', String(currentTrackOffset))
-
-      playAudio(audioRef.current, url.toString())
-
-      currentTrackIdRef.current = currentTrackId
-      currentAudioOffsetRef.current = currentTrackOffset
-    }
-  }, [currentTrackId, currentTrackOffset, audioRef, isStopped])
+  }, [currentTrackId, isStopped, audioRef])
 
   // Sync Effect
   useEffect(() => {
-    if (isStopped || !audioRef.current || currentTrackOffset === undefined) {
+    if (isStopped || !audioRef.current || playbackPosition === undefined) {
       return
     }
 
-    const currentAudioTime = audioRef.current.currentTime * 1000 + currentAudioOffsetRef.current
-    const delay = (currentTrackOffset - currentAudioTime) / 1000
+    const currentAudioTimeMillis = audioRef.current?.currentTime ?? 0
+    const audioPosition = currentAudioOffsetRef.current / 1000 + currentAudioTimeMillis
 
-    debug('Player positions delta: %f', delay)
+    const delay = (playbackPosition ?? 0) / 1000 - audioPosition
 
-    if (Math.abs(delay) > 1) {
+    if (Math.abs(delay) > 0.25) {
+      debug('Audio latency > 250ms')
       advanceAudio(audioRef.current, delay)
-      // currentAudioOffsetRef.current = currentTrackOffset
+      currentAudioOffsetRef.current += delay
     }
-  }, [currentTrackOffset, audioRef, isStopped])
+  }, [playbackPosition, isStopped, audioRef])
 }

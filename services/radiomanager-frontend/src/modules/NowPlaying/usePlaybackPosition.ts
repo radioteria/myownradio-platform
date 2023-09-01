@@ -4,10 +4,10 @@ import { useNowPlaying } from './useNowPlaying'
 /**
  * Hook to track the playback position of the current track.
  *
- * @param {number} interval - Interval time in milliseconds for updating the running time. Default is 1000 ms.
- * @returns {number} runningTime - The current playback position in milliseconds.
+ * @param interval - Interval time in milliseconds for updating the running time. Default is 1000 ms.
+ * @returns runningTime - The current playback position in milliseconds.
  */
-export const usePlaybackPosition = (interval = 1_000) => {
+export const usePlaybackPosition = (interval: number = 1_000): number | null => {
   // Using the custom hook to get information about the currently playing track
   const { nowPlaying } = useNowPlaying()
 
@@ -31,14 +31,18 @@ export const usePlaybackPosition = (interval = 1_000) => {
     // Capture the current time
     const now = Date.now()
 
-    // Set up an interval to update runningTime
-    const intervalId = window.setInterval(() => {
+    const updateRunningDelay = () => {
       // Calculate the time elapsed since the effect started
       const runningDelay = Date.now() - now
 
       // Update runningTime based on the current track's offset and the elapsed time
       setRunningTime(currentTrackOffset + runningDelay)
-    }, interval)
+    }
+
+    // Set up an interval to update runningTime
+    const intervalId = window.setInterval(updateRunningDelay, interval)
+
+    updateRunningDelay()
 
     // Cleanup: Clear the interval when the component unmounts or when the effect re-runs
     return () => {

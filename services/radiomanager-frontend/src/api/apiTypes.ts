@@ -139,11 +139,13 @@ export const NowPlayingResponseSchema = z.object({
         offset: z.number(),
         title: z.string(),
         url: z.string(),
+        track_id: z.number(),
       }),
       next_track: z.object({
         duration: z.number(),
         title: z.string(),
         url: z.string(),
+        track_id: z.number(),
       }),
       playlist_position: z.number(),
       time: z.number(),

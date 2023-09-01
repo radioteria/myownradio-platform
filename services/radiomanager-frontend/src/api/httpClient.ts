@@ -14,7 +14,7 @@ import {
   UploadTrackToChannelResponseSchema,
 } from './httpSchemas'
 
-const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
+export const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
 
 export const MAX_TRACKS_PER_REQUEST = 50
 

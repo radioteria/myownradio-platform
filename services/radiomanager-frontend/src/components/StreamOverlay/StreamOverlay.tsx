@@ -4,6 +4,7 @@ import { config } from '@/config'
 import { useEffect, useRef, useState } from 'react'
 import cn from 'classnames'
 import { playAudio, stopAudio } from '@/utils/audio'
+import { useChannelPlayer } from '@/hooks/useChannelPlayer'
 
 const BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
 
@@ -22,36 +23,38 @@ export const StreamOverlay: React.FC<Props> = ({ channelId }) => {
 
   const playerRef = useRef<HTMLAudioElement | null>(null)
 
-  useEffect(() => {
-    const current = playerRef.current
+  useChannelPlayer(playerRef, !playing)
 
-    if (!current) {
-      return
-    }
+  // useEffect(() => {
+  //   const current = playerRef.current
+  //
+  //   if (!current) {
+  //     return
+  //   }
+  //
+  //   current.addEventListener('ended', () => {
+  //     console.log('play again')
+  //     playAudio(current, audioUrl)
+  //   })
+  //
+  //   current.addEventListener('error', () => {
+  //     setTimeout(() => playAudio(current, audioUrl), 1_000)
+  //   })
+  // }, [])
 
-    current.addEventListener('ended', () => {
-      console.log('play again')
-      playAudio(current, audioUrl)
-    })
-
-    current.addEventListener('error', () => {
-      setTimeout(() => playAudio(current, audioUrl), 1_000)
-    })
-  }, [])
-
-  useEffect(() => {
-    const current = playerRef.current
-
-    if (!current || !playing) {
-      return
-    }
-
-    playAudio(current, audioUrl)
-
-    return () => {
-      stopAudio(current)
-    }
-  }, [playing, channelId])
+  // useEffect(() => {
+  //   const current = playerRef.current
+  //
+  //   if (!current || !playing) {
+  //     return
+  //   }
+  //
+  //   playAudio(current, audioUrl)
+  //
+  //   return () => {
+  //     stopAudio(current)
+  //   }
+  // }, [playing, channelId])
 
   return (
     <>

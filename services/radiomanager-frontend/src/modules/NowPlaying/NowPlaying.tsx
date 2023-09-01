@@ -1,20 +1,10 @@
 import { createContext, ReactNode, useContext, useEffect, useReducer, useState } from 'react'
 import { NowPlaying, getNowPlaying } from '@/api'
 
-const NowPlayingContext = createContext<{
+export const NowPlayingContext = createContext<{
   nowPlaying: NowPlaying | null
   refresh: () => void
 } | null>(null)
-
-export const useNowPlaying = () => {
-  const ctx = useContext(NowPlayingContext)
-
-  if (!ctx) {
-    throw new Error('Now playing data has not been found in the context')
-  }
-
-  return ctx
-}
 
 const UPDATE_INTERVAL = 10_000
 

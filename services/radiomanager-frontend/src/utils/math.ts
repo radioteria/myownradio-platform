@@ -5,3 +5,7 @@ export function clamp(min: number, current: number, max: number): number {
 export function scale(value: number, valueMax: number, scaleMax: number): number {
   return (scaleMax / valueMax) * value
 }
+
+export function filterBelow(value: number, threshold: number): number {
+  return value < threshold ? 0 : value
+}

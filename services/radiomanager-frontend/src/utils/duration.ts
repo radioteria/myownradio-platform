@@ -31,6 +31,18 @@ export class Duration {
   public add = (duration: Duration) => {
     return new Duration(this.millis + duration.millis, this.seconds + duration.seconds)
   }
+
+  public sub = (duration: Duration) => {
+    return new Duration(this.millis - duration.millis, this.seconds - duration.seconds)
+  }
+
+  public filterBelow = (threshold: Duration) => {
+    return this.toMillis() < threshold.toMillis() ? ZERO : this
+  }
+
+  public toString = () => {
+    return `${this.toMillis().toFixed(0)}ms`
+  }
 }
 
 export const ZERO = Duration.fromMillis(0)

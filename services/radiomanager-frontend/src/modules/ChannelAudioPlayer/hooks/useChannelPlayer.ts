@@ -40,7 +40,11 @@ export const useChannelPlayer = (
     const estimatedTrackPosition = filterBelow(trackPosition + timeSinceLastUpdate, START_TOLERANCE)
     const positionPercent = scale(estimatedTrackPosition, trackDuration, 100)
 
-    const src = `${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${trackId}/transcode?initialPosition=${estimatedTrackPosition}`
+    const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${trackId}/transcode`)
+    if (estimatedTrackPosition > 0) {
+      url.searchParams.set('initialPosition', `${estimatedTrackPosition}`)
+    }
+    const src = url.toString()
     audioOffsetRef.current = estimatedTrackPosition
     debug(
       'Playing track %d starting from position %dms (%d%)',

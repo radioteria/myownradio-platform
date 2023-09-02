@@ -14,7 +14,7 @@ export const useAudioPlayerControl = (audioRef: MutableRefObject<HTMLAudioElemen
   const currentAudioOffsetRef = useRef(ZERO)
   const numRestartsOnError = useAudioRestartOnError(audioRef)
 
-  const currentTrackId = nowPlaying?.currentTrack.track_id ?? null
+  const currentTrackId = nowPlaying?.currentTrack.trackId ?? null
 
   const [numRestarts, restart] = useReducer((n: number) => n + 1, 0)
   useEffect(() => {

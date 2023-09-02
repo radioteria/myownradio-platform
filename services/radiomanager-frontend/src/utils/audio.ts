@@ -11,6 +11,12 @@ export function playAudio(htmlAudioElement: HTMLAudioElement, src: string) {
   })
 }
 
+export function loadAudio(htmlAudioElement: HTMLAudioElement, src: string) {
+  debug('Loading audio: %s', src)
+  htmlAudioElement.src = src
+  htmlAudioElement.load()
+}
+
 export function stopAudio(htmlAudioElement: HTMLAudioElement) {
   debug('Stopping audio playback')
   htmlAudioElement.pause()

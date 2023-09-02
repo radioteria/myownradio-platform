@@ -134,19 +134,23 @@ export const NowPlayingResponseSchema = z.object({
   message: z.literal('OK'),
   data: z
     .object({
-      current_track: z.object({
-        duration: z.number(),
-        offset: z.number(),
-        title: z.string(),
-        url: z.string(),
-        track_id: z.number(),
-      }),
-      next_track: z.object({
-        duration: z.number(),
-        title: z.string(),
-        url: z.string(),
-        track_id: z.number(),
-      }),
+      current_track: z
+        .object({
+          duration: z.number(),
+          offset: z.number(),
+          title: z.string(),
+          url: z.string(),
+          track_id: z.number(),
+        })
+        .transform((v) => camelKeys(v)),
+      next_track: z
+        .object({
+          duration: z.number(),
+          title: z.string(),
+          url: z.string(),
+          track_id: z.number(),
+        })
+        .transform((v) => camelKeys(v)),
       playlist_position: z.number(),
       time: z.number(),
     })

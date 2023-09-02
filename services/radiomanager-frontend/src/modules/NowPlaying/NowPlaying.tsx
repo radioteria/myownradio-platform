@@ -2,9 +2,10 @@ import { createContext, ReactNode, useContext, useEffect, useReducer, useState }
 import { NowPlaying, getNowPlaying } from '@/api'
 
 export const NowPlayingContext = createContext<{
-  updatedAt: Date
-  nowPlaying: NowPlaying | null
-  refresh: () => void
+  readonly updatedAt: Date
+  readonly nowPlaying: NowPlaying | null
+  readonly refresh: () => void
+  readonly channelId: number
 } | null>(null)
 
 const UPDATE_INTERVAL = 10_000
@@ -62,7 +63,7 @@ export const NowPlayingProvider: React.FC<Props> = ({ channelId, children }) => 
   }, [channelId, refreshed])
 
   return (
-    <NowPlayingContext.Provider value={{ nowPlaying, refresh, updatedAt }}>
+    <NowPlayingContext.Provider value={{ nowPlaying, refresh, updatedAt, channelId }}>
       {children}
     </NowPlayingContext.Provider>
   )

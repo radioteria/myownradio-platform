@@ -1,10 +1,17 @@
 import { useRef } from 'react'
-import { useChannelAudioPlayer } from './hooks/useChannelAudioPlayer'
+import { useChannelPlayer } from './hooks/useChannelPlayer'
 
 export const ChannelAudioPlayer = () => {
-  const audioRef = useRef(null)
+  const audio1Ref = useRef(null)
+  const audio2Ref = useRef(null)
+  const audioOffsetRef = useRef(0)
 
-  useChannelAudioPlayer(audioRef)
+  useChannelPlayer(audio1Ref, audio2Ref, audioOffsetRef)
 
-  return <audio ref={audioRef} />
+  return (
+    <>
+      <audio ref={audio1Ref} />
+      <audio ref={audio2Ref} />
+    </>
+  )
 }

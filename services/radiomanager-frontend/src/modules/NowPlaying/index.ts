@@ -1,3 +1,3 @@
 export * from './NowPlaying'
 export * from './useNowPlaying'
-export * from './usePlaybackPosition'
+export * from './useEstimatedTrackPosition'

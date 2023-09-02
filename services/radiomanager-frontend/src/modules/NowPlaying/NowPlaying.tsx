@@ -26,8 +26,10 @@ export const NowPlayingProvider: React.FC<Props> = ({ channelId, children }) => 
     const fetchAndUpdateNowPlaying = async () => {
       let nextUpdateDelay = UPDATE_INTERVAL
 
+      const ts = new Date()
+
       try {
-        const nowPlayingData = await getNowPlaying(channelId, Date.now())
+        const nowPlayingData = await getNowPlaying(channelId, ts.getTime())
 
         if (isComponentUnmounted) {
           return
@@ -43,7 +45,7 @@ export const NowPlayingProvider: React.FC<Props> = ({ channelId, children }) => 
         setNowPlaying(null)
       }
 
-      setUpdatedAt(new Date())
+      setUpdatedAt(ts)
 
       timeoutId = window.setTimeout(fetchAndUpdateNowPlaying, nextUpdateDelay)
     }

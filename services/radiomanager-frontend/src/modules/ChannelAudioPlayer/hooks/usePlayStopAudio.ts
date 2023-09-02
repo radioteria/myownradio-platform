@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect, useRef } from 'react'
+import { MutableRefObject, useEffect, useReducer, useRef } from 'react'
 import { BACKEND_BASE_URL } from '@/api'
 import { playAudio, stopAudio } from '@/utils/audio'
 import { useNowPlaying } from '@/modules/NowPlaying'
@@ -11,6 +11,9 @@ const filterBelow = (value: number, threshold: number) => (value < threshold ? 0
 export const usePlayStopAudio = (audioRef: MutableRefObject<HTMLAudioElement | null>) => {
   const { nowPlaying, updatedAt } = useNowPlaying()
   const currentAudioOffsetRef = useRef(ZERO)
+
+  // Triggers Audio Player Restart
+  const [restarted, restart] = useReducer((n) => n + 1, 0)
 
   const currentTrackId = nowPlaying?.currentTrack.track_id ?? null
 
@@ -29,14 +32,23 @@ export const usePlayStopAudio = (audioRef: MutableRefObject<HTMLAudioElement | n
     )
     url.searchParams.set('initialPosition', String(filteredPlaybackPosition.toMillis()))
 
+    let timeoutId: number | null = null
+    const handlePlaybackError = () => {
+      timeoutId = window.setTimeout(() => restart(), 1_000)
+    }
+
+    audioElement.addEventListener('error', handlePlaybackError)
     playAudio(audioElement, url.toString())
 
     currentAudioOffsetRef.current = filteredPlaybackPosition
 
     return () => {
+      timeoutId && window.clearTimeout(timeoutId)
+
+      audioElement.removeEventListener('error', handlePlaybackError)
       stopAudio(audioElement)
     }
-  }, [currentTrackId, audioRef])
+  }, [currentTrackId, audioRef, restarted])
 
   return currentAudioOffsetRef
 }

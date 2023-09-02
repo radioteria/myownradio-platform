@@ -45,7 +45,7 @@ export const usePlaybackPosition = (interval: number = 1_000): Duration | null =
     return () => {
       window.clearInterval(intervalId)
     }
-  }, [currentTrackOffset, interval])
+  }, [currentTrackOffset, updatedAt, interval])
 
   return runningTime
 }

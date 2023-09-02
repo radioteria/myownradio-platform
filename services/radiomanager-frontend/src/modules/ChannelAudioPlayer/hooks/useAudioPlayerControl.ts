@@ -12,10 +12,11 @@ const filterBelow = (value: number, threshold: number) => (value < threshold ? 0
 export const useAudioPlayerControl = (audioRef: MutableRefObject<HTMLAudioElement | null>) => {
   const { nowPlaying, updatedAt } = useNowPlaying()
   const currentAudioOffsetRef = useRef(ZERO)
-  const numRestarts = useAudioRestartOnError(audioRef)
+  const numRestartsOnError = useAudioRestartOnError(audioRef)
 
   const currentTrackId = nowPlaying?.currentTrack.track_id ?? null
 
+  const [numRestarts, restart] = useReducer((n: number) => n + 1, 0)
   useEffect(() => {
     const audioElement = audioRef.current
 
@@ -39,7 +40,7 @@ export const useAudioPlayerControl = (audioRef: MutableRefObject<HTMLAudioElemen
     return () => {
       stopAudio(audioElement)
     }
-  }, [currentTrackId, audioRef, numRestarts])
+  }, [currentTrackId, audioRef, numRestartsOnError, numRestarts])
 
-  return currentAudioOffsetRef
+  return { currentAudioOffsetRef, restart }
 }

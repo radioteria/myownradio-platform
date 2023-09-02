@@ -40,6 +40,10 @@ export class Duration {
     return this.toMillis() < threshold.toMillis() ? ZERO : this
   }
 
+  public isNeg = () => {
+    return this.toMillis() < 0
+  }
+
   public toString = () => {
     return `${this.toMillis().toFixed(0)}ms`
   }

@@ -8,7 +8,7 @@ import { Duration } from '@/utils/duration'
  * @param interval - Interval time in milliseconds for updating the running time. Default is 1000 ms.
  * @returns runningTime - The current playback position.
  */
-export const usePlaybackPosition = (interval: number = 1_000): Duration | null => {
+export const useEstimatedTrackPosition = (interval: number = 1_000): Duration | null => {
   // Using the custom hook to get information about the currently playing track
   const { nowPlaying, updatedAt } = useNowPlaying()
   const timeSince = Duration.fromMillis(new Date().getTime() - updatedAt.getTime())

@@ -3,7 +3,7 @@ import { useAudioPlayerControl } from './useAudioPlayerControl'
 import { useAudioPlayerSync } from '@/modules/ChannelAudioPlayer/hooks/useAudioPlayerSync'
 
 export const useChannelAudioPlayer = (audioRef: MutableRefObject<HTMLAudioElement | null>) => {
-  const currentAudioOffsetRef = useAudioPlayerControl(audioRef)
+  const { currentAudioOffsetRef, restart } = useAudioPlayerControl(audioRef)
 
-  useAudioPlayerSync(audioRef, currentAudioOffsetRef)
+  useAudioPlayerSync(audioRef, currentAudioOffsetRef, restart)
 }

@@ -28,10 +28,10 @@ export const useChannelPlayer = (
 
     if (!audio1Element || !audio2Element || !nowPlaying) return
 
-    debug('Active audio element: %d', activeAudioRef.current)
     activeAudioRef.current = 1 - activeAudioRef.current
     const activeAudioElement = activeAudioRef.current === 0 ? audio1Element : audio2Element
     const inactiveAudioElement = activeAudioRef.current === 0 ? audio2Element : audio1Element
+    debug('Active audio element: %d', activeAudioRef.current)
 
     const trackPosition = nowPlaying.currentTrack.offset
     const trackId = nowPlaying.currentTrack.trackId

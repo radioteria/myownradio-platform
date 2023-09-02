@@ -8,7 +8,7 @@ const debug = makeDebug('useChannelPlayer')
 
 const LATENCY_TOLERANCE = Duration.fromMillis(500)
 
-export const useSeekAudio = (
+export const useAudioPlayerSync = (
   audioRef: MutableRefObject<HTMLAudioElement | null>,
   currentAudioOffsetRef: MutableRefObject<Duration>,
 ) => {

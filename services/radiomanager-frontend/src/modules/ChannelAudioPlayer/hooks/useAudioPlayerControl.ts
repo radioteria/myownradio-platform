@@ -9,7 +9,7 @@ const POSITION_TOLERANCE = Duration.fromMillis(500)
 
 const filterBelow = (value: number, threshold: number) => (value < threshold ? 0 : value)
 
-export const usePlayStopAudio = (audioRef: MutableRefObject<HTMLAudioElement | null>) => {
+export const useAudioPlayerControl = (audioRef: MutableRefObject<HTMLAudioElement | null>) => {
   const { nowPlaying, updatedAt } = useNowPlaying()
   const currentAudioOffsetRef = useRef(ZERO)
   const numRestarts = useAudioRestartOnError(audioRef)

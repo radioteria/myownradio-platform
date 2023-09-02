@@ -1,9 +1,9 @@
 import { MutableRefObject } from 'react'
-import { usePlayStopAudio } from './usePlayStopAudio'
-import { useSeekAudio } from '@/modules/ChannelAudioPlayer/hooks/useSeekAudio'
+import { useAudioPlayerControl } from './useAudioPlayerControl'
+import { useAudioPlayerSync } from '@/modules/ChannelAudioPlayer/hooks/useAudioPlayerSync'
 
 export const useChannelAudioPlayer = (audioRef: MutableRefObject<HTMLAudioElement | null>) => {
-  const currentAudioOffsetRef = usePlayStopAudio(audioRef)
+  const currentAudioOffsetRef = useAudioPlayerControl(audioRef)
 
-  useSeekAudio(audioRef, currentAudioOffsetRef)
+  useAudioPlayerSync(audioRef, currentAudioOffsetRef)
 }

@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect, useRef } from 'react'
+import { MutableRefObject, useEffect, useReducer, useRef } from 'react'
 import makeDebug from 'debug'
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { seekAudio, loadAudio, playAudio, stopAudio } from '@/utils/audio'
@@ -19,6 +19,8 @@ export const useChannelPlayer = (
 
   const isPlaying = !!nowPlayingData.nowPlaying
   const activeAudioRef = useRef(0)
+
+  const [restarted, restart] = useReducer((n: number) => n + 1, 0)
 
   // Play Effect
   useEffect(() => {
@@ -52,13 +54,28 @@ export const useChannelPlayer = (
       estimatedTrackPosition,
       positionPercent,
     )
+
+    let restartTimeoutId = <number | null>null
+
+    const handleAudioError = (ev: ErrorEvent) => {
+      debug('Triggering restart: error happened on playing audio: %s', ev)
+      restartTimeoutId = window.setTimeout(restart, 500)
+    }
+    activeAudioElement.addEventListener('error', handleAudioError)
     playAudio(activeAudioElement, src)
 
     const nextTrackId = nowPlaying.nextTrack.trackId
     const nextSrc = `${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${nextTrackId}/transcode`
     debug('Preloading next track %s', nextTrackId)
     loadAudio(inactiveAudioElement, nextSrc)
-  }, [audio0Ref, audioOffsetRef, audio1Ref, currentTrackId])
+
+    return () => {
+      activeAudioElement.removeEventListener('error', handleAudioError)
+      if (restartTimeoutId) {
+        window.clearTimeout(restartTimeoutId)
+      }
+    }
+  }, [audio0Ref, audioOffsetRef, audio1Ref, currentTrackId, restarted])
 
   // Stop Effect
   useEffect(() => {
@@ -98,7 +115,7 @@ export const useChannelPlayer = (
 
     if (latency < 0 && Math.abs(latency) > currentAudioTime) {
       debug('Audio latency is negative and exceeds current audio position.')
-      // TODO: Restart
+      restart()
       return
     }
 

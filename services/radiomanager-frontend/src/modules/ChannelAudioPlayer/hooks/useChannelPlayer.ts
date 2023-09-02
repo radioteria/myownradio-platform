@@ -1,7 +1,7 @@
 import { MutableRefObject, useEffect, useRef } from 'react'
 import makeDebug from 'debug'
 import { useNowPlaying } from '@/modules/NowPlaying'
-import { loadAudio, playAudio, stopAudio } from '@/utils/audio'
+import { seekAudio, loadAudio, playAudio, stopAudio } from '@/utils/audio'
 import { BACKEND_BASE_URL } from '@/api'
 import { filterBelow, scale } from '@/utils/math'
 
@@ -10,8 +10,8 @@ const debug = makeDebug('useChannelPlayer')
 const START_TOLERANCE = 500
 
 export const useChannelPlayer = (
+  audio0Ref: MutableRefObject<HTMLAudioElement | null>,
   audio1Ref: MutableRefObject<HTMLAudioElement | null>,
-  audio2Ref: MutableRefObject<HTMLAudioElement | null>,
   audioOffsetRef: MutableRefObject<number>,
 ) => {
   const nowPlayingData = useNowPlaying()
@@ -20,17 +20,17 @@ export const useChannelPlayer = (
   const isPlaying = !!nowPlayingData.nowPlaying
   const activeAudioRef = useRef(0)
 
-  // Play Hook
+  // Play Effect
   useEffect(() => {
+    const audio0Element = audio0Ref.current
     const audio1Element = audio1Ref.current
-    const audio2Element = audio2Ref.current
     const { nowPlaying, updatedAt } = nowPlayingData
 
-    if (!audio1Element || !audio2Element || !nowPlaying) return
+    if (!audio0Element || !audio1Element || !nowPlaying) return
 
     activeAudioRef.current = 1 - activeAudioRef.current
-    const activeAudioElement = activeAudioRef.current === 0 ? audio1Element : audio2Element
-    const inactiveAudioElement = activeAudioRef.current === 0 ? audio2Element : audio1Element
+    const activeAudioElement = activeAudioRef.current === 0 ? audio0Element : audio1Element
+    const inactiveAudioElement = activeAudioRef.current === 0 ? audio1Element : audio0Element
     debug('Active audio element: %d', activeAudioRef.current)
 
     const trackPosition = nowPlaying.currentTrack.offset
@@ -58,12 +58,12 @@ export const useChannelPlayer = (
     const nextSrc = `${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${nextTrackId}/transcode`
     debug('Preloading next track %s', nextTrackId)
     loadAudio(inactiveAudioElement, nextSrc)
-  }, [audio1Ref, audioOffsetRef, audio2Ref, currentTrackId])
+  }, [audio0Ref, audioOffsetRef, audio1Ref, currentTrackId])
 
-  // Stop Hook
+  // Stop Effect
   useEffect(() => {
-    const audio1Element = audio1Ref.current
-    const audio2Element = audio2Ref.current
+    const audio1Element = audio0Ref.current
+    const audio2Element = audio1Ref.current
 
     if (!isPlaying || !audio1Element || !audio2Element) return
 
@@ -72,5 +72,40 @@ export const useChannelPlayer = (
       stopAudio(audio1Element)
       stopAudio(audio2Element)
     }
-  }, [audio1Ref, audio2Ref, isPlaying])
+  }, [audio0Ref, audio1Ref, isPlaying])
+
+  // Latency Effect
+  useEffect(() => {
+    const audio1Element = audio0Ref.current
+    const audio2Element = audio1Ref.current
+
+    const { nowPlaying, updatedAt } = nowPlayingData
+
+    if (!audio1Element || !audio2Element || !nowPlaying) return
+
+    const activeAudioElement = activeAudioRef.current === 0 ? audio1Element : audio2Element
+
+    const trackPosition = nowPlaying.currentTrack.offset
+    const timeSinceLastUpdate = Date.now() - updatedAt.getTime()
+
+    const estimatedTrackPosition = filterBelow(trackPosition + timeSinceLastUpdate, START_TOLERANCE)
+    const currentAudioTime = activeAudioElement.currentTime * 1000
+    const currentTrackPosition = currentAudioTime + audioOffsetRef.current
+
+    const latency = estimatedTrackPosition - currentTrackPosition
+
+    debug('Latency: %dms', latency)
+
+    if (latency < 0 && Math.abs(latency) > currentAudioTime) {
+      debug('Audio latency is negative and exceeds current audio position.')
+      // TODO: Restart
+      return
+    }
+
+    if (Math.abs(latency) > 1_000) {
+      debug('Advancing audio position by %dms', latency)
+
+      seekAudio(activeAudioElement, latency / 1000)
+    }
+  }, [audio0Ref, audio1Ref, audioOffsetRef, nowPlayingData])
 }

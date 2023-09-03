@@ -4,11 +4,8 @@ const debug = makeDebug('audio.ts')
 
 export function playAudio(htmlAudioElement: HTMLAudioElement, src: string) {
   debug('Starting audio playback: %s', src)
-  if (htmlAudioElement.currentSrc !== src) {
-    htmlAudioElement.src = src
-    htmlAudioElement.load()
-  }
-  htmlAudioElement.currentTime = 0
+  htmlAudioElement.src = src
+  htmlAudioElement.load()
   htmlAudioElement.play().catch((error) => {
     debug('Unable to start audio playback: %s', error)
   })
@@ -16,13 +13,8 @@ export function playAudio(htmlAudioElement: HTMLAudioElement, src: string) {
 
 export function loadAudio(htmlAudioElement: HTMLAudioElement, src: string) {
   debug('Loading audio: %s', src)
-  if (htmlAudioElement.currentSrc !== src) {
-    htmlAudioElement.src = src
-    htmlAudioElement.load()
-  }
-
-  htmlAudioElement.currentTime = 0
-  htmlAudioElement.pause()
+  htmlAudioElement.src = src
+  htmlAudioElement.load()
 }
 
 export function stopAudio(htmlAudioElement: HTMLAudioElement) {
@@ -30,10 +22,6 @@ export function stopAudio(htmlAudioElement: HTMLAudioElement) {
   htmlAudioElement.pause()
   htmlAudioElement.load()
   htmlAudioElement.removeAttribute('src')
-}
-
-export function isAudioStopped(htmlAudioElement: HTMLAudioElement) {
-  return htmlAudioElement.ended || htmlAudioElement.paused
 }
 
 export function seekAudio(htmlAudioElement: HTMLAudioElement, amountSeconds: number) {

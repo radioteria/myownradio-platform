@@ -27,7 +27,7 @@ export const StreamOverlay: React.FC<Props> = ({ channelId }) => {
       >
         OFFLINE
       </div>
-      {playing && <ChannelAudioPlayer />}
+      {playing && <ChannelAudioPlayer channelId={channelId} />}
     </>
   )
 }

@@ -1,7 +1,6 @@
-import { BACKEND_BASE_URL, getNowPlaying } from '@/api'
+import { BACKEND_BASE_URL, getNowPlaying, NowPlaying } from '@/api'
 import makeDebug from 'debug'
 import { loadAudio, playAudio, stopAudio } from '@/utils/audio'
-import EventEmitter from 'events'
 
 const debug = makeDebug('ChannelPlayerService')
 
@@ -9,18 +8,36 @@ export class ChannelPlayerService {
   private currentTimestamp = Date.now()
   private stopping = false
 
-  private nextAudioSrcCache: null | string = null
+  private activeAudioElement = 0
+  private nextNowPlayingPromise: null | Promise<NowPlaying> = null
 
   constructor(
     private readonly channelId: number,
-    private readonly audioElement: HTMLAudioElement,
+    private readonly audio0Element: HTMLAudioElement,
+    private readonly audio1Element: HTMLAudioElement,
   ) {}
+
+  private readonly getNextActiveAudioElement = () => {
+    this.activeAudioElement = 1 - this.activeAudioElement
+
+    return this.activeAudioElement === 0 ? this.audio0Element : this.audio1Element
+  }
+
+  private readonly getInactiveAudioElement = () => {
+    return this.activeAudioElement === 0 ? this.audio1Element : this.audio0Element
+  }
 
   public readonly runLoop = async () => {
     debug('Starting player loop')
+
     while (!this.stopping) {
-      let nowPlaying = await getNowPlaying(this.channelId, this.currentTimestamp)
+      let nowPlaying = this.nextNowPlayingPromise
+        ? await this.nextNowPlayingPromise
+        : await getNowPlaying(this.channelId, this.currentTimestamp)
+      this.nextNowPlayingPromise = null
+
       const { trackId, offset, duration } = nowPlaying.currentTrack
+      const remainder = duration - offset
       debug('Now playing: %s (%d)', trackId, offset)
 
       const audioUrl = new URL(
@@ -30,9 +47,15 @@ export class ChannelPlayerService {
       const audioSrc = audioUrl.toString()
       debug('Audio URL: %s', audioSrc)
 
-      playAudio(this.audioElement, this.nextAudioSrcCache ?? audioSrc)
+      const activeAudioElement = this.getNextActiveAudioElement()
 
-      this.nextAudioSrcCache = null
+      playAudio(activeAudioElement, audioSrc)
+
+      debug('Current latency: %dms', Date.now() - this.currentTimestamp)
+
+      this.currentTimestamp += remainder
+
+      this.nextNowPlayingPromise = getNowPlaying(this.channelId, this.currentTimestamp)
 
       await new Promise((resolve, reject) => {
         const handleError = (ev: ErrorEvent) => {
@@ -48,35 +71,36 @@ export class ChannelPlayerService {
         }
 
         const handleCanPlayThrough = () => {
-          this.nextAudioSrcCache = `${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${nowPlaying.nextTrack.trackId}/transcode`
+          const nextAudioSrc = `${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${nowPlaying.nextTrack.trackId}/transcode`
+          loadAudio(this.getInactiveAudioElement(), nextAudioSrc)
         }
 
-        this.audioElement.addEventListener('error', handleError)
-        this.audioElement.addEventListener('ended', handleEnded)
-        this.audioElement.addEventListener('canplaythrough', handleCanPlayThrough)
+        activeAudioElement.addEventListener('error', handleError)
+        activeAudioElement.addEventListener('ended', handleEnded)
+        activeAudioElement.addEventListener('canplaythrough', handleCanPlayThrough)
 
         const dispose = () => {
-          this.audioElement.removeEventListener('error', handleError)
-          this.audioElement.removeEventListener('ended', handleEnded)
-          this.audioElement.removeEventListener('canplaythrough', handleCanPlayThrough)
+          activeAudioElement.removeEventListener('error', handleError)
+          activeAudioElement.removeEventListener('ended', handleEnded)
+          activeAudioElement.removeEventListener('canplaythrough', handleCanPlayThrough)
         }
       })
-
-      this.currentTimestamp += duration
     }
 
     debug('Playback loop ended')
   }
 
   public readonly reload = () => {
-    this.nextAudioSrcCache = null
+    this.nextNowPlayingPromise = null
 
-    stopAudio(this.audioElement)
+    stopAudio(this.audio0Element)
+    stopAudio(this.audio1Element)
   }
 
   public readonly stop = () => {
     this.stopping = true
 
-    stopAudio(this.audioElement)
+    stopAudio(this.audio0Element)
+    stopAudio(this.audio1Element)
   }
 }

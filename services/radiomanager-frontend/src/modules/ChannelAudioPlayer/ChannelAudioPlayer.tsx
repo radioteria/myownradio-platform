@@ -11,7 +11,7 @@ export const ChannelAudioPlayer: React.FC<Props> = ({ channelId }) => {
   const audio2Ref = useRef(null)
   const audioOffsetRef = useRef(0)
 
-  useChannelPlayer2(channelId, audio1Ref)
+  useChannelPlayer2(channelId, audio1Ref, audio2Ref)
 
   return (
     <>

@@ -156,14 +156,14 @@ export class ChannelPlayerService {
   }
 
   public readonly reload = () => {
-    stopAudio(this.audioElement)
+    debug('Reloading channel')
     stopAudio(this.audioElement)
   }
 
   public readonly stop = () => {
+    debug('Stopping channel playback')
     this.stopping = true
 
-    stopAudio(this.audioElement)
     stopAudio(this.audioElement)
   }
 }

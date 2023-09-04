@@ -1,106 +1,169 @@
-import { BACKEND_BASE_URL, getNowPlaying, NowPlaying } from '@/api'
+import { getNowPlaying, getTrackTranscodeStream } from '@/api'
 import makeDebug from 'debug'
-import { loadAudio, playAudio, stopAudio } from '@/utils/audio'
+import { appendBufferAsync, playAudio, stopAudio } from '@/utils/audio'
+import { streamAsyncIterator } from '@/utils/iterators'
 
 const debug = makeDebug('ChannelPlayerService')
 
+const BUFFER_LENGTH_MILLISECONDS = 5_000
+
 export class ChannelPlayerService {
-  private currentTimestamp = Date.now()
   private stopping = false
 
-  private activeAudioElement = 0
-  private nextNowPlayingPromise: null | Promise<NowPlaying> = null
+  private bufferedTimeInternal = 0
+
+  public get bufferedTime() {
+    return this.bufferedTimeInternal
+  }
 
   constructor(
     private readonly channelId: number,
-    private readonly audio0Element: HTMLAudioElement,
-    private readonly audio1Element: HTMLAudioElement,
+    private readonly audioElement: HTMLAudioElement,
   ) {}
 
-  private readonly getNextActiveAudioElement = () => {
-    this.activeAudioElement = 1 - this.activeAudioElement
-
-    return this.activeAudioElement === 0 ? this.audio0Element : this.audio1Element
-  }
-
-  private readonly getInactiveAudioElement = () => {
-    return this.activeAudioElement === 0 ? this.audio1Element : this.audio0Element
-  }
-
   public readonly runLoop = async () => {
-    debug('Starting player loop')
-
     while (!this.stopping) {
-      let nowPlaying = this.nextNowPlayingPromise
-        ? await this.nextNowPlayingPromise
-        : await getNowPlaying(this.channelId, this.currentTimestamp)
-      this.nextNowPlayingPromise = null
+      let objectURL: string | null = null
 
-      const { trackId, offset, duration } = nowPlaying.currentTrack
-      const remainder = duration - offset
-      debug('Now playing: %s (%d)', trackId, offset)
+      try {
+        debug('Creating Media Source')
+        const mediaSource = this.createChannelMediaSource()
+        objectURL = URL.createObjectURL(mediaSource)
 
-      const audioUrl = new URL(
-        `${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${trackId}/transcode`,
-      )
-      if (offset > 0) audioUrl.searchParams.set('initialPosition', `${offset}`)
-      const audioSrc = audioUrl.toString()
-      debug('Audio URL: %s', audioSrc)
+        debug('Playing Media Source')
+        playAudio(this.audioElement, objectURL)
 
-      const activeAudioElement = this.getNextActiveAudioElement()
+        await new Promise<void>((resolve, reject) => {
+          const handleEnded = () => {
+            resolve()
+            dispose()
+          }
 
-      playAudio(activeAudioElement, audioSrc)
+          const handleError = (ev: ErrorEvent) => {
+            reject(ev)
+            dispose()
+          }
 
-      debug('Current latency: %dms', Date.now() - this.currentTimestamp)
+          const handleTimeUpdate = () => {
+            if (this.audioElement.buffered.length > 0) {
+              const end = this.audioElement.buffered.end(0)
+              const position = this.audioElement.currentTime
 
-      this.currentTimestamp += remainder
+              this.bufferedTimeInternal = end - position
+            }
+          }
 
-      this.nextNowPlayingPromise = getNowPlaying(this.channelId, this.currentTimestamp)
+          this.audioElement.addEventListener('ended', handleEnded)
+          this.audioElement.addEventListener('error', handleError)
+          this.audioElement.addEventListener('timeupdate', handleTimeUpdate)
 
-      await new Promise((resolve, reject) => {
-        const handleError = (ev: ErrorEvent) => {
-          debug('Stopping playback due to error: %s', ev)
-          reject(ev)
-          dispose()
-        }
+          const dispose = () => {
+            this.audioElement.removeEventListener('ended', handleEnded)
+            this.audioElement.removeEventListener('error', handleError)
+            this.audioElement.removeEventListener('timeupdate', handleTimeUpdate)
+            this.bufferedTimeInternal = 0
+          }
+        })
 
-        const handleEnded = () => {
-          debug('Playback ended')
-          resolve(null)
-          dispose()
-        }
-
-        const handleCanPlayThrough = () => {
-          const nextAudioSrc = `${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${nowPlaying.nextTrack.trackId}/transcode`
-          loadAudio(this.getInactiveAudioElement(), nextAudioSrc)
-        }
-
-        activeAudioElement.addEventListener('error', handleError)
-        activeAudioElement.addEventListener('ended', handleEnded)
-        activeAudioElement.addEventListener('canplaythrough', handleCanPlayThrough)
-
-        const dispose = () => {
-          activeAudioElement.removeEventListener('error', handleError)
-          activeAudioElement.removeEventListener('ended', handleEnded)
-          activeAudioElement.removeEventListener('canplaythrough', handleCanPlayThrough)
-        }
-      })
+        debug('Media Source playback finished')
+      } finally {
+        objectURL && URL.revokeObjectURL(objectURL)
+      }
     }
+  }
 
-    debug('Playback loop ended')
+  public readonly createChannelMediaSource = (): MediaSource => {
+    const localDebug = debug.extend('MediaSource')
+    const mediaSource = new MediaSource()
+    const abortController = new AbortController()
+
+    const startTimeMillis = Date.now()
+    let currentTime = startTimeMillis
+
+    mediaSource.addEventListener('sourceclose', () => {
+      localDebug('Media Source closed')
+      abortController.abort()
+    })
+
+    mediaSource.addEventListener('sourceopen', async () => {
+      localDebug('Opening Media Source')
+
+      let sourceBuffer = <SourceBuffer | null>null
+
+      while (!this.stopping) {
+        const nowPlaying = await getNowPlaying(this.channelId, currentTime)
+        const remainder = nowPlaying.currentTrack.duration - nowPlaying.currentTrack.offset
+        localDebug(
+          'Now Playing: %s (pos: %d, rem: %d)',
+          nowPlaying.currentTrack.trackId,
+          nowPlaying.currentTrack.offset,
+          remainder,
+        )
+        const { stream, contentType } = await getTrackTranscodeStream(
+          nowPlaying.currentTrack.trackId,
+          nowPlaying.currentTrack.offset,
+          abortController.signal,
+        )
+
+        if (!sourceBuffer) {
+          localDebug('Creating Source Buffer')
+          sourceBuffer = mediaSource.addSourceBuffer(contentType)
+        }
+
+        const sb = sourceBuffer
+
+        try {
+          for await (const bytes of streamAsyncIterator(stream, abortController.signal)) {
+            if (mediaSource.readyState !== 'open') {
+              localDebug('MediaSource closed: exiting')
+              return
+            }
+
+            await appendBufferAsync(sb, bytes)
+
+            const currentTimeMillis = Date.now()
+            const estimatedTimestampMillis =
+              currentTimeMillis - startTimeMillis + BUFFER_LENGTH_MILLISECONDS
+            const bufferTimestampOffsetMillis = sb.timestampOffset * 1000
+
+            await new Promise<void>((resolve) => {
+              window.setTimeout(
+                () => resolve(),
+                bufferTimestampOffsetMillis - estimatedTimestampMillis,
+              )
+            })
+          }
+        } finally {
+          await stream.cancel()
+        }
+
+        currentTime += remainder
+      }
+
+      if (mediaSource.readyState !== 'open') {
+        localDebug('MediaSource closed: exiting')
+        return
+      }
+
+      if (sourceBuffer) {
+        await appendBufferAsync(sourceBuffer, new Uint8Array())
+      }
+
+      mediaSource.endOfStream()
+    })
+
+    return mediaSource
   }
 
   public readonly reload = () => {
-    this.nextNowPlayingPromise = null
-
-    stopAudio(this.audio0Element)
-    stopAudio(this.audio1Element)
+    stopAudio(this.audioElement)
+    stopAudio(this.audioElement)
   }
 
   public readonly stop = () => {
     this.stopping = true
 
-    stopAudio(this.audio0Element)
-    stopAudio(this.audio1Element)
+    stopAudio(this.audioElement)
+    stopAudio(this.audioElement)
   }
 }

@@ -34,3 +34,16 @@ export function seekAudio(htmlAudioElement: HTMLAudioElement, amountSeconds: num
   debug('Advancing audio: %f', amountSeconds.toPrecision(2))
   htmlAudioElement.currentTime += amountSeconds
 }
+
+export async function appendBufferAsync(
+  sourceBuffer: SourceBuffer,
+  buffer: Uint8Array,
+): Promise<void> {
+  sourceBuffer.appendBuffer(buffer)
+
+  if (sourceBuffer.updating) {
+    await new Promise<void>((resolve) => {
+      sourceBuffer.onupdateend = () => resolve()
+    })
+  }
+}

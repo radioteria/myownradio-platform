@@ -1,17 +1,18 @@
 import { useRef } from 'react'
 import { useChannelPlayer } from './hooks/useChannelPlayer'
 
-export const ChannelAudioPlayer = () => {
-  const audio1Ref = useRef(null)
-  const audio2Ref = useRef(null)
-  const audioOffsetRef = useRef(0)
+interface Props {
+  readonly channelId: number
+}
 
-  useChannelPlayer(audio1Ref, audio2Ref, audioOffsetRef)
+export const ChannelAudioPlayer: React.FC<Props> = ({ channelId }) => {
+  const audio1Ref = useRef(null)
+
+  useChannelPlayer(channelId, audio1Ref)
 
   return (
     <>
       <audio ref={audio1Ref} />
-      <audio ref={audio2Ref} />
     </>
   )
 }

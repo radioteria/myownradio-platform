@@ -154,3 +154,25 @@ export async function removeTracksFromChannelById(uniqueIds: readonly string[], 
     .then((res) => res.json())
     .then((json) => RemoveTracksFromChannelResponseSchema.parse(json).data)
 }
+
+export const getTrackTranscodeStream = async (
+  trackId: number,
+  initialPosition: number,
+  signal: AbortSignal,
+): Promise<{ readonly stream: ReadableStream<Uint8Array>; readonly contentType: string }> => {
+  const audioUrl = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${trackId}/transcode`)
+  if (initialPosition > 0) audioUrl.searchParams.set('initialPosition', `${initialPosition}`)
+
+  const response = await fetch(audioUrl, {
+    credentials: 'include',
+    signal,
+  })
+  const contentType = response.headers.get('Content-Type')
+  if (!contentType) {
+    throw new Error('Content-Type is not defined')
+  }
+
+  const stream = response.body ?? new ReadableStream()
+
+  return { stream, contentType }
+}

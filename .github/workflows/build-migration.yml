@@ -6,8 +6,9 @@ on:
     branches:
       - main
     paths:
-      - 'migrations/*'
+      - 'migrations/**'
       - 'images/migration/**'
+      - '.github/workflows/build-migration.yml'
 
 jobs:
   main:
@@ -15,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: trigger the build
-        uses: peter-evans/repository-dispatch@v1
+        uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           event-type: build-image

@@ -51,9 +51,7 @@ UNLOCK TABLES;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `file.when.added` AFTER INSERT ON `fs_file` FOR EACH ROW UPDATE fs_list SET files_count = files_count + 1 WHERE fs_id = NEW.server_id */;;
-DELIMITER ;
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `file.when.added` AFTER INSERT ON `fs_file` FOR EACH ROW UPDATE fs_list SET files_count = files_count + 1 WHERE fs_id = NEW.server_id */;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -66,9 +64,7 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `file.when.deleted` AFTER DELETE ON `fs_file` FOR EACH ROW UPDATE fs_list SET files_count = files_count - 1 WHERE fs_id = OLD.server_id */;;
-DELIMITER ;
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `file.when.deleted` AFTER DELETE ON `fs_file` FOR EACH ROW UPDATE fs_list SET files_count = files_count - 1 WHERE fs_id = OLD.server_id */;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -661,13 +657,15 @@ UNLOCK TABLES;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `like.when.added` AFTER INSERT ON `mor_track_like` FOR EACH ROW IF (NEW.relation = "like") THEN
-    UPDATE mor_track_stat SET likes = likes + 1 WHERE track_id = NEW.track_id;
-ELSE
-    UPDATE mor_track_stat SET dislikes = dislikes + 1 WHERE track_id = NEW.track_id;
-END IF */;;
-DELIMITER ;
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `like.when.added` AFTER INSERT ON `mor_track_like`
+FOR EACH ROW
+BEGIN
+    IF (NEW.relation = "like") THEN
+        UPDATE mor_track_stat SET likes = likes + 1 WHERE track_id = NEW.track_id;
+    ELSE
+        UPDATE mor_track_stat SET dislikes = dislikes + 1 WHERE track_id = NEW.track_id;
+    END IF;
+END */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -680,13 +678,15 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `like.when.deleted` AFTER DELETE ON `mor_track_like` FOR EACH ROW IF (OLD.relation = "like") THEN
-    UPDATE mor_track_stat SET likes = likes - 1 WHERE track_id = OLD.track_id;
-ELSE
-    UPDATE mor_track_stat SET dislikes = dislikes - 1 WHERE track_id = OLD.track_id;
-END IF */;;
-DELIMITER ;
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `like.when.deleted` AFTER DELETE ON `mor_track_like`
+FOR EACH ROW
+BEGIN
+    IF (OLD.relation = "like") THEN
+        UPDATE mor_track_stat SET likes = likes - 1 WHERE track_id = OLD.track_id;
+    ELSE
+        UPDATE mor_track_stat SET dislikes = dislikes - 1 WHERE track_id = OLD.track_id;
+    END IF;
+END */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -866,9 +866,7 @@ UNLOCK TABLES;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `bookmark.when.added` AFTER INSERT ON `r_bookmarks` FOR EACH ROW UPDATE r_static_stream_vars SET bookmarks_count = bookmarks_count + 1 WHERE stream_id = NEW.stream_id */;;
-DELIMITER ;
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `bookmark.when.added` AFTER INSERT ON `r_bookmarks` FOR EACH ROW UPDATE r_static_stream_vars SET bookmarks_count = bookmarks_count + 1 WHERE stream_id = NEW.stream_id */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -881,9 +879,7 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `bookmark.when.removed` AFTER DELETE ON `r_bookmarks` FOR EACH ROW UPDATE r_static_stream_vars SET bookmarks_count = bookmarks_count - 1 WHERE stream_id = OLD.stream_id */;;
-DELIMITER ;
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `bookmark.when.removed` AFTER DELETE ON `r_bookmarks` FOR EACH ROW UPDATE r_static_stream_vars SET bookmarks_count = bookmarks_count - 1 WHERE stream_id = OLD.stream_id */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -979,7 +975,6 @@ UNLOCK TABLES;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `rlink.when.added` AFTER INSERT ON `r_link` FOR EACH ROW BEGIN
 
     SELECT duration INTO @duration FROM r_tracks WHERE tid = NEW.track_id;
@@ -987,8 +982,7 @@ DELIMITER ;;
 
     INSERT INTO `r_static_stream_vars` SET `stream_id` = NEW.`stream_id`, `tracks_count` = 1, `tracks_duration` = @duration ON DUPLICATE KEY UPDATE  `tracks_count` = `tracks_count` + 1, `tracks_duration` = `tracks_duration` + @duration;
 
-END */;;
-DELIMITER ;
+END */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1001,14 +995,12 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `rlink.when.modified` AFTER UPDATE ON `r_link` FOR EACH ROW BEGIN
     IF (OLD.track_id != NEW.track_id) THEN
         UPDATE r_tracks SET used_count = used_count - 1 WHERE tid = OLD.track_id;
         UPDATE r_tracks SET used_count = used_count + 1 WHERE tid = NEW.track_id;
     END IF;
-END */;;
-DELIMITER ;
+END */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1021,7 +1013,6 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `rlink.when.deleted` BEFORE DELETE ON `r_link` FOR EACH ROW BEGIN
 
     SELECT duration
@@ -1039,8 +1030,7 @@ DELIMITER ;;
     WHERE `stream_id` = OLD.`stream_id`;
 
 
-END */;;
-DELIMITER ;
+END */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1084,12 +1074,10 @@ UNLOCK TABLES;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `when.listener.added` AFTER INSERT ON `r_listener` FOR EACH ROW BEGIN
     UPDATE r_static_stream_vars set listeners_count = listeners_count + 1, playbacks = playbacks + 1 WHERE stream_id = NEW.stream;
     UPDATE r_static_user_vars set listeners_count = listeners_count + 1 WHERE user_id = (SELECT uid FROM r_streams WHERE sid = NEW.stream);
-END */;;
-DELIMITER ;
+END */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1102,14 +1090,12 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `when.listener.finished` AFTER UPDATE ON `r_listener` FOR EACH ROW IF NEW.finished IS NOT NULL THEN
     UPDATE r_static_stream_vars
     SET listeners_count = listeners_count - 1, summary_played = summary_played + TIMESTAMPDIFF(SECOND, NEW.started, NEW.finished)
     WHERE stream_id = NEW.stream;
     UPDATE r_static_user_vars set listeners_count = listeners_count - 1 WHERE user_id = (SELECT uid FROM r_streams WHERE sid = NEW.stream);
-END IF */;;
-DELIMITER ;
+END IF */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1122,12 +1108,10 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `when.listener.deleted` AFTER DELETE ON `r_listener` FOR EACH ROW IF OLD.finished IS NULL THEN
     UPDATE r_static_stream_vars SET listeners_count = listeners_count - 1 WHERE stream_id = OLD.stream AND listeners_count > 0;
     UPDATE r_static_user_vars set listeners_count = listeners_count - 1 WHERE user_id = (SELECT uid FROM r_streams WHERE sid = OLD.stream);
-END IF */;;
-DELIMITER ;
+END IF */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1358,15 +1342,13 @@ UNLOCK TABLES;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `stream.when.added` AFTER INSERT ON `r_streams` FOR EACH ROW BEGIN
     INSERT INTO r_static_stream_vars SET stream_id = NEW.sid;
     UPDATE r_static_user_vars SET streams_count = streams_count + 1 WHERE user_id = NEW.uid;
     IF NEW.access = "PUBLIC" THEN
         CALL increase_streams_in_category(NEW.category);
     END IF;
-END */;;
-DELIMITER ;
+END */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1379,7 +1361,6 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `stream.when.changed` AFTER UPDATE ON `r_streams` FOR EACH ROW BEGIN
     IF OLD.access = "PUBLIC" THEN
         CALL decrease_streams_in_category(OLD.category);
@@ -1387,8 +1368,7 @@ DELIMITER ;;
     IF NEW.access = "PUBLIC" THEN
         CALL increase_streams_in_category(NEW.category);
     END IF;
-END */;;
-DELIMITER ;
+END */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1401,7 +1381,6 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `stream.when.removed` AFTER DELETE ON `r_streams` FOR EACH ROW BEGIN
     DELETE FROM r_static_stream_vars WHERE stream_id = OLD.sid;
     UPDATE r_static_user_vars SET streams_count = streams_count - 1 WHERE user_id = OLD.uid;
@@ -1410,8 +1389,7 @@ DELIMITER ;;
                                 CALL decrease_streams_in_category(OLD.category);
 END IF;
 
-END */;;
-DELIMITER ;
+END */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1484,13 +1462,11 @@ UNLOCK TABLES;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `track.when.added` AFTER INSERT ON `r_tracks` FOR EACH ROW BEGIN
     INSERT INTO `r_static_user_vars` SET `user_id` = NEW.`uid`, `tracks_count` = 1, `tracks_duration` = NEW.`duration`, `tracks_size` = NEW.`filesize`
     ON DUPLICATE KEY UPDATE `tracks_count` = `tracks_count` + 1, `tracks_duration` = `tracks_duration` + NEW.`duration`, `tracks_size` = `tracks_size` + NEW.`filesize`;
     INSERT INTO mor_track_stat SET track_id = NEW.tid;
-END */;;
-DELIMITER ;
+END */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1541,12 +1517,10 @@ UNLOCK TABLES;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `when.user.added` AFTER INSERT ON `r_users` FOR EACH ROW BEGIN
     INSERT INTO r_static_user_vars SET user_id = NEW.uid;
     INSERT INTO opt_user_options SET user_id = NEW.uid;
-END */;;
-DELIMITER ;
+END */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1559,9 +1533,7 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `when.user.removed` AFTER DELETE ON `r_users` FOR EACH ROW DELETE FROM r_static_user_vars WHERE user_id = OLD.uid */;;
-DELIMITER ;
+/*!50003 CREATE*/ /*!50017 DEFINER=`mor`@`%`*/ /*!50003 TRIGGER `when.user.removed` AFTER DELETE ON `r_users` FOR EACH ROW DELETE FROM r_static_user_vars WHERE user_id = OLD.uid */ ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1579,11 +1551,9 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 CREATE DEFINER=`mor`@`%` FUNCTION `TODAY`(`PARAM` TIMESTAMP) RETURNS tinyint(1)
     NO SQL
-    RETURN CAST(NOW() AS DATE) = CAST(PARAM AS DATE) ;;
-DELIMITER ;
+    RETURN CAST(NOW() AS DATE) = CAST(PARAM AS DATE) ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1597,13 +1567,11 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 CREATE DEFINER=`mor`@`%` PROCEDURE `decrease_streams_in_category`(IN `id` INT)
     NO SQL
 UPDATE r_categories
 SET streams_count = GREATEST(streams_count - 1, 0)
-WHERE category_id = id ;;
-DELIMITER ;
+WHERE category_id = id ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1617,13 +1585,11 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 CREATE DEFINER=`mor`@`%` PROCEDURE `increase_streams_in_category`(IN `id` INT)
     NO SQL
 UPDATE r_categories
 SET streams_count = streams_count + 1
-WHERE category_id = id ;;
-DELIMITER ;
+WHERE category_id = id ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1637,7 +1603,6 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 CREATE DEFINER=`mor`@`%` PROCEDURE `move_track_channel`(IN `s_id` INT, IN `s_target` VARCHAR(16), IN `s_index` INT)
     NO SQL
 proc:BEGIN
@@ -1671,8 +1636,7 @@ END IF;
 
 UPDATE `r_link` SET `t_order` = s_index, `time_offset` = @newOffset WHERE `unique_id` = s_target;
 
-END ;;
-DELIMITER ;
+END ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1686,7 +1650,6 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 CREATE DEFINER=`mor`@`%` PROCEDURE `optimize_channel`(IN `s_id` INT)
     NO SQL
 BEGIN
@@ -1710,8 +1673,7 @@ UPDATE r_link AS target
         target.t_order     = source.col,
         target.time_offset = source.acc;
 
-END ;;
-DELIMITER ;
+END ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1725,7 +1687,6 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 CREATE DEFINER=`mor`@`%` PROCEDURE `serverListenersRotate`()
     NO SQL
 BEGIN
@@ -1736,8 +1697,7 @@ FROM `r_listener`
 WHERE TODAY(`started`) AND `finished` IS NOT NULL
 GROUP BY `stream`;
 
-END ;;
-DELIMITER ;
+END ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
@@ -1751,7 +1711,6 @@ DELIMITER ;
 /*!50003 SET collation_connection  = utf8_general_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
 CREATE DEFINER=`mor`@`%` PROCEDURE `shuffle_channel`(IN `s_id` INT)
     NO SQL
 BEGIN
@@ -1775,8 +1734,7 @@ UPDATE r_link AS target
         target.t_order     = source.col,
         target.time_offset = source.acc;
 
-END ;;
-DELIMITER ;
+END ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;

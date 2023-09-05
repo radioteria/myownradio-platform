@@ -1,4 +1,4 @@
-name: trigger radio-streamer image build
+name: trigger mysql-migration build
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
     paths:
       - 'migrations/**'
       - 'images/migration/**'
-      - '.github/workflows/build-migration.yml'
+      - '.github/workflows/build-migrations.yml'
 
 jobs:
   main:

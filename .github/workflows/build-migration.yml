@@ -1,0 +1,27 @@
+name: trigger radio-streamer image build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'migrations/**'
+
+jobs:
+  main:
+    name: main
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger the build
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: build-image
+          client-payload: |
+            {
+              "image_name": "pldin601/myownradio-mysql-migration",
+              "dockerfile": "images/migration/Dockerfile",
+              "context": ".",
+              "token": "${{ secrets.REPO_ACCESS_TOKEN }}"
+            }

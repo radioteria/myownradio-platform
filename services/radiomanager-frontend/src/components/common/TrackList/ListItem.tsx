@@ -17,7 +17,7 @@ interface Props {
   onThreeDotsClick: (event: React.MouseEvent<HTMLElement>) => void
 }
 
-export const TrackListItem: React.FC<Props> = ({
+export const ListItem: React.FC<Props> = ({
   track,
   currentTrack,
   index,
@@ -43,7 +43,7 @@ export const TrackListItem: React.FC<Props> = ({
       ])}
       onClick={handleClick}
     >
-      <div className="p-2 pl-4 w-12 flex-shrink-0 z-10 text-right">
+      <div className="p-2 pl-4 w-14 flex-shrink-0 z-10 text-right text-sm">
         {isCurrentTrack ? <AnimatedBars size={12} /> : <>{index + 1}</>}
       </div>
       <div className="p-2 w-full z-10 min-w-0">

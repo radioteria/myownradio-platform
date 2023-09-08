@@ -1,9 +1,7 @@
 import React, { useRef, useEffect, ReactNode, useState } from 'react'
 
 interface InfiniteScrollProps {
-  enabled?: boolean
   onReach: () => void
-  offset?: number
   children?: ReactNode
 }
 

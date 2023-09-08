@@ -89,18 +89,15 @@ export const ChannelTracksList: React.FC<Props> = ({
   return (
     <section className={'h-full'}>
       <TracksList
+        totalTracks={canInfinitelyScroll ? tracks.length + 50 : tracks.length}
+        topTrackOffset={0}
         tracks={tracks}
         currentTrack={currentTrack}
         onTracksListMenu={handleTracksListMenu}
         contextMenuRef={contextMenuRef}
+        onScrollBottom={onInfiniteScroll}
+        onScrollTop={() => console.log('top')}
       />
-      {canInfinitelyScroll && (
-        <InfiniteScroll key={tracks.length} offset={200} onReach={onInfiniteScroll}>
-          <div className={'text-center p-2'}>
-            <AnimatedBars size={32} />
-          </div>
-        </InfiniteScroll>
-      )}
     </section>
   )
 }

@@ -1,5 +1,5 @@
 import cn from 'classnames'
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { AnimatedBars } from '@/icons/AnimatedBars'
 import { ThreeDots } from '@/icons/ThreeDots'
 import { Duration } from '@/components/Duration/Duration'
@@ -26,6 +26,8 @@ export const ListItem: React.FC<Props> = ({
   onSelect,
   onThreeDotsClick,
 }) => {
+  const itemRef = useRef<HTMLLIElement | null>(null)
+
   const isCurrentTrack = currentTrack?.index === index
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -34,8 +36,15 @@ export const ListItem: React.FC<Props> = ({
     onSelect(event)
   }
 
+  // useEffect(() => {
+  //   if (isCurrentTrack) {
+  //     itemRef.current?.scrollIntoView()
+  //   }
+  // }, [isCurrentTrack])
+
   return (
     <li
+      ref={itemRef}
       key={track.trackId}
       className={cn([
         'flex items-center border-gray-800 h-12 relative cursor-pointer select-none',

@@ -1,11 +1,17 @@
-import { MutableRefObject, useRef } from 'react'
+import { MutableRefObject, useEffect, useRef, useState } from 'react'
 import { TrackItem, CurrentTrack } from './types'
-import { TrackListItem } from './TrackListItem'
+import { ListItem } from './ListItem'
 import { isModifierKeyPressed } from './helpers'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useListItemSelector } from '@/hooks/useListItemSelector'
+import { SkeletonList } from '@/components/common/TrackList/SkeletonList'
+import { InfiniteScroll } from '@/components/common/InfiniteScroll/InfiniteScroll'
+import { noop } from '@/utils/fun'
+import { SkeletonItem } from '@/components/common/TrackList/SkeletonItem'
 
 interface Props<Item extends TrackItem> {
+  readonly totalTracks: number
+  readonly topTrackOffset: number
   readonly tracks: readonly Item[]
   readonly currentTrack: CurrentTrack | null
   readonly onTracksListMenu: (
@@ -13,13 +19,19 @@ interface Props<Item extends TrackItem> {
     event: React.MouseEvent<HTMLElement>,
   ) => void
   readonly contextMenuRef: MutableRefObject<null>
+  readonly onScrollTop?: () => void
+  readonly onScrollBottom?: () => void
 }
 
 export function TracksList<Item extends TrackItem>({
+  totalTracks,
+  topTrackOffset,
   tracks,
   currentTrack,
   onTracksListMenu,
   contextMenuRef,
+  onScrollTop,
+  onScrollBottom,
 }: Props<Item>) {
   const listRef = useRef(null)
   const selector = useListItemSelector(tracks)
@@ -54,21 +66,30 @@ export function TracksList<Item extends TrackItem>({
     onTracksListMenu(selectedTracks, event)
   }
 
+  const topSkeletonLength = topTrackOffset
+  const bottomSkeletonLength = totalTracks - topTrackOffset - tracks.length
+
+  const scrollRef = useRef<HTMLUListElement | null>(null)
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView()
+  }, [scrollRef])
+
   return (
     <div ref={listRef} onContextMenu={handleContextMenu}>
       <div ref={contextMenuRef} />
-      <ul>
-        <li className="flex text-gray-500">
-          <div className="pl-4 pr-2 py-4 w-12 flex-shrink-0 text-right">#</div>
-          <div className="px-2 py-4 w-full">Title</div>
-          <div className="px-2 py-4 w-full hidden xl:block">Album</div>
-          <div className="px-2 py-4 w-20 flex-shrink-0 text-right">⏱</div>
-          <div className="pl-2 pr-4 py-4 w-10 flex-shrink-0 text-right" />
-        </li>
-
+      {topSkeletonLength > 0 && (
+        <>
+          <SkeletonList length={topSkeletonLength - 1} />
+          <InfiniteScroll key={`top-${tracks.length}`} onReach={onScrollTop ?? noop}>
+            <SkeletonItem />
+          </InfiniteScroll>
+        </>
+      )}
+      <ul ref={scrollRef}>
         {selector.listItems.map((listItem, index) => {
           return (
-            <TrackListItem
+            <ListItem
               key={index}
               track={listItem.item}
               currentTrack={currentTrack}
@@ -81,6 +102,14 @@ export function TracksList<Item extends TrackItem>({
           )
         })}
       </ul>
+      {bottomSkeletonLength > 0 && (
+        <>
+          <InfiniteScroll key={`bottom-${tracks.length}`} onReach={onScrollBottom ?? noop}>
+            <SkeletonItem />
+          </InfiniteScroll>
+          <SkeletonList length={bottomSkeletonLength} />
+        </>
+      )}
     </div>
   )
 }

@@ -2,18 +2,14 @@ import React, { useRef, useEffect, ReactNode, useState } from 'react'
 
 interface InfiniteScrollProps {
   onReach: () => void
-  offset?: number
   children?: ReactNode
 }
 
-export const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
-  onReach,
-  offset = 100,
-  children,
-}) => {
+export const InfiniteScroll: React.FC<InfiniteScrollProps> = ({ onReach, children }) => {
   const ref = useRef<HTMLDivElement>(null)
   const [hasTriggered, setHasTriggered] = useState(false)
 
+  // Intersection
   useEffect(() => {
     const current = ref.current
 
@@ -28,12 +24,14 @@ export const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
       }
     }
 
-    const observer = new IntersectionObserver(handleIntersection)
+    const observer = new IntersectionObserver(handleIntersection, {
+      threshold: 0.25,
+    })
 
     observer.observe(current)
 
     return () => observer.unobserve(current)
-  }, [onReach, offset, hasTriggered])
+  }, [hasTriggered, onReach])
 
   return <div ref={ref}>{children}</div>
 }

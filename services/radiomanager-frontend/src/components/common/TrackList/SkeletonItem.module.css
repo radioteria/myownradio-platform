@@ -1,0 +1,15 @@
+@keyframes skeletonBounce {
+    from, 50% {
+        background-color: #d1d5db;
+    }
+    75% {
+        background-color: #dbdfe7;
+    }
+    to {
+        background-color: #d1d5db;
+    }
+}
+
+.skeletonAnimation {
+    animation: skeletonBounce 1s infinite;
+}

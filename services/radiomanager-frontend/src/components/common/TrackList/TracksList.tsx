@@ -79,12 +79,13 @@ export function TracksList<Item extends TrackItem>({
     <div ref={listRef} onContextMenu={handleContextMenu}>
       <div ref={contextMenuRef} />
       {topSkeletonLength > 0 && (
-        <>
-          <SkeletonList length={topSkeletonLength - 1} />
-          <InfiniteScroll key={`top-${tracks.length}`} onReach={onScrollTop ?? noop}>
-            <SkeletonItem />
-          </InfiniteScroll>
-        </>
+        <InfiniteScroll
+          key={`top-${firstTrackOffset}`}
+          threshold={0.5 / topSkeletonLength}
+          onReach={onScrollTop ?? noop}
+        >
+          <SkeletonList length={topSkeletonLength} />
+        </InfiniteScroll>
       )}
       <ul ref={scrollRef}>
         {selector.listItems.map((listItem, index) => {
@@ -104,10 +105,13 @@ export function TracksList<Item extends TrackItem>({
       </ul>
       {bottomSkeletonLength > 0 && (
         <>
-          <InfiniteScroll key={`bottom-${tracks.length}`} onReach={onScrollBottom ?? noop}>
-            <SkeletonItem />
+          <InfiniteScroll
+            key={`bottom-${tracks.length}`}
+            threshold={0.5 / bottomSkeletonLength}
+            onReach={onScrollBottom ?? noop}
+          >
+            <SkeletonList length={bottomSkeletonLength} />
           </InfiniteScroll>
-          <SkeletonList length={bottomSkeletonLength} />
         </>
       )}
     </div>

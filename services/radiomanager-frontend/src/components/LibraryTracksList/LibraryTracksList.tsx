@@ -67,7 +67,7 @@ export const LibraryTracksList: React.FC<Props> = ({
     <section className={'h-full'}>
       <TracksList
         totalTracks={canInfinitelyScroll ? tracks.length + 50 : tracks.length}
-        firstTrackOffset={0}
+        firstTrackOffset={3}
         tracks={tracks}
         currentTrack={null}
         onTracksListMenu={handleTracksListMenu}

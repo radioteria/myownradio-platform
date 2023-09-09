@@ -11,7 +11,7 @@ import { SkeletonItem } from '@/components/common/TrackList/SkeletonItem'
 
 interface Props<Item extends TrackItem> {
   readonly totalTracks: number
-  readonly topTrackOffset: number
+  readonly firstTrackOffset: number
   readonly tracks: readonly Item[]
   readonly currentTrack: CurrentTrack | null
   readonly onTracksListMenu: (
@@ -25,7 +25,7 @@ interface Props<Item extends TrackItem> {
 
 export function TracksList<Item extends TrackItem>({
   totalTracks,
-  topTrackOffset,
+  firstTrackOffset,
   tracks,
   currentTrack,
   onTracksListMenu,
@@ -66,8 +66,8 @@ export function TracksList<Item extends TrackItem>({
     onTracksListMenu(selectedTracks, event)
   }
 
-  const topSkeletonLength = topTrackOffset
-  const bottomSkeletonLength = totalTracks - topTrackOffset - tracks.length
+  const topSkeletonLength = firstTrackOffset
+  const bottomSkeletonLength = totalTracks - firstTrackOffset - tracks.length
 
   const scrollRef = useRef<HTMLUListElement | null>(null)
 

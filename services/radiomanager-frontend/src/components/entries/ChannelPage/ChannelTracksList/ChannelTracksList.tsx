@@ -90,7 +90,7 @@ export const ChannelTracksList: React.FC<Props> = ({
     <section className={'h-full'}>
       <TracksList
         totalTracks={canInfinitelyScroll ? tracks.length + 50 : tracks.length}
-        topTrackOffset={0}
+        firstTrackOffset={0}
         tracks={tracks}
         currentTrack={currentTrack}
         onTracksListMenu={handleTracksListMenu}

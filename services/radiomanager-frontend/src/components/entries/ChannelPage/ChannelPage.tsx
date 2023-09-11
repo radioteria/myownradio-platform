@@ -12,16 +12,18 @@ import { MediaUploaderComponent } from '@/modules/MediaUploader'
 import { useChannelPageStore } from './hooks/useChannelPageStore'
 
 interface Props {
-  channelId: number
-  user: User
-  userChannelTracks: readonly UserChannelTrack[]
-  userChannels: readonly UserChannel[]
+  readonly channelId: number
+  readonly userChannel: UserChannel
+  readonly userChannelTracks: readonly UserChannelTrack[]
+  readonly user: User
+  readonly userChannels: readonly UserChannel[]
 }
 
 export const ChannelPage: React.FC<Props> = ({
   channelId,
-  user,
+  userChannel,
   userChannelTracks,
+  user,
   userChannels,
 }) => {
   const channelPageStore = useChannelPageStore(channelId, userChannelTracks)
@@ -34,9 +36,8 @@ export const ChannelPage: React.FC<Props> = ({
         content={
           <ChannelTracksList
             channelId={channelId}
+            totalTracks={userChannel.tracksCount}
             tracks={channelPageStore.trackEntries}
-            canInfinitelyScroll={channelPageStore.canInfinitelyScroll}
-            onInfiniteScroll={channelPageStore.handleInfiniteScroll}
             onDeleteTracks={channelPageStore.handleDeletingTracks}
             onRemoveTracksFromChannel={channelPageStore.handleRemovingTracksFromChannel}
           />

@@ -1,6 +1,4 @@
-use crate::data_structures::{
-    SortingColumn, SortingOrder, TrackId, UserId, DEFAULT_TRACKS_PER_REQUEST,
-};
+use crate::data_structures::{SortingColumn, SortingOrder, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{FileRow, TrackRow};
@@ -76,7 +74,8 @@ pub(crate) async fn get_user_tracks(
     connection: &mut MySqlConnection,
     user_id: &UserId,
     params: &GetUserTracksParams,
-    offset: &u32,
+    offset: &Option<i64>,
+    limit: &Option<i64>,
 ) -> RepositoryResult<Vec<TrackFileMergedRow>> {
     let mut builder = create_select_query_builder();
 
@@ -108,10 +107,19 @@ pub(crate) async fn get_user_tracks(
         params.sorting_order.as_str()
     ));
 
-    builder.push(" LIMIT ");
-    builder.push_bind(offset);
-    builder.push(", ");
-    builder.push_bind(DEFAULT_TRACKS_PER_REQUEST);
+    match (limit, offset) {
+        (Some(limit), Some(offset)) => {
+            builder.push(" LIMIT ");
+            builder.push_bind(offset);
+            builder.push(", ");
+            builder.push_bind(limit);
+        }
+        (Some(limit), _) => {
+            builder.push(" LIMIT ");
+            builder.push_bind(limit);
+        }
+        _ => (),
+    }
 
     let query = builder.build_query_as::<TrackFileMergedRow>();
 

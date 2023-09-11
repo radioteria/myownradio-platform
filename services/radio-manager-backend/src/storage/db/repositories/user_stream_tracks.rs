@@ -1,10 +1,9 @@
-use crate::data_structures::{LinkId, OrderId, StreamId, TrackId, DEFAULT_TRACKS_PER_REQUEST};
+use crate::data_structures::{LinkId, OrderId, StreamId, TrackId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{FileRow, LinkRow, TrackRow};
 use chrono::Duration;
 use sqlx::{query, Execute, MySql, QueryBuilder};
-use std::mem::swap;
 use std::ops::{Deref, DerefMut};
 use tracing::trace;
 
@@ -74,7 +73,8 @@ pub(crate) async fn get_stream_tracks(
     connection: &mut MySqlConnection,
     stream_id: &StreamId,
     params: &GetUserStreamTracksParams,
-    offset: &u32,
+    offset: &Option<i64>,
+    limit: &Option<i64>,
 ) -> RepositoryResult<Vec<TrackFileLinkMergedRow>> {
     let mut builder = create_select_query_builder();
 
@@ -96,10 +96,19 @@ pub(crate) async fn get_stream_tracks(
 
     builder.push(" ORDER BY `r_link`.`t_order`");
 
-    builder.push(" LIMIT ");
-    builder.push_bind(offset);
-    builder.push(", ");
-    builder.push_bind(DEFAULT_TRACKS_PER_REQUEST);
+    match (limit, offset) {
+        (Some(limit), Some(offset)) => {
+            builder.push(" LIMIT ");
+            builder.push_bind(offset);
+            builder.push(", ");
+            builder.push_bind(limit);
+        }
+        (Some(limit), _) => {
+            builder.push(" LIMIT ");
+            builder.push_bind(limit);
+        }
+        _ => (),
+    }
 
     let query = builder.build_query_as::<TrackFileLinkMergedRow>();
 
@@ -272,7 +281,8 @@ pub(crate) async fn optimize_tracks_in_user_stream(
         &mut connection,
         stream_id,
         &GetUserStreamTracksParams::default(),
-        &0,
+        &None,
+        &None,
     )
     .await?;
 

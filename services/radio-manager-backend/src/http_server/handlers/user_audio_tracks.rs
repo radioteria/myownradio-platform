@@ -1,5 +1,7 @@
 use crate::config::Config;
-use crate::data_structures::{SortingColumn, SortingOrder, StreamId, TrackId, UserId};
+use crate::data_structures::{
+    SortingColumn, SortingOrder, StreamId, TrackId, UserId, DEFAULT_TRACKS_PER_REQUEST,
+};
 use crate::http_server::response::Response;
 use crate::services::ffmpeg_service::{
     transcode_audio_file, AudioChannels, AudioCodec, AudioContainer, TranscodeAudioFileFormat,
@@ -20,7 +22,7 @@ use crate::utils::TeeResultUtils;
 use crate::MySqlClient;
 use actix_web::web::{Data, Form, Path, Query};
 use actix_web::{web, HttpResponse};
-use futures::{channel::mpsc, StreamExt};
+use futures::channel::mpsc;
 use serde::Deserialize;
 use std::time::Duration;
 use tracing::error;
@@ -32,7 +34,9 @@ pub(crate) struct GetUserAudioTracksQuery {
     #[serde(default)]
     filter: Option<String>,
     #[serde(default)]
-    offset: u32,
+    offset: i64,
+    #[serde(default)]
+    limit: Option<i64>,
     #[serde(default)]
     unused: bool,
     #[serde(default)]
@@ -56,6 +60,12 @@ pub(crate) async fn get_user_audio_tracks(
 
     let mut conn = mysql_client.connection().await?;
 
+    let offset = params.offset;
+    let limit = params
+        .limit
+        .unwrap_or(DEFAULT_TRACKS_PER_REQUEST)
+        .min(DEFAULT_TRACKS_PER_REQUEST);
+
     let track_rows = get_user_tracks(
         &mut conn,
         &user_id,
@@ -66,7 +76,8 @@ pub(crate) async fn get_user_audio_tracks(
             sorting_order: params.order,
             unused: params.unused,
         },
-        &params.offset,
+        &Some(offset),
+        &Some(limit),
     )
     .await
     .tee_err(|error| {
@@ -109,13 +120,15 @@ pub(crate) struct GetUserPlaylistAudioTracksQuery {
     #[serde(default)]
     filter: Option<String>,
     #[serde(default)]
-    offset: u32,
+    offset: i64,
+    #[serde(default)]
+    limit: Option<i64>,
 }
 
 pub(crate) async fn get_user_stream_audio_tracks(
-    path: web::Path<StreamId>,
+    path: Path<StreamId>,
     user_id: UserId,
-    query: web::Query<GetUserPlaylistAudioTracksQuery>,
+    query: Query<GetUserPlaylistAudioTracksQuery>,
     mysql_client: Data<MySqlClient>,
 ) -> Response {
     let stream_id = path.into_inner();
@@ -140,6 +153,12 @@ pub(crate) async fn get_user_stream_audio_tracks(
         }
     }
 
+    let offset = params.offset;
+    let limit = params
+        .limit
+        .unwrap_or(DEFAULT_TRACKS_PER_REQUEST)
+        .min(DEFAULT_TRACKS_PER_REQUEST);
+
     let track_rows = get_stream_tracks(
         &mut connection,
         &stream_id,
@@ -147,7 +166,8 @@ pub(crate) async fn get_user_stream_audio_tracks(
             color: color_id,
             filter: params.filter,
         },
-        &params.offset,
+        &Some(offset),
+        &Some(limit),
     )
     .await
     .tee_err(|error| {

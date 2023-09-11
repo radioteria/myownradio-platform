@@ -1,11 +1,6 @@
-import { useCallback, useMemo, useState } from 'react'
-import { toLibraryTrackEntry } from '@/components/LibraryTracksList/LibraryTracksList'
-import {
-  deleteTracksById,
-  getLibraryTracks,
-  getUnusedLibraryTracks,
-  MAX_TRACKS_PER_REQUEST,
-} from '@/api'
+import { useCallback, useEffect, useState } from 'react'
+import { LibraryTrackEntry, toLibraryTrackEntry } from '@/components/LibraryTracksList'
+import { deleteTracksById, getLibraryTracks, MAX_TRACKS_PER_REQUEST } from '@/api'
 import { useHandleLibraryLastUploadedTrack } from './useHandleLibraryLastUploadedTrack'
 
 import type { UserTrack } from '@/api'
@@ -18,34 +13,35 @@ export const useLibraryPageStore = (
   initialUserTracks: readonly UserTrack[],
   config?: StoreConfig,
 ) => {
-  const initialTrackEntries = useMemo(
-    () => initialUserTracks.map(toLibraryTrackEntry),
-    [initialUserTracks],
+  const [trackEntries, setTrackEntries] = useState<readonly LibraryTrackEntry[]>(() =>
+    initialUserTracks.map(toLibraryTrackEntry),
   )
-  const [trackEntries, setTrackEntries] = useState(initialTrackEntries)
 
   const addTrackEntry = useCallback((track: UserTrack) => {
     setTrackEntries((entries) => [toLibraryTrackEntry(track), ...entries])
   }, [])
 
-  useHandleLibraryLastUploadedTrack(addTrackEntry)
+  const [isFetching, setIsFetching] = useState(true)
+  useEffect(() => {
+    if (!isFetching) return
 
-  const initialCanInfinitelyScroll = initialTrackEntries.length === MAX_TRACKS_PER_REQUEST
-  const [canInfinitelyScroll, setCanInfinitelyScroll] = useState(initialCanInfinitelyScroll)
-  const handleInfiniteScroll = () => {
-    const promise = config?.filterUnusedTracks
-      ? getUnusedLibraryTracks(trackEntries.length)
-      : getLibraryTracks(trackEntries.length)
+    const abortController = new AbortController()
 
-    promise.then((tracks) => {
+    getLibraryTracks({
+      offset: trackEntries.length,
+      signal: abortController.signal,
+    }).then((tracks) => {
       const newEntries = tracks.map(toLibraryTrackEntry)
       setTrackEntries((entries) => [...entries, ...newEntries])
-
-      if (MAX_TRACKS_PER_REQUEST > newEntries.length) {
-        setCanInfinitelyScroll(newEntries.length === MAX_TRACKS_PER_REQUEST)
-      }
+      setIsFetching(newEntries.length === MAX_TRACKS_PER_REQUEST)
     })
-  }
+
+    return () => {
+      abortController.abort()
+    }
+  }, [isFetching, trackEntries])
+
+  useHandleLibraryLastUploadedTrack(addTrackEntry, config?.filterUnusedTracks ?? false)
 
   const handleDeletingTracks = (trackIds: readonly number[]) => {
     const idsSet = new Set(trackIds)
@@ -61,8 +57,6 @@ export const useLibraryPageStore = (
 
   return {
     trackEntries,
-    canInfinitelyScroll,
-    handleInfiniteScroll,
     handleDeletingTracks,
   }
 }

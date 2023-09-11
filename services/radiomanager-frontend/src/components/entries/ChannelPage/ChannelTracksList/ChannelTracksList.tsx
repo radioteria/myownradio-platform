@@ -2,11 +2,9 @@ import { useRef } from 'react'
 import { UserChannelTrack } from '@/api'
 import { TracksList } from '@/components/common/TrackList'
 import { useNowPlaying } from '@/modules/NowPlaying'
-import { InfiniteScroll } from '@/components/common/InfiniteScroll/InfiniteScroll'
-import AnimatedBars from '@/icons/AnimatedBars'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 
-interface ChannelTrackEntry {
+export interface ChannelTrackEntry {
   trackId: number
   uniqueId: string
   title: string
@@ -25,19 +23,17 @@ export const toChannelTrackEntry = (track: UserChannelTrack): ChannelTrackEntry 
 })
 
 interface Props {
+  readonly totalTracks: number
   readonly tracks: readonly ChannelTrackEntry[]
   readonly channelId: number
-  readonly canInfinitelyScroll: boolean
-  readonly onInfiniteScroll: () => void
   readonly onDeleteTracks: (trackIds: readonly number[]) => void
   readonly onRemoveTracksFromChannel: (uniqueIds: readonly string[]) => void
 }
 
 export const ChannelTracksList: React.FC<Props> = ({
+  totalTracks,
   tracks,
   channelId,
-  canInfinitelyScroll,
-  onInfiniteScroll,
   onDeleteTracks,
   onRemoveTracksFromChannel,
 }) => {
@@ -89,14 +85,11 @@ export const ChannelTracksList: React.FC<Props> = ({
   return (
     <section className={'h-full'}>
       <TracksList
-        totalTracks={canInfinitelyScroll ? tracks.length + 50 : tracks.length}
-        topTrackOffset={0}
+        totalTracks={totalTracks}
         tracks={tracks}
         currentTrack={currentTrack}
         onTracksListMenu={handleTracksListMenu}
         contextMenuRef={contextMenuRef}
-        onScrollBottom={onInfiniteScroll}
-        onScrollTop={() => console.log('top')}
       />
     </section>
   )

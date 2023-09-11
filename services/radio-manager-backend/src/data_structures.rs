@@ -148,4 +148,4 @@ impl std::ops::Sub<i32> for OrderId {
 }
 
 // Copied from Defaults.php
-pub(crate) const DEFAULT_TRACKS_PER_REQUEST: i64 = 50;
+pub(crate) const DEFAULT_TRACKS_PER_REQUEST: i64 = 200;

@@ -16,7 +16,7 @@ import {
 
 export const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
 
-export const MAX_TRACKS_PER_REQUEST = 50
+export const MAX_TRACKS_PER_REQUEST = 200
 
 export async function getChannels() {
   const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/`
@@ -61,12 +61,18 @@ export async function getUnusedLibraryTracks(offset = 0) {
     .then((json) => LibraryTracksResponseSchema.parse(json).data)
 }
 
-export async function getChannelTracks(channelId: number, offset = 0) {
-  const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/tracks/`)
-  url.searchParams.set('offset', String(offset))
-  url.searchParams.set('limit', String(MAX_TRACKS_PER_REQUEST))
+interface GetChannelTracksOpts {
+  readonly offset?: number
+  readonly limit?: number
+  readonly signal?: AbortSignal
+}
 
-  return await isomorphicFetch(url)
+export async function getChannelTracks(channelId: number, opts?: GetChannelTracksOpts) {
+  const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/tracks/`)
+  url.searchParams.set('offset', String(opts?.offset ?? 0))
+  url.searchParams.set('limit', String(opts?.limit ?? MAX_TRACKS_PER_REQUEST))
+
+  return await isomorphicFetch(url, { signal: opts?.signal })
     .then((res) => res.json())
     .then((json) => ChannelTracksResponseSchema.parse(json).data)
 }

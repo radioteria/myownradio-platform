@@ -1,3 +1,5 @@
+import exp from 'constants'
+
 export const streamAsyncIterator = <T>(stream: ReadableStream<T>, signal?: AbortSignal) => ({
   async *[Symbol.asyncIterator]() {
     // Get a lock on the stream
@@ -48,4 +50,12 @@ export function createPromiseChannel<T>(): readonly [(t: T) => void, Promise<T>]
   }
 
   return [resolve, promise] as const
+}
+
+export function repeat<T>(value: T, times: number) {
+  return new Array<T>(times).fill(value)
+}
+
+export function range(from = 0, to: number) {
+  return new Array(to - from).fill(null).map((_, i) => i + from)
 }

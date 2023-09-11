@@ -5,9 +5,9 @@ interface Props {
 }
 
 export const SkeletonList: React.FC<Props> = ({ length }) => (
-  <ul>
+  <>
     {new Array(length).fill(null).map((_, index) => (
       <SkeletonItem key={index} />
     ))}
-  </ul>
+  </>
 )

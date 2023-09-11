@@ -39,7 +39,7 @@ const UserSchema = z
   .transform((v) => camelKeys(v))
 export type User = z.infer<typeof UserSchema>
 
-export const UserStreamSchema = z
+export const UserChannelSchema = z
   .object({
     sid: z.number(),
     uid: z.number(),
@@ -65,7 +65,7 @@ export const UserStreamSchema = z
     url: z.string(),
   })
   .transform((v) => camelKeys(v))
-export type UserChannel = z.infer<typeof UserStreamSchema>
+export type UserChannel = z.infer<typeof UserChannelSchema>
 
 export const UserTrackSchema = z
   .object({
@@ -108,7 +108,7 @@ export const SelfResponseSchema = z.object({
   data: z
     .object({
       user: UserSchema,
-      streams: z.array(UserStreamSchema),
+      streams: z.array(UserChannelSchema),
       client_id: z.string(),
     })
     .transform((v) => camelKeys(v)),

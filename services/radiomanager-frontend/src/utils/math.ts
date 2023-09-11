@@ -9,3 +9,7 @@ export function scale(value: number, valueMax: number, scaleMax: number): number
 export function filterBelow(value: number, threshold: number): number {
   return value < threshold ? 0 : value
 }
+
+export function quantise(value: number, ratio: number): number {
+  return Math.floor(value / ratio) * ratio
+}

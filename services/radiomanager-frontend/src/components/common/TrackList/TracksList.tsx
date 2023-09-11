@@ -1,17 +1,14 @@
-import { MutableRefObject, useEffect, useRef, useState } from 'react'
+import { MutableRefObject, useRef } from 'react'
 import { TrackItem, CurrentTrack } from './types'
 import { ListItem } from './ListItem'
 import { isModifierKeyPressed } from './helpers'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useListItemSelector } from '@/hooks/useListItemSelector'
-import { SkeletonList } from '@/components/common/TrackList/SkeletonList'
-import { InfiniteScroll } from '@/components/common/InfiniteScroll/InfiniteScroll'
-import { noop } from '@/utils/fun'
 import { SkeletonItem } from '@/components/common/TrackList/SkeletonItem'
+import { range } from '@/utils/iterators'
 
 interface Props<Item extends TrackItem> {
   readonly totalTracks: number
-  readonly firstTrackOffset: number
   readonly tracks: readonly Item[]
   readonly currentTrack: CurrentTrack | null
   readonly onTracksListMenu: (
@@ -19,19 +16,14 @@ interface Props<Item extends TrackItem> {
     event: React.MouseEvent<HTMLElement>,
   ) => void
   readonly contextMenuRef: MutableRefObject<null>
-  readonly onScrollTop?: () => void
-  readonly onScrollBottom?: () => void
 }
 
 export function TracksList<Item extends TrackItem>({
   totalTracks,
-  firstTrackOffset,
   tracks,
   currentTrack,
   onTracksListMenu,
   contextMenuRef,
-  onScrollTop,
-  onScrollBottom,
 }: Props<Item>) {
   const listRef = useRef(null)
   const selector = useListItemSelector(tracks)
@@ -61,33 +53,16 @@ export function TracksList<Item extends TrackItem>({
   const handleContextMenu = (event: React.MouseEvent<HTMLElement>) => {
     event.preventDefault()
     const selectedTracks = selector.listItems
-      .filter(({ isSelected }) => isSelected)
+      .filter(({ isSelected, item }) => isSelected)
       .map(({ item }) => item)
     onTracksListMenu(selectedTracks, event)
   }
 
-  const topSkeletonLength = firstTrackOffset
-  const bottomSkeletonLength = totalTracks - firstTrackOffset - tracks.length
-
-  const scrollRef = useRef<HTMLUListElement | null>(null)
-
-  useEffect(() => {
-    scrollRef.current?.scrollIntoView()
-  }, [scrollRef])
-
   return (
     <div ref={listRef} onContextMenu={handleContextMenu}>
       <div ref={contextMenuRef} />
-      {topSkeletonLength > 0 && (
-        <InfiniteScroll
-          key={`top-${firstTrackOffset}`}
-          threshold={0.5 / topSkeletonLength}
-          onReach={onScrollTop ?? noop}
-        >
-          <SkeletonList length={topSkeletonLength} />
-        </InfiniteScroll>
-      )}
-      <ul ref={scrollRef}>
+
+      <ul>
         {selector.listItems.map((listItem, index) => {
           return (
             <ListItem
@@ -102,18 +77,11 @@ export function TracksList<Item extends TrackItem>({
             />
           )
         })}
+
+        {[...range(selector.listItems.length, totalTracks)].map((index) => (
+          <SkeletonItem key={index} />
+        ))}
       </ul>
-      {bottomSkeletonLength > 0 && (
-        <>
-          <InfiniteScroll
-            key={`bottom-${tracks.length}`}
-            threshold={0.5 / bottomSkeletonLength}
-            onReach={onScrollBottom ?? noop}
-          >
-            <SkeletonList length={bottomSkeletonLength} />
-          </InfiniteScroll>
-        </>
-      )}
     </div>
   )
 }

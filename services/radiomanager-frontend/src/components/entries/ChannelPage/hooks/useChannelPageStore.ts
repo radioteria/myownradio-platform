@@ -1,5 +1,8 @@
-import { useCallback, useState } from 'react'
-import { toChannelTrackEntry } from '@/components/entries/ChannelPage/ChannelTracksList'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  toChannelTrackEntry,
+  ChannelTrackEntry,
+} from '@/components/entries/ChannelPage/ChannelTracksList'
 import {
   MAX_TRACKS_PER_REQUEST,
   deleteTracksById,
@@ -11,36 +14,38 @@ import { useHandleChannelLastUploadedTrack } from './useHandleChannelLastUploade
 
 import type { UserChannelTrack } from '@/api'
 
-export const useChannelPageStore = (
-  channelId: number,
-  initialUserChannelTracks: readonly UserChannelTrack[],
-) => {
+export const useChannelPageStore = (channelId: number) => {
   const { refresh: refreshNowPlaying } = useNowPlaying()
 
-  const initialTrackEntries = initialUserChannelTracks.map(toChannelTrackEntry)
-  const [trackEntries, setTrackEntries] = useState(initialTrackEntries)
+  const [trackEntries, setTrackEntries] = useState<readonly ChannelTrackEntry[]>([])
 
   const addTrackEntry = useCallback((track: UserChannelTrack) => {
     setTrackEntries((entries) => [...entries, toChannelTrackEntry(track)])
   }, [])
 
-  const initialCanInfinitelyScroll = initialTrackEntries.length === MAX_TRACKS_PER_REQUEST
-  const [canInfinitelyScroll, setCanInfinitelyScroll] = useState(initialCanInfinitelyScroll)
+  const [isFetching, setIsFetching] = useState(true)
+  useEffect(() => {
+    if (!isFetching) return
 
-  const handleInfiniteScroll = () => {
-    getChannelTracks(channelId, trackEntries.length).then((tracks) => {
+    const abortController = new AbortController()
+
+    getChannelTracks(channelId, {
+      offset: trackEntries.length,
+      signal: abortController.signal,
+    }).then((tracks) => {
       const newEntries = tracks.map(toChannelTrackEntry)
       setTrackEntries((entries) => [...entries, ...newEntries])
-
-      if (MAX_TRACKS_PER_REQUEST > newEntries.length) {
-        setCanInfinitelyScroll(newEntries.length === MAX_TRACKS_PER_REQUEST)
-      }
+      setIsFetching(newEntries.length === MAX_TRACKS_PER_REQUEST)
     })
-  }
+
+    return () => {
+      abortController.abort()
+    }
+  }, [isFetching, channelId, trackEntries])
 
   const handleDeletingTracks = (trackIds: readonly number[]) => {
     const idsSet = new Set(trackIds)
-    const updatedTrackEntries = trackEntries.filter(({ trackId }) => !idsSet.has(trackId))
+    const updatedTrackEntries = trackEntries.filter((track) => track && !idsSet.has(track.trackId))
 
     setTrackEntries(updatedTrackEntries)
 
@@ -56,7 +61,7 @@ export const useChannelPageStore = (
 
   const handleRemovingTracksFromChannel = (uniqueIds: readonly string[]) => {
     const idsSet = new Set(uniqueIds)
-    const updatedTrackEntries = trackEntries.filter(({ uniqueId }) => !idsSet.has(uniqueId))
+    const updatedTrackEntries = trackEntries.filter((track) => track && !idsSet.has(track.uniqueId))
 
     setTrackEntries(updatedTrackEntries)
 
@@ -70,12 +75,10 @@ export const useChannelPageStore = (
       })
   }
 
-  useHandleChannelLastUploadedTrack(channelId, canInfinitelyScroll, addTrackEntry)
+  useHandleChannelLastUploadedTrack(channelId, isFetching, addTrackEntry)
 
   return {
     trackEntries,
-    canInfinitelyScroll,
-    handleInfiniteScroll,
     handleDeletingTracks,
     handleRemovingTracksFromChannel,
   }

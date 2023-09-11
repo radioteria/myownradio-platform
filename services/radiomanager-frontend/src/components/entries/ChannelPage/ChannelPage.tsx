@@ -1,6 +1,6 @@
 'use client'
 
-import { User, UserChannel, UserChannelTrack } from '@/api'
+import { Channel, User, UserChannel, UserChannelTrack } from '@/api'
 import { Header } from '@/components/Header'
 import { Sidebar } from '@/components/Sidebar'
 import { StreamOverlay } from '@/components/StreamOverlay'
@@ -12,19 +12,14 @@ import { MediaUploaderComponent } from '@/modules/MediaUploader'
 import { useChannelPageStore } from './hooks/useChannelPageStore'
 
 interface Props {
-  channelId: number
-  user: User
-  userChannelTracks: readonly UserChannelTrack[]
-  userChannels: readonly UserChannel[]
+  readonly channelId: number
+  readonly channel: UserChannel
+  readonly user: User
+  readonly userChannels: readonly UserChannel[]
 }
 
-export const ChannelPage: React.FC<Props> = ({
-  channelId,
-  user,
-  userChannelTracks,
-  userChannels,
-}) => {
-  const channelPageStore = useChannelPageStore(channelId, userChannelTracks)
+export const ChannelPage: React.FC<Props> = ({ channelId, channel, user, userChannels }) => {
+  const channelPageStore = useChannelPageStore(channelId)
 
   return (
     <>
@@ -34,11 +29,12 @@ export const ChannelPage: React.FC<Props> = ({
         content={
           <ChannelTracksList
             channelId={channelId}
+            totalTracks={channel.tracksCount}
             tracks={channelPageStore.trackEntries}
-            canInfinitelyScroll={channelPageStore.canInfinitelyScroll}
-            onInfiniteScroll={channelPageStore.handleInfiniteScroll}
             onDeleteTracks={channelPageStore.handleDeletingTracks}
             onRemoveTracksFromChannel={channelPageStore.handleRemovingTracksFromChannel}
+            // onScrollTop={channelPageStore.handleOnScrollTop}
+            // onScrollBottom={channelPageStore.handleOnScrollBottom}
           />
         }
         rightSidebar={

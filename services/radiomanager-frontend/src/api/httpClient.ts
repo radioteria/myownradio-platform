@@ -40,12 +40,18 @@ export async function getSelf() {
     })
 }
 
-export async function getLibraryTracks(offset = 0) {
-  const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/`)
-  url.searchParams.set('offset', String(offset))
-  url.searchParams.set('limit', String(MAX_TRACKS_PER_REQUEST))
+interface GetLibraryTracksOpts {
+  readonly offset?: number
+  readonly limit?: number
+  readonly signal?: AbortSignal
+}
 
-  return await isomorphicFetch(url)
+export async function getLibraryTracks(opts?: GetLibraryTracksOpts) {
+  const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/`)
+  url.searchParams.set('offset', String(opts?.offset ?? 0))
+  url.searchParams.set('limit', String(opts?.limit ?? MAX_TRACKS_PER_REQUEST))
+
+  return await isomorphicFetch(url, { signal: opts?.signal })
     .then((res) => res.json())
     .then((json) => LibraryTracksResponseSchema.parse(json).data)
 }

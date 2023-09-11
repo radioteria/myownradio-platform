@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { UserTrack } from '@/api'
-import { useMediaUploader } from '@/modules/MediaUploader'
+import { UploadedTrackType, useMediaUploader } from '@/modules/MediaUploader'
 
 export const useHandleLibraryLastUploadedTrack = (
   onLastUploadedTrack: (track: UserTrack) => void,
+  filterUnusedTracks: boolean,
 ) => {
   const { lastUploadedTrack } = useMediaUploader()
 
@@ -12,6 +13,10 @@ export const useHandleLibraryLastUploadedTrack = (
       return
     }
 
+    if (filterUnusedTracks && lastUploadedTrack.type === UploadedTrackType.CHANNEL) {
+      return
+    }
+
     onLastUploadedTrack(lastUploadedTrack.track)
-  }, [lastUploadedTrack, onLastUploadedTrack])
+  }, [lastUploadedTrack, onLastUploadedTrack, filterUnusedTracks])
 }

@@ -13,13 +13,20 @@ import { useChannelPageStore } from './hooks/useChannelPageStore'
 
 interface Props {
   readonly channelId: number
-  readonly channel: UserChannel
+  readonly userChannel: UserChannel
+  readonly userChannelTracks: readonly UserChannelTrack[]
   readonly user: User
   readonly userChannels: readonly UserChannel[]
 }
 
-export const ChannelPage: React.FC<Props> = ({ channelId, channel, user, userChannels }) => {
-  const channelPageStore = useChannelPageStore(channelId)
+export const ChannelPage: React.FC<Props> = ({
+  channelId,
+  userChannel,
+  userChannelTracks,
+  user,
+  userChannels,
+}) => {
+  const channelPageStore = useChannelPageStore(channelId, userChannelTracks)
 
   return (
     <>
@@ -29,7 +36,7 @@ export const ChannelPage: React.FC<Props> = ({ channelId, channel, user, userCha
         content={
           <ChannelTracksList
             channelId={channelId}
-            totalTracks={channel.tracksCount}
+            totalTracks={userChannel.tracksCount}
             tracks={channelPageStore.trackEntries}
             onDeleteTracks={channelPageStore.handleDeletingTracks}
             onRemoveTracksFromChannel={channelPageStore.handleRemovingTracksFromChannel}

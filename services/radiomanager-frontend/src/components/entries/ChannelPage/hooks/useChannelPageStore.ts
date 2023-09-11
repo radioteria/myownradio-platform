@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   toChannelTrackEntry,
   ChannelTrackEntry,
@@ -14,10 +14,15 @@ import { useHandleChannelLastUploadedTrack } from './useHandleChannelLastUploade
 
 import type { UserChannelTrack } from '@/api'
 
-export const useChannelPageStore = (channelId: number) => {
+export const useChannelPageStore = (
+  channelId: number,
+  initialUserChannelTracks: readonly UserChannelTrack[],
+) => {
   const { refresh: refreshNowPlaying } = useNowPlaying()
 
-  const [trackEntries, setTrackEntries] = useState<readonly ChannelTrackEntry[]>([])
+  const [trackEntries, setTrackEntries] = useState<readonly ChannelTrackEntry[]>(() =>
+    initialUserChannelTracks.map(toChannelTrackEntry),
+  )
 
   const addTrackEntry = useCallback((track: UserChannelTrack) => {
     setTrackEntries((entries) => [...entries, toChannelTrackEntry(track)])

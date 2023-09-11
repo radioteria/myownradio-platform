@@ -10,16 +10,19 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
     return <h1>Unauthorized</h1>
   }
 
-  const channel = self.streams.find((c) => c.sid === channelId)
+  const userChannel = self.streams.find((c) => c.sid === channelId)
 
-  if (!channel) {
+  if (!userChannel) {
     return <h1>Channel not found</h1>
   }
+
+  const userChannelTracks = await getChannelTracks(channelId)
 
   return (
     <ChannelPageWithProviders
       channelId={channelId}
-      channel={channel}
+      userChannel={userChannel}
+      userChannelTracks={userChannelTracks}
       user={self.user}
       userChannels={self.streams}
     />

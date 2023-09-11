@@ -8,9 +8,7 @@ export default async function Library() {
     return <h1>Unauthorized</h1>
   }
 
-  const tracks = await getLibraryTracks()
+  // const tracks = await getLibraryTracks()
 
-  return (
-    <LibraryPageWithProviders user={self.user} userTracks={tracks} userChannels={self.streams} />
-  )
+  return <LibraryPageWithProviders user={self.user} userTracks={[]} userChannels={self.streams} />
 }

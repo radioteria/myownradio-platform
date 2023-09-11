@@ -36,7 +36,11 @@ export const ChannelPage: React.FC<Props> = ({
         content={
           <ChannelTracksList
             channelId={channelId}
-            totalTracks={userChannel.tracksCount}
+            totalTracks={
+              channelPageStore.isFetching
+                ? userChannel.tracksCount
+                : channelPageStore.trackEntries.length
+            }
             tracks={channelPageStore.trackEntries}
             onDeleteTracks={channelPageStore.handleDeletingTracks}
             onRemoveTracksFromChannel={channelPageStore.handleRemovingTracksFromChannel}

@@ -26,7 +26,9 @@ export const UnusedLibraryPage: React.FC<Props> = ({ user, userTracks, userChann
         sidebar={<Sidebar channels={userChannels} activeItem={['unused']} />}
         content={
           <LibraryTracksList
-            totalTracks={user.tracksCount}
+            totalTracks={
+              libraryPageStore.isFetching ? user.tracksCount : libraryPageStore.trackEntries.length
+            }
             tracks={libraryPageStore.trackEntries}
             onDeleteTracks={libraryPageStore.handleDeletingTracks}
           />

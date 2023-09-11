@@ -69,6 +69,7 @@ export const useLibraryPageStore = (
 
   return {
     trackEntries,
+    isFetching,
     handleDeletingTracks,
   }
 }

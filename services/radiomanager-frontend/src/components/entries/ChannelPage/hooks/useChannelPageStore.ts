@@ -84,6 +84,7 @@ export const useChannelPageStore = (
 
   return {
     trackEntries,
+    isFetching,
     handleDeletingTracks,
     handleRemovingTracksFromChannel,
   }

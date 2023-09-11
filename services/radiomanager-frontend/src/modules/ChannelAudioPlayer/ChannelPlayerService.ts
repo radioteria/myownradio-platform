@@ -2,6 +2,7 @@ import { getNowPlaying, getTrackTranscodeStream } from '@/api'
 import makeDebug from 'debug'
 import { appendBufferAsync, playAudio, stopAudio } from '@/utils/audio'
 import { streamAsyncIterator } from '@/utils/iterators'
+import { getWorldTime } from '@/api/time'
 
 const debug = makeDebug('ChannelPlayerService')
 
@@ -77,9 +78,6 @@ export class ChannelPlayerService {
     const mediaSource = new MediaSource()
     const abortController = new AbortController()
 
-    const startTimeMillis = Date.now()
-    let currentTime = startTimeMillis
-
     mediaSource.addEventListener('sourceclose', () => {
       localDebug('Media Source closed')
       abortController.abort()
@@ -87,6 +85,11 @@ export class ChannelPlayerService {
 
     mediaSource.addEventListener('sourceopen', async () => {
       localDebug('Opening Media Source')
+
+      const startTimeMillis = performance.now()
+      const { unixtime } = await getWorldTime()
+
+      let currentTime = unixtime * 1000 - Math.floor(performance.now() - startTimeMillis)
 
       let sourceBuffer = <SourceBuffer | null>null
 
@@ -121,7 +124,7 @@ export class ChannelPlayerService {
 
             await appendBufferAsync(sb, bytes)
 
-            const currentTimeMillis = Date.now()
+            const currentTimeMillis = performance.now()
             const estimatedTimestampMillis =
               currentTimeMillis - startTimeMillis + BUFFER_LENGTH_MILLISECONDS
             const bufferTimestampOffsetMillis = sb.timestampOffset * 1000

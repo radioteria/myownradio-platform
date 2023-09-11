@@ -57,5 +57,9 @@ export function repeat<T>(value: T, times: number) {
 }
 
 export function range(from = 0, to: number) {
+  if (from > to) {
+    return []
+  }
+
   return new Array(to - from).fill(null).map((_, i) => i + from)
 }

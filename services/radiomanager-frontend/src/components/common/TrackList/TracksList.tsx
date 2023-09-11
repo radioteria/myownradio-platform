@@ -4,7 +4,7 @@ import { ListItem } from './ListItem'
 import { isModifierKeyPressed } from './helpers'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useListItemSelector } from '@/hooks/useListItemSelector'
-import { SkeletonItem } from '@/components/common/TrackList/SkeletonItem'
+import { ListItemSkeleton } from '@/components/common/TrackList/ListItemSkeleton'
 import { range } from '@/utils/iterators'
 
 interface Props<Item extends TrackItem> {
@@ -62,24 +62,24 @@ export function TracksList<Item extends TrackItem>({
     <div ref={listRef} onContextMenu={handleContextMenu}>
       <div ref={contextMenuRef} />
 
-      <ul>
-        {selector.listItems.map((listItem, index) => {
+      <ul className={'py-4'}>
+        {selector.listItems.map(({ item, isSelected }, itemIndex) => {
           return (
             <ListItem
-              key={index}
-              track={listItem.item}
+              key={itemIndex}
+              track={item}
               currentTrack={currentTrack}
-              index={index}
-              isSelected={listItem.isSelected}
-              isMainSelected={selector.cursor === index}
-              onSelect={(event) => handleSelectItem(index, event)}
-              onThreeDotsClick={(event) => handleTreeDotsClick(index, event)}
+              index={itemIndex}
+              isSelected={isSelected}
+              isMainSelected={selector.cursor === itemIndex}
+              onSelect={(event) => handleSelectItem(itemIndex, event)}
+              onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}
             />
           )
         })}
 
-        {[...range(selector.listItems.length, totalTracks)].map((index) => (
-          <SkeletonItem key={index} />
+        {[...range(selector.listItems.length, totalTracks)].map((n) => (
+          <ListItemSkeleton key={n} />
         ))}
       </ul>
     </div>

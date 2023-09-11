@@ -1,7 +1,7 @@
-import styles from './SkeletonItem.module.css'
+import styles from './ListItemSkeleton.module.css'
 import cn from 'classnames'
 
-export const SkeletonItem: React.FC = () => (
+export const ListItemSkeleton: React.FC = () => (
   <li className="flex items-center border-gray-800 h-12 relative cursor-pointer select-none">
     <div className="p-2 pl-4 w-14 flex-shrink-0 z-10 text-right">
       <div

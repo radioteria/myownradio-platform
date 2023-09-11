@@ -26,9 +26,8 @@ export const UnusedLibraryPage: React.FC<Props> = ({ user, userTracks, userChann
         sidebar={<Sidebar channels={userChannels} activeItem={['unused']} />}
         content={
           <LibraryTracksList
+            totalTracks={user.tracksCount}
             tracks={libraryPageStore.trackEntries}
-            canInfinitelyScroll={libraryPageStore.canInfinitelyScroll}
-            onInfiniteScroll={libraryPageStore.handleInfiniteScroll}
             onDeleteTracks={libraryPageStore.handleDeletingTracks}
           />
         }

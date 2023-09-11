@@ -56,13 +56,13 @@ export async function getLibraryTracks(opts?: GetLibraryTracksOpts) {
     .then((json) => LibraryTracksResponseSchema.parse(json).data)
 }
 
-export async function getUnusedLibraryTracks(offset = 0) {
+export async function getUnusedLibraryTracks(opts?: GetLibraryTracksOpts) {
   const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/`)
   url.searchParams.set('unused', 'true')
-  url.searchParams.set('offset', String(offset))
-  url.searchParams.set('limit', String(MAX_TRACKS_PER_REQUEST))
+  url.searchParams.set('offset', String(opts?.offset ?? 0))
+  url.searchParams.set('limit', String(opts?.limit ?? MAX_TRACKS_PER_REQUEST))
 
-  return await isomorphicFetch(url)
+  return await isomorphicFetch(url, { signal: opts?.signal })
     .then((res) => res.json())
     .then((json) => LibraryTracksResponseSchema.parse(json).data)
 }

@@ -17,7 +17,6 @@ export const isomorphicFetch = (
 
       return fetch(input, {
         credentials: 'include',
-        cache: 'no-store',
         headers,
         ...(init ?? {}),
       })

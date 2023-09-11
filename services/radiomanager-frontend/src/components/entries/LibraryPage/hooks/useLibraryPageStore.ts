@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import { LibraryTrackEntry, toLibraryTrackEntry } from '@/components/LibraryTracksList'
-import { deleteTracksById, getLibraryTracks, MAX_TRACKS_PER_REQUEST } from '@/api'
+import {
+  deleteTracksById,
+  getLibraryTracks,
+  getUnusedLibraryTracks,
+  MAX_TRACKS_PER_REQUEST,
+} from '@/api'
 import { useHandleLibraryLastUploadedTrack } from './useHandleLibraryLastUploadedTrack'
 
 import type { UserTrack } from '@/api'
@@ -27,10 +32,17 @@ export const useLibraryPageStore = (
 
     const abortController = new AbortController()
 
-    getLibraryTracks({
-      offset: trackEntries.length,
-      signal: abortController.signal,
-    }).then((tracks) => {
+    const promise = config?.filterUnusedTracks
+      ? getUnusedLibraryTracks({
+          offset: trackEntries.length,
+          signal: abortController.signal,
+        })
+      : getLibraryTracks({
+          offset: trackEntries.length,
+          signal: abortController.signal,
+        })
+
+    promise.then((tracks) => {
       const newEntries = tracks.map(toLibraryTrackEntry)
       setTrackEntries((entries) => [...entries, ...newEntries])
       setIsFetching(newEntries.length === MAX_TRACKS_PER_REQUEST)

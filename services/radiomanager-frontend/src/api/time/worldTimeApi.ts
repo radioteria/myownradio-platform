@@ -1,7 +1,7 @@
 import z from 'zod'
 import camelKeys from 'camelcase-keys'
 
-const WORLD_TIME_API = 'http://worldtimeapi.org/api/'
+const WORLD_TIME_API_ENDPOINT = 'https://worldtimeapi.org/api/'
 
 const WorldTimeSchema = z
   .object({
@@ -24,7 +24,7 @@ const WorldTimeSchema = z
   .transform((o) => camelKeys(o))
 
 export const getWorldTime = () => {
-  const url = `${WORLD_TIME_API}timezone/UTC` as const
+  const url = `${WORLD_TIME_API_ENDPOINT}timezone/UTC` as const
 
   return fetch(url)
     .then((r) => r.json())

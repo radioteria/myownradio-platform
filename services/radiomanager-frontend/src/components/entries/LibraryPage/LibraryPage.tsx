@@ -26,8 +26,6 @@ export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels })
           <LibraryTracksList
             tracks={libraryPageStore.trackEntries}
             totalTracks={user.tracksCount}
-            // canInfinitelyScroll={libraryPageStore.canInfinitelyScroll}
-            // onInfiniteScroll={libraryPageStore.handleInfiniteScroll}
             onDeleteTracks={libraryPageStore.handleDeletingTracks}
           />
         }

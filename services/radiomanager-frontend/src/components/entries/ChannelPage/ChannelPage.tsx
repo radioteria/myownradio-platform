@@ -1,6 +1,6 @@
 'use client'
 
-import { Channel, User, UserChannel, UserChannelTrack } from '@/api'
+import { User, UserChannel, UserChannelTrack } from '@/api'
 import { Header } from '@/components/Header'
 import { Sidebar } from '@/components/Sidebar'
 import { StreamOverlay } from '@/components/StreamOverlay'
@@ -40,8 +40,6 @@ export const ChannelPage: React.FC<Props> = ({
             tracks={channelPageStore.trackEntries}
             onDeleteTracks={channelPageStore.handleDeletingTracks}
             onRemoveTracksFromChannel={channelPageStore.handleRemovingTracksFromChannel}
-            // onScrollTop={channelPageStore.handleOnScrollTop}
-            // onScrollBottom={channelPageStore.handleOnScrollBottom}
           />
         }
         rightSidebar={

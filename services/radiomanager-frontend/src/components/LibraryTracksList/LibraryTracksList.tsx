@@ -24,18 +24,10 @@ export const toLibraryTrackEntry = (track: UserTrack): LibraryTrackEntry => ({
 interface Props {
   readonly totalTracks: number
   readonly tracks: readonly LibraryTrackEntry[]
-  // readonly canInfinitelyScroll: boolean
-  // readonly onInfiniteScroll: () => void
   readonly onDeleteTracks: (trackIds: readonly number[]) => void
 }
 
-export const LibraryTracksList: React.FC<Props> = ({
-  totalTracks,
-  tracks,
-  // canInfinitelyScroll,
-  // onInfiniteScroll,
-  onDeleteTracks,
-}) => {
+export const LibraryTracksList: React.FC<Props> = ({ totalTracks, tracks, onDeleteTracks }) => {
   const contextMenu = useContextMenu()
   const contextMenuRef = useRef(null)
 
@@ -73,8 +65,6 @@ export const LibraryTracksList: React.FC<Props> = ({
         currentTrack={null}
         onTracksListMenu={handleTracksListMenu}
         contextMenuRef={contextMenuRef}
-        // onScrollBottom={onInfiniteScroll}
-        // onScrollTop={() => console.log('top')}
       />
     </section>
   )

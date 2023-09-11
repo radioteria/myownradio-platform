@@ -2,8 +2,6 @@ import { useRef } from 'react'
 import { UserChannelTrack } from '@/api'
 import { TracksList } from '@/components/common/TrackList'
 import { useNowPlaying } from '@/modules/NowPlaying'
-import { InfiniteScroll } from '@/components/common/InfiniteScroll/InfiniteScroll'
-import AnimatedBars from '@/icons/AnimatedBars'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 
 export interface ChannelTrackEntry {
@@ -27,12 +25,7 @@ export const toChannelTrackEntry = (track: UserChannelTrack): ChannelTrackEntry 
 interface Props {
   readonly totalTracks: number
   readonly tracks: readonly ChannelTrackEntry[]
-  // readonly firstTrackOffset: number
   readonly channelId: number
-  // readonly canInfinitelyScroll: boolean
-  // readonly onInfiniteScroll: () => void
-  // readonly onScrollTop: () => void
-  // readonly onScrollBottom: () => void
   readonly onDeleteTracks: (trackIds: readonly number[]) => void
   readonly onRemoveTracksFromChannel: (uniqueIds: readonly string[]) => void
 }
@@ -40,12 +33,7 @@ interface Props {
 export const ChannelTracksList: React.FC<Props> = ({
   totalTracks,
   tracks,
-  // firstTrackOffset,
   channelId,
-  // canInfinitelyScroll,
-  // onInfiniteScroll,
-  // onScrollTop,
-  // onScrollBottom,
   onDeleteTracks,
   onRemoveTracksFromChannel,
 }) => {

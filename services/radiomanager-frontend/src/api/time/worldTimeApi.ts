@@ -23,10 +23,10 @@ const WorldTimeSchema = z
   })
   .transform((o) => camelKeys(o))
 
-export const getWorldTime = () => {
+export const getWorldTime = async () => {
   const url = `${WORLD_TIME_API_ENDPOINT}timezone/UTC` as const
 
-  return fetch(url)
-    .then((r) => r.json())
-    .then((j) => WorldTimeSchema.parse(j))
+  const response = await fetch(url)
+  const json = await response.json()
+  return WorldTimeSchema.parse(json)
 }

@@ -3,7 +3,7 @@ use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{FileRow, LinkRow, TrackRow};
 use chrono::Duration;
-use sqlx::{query, Execute, MySql, QueryBuilder};
+use sqlx::{query, Execute, MySql, QueryBuilder, Row};
 use std::ops::{Deref, DerefMut};
 use tracing::trace;
 
@@ -66,6 +66,41 @@ JOIN `r_link` ON `r_tracks`.`tid` = `r_link`.`track_id`
 pub(crate) struct GetUserStreamTracksParams {
     pub(crate) color: Option<u32>,
     pub(crate) filter: Option<String>,
+}
+
+#[tracing::instrument(err, skip(connection))]
+pub(crate) async fn get_stream_tracks_count(
+    connection: &mut MySqlConnection,
+    stream_id: &StreamId,
+    params: &GetUserStreamTracksParams,
+) -> RepositoryResult<i64> {
+    let mut builder = QueryBuilder::new("SELECT COUNT(*) as `count` FROM `r_tracks`");
+
+    builder.push("JOIN `r_link` ON `r_tracks`.`tid` = `r_link`.`track_id`");
+
+    builder.push(" WHERE `r_link`.`stream_id` = ");
+    builder.push_bind(stream_id.deref());
+
+    if let Some(filter) = &params.filter {
+        if !filter.is_empty() {
+            builder.push(" AND MATCH(artist, title, genre) AGAINST (");
+            builder.push_bind(filter);
+            builder.push(" IN BOOLEAN MODE)");
+        }
+    };
+
+    if let Some(color) = params.color {
+        builder.push(" AND color = ");
+        builder.push_bind(color);
+    };
+
+    let query = builder.build();
+
+    trace!("Running SQL query: {}", query.sql());
+
+    let count_row = query.fetch_one(connection.deref_mut()).await?;
+
+    Ok(count_row.get("count"))
 }
 
 #[tracing::instrument(err, skip(connection))]

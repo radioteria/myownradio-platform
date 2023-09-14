@@ -1,6 +1,6 @@
 use crate::http_server::handlers::{
     internal_radio_streamer, public_schedule, public_streams, user_audio_tracks,
-    user_stream_control, user_streams,
+    user_audio_tracks_v2, user_stream_control, user_streams,
 };
 use crate::storage::fs::FileSystem;
 use crate::{Config, MySqlClient, StreamServiceFactory};
@@ -26,6 +26,21 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
             .app_data(Data::new(config.clone()))
             .app_data(Data::new(file_system.clone()))
             .app_data(Data::new(stream_service_factory.clone()))
+            .service(
+                web::scope("/v1/tracks")
+                    .route(
+                        "/all",
+                        web::get().to(user_audio_tracks_v2::get_user_audio_tracks),
+                    )
+                    .route(
+                        "/unused",
+                        web::get().to(user_audio_tracks_v2::get_unused_user_audio_tracks),
+                    )
+                    .route(
+                        "/channel/{channel_id}",
+                        web::get().to(user_audio_tracks_v2::get_channel_audio_tracks),
+                    ),
+            )
             .service(
                 web::scope("/v0/tracks")
                     .route("/", web::get().to(user_audio_tracks::get_user_audio_tracks))

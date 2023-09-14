@@ -2,7 +2,7 @@ use crate::data_structures::{SortingColumn, SortingOrder, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{FileRow, TrackRow};
-use sqlx::{query, Execute, FromRow, MySql, QueryBuilder};
+use sqlx::{query, Execute, FromRow, MySql, QueryBuilder, Row};
 use std::ops::{Deref, DerefMut};
 use tracing::trace;
 
@@ -58,6 +58,51 @@ impl Deref for TrackFileMergedRow {
     fn deref(&self) -> &Self::Target {
         &self.track.tid
     }
+}
+
+#[derive(Default, Debug)]
+pub(crate) struct GetUserTracksTotalParams {
+    pub(crate) color: Option<u32>,
+    pub(crate) filter: Option<String>,
+    pub(crate) unused: bool,
+}
+
+pub(crate) async fn get_user_tracks_count(
+    connection: &mut MySqlConnection,
+    user_id: &UserId,
+    params: &GetUserTracksTotalParams,
+) -> RepositoryResult<i64> {
+    let mut builder = QueryBuilder::new("SELECT COUNT(*) as `count` FROM `r_tracks`");
+
+    builder.push(" WHERE `r_tracks`.`uid` = ");
+    builder.push_bind(user_id.deref());
+
+    if let Some(filter) = &params.filter {
+        if !filter.is_empty() {
+            builder.push(
+                " AND MATCH(`r_tracks`.`artist`, `r_tracks`.`title`, `r_tracks`.`genre`) AGAINST (",
+            );
+            builder.push_bind(filter);
+            builder.push(" IN BOOLEAN MODE)");
+        }
+    };
+
+    if let Some(color) = params.color {
+        builder.push(" AND `r_tracks`.`color` = ");
+        builder.push_bind(color);
+    };
+
+    if params.unused {
+        builder.push(" AND `r_tracks`.`used_count` = 0");
+    }
+
+    let query = builder.build();
+
+    trace!("Running SQL query: {}", query.sql());
+
+    let count_row = query.fetch_one(connection.deref_mut()).await?;
+
+    Ok(count_row.get("count"))
 }
 
 #[derive(Default, Debug)]

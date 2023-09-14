@@ -6,6 +6,7 @@ import { useClickOutside } from '@/hooks/useClickOutside'
 import { useListItemSelector } from '@/hooks/useListItemSelector'
 import { ListItemSkeleton } from '@/components/common/TrackList/ListItemSkeleton'
 import { range } from '@/utils/iterators'
+import { ClientSide } from '@/components/common/ClientSide'
 
 interface Props<Item extends TrackItem> {
   readonly totalTracks: number
@@ -78,9 +79,11 @@ export function TracksList<Item extends TrackItem>({
           )
         })}
 
-        {[...range(selector.listItems.length, totalTracks)].map((n) => (
-          <ListItemSkeleton key={n} />
-        ))}
+        <ClientSide>
+          {[...range(selector.listItems.length, totalTracks)].map((n) => (
+            <ListItemSkeleton key={n} />
+          ))}
+        </ClientSide>
       </ul>
     </div>
   )

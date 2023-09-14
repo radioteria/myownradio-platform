@@ -147,7 +147,7 @@ pub(crate) async fn get_unused_user_audio_tracks(
             filter: params.filter,
             sorting_column: SortingColumn::TrackId,
             sorting_order: SortingOrder::Desc,
-            unused: false,
+            unused: true,
         },
         &Some(offset),
         &Some(limit),

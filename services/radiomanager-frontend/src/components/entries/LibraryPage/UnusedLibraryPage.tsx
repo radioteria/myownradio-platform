@@ -10,12 +10,13 @@ import { useLibraryPageStore } from './hooks/useLibraryPageStore'
 
 interface Props {
   readonly user: User
-  readonly userTracks: readonly UserTrack[]
+  readonly tracks: readonly UserTrack[]
+  readonly totalTracks: number
   readonly userChannels: readonly UserChannel[]
 }
 
-export const UnusedLibraryPage: React.FC<Props> = ({ user, userTracks, userChannels }) => {
-  const libraryPageStore = useLibraryPageStore(userTracks, {
+export const UnusedLibraryPage: React.FC<Props> = ({ user, tracks, totalTracks, userChannels }) => {
+  const libraryPageStore = useLibraryPageStore(tracks, {
     filterUnusedTracks: true,
   })
 
@@ -26,9 +27,7 @@ export const UnusedLibraryPage: React.FC<Props> = ({ user, userTracks, userChann
         sidebar={<Sidebar channels={userChannels} activeItem={['unused']} />}
         content={
           <LibraryTracksList
-            totalTracks={
-              libraryPageStore.isFetching ? user.tracksCount : libraryPageStore.trackEntries.length
-            }
+            totalTracks={totalTracks}
             tracks={libraryPageStore.trackEntries}
             onDeleteTracks={libraryPageStore.handleDeletingTracks}
           />

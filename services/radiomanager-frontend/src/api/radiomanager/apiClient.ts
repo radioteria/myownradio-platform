@@ -15,10 +15,10 @@ interface PageRequestOptions {
 
 const GetUserTracksPageSchema = z.object({
   items: z.array(UserTrackSchema),
-  totalCount: z.number().positive(),
+  totalCount: z.number().nonnegative(),
   paginationData: z.object({
-    offset: z.number().positive(),
-    limit: z.number().positive(),
+    offset: z.number().nonnegative(),
+    limit: z.number().nonnegative(),
   }),
 })
 
@@ -55,10 +55,10 @@ const GetChannelTracksPageSchema = z.object({
       entry: ChannelEntrySchema,
     }),
   ),
-  totalCount: z.number().positive(),
+  totalCount: z.number().nonnegative(),
   paginationData: z.object({
-    offset: z.number().positive(),
-    limit: z.number().positive(),
+    offset: z.number().nonnegative(),
+    limit: z.number().nonnegative(),
   }),
 })
 

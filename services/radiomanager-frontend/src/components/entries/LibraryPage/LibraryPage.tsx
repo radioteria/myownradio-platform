@@ -10,22 +10,23 @@ import { useLibraryPageStore } from './hooks/useLibraryPageStore'
 
 interface Props {
   readonly user: User
-  readonly userTracks: readonly UserTrack[]
-  readonly userChannels: readonly UserChannel[]
+  readonly tracks: readonly UserTrack[]
+  readonly totalTracks: number
+  readonly channels: readonly UserChannel[]
 }
 
-export const LibraryPage: React.FC<Props> = ({ user, userTracks, userChannels }) => {
-  const libraryPageStore = useLibraryPageStore(userTracks)
+export const LibraryPage: React.FC<Props> = ({ user, tracks, totalTracks, channels }) => {
+  const libraryPageStore = useLibraryPageStore(tracks)
 
   return (
     <>
       <LibraryLayout
         header={<Header user={user} />}
-        sidebar={<Sidebar channels={userChannels} activeItem={['library']} />}
+        sidebar={<Sidebar channels={channels} activeItem={['library']} />}
         content={
           <LibraryTracksList
             tracks={libraryPageStore.trackEntries}
-            totalTracks={user.tracksCount}
+            totalTracks={totalTracks}
             onDeleteTracks={libraryPageStore.handleDeletingTracks}
           />
         }

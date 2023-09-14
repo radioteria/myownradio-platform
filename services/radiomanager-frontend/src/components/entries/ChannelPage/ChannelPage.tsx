@@ -13,34 +13,32 @@ import { useChannelPageStore } from './hooks/useChannelPageStore'
 
 interface Props {
   readonly channelId: number
-  readonly userChannel: UserChannel
-  readonly userChannelTracks: readonly UserChannelTrack[]
+  readonly channel: UserChannel
+  readonly tracks: readonly UserChannelTrack[]
+  readonly totalTracks: number
   readonly user: User
-  readonly userChannels: readonly UserChannel[]
+  readonly channels: readonly UserChannel[]
 }
 
 export const ChannelPage: React.FC<Props> = ({
   channelId,
-  userChannel,
-  userChannelTracks,
+  channel,
+  tracks,
+  totalTracks,
   user,
-  userChannels,
+  channels,
 }) => {
-  const channelPageStore = useChannelPageStore(channelId, userChannelTracks)
+  const channelPageStore = useChannelPageStore(channelId, tracks)
 
   return (
     <>
       <LibraryLayout
         header={<Header user={user} />}
-        sidebar={<Sidebar channels={userChannels} activeItem={['channel', channelId]} />}
+        sidebar={<Sidebar channels={channels} activeItem={['channel', channelId]} />}
         content={
           <ChannelTracksList
             channelId={channelId}
-            totalTracks={
-              channelPageStore.isFetching
-                ? userChannel.tracksCount
-                : channelPageStore.trackEntries.length
-            }
+            totalTracks={totalTracks}
             tracks={channelPageStore.trackEntries}
             onDeleteTracks={channelPageStore.handleDeletingTracks}
             onRemoveTracksFromChannel={channelPageStore.handleRemovingTracksFromChannel}

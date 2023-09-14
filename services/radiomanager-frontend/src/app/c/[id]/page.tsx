@@ -1,6 +1,7 @@
 import { ChannelPageWithProviders } from '@/components/entries/ChannelPage'
-import { getChannelTracks, getNowPlaying, getSelf, MAX_TRACKS_PER_REQUEST } from '@/api'
+import { getSelf } from '@/api'
 import { INITIAL_AUDIO_TRACKS_TO_LOAD } from '@/constants'
+import { getChannelTracksPage } from '@/api/radiomanager'
 
 export default async function UserChannel({ params: { id } }: { params: { id: string } }) {
   const channelId = Number(id)
@@ -17,17 +18,18 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
     return <h1>Channel not found</h1>
   }
 
-  const userChannelTracks = await getChannelTracks(channelId, {
+  const data = await getChannelTracksPage(channelId, {
     limit: INITIAL_AUDIO_TRACKS_TO_LOAD,
   })
 
   return (
     <ChannelPageWithProviders
       channelId={channelId}
-      userChannel={userChannel}
-      userChannelTracks={userChannelTracks}
+      channel={userChannel}
+      tracks={data.items.map(({ track, entry }) => ({ ...track, ...entry }))}
+      totalTracks={data.totalCount}
       user={self.user}
-      userChannels={self.streams}
+      channels={self.streams}
     />
   )
 }

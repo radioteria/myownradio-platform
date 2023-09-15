@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import PQueue from 'p-queue'
+import { useCallback, useState } from 'react'
 import { useTaskQueue } from '@/hooks/useTaskQueue'
 
 interface FetchItemsResult<Item> {
@@ -15,15 +14,12 @@ interface RangeRequest {
 interface VirtualListOptions<Item> {
   readonly initialTotalCount: number
   readonly initialItems: readonly Item[]
-  readonly fetchMoreItems: (
-    offset: number,
-    limit: number,
+  readonly onFetchMoreItems: (
+    req: RangeRequest,
     signal: AbortSignal,
   ) => Promise<FetchItemsResult<Item>>
   readonly onFetchError: (error: Error, req: RangeRequest) => void
 }
-
-const fetchPromiseQueue = new PQueue({ concurrency: 1 })
 
 const initItems = <Item extends NonNullable<unknown>>(
   initialTotalCount: number,
@@ -63,7 +59,7 @@ export const useVirtualList = <Item extends NonNullable<unknown>>(
   const { addTask } = useTaskQueue<RangeRequest>(
     useCallback(
       async (req, signal) => {
-        const result = await opts.fetchMoreItems(req.offset, req.limit, signal)
+        const result = await opts.onFetchMoreItems(req, signal)
 
         updateRangeOfItems(req.offset, result.items, result.totalCount)
       },
@@ -78,5 +74,17 @@ export const useVirtualList = <Item extends NonNullable<unknown>>(
     [addTask],
   )
 
-  return { requestMoreItems, items }
+  const addItemsToTop = useCallback((items: readonly Item[]) => {
+    setItems((prevItems) => [...items, ...prevItems])
+  }, [])
+
+  const addItemsToBottom = useCallback((items: readonly Item[]) => {
+    setItems((prevItems) => [...prevItems, ...items])
+  }, [])
+
+  const filterItems = useCallback((pred: (item: Item | null, index: number) => boolean) => {
+    setItems((prevItems) => prevItems.filter(pred))
+  }, [])
+
+  return { requestMoreItems, items, addItemsToTop, addItemsToBottom, filterItems }
 }

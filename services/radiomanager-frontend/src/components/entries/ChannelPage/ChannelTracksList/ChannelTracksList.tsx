@@ -90,6 +90,7 @@ export const ChannelTracksList: React.FC<Props> = ({
         currentTrack={currentTrack}
         onTracksListMenu={handleTracksListMenu}
         contextMenuRef={contextMenuRef}
+        onReachUnloadedTrack={(trackIndex) => {}}
       />
     </section>
   )

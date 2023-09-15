@@ -10,13 +10,14 @@ import { ClientSide } from '@/components/common/ClientSide'
 
 interface Props<Item extends TrackItem> {
   readonly totalTracks: number
-  readonly tracks: readonly Item[]
+  readonly tracks: readonly (Item | null)[]
   readonly currentTrack: CurrentTrack | null
   readonly onTracksListMenu: (
     selectedTracks: readonly Item[],
     event: React.MouseEvent<HTMLElement>,
   ) => void
   readonly contextMenuRef: MutableRefObject<null>
+  readonly onReachUnloadedTrack: (index: number) => void
 }
 
 export function TracksList<Item extends TrackItem>({
@@ -25,6 +26,7 @@ export function TracksList<Item extends TrackItem>({
   currentTrack,
   onTracksListMenu,
   contextMenuRef,
+  onReachUnloadedTrack,
 }: Props<Item>) {
   const listRef = useRef(null)
   const selector = useListItemSelector(tracks)
@@ -41,7 +43,9 @@ export function TracksList<Item extends TrackItem>({
 
   const handleTreeDotsClick = (itemIndex: number, event: React.MouseEvent<HTMLElement>) => {
     selector.selectOnly(itemIndex)
-    const selectedTracks = tracks.filter((_, index) => index === itemIndex)
+    const selectedTracks = tracks.filter(
+      (item, index): item is Item => item !== null && index === itemIndex,
+    )
     onTracksListMenu(selectedTracks, event)
   }
 
@@ -56,6 +60,7 @@ export function TracksList<Item extends TrackItem>({
     const selectedTracks = selector.listItems
       .filter(({ isSelected, item }) => isSelected)
       .map(({ item }) => item)
+      .filter((item): item is Item => item !== null)
     onTracksListMenu(selectedTracks, event)
   }
 
@@ -65,6 +70,15 @@ export function TracksList<Item extends TrackItem>({
 
       <ul className={'py-4'}>
         {selector.listItems.map(({ item, isSelected }, itemIndex) => {
+          if (!item) {
+            return (
+              <ListItemSkeleton
+                key={itemIndex}
+                onReach={onReachUnloadedTrack.bind(undefined, itemIndex)}
+              />
+            )
+          }
+
           return (
             <ListItem
               key={itemIndex}
@@ -78,12 +92,6 @@ export function TracksList<Item extends TrackItem>({
             />
           )
         })}
-
-        <ClientSide>
-          {[...range(selector.listItems.length, totalTracks)].map((n) => (
-            <ListItemSkeleton key={n} />
-          ))}
-        </ClientSide>
       </ul>
     </div>
   )

@@ -23,11 +23,17 @@ export const toLibraryTrackEntry = (track: UserTrack): LibraryTrackEntry => ({
 
 interface Props {
   readonly totalTracks: number
-  readonly tracks: readonly LibraryTrackEntry[]
+  readonly tracks: readonly (LibraryTrackEntry | null)[]
   readonly onDeleteTracks: (trackIds: readonly number[]) => void
+  readonly onReachUnloadedTrack: (trackIndex: number) => void
 }
 
-export const LibraryTracksList: React.FC<Props> = ({ totalTracks, tracks, onDeleteTracks }) => {
+export const LibraryTracksList: React.FC<Props> = ({
+  totalTracks,
+  tracks,
+  onDeleteTracks,
+  onReachUnloadedTrack,
+}) => {
   const contextMenu = useContextMenu()
   const contextMenuRef = useRef(null)
 
@@ -65,6 +71,7 @@ export const LibraryTracksList: React.FC<Props> = ({ totalTracks, tracks, onDele
         currentTrack={null}
         onTracksListMenu={handleTracksListMenu}
         contextMenuRef={contextMenuRef}
+        onReachUnloadedTrack={onReachUnloadedTrack}
       />
     </section>
   )

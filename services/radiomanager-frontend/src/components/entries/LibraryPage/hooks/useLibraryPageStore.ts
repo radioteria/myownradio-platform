@@ -1,60 +1,52 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import makeDebug from 'debug'
 import { LibraryTrackEntry, toLibraryTrackEntry } from '@/components/LibraryTracksList'
-import {
-  deleteTracksById,
-  getLibraryTracks,
-  getUnusedLibraryTracks,
-  MAX_TRACKS_PER_REQUEST,
-} from '@/api'
-import { useHandleLibraryLastUploadedTrack } from './useHandleLibraryLastUploadedTrack'
+import { deleteTracksById } from '@/api'
+import { getUnusedUserTracksPage, getUserTracksPage } from '@/api/radiomanager'
+import { quantise } from '@/utils/math'
+import { remove } from '@/utils/arrays'
+import { useHandleLibraryLastUploadedTrack } from '../hooks/useHandleLibraryLastUploadedTrack'
 
 import type { UserTrack } from '@/api'
+
+const debug = makeDebug('useLibraryPageStore')
+const REQUEST_MORE_TRACKS_WINDOW = 100
 
 interface StoreConfig {
   readonly filterUnusedTracks?: boolean
 }
 
-export const useLibraryPageStore = (initialTracks: readonly UserTrack[], config?: StoreConfig) => {
-  const [trackEntries, setTrackEntries] = useState<readonly LibraryTrackEntry[]>(() =>
-    initialTracks.map(toLibraryTrackEntry),
-  )
+export const useLibraryPageStore = (
+  initialTracks: readonly UserTrack[],
+  initialTotalCount: number,
+  config?: StoreConfig,
+) => {
+  const [trackEntries, setTrackEntries] = useState<readonly (LibraryTrackEntry | null)[]>(() => {
+    const entries = new Array<LibraryTrackEntry | null>(initialTotalCount).fill(null)
+    entries.splice(0, initialTracks.length, ...initialTracks.map(toLibraryTrackEntry))
+
+    return entries
+  })
+
+  const [requestOffset, setRequestOffset] = useState<number | null>(null)
+
+  const abortControllersRef = useRef<AbortController[]>([])
 
   const addTrackEntry = useCallback((track: UserTrack) => {
     setTrackEntries((entries) => [toLibraryTrackEntry(track), ...entries])
   }, [])
 
-  const [isFetching, setIsFetching] = useState(true)
-  useEffect(() => {
-    if (!isFetching) return
-
-    const abortController = new AbortController()
-
-    const promise = config?.filterUnusedTracks
-      ? getUnusedLibraryTracks({
-          offset: trackEntries.length,
-          signal: abortController.signal,
-        })
-      : getLibraryTracks({
-          offset: trackEntries.length,
-          signal: abortController.signal,
-        })
-
-    promise.then((tracks) => {
-      const newEntries = tracks.map(toLibraryTrackEntry)
-      setTrackEntries((entries) => [...entries, ...newEntries])
-      setIsFetching(newEntries.length === MAX_TRACKS_PER_REQUEST)
-    })
-
-    return () => {
-      abortController.abort()
-    }
-  }, [isFetching, trackEntries])
-
   useHandleLibraryLastUploadedTrack(addTrackEntry, config?.filterUnusedTracks ?? false)
 
   const handleDeletingTracks = (trackIds: readonly number[]) => {
     const idsSet = new Set(trackIds)
-    const updatedTrackEntries = trackEntries.filter(({ trackId }) => !idsSet.has(trackId))
+    const updatedTrackEntries = trackEntries.filter((item) => {
+      if (!item) {
+        return true
+      }
+
+      return !idsSet.has(item.trackId)
+    })
 
     setTrackEntries(updatedTrackEntries)
 
@@ -64,9 +56,60 @@ export const useLibraryPageStore = (initialTracks: readonly UserTrack[], config?
     })
   }
 
+  const handleRequestMoreTracks = useCallback((trackIndex: number) => {
+    const quantisedIndex = quantise(trackIndex, REQUEST_MORE_TRACKS_WINDOW / 2)
+    const offset = Math.max(0, quantisedIndex - REQUEST_MORE_TRACKS_WINDOW / 2)
+
+    setRequestOffset(offset)
+  }, [])
+
+  useEffect(() => {
+    if (requestOffset === null) return
+    const offset = requestOffset
+
+    const abortController = new AbortController()
+    abortControllersRef.current.push(abortController)
+
+    const requestOpts = {
+      offset,
+      limit: REQUEST_MORE_TRACKS_WINDOW,
+      signal: abortController.signal,
+    }
+    const promise = config?.filterUnusedTracks
+      ? getUnusedUserTracksPage(requestOpts)
+      : getUserTracksPage(requestOpts)
+
+    promise
+      .then(({ items, totalCount }) => {
+        setTrackEntries((prevEntries) => {
+          let nextEntries = [...prevEntries]
+          nextEntries.splice(offset, items.length, ...items.map(toLibraryTrackEntry))
+
+          if (totalCount > nextEntries.length) {
+            nextEntries.push(...new Array<null>(totalCount - nextEntries.length).fill(null))
+          } else if (totalCount < nextEntries.length) {
+            nextEntries.splice(totalCount)
+          }
+
+          return nextEntries
+        })
+      })
+      .finally(() => {
+        remove(abortControllersRef.current, abortController)
+      })
+  }, [requestOffset, config?.filterUnusedTracks])
+
+  useEffect(() => {
+    const current = abortControllersRef.current
+
+    return () => {
+      current.forEach((ctrl) => ctrl.abort())
+    }
+  }, [])
+
   return {
     trackEntries,
-    isFetching,
     handleDeletingTracks,
+    handleRequestMoreTracks,
   }
 }

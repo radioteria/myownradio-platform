@@ -18,7 +18,7 @@ export default async function UnusedTracks() {
     <UnusedLibraryPageWithProviders
       user={self.user}
       initialTracks={data.items}
-      totalTracks={data.totalCount}
+      initialTotalCount={data.totalCount}
       userChannels={self.streams}
     />
   )

@@ -13,7 +13,9 @@ const mapToListItems = <T>(items: readonly T[]) => {
 }
 
 export const useListItemSelector = <I>(initialItems: readonly I[]) => {
-  const [listItems, setListItems] = useState<readonly ListItem<I>[]>(mapToListItems(initialItems))
+  const [listItems, setListItems] = useState<readonly ListItem<I>[]>(() =>
+    mapToListItems(initialItems),
+  )
   const [cursor, setCursor] = useState<null | number>(null)
 
   // Reset selection on tracks list update.

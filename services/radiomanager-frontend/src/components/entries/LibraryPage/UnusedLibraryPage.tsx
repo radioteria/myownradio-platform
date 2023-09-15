@@ -10,13 +10,18 @@ import { useLibraryPageStore } from './hooks/useLibraryPageStore'
 
 interface Props {
   readonly user: User
-  readonly tracks: readonly UserTrack[]
+  readonly initialTracks: readonly UserTrack[]
   readonly totalTracks: number
   readonly userChannels: readonly UserChannel[]
 }
 
-export const UnusedLibraryPage: React.FC<Props> = ({ user, tracks, totalTracks, userChannels }) => {
-  const libraryPageStore = useLibraryPageStore(tracks, {
+export const UnusedLibraryPage: React.FC<Props> = ({
+  user,
+  initialTracks,
+  totalTracks,
+  userChannels,
+}) => {
+  const libraryPageStore = useLibraryPageStore(initialTracks, {
     filterUnusedTracks: true,
   })
 

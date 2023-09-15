@@ -14,12 +14,9 @@ interface StoreConfig {
   readonly filterUnusedTracks?: boolean
 }
 
-export const useLibraryPageStore = (
-  initialUserTracks: readonly UserTrack[],
-  config?: StoreConfig,
-) => {
+export const useLibraryPageStore = (initialTracks: readonly UserTrack[], config?: StoreConfig) => {
   const [trackEntries, setTrackEntries] = useState<readonly LibraryTrackEntry[]>(() =>
-    initialUserTracks.map(toLibraryTrackEntry),
+    initialTracks.map(toLibraryTrackEntry),
   )
 
   const addTrackEntry = useCallback((track: UserTrack) => {

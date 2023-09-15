@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import PQueue from 'p-queue'
-import { range } from '@/utils/iterators'
+import { useTaskQueue } from '@/hooks/useTaskQueue'
 
 interface FetchItemsResult<Item> {
   readonly items: Item[]
   readonly totalCount: number
 }
 
-interface RequestedRange {
+interface RangeRequest {
   readonly offset: number
   readonly limit: number
 }
@@ -15,74 +15,68 @@ interface RequestedRange {
 interface VirtualListOptions<Item> {
   readonly initialTotalCount: number
   readonly initialItems: readonly Item[]
-  readonly fetchItems: (
+  readonly fetchMoreItems: (
     offset: number,
     limit: number,
     signal: AbortSignal,
   ) => Promise<FetchItemsResult<Item>>
-  readonly onFetchError: (error: Error, offset: number, limit: number) => void
+  readonly onFetchError: (error: Error, req: RangeRequest) => void
 }
 
 const fetchPromiseQueue = new PQueue({ concurrency: 1 })
 
+const initItems = <Item extends NonNullable<unknown>>(
+  initialTotalCount: number,
+  initialItems: readonly Item[],
+) => {
+  const emptyItems = new Array<Item | null>(initialTotalCount).fill(null)
+  emptyItems.splice(0, initialItems.length, ...initialItems)
+
+  return emptyItems
+}
+
 export const useVirtualList = <Item extends NonNullable<unknown>>(
   opts: VirtualListOptions<Item>,
 ) => {
-  const [totalCount, setTotalCount] = useState(opts.initialTotalCount)
-  const [items, setItems] = useState<Record<number, Item>>({})
-  const [requestedRanges, setRequestedRanges] = useState<readonly RequestedRange[]>([])
+  const [items, setItems] = useState<readonly (Item | null)[]>(() =>
+    initItems(opts.initialTotalCount, opts.initialItems),
+  )
 
-  const itemsList = useMemo(() => {
-    let itemsList: (Item | null)[] = []
+  const updateRangeOfItems = useCallback(
+    (offset: number, items: readonly Item[], totalCount: number) => {
+      setItems((prevItems) => {
+        let newItems = [...prevItems]
+        newItems.splice(offset, items.length, ...items)
 
-    for (let i = 0; i < totalCount; i += 1) {
-      itemsList.push(items[i] ?? null)
-    }
+        if (totalCount > newItems.length) {
+          newItems.push(...new Array<null>(totalCount - newItems.length).fill(null))
+        } else if (totalCount < newItems.length) {
+          newItems.splice(totalCount)
+        }
 
-    return itemsList
-  }, [totalCount, items])
-
-  const addItems = useCallback((offset: number, items: readonly Item[]) => {
-    setItems((oldItems) => {
-      let newItems = { ...oldItems }
-
-      for (let i = 0; i < items.length; i += 1) {
-        newItems[i + offset] = items[i]
-      }
-
-      return newItems
-    })
-  }, [])
-
-  useEffect(() => {
-    if (requestedRanges.length === 0) return
-
-    const [{ offset, limit }, ...restRequestedRanges] = requestedRanges
-
-    const abortController = new AbortController()
-
-    fetchPromiseQueue
-      .add(async () => {
-        const data = await opts.fetchItems(offset, limit, abortController.signal)
-        addItems(offset, data.items)
-        setTotalCount(data.totalCount)
+        return newItems
       })
-      .catch((error) => opts.onFetchError(error, offset, limit))
-      .finally(() => {
-        setRequestedRanges(restRequestedRanges)
-      })
+    },
+    [],
+  )
 
-    return () => {
-      abortController.abort()
-    }
-  }, [requestedRanges, addItems, opts])
+  const { addTask } = useTaskQueue<RangeRequest>(
+    useCallback(
+      async (req, signal) => {
+        const result = await opts.fetchMoreItems(req.offset, req.limit, signal)
 
-  const requestItemsRange = useCallback((offset: number, limit: number) => {
-    setRequestedRanges((ranges) => [...ranges, { offset, limit }])
-  }, [])
+        updateRangeOfItems(req.offset, result.items, result.totalCount)
+      },
+      [opts, updateRangeOfItems],
+    ),
+  )
 
-  return {
-    itemsList,
-    requestItemsRange,
-  }
+  const requestMoreItems = useCallback(
+    (offset: number, limit: number) => {
+      addTask({ offset, limit })
+    },
+    [addTask],
+  )
+
+  return { requestMoreItems, items }
 }

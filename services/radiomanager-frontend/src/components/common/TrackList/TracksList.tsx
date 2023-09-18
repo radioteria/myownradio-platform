@@ -7,6 +7,7 @@ import { useListItemSelector } from '@/hooks/useListItemSelector'
 import { ListItemSkeleton } from '@/components/common/TrackList/ListItemSkeleton'
 import { range } from '@/utils/iterators'
 import { ClientSide } from '@/components/common/ClientSide'
+import { FiniteList } from '@/components/InfiniteList'
 
 interface Props<Item extends TrackItem> {
   readonly totalTracks: number
@@ -18,6 +19,11 @@ interface Props<Item extends TrackItem> {
   ) => void
   readonly contextMenuRef: MutableRefObject<null>
   readonly onReachUnloadedTrack: (index: number) => void
+  readonly loadMoreTracks: (
+    startIndex: number,
+    endIndex: number,
+    signal: AbortSignal,
+  ) => Promise<void>
 }
 
 export function TracksList<Item extends TrackItem>({
@@ -27,6 +33,7 @@ export function TracksList<Item extends TrackItem>({
   onTracksListMenu,
   contextMenuRef,
   onReachUnloadedTrack,
+  loadMoreTracks,
 }: Props<Item>) {
   const listRef = useRef(null)
   const selector = useListItemSelector(tracks)
@@ -68,31 +75,56 @@ export function TracksList<Item extends TrackItem>({
     <div ref={listRef} onContextMenu={handleContextMenu}>
       <div ref={contextMenuRef} />
 
-      <ul className={'py-4'}>
-        {selector.listItems.map(({ item, isSelected }, itemIndex) => {
-          if (!item) {
-            return (
-              <ListItemSkeleton
+      <div className={'py-4'}>
+        <FiniteList
+          items={selector.listItems}
+          getItemKey={(_, index) => index}
+          renderSkeleton={() => <ListItemSkeleton />}
+          renderItem={(item, itemIndex) =>
+            item.item === null ? (
+              <ListItemSkeleton />
+            ) : (
+              <ListItem
                 key={itemIndex}
-                onReach={onReachUnloadedTrack.bind(undefined, itemIndex)}
+                track={item.item}
+                currentTrack={currentTrack}
+                index={itemIndex}
+                isSelected={item.isSelected}
+                isMainSelected={selector.cursor === itemIndex}
+                onSelect={(event) => handleSelectItem(itemIndex, event)}
+                onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}
               />
             )
           }
+          loadMoreItems={loadMoreTracks}
+        />
+      </div>
 
-          return (
-            <ListItem
-              key={itemIndex}
-              track={item}
-              currentTrack={currentTrack}
-              index={itemIndex}
-              isSelected={isSelected}
-              isMainSelected={selector.cursor === itemIndex}
-              onSelect={(event) => handleSelectItem(itemIndex, event)}
-              onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}
-            />
-          )
-        })}
-      </ul>
+      {/*<ul className={'py-4'}>*/}
+      {/*  {selector.listItems.map(({ item, isSelected }, itemIndex) => {*/}
+      {/*    if (!item) {*/}
+      {/*      return (*/}
+      {/*        <ListItemSkeleton*/}
+      {/*          key={itemIndex}*/}
+      {/*          onReach={onReachUnloadedTrack.bind(undefined, itemIndex)}*/}
+      {/*        />*/}
+      {/*      )*/}
+      {/*    }*/}
+
+      {/*    return (*/}
+      {/*      <ListItem*/}
+      {/*        key={itemIndex}*/}
+      {/*        track={item}*/}
+      {/*        currentTrack={currentTrack}*/}
+      {/*        index={itemIndex}*/}
+      {/*        isSelected={isSelected}*/}
+      {/*        isMainSelected={selector.cursor === itemIndex}*/}
+      {/*        onSelect={(event) => handleSelectItem(itemIndex, event)}*/}
+      {/*        onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}*/}
+      {/*      />*/}
+      {/*    )*/}
+      {/*  })}*/}
+      {/*</ul>*/}
     </div>
   )
 }

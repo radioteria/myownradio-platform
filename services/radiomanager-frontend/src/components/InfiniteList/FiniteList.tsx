@@ -1,9 +1,9 @@
 import { OnReachTrigger } from './OnReachTrigger'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface ListItem {}
 
-interface LoadMoreItemsResult<Item extends ListItem> {
+interface LoadMoreItemsResult<Item extends NonNullable<ListItem>> {
   items: readonly Item[]
   totalCount: number
 }
@@ -13,7 +13,7 @@ interface LoadRequest {
   readonly endIndex: number
 }
 
-interface Props<Item extends ListItem> {
+interface Props<Item extends NonNullable<ListItem>> {
   readonly items: readonly (Item | null)[]
   readonly getItemKey: (item: Item | null, index: number) => React.Key
 
@@ -24,10 +24,10 @@ interface Props<Item extends ListItem> {
     startIndex: number,
     endIndex: number,
     signal: AbortSignal,
-  ) => Promise<LoadMoreItemsResult<Item>>
+  ) => Promise<void>
 }
 
-export function FiniteList<Item extends ListItem>({
+export function FiniteList<Item extends NonNullable<ListItem>>({
   items,
   renderSkeleton,
   renderItem,
@@ -42,6 +42,8 @@ export function FiniteList<Item extends ListItem>({
     if (isLoading) return
 
     if (items[index] === null) {
+      console.log('reach', index)
+
       const startIndex = Math.max(0, index - 25)
       const endIndex = index + 25
 

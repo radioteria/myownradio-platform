@@ -107,8 +107,37 @@ export const useLibraryPageStore = (
     }
   }, [])
 
+  const loadMoreTracks = useCallback(
+    async (startIndex: number, endIndex: number, signal: AbortSignal) => {
+      const requestOpts = {
+        offset: startIndex,
+        limit: endIndex - startIndex,
+        signal,
+      }
+
+      const { items, totalCount } = config?.filterUnusedTracks
+        ? await getUnusedUserTracksPage(requestOpts)
+        : await getUserTracksPage(requestOpts)
+
+      setTrackEntries((prevEntries) => {
+        let nextEntries = [...prevEntries]
+        nextEntries.splice(startIndex, items.length, ...items.map(toLibraryTrackEntry))
+
+        if (totalCount > nextEntries.length) {
+          nextEntries.push(...new Array<null>(totalCount - nextEntries.length).fill(null))
+        } else if (totalCount < nextEntries.length) {
+          nextEntries.splice(totalCount)
+        }
+
+        return nextEntries
+      })
+    },
+    [config?.filterUnusedTracks],
+  )
+
   return {
     trackEntries,
+    loadMoreTracks,
     handleDeletingTracks,
     handleRequestMoreTracks,
   }

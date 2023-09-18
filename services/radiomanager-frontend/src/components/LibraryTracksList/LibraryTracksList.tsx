@@ -26,6 +26,11 @@ interface Props {
   readonly tracks: readonly (LibraryTrackEntry | null)[]
   readonly onDeleteTracks: (trackIds: readonly number[]) => void
   readonly onReachUnloadedTrack: (trackIndex: number) => void
+  readonly loadMoreTracks: (
+    startIndex: number,
+    endIndex: number,
+    signal: AbortSignal,
+  ) => Promise<void>
 }
 
 export const LibraryTracksList: React.FC<Props> = ({
@@ -33,6 +38,7 @@ export const LibraryTracksList: React.FC<Props> = ({
   tracks,
   onDeleteTracks,
   onReachUnloadedTrack,
+  loadMoreTracks,
 }) => {
   const contextMenu = useContextMenu()
   const contextMenuRef = useRef(null)
@@ -72,6 +78,7 @@ export const LibraryTracksList: React.FC<Props> = ({
         onTracksListMenu={handleTracksListMenu}
         contextMenuRef={contextMenuRef}
         onReachUnloadedTrack={onReachUnloadedTrack}
+        loadMoreTracks={loadMoreTracks}
       />
     </section>
   )

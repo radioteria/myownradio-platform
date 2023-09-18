@@ -2,41 +2,11 @@ import styles from './ListItemSkeleton.module.css'
 import cn from 'classnames'
 import { useEffect, useRef, useState } from 'react'
 
-interface Props {
-  readonly onReach?: () => void
-}
+interface Props {}
 
-export const ListItemSkeleton: React.FC<Props> = ({ onReach }) => {
-  const ref = useRef<HTMLLIElement>(null)
-  const [hasReached, setHasReached] = useState(false)
-
-  // Intersection
-  useEffect(() => {
-    const current = ref.current
-
-    if (!current) return
-
-    const handleIntersection = ([entry]: IntersectionObserverEntry[]) => {
-      if (entry.isIntersecting && entry.intersectionRatio) {
-        onReach?.()
-        setHasReached(true)
-      }
-    }
-
-    const observer = new IntersectionObserver(handleIntersection, {
-      threshold: 0.1,
-    })
-
-    observer.observe(current)
-
-    return () => observer.unobserve(current)
-  }, [hasReached, onReach])
-
+export const ListItemSkeleton: React.FC<Props> = () => {
   return (
-    <li
-      ref={ref}
-      className="flex items-center border-gray-800 h-12 relative cursor-pointer select-none"
-    >
+    <div className="flex items-center border-gray-800 h-12 relative cursor-pointer select-none">
       <div className="p-2 pl-4 w-14 flex-shrink-0 z-10 text-right">
         <div
           className={cn('w-4 h-5 bg-gray-300 rounded-md inline-block ', styles.skeletonAnimation)}
@@ -60,6 +30,6 @@ export const ListItemSkeleton: React.FC<Props> = ({ onReach }) => {
         />
       </div>
       <div className="pl-2 pr-4 py-4 w-10 flex-shrink-0 text-right" />
-    </li>
+    </div>
   )
 }

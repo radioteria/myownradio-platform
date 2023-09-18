@@ -35,6 +35,7 @@ export const LibraryPage: React.FC<Props> = ({
             totalTracks={initialTotalCount}
             onDeleteTracks={libraryPageStore.handleDeletingTracks}
             onReachUnloadedTrack={libraryPageStore.handleRequestMoreTracks}
+            loadMoreTracks={libraryPageStore.loadMoreTracks}
           />
         }
         rightSidebar={null}

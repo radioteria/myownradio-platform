@@ -91,6 +91,7 @@ export const ChannelTracksList: React.FC<Props> = ({
         onTracksListMenu={handleTracksListMenu}
         contextMenuRef={contextMenuRef}
         onReachUnloadedTrack={(trackIndex) => {}}
+        loadMoreItems={() => Promise.resolve()}
       />
     </section>
   )

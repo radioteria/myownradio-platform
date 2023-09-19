@@ -18,7 +18,6 @@ interface Props<Item extends TrackItem> {
     event: React.MouseEvent<HTMLElement>,
   ) => void
   readonly contextMenuRef: MutableRefObject<null>
-  readonly onReachUnloadedTrack: (index: number) => void
   readonly loadMoreTracks: (
     intervals: readonly { start: number; end: number }[],
     signal: AbortSignal,
@@ -31,7 +30,6 @@ export function TracksList<Item extends TrackItem>({
   currentTrack,
   onTracksListMenu,
   contextMenuRef,
-  onReachUnloadedTrack,
   loadMoreTracks,
 }: Props<Item>) {
   const listRef = useRef(null)

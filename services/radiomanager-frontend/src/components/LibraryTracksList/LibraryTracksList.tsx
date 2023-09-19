@@ -1,9 +1,7 @@
+import { useRef } from 'react'
 import { UserTrack } from '@/api'
 import { TracksList } from '@/components/common/TrackList'
-import { InfiniteScroll } from '@/components/common/InfiniteScroll/InfiniteScroll'
-import AnimatedBars from '@/icons/AnimatedBars'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
-import { useRef } from 'react'
 
 export interface LibraryTrackEntry {
   trackId: number
@@ -25,7 +23,6 @@ interface Props {
   readonly totalTracks: number
   readonly tracks: readonly (LibraryTrackEntry | null)[]
   readonly onDeleteTracks: (trackIds: readonly number[]) => void
-  readonly onReachUnloadedTrack: (trackIndex: number) => void
   readonly loadMoreTracks: (
     intervals: readonly { start: number; end: number }[],
     signal: AbortSignal,
@@ -36,7 +33,6 @@ export const LibraryTracksList: React.FC<Props> = ({
   totalTracks,
   tracks,
   onDeleteTracks,
-  onReachUnloadedTrack,
   loadMoreTracks,
 }) => {
   const contextMenu = useContextMenu()
@@ -76,7 +72,6 @@ export const LibraryTracksList: React.FC<Props> = ({
         currentTrack={null}
         onTracksListMenu={handleTracksListMenu}
         contextMenuRef={contextMenuRef}
-        onReachUnloadedTrack={onReachUnloadedTrack}
         loadMoreTracks={loadMoreTracks}
       />
     </section>

@@ -28,10 +28,6 @@ export const useLibraryPageStore = (
     return entries
   })
 
-  const [requestOffset, setRequestOffset] = useState<number | null>(null)
-
-  const abortControllersRef = useRef<AbortController[]>([])
-
   const addTrackEntry = useCallback((track: UserTrack) => {
     setTrackEntries((entries) => [toLibraryTrackEntry(track), ...entries])
   }, [])
@@ -55,57 +51,6 @@ export const useLibraryPageStore = (
       setTrackEntries(trackEntries)
     })
   }
-
-  const handleRequestMoreTracks = useCallback((trackIndex: number) => {
-    const quantisedIndex = quantise(trackIndex, REQUEST_MORE_TRACKS_WINDOW / 2)
-    const offset = Math.max(0, quantisedIndex - REQUEST_MORE_TRACKS_WINDOW / 2)
-
-    setRequestOffset(offset)
-  }, [])
-
-  useEffect(() => {
-    if (requestOffset === null) return
-    const offset = requestOffset
-
-    const abortController = new AbortController()
-    abortControllersRef.current.push(abortController)
-
-    const requestOpts = {
-      offset,
-      limit: REQUEST_MORE_TRACKS_WINDOW,
-      signal: abortController.signal,
-    }
-    const promise = config?.filterUnusedTracks
-      ? getUnusedUserTracksPage(requestOpts)
-      : getUserTracksPage(requestOpts)
-
-    promise
-      .then(({ items, totalCount }) => {
-        setTrackEntries((prevEntries) => {
-          let nextEntries = [...prevEntries]
-          nextEntries.splice(offset, items.length, ...items.map(toLibraryTrackEntry))
-
-          if (totalCount > nextEntries.length) {
-            nextEntries.push(...new Array<null>(totalCount - nextEntries.length).fill(null))
-          } else if (totalCount < nextEntries.length) {
-            nextEntries.splice(totalCount)
-          }
-
-          return nextEntries
-        })
-      })
-      .finally(() => {
-        remove(abortControllersRef.current, abortController)
-      })
-  }, [requestOffset, config?.filterUnusedTracks])
-
-  useEffect(() => {
-    const current = abortControllersRef.current
-
-    return () => {
-      current.forEach((ctrl) => ctrl.abort())
-    }
-  }, [])
 
   const loadMoreTracks = useCallback(
     async (intervals: readonly { start: number; end: number }[], signal: AbortSignal) => {
@@ -143,6 +88,5 @@ export const useLibraryPageStore = (
     trackEntries,
     loadMoreTracks,
     handleDeletingTracks,
-    handleRequestMoreTracks,
   }
 }

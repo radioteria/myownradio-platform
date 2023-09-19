@@ -1,5 +1,5 @@
 import { OnReachTrigger } from './OnReachTrigger'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface ListItem {}
 
@@ -34,22 +34,21 @@ export function FiniteList<Item extends NonNullable<ListItem>>({
   getItemKey,
   loadMoreItems,
 }: Props<Item>) {
-  const [isLoading, setIsLoading] = useState(false)
+  const isLoadingRef = useRef(false)
   const [loadRequest, setLoadRequest] = useState<null | LoadRequest>(null)
 
   // Trigger "loadMoreItems"
   const handleOnReach = (index: number) => {
-    if (isLoading) return
+    if (isLoadingRef.current) return
 
     if (items[index] === null) {
-      console.log('reach', index)
-
+      // TODO Load only missing items
       const startIndex = Math.max(0, index - 25)
       const endIndex = index + 25
 
       // Load more data
       setLoadRequest({ startIndex, endIndex })
-      setIsLoading(true)
+      isLoadingRef.current = true
     }
   }
 
@@ -61,7 +60,7 @@ export function FiniteList<Item extends NonNullable<ListItem>>({
 
     loadMoreItems(loadRequest.startIndex, loadRequest.endIndex, abortController.signal).finally(
       () => {
-        setIsLoading(false)
+        isLoadingRef.current = false
         setLoadRequest(null)
       },
     )

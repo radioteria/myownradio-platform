@@ -1,14 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   toChannelTrackEntry,
+  toChannelTrackEntry2,
   ChannelTrackEntry,
 } from '@/components/entries/ChannelPage/ChannelTracksList'
-import {
-  MAX_TRACKS_PER_REQUEST,
-  deleteTracksById,
-  getChannelTracks,
-  removeTracksFromChannelById,
-} from '@/api'
+import { deleteTracksById, removeTracksFromChannelById } from '@/api'
+import { getChannelTracksPage } from '@/api/radiomanager'
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { useHandleChannelLastUploadedTrack } from './useHandleChannelLastUploadedTrack'
 
@@ -16,37 +13,23 @@ import type { UserChannelTrack } from '@/api'
 
 export const useChannelPageStore = (
   channelId: number,
-  initialUserChannelTracks: readonly UserChannelTrack[],
+  initialTracks: readonly UserChannelTrack[],
+  initialTotalCount: number,
 ) => {
   const { refresh: refreshNowPlaying } = useNowPlaying()
 
-  const [trackEntries, setTrackEntries] = useState<readonly ChannelTrackEntry[]>(() =>
-    initialUserChannelTracks.map(toChannelTrackEntry),
-  )
+  const [trackEntries, setTrackEntries] = useState<readonly (ChannelTrackEntry | null)[]>(() => {
+    const entries = new Array<ChannelTrackEntry | null>(initialTotalCount).fill(null)
+    entries.splice(0, initialTracks.length, ...initialTracks.map(toChannelTrackEntry))
+
+    return entries
+  })
 
   const addTrackEntry = useCallback((track: UserChannelTrack) => {
     setTrackEntries((entries) => [...entries, toChannelTrackEntry(track)])
   }, [])
 
-  const [isFetching, setIsFetching] = useState(true)
-  useEffect(() => {
-    if (!isFetching) return
-
-    const abortController = new AbortController()
-
-    getChannelTracks(channelId, {
-      offset: trackEntries.length,
-      signal: abortController.signal,
-    }).then((tracks) => {
-      const newEntries = tracks.map(toChannelTrackEntry)
-      setTrackEntries((entries) => [...entries, ...newEntries])
-      setIsFetching(newEntries.length === MAX_TRACKS_PER_REQUEST)
-    })
-
-    return () => {
-      abortController.abort()
-    }
-  }, [isFetching, channelId, trackEntries])
+  useHandleChannelLastUploadedTrack(channelId, addTrackEntry)
 
   const handleDeletingTracks = (trackIds: readonly number[]) => {
     const idsSet = new Set(trackIds)
@@ -80,11 +63,39 @@ export const useChannelPageStore = (
       })
   }
 
-  useHandleChannelLastUploadedTrack(channelId, isFetching, addTrackEntry)
+  const loadMoreTracks = useCallback(
+    async (intervals: readonly { start: number; end: number }[], signal: AbortSignal) => {
+      await Promise.all(
+        intervals.map(async ({ start, end }) => {
+          const requestOpts = {
+            offset: start,
+            limit: end - start,
+            signal,
+          }
+
+          const { items, totalCount } = await getChannelTracksPage(channelId, requestOpts)
+
+          setTrackEntries((prevEntries) => {
+            let nextEntries = [...prevEntries]
+            nextEntries.splice(start, items.length, ...items.map(toChannelTrackEntry2))
+
+            if (totalCount > nextEntries.length) {
+              nextEntries.push(...new Array<null>(totalCount - nextEntries.length).fill(null))
+            } else if (totalCount < nextEntries.length) {
+              nextEntries.splice(totalCount)
+            }
+
+            return nextEntries
+          })
+        }),
+      )
+    },
+    [channelId],
+  )
 
   return {
     trackEntries,
-    isFetching,
+    loadMoreTracks,
     handleDeletingTracks,
     handleRemovingTracksFromChannel,
   }

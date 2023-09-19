@@ -2,7 +2,10 @@ import { useRef } from 'react'
 import { UserChannelTrack } from '@/api'
 import { TracksList } from '@/components/common/TrackList'
 import { useNowPlaying } from '@/modules/NowPlaying'
+import { Interval } from '@/components/InfiniteList/types'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
+
+import type { ChannelTrackEntry as ApiChannelTrackEntry } from '@/api/radiomanager'
 
 export interface ChannelTrackEntry {
   trackId: number
@@ -22,12 +25,25 @@ export const toChannelTrackEntry = (track: UserChannelTrack): ChannelTrackEntry 
   duration: track.duration,
 })
 
+export const toChannelTrackEntry2 = ({
+  track,
+  entry,
+}: ApiChannelTrackEntry): ChannelTrackEntry => ({
+  trackId: track.tid,
+  uniqueId: entry.uniqueId,
+  title: track.title || track.filename,
+  artist: track.artist ?? '',
+  album: track.album ?? '',
+  duration: track.duration,
+})
+
 interface Props {
   readonly totalTracks: number
-  readonly tracks: readonly ChannelTrackEntry[]
+  readonly tracks: readonly (ChannelTrackEntry | null)[]
   readonly channelId: number
   readonly onDeleteTracks: (trackIds: readonly number[]) => void
   readonly onRemoveTracksFromChannel: (uniqueIds: readonly string[]) => void
+  readonly loadMoreTracks: (intervals: readonly Interval[], signal: AbortSignal) => Promise<void>
 }
 
 export const ChannelTracksList: React.FC<Props> = ({
@@ -36,6 +52,7 @@ export const ChannelTracksList: React.FC<Props> = ({
   channelId,
   onDeleteTracks,
   onRemoveTracksFromChannel,
+  loadMoreTracks,
 }) => {
   const { nowPlaying } = useNowPlaying()
   const currentTrack = nowPlaying
@@ -90,8 +107,7 @@ export const ChannelTracksList: React.FC<Props> = ({
         currentTrack={currentTrack}
         onTracksListMenu={handleTracksListMenu}
         contextMenuRef={contextMenuRef}
-        onReachUnloadedTrack={(trackIndex) => {}}
-        loadMoreItems={() => Promise.resolve()}
+        loadMoreTracks={loadMoreTracks}
       />
     </section>
   )

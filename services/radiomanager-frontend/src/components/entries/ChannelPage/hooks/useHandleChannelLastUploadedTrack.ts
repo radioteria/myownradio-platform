@@ -5,7 +5,6 @@ import { UserChannelTrack } from '@/api'
 
 export const useHandleChannelLastUploadedTrack = (
   channelId: number,
-  isFetching: boolean,
   onLastUploadedTrack: (track: UserChannelTrack) => void,
 ) => {
   const { lastUploadedTrack } = useMediaUploader()
@@ -24,12 +23,7 @@ export const useHandleChannelLastUploadedTrack = (
       return
     }
 
-    // Exit if more tracks can still be loaded
-    if (isFetching) {
-      return
-    }
-
     // Invoke the callback with the last uploaded track for this channel
     onLastUploadedTrack(lastUploadedTrack.track)
-  }, [lastUploadedTrack, onLastUploadedTrack, channelId, isFetching])
+  }, [lastUploadedTrack, onLastUploadedTrack, channelId])
 }

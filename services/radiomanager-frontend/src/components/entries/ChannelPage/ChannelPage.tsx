@@ -28,7 +28,7 @@ export const ChannelPage: React.FC<Props> = ({
   user,
   channels,
 }) => {
-  const channelPageStore = useChannelPageStore(channelId, tracks)
+  const channelPageStore = useChannelPageStore(channelId, tracks, totalTracks)
 
   return (
     <>
@@ -42,6 +42,7 @@ export const ChannelPage: React.FC<Props> = ({
             tracks={channelPageStore.trackEntries}
             onDeleteTracks={channelPageStore.handleDeletingTracks}
             onRemoveTracksFromChannel={channelPageStore.handleRemovingTracksFromChannel}
+            loadMoreTracks={channelPageStore.loadMoreTracks}
           />
         }
         rightSidebar={

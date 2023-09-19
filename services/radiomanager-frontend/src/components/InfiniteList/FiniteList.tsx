@@ -64,8 +64,8 @@ export function FiniteList<Item extends NonNullable<ListItem>>({
     const abortController = new AbortController()
 
     loadMoreItems(loadRequest.intervals, abortController.signal).finally(() => {
-      isLoadingRef.current = false
       setLoadRequest(null)
+      isLoadingRef.current = false
     })
 
     return () => {

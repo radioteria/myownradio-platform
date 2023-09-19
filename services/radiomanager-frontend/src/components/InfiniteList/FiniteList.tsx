@@ -74,9 +74,13 @@ export function FiniteList<Item extends NonNullable<ListItem>>({
     <ul>
       {items.map((item, index) => (
         <li key={getItemKey(item, index)}>
-          <OnReachTrigger onReach={handleOnReach.bind(undefined, index)}>
-            {item === null ? renderSkeleton(index) : renderItem(item, index)}
-          </OnReachTrigger>
+          {item === null ? (
+            <OnReachTrigger onReach={handleOnReach.bind(undefined, index)}>
+              {renderSkeleton(index)}
+            </OnReachTrigger>
+          ) : (
+            renderItem(item, index)
+          )}
         </li>
       ))}
     </ul>

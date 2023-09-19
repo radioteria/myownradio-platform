@@ -1,19 +1,22 @@
 import { RefObject, useCallback, useEffect, useState } from 'react'
 import { useHotkey } from '@/hooks/useHotkey'
 
-interface ListItem<I> {
+export interface ListItem<I> {
   item: I
   isSelected: boolean
 }
 
-const makeListItem = <I>(item: I) => ({ item, isSelected: false })
+const makeListItem = <I extends NonNullable<unknown>>(item: I | null) =>
+  item === null ? null : { item, isSelected: false }
 
-const mapToListItems = <T>(items: readonly T[]) => {
+const mapToListItems = <T extends NonNullable<unknown>>(items: readonly (T | null)[]) => {
   return items.map(makeListItem)
 }
 
-export const useListItemSelector = <I>(initialItems: readonly I[]) => {
-  const [listItems, setListItems] = useState<readonly ListItem<I>[]>(() =>
+export const useListItemSelector = <I extends NonNullable<unknown>>(
+  initialItems: readonly (I | null)[],
+) => {
+  const [listItems, setListItems] = useState<readonly (ListItem<I> | null)[]>(() =>
     mapToListItems(initialItems),
   )
   const [cursor, setCursor] = useState<null | number>(null)
@@ -21,9 +24,14 @@ export const useListItemSelector = <I>(initialItems: readonly I[]) => {
   // Reset selection on tracks list update.
   useEffect(() => {
     setListItems((prevItems) => {
-      const prevItemsMap = new Map(prevItems.map((item) => [item.item, item]))
+      const prevItemsMap = new Map(
+        prevItems
+          .filter((item): item is ListItem<I> => item !== null)
+          .map((item) => [item.item, item]),
+      )
 
       return initialItems.map((item) => {
+        if (item === null) return null
         const prevItem = prevItemsMap.get(item)
         return prevItem ? { ...prevItem, item } : makeListItem(item)
       })
@@ -34,6 +42,7 @@ export const useListItemSelector = <I>(initialItems: readonly I[]) => {
     setCursor(selectIndex)
     setListItems((items) =>
       items.map((item, index) => {
+        if (item === null) return null
         return selectIndex === index ? { ...item, isSelected: true } : item
       }),
     )
@@ -43,6 +52,7 @@ export const useListItemSelector = <I>(initialItems: readonly I[]) => {
     setCursor(selectIndex)
     setListItems((items) =>
       items.map((item, index) => {
+        if (item === null) return null
         return selectIndex === index ? { ...item, isSelected: !item.isSelected } : item
       }),
     )
@@ -52,6 +62,7 @@ export const useListItemSelector = <I>(initialItems: readonly I[]) => {
     setCursor(selectIndex)
     setListItems((items) =>
       items.map((item, index) => {
+        if (item === null) return null
         return { ...item, isSelected: selectIndex === index }
       }),
     )
@@ -61,6 +72,7 @@ export const useListItemSelector = <I>(initialItems: readonly I[]) => {
     setCursor(discardIndex)
     setListItems((items) =>
       items.map((item, index) => {
+        if (item === null) return null
         return discardIndex === index ? { ...item, isSelected: false } : item
       }),
     )
@@ -71,6 +83,7 @@ export const useListItemSelector = <I>(initialItems: readonly I[]) => {
 
     setListItems((items) => {
       return items.map((item, index) => {
+        if (item === null) return null
         return endIndex > startIndex
           ? {
               ...item,
@@ -86,7 +99,7 @@ export const useListItemSelector = <I>(initialItems: readonly I[]) => {
 
   const reset = () => {
     setCursor(null)
-    setListItems((items) => items.map(({ item }) => makeListItem(item)))
+    setListItems((items) => items.map((item) => makeListItem(item?.item ?? null)))
   }
 
   return { listItems, select, selectOnly, discard, selectTo, reset, toggle, cursor }

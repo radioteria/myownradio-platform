@@ -5,9 +5,9 @@ import { isModifierKeyPressed } from './helpers'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useListItemSelector } from '@/hooks/useListItemSelector'
 import { ListItemSkeleton } from '@/components/common/TrackList/ListItemSkeleton'
-import { range } from '@/utils/iterators'
-import { ClientSide } from '@/components/common/ClientSide'
 import { FiniteList } from '@/components/InfiniteList'
+
+import type { ListItem as SelectorListItem } from '@/hooks/useListItemSelector'
 
 interface Props<Item extends TrackItem> {
   readonly totalTracks: number
@@ -65,9 +65,9 @@ export function TracksList<Item extends TrackItem>({
   const handleContextMenu = (event: React.MouseEvent<HTMLElement>) => {
     event.preventDefault()
     const selectedTracks = selector.listItems
+      .filter((item): item is SelectorListItem<Item> => item !== null)
       .filter(({ isSelected, item }) => isSelected)
       .map(({ item }) => item)
-      .filter((item): item is Item => item !== null)
     onTracksListMenu(selectedTracks, event)
   }
 
@@ -80,51 +80,21 @@ export function TracksList<Item extends TrackItem>({
           items={selector.listItems}
           getItemKey={(_, index) => index}
           renderSkeleton={() => <ListItemSkeleton />}
-          renderItem={(item, itemIndex) =>
-            item.item === null ? (
-              <ListItemSkeleton />
-            ) : (
-              <ListItem
-                key={itemIndex}
-                track={item.item}
-                currentTrack={currentTrack}
-                index={itemIndex}
-                isSelected={item.isSelected}
-                isMainSelected={selector.cursor === itemIndex}
-                onSelect={(event) => handleSelectItem(itemIndex, event)}
-                onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}
-              />
-            )
-          }
+          renderItem={(item, itemIndex) => (
+            <ListItem
+              key={itemIndex}
+              track={item.item}
+              currentTrack={currentTrack}
+              index={itemIndex}
+              isSelected={item.isSelected}
+              isMainSelected={selector.cursor === itemIndex}
+              onSelect={(event) => handleSelectItem(itemIndex, event)}
+              onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}
+            />
+          )}
           loadMoreItems={loadMoreTracks}
         />
       </div>
-
-      {/*<ul className={'py-4'}>*/}
-      {/*  {selector.listItems.map(({ item, isSelected }, itemIndex) => {*/}
-      {/*    if (!item) {*/}
-      {/*      return (*/}
-      {/*        <ListItemSkeleton*/}
-      {/*          key={itemIndex}*/}
-      {/*          onReach={onReachUnloadedTrack.bind(undefined, itemIndex)}*/}
-      {/*        />*/}
-      {/*      )*/}
-      {/*    }*/}
-
-      {/*    return (*/}
-      {/*      <ListItem*/}
-      {/*        key={itemIndex}*/}
-      {/*        track={item}*/}
-      {/*        currentTrack={currentTrack}*/}
-      {/*        index={itemIndex}*/}
-      {/*        isSelected={isSelected}*/}
-      {/*        isMainSelected={selector.cursor === itemIndex}*/}
-      {/*        onSelect={(event) => handleSelectItem(itemIndex, event)}*/}
-      {/*        onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}*/}
-      {/*      />*/}
-      {/*    )*/}
-      {/*  })}*/}
-      {/*</ul>*/}
     </div>
   )
 }

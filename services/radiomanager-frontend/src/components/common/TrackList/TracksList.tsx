@@ -1,11 +1,12 @@
 import { MutableRefObject, useRef } from 'react'
 import { TrackItem, CurrentTrack } from './types'
 import { ListItem } from './ListItem'
-import { isModifierKeyPressed } from './helpers'
+import { ListItemSkeleton } from './ListItemSkeleton'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useListItemSelector } from '@/hooks/useListItemSelector'
-import { ListItemSkeleton } from '@/components/common/TrackList/ListItemSkeleton'
 import { FiniteList } from '@/components/InfiniteList'
+import { ClientSide } from '@/components/common/ClientSide'
+import { isModifierKeyPressed } from './helpers'
 
 import type { ListItem as SelectorListItem } from '@/hooks/useListItemSelector'
 
@@ -73,24 +74,26 @@ export function TracksList<Item extends TrackItem>({
       <div ref={contextMenuRef} />
 
       <div className={'py-4'}>
-        <FiniteList
-          items={selector.listItems}
-          getItemKey={(_, index) => index}
-          renderSkeleton={() => <ListItemSkeleton />}
-          renderItem={(item, itemIndex) => (
-            <ListItem
-              key={itemIndex}
-              track={item.item}
-              currentTrack={currentTrack}
-              index={itemIndex}
-              isSelected={item.isSelected}
-              isMainSelected={selector.cursor === itemIndex}
-              onSelect={(event) => handleSelectItem(itemIndex, event)}
-              onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}
-            />
-          )}
-          loadMoreItems={loadMoreTracks}
-        />
+        <ClientSide>
+          <FiniteList
+            items={selector.listItems}
+            getItemKey={(_, index) => index}
+            renderSkeleton={() => <ListItemSkeleton />}
+            renderItem={(item, itemIndex) => (
+              <ListItem
+                key={itemIndex}
+                track={item.item}
+                currentTrack={currentTrack}
+                index={itemIndex}
+                isSelected={item.isSelected}
+                isMainSelected={selector.cursor === itemIndex}
+                onSelect={(event) => handleSelectItem(itemIndex, event)}
+                onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}
+              />
+            )}
+            loadMoreItems={loadMoreTracks}
+          />
+        </ClientSide>
       </div>
     </div>
   )

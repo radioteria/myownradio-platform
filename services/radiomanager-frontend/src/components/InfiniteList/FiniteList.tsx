@@ -20,6 +20,7 @@ interface LoadRequest {
 interface Props<Item extends NonNullable<ListItem>> {
   readonly items: readonly (Item | null)[]
   readonly getItemKey: (item: Item | null, index: number) => React.Key
+  readonly itemsBuffer?: number
 
   readonly renderSkeleton: (index: number) => React.ReactNode
   readonly renderItem: (item: Item, index: number) => React.ReactNode
@@ -30,6 +31,7 @@ interface Props<Item extends NonNullable<ListItem>> {
 const debug = makeDebug(FiniteList.name)
 
 export function FiniteList<Item extends NonNullable<ListItem>>({
+  itemsBuffer = 100,
   items,
   renderSkeleton,
   renderItem,
@@ -43,8 +45,8 @@ export function FiniteList<Item extends NonNullable<ListItem>>({
   const handleOnReach = (index: number) => {
     if (isLoadingRef.current) return
 
-    const start = Math.max(0, index - 25)
-    const end = Math.min(items.length, index + 25)
+    const start = Math.max(0, index - itemsBuffer)
+    const end = Math.min(items.length, index + itemsBuffer)
     debug('Reach %dth not yet loaded element. Range to load: %d..%d', index, start, end)
 
     const rangeToLoad = range(start, end).filter((index) => items[index] === null)

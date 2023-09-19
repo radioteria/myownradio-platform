@@ -1,22 +1,28 @@
 import { MutableRefObject, useRef } from 'react'
 import { TrackItem, CurrentTrack } from './types'
 import { ListItem } from './ListItem'
-import { isModifierKeyPressed } from './helpers'
+import { ListItemSkeleton } from './ListItemSkeleton'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useListItemSelector } from '@/hooks/useListItemSelector'
-import { ListItemSkeleton } from '@/components/common/TrackList/ListItemSkeleton'
-import { range } from '@/utils/iterators'
+import { FiniteList } from '@/components/InfiniteList'
 import { ClientSide } from '@/components/common/ClientSide'
+import { isModifierKeyPressed } from './helpers'
+
+import type { ListItem as SelectorListItem } from '@/hooks/useListItemSelector'
 
 interface Props<Item extends TrackItem> {
   readonly totalTracks: number
-  readonly tracks: readonly Item[]
+  readonly tracks: readonly (Item | null)[]
   readonly currentTrack: CurrentTrack | null
   readonly onTracksListMenu: (
     selectedTracks: readonly Item[],
     event: React.MouseEvent<HTMLElement>,
   ) => void
   readonly contextMenuRef: MutableRefObject<null>
+  readonly loadMoreTracks: (
+    intervals: readonly { start: number; end: number }[],
+    signal: AbortSignal,
+  ) => Promise<void>
 }
 
 export function TracksList<Item extends TrackItem>({
@@ -25,6 +31,7 @@ export function TracksList<Item extends TrackItem>({
   currentTrack,
   onTracksListMenu,
   contextMenuRef,
+  loadMoreTracks,
 }: Props<Item>) {
   const listRef = useRef(null)
   const selector = useListItemSelector(tracks)
@@ -41,7 +48,9 @@ export function TracksList<Item extends TrackItem>({
 
   const handleTreeDotsClick = (itemIndex: number, event: React.MouseEvent<HTMLElement>) => {
     selector.selectOnly(itemIndex)
-    const selectedTracks = tracks.filter((_, index) => index === itemIndex)
+    const selectedTracks = tracks.filter(
+      (item, index): item is Item => item !== null && index === itemIndex,
+    )
     onTracksListMenu(selectedTracks, event)
   }
 
@@ -54,6 +63,7 @@ export function TracksList<Item extends TrackItem>({
   const handleContextMenu = (event: React.MouseEvent<HTMLElement>) => {
     event.preventDefault()
     const selectedTracks = selector.listItems
+      .filter((item): item is SelectorListItem<Item> => item !== null)
       .filter(({ isSelected, item }) => isSelected)
       .map(({ item }) => item)
     onTracksListMenu(selectedTracks, event)
@@ -63,28 +73,28 @@ export function TracksList<Item extends TrackItem>({
     <div ref={listRef} onContextMenu={handleContextMenu}>
       <div ref={contextMenuRef} />
 
-      <ul className={'py-4'}>
-        {selector.listItems.map(({ item, isSelected }, itemIndex) => {
-          return (
-            <ListItem
-              key={itemIndex}
-              track={item}
-              currentTrack={currentTrack}
-              index={itemIndex}
-              isSelected={isSelected}
-              isMainSelected={selector.cursor === itemIndex}
-              onSelect={(event) => handleSelectItem(itemIndex, event)}
-              onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}
-            />
-          )
-        })}
-
+      <div className={'py-4'}>
         <ClientSide>
-          {[...range(selector.listItems.length, totalTracks)].map((n) => (
-            <ListItemSkeleton key={n} />
-          ))}
+          <FiniteList
+            items={selector.listItems}
+            getItemKey={(_, index) => index}
+            renderSkeleton={() => <ListItemSkeleton />}
+            renderItem={(item, itemIndex) => (
+              <ListItem
+                key={itemIndex}
+                track={item.item}
+                currentTrack={currentTrack}
+                index={itemIndex}
+                isSelected={item.isSelected}
+                isMainSelected={selector.cursor === itemIndex}
+                onSelect={(event) => handleSelectItem(itemIndex, event)}
+                onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}
+              />
+            )}
+            loadMoreItems={loadMoreTracks}
+          />
         </ClientSide>
-      </ul>
+      </div>
     </div>
   )
 }

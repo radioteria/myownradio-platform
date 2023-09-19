@@ -18,7 +18,7 @@ export default async function Library() {
     <LibraryPageWithProviders
       user={self.user}
       initialTracks={data.items}
-      totalTracks={data.totalCount}
+      initialTotalCount={data.totalCount}
       channels={self.streams}
     />
   )

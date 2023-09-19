@@ -17,7 +17,7 @@ interface Props {
   onThreeDotsClick: (event: React.MouseEvent<HTMLElement>) => void
 }
 
-export const ListItem = React.forwardRef<HTMLLIElement, Props>(
+export const ListItem = React.forwardRef<HTMLDivElement, Props>(
   ({ track, currentTrack, index, isSelected, isMainSelected, onSelect, onThreeDotsClick }, ref) => {
     const isCurrentTrack = currentTrack?.index === index
 
@@ -28,7 +28,7 @@ export const ListItem = React.forwardRef<HTMLLIElement, Props>(
     }
 
     return (
-      <li
+      <div
         ref={ref}
         key={track.trackId}
         className={cn([
@@ -61,7 +61,7 @@ export const ListItem = React.forwardRef<HTMLLIElement, Props>(
             <ThreeDots size={14} />
           </button>
         </div>
-      </li>
+      </div>
     )
   },
 )

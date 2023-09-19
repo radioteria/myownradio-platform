@@ -1,6 +1,5 @@
 'use client'
 
-import { User, UserChannel, UserTrack } from '@/api'
 import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { Header } from '@/components/Header'
 import { Sidebar } from '@/components/Sidebar'
@@ -8,15 +7,22 @@ import { LibraryTracksList } from '@/components/LibraryTracksList/LibraryTracksL
 import { MediaUploaderComponent } from '@/modules/MediaUploader'
 import { useLibraryPageStore } from './hooks/useLibraryPageStore'
 
+import type { User, UserChannel, UserTrack } from '@/api'
+
 interface Props {
   readonly user: User
   readonly initialTracks: readonly UserTrack[]
-  readonly totalTracks: number
+  readonly initialTotalCount: number
   readonly channels: readonly UserChannel[]
 }
 
-export const LibraryPage: React.FC<Props> = ({ user, initialTracks, totalTracks, channels }) => {
-  const libraryPageStore = useLibraryPageStore(initialTracks)
+export const LibraryPage: React.FC<Props> = ({
+  user,
+  initialTracks,
+  initialTotalCount,
+  channels,
+}) => {
+  const libraryPageStore = useLibraryPageStore(initialTracks, initialTotalCount)
 
   return (
     <>
@@ -26,8 +32,9 @@ export const LibraryPage: React.FC<Props> = ({ user, initialTracks, totalTracks,
         content={
           <LibraryTracksList
             tracks={libraryPageStore.trackEntries}
-            totalTracks={totalTracks}
+            totalTracks={initialTotalCount}
             onDeleteTracks={libraryPageStore.handleDeletingTracks}
+            loadMoreTracks={libraryPageStore.loadMoreTracks}
           />
         }
         rightSidebar={null}

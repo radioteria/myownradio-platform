@@ -48,13 +48,14 @@ export const getUnusedUserTracksPage = async (opts: PageRequestOptions = {}) => 
   return GetUnusedUserTracksPageSchema.parse(json)
 }
 
-const GetChannelTracksPageSchema = z.object({
-  items: z.array(
-    z.object({
-      track: UserTrackSchema,
-      entry: ChannelEntrySchema,
-    }),
-  ),
+const ChannelTracksEntrySchema = z.object({
+  track: UserTrackSchema,
+  entry: ChannelEntrySchema,
+})
+export type ChannelTrackEntry = z.TypeOf<typeof ChannelTracksEntrySchema>
+
+const GetChannelTracksPageResponseSchema = z.object({
+  items: z.array(ChannelTracksEntrySchema),
   totalCount: z.number().nonnegative(),
   paginationData: z.object({
     offset: z.number().nonnegative(),
@@ -71,5 +72,5 @@ export const getChannelTracksPage = async (channelId: number, opts: PageRequestO
   const res = await isomorphicFetch(url, { signal: opts?.signal })
   const json = await res.json()
 
-  return GetChannelTracksPageSchema.parse(json)
+  return GetChannelTracksPageResponseSchema.parse(json)
 }

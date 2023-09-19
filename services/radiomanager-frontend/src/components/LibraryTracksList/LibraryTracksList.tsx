@@ -27,8 +27,7 @@ interface Props {
   readonly onDeleteTracks: (trackIds: readonly number[]) => void
   readonly onReachUnloadedTrack: (trackIndex: number) => void
   readonly loadMoreTracks: (
-    startIndex: number,
-    endIndex: number,
+    intervals: readonly { start: number; end: number }[],
     signal: AbortSignal,
   ) => Promise<void>
 }

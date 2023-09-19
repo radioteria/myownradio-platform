@@ -1,5 +1,9 @@
-import { OnReachTrigger } from './OnReachTrigger'
 import { useEffect, useRef, useState } from 'react'
+import { OnReachTrigger } from './OnReachTrigger'
+import { numbersToExclusiveIntervals } from './helpers'
+import { range } from '@/utils/iterators'
+
+import type { Interval } from './types'
 
 interface ListItem {}
 
@@ -9,8 +13,7 @@ interface LoadMoreItemsResult<Item extends NonNullable<ListItem>> {
 }
 
 interface LoadRequest {
-  readonly startIndex: number
-  readonly endIndex: number
+  readonly intervals: readonly Interval[]
 }
 
 interface Props<Item extends NonNullable<ListItem>> {
@@ -20,11 +23,7 @@ interface Props<Item extends NonNullable<ListItem>> {
   readonly renderSkeleton: (index: number) => React.ReactNode
   readonly renderItem: (item: Item, index: number) => React.ReactNode
 
-  readonly loadMoreItems: (
-    startIndex: number,
-    endIndex: number,
-    signal: AbortSignal,
-  ) => Promise<void>
+  readonly loadMoreItems: (intervals: readonly Interval[], signal: AbortSignal) => Promise<void>
 }
 
 export function FiniteList<Item extends NonNullable<ListItem>>({
@@ -41,15 +40,14 @@ export function FiniteList<Item extends NonNullable<ListItem>>({
   const handleOnReach = (index: number) => {
     if (isLoadingRef.current) return
 
-    if (items[index] === null) {
-      // TODO Load only missing items
-      const startIndex = Math.max(0, index - 25)
-      const endIndex = index + 25
+    const start = Math.max(0, index - 25)
+    const end = index + 25
+    const rangeToLoad = range(start, end).filter((index) => items[index] === null)
+    const rangeIntervals = numbersToExclusiveIntervals(rangeToLoad)
 
-      // Load more data
-      setLoadRequest({ startIndex, endIndex })
-      isLoadingRef.current = true
-    }
+    // Load more data
+    setLoadRequest({ intervals: rangeIntervals })
+    isLoadingRef.current = true
   }
 
   // Handle "loadMoreItems"
@@ -58,12 +56,10 @@ export function FiniteList<Item extends NonNullable<ListItem>>({
 
     const abortController = new AbortController()
 
-    loadMoreItems(loadRequest.startIndex, loadRequest.endIndex, abortController.signal).finally(
-      () => {
-        isLoadingRef.current = false
-        setLoadRequest(null)
-      },
-    )
+    loadMoreItems(loadRequest.intervals, abortController.signal).finally(() => {
+      isLoadingRef.current = false
+      setLoadRequest(null)
+    })
 
     return () => {
       abortController.abort()

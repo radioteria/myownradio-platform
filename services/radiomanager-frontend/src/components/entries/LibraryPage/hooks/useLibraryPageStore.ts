@@ -108,29 +108,33 @@ export const useLibraryPageStore = (
   }, [])
 
   const loadMoreTracks = useCallback(
-    async (startIndex: number, endIndex: number, signal: AbortSignal) => {
-      const requestOpts = {
-        offset: startIndex,
-        limit: endIndex - startIndex,
-        signal,
-      }
+    async (intervals: readonly { start: number; end: number }[], signal: AbortSignal) => {
+      await Promise.all(
+        intervals.map(async ({ start, end }) => {
+          const requestOpts = {
+            offset: start,
+            limit: end - start,
+            signal,
+          }
 
-      const { items, totalCount } = config?.filterUnusedTracks
-        ? await getUnusedUserTracksPage(requestOpts)
-        : await getUserTracksPage(requestOpts)
+          const { items, totalCount } = config?.filterUnusedTracks
+            ? await getUnusedUserTracksPage(requestOpts)
+            : await getUserTracksPage(requestOpts)
 
-      setTrackEntries((prevEntries) => {
-        let nextEntries = [...prevEntries]
-        nextEntries.splice(startIndex, items.length, ...items.map(toLibraryTrackEntry))
+          setTrackEntries((prevEntries) => {
+            let nextEntries = [...prevEntries]
+            nextEntries.splice(start, items.length, ...items.map(toLibraryTrackEntry))
 
-        if (totalCount > nextEntries.length) {
-          nextEntries.push(...new Array<null>(totalCount - nextEntries.length).fill(null))
-        } else if (totalCount < nextEntries.length) {
-          nextEntries.splice(totalCount)
-        }
+            if (totalCount > nextEntries.length) {
+              nextEntries.push(...new Array<null>(totalCount - nextEntries.length).fill(null))
+            } else if (totalCount < nextEntries.length) {
+              nextEntries.splice(totalCount)
+            }
 
-        return nextEntries
-      })
+            return nextEntries
+          })
+        }),
+      )
     },
     [config?.filterUnusedTracks],
   )

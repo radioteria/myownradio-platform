@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import makeDebug from 'debug'
-import { OnReachTrigger } from './OnReachTrigger'
+import { ViewportReach } from './ViewportReach'
 import { numbersToExclusiveIntervals } from './helpers'
 import { range } from '@/utils/iterators'
 
@@ -80,9 +80,9 @@ export function FiniteList<Item extends NonNullable<ListItem>>({
       {items.map((item, index) => (
         <li key={getItemKey(item, index)}>
           {item === null ? (
-            <OnReachTrigger onReach={handleOnReach.bind(undefined, index)}>
+            <ViewportReach onReach={handleOnReach.bind(undefined, index)}>
               {renderSkeleton(index)}
-            </OnReachTrigger>
+            </ViewportReach>
           ) : (
             renderItem(item, index)
           )}

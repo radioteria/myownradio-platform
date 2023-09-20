@@ -24,7 +24,8 @@ interface Props {
   readonly tracks: readonly (LibraryTrackEntry | null)[]
   readonly onDeleteTracks: (trackIds: readonly number[]) => void
   readonly loadMoreTracks: (
-    intervals: readonly { start: number; end: number }[],
+    startIndex: number,
+    endIndex: number,
     signal: AbortSignal,
   ) => Promise<void>
 }

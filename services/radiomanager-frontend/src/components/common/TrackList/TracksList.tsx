@@ -20,7 +20,8 @@ interface Props<Item extends TrackItem> {
   ) => void
   readonly contextMenuRef: MutableRefObject<null>
   readonly loadMoreTracks: (
-    intervals: readonly { start: number; end: number }[],
+    startIndex: number,
+    endIndex: number,
     signal: AbortSignal,
   ) => Promise<void>
 }

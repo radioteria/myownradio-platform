@@ -1,12 +1,4 @@
-import React, {
-  Children,
-  useRef,
-  useEffect,
-  ReactNode,
-  useState,
-  cloneElement,
-  isValidElement,
-} from 'react'
+import React, { Children, useRef, useEffect, ReactNode } from 'react'
 
 interface Props {
   onReach: () => void
@@ -15,19 +7,22 @@ interface Props {
 
 export const ViewportReach: React.FC<Props> = ({ onReach, children }) => {
   const childRefs = useRef<(Element | null)[]>([])
-  const [hasTriggered, setHasTriggered] = useState(false)
+  const hasTriggeredRef = useRef(false)
 
   // Intersection
   useEffect(() => {
     const current = [...childRefs.current]
 
-    if (current.length === 0 || hasTriggered) return
+    if (current.length === 0 || hasTriggeredRef.current) return
 
     const handleIntersection = (entries: IntersectionObserverEntry[]) => {
+      if (hasTriggeredRef.current) return
+
       for (const entry of entries) {
         if (entry.isIntersecting) {
+          hasTriggeredRef.current = true
           onReach()
-          setHasTriggered(true)
+          break
         }
       }
     }
@@ -47,7 +42,7 @@ export const ViewportReach: React.FC<Props> = ({ onReach, children }) => {
         observer.unobserve(ref)
       }
     }
-  }, [hasTriggered, onReach])
+  }, [onReach])
 
   return Children.map(children, (child, index) => {
     return <div ref={(el) => (childRefs.current[index] = el)}>{child}</div>

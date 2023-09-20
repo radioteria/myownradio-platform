@@ -1,23 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import makeDebug from 'debug'
+import chunk from 'lodash.chunk'
+import { remove } from '@/utils/arrays'
 import { ViewportReach } from './ViewportReach'
-import { numbersToExclusiveIntervals } from './helpers'
-import { range } from '@/utils/iterators'
 
-import type { Interval } from './types'
-
-interface ListItem {}
-
-interface LoadMoreItemsResult<Item extends NonNullable<ListItem>> {
-  items: readonly Item[]
-  totalCount: number
-}
-
-interface LoadRequest {
-  readonly intervals: readonly Interval[]
-}
-
-interface Props<Item extends NonNullable<ListItem>> {
+interface Props<Item extends NonNullable<unknown>> {
   readonly items: readonly (Item | null)[]
   readonly getItemKey: (item: Item | null, index: number) => React.Key
   readonly itemsBuffer?: number
@@ -25,12 +12,18 @@ interface Props<Item extends NonNullable<ListItem>> {
   readonly renderSkeleton: (index: number) => React.ReactNode
   readonly renderItem: (item: Item, index: number) => React.ReactNode
 
-  readonly loadMoreItems: (intervals: readonly Interval[], signal: AbortSignal) => Promise<void>
+  readonly loadMoreItems: (
+    startIndex: number,
+    endIndex: number,
+    signal: AbortSignal,
+  ) => Promise<void>
 }
 
 const debug = makeDebug(FiniteList.name)
 
-export function FiniteList<Item extends NonNullable<ListItem>>({
+const ITEMS_PER_CHUNK = 25
+
+export function FiniteList<Item extends NonNullable<unknown>>({
   itemsBuffer = 100,
   items,
   renderSkeleton,
@@ -38,56 +31,55 @@ export function FiniteList<Item extends NonNullable<ListItem>>({
   getItemKey,
   loadMoreItems,
 }: Props<Item>) {
-  const isLoadingRef = useRef(false)
-  const [loadRequest, setLoadRequest] = useState<null | LoadRequest>(null)
+  const abortControllerRefs = useRef<AbortController[]>([])
 
-  // Trigger "loadMoreItems"
   const handleOnReach = (index: number) => {
-    if (isLoadingRef.current) return
-
-    const start = Math.max(0, index - itemsBuffer)
-    const end = Math.min(items.length, index + itemsBuffer)
+    const start = index
+    const end = index + ITEMS_PER_CHUNK
     debug('Reach %dth not yet loaded element. Range to load: %d..%d', index, start, end)
 
-    const rangeToLoad = range(start, end).filter((index) => items[index] === null)
-    const rangeIntervals = numbersToExclusiveIntervals(rangeToLoad)
-    const rangeIntervalsStr = rangeIntervals.map(({ start, end }) => `${start}..${end}`).join(', ')
-    debug('Refined range intervals to load: %s', rangeIntervalsStr)
+    const abortController = new AbortController()
+    abortControllerRefs.current.push(abortController)
 
-    // Load more data
-    setLoadRequest({ intervals: rangeIntervals })
-    isLoadingRef.current = true
+    loadMoreItems(start, end, abortController.signal).finally(() => {
+      remove(abortControllerRefs.current, abortController)
+    })
   }
 
-  // Handle "loadMoreItems"
   useEffect(() => {
-    if (!loadRequest) return
-
-    const abortController = new AbortController()
-
-    loadMoreItems(loadRequest.intervals, abortController.signal).finally(() => {
-      setLoadRequest(null)
-      isLoadingRef.current = false
-    })
+    const current = abortControllerRefs.current
 
     return () => {
-      abortController.abort()
+      for (const controller of current) {
+        controller.abort()
+      }
     }
-  }, [loadRequest, loadMoreItems])
+  }, [loadMoreItems])
 
   return (
     <ul>
-      {items.map((item, index) => (
-        <li key={getItemKey(item, index)}>
-          {item === null ? (
-            <ViewportReach onReach={handleOnReach.bind(undefined, index)}>
-              {renderSkeleton(index)}
-            </ViewportReach>
-          ) : (
-            renderItem(item, index)
-          )}
-        </li>
-      ))}
+      {chunk(items, ITEMS_PER_CHUNK).map((itemsInChunk, chunkIndex) => {
+        const indexOffset = chunkIndex * ITEMS_PER_CHUNK
+        return itemsInChunk[0] === null ? (
+          <ViewportReach key={chunkIndex} onReach={handleOnReach.bind(undefined, indexOffset)}>
+            {itemsInChunk.map((item, index) => (
+              <li key={getItemKey(item, index)}>
+                {item === null
+                  ? renderSkeleton(indexOffset + index)
+                  : renderItem(item, indexOffset + index)}
+              </li>
+            ))}
+          </ViewportReach>
+        ) : (
+          itemsInChunk.map((item, index) => (
+            <li key={getItemKey(item, index)}>
+              {item === null
+                ? renderSkeleton(indexOffset + index)
+                : renderItem(item, indexOffset + index)}
+            </li>
+          ))
+        )
+      })}
     </ul>
   )
 }

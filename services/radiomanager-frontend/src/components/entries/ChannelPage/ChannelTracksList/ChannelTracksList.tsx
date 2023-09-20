@@ -2,7 +2,6 @@ import { useRef } from 'react'
 import { UserChannelTrack } from '@/api'
 import { TracksList } from '@/components/common/TrackList'
 import { useNowPlaying } from '@/modules/NowPlaying'
-import { Interval } from '@/components/InfiniteList/types'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 
 import type { ChannelTrackEntry as ApiChannelTrackEntry } from '@/api/radiomanager'
@@ -43,7 +42,11 @@ interface Props {
   readonly channelId: number
   readonly onDeleteTracks: (trackIds: readonly number[]) => void
   readonly onRemoveTracksFromChannel: (uniqueIds: readonly string[]) => void
-  readonly loadMoreTracks: (intervals: readonly Interval[], signal: AbortSignal) => Promise<void>
+  readonly loadMoreTracks: (
+    startIndex: number,
+    endIndex: number,
+    signal: AbortSignal,
+  ) => Promise<void>
 }
 
 export const ChannelTracksList: React.FC<Props> = ({

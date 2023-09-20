@@ -1,16 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import makeDebug from 'debug'
 import { LibraryTrackEntry, toLibraryTrackEntry } from '@/components/LibraryTracksList'
 import { deleteTracksById } from '@/api'
 import { getUnusedUserTracksPage, getUserTracksPage } from '@/api/radiomanager'
-import { quantise } from '@/utils/math'
-import { remove } from '@/utils/arrays'
 import { useHandleLibraryLastUploadedTrack } from '../hooks/useHandleLibraryLastUploadedTrack'
 
 import type { UserTrack } from '@/api'
 
 const debug = makeDebug('useLibraryPageStore')
-const REQUEST_MORE_TRACKS_WINDOW = 100
 
 interface StoreConfig {
   readonly filterUnusedTracks?: boolean
@@ -53,33 +50,29 @@ export const useLibraryPageStore = (
   }
 
   const loadMoreTracks = useCallback(
-    async (intervals: readonly { start: number; end: number }[], signal: AbortSignal) => {
-      await Promise.all(
-        intervals.map(async ({ start, end }) => {
-          const requestOpts = {
-            offset: start,
-            limit: end - start,
-            signal,
-          }
+    async (startIndex: number, endIndex: number, signal: AbortSignal) => {
+      const requestOpts = {
+        offset: startIndex,
+        limit: endIndex - startIndex,
+        signal,
+      }
 
-          const { items, totalCount } = config?.filterUnusedTracks
-            ? await getUnusedUserTracksPage(requestOpts)
-            : await getUserTracksPage(requestOpts)
+      const { items, totalCount } = config?.filterUnusedTracks
+        ? await getUnusedUserTracksPage(requestOpts)
+        : await getUserTracksPage(requestOpts)
 
-          setTrackEntries((prevEntries) => {
-            let nextEntries = [...prevEntries]
-            nextEntries.splice(start, items.length, ...items.map(toLibraryTrackEntry))
+      setTrackEntries((prevEntries) => {
+        let nextEntries = [...prevEntries]
+        nextEntries.splice(startIndex, items.length, ...items.map(toLibraryTrackEntry))
 
-            if (totalCount > nextEntries.length) {
-              nextEntries.push(...new Array<null>(totalCount - nextEntries.length).fill(null))
-            } else if (totalCount < nextEntries.length) {
-              nextEntries.splice(totalCount)
-            }
+        if (totalCount > nextEntries.length) {
+          nextEntries.push(...new Array<null>(totalCount - nextEntries.length).fill(null))
+        } else if (totalCount < nextEntries.length) {
+          nextEntries.splice(totalCount)
+        }
 
-            return nextEntries
-          })
-        }),
-      )
+        return nextEntries
+      })
     },
     [config?.filterUnusedTracks],
   )

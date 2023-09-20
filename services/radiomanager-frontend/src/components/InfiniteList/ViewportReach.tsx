@@ -13,22 +13,22 @@ export const ViewportReach: React.FC<Props> = ({ onReach, children }) => {
   useEffect(() => {
     const current = [...childRefs.current]
 
-    if (current.length === 0 || hasTriggeredRef.current) return
+    if (current.length === 0) return
 
     const handleIntersection = (entries: IntersectionObserverEntry[]) => {
-      if (hasTriggeredRef.current) return
-
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          hasTriggeredRef.current = true
-          onReach()
-          break
+          if (!hasTriggeredRef.current) {
+            onReach()
+            hasTriggeredRef.current = true
+          }
+          return
         }
       }
     }
 
     const observer = new IntersectionObserver(handleIntersection, {
-      threshold: 1,
+      threshold: 0.5,
     })
 
     for (const ref of current) {
@@ -37,10 +37,7 @@ export const ViewportReach: React.FC<Props> = ({ onReach, children }) => {
     }
 
     return () => {
-      for (const ref of current) {
-        if (ref === null) continue
-        observer.unobserve(ref)
-      }
+      observer.disconnect()
     }
   }, [onReach])
 

@@ -23,6 +23,8 @@ module.exports = {
         'morblue-700': '#272d43',
         'morblue-800': '#23283A',
         'morblue-900': '#202434',
+        'morblue-950': '#1e202d',
+        'morblue-1000': '#13141c',
       },
     },
   },

@@ -14,7 +14,7 @@ export const LibraryLayout: React.FC<Props> = ({ header, sidebar, content, right
   return (
     <main className={cn('h-screen w-screen')}>
       <ContextMenuProvider>
-        <div className={cn('flex h-full w-full flex-col')}>
+        <div className={cn('flex h-full w-full flex-col bg-morblue-1000')}>
           <nav className={cn('h-16 bg-morblue-700 text-gray-100 items-center overflow-hidden')}>
             {header}
           </nav>
@@ -23,7 +23,7 @@ export const LibraryLayout: React.FC<Props> = ({ header, sidebar, content, right
               <div
                 className={cn(
                   'w-full h-full rounded-lg overflow-y-auto',
-                  'from-gray-200 to-gray-50 bg-gradient-to-b',
+                  'bg-morblue-950 text-gray-300',
                 )}
               >
                 {sidebar}
@@ -33,7 +33,7 @@ export const LibraryLayout: React.FC<Props> = ({ header, sidebar, content, right
               <div
                 className={cn(
                   'w-full h-full rounded-lg overflow-y-auto',
-                  'from-gray-200 to-gray-50 bg-gradient-to-b',
+                  'bg-morblue-950 text-gray-300',
                 )}
               >
                 {content}

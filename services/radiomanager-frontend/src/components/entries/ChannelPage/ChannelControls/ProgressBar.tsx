@@ -24,7 +24,7 @@ export const ProgressBar: React.FC<Props> = ({ position, duration }) => {
       `}</style>
       <div
         key={`k-${position}`}
-        className={'h-full w-full origin-left bg-morblue-800'}
+        className={'h-full w-full origin-left bg-morblue-300'}
         style={{
           animation: 'scale',
           animationDuration: `${animationDuration}ms`,

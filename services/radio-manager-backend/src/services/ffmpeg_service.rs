@@ -15,10 +15,12 @@ pub(crate) enum TranscodeAudioFileError {
 
 pub(crate) enum AudioCodec {
     Aac,
+    Vorbis,
 }
 
 pub(crate) enum AudioContainer {
     Adts,
+    Webm,
 }
 
 pub(crate) enum AudioChannels {
@@ -48,6 +50,7 @@ pub(crate) async fn transcode_audio_file(
         .arg("-acodec")
         .arg(match format.codec {
             AudioCodec::Aac => "aac",
+            AudioCodec::Vorbis => "libvorbis",
         })
         .arg("-b:a")
         .arg(format!("{}", format.bitrate))
@@ -64,6 +67,7 @@ pub(crate) async fn transcode_audio_file(
         .arg("-f")
         .arg(match format.container {
             AudioContainer::Adts => "adts",
+            AudioContainer::Webm => "webm",
         })
         .arg("pipe:1")
         .stdout(Stdio::piped())

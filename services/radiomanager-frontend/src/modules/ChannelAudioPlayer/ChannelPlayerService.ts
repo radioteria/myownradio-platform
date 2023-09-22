@@ -1,8 +1,9 @@
-import { getNowPlaying, getTrackTranscodeStream } from '@/api'
 import makeDebug from 'debug'
+import { AudioFormat, getNowPlaying, getTrackTranscodeStream } from '@/api'
 import { appendBufferAsync, playAudio, stopAudio } from '@/utils/audio'
 import { streamAsyncIterator } from '@/utils/iterators'
 import { getWorldTime } from '@/api/time'
+import { getSupportedAudioFormats } from './probe'
 
 const debug = makeDebug('ChannelPlayerService')
 
@@ -20,7 +21,10 @@ export class ChannelPlayerService {
   constructor(
     private readonly channelId: number,
     private readonly audioElement: HTMLAudioElement,
-  ) {}
+    private readonly supportedAudioFormats = getSupportedAudioFormats(),
+  ) {
+    debug('Supported audio formats', this.supportedAudioFormats)
+  }
 
   public readonly runLoop = async () => {
     while (!this.stopping) {
@@ -102,9 +106,16 @@ export class ChannelPlayerService {
           nowPlaying.currentTrack.offset,
           remainder,
         )
+        const audioFormat = this.supportedAudioFormats.aac
+          ? AudioFormat.AAC
+          : this.supportedAudioFormats.vorbis
+          ? AudioFormat.Vorbis
+          : null
+
         const { stream, contentType } = await getTrackTranscodeStream(
           nowPlaying.currentTrack.trackId,
           nowPlaying.currentTrack.offset,
+          audioFormat,
           abortController.signal,
         )
 

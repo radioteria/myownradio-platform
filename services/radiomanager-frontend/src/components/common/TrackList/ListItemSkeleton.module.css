@@ -1,12 +1,12 @@
 @keyframes skeletonBounce {
     from, 50% {
-        background-color: #d1d5db;
+        background-color: #282d41;
     }
     75% {
-        background-color: #dbdfe7;
+        background-color: #2d3349;
     }
     to {
-        background-color: #d1d5db;
+        background-color: #282d41;
     }
 }
 

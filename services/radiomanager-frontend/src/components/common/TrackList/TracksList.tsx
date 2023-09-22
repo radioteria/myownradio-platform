@@ -75,26 +75,24 @@ export function TracksList<Item extends TrackItem>({
       <div ref={contextMenuRef} />
 
       <div className={'py-4'}>
-        <ClientSide>
-          <FiniteList
-            items={selector.listItems}
-            getItemKey={(_, index) => index}
-            renderSkeleton={() => <ListItemSkeleton />}
-            renderItem={(item, itemIndex) => (
-              <ListItem
-                key={itemIndex}
-                track={item.item}
-                currentTrack={currentTrack}
-                index={itemIndex}
-                isSelected={item.isSelected}
-                isMainSelected={selector.cursor === itemIndex}
-                onSelect={(event) => handleSelectItem(itemIndex, event)}
-                onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}
-              />
-            )}
-            loadMoreItems={loadMoreTracks}
-          />
-        </ClientSide>
+        <FiniteList
+          items={selector.listItems}
+          getItemKey={(_, index) => index}
+          renderSkeleton={() => <ListItemSkeleton />}
+          renderItem={(item, itemIndex) => (
+            <ListItem
+              key={itemIndex}
+              track={item.item}
+              currentTrack={currentTrack}
+              index={itemIndex}
+              isSelected={item.isSelected}
+              isMainSelected={selector.cursor === itemIndex}
+              onSelect={(event) => handleSelectItem(itemIndex, event)}
+              onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}
+            />
+          )}
+          loadMoreItems={loadMoreTracks}
+        />
       </div>
     </div>
   )

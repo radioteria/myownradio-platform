@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 import makeDebug from 'debug'
-import chunk from 'lodash.chunk'
 import { remove } from '@/utils/arrays'
 import { ViewportReach } from './ViewportReach'
+import { chunkItems } from './fns'
 
 interface Props<Item extends NonNullable<unknown>> {
   readonly items: readonly (Item | null)[]
@@ -24,7 +24,6 @@ const debug = makeDebug(FiniteList.name)
 const ITEMS_PER_CHUNK = 25
 
 export function FiniteList<Item extends NonNullable<unknown>>({
-  itemsBuffer = 100,
   items,
   renderSkeleton,
   renderItem,
@@ -58,26 +57,21 @@ export function FiniteList<Item extends NonNullable<unknown>>({
 
   return (
     <ul>
-      {chunk(items, ITEMS_PER_CHUNK).map((itemsInChunk, chunkIndex) => {
-        const indexOffset = chunkIndex * ITEMS_PER_CHUNK
-        return itemsInChunk[0] === null ? (
+      {chunkItems(items, ITEMS_PER_CHUNK).map((itemsInChunk, chunkIndex) => {
+        const indexOffset = itemsInChunk.items[0][1]
+
+        const itemsChunkElement = itemsInChunk.items.map(([item, itemIndex]) => (
+          <li key={getItemKey(item, itemIndex)}>
+            {item === null ? renderSkeleton(itemIndex) : renderItem(item, itemIndex)}
+          </li>
+        ))
+
+        return itemsInChunk.hasNull ? (
           <ViewportReach key={indexOffset} onReach={handleOnReach.bind(undefined, indexOffset)}>
-            {itemsInChunk.map((item, index) => (
-              <li key={getItemKey(item, index)}>
-                {item === null
-                  ? renderSkeleton(indexOffset + index)
-                  : renderItem(item, indexOffset + index)}
-              </li>
-            ))}
+            {itemsChunkElement}
           </ViewportReach>
         ) : (
-          itemsInChunk.map((item, index) => (
-            <li key={getItemKey(item, index)}>
-              {item === null
-                ? renderSkeleton(indexOffset + index)
-                : renderItem(item, indexOffset + index)}
-            </li>
-          ))
+          itemsChunkElement
         )
       })}
     </ul>

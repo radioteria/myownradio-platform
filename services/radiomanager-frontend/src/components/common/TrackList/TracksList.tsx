@@ -5,8 +5,8 @@ import { ListItemSkeleton } from './ListItemSkeleton'
 import { useClickOutside } from '@/hooks/useClickOutside'
 import { useListItemSelector } from '@/hooks/useListItemSelector'
 import { FiniteList } from '@/components/InfiniteList'
-import { ClientSide } from '@/components/common/ClientSide'
 import { isModifierKeyPressed } from './helpers'
+import { INITIAL_AUDIO_TRACKS_CHUNK_SIZE, NEXT_AUDIO_TRACKS_CHUNKS_SIZE } from '@/constants'
 
 import type { ListItem as SelectorListItem } from '@/hooks/useListItemSelector'
 
@@ -92,6 +92,8 @@ export function TracksList<Item extends TrackItem>({
             />
           )}
           loadMoreItems={loadMoreTracks}
+          serverItemsLimit={INITIAL_AUDIO_TRACKS_CHUNK_SIZE}
+          loadRequestItemsMax={NEXT_AUDIO_TRACKS_CHUNKS_SIZE}
         />
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { ChannelPageWithProviders } from '@/components/entries/ChannelPage'
 import { getSelf } from '@/api'
-import { INITIAL_AUDIO_TRACKS_TO_LOAD } from '@/constants'
+import { INITIAL_AUDIO_TRACKS_CHUNK_SIZE } from '@/constants'
 import { getChannelTracksPage } from '@/api/radiomanager'
 
 export default async function UserChannel({ params: { id } }: { params: { id: string } }) {
@@ -19,7 +19,7 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
   }
 
   const data = await getChannelTracksPage(channelId, {
-    limit: INITIAL_AUDIO_TRACKS_TO_LOAD,
+    limit: INITIAL_AUDIO_TRACKS_CHUNK_SIZE,
   })
 
   return (

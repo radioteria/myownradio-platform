@@ -1,7 +1,7 @@
 import { getSelf } from '@/api'
 import { getUserTracksPage } from '@/api/radiomanager'
 import { LibraryPageWithProviders } from '@/components/entries/LibraryPage'
-import { INITIAL_AUDIO_TRACKS_TO_LOAD } from '@/constants'
+import { INITIAL_AUDIO_TRACKS_CHUNK_SIZE } from '@/constants'
 
 export default async function Library() {
   const self = await getSelf()
@@ -11,7 +11,7 @@ export default async function Library() {
   }
 
   const data = await getUserTracksPage({
-    limit: INITIAL_AUDIO_TRACKS_TO_LOAD,
+    limit: INITIAL_AUDIO_TRACKS_CHUNK_SIZE,
   })
 
   return (

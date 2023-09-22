@@ -53,7 +53,7 @@ export function FiniteList<Item extends NonNullable<unknown>>({
         controller.abort()
       }
     }
-  }, [loadMoreItems])
+  }, [])
 
   return (
     <ul>

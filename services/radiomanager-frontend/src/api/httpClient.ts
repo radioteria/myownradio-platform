@@ -167,13 +167,20 @@ export async function removeTracksFromChannelById(uniqueIds: readonly string[], 
     .then((json) => RemoveTracksFromChannelResponseSchema.parse(json).data)
 }
 
+export enum AudioFormat {
+  AAC = 'aac',
+  Vorbis = 'vorbis',
+}
+
 export const getTrackTranscodeStream = async (
   trackId: number,
   initialPosition: number,
+  audioFormat: AudioFormat | null,
   signal: AbortSignal,
 ): Promise<{ readonly stream: ReadableStream<Uint8Array>; readonly contentType: string }> => {
   const audioUrl = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${trackId}/transcode`)
   if (initialPosition > 0) audioUrl.searchParams.set('initialPosition', `${initialPosition}`)
+  if (audioFormat) audioUrl.searchParams.set('audioFormat', audioFormat)
 
   const response = await fetch(audioUrl, {
     credentials: 'include',

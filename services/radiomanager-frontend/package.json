@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@types/debug": "^4.1.8",
-    "@types/lodash.chunk": "^4.2.7",
     "@types/node": "20.4.8",
     "@types/react": "18.2.18",
     "@types/react-dom": "18.2.7",
@@ -23,7 +22,6 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "jotai": "^2.3.1",
-    "lodash.chunk": "^4.2.0",
     "next": "13.4.13",
     "p-queue": "^7.3.4",
     "postcss": "8.4.27",

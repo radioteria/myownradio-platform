@@ -12,12 +12,28 @@ use serde::Deserialize;
 use std::time::Duration;
 use tracing::error;
 
+#[derive(Deserialize, Clone)]
+pub(crate) enum Format {
+    #[serde(rename = "aac")]
+    Aac,
+    #[serde(rename = "vorbis")]
+    Vorbis,
+}
+
+impl Default for Format {
+    fn default() -> Self {
+        Format::Aac
+    }
+}
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct TranscodeAudioTrackQuery {
     #[serde(default)]
     #[serde(with = "serde_millis")]
     pub(crate) initial_position: Duration,
+    #[serde(default)]
+    pub(crate) audio_format: Format,
 }
 
 pub(crate) async fn transcode_audio_track(
@@ -48,14 +64,23 @@ pub(crate) async fn transcode_audio_track(
     let (response_tx, response_rx) = mpsc::channel(32);
 
     actix_rt::spawn({
+        let format = json.audio_format.clone();
+        let position = json.initial_position.clone();
+
         async move {
             if let Err(error) = ffmpeg_service::transcode_audio_file(
                 &source_url,
                 response_tx,
-                json.initial_position,
+                position,
                 ffmpeg_service::TranscodeAudioFileFormat {
-                    container: ffmpeg_service::AudioContainer::Adts,
-                    codec: ffmpeg_service::AudioCodec::Aac,
+                    container: match format {
+                        Format::Aac => ffmpeg_service::AudioContainer::Adts,
+                        Format::Vorbis => ffmpeg_service::AudioContainer::Webm,
+                    },
+                    codec: match format {
+                        Format::Aac => ffmpeg_service::AudioCodec::Aac,
+                        Format::Vorbis => ffmpeg_service::AudioCodec::Vorbis,
+                    },
                     channels: ffmpeg_service::AudioChannels::Stereo,
                     bitrate: 256_000,
                     sampling_rate: 48_000,
@@ -72,7 +97,12 @@ pub(crate) async fn transcode_audio_track(
 
     let mut response = HttpResponse::Ok();
 
-    response.content_type("audio/aac").force_close();
+    response
+        .content_type(match json.audio_format {
+            Format::Aac => "audio/aac",
+            Format::Vorbis => "audio/webm",
+        })
+        .force_close();
 
     Ok(response.streaming::<_, actix_web::Error>(response_rx.map(Ok)))
 }

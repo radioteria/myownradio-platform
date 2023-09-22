@@ -60,7 +60,7 @@ export function FiniteList<Item extends NonNullable<unknown>>({
       {chunkItems(items, ITEMS_PER_CHUNK).map((itemsInChunk, chunkIndex) => {
         const indexOffset = itemsInChunk.items[0][1]
 
-        const itemsChunkElement = itemsInChunk.items.map(([item, itemIndex]) => (
+        const chunkElement = itemsInChunk.items.map(([item, itemIndex]) => (
           <li key={getItemKey(item, itemIndex)}>
             {item === null ? renderSkeleton(itemIndex) : renderItem(item, itemIndex)}
           </li>
@@ -68,10 +68,10 @@ export function FiniteList<Item extends NonNullable<unknown>>({
 
         return itemsInChunk.hasNull ? (
           <ViewportReach key={indexOffset} onReach={handleOnReach.bind(undefined, indexOffset)}>
-            {itemsChunkElement}
+            {chunkElement}
           </ViewportReach>
         ) : (
-          itemsChunkElement
+          chunkElement
         )
       })}
     </ul>

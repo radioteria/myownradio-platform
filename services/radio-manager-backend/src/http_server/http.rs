@@ -1,5 +1,5 @@
 use crate::http_server::handlers::{
-    internal_radio_streamer, public_schedule, public_streams, user_audio_tracks,
+    internal_radio_streamer, public_schedule, public_streams, user_audio_stream, user_audio_tracks,
     user_audio_tracks_v2, user_stream_control, user_streams,
 };
 use crate::storage::fs::FileSystem;
@@ -51,7 +51,7 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                     )
                     .route(
                         "/{track_id}/transcode",
-                        web::get().to(user_audio_tracks::transcode_audio_track),
+                        web::get().to(user_audio_stream::transcode_audio_track),
                     ),
             )
             .service(web::scope("/v0/streams/{stream_id}/tracks").route(

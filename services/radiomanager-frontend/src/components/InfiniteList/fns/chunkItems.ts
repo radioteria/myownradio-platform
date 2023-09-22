@@ -19,7 +19,7 @@ export const chunkItems = <Item extends NonNullable<unknown>>(
     }
 
     currentChunk.items.push([items[i], i])
-    currentChunk.hasNull = isNull(items[i])
+    currentChunk.hasNull ||= isNull(items[i])
   }
 
   return chunks

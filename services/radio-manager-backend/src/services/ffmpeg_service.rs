@@ -47,7 +47,9 @@ pub(crate) async fn transcode_audio_file(
         .arg(format!("{:.3}", initial_position.as_secs_f64()))
         .arg("-i")
         .arg(input_file)
-        .arg("-acodec")
+        .arg("-map")
+        .arg("0:a")
+        .arg("-c:a")
         .arg(match format.codec {
             AudioCodec::Aac => "aac",
             AudioCodec::Vorbis => "libvorbis",

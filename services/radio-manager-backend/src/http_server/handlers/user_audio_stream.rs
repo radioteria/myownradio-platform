@@ -100,7 +100,7 @@ pub(crate) async fn transcode_audio_track(
     response
         .content_type(match json.audio_format {
             Format::Aac => "audio/aac",
-            Format::Vorbis => "audio/webm",
+            Format::Vorbis => "audio/webm; codecs=\"vorbis\"",
         })
         .force_close();
 

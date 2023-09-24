@@ -170,6 +170,7 @@ export async function removeTracksFromChannelById(uniqueIds: readonly string[], 
 export enum AudioFormat {
   AAC = 'aac',
   Vorbis = 'vorbis',
+  Opus = 'opus',
 }
 
 export const getTrackTranscodeStream = async (

@@ -18,6 +18,8 @@ pub(crate) enum Format {
     Aac,
     #[serde(rename = "vorbis")]
     Vorbis,
+    #[serde(rename = "opus")]
+    Opus,
 }
 
 impl Default for Format {
@@ -76,10 +78,12 @@ pub(crate) async fn transcode_audio_track(
                     container: match format {
                         Format::Aac => ffmpeg_service::AudioContainer::Adts,
                         Format::Vorbis => ffmpeg_service::AudioContainer::Webm,
+                        Format::Opus => ffmpeg_service::AudioContainer::Webm,
                     },
                     codec: match format {
                         Format::Aac => ffmpeg_service::AudioCodec::Aac,
                         Format::Vorbis => ffmpeg_service::AudioCodec::Vorbis,
+                        Format::Opus => ffmpeg_service::AudioCodec::Opus,
                     },
                     channels: ffmpeg_service::AudioChannels::Stereo,
                     bitrate: 256_000,
@@ -101,6 +105,7 @@ pub(crate) async fn transcode_audio_track(
         .content_type(match json.audio_format {
             Format::Aac => "audio/aac",
             Format::Vorbis => "audio/webm; codecs=\"vorbis\"",
+            Format::Opus => "audio/webm; codecs=\"opus\"",
         })
         .force_close();
 

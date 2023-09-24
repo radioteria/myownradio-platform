@@ -16,6 +16,7 @@ pub(crate) enum TranscodeAudioFileError {
 pub(crate) enum AudioCodec {
     Aac,
     Vorbis,
+    Opus,
 }
 
 pub(crate) enum AudioContainer {
@@ -53,6 +54,7 @@ pub(crate) async fn transcode_audio_file(
         .arg(match format.codec {
             AudioCodec::Aac => "aac",
             AudioCodec::Vorbis => "libvorbis",
+            AudioCodec::Opus => "libopus",
         })
         .arg("-b:a")
         .arg(format!("{}", format.bitrate))

@@ -8,7 +8,7 @@ const debug = makeDebug('TimestampParser')
  *
  * @returns {TransformStream<Uint8Array, [Uint8Array, number]>} The TransformStream that takes Uint8Array chunks as input and outputs a tuple containing the original chunk and the last parsed timecode.
  */
-export const createWebMTimeCodeParser = (): TransformStream<Uint8Array, [Uint8Array, number]> => {
+export const createWebmTimeParser = (): TransformStream<Uint8Array, [Uint8Array, number]> => {
   // Create a readable/writable pair using the EbmlStreamDecoder
   const { readable, writable } = new EbmlStreamDecoder()
 

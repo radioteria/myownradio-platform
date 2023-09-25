@@ -1,11 +1,8 @@
 import makeDebug from 'debug'
-import { AudioFormat, getNowPlaying, getTrackTranscodeStream } from '@/api'
 import { appendBufferAsync, playAudio, stopAudio } from '@/utils/audio'
 import { streamAsyncIterator } from '@/utils/iterators'
-import { getWorldTime } from '@/api/time'
 import { getSupportedAudioFormats, makeBufferTransform } from './probe'
-import { createWebMTimeCodeParser } from '@/media/webm'
-import { Clock } from '@/media/clock'
+import { composeChannelWebmStream, EventType } from '@/player/webmStreamCompositor'
 
 const debug = makeDebug('ChannelPlayerService')
 
@@ -82,95 +79,61 @@ export class ChannelPlayerService {
   public readonly createChannelMediaSource = (): MediaSource => {
     const localDebug = debug.extend('MediaSource')
     const mediaSource = new MediaSource()
-    const abortController = new AbortController()
+
+    let abortController: AbortController | null = null
 
     mediaSource.addEventListener('sourceclose', () => {
       localDebug('Media Source closed')
-      abortController.abort()
+      abortController?.abort()
+      abortController = null
     })
 
     mediaSource.addEventListener('sourceopen', async () => {
+      if (abortController) {
+        throw new Error('Media Source already opened!')
+      }
+
+      abortController = new AbortController()
+
       localDebug('Opening Media Source')
 
-      const startTimeMillis = performance.now()
-      const { unixtime } = await getWorldTime()
-      const clock = new Clock(startTimeMillis)
+      const stream = composeChannelWebmStream(this.channelId, {
+        bufferAheadMillis: BUFFER_TIME_MILLIS,
+        supportedCodecs: this.supportedAudioFormats,
+      })
 
-      let currentTime = unixtime * 1000 - Math.floor(performance.now() - startTimeMillis)
+      let sourceBuffer: SourceBuffer | null = null
 
-      let sourceBuffer = <SourceBuffer | null>null
+      try {
+        for await (const streamEvent of streamAsyncIterator(stream, abortController.signal)) {
+          if (mediaSource.readyState !== 'open') {
+            localDebug('MediaSource closed: exiting')
+            return
+          }
 
-      while (!this.stopping) {
-        const nowPlaying = await getNowPlaying(this.channelId, currentTime)
-        const remainder = nowPlaying.currentTrack.duration - nowPlaying.currentTrack.offset
-        localDebug(
-          'Now Playing: %s (pos: %d, rem: %d)',
-          nowPlaying.currentTrack.trackId,
-          nowPlaying.currentTrack.offset,
-          remainder,
-        )
-        const audioFormat = this.supportedAudioFormats.opus
-          ? AudioFormat.Opus
-          : this.supportedAudioFormats.vorbis
-          ? AudioFormat.Vorbis
-          : null
-
-        const { stream, contentType } = await getTrackTranscodeStream(
-          nowPlaying.currentTrack.trackId,
-          nowPlaying.currentTrack.offset,
-          audioFormat,
-          abortController.signal,
-        )
-
-        if (!contentType.includes('audio/webm')) {
-          throw new TypeError(`${contentType} is not supported!`)
-        }
-
-        const parsedStream = stream
-          .pipeThrough(makeBufferTransform(4096))
-          .pipeThrough(createWebMTimeCodeParser())
-
-        if (!sourceBuffer) {
-          localDebug('Creating Source Buffer')
-          sourceBuffer = mediaSource.addSourceBuffer(contentType)
-          localDebug('Source Buffer Created')
-        }
-
-        const sb = sourceBuffer
-
-        let lastTimestamp = 0
-
-        clock.resetPts()
-
-        try {
-          for await (const [bytes, timestamp] of streamAsyncIterator(
-            parsedStream,
-            abortController.signal,
-          )) {
-            clock.advanceTimeByPts(timestamp)
-
-            if (mediaSource.readyState !== 'open') {
-              localDebug('MediaSource closed: exiting')
-              return
+          switch (streamEvent.eventType) {
+            case EventType.Segment: {
+              if (!sourceBuffer) {
+                localDebug('Creating Source Buffer', {
+                  contentType: streamEvent.contentType,
+                })
+                sourceBuffer = mediaSource.addSourceBuffer(streamEvent.contentType)
+              }
+              sourceBuffer.timestampOffset = streamEvent.timestampOffset / 1000
+              break
             }
 
-            await appendBufferAsync(sb, new Uint8Array(bytes))
-
-            const currentTimeMillis = performance.now()
-
-            await clock.sync(currentTimeMillis + BUFFER_TIME_MILLIS)
-
-            lastTimestamp = timestamp
+            case EventType.Buffer: {
+              if (sourceBuffer) {
+                await appendBufferAsync(sourceBuffer, streamEvent.buffer)
+              }
+              break
+            }
+            default:
           }
-        } finally {
-          await parsedStream.cancel()
         }
-
-        currentTime += remainder
-
-        if (mediaSource.readyState === 'open') {
-          sourceBuffer.timestampOffset += lastTimestamp / 1000
-        }
+      } finally {
+        await stream.cancel()
       }
 
       if (mediaSource.readyState !== 'open') {

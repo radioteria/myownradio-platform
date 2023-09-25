@@ -1,8 +1,8 @@
 import makeDebug from 'debug'
 
-const debug = makeDebug('Clock')
+const debug = makeDebug('StreamClock')
 
-export class Clock {
+export class StreamClock {
   private previousPts: null | number = null
   private time: number = 0
 
@@ -26,12 +26,26 @@ export class Clock {
     this.previousPts = null
   }
 
-  public async sync(currentTimeMillis: number) {
+  public async sync(currentTimeMillis: number, signal: AbortSignal) {
     const runningTimeMillis = currentTimeMillis - this.startTimeMillis
     const buffersTimeMillis = this.getTime()
 
     await new Promise<void>((resolve) => {
-      window.setTimeout(() => resolve(), buffersTimeMillis - runningTimeMillis)
+      const timeoutId = window.setTimeout(
+        () => handleResolve(),
+        buffersTimeMillis - runningTimeMillis,
+      )
+
+      const handleAbortSignal = () => {
+        handleResolve()
+      }
+      signal.addEventListener('abort', handleAbortSignal)
+
+      const handleResolve = () => {
+        window.clearTimeout(timeoutId)
+        signal.removeEventListener('abort', handleAbortSignal)
+        resolve()
+      }
     })
   }
 }

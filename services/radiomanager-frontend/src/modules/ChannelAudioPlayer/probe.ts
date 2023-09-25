@@ -2,7 +2,6 @@ import { streamAsyncIterator } from '@/utils/iterators'
 import makeDebug from 'debug'
 
 export const getSupportedAudioFormats = () => ({
-  aac: false, //MediaSource.isTypeSupported('audio/aac'),
   vorbis: MediaSource.isTypeSupported('audio/webm; codecs="vorbis"'),
   opus: MediaSource.isTypeSupported('audio/webm; codecs="opus"'),
 })

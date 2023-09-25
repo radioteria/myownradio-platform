@@ -109,10 +109,10 @@ export class ChannelPlayerService {
           nowPlaying.currentTrack.offset,
           remainder,
         )
-        const audioFormat = this.supportedAudioFormats.aac
-          ? AudioFormat.AAC
-          : this.supportedAudioFormats.opus
+        const audioFormat = this.supportedAudioFormats.opus
           ? AudioFormat.Opus
+          : this.supportedAudioFormats.vorbis
+          ? AudioFormat.Vorbis
           : null
 
         const { stream, contentType } = await getTrackTranscodeStream(
@@ -121,6 +121,11 @@ export class ChannelPlayerService {
           audioFormat,
           abortController.signal,
         )
+
+        if (!contentType.includes('audio/webm')) {
+          throw new TypeError(`${contentType} is not supported!`)
+        }
+
         const parsedStream = stream
           .pipeThrough(makeBufferTransform(4096))
           .pipeThrough(createWebMTimeCodeParser())

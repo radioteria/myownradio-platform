@@ -120,6 +120,7 @@ export class ChannelPlayerService {
                 sourceBuffer = mediaSource.addSourceBuffer(streamEvent.contentType)
               }
               sourceBuffer.timestampOffset = streamEvent.timestampOffset / 1000
+              debug('Update Source Buffer timestamp offset = %f', sourceBuffer.timestampOffset)
               break
             }
 

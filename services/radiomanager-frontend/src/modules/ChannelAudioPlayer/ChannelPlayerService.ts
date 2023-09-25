@@ -1,13 +1,12 @@
 import makeDebug from 'debug'
-import { AudioFormat, getNowPlaying, getTrackTranscodeStream } from '@/api'
 import { appendBufferAsync, playAudio, stopAudio } from '@/utils/audio'
 import { streamAsyncIterator } from '@/utils/iterators'
-import { getWorldTime } from '@/api/time'
-import { getSupportedAudioFormats } from './probe'
+import { getSupportedAudioFormats, makeBufferTransform } from './probe'
+import { composeChannelWebmStream, EventType } from '@/player/webmStreamCompositor'
 
 const debug = makeDebug('ChannelPlayerService')
 
-const BUFFER_LENGTH_MILLISECONDS = 5_000
+const BUFFER_TIME_MILLIS = 2_000
 
 export class ChannelPlayerService {
   private stopping = false
@@ -80,78 +79,61 @@ export class ChannelPlayerService {
   public readonly createChannelMediaSource = (): MediaSource => {
     const localDebug = debug.extend('MediaSource')
     const mediaSource = new MediaSource()
-    const abortController = new AbortController()
+
+    let abortController: AbortController | null = null
 
     mediaSource.addEventListener('sourceclose', () => {
       localDebug('Media Source closed')
-      abortController.abort()
+      abortController?.abort()
+      abortController = null
     })
 
     mediaSource.addEventListener('sourceopen', async () => {
+      if (abortController) {
+        throw new Error('Media Source already opened!')
+      }
+
+      abortController = new AbortController()
+
       localDebug('Opening Media Source')
 
-      const startTimeMillis = performance.now()
-      const { unixtime } = await getWorldTime()
+      const stream = composeChannelWebmStream(this.channelId, {
+        bufferAheadMillis: BUFFER_TIME_MILLIS,
+        supportedCodecs: this.supportedAudioFormats,
+      })
 
-      let currentTime = unixtime * 1000 - Math.floor(performance.now() - startTimeMillis)
+      let sourceBuffer: SourceBuffer | null = null
 
-      let sourceBuffer = <SourceBuffer | null>null
+      try {
+        for await (const streamEvent of streamAsyncIterator(stream, abortController.signal)) {
+          if (mediaSource.readyState !== 'open') {
+            localDebug('MediaSource closed: exiting')
+            return
+          }
 
-      while (!this.stopping) {
-        const nowPlaying = await getNowPlaying(this.channelId, currentTime)
-        const remainder = nowPlaying.currentTrack.duration - nowPlaying.currentTrack.offset
-        localDebug(
-          'Now Playing: %s (pos: %d, rem: %d)',
-          nowPlaying.currentTrack.trackId,
-          nowPlaying.currentTrack.offset,
-          remainder,
-        )
-        const audioFormat = this.supportedAudioFormats.aac
-          ? AudioFormat.AAC
-          : this.supportedAudioFormats.vorbis
-          ? AudioFormat.Vorbis
-          : null
-
-        const { stream, contentType } = await getTrackTranscodeStream(
-          nowPlaying.currentTrack.trackId,
-          nowPlaying.currentTrack.offset,
-          audioFormat,
-          abortController.signal,
-        )
-
-        if (!sourceBuffer) {
-          localDebug('Creating Source Buffer')
-          sourceBuffer = mediaSource.addSourceBuffer(contentType)
-        }
-
-        const sb = sourceBuffer
-
-        try {
-          for await (const bytes of streamAsyncIterator(stream, abortController.signal)) {
-            if (mediaSource.readyState !== 'open') {
-              localDebug('MediaSource closed: exiting')
-              return
+          switch (streamEvent.eventType) {
+            case EventType.Segment: {
+              if (!sourceBuffer) {
+                localDebug('Creating Source Buffer', {
+                  contentType: streamEvent.contentType,
+                })
+                sourceBuffer = mediaSource.addSourceBuffer(streamEvent.contentType)
+              }
+              sourceBuffer.timestampOffset = streamEvent.timestampOffset / 1000
+              break
             }
 
-            await appendBufferAsync(sb, bytes)
-
-            const currentTimeMillis = performance.now()
-            const estimatedTimestampMillis =
-              currentTimeMillis - startTimeMillis + BUFFER_LENGTH_MILLISECONDS
-            const bufferTimestampOffsetMillis = sb.timestampOffset * 1000
-
-            await new Promise<void>((resolve) => {
-              window.setTimeout(
-                () => resolve(),
-                bufferTimestampOffsetMillis - estimatedTimestampMillis,
-              )
-            })
+            case EventType.Buffer: {
+              if (sourceBuffer) {
+                await appendBufferAsync(sourceBuffer, streamEvent.buffer)
+              }
+              break
+            }
+            default:
           }
-        } finally {
-          await stream.cancel()
         }
-
-        currentTime += remainder
+      } finally {
+        await stream.cancel()
       }
 
       if (mediaSource.readyState !== 'open') {

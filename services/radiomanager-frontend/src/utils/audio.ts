@@ -35,15 +35,18 @@ export function seekAudio(htmlAudioElement: HTMLAudioElement, amountSeconds: num
   htmlAudioElement.currentTime += amountSeconds
 }
 
-export async function appendBufferAsync(
-  sourceBuffer: SourceBuffer,
-  buffer: Uint8Array,
-): Promise<void> {
-  sourceBuffer.appendBuffer(buffer)
-
+export async function waitForUpdateEnd(sourceBuffer: SourceBuffer) {
   if (sourceBuffer.updating) {
     await new Promise<void>((resolve) => {
       sourceBuffer.onupdateend = () => resolve()
     })
   }
+}
+
+export async function appendBuffer(sourceBuffer: SourceBuffer, buffer: BufferSource) {
+  sourceBuffer.appendBuffer(buffer)
+
+  await new Promise<void>((resolve) => {
+    sourceBuffer.onupdateend = (ev) => resolve()
+  })
 }

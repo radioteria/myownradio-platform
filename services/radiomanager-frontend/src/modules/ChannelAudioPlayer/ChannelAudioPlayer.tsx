@@ -6,13 +6,9 @@ interface Props {
 }
 
 export const ChannelAudioPlayer: React.FC<Props> = ({ channelId }) => {
-  const audio1Ref = useRef(null)
+  const audioRef = useRef(null)
 
-  useChannelPlayer(channelId, audio1Ref)
+  useChannelPlayer(channelId, audioRef)
 
-  return (
-    <>
-      <audio ref={audio1Ref} />
-    </>
-  )
+  return <audio ref={audioRef} />
 }

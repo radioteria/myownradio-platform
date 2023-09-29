@@ -1,8 +1,8 @@
 import { RefObject, useEffect } from 'react'
-import { ChannelPlayerService } from '@/modules/ChannelAudioPlayer/ChannelPlayerService'
+import { Player } from '@/player/player'
 import makeDebug from 'debug'
 
-const debug = makeDebug('useChannelPlayer2')
+const debug = makeDebug('useChannelPlayer')
 
 export const useChannelPlayer = (
   channelId: number,
@@ -11,7 +11,7 @@ export const useChannelPlayer = (
   useEffect(() => {
     if (!audio0Ref.current) return
 
-    const player = new ChannelPlayerService(channelId, audio0Ref.current)
+    const player = new Player(channelId, audio0Ref.current)
 
     player.runLoop().catch((error) => {
       debug('Player loop exited with error: %s', error)

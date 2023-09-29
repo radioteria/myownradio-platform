@@ -180,6 +180,7 @@ export const getTrackTranscodeStream = async (
   signal: AbortSignal,
 ): Promise<{ readonly stream: ReadableStream<Uint8Array>; readonly contentType: string }> => {
   const audioUrl = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${trackId}/transcode`)
+
   if (initialPosition > 0) audioUrl.searchParams.set('initialPosition', `${initialPosition}`)
   if (audioFormat) audioUrl.searchParams.set('audioFormat', audioFormat)
 
@@ -188,11 +189,16 @@ export const getTrackTranscodeStream = async (
     signal,
   })
   const contentType = response.headers.get('Content-Type')
+
   if (!contentType) {
     throw new Error('Content-Type is not defined')
   }
 
-  const stream = response.body ?? new ReadableStream()
+  if (!response.body) {
+    throw new TypeError('Expected response body')
+  }
+
+  const stream = response.body
 
   return { stream, contentType }
 }

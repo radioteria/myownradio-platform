@@ -50,6 +50,8 @@ pub(crate) async fn transcode_audio_file(
         .arg(input_file)
         .arg("-map")
         .arg("0:a")
+        .arg("-map_metadata")
+        .arg("-1")
         .arg("-c:a")
         .arg(match format.codec {
             AudioCodec::Aac => "aac",
@@ -73,6 +75,8 @@ pub(crate) async fn transcode_audio_file(
             AudioContainer::Adts => "adts",
             AudioContainer::Webm => "webm",
         })
+        .arg("-fflags")
+        .arg("+bitexact")
         .arg("pipe:1")
         .stdout(Stdio::piped())
         .spawn()?;

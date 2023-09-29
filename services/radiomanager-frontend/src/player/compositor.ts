@@ -61,7 +61,9 @@ export const composeMediaSource = (channelId: number, opts: Options) => {
           abortController.signal,
         )
         const reader = stream
-          .pipeThrough(makeChunkTransform(PRODUCED_STREAM_CHUNK_SIZE))
+          .pipeThrough(makeChunkTransform(PRODUCED_STREAM_CHUNK_SIZE), {
+            signal: abortController.signal,
+          })
           .getReader()
 
         if (sourceBuffer === null) {
@@ -71,6 +73,11 @@ export const composeMediaSource = (channelId: number, opts: Options) => {
         try {
           while (true) {
             const { value, done } = await reader.read()
+
+            if (mediaSource.readyState !== 'open') {
+              abortController.abort(new Error('PIPE'))
+              return
+            }
 
             if (done) {
               sourceBuffer.timestampOffset = sourceBuffer.buffered.end(
@@ -88,14 +95,15 @@ export const composeMediaSource = (channelId: number, opts: Options) => {
           }
 
           streamTimeMillis += remainder
-        } finally {
-          await reader.cancel()
+        } catch (e) {
+          await reader.cancel(e)
         }
       }
     } catch (e) {
       if (e instanceof Error && e.name === 'AbortError') {
         return
       }
+
       debug('Media stream composing failed: %s', e)
       mediaSource.endOfStream()
     }

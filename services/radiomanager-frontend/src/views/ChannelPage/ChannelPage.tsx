@@ -1,10 +1,9 @@
 'use client'
 
 import { User, UserChannel, UserChannelTrack } from '@/api'
-import { Header } from '@/components/Header'
+import { LibraryLayout, Header } from '@/layouts/LibraryLayout'
 import { Sidebar } from '@/components/Sidebar'
 import { StreamOverlay } from '@/components/StreamOverlay'
-import { LibraryLayout } from '@/components/layouts/LibraryLayout'
 import { ChannelTracksList } from './ChannelTracksList'
 import { ChannelControls } from './ChannelControls'
 import { NowPlayingProvider } from '@/modules/NowPlaying'

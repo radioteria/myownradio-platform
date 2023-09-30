@@ -2,8 +2,7 @@
 
 import { User, UserChannel } from '@/api'
 import { MediaUploaderComponent, useMediaUploader } from '@/modules/MediaUploader'
-import { LibraryLayout } from '@/components/layouts/LibraryLayout'
-import { Header } from '@/components/Header'
+import { LibraryLayout, Header } from '@/layouts/LibraryLayout'
 import { Sidebar } from '@/components/Sidebar'
 import { UploadList } from './UploadList'
 

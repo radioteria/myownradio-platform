@@ -1,9 +1,8 @@
 'use client'
 
-import { LibraryLayout } from '@/components/layouts/LibraryLayout'
-import { Header } from '@/components/Header'
+import { LibraryLayout, Header } from '@/layouts/LibraryLayout'
 import { Sidebar } from '@/components/Sidebar'
-import { LibraryTracksList } from '@/components/LibraryTracksList/LibraryTracksList'
+import { LibraryTracksList } from '@/views/LibraryPage/LibraryTracksList/LibraryTracksList'
 import { MediaUploaderComponent } from '@/modules/MediaUploader'
 import { useLibraryPageStore } from './hooks/useLibraryPageStore'
 

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import makeDebug from 'debug'
-import { LibraryTrackEntry, toLibraryTrackEntry } from '@/components/LibraryTracksList'
+import { LibraryTrackEntry, toLibraryTrackEntry } from '../LibraryTracksList'
 import { deleteTracksById } from '@/api'
 import { getUnusedUserTracksPage, getUserTracksPage } from '@/api/radiomanager'
 import { useHandleLibraryLastUploadedTrack } from './useHandleLibraryLastUploadedTrack'

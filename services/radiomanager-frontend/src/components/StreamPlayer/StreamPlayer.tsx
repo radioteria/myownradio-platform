@@ -55,7 +55,7 @@ export const StreamPlayer: React.FC<Props> = ({ channelId }) => {
 
     audioElement.srcObject = composeStreamMediaSource(channelId, {
       bufferAheadTime: BUFFER_AHEAD_TIME,
-      supportedCodecs: browserFeatures.supportedAudioCodecs,
+      supportedCodecs: browserFeatures().supportedAudioCodecs,
     })
 
     audioElement.play().catch((event) => debug('Unable to restart stream playback', event))

@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { UserTrack } from '@/api'
-import { TracksList } from '@/components/common/TrackList'
+import { TrackList } from '../shared/TrackList'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 
 export interface LibraryTrackEntry {
@@ -67,13 +67,13 @@ export const LibraryTracksList: React.FC<Props> = ({
 
   return (
     <section className={'h-full'}>
-      <TracksList
+      <TrackList
         totalTracks={totalTracks}
-        tracks={tracks}
+        trackItems={tracks}
         currentTrack={null}
-        onTracksListMenu={handleTracksListMenu}
+        onTrackListMenu={handleTracksListMenu}
         contextMenuRef={contextMenuRef}
-        loadMoreTracks={loadMoreTracks}
+        loadMoreTrackItems={loadMoreTracks}
       />
     </section>
   )

@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { UserChannelTrack } from '@/api'
-import { TracksList } from '@/components/common/TrackList'
+import { TrackList } from '../../../shared/TrackList'
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 
@@ -104,13 +104,13 @@ export const ChannelTracksList: React.FC<Props> = ({
 
   return (
     <section className={'h-full'}>
-      <TracksList
+      <TrackList
         totalTracks={totalTracks}
-        tracks={tracks}
+        trackItems={tracks}
         currentTrack={currentTrack}
-        onTracksListMenu={handleTracksListMenu}
+        onTrackListMenu={handleTracksListMenu}
         contextMenuRef={contextMenuRef}
-        loadMoreTracks={loadMoreTracks}
+        loadMoreTrackItems={loadMoreTracks}
       />
     </section>
   )

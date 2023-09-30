@@ -17,7 +17,7 @@ interface Props {
   onThreeDotsClick: (event: React.MouseEvent<HTMLElement>) => void
 }
 
-export const ListItem = React.forwardRef<HTMLDivElement, Props>(
+export const TrackListItem = React.forwardRef<HTMLDivElement, Props>(
   ({ track, currentTrack, index, isSelected, isMainSelected, onSelect, onThreeDotsClick }, ref) => {
     const isCurrentTrack = currentTrack?.index === index
 
@@ -66,4 +66,4 @@ export const ListItem = React.forwardRef<HTMLDivElement, Props>(
   },
 )
 
-ListItem.displayName = 'ListItem'
+TrackListItem.displayName = 'TrackListItem'

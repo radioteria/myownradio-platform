@@ -1,10 +1,9 @@
-import styles from './ListItemSkeleton.module.css'
+import styles from './TrackListItemSkeleton.module.css'
 import cn from 'classnames'
-import { useEffect, useRef, useState } from 'react'
 
 interface Props {}
 
-export const ListItemSkeleton: React.FC<Props> = () => {
+export const TrackListItemSkeleton: React.FC<Props> = () => {
   return (
     <div className="flex items-center border-gray-800 h-12 relative cursor-pointer select-none">
       <div className="p-2 pl-4 w-14 flex-shrink-0 z-10 text-right">

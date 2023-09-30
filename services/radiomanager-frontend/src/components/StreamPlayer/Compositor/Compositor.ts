@@ -3,7 +3,7 @@ import { appendBuffer } from '@/utils/audio'
 import { getWorldTime } from '@/api/time'
 import { AudioFormat, getNowPlaying, getTrackTranscodeStream } from '@/api'
 import { sleep } from '@/utils/sleep'
-import { makeChunkTransform } from '@/player/buffer'
+import { makeChunkTransform } from './BufferUtils'
 
 const debug = makeDebug('compositor')
 
@@ -17,7 +17,7 @@ interface Options {
 
 const PRODUCED_STREAM_CHUNK_SIZE = 8192
 
-export const composeMediaSource = (channelId: number, opts: Options) => {
+export const composeStreamMediaSource = (channelId: number, opts: Options) => {
   const { supportedCodecs, bufferAheadTime } = opts
 
   const mediaSource = new MediaSource()

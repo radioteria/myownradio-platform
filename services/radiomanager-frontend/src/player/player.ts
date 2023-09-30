@@ -1,6 +1,6 @@
 import makeDebug from 'debug'
 import { playAudio, stopAudio } from '@/utils/audio'
-import { composeMediaSource } from '@/player/compositor'
+import { composeStreamMediaSource } from '@/components/StreamPlayer/Compositor/Compositor'
 import { browserFeatures } from '@/features'
 
 const debug = makeDebug('Player')
@@ -25,7 +25,7 @@ export class Player {
 
       try {
         debug('Creating Media Source')
-        const mediaSource = composeMediaSource(this.channelId, {
+        const mediaSource = composeStreamMediaSource(this.channelId, {
           bufferAheadTime: BUFFER_AHEAD_TIME,
           supportedCodecs: browserFeatures.supportedAudioCodecs,
         })

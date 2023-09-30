@@ -4,7 +4,7 @@ import Local from 'next/font/local'
 import Image from 'next/image'
 import Logo from './logo.png'
 
-const logoFont = Local({ src: '../../fonts/MYRIAD/MYRIAD-THIN.otf' })
+const logoFont = Local({ src: '../../../fonts/MYRIAD/MYRIAD-THIN.otf' })
 
 interface Props {
   user: User

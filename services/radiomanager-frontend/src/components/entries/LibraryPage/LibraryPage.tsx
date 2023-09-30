@@ -32,7 +32,6 @@ export const LibraryPage: React.FC<Props> = ({
         content={
           <LibraryTracksList
             tracks={libraryPageStore.trackEntries}
-            totalTracks={initialTotalCount}
             onDeleteTracks={libraryPageStore.handleDeletingTracks}
             loadMoreTracks={libraryPageStore.loadMoreTracks}
           />

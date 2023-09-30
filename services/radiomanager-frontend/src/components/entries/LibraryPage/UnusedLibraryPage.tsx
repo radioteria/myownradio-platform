@@ -33,7 +33,6 @@ export const UnusedLibraryPage: React.FC<Props> = ({
         sidebar={<Sidebar channels={userChannels} activeItem={['unused']} />}
         content={
           <LibraryTracksList
-            totalTracks={initialTotalCount}
             tracks={libraryPageStore.trackEntries}
             onDeleteTracks={libraryPageStore.handleDeletingTracks}
             loadMoreTracks={libraryPageStore.loadMoreTracks}

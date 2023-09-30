@@ -37,9 +37,7 @@ export const toChannelTrackEntry2 = ({
 })
 
 interface Props {
-  readonly totalTracks: number
   readonly tracks: readonly (ChannelTrackEntry | null)[]
-  readonly channelId: number
   readonly onDeleteTracks: (trackIds: readonly number[]) => void
   readonly onRemoveTracksFromChannel: (uniqueIds: readonly string[]) => void
   readonly loadMoreTracks: (
@@ -50,9 +48,7 @@ interface Props {
 }
 
 export const ChannelTracksList: React.FC<Props> = ({
-  totalTracks,
   tracks,
-  channelId,
   onDeleteTracks,
   onRemoveTracksFromChannel,
   loadMoreTracks,
@@ -105,7 +101,6 @@ export const ChannelTracksList: React.FC<Props> = ({
   return (
     <section className={'h-full'}>
       <TrackList
-        totalTracks={totalTracks}
         trackItems={tracks}
         currentTrack={currentTrack}
         onTrackListMenu={handleTracksListMenu}

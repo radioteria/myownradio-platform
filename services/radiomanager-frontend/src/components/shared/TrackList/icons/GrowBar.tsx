@@ -6,7 +6,7 @@ interface Props {
   size: number
 }
 
-export const AnimatedBars: React.FC<Props> = ({ size }) => {
+export const GrowBar: React.FC<Props> = ({ size }) => {
   const ref = useRef(null)
   const isVisible = useIsVisible(ref)
 
@@ -60,4 +60,4 @@ export const AnimatedBars: React.FC<Props> = ({ size }) => {
   )
 }
 
-export default AnimatedBars
+export default GrowBar

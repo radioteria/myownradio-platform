@@ -1,7 +1,7 @@
 import cn from 'classnames'
-import React, { useRef } from 'react'
-import { AnimatedBars } from '@/icons/AnimatedBars'
-import { ThreeDots } from '@/icons/ThreeDots'
+import React from 'react'
+import { GrowBar } from './icons/GrowBar'
+import { ThreeDots } from './icons/ThreeDots'
 import { Duration } from '@/components/Duration/Duration'
 import { CurrentTrack, TrackItem } from './types'
 
@@ -38,7 +38,7 @@ export const TrackListItem = React.forwardRef<HTMLDivElement, Props>(
         onClick={handleClick}
       >
         <div className="p-2 pl-4 w-14 flex-shrink-0 z-10 text-right text-sm">
-          {isCurrentTrack ? <AnimatedBars size={12} /> : <>{index + 1}</>}
+          {isCurrentTrack ? <GrowBar size={12} /> : <>{index + 1}</>}
         </div>
         <div className="p-2 w-full z-10 min-w-0">
           <div className={'truncate'}>{track.title}</div>

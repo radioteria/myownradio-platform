@@ -1,9 +1,8 @@
 'use client'
 
-import { config } from '@/config'
 import { useState } from 'react'
 import cn from 'classnames'
-import { ChannelAudioPlayer } from '@/modules/ChannelAudioPlayer'
+import { StreamPlayer } from '@/components/StreamPlayer'
 
 interface Props {
   readonly channelId: number
@@ -25,9 +24,9 @@ export const StreamOverlay: React.FC<Props> = ({ channelId }) => {
           'bg-black aspect-video text-white rounded-lg',
         ])}
       >
-        OFFLINE
+        NO SIGNAL
       </div>
-      {playing && <ChannelAudioPlayer channelId={channelId} />}
+      {playing && <StreamPlayer channelId={channelId} />}
     </>
   )
 }

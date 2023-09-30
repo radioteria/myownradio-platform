@@ -1,0 +1,35 @@
+import React, { ReactNode, useEffect, useMemo, useState } from 'react'
+import { Duration } from '@/components/shared/Duration'
+
+interface Props {
+  position: number
+  duration: number
+  progressBar: ReactNode
+}
+
+export const TimePosition: React.FC<Props> = ({ position, duration, progressBar }) => {
+  const updatedAt = useMemo(() => Date.now(), [position])
+  const [positionProgress, setPositionProgress] = useState(position)
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setPositionProgress(position + (Date.now() - updatedAt))
+    })
+
+    return () => {
+      window.clearInterval(intervalId)
+    }
+  }, [updatedAt, position])
+
+  return (
+    <div className={'flex w-full items-center'}>
+      <div className={'flex-shrink-0 text-xs w-7 text-right'}>
+        <Duration millis={positionProgress} />
+      </div>
+      {progressBar}
+      <div className={'flex-shrink-0 text-xs w-7 text-left'}>
+        <Duration millis={duration} />
+      </div>
+    </div>
+  )
+}

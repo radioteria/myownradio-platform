@@ -13,4 +13,4 @@ export class BrowserFeatures {
   }
 }
 
-export const browserFeatures = new BrowserFeatures()
+export const browserFeatures = () => new BrowserFeatures()

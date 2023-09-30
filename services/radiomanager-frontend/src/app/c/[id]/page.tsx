@@ -1,4 +1,4 @@
-import { ChannelPageWithProviders } from '@/components/entries/ChannelPage'
+import { ChannelPageWithProviders } from '@/views/ChannelPage'
 import { getSelf } from '@/api'
 import { INITIAL_AUDIO_TRACKS_CHUNK_SIZE } from '@/constants'
 import { getChannelTracksPage } from '@/api/radiomanager'

@@ -1,5 +1,3 @@
-import exp from 'constants'
-
 interface Props {
   size: number
 }

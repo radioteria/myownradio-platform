@@ -53,14 +53,18 @@ export const StreamPlayer: React.FC<Props> = ({ channelId }) => {
     audioElement.addEventListener('error', handleError)
     audioElement.addEventListener('timeupdate', handleTimeUpdate)
 
-    audioElement.srcObject = composeStreamMediaSource(channelId, {
+    const mediaSource = composeStreamMediaSource(channelId, {
       bufferAheadTime: BUFFER_AHEAD_TIME,
       supportedCodecs: browserFeatures().supportedAudioCodecs,
     })
+    const objectURL = URL.createObjectURL(mediaSource)
 
+    audioElement.src = objectURL
     audioElement.play().catch((event) => debug('Unable to restart stream playback', event))
 
     return () => {
+      URL.revokeObjectURL(objectURL)
+
       audioElement.removeEventListener('ended', handleEnded)
       audioElement.removeEventListener('error', handleError)
       audioElement.removeEventListener('timeupdate', handleTimeUpdate)
@@ -69,7 +73,7 @@ export const StreamPlayer: React.FC<Props> = ({ channelId }) => {
 
       audioElement.pause()
       audioElement.load()
-      audioElement.srcObject = null
+      audioElement.removeAttribute('src')
     }
   }, [channelId])
 

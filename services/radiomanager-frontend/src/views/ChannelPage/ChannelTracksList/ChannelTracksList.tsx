@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { UserChannelTrack } from '@/api'
-import { TrackList } from '../../../shared/TrackList'
+import { TrackList } from '../../../components/shared/TrackList'
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 

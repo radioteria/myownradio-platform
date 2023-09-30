@@ -2,7 +2,7 @@ import cn from 'classnames'
 import React from 'react'
 import { GrowBar } from './icons/GrowBar'
 import { ThreeDots } from './icons/ThreeDots'
-import { Duration } from '@/components/Duration/Duration'
+import { Duration } from '@/components/shared/Duration/Duration'
 import { CurrentTrack, TrackItem } from './types'
 
 interface Props {

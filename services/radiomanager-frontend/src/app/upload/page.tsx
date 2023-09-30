@@ -1,5 +1,5 @@
 import { getSelf } from '@/api'
-import { UploadPageWithProviders } from '@/components/entries/UploadPage'
+import { UploadPageWithProviders } from '../../views/UploadPage'
 
 export default async function Upload() {
   const self = await getSelf()

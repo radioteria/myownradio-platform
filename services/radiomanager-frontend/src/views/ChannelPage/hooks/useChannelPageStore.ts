@@ -3,7 +3,7 @@ import {
   toChannelTrackEntry,
   toChannelTrackEntry2,
   ChannelTrackEntry,
-} from '@/components/entries/ChannelPage/ChannelTracksList'
+} from '@/views/ChannelPage/ChannelTracksList'
 import { deleteTracksById, removeTracksFromChannelById } from '@/api'
 import { getChannelTracksPage } from '@/api/radiomanager'
 import { useNowPlaying } from '@/modules/NowPlaying'

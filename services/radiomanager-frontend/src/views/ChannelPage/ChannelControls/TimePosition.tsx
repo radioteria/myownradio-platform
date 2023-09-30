@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useMemo, useState } from 'react'
-import { Duration } from '@/components/Duration'
+import { Duration } from '@/components/shared/Duration'
 
 interface Props {
   position: number

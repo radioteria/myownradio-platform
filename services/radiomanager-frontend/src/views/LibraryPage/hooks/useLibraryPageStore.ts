@@ -3,7 +3,7 @@ import makeDebug from 'debug'
 import { LibraryTrackEntry, toLibraryTrackEntry } from '@/components/LibraryTracksList'
 import { deleteTracksById } from '@/api'
 import { getUnusedUserTracksPage, getUserTracksPage } from '@/api/radiomanager'
-import { useHandleLibraryLastUploadedTrack } from '../hooks/useHandleLibraryLastUploadedTrack'
+import { useHandleLibraryLastUploadedTrack } from './useHandleLibraryLastUploadedTrack'
 
 import type { UserTrack } from '@/api'
 

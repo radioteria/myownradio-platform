@@ -1,6 +1,6 @@
 import { getSelf } from '@/api'
 import { getUnusedUserTracksPage } from '@/api/radiomanager'
-import { UnusedLibraryPageWithProviders } from '@/components/entries/LibraryPage'
+import { UnusedLibraryPageWithProviders } from '@/views/LibraryPage'
 import { INITIAL_AUDIO_TRACKS_CHUNK_SIZE } from '@/constants'
 
 export default async function UnusedTracks() {

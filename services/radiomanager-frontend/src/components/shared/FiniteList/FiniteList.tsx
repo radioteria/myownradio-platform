@@ -6,15 +6,15 @@ import { chunkItems } from './fns'
 import { ClientServer, useClientServer } from '@/hooks/useClientServer'
 
 interface Props<Item extends NonNullable<unknown>> {
-  readonly items: readonly (Item | null)[]
-  readonly getItemKey: (item: Item | null, index: number) => React.Key
-  readonly serverItemsLimit: number
-  readonly loadRequestItemsMax: number
+  readonly listItems: readonly (Item | null)[]
+  readonly getListItemKey: (item: Item | null, index: number) => React.Key
+  readonly serverRenderedListItemsLimit: number
+  readonly listItemsPerRequestMax: number
 
-  readonly renderSkeleton: (index: number) => React.ReactNode
-  readonly renderItem: (item: Item, index: number) => React.ReactNode
+  readonly renderListItemSkeleton: (index: number) => React.ReactNode
+  readonly renderListItem: (item: Item, index: number) => React.ReactNode
 
-  readonly loadMoreItems: (
+  readonly loadMoreListItems: (
     startIndex: number,
     endIndex: number,
     signal: AbortSignal,
@@ -24,26 +24,26 @@ interface Props<Item extends NonNullable<unknown>> {
 const debug = makeDebug(FiniteList.name)
 
 export function FiniteList<Item extends NonNullable<unknown>>({
-  items,
-  renderSkeleton,
-  renderItem,
-  getItemKey,
-  serverItemsLimit,
-  loadRequestItemsMax,
-  loadMoreItems,
+  listItems,
+  renderListItemSkeleton,
+  renderListItem,
+  getListItemKey,
+  serverRenderedListItemsLimit,
+  listItemsPerRequestMax,
+  loadMoreListItems,
 }: Props<Item>) {
   const abortControllerRefs = useRef<AbortController[]>([])
   const clientServer = useClientServer()
 
   const handleOnReach = (index: number) => {
     const start = index
-    const end = index + loadRequestItemsMax
+    const end = index + listItemsPerRequestMax
     debug('Reach %dth not yet loaded element. Range to load: %d..%d', index, start, end)
 
     const abortController = new AbortController()
     abortControllerRefs.current.push(abortController)
 
-    loadMoreItems(start, end, abortController.signal).finally(() => {
+    loadMoreListItems(start, end, abortController.signal).finally(() => {
       remove(abortControllerRefs.current, abortController)
     })
   }
@@ -59,16 +59,16 @@ export function FiniteList<Item extends NonNullable<unknown>>({
   }, [])
 
   const itemsToRender =
-    clientServer === ClientServer.Server ? items.slice(0, serverItemsLimit) : items
+    clientServer === ClientServer.Server ? listItems.slice(0, serverRenderedListItemsLimit) : listItems
 
   return (
     <ul>
-      {chunkItems(itemsToRender, loadRequestItemsMax).map((itemsInChunk, chunkIndex) => {
+      {chunkItems(itemsToRender, listItemsPerRequestMax).map((itemsInChunk, chunkIndex) => {
         const indexOffset = itemsInChunk.items[0][1]
 
         const chunkElement = itemsInChunk.items.map(([item, itemIndex]) => (
-          <li key={getItemKey(item, itemIndex)}>
-            {item === null ? renderSkeleton(itemIndex) : renderItem(item, itemIndex)}
+          <li key={getListItemKey(item, itemIndex)}>
+            {item === null ? renderListItemSkeleton(itemIndex) : renderListItem(item, itemIndex)}
           </li>
         ))
 

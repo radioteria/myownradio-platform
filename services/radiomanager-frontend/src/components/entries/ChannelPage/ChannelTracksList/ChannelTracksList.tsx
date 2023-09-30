@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { UserChannelTrack } from '@/api'
-import { TracksList } from '@/components/common/TrackList'
+import { TrackList } from '../../../shared/TrackList'
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 
@@ -37,9 +37,7 @@ export const toChannelTrackEntry2 = ({
 })
 
 interface Props {
-  readonly totalTracks: number
   readonly tracks: readonly (ChannelTrackEntry | null)[]
-  readonly channelId: number
   readonly onDeleteTracks: (trackIds: readonly number[]) => void
   readonly onRemoveTracksFromChannel: (uniqueIds: readonly string[]) => void
   readonly loadMoreTracks: (
@@ -50,9 +48,7 @@ interface Props {
 }
 
 export const ChannelTracksList: React.FC<Props> = ({
-  totalTracks,
   tracks,
-  channelId,
   onDeleteTracks,
   onRemoveTracksFromChannel,
   loadMoreTracks,
@@ -104,13 +100,12 @@ export const ChannelTracksList: React.FC<Props> = ({
 
   return (
     <section className={'h-full'}>
-      <TracksList
-        totalTracks={totalTracks}
-        tracks={tracks}
+      <TrackList
+        trackItems={tracks}
         currentTrack={currentTrack}
-        onTracksListMenu={handleTracksListMenu}
+        onTrackListMenu={handleTracksListMenu}
         contextMenuRef={contextMenuRef}
-        loadMoreTracks={loadMoreTracks}
+        loadMoreTrackItems={loadMoreTracks}
       />
     </section>
   )

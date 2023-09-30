@@ -37,8 +37,6 @@ export const ChannelPage: React.FC<Props> = ({
         sidebar={<Sidebar channels={channels} activeItem={['channel', channelId]} />}
         content={
           <ChannelTracksList
-            channelId={channelId}
-            totalTracks={totalTracks}
             tracks={channelPageStore.trackEntries}
             onDeleteTracks={channelPageStore.handleDeletingTracks}
             onRemoveTracksFromChannel={channelPageStore.handleRemovingTracksFromChannel}

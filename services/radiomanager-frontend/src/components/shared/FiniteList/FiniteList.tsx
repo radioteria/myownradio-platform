@@ -59,7 +59,9 @@ export function FiniteList<Item extends NonNullable<unknown>>({
   }, [])
 
   const itemsToRender =
-    clientServer === ClientServer.Server ? listItems.slice(0, serverRenderedListItemsLimit) : listItems
+    clientServer === ClientServer.Server
+      ? listItems.slice(0, serverRenderedListItemsLimit)
+      : listItems
 
   return (
     <ul>

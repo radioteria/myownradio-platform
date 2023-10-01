@@ -86,7 +86,6 @@ export const composeStreamMediaSource = (channelId: number, opts: Options) => {
             const { value, done } = await reader.read()
 
             if (mediaSource.readyState !== 'open') {
-              abortController.abort(new Error('PIPE'))
               return
             }
 
@@ -106,8 +105,8 @@ export const composeStreamMediaSource = (channelId: number, opts: Options) => {
           }
 
           streamTimeMillis += remainder
-        } catch (e) {
-          await reader.cancel(e)
+        } finally {
+          await reader.cancel()
         }
       }
     } catch (e) {
@@ -130,3 +129,5 @@ export const composeStreamMediaSource = (channelId: number, opts: Options) => {
 
   return mediaSource
 }
+
+const handleTrack = async () => {}

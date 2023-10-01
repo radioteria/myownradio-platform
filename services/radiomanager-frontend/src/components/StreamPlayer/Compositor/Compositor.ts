@@ -7,12 +7,23 @@ import { makeChunkTransform } from './BufferUtils'
 
 const debug = makeDebug('compositor')
 
+enum CompositorEventType {
+  Metadata,
+}
+
+type CompositorEvent = {
+  readonly event: CompositorEventType.Metadata
+  readonly title: string
+  readonly pts: number
+}
+
 interface Options {
   readonly bufferAheadTime: number
   readonly supportedCodecs: {
     readonly opus: boolean
     readonly vorbis: boolean
   }
+  readonly onCompositorEvent?: (event: CompositorEvent) => Promise<void>
 }
 
 const PRODUCED_STREAM_CHUNK_SIZE = 8192
@@ -29,12 +40,7 @@ export const composeStreamMediaSource = (channelId: number, opts: Options) => {
     ? AudioFormat.Vorbis
     : null
 
-  mediaSource.addEventListener('sourceclose', () => {
-    debug('Media Source closed')
-    abortController.abort()
-  })
-
-  mediaSource.addEventListener('sourceopen', async () => {
+  const handleSourceOpen = async () => {
     debug('MediaSource opened')
 
     let sourceBuffer: SourceBuffer | null = null
@@ -49,11 +55,16 @@ export const composeStreamMediaSource = (channelId: number, opts: Options) => {
         const nowPlaying = await getNowPlaying(channelId, streamTimeMillis)
         const remainder = nowPlaying.currentTrack.duration - nowPlaying.currentTrack.offset
         debug(
-          'Now Playing: %s (pos: %d, rem: %d)',
+          'Now playing = %s (position = %d, remainder = %d)',
           nowPlaying.currentTrack.trackId,
           nowPlaying.currentTrack.offset,
           remainder,
         )
+        await opts.onCompositorEvent?.({
+          event: CompositorEventType.Metadata,
+          title: nowPlaying.currentTrack.title,
+          pts: sourceBuffer?.timestampOffset ?? 0,
+        })
         const { stream, contentType } = await getTrackTranscodeStream(
           nowPlaying.currentTrack.trackId,
           nowPlaying.currentTrack.offset,
@@ -107,7 +118,15 @@ export const composeStreamMediaSource = (channelId: number, opts: Options) => {
       debug('Media stream composing failed: %s', e)
       mediaSource.endOfStream()
     }
-  })
+  }
+
+  const handleSourceClose = () => {
+    debug('Media Source closed')
+    abortController.abort()
+  }
+
+  mediaSource.addEventListener('sourceclose', handleSourceClose)
+  mediaSource.addEventListener('sourceopen', handleSourceOpen)
 
   return mediaSource
 }

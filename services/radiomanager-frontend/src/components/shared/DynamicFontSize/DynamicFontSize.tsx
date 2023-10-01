@@ -1,14 +1,15 @@
-import { Children, cloneElement, isValidElement, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import cn from 'classnames'
 
-type StyleableElement = React.ReactElement<{ style?: React.CSSProperties }>
 type Size = { readonly width: number; readonly height: number }
 
 export interface Props {
+  readonly className?: string
   readonly formula: (containerSize: Size) => string
-  readonly children: StyleableElement
+  readonly children: React.ReactNode
 }
 
-export const DynamicFontSize: React.FC<Props> = ({ formula, children }) => {
+export const DynamicFontSize: React.FC<Props> = ({ className, formula, children }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerSize, setContainerSize] = useState<Size>({
     width: 0,
@@ -19,14 +20,15 @@ export const DynamicFontSize: React.FC<Props> = ({ formula, children }) => {
     if (!containerRef.current) return
 
     setContainerSize({
-      width: containerRef.current.getBoundingClientRect().width,
-      height: containerRef.current.getBoundingClientRect().height,
+      width: containerRef.current.clientWidth,
+      height: containerRef.current.clientHeight,
     })
   }, [])
 
   return (
     <div
-      className={'w-full h-full'}
+      className={cn(`w-full h-full`, className)}
+      style={{ fontSize: formula(containerSize) }}
       ref={containerRef}
       onResize={(event) =>
         setContainerSize({
@@ -35,16 +37,7 @@ export const DynamicFontSize: React.FC<Props> = ({ formula, children }) => {
         })
       }
     >
-      {Children.map(children, (child) => {
-        return isValidElement(child)
-          ? cloneElement(child, {
-              style: {
-                ...child.props.style,
-                fontSize: formula(containerSize),
-              },
-            })
-          : child
-      })}
+      {children}
     </div>
   )
 }

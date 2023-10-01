@@ -29,12 +29,16 @@ export const StreamOverlay: React.FC<Props> = ({ channelId }) => {
   return (
     <div
       onClick={() => setPlaying((playing) => !playing)}
-      className={cn([
-        'flex items-center justify-center',
-        'bg-black aspect-video text-white rounded-lg relative',
-      ])}
+      className={cn(['bg-black aspect-video text-white rounded-lg relative'])}
     >
-      {!playing && 'NO SIGNAL'}
+      {!playing && (
+        <DynamicFontSize
+          className={'flex items-center justify-center'}
+          formula={({ width }) => `${width * 0.05}px`}
+        >
+          NO SIGNAL
+        </DynamicFontSize>
+      )}
       {playing && <Player channelId={channelId} />}
     </div>
   )

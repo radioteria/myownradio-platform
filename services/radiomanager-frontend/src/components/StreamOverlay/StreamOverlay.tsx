@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import cn from 'classnames'
 import { StreamPlayer } from '@/components/StreamPlayer'
+import { DynamicFontSize } from '@/components/shared/DynamicFontSize/DynamicFontSize'
 
 interface Props {
   readonly channelId: number
@@ -13,7 +14,10 @@ const Player: React.FC<Props> = ({ channelId }) => {
 
   return (
     <>
-      <div className={'absolute left-2 bottom-2 bg-morblue-800 px-2'}>{title}</div>
+      <DynamicFontSize formula={({ width }) => `${width * 0.025}px`}>
+        <div className={'absolute left-2 bottom-2 bg-morblue-800 px-2'}>{title}</div>
+      </DynamicFontSize>
+
       <StreamPlayer channelId={channelId} onTrackChanged={setTitle} />
     </>
   )

@@ -63,8 +63,6 @@ export const StreamPlayer: React.FC<Props> = ({ channelId }) => {
     audioElement.play().catch((event) => debug('Unable to restart stream playback', event))
 
     return () => {
-      URL.revokeObjectURL(objectURL)
-
       audioElement.removeEventListener('ended', handleEnded)
       audioElement.removeEventListener('error', handleError)
       audioElement.removeEventListener('timeupdate', handleTimeUpdate)
@@ -74,6 +72,8 @@ export const StreamPlayer: React.FC<Props> = ({ channelId }) => {
       audioElement.pause()
       audioElement.load()
       audioElement.removeAttribute('src')
+
+      URL.revokeObjectURL(objectURL)
     }
   }, [channelId])
 

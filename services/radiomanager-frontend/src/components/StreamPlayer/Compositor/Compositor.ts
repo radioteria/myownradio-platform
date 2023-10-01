@@ -7,7 +7,7 @@ import { makeChunkTransform } from './BufferUtils'
 
 const debug = makeDebug('compositor')
 
-enum CompositorEventType {
+export enum CompositorEventType {
   Metadata,
 }
 

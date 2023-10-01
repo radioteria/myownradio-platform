@@ -8,25 +8,30 @@ interface Props {
   readonly channelId: number
 }
 
-export const StreamOverlay: React.FC<Props> = ({ channelId }) => {
-  const [playing, setPlaying] = useState(false)
-  // TODO Connect to WS to listen channel events
-  // TODO Connect to scheduler to get now-playing data
-  // TODO Integrate audio player to listen to audio
-  // const { nowPlaying } = useNowPlaying(channelId)
+const Player: React.FC<Props> = ({ channelId }) => {
+  const [title, setTitle] = useState('')
 
   return (
     <>
-      <div
-        onClick={() => setPlaying((playing) => !playing)}
-        className={cn([
-          'flex items-center justify-center',
-          'bg-black aspect-video text-white rounded-lg',
-        ])}
-      >
-        NO SIGNAL
-      </div>
-      {playing && <StreamPlayer channelId={channelId} />}
+      <div className={'absolute left-2 bottom-2 bg-morblue-800 px-2'}>{title}</div>
+      <StreamPlayer channelId={channelId} onTrackChanged={setTitle} />
     </>
+  )
+}
+
+export const StreamOverlay: React.FC<Props> = ({ channelId }) => {
+  const [playing, setPlaying] = useState(false)
+
+  return (
+    <div
+      onClick={() => setPlaying((playing) => !playing)}
+      className={cn([
+        'flex items-center justify-center',
+        'bg-black aspect-video text-white rounded-lg relative',
+      ])}
+    >
+      {!playing && 'NO SIGNAL'}
+      {playing && <Player channelId={channelId} />}
+    </div>
   )
 }

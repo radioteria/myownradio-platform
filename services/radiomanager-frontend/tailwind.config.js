@@ -28,6 +28,14 @@ module.exports = {
         'morblue-1000': '#13141c',
       },
     },
+    fontSize: {
+      base: '10pt',
+      sm: '9pt',
+      xs: '8pt',
+      lg: '12pt',
+      xl: '14pt',
+      '2xl': '20pt',
+    },
   },
   plugins: [],
 }

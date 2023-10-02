@@ -38,7 +38,7 @@ export const MediaUploaderComponent: React.FC<Props> = ({ targetChannelId }) => 
 
   return (
     <div className={'fixed w-96 z-20 bottom-4 left-4 rounded-lg bg-gray-200 shadow p-2'}>
-      <div className={'text-xs truncate'}>
+      <div className={'truncate'}>
         Uploading <b>{currentQueueItem.file.name}</b>...
       </div>
       <div className={'bg-gray-300 h-2 rounded my-2 relative'}>
@@ -49,7 +49,7 @@ export const MediaUploaderComponent: React.FC<Props> = ({ targetChannelId }) => 
           }}
         />
       </div>
-      <div className={'text-xs'}>
+      <div className={''}>
         Uploaded <b>{numberOfUploadedTracks}</b> of <b>{totalNumberOfUploads}</b> file(s)
       </div>
     </div>

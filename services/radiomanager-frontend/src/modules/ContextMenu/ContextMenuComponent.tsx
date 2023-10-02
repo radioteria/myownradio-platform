@@ -29,7 +29,7 @@ export const ContextMenuComponent: React.FC<Props> = ({
       ref={menuRef}
       onBlur={onBlur}
       className={cn([
-        'bg-morblue-400 py-2 outline-none rounded-md fixed text-sm cursor-pointer',
+        'bg-morblue-400 py-2 outline-none rounded-md fixed cursor-pointer',
         styles.menuAnimation,
       ])}
       style={{

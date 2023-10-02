@@ -37,18 +37,11 @@ export const TrackListItem = React.forwardRef<HTMLDivElement, Props>(
         ])}
         onClick={handleClick}
       >
-        <div className="p-2 pl-4 w-14 flex-shrink-0 z-10 text-right text-sm">
+        <div className="p-2 pl-4 w-14 flex-shrink-0 z-10 text-right">
           {isCurrentTrack ? <GrowBar size={12} /> : <>{index + 1}</>}
         </div>
-        <div className="p-2 w-full z-10 min-w-0">
+        <div className="p-2 w-[50%] z-10 min-w-0">
           <div className={'truncate'}>{track.title}</div>
-          {track.artist && <div className={'text-xs truncate'}>{track.artist}</div>}
-        </div>
-        {track.album && (
-          <div className="p-2 w-full z-10 truncate hidden xl:block">{track.album}</div>
-        )}
-        <div className="p-2 w-20 flex-shrink-0 text-right z-10">
-          <Duration millis={track.duration} />
         </div>
         <div
           className={cn([
@@ -61,6 +54,13 @@ export const TrackListItem = React.forwardRef<HTMLDivElement, Props>(
             <ThreeDots size={14} />
           </button>
         </div>
+        <div className="p-2 w-20 flex-shrink-0 text-right z-10">
+          <Duration millis={track.duration} />
+        </div>
+        <div className={'p-2 w-[35%] flex-shrink-0 z-10'}>
+          <div className={'truncate'}> {track.artist}</div>
+        </div>
+        <div className="p-2 w-[35%] z-10 truncate hidden xl:block">{track.album}</div>
       </div>
     )
   },

@@ -9,6 +9,7 @@ import { INITIAL_AUDIO_TRACKS_CHUNK_SIZE, NEXT_AUDIO_TRACKS_CHUNKS_SIZE } from '
 
 import type { TrackItem, CurrentTrack } from './types'
 import type { ListItem as SelectorListItem } from '@/hooks/useListItemSelector'
+import { TrackListHeader } from '@/components/shared/TrackList/TrackListHeader'
 
 interface Props<Item extends TrackItem> {
   readonly trackItems: readonly (Item | null)[]
@@ -73,6 +74,8 @@ export function TrackList<Item extends TrackItem>({
       <div ref={contextMenuRef} />
 
       <div className={'py-4'}>
+        <TrackListHeader />
+
         <FiniteList
           listItems={selector.listItems}
           getListItemKey={(_, index) => index}

@@ -13,8 +13,8 @@ export const ChannelControls: React.FC<Props> = ({ channelId }) => {
   const { nowPlaying } = useNowPlaying()
 
   return (
-    <div className={'bg-morblue-950 text-gray-400 rounded-lg mt-2 p-4 flex flex-col'}>
-      <div className={'truncate text-xs h-4 align-middle text-center mb-4'}>
+    <div className={'bg-morblue-950 text-gray-400 rounded-lg mt-2 p-4 flex flex-col text-xs'}>
+      <div className={'truncate h-4 align-middle text-center mb-4'}>
         {nowPlaying?.currentTrack.title ?? ''}
       </div>
 

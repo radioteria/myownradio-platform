@@ -18,7 +18,7 @@ export const Sidebar: React.FC<Props> = ({ channels, activeItem }) => {
 
   return (
     <div className={'py-0'}>
-      <h3 className={'text-md text-gray-500 px-4 py-4'}>LIBRARY</h3>
+      <h3 className={'text-gray-500 px-4 py-4'}>LIBRARY</h3>
       <ul>
         <li
           className={cn('px-4 py-2', 'text-ellipsis overflow-hidden', {
@@ -40,7 +40,7 @@ export const Sidebar: React.FC<Props> = ({ channels, activeItem }) => {
         </li>
 
         <li className={'py-2'} />
-        <h3 className={'text-md text-gray-500 px-4 py-4'}>CHANNELS</h3>
+        <h3 className={'text-gray-500 px-4 py-4'}>CHANNELS</h3>
 
         {channels.map((channel) => {
           return (

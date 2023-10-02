@@ -27,14 +27,20 @@ module.exports = {
         'morblue-950': '#1e202d',
         'morblue-1000': '#13141c',
       },
+      gridTemplateColumns: {
+        'playlist-item':
+          '[index] 24px [title] 6fr [time] 46px [artist] 4fr [album] 3fr [etc] minmax(120px,1fr);',
+      },
     },
     fontSize: {
-      base: '10pt',
-      sm: '9pt',
       xs: '8pt',
+      sm: '9pt',
+      base: '10pt',
+      md: '11pt',
       lg: '12pt',
       xl: '14pt',
-      '2xl': '20pt',
+      '2xl': '16pt',
+      '3xl': '20pt',
     },
   },
   plugins: [],

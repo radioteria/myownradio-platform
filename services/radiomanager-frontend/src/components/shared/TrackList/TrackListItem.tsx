@@ -32,20 +32,30 @@ export const TrackListItem = React.forwardRef<HTMLDivElement, Props>(
         ref={ref}
         key={track.trackId}
         className={cn([
-          'flex items-center border-gray-800 h-12 relative cursor-pointer select-none',
+          'grid gap-4 grid-cols-playlist-item p-4 text-morblue-100',
+          'border-gray-800 relative cursor-pointer select-none',
           { 'bg-morblue-600 text-gray-300': isSelected },
         ])}
         onClick={handleClick}
       >
-        <div className="p-2 pl-4 w-14 flex-shrink-0 z-10 text-right">
+        <div className="flex items-center justify-end">
           {isCurrentTrack ? <GrowBar size={12} /> : <>{index + 1}</>}
         </div>
-        <div className="p-2 w-[50%] z-10 min-w-0">
+        <div className="flex">
           <div className={'truncate'}>{track.title}</div>
+        </div>
+        <div className="flex items-center justify-end">
+          <Duration millis={track.duration} />
+        </div>
+        <div className="flex items-center">
+          <div className={'truncate'}>{track.artist || '-'}</div>
+        </div>
+        <div className="flex items-center">
+          <div className={'truncate'}>{track.album || '-'}</div>
         </div>
         <div
           className={cn([
-            'p-2 pr-4 w-10 flex-shrink-0 text-right z-10 cursor-pointer',
+            'flex cursor-pointer items-center',
             { 'opacity-0': !isMainSelected },
             { 'opacity-100': isMainSelected },
           ])}
@@ -54,13 +64,6 @@ export const TrackListItem = React.forwardRef<HTMLDivElement, Props>(
             <ThreeDots size={14} />
           </button>
         </div>
-        <div className="p-2 w-20 flex-shrink-0 text-right z-10">
-          <Duration millis={track.duration} />
-        </div>
-        <div className={'p-2 w-[35%] flex-shrink-0 z-10'}>
-          <div className={'truncate'}> {track.artist}</div>
-        </div>
-        <div className="p-2 w-[35%] z-10 truncate hidden xl:block">{track.album}</div>
       </div>
     )
   },

@@ -73,7 +73,7 @@ export function TrackList<Item extends TrackItem>({
     <div ref={listRef} onContextMenu={handleContextMenu}>
       <div ref={contextMenuRef} />
 
-      <div className={'py-4'}>
+      <div className={'pb-4'}>
         <TrackListHeader />
 
         <FiniteList

@@ -1,9 +1,15 @@
+import { ThreeDots } from '@/components/shared/TrackList/icons/ThreeDots'
+import React from 'react'
+
 export const TrackListHeader: React.FC = () => (
-  <li className="flex text-gray-500">
-    <div className="pl-4 pr-2 py-4 w-12 flex-shrink-0 text-right">#</div>
-    <div className="px-2 py-4 w-full">Title</div>
-    <div className="pl-2 pr-4 py-4 w-10 flex-shrink-0 text-right" />
-    <div className="px-2 py-4 w-full hidden xl:block">Album</div>
-    <div className="px-2 py-4 w-20 flex-shrink-0 text-right">⏱</div>
+  <li className="grid gap-4 grid-cols-playlist-item text-gray-500 p-4">
+    <div className={'flex justify-end'}>#</div>
+    <div className={'flex'}>Title</div>
+    <div className={'flex justify-end'}>⏱</div>
+    <div className={'flex'}>Artist</div>
+    <div className={'flex'}>Album</div>
+    <div className={'flex'}>
+      <ThreeDots size={14} />
+    </div>
   </li>
 )

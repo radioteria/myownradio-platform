@@ -18,8 +18,8 @@ export const Sidebar: React.FC<Props> = ({ channels, activeItem }) => {
 
   return (
     <div className={'py-0'}>
-      <h3 className={'text-gray-500 px-4 py-4'}>LIBRARY</h3>
-      <ul>
+      <h3 className={'text-gray-500 p-4 text-sm font-medium'}>LIBRARY</h3>
+      <ul className={'pb-2'}>
         <li
           className={cn('px-4 py-2', 'text-ellipsis overflow-hidden', {
             'bg-morblue-400 text-gray-50': activeItem?.[0] === 'library',
@@ -38,10 +38,9 @@ export const Sidebar: React.FC<Props> = ({ channels, activeItem }) => {
             Unused Tracks
           </Link>
         </li>
-
-        <li className={'py-2'} />
-        <h3 className={'text-gray-500 px-4 py-4'}>CHANNELS</h3>
-
+      </ul>
+      <h3 className={'text-gray-500 p-4 text-sm font-medium'}>CHANNELS</h3>
+      <ul>
         {channels.map((channel) => {
           return (
             <li

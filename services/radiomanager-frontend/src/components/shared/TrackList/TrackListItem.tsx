@@ -38,26 +38,25 @@ export const TrackListItem = React.forwardRef<HTMLDivElement, Props>(
         ])}
         onClick={handleClick}
       >
-        <div className="flex items-center justify-end">
+        <div className="flex overflow-hidden items-center justify-end">
           {isCurrentTrack ? <GrowBar size={12} /> : <>{index + 1}</>}
         </div>
-        <div className="flex">
+        <div className="flex overflow-hidden">
           <div className={'truncate'}>{track.title}</div>
         </div>
-        <div className="flex items-center justify-end">
+        <div className="flex overflow-hidden items-center justify-end">
           <Duration millis={track.duration} />
         </div>
-        <div className="flex items-center">
+        <div className="flex overflow-hidden items-center">
           <div className={'truncate'}>{track.artist || '-'}</div>
         </div>
-        <div className="flex items-center">
+        <div className="flex overflow-hidden items-center">
           <div className={'truncate'}>{track.album || '-'}</div>
         </div>
         <div
           className={cn([
-            'flex cursor-pointer items-center',
-            { 'opacity-0': !isMainSelected },
-            { 'opacity-100': isMainSelected },
+            'flex cursor-pointer overflow-hidden items-center',
+            isMainSelected ? 'opacity-100' : 'opacity-0',
           ])}
         >
           <button onClick={onThreeDotsClick}>

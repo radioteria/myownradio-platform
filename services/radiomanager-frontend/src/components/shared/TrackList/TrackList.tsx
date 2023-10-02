@@ -74,11 +74,10 @@ export function TrackList<Item extends TrackItem>({
       <div ref={contextMenuRef} />
 
       <div className={'pb-4'}>
-        <TrackListHeader />
-
         <FiniteList
           listItems={selector.listItems}
           getListItemKey={(_, index) => index}
+          renderListHeader={() => <TrackListHeader />}
           renderListItemSkeleton={() => <TrackListItemSkeleton />}
           renderListItem={(item, itemIndex) => (
             <TrackListItem

@@ -13,6 +13,7 @@ interface Props<Item extends NonNullable<unknown>> {
 
   readonly renderListItemSkeleton: (index: number) => React.ReactNode
   readonly renderListItem: (item: Item, index: number) => React.ReactNode
+  readonly renderListHeader: () => React.ReactNode
 
   readonly loadMoreListItems: (
     startIndex: number,
@@ -27,6 +28,7 @@ export function FiniteList<Item extends NonNullable<unknown>>({
   listItems,
   renderListItemSkeleton,
   renderListItem,
+  renderListHeader,
   getListItemKey,
   serverRenderedListItemsLimit,
   listItemsPerRequestMax,
@@ -65,6 +67,8 @@ export function FiniteList<Item extends NonNullable<unknown>>({
 
   return (
     <ul>
+      {renderListHeader()}
+
       {chunkItems(itemsToRender, listItemsPerRequestMax).map((itemsInChunk, chunkIndex) => {
         const indexOffset = itemsInChunk.items[0][1]
 

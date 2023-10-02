@@ -35,6 +35,10 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
     hide()
   }
 
+  const handleEscapeKeyPressed = () => {
+    hide()
+  }
+
   const handleClick = () => {
     hide()
   }
@@ -44,11 +48,21 @@ export const ContextMenuProvider: React.FC<{ children: React.ReactNode }> = ({ c
       {context &&
         (context.portalElement ? (
           createPortal(
-            <ContextMenuComponent context={context} onBlur={handleBlur} onClick={handleClick} />,
+            <ContextMenuComponent
+              context={context}
+              onBlur={handleBlur}
+              onClick={handleClick}
+              onEscapeKeyPressed={handleEscapeKeyPressed}
+            />,
             context.portalElement,
           )
         ) : (
-          <ContextMenuComponent context={context} onBlur={handleBlur} onClick={handleClick} />
+          <ContextMenuComponent
+            context={context}
+            onBlur={handleBlur}
+            onClick={handleClick}
+            onEscapeKeyPressed={handleEscapeKeyPressed}
+          />
         ))}
       {children}
     </ContextMenuContext.Provider>

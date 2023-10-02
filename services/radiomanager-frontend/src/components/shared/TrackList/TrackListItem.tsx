@@ -44,6 +44,16 @@ export const TrackListItem = React.forwardRef<HTMLDivElement, Props>(
         <div className="flex overflow-hidden">
           <div className={'truncate'}>{track.title}</div>
         </div>
+        <div
+          className={cn([
+            'flex cursor-pointer overflow-hidden items-center',
+            { 'text-morblue-200': !isMainSelected },
+          ])}
+        >
+          <button onClick={onThreeDotsClick}>
+            <ThreeDots size={14} />
+          </button>
+        </div>
         <div className="flex overflow-hidden items-center justify-end">
           <Duration millis={track.duration} />
         </div>
@@ -52,16 +62,6 @@ export const TrackListItem = React.forwardRef<HTMLDivElement, Props>(
         </div>
         <div className="flex overflow-hidden items-center">
           <div className={'truncate'}>{track.album || '-'}</div>
-        </div>
-        <div
-          className={cn([
-            'flex cursor-pointer overflow-hidden items-center',
-            isMainSelected ? 'opacity-100' : 'opacity-0',
-          ])}
-        >
-          <button onClick={onThreeDotsClick}>
-            <ThreeDots size={14} />
-          </button>
         </div>
       </div>
     )

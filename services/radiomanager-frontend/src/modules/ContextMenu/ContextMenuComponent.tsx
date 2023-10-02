@@ -3,21 +3,26 @@ import cn from 'classnames'
 import { MenuContext, MenuItemType } from '@/modules/ContextMenu'
 import { useMenuPosition } from '@/modules/ContextMenu/hooks/useMenuPosition'
 import styles from './ContextMenuComponent.module.css'
+import { useHotkey } from '@/hooks/useHotkey'
 
 interface Props {
   context: MenuContext
   onBlur: (ev: React.FocusEvent<HTMLElement>) => void
   onClick: (ev: React.MouseEvent<HTMLElement>) => void
+  onEscapeKeyPressed: () => void
 }
 
 export const ContextMenuComponent: React.FC<Props> = ({
   onBlur,
   onClick,
+  onEscapeKeyPressed,
   context: { position, menuItems },
 }) => {
   const menuRef = useRef<HTMLDivElement | null>(null)
   // TODO Fix position jumping
   const actualPosition = useMenuPosition(menuRef, position)
+
+  useHotkey(menuRef, 'Escape', onEscapeKeyPressed)
 
   useEffect(() => {
     menuRef.current?.focus()

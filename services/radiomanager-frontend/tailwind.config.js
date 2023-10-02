@@ -29,7 +29,7 @@ module.exports = {
       },
       gridTemplateColumns: {
         'playlist-item':
-          '[index] 24px [title] 5fr [time] 46px [artist] 4fr [album] 3fr [etc] minmax(120px,1fr);',
+          '[index] 24px [title] 5fr [menu] 24px [time] 46px [artist] 4fr [album] 4fr;',
       },
     },
     fontSize: {

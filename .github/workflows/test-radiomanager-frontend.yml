@@ -6,6 +6,7 @@ on:
       - '**'
     paths:
       - 'services/radiomanager-frontend/**'
+      - '.github/workflows/test-radiomanager-frontend.yml'
 
 jobs:
   main:

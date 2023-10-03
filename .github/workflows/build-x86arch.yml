@@ -21,6 +21,7 @@ jobs:
       build_id: ${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
 
   build:
+    needs: [get_build]
     runs-on: ubuntu-latest
     steps:
       - name: Set up QEMU

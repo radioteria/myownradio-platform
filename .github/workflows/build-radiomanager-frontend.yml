@@ -1,4 +1,4 @@
-name: trigger backend images build
+name: Trigger radiomanager-frontend build
 
 on:
   workflow_dispatch:

@@ -24,6 +24,7 @@ interface Props<Item extends TrackItem> {
     endIndex: number,
     signal: AbortSignal,
   ) => Promise<void>
+  readonly renderChannelControls?: React.ReactNode
 }
 
 export function TrackList<Item extends TrackItem>({
@@ -32,6 +33,7 @@ export function TrackList<Item extends TrackItem>({
   onTrackListMenu,
   contextMenuRef,
   loadMoreTrackItems,
+  renderChannelControls,
 }: Props<Item>) {
   const listRef = useRef(null)
   const selector = useListItemSelector(trackItems)
@@ -74,6 +76,8 @@ export function TrackList<Item extends TrackItem>({
       <div ref={contextMenuRef} />
 
       <div className={'pb-4'}>
+        {renderChannelControls}
+
         <FiniteList
           listItems={selector.listItems}
           getListItemKey={(_, index) => index}

@@ -33,10 +33,10 @@ export const StreamOverlay: React.FC<Props> = ({ channelId }) => {
     >
       {!playing && (
         <DynamicFontSize
-          className={'flex items-center justify-center'}
+          className={'flex items-center justify-center cursor-pointer'}
           formula={({ width }) => `${width * 0.05}px`}
         >
-          NO SIGNAL
+          Click to preview
         </DynamicFontSize>
       )}
       {playing && <Player channelId={channelId} />}

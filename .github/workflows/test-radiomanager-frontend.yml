@@ -1,7 +1,6 @@
 name: Test radiomanager-frontend build
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - '**'
@@ -10,11 +9,10 @@ on:
 
 jobs:
   main:
-    name: Setup Node.js
+    name: Test radiomanager-frontend build
     runs-on: ubuntu-latest
     steps:
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: '18.x'
       - run: |

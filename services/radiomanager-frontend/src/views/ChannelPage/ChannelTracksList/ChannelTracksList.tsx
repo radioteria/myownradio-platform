@@ -5,6 +5,7 @@ import { useNowPlaying } from '@/modules/NowPlaying'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 
 import type { ChannelTrackEntry as ApiChannelTrackEntry } from '@/api/radiomanager'
+import { ChannelControls } from 'ChannelControls'
 
 export interface ChannelTrackEntry {
   trackId: number
@@ -37,6 +38,7 @@ export const toChannelTrackEntry2 = ({
 })
 
 interface Props {
+  readonly channelId: number
   readonly tracks: readonly (ChannelTrackEntry | null)[]
   readonly onDeleteTracks: (trackIds: readonly number[]) => void
   readonly onRemoveTracksFromChannel: (uniqueIds: readonly string[]) => void
@@ -48,6 +50,7 @@ interface Props {
 }
 
 export const ChannelTracksList: React.FC<Props> = ({
+  channelId,
   tracks,
   onDeleteTracks,
   onRemoveTracksFromChannel,

@@ -3,12 +3,11 @@
 import { User, UserChannel, UserChannelTrack } from '@/api'
 import { LibraryLayout, Header } from '@/layouts/LibraryLayout'
 import { Sidebar } from '@/components/Sidebar'
-import { StreamOverlay } from '@/components/StreamOverlay'
 import { ChannelTracksList } from './ChannelTracksList'
-import { ChannelControls } from './ChannelControls'
 import { NowPlayingProvider } from '@/modules/NowPlaying'
 import { MediaUploaderComponent } from '@/modules/MediaUploader'
 import { useChannelPageStore } from './hooks/useChannelPageStore'
+import { ChannelControls } from './ChannelTracksList/ChannelControls'
 
 interface Props {
   readonly channelId: number
@@ -36,18 +35,14 @@ export const ChannelPage: React.FC<Props> = ({
         sidebar={<Sidebar channels={channels} activeItem={['channel', channelId]} />}
         content={
           <ChannelTracksList
+            channelId={channelId}
             tracks={channelPageStore.trackEntries}
             onDeleteTracks={channelPageStore.handleDeletingTracks}
             onRemoveTracksFromChannel={channelPageStore.handleRemovingTracksFromChannel}
             loadMoreTracks={channelPageStore.loadMoreTracks}
           />
         }
-        rightSidebar={
-          <>
-            <StreamOverlay channelId={channelId} />
-            <ChannelControls channelId={channelId} />
-          </>
-        }
+        rightSidebar={<ChannelControls channelId={channelId} />}
       />
       <MediaUploaderComponent targetChannelId={channelId} />
     </>

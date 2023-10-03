@@ -1,0 +1,56 @@
+name: build service images
+
+on:
+  repository_dispatch:
+    types:
+      - build-multi-arch-image
+
+jobs:
+  get_build:
+    name: get current build
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@master
+      - name: setup variables
+        id: vars
+        run: |
+          echo "::set-output name=date::$(date +'%y.%m')"
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+    outputs:
+      build_id: ${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          context: ${{ github.event.client_payload.context }}
+          file: ${{ github.event.client_payload.dockerfile }}
+          tags: ${{ github.event.client_payload.image_name }}:${{ github.event.client_payload.release || needs.get_build.outputs.build_id }}
+
+  comment:
+    needs: [get_build, build]
+    name: Leave a comment
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: ${{ github.event.client_payload.image_name }}
+      BUILD_ID: ${{ github.event.client_payload.release || needs.get_build.outputs.build_id }}
+    steps:
+      - name: Leave a comment
+        uses: peter-evans/commit-comment@v1
+        with:
+          body: |
+            Docker image has been built:
+                ${{ env.IMAGE_NAME }}:${{ env.BUILD_ID }}

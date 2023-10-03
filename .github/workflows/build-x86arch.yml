@@ -21,23 +21,24 @@ jobs:
       build_id: ${{ steps.vars.outputs.date }}.${{ github.run_id }}-${{ steps.vars.outputs.sha_short }}
 
   build:
-    needs: [get_build]
-    name: Build and push
-    uses: pldin601/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@build
-    with:
-      DOCKER_IMAGE_TAG: ${{ github.event.client_payload.release || needs.get_build.outputs.build_id }}
-      DOCKER_IMAGE_NAME: ${{ github.event.client_payload.image_name }}
-      WORKFLOW_CHECKOUT: build # Should be the same as the ref used in "uses" expression.
-      AWS_REGION: eu-west-2
-      AWS_EC2_INSTANCE_SIZE: large
-      BUILD_CONTEXT: ${{ github.event.client_payload.context }}
-      BUILD_DOCKERFILE: ${{ github.event.client_payload.dockerfile }}
-      REPOSITORY_URL: https://${{ github.event.client_payload.token }}@github.com/${{ github.repository }}.git
-    secrets:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKER_PASSWORD }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          context: ${{ github.event.client_payload.context }}
+          file: ${{ github.event.client_payload.dockerfile }}
+          tags: ${{ github.event.client_payload.image_name }}:${{ github.event.client_payload.release || needs.get_build.outputs.build_id }}
 
   comment:
     needs: [get_build, build]

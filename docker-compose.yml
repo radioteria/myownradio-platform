@@ -122,11 +122,11 @@ services:
     env_file:
       - services/radio-streamer/.env
   radiomanager-pubsub-backend:
+    depends_on:
+      - redis
     build:
       context: services/radiomanager-pubsub-backend
       dockerfile: Dockerfile
-    volumes:
-      - ./services/radiomanager-pubsub-backend:/data:rw
     user: "${USER}"
     working_dir: /code
     networks:

@@ -1,0 +1,23 @@
+name: Test radiomanager-frontend build
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'services/radiomanager-pubsub-backend/**'
+      - '.github/workflows/test-radiomanager-pubsub-backend.yml'
+
+jobs:
+  main:
+    name: Test radiomanager-pubsub-backend build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+      - run: |
+          npm ci
+          npm run build --if-present
+        working-directory: 'services/radiomanager-pubsub-backend'

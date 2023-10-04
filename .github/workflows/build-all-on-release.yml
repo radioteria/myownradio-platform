@@ -75,3 +75,16 @@ jobs:
               "token": "${{ secrets.REPO_ACCESS_TOKEN }}",
               "release": "${{ github.event.release.tag_name }}"
             }
+      - name: trigger "pldin601/myownradio-radiomanager-pubsub-backend" build
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: build-image
+          client-payload: |
+            {
+              "image_name": "pldin601/myownradio-radiomanager-pubsub-backend",
+              "dockerfile": "services/radiomanager-pubsub-backend/Dockerfile",
+              "context": "services/radiomanager-pubsub-backend",
+              "token": "${{ secrets.REPO_ACCESS_TOKEN }}",
+              "release": "${{ github.event.release.tag_name }}"
+            }

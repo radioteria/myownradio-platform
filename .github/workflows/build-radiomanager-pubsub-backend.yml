@@ -1,0 +1,27 @@
+name: Trigger 'radiomanager-pubsub-backend' build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'services/radiomanager-pubsub-backend/**'
+
+jobs:
+  main:
+    name: main
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger the build
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: build-image
+          client-payload: |
+            {
+              "image_name": "pldin601/myownradio-radiomanager-pubsub-backend",
+              "dockerfile": "services/radiomanager-pubsub-backend/Dockerfile",
+              "context": "services/radiomanager-pubsub-backend",
+              "token": "${{ secrets.REPO_ACCESS_TOKEN }}"
+            }

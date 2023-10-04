@@ -1,93 +1,87 @@
-import express from 'express';
-import { createClient } from '@redis/client';
-import { z, ZodError } from 'zod';
+import { createClient } from "@redis/client"
+import express from "express"
+import makeDebug from "debug"
+import { z, ZodError } from "zod"
+import { Config } from "./config.js"
+
+const debug = makeDebug("main")
 
 async function main() {
-    // Create an Express application
-    const app = express();
-    app.use(express.json());
+  const config = Config.fromEnv(process.env)
 
-    // Initialize Redis client
-    const redisClient = createClient({
-        url: `redis://${process.env.REDIS_HOST}`
-    });
+  // Initialize Redis client
+  const redisClient = createClient({
+    url: `redis://${process.env.REDIS_HOST}`,
+  })
+  await redisClient.connect()
+  const app = express()
 
-    // Zod schema for request body validation
-    const PostSchema = z.object({
-        channel: z.string(),
-        message: z.string(),
-    });
+  app.use(express.json())
 
-    // POST endpoint
-    app.post('/post', async (req, res) => {
-        const userId = req.headers['user-id'];
-        if (!userId || Array.isArray(userId)) {
-            return res.status(400).send('User-Id header is missing or invalid.');
-        }
+  const PublishSchema = z.object({
+    channel: z.string(),
+    message: z.string(),
+  })
 
-        try {
-            const validatedData = PostSchema.parse(req.body);
-            const channel = `${validatedData.channel}_${userId}`;
+  app.post("/publish", async (req, res) => {
+    const userId = req.headers["user-id"]
 
-            await redisClient.publish(channel, validatedData.message);
+    if (!userId || Array.isArray(userId)) {
+      return res.status(400).send("User-Id header is missing or invalid.")
+    }
 
-            res.status(200).send('Message published successfully.');
-        } catch (e) {
-            if (e instanceof ZodError) {
-            res.status(400).send(e.errors);
-            } else {
-            res.status(500).send('An error occurred.');
-            }
-        }
-    });
+    try {
+      const validatedData = PublishSchema.parse(req.body)
+      const redisChannel = `${userId}_${validatedData.channel}`
 
-    // Server-Sent Events endpoint
-    app.get('/events', async (req, res) => {
-        const userId = req.headers['user-id'];
-        if (!userId || Array.isArray(userId)) {
-            return res.status(400).send('User-Id header is missing or invalid.');
-        }
+      await redisClient.publish(redisChannel, validatedData.message)
 
-        const channel = `${req.query.channel}_${userId}`;
+      res.status(200).send("OK")
+    } catch (e) {
+      if (e instanceof ZodError) {
+        res.status(400).send(e.errors)
+      } else {
+        debug("Error on publishing: %s", e)
+        res.status(500).send("Internal server error")
+      }
+    }
+  })
 
-        res.set({
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-        });
+  app.get("/subscribe/:channelId", async (req, res) => {
+    const userId = req.headers["user-id"]
+    const channelId = req.params.channelId
 
-        const subscription = redisClient.duplicate();
-        await subscription.connect();
+    if (!userId || Array.isArray(userId)) {
+      return res.status(400).send("User-Id header is missing or invalid.")
+    }
 
-        await subscription.subscribe(channel, (message) => {
-            res.write(`data: ${message}\n\n`);
-        });
+    const redisChannel = `${userId}_${channelId}`
 
-        req.on('close', async () => {
-            await subscription.unsubscribe(channel);
-            await subscription.disconnect();
-        });
-    });
+    const subscription = redisClient.duplicate()
+    await subscription.connect()
 
+    res.set({
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    })
 
-    // Start the server
-    const PORT = process.env.PORT || 3000;
-    const server = app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
+    await subscription.subscribe(redisChannel, (message) => {
+      res.write(`data: ${message}\n\n`)
+    })
 
-    // Handle graceful shutdown
-    const gracefulShutdown = async () => {
-        await new Promise<void>((resolve) => server.close(() => resolve()));
-        await redisClient.disconnect();
-        process.exit(0);
-    };
+    req.on("close", async () => {
+      await subscription.unsubscribe(redisChannel)
+      await subscription.disconnect()
+    })
+  })
 
-    process.on('SIGTERM', gracefulShutdown);
-    process.on('SIGINT', gracefulShutdown);
+  app.listen(config.httpPort, () => {
+    debug(`Server is running on port ${config.httpPort}`)
+  })
 }
 
-main().catch(error => {
-    console.error(error);
-    process.exit(1);
-});
+main().catch((error) => {
+  debug("Error on starting the server: %s", error)
+  process.exit(1)
+})

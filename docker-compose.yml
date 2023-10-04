@@ -49,6 +49,12 @@ services:
       - myownradio-dev
     ports:
       - "127.0.0.1:40001:3306"
+  redis:
+    image: redis:alpine3.18
+    volumes:
+      - redis-data:/data
+    networks:
+      - myownradio-dev
   backend-nginx:
     depends_on:
       - backend-php-fpm
@@ -115,6 +121,18 @@ services:
       - "127.0.0.1:40003:8080"
     env_file:
       - services/radio-streamer/.env
+  radiomanager-pubsub-backend:
+    build:
+      context: services/radiomanager-pubsub-backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./services/radiomanager-pubsub-backend:/data:rw
+    user: "${USER}"
+    working_dir: /code
+    networks:
+      - myownradio-dev
+    env_file:
+      - services/radiomanager-pubsub-backend/.env
   radio-manager-backend:
     build:
       context: services/radio-manager-backend
@@ -146,6 +164,8 @@ services:
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowcredentials=true
 volumes:
   mysql-data:
+    driver: local
+  redis-data:
     driver: local
 
 networks:

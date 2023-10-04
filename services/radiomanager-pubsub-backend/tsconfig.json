@@ -1,13 +1,15 @@
 {
     "compilerOptions": {
       "target": "es2020",
-      "module": "esnext",
-      "moduleResolution": "node",
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext",
       "outDir": "dist",
       "esModuleInterop": true,
       "experimentalDecorators": true,
       "emitDecoratorMetadata": true,
-      "strict": true
+      "strict": true,
+      "types": ["node"],
+      "typeRoots": ["node_modules/@types"]
     },
     "ts-node": {
       "esm": true

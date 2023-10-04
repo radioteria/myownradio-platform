@@ -1,19 +1,13 @@
 {
     "compilerOptions": {
-      "skipLibCheck": true,
-      "outDir": "dist",
-      "lib": ["es2020"],
       "target": "es2020",
       "module": "esnext",
       "moduleResolution": "node",
+      "outDir": "dist",
       "esModuleInterop": true,
       "experimentalDecorators": true,
       "emitDecoratorMetadata": true,
-      "strict": true,
-      "types": ["node"],
-      "typeRoots": [
-        "node_modules/@types"
-      ]
+      "strict": true
     },
     "ts-node": {
       "esm": true

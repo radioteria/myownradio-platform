@@ -1,0 +1,12 @@
+traefik.enable=true
+traefik.http.routers.pubsub.rule=PathPrefix(`/pubsub/channel/{channelId:[a-z]+}/subscribe`)
+traefik.http.routers.pubsub.middlewares=stripprefixPubsub,forwardauthPubsub,corsPubsub
+traefik.http.services.pubsub.loadbalancer.server.port=8080
+traefik.http.middlewares.stripprefixPubsub.stripprefix.prefixes=/pubsub
+traefik.http.middlewares.forwardauthPubsub.forwardauth.address=http://backend-nginx:80/api/v2/me
+traefik.http.middlewares.forwardauthPubsub.forwardauth.authResponseHeaders=user-id
+traefik.http.middlewares.forwardauthPubsub.forwardauth.trustForwardHeader=false
+traefik.http.middlewares.corsPubsub.headers.accesscontrolallowmethods=GET
+traefik.http.middlewares.corsPubsub.headers.accesscontrolallowheaders=*
+traefik.http.middlewares.corsPubsub.headers.accesscontrolalloworiginlist=http://localhost:3000
+traefik.http.middlewares.corsPubsub.headers.accesscontrolallowcredentials=true

@@ -11,7 +11,7 @@ async function main() {
 
   // Initialize Redis client
   const redisClient = createClient({
-    url: `redis://${process.env.REDIS_HOST}`,
+    url: `redis://${config.redisHost}`,
   })
   await redisClient.connect()
   const app = express()

@@ -1,28 +1,25 @@
 use crate::config::RadioStreamerConfig;
 use crate::data_structures::{LinkId, OrderId, StreamId, TrackId, UserId};
 use crate::mysql_client::MySqlConnection;
+use crate::pubsub_client::{PubsubClient, PubsubClientError};
 use crate::services::stream_service_utils::get_now_playing;
-use crate::storage::db::repositories::errors::{RepositoryError, RepositoryResult};
+use crate::storage::db::repositories::errors::RepositoryError;
 use crate::storage::db::repositories::streams::{
-    get_single_stream_by_id, get_stream_playlist_duration, seek_user_stream_forward,
-    update_stream_status,
+    get_single_stream_by_id, seek_user_stream_forward, update_stream_status,
 };
 use crate::storage::db::repositories::user_stream_tracks::{
-    delete_track_by_link_id, get_single_stream_track_at_time_offset,
-    get_single_stream_track_by_link_id, get_single_stream_track_by_order_id, get_stream_tracks,
-    remove_tracks_by_track_id, GetUserStreamTracksParams, TrackFileLinkMergedRow,
+    delete_track_by_link_id, get_single_stream_track_by_link_id,
+    get_single_stream_track_by_order_id, remove_tracks_by_track_id,
 };
-use crate::storage::db::repositories::{StreamRow, StreamStatus};
+use crate::storage::db::repositories::StreamStatus;
 use crate::system::now;
 use crate::MySqlClient;
 use chrono::Duration;
 use futures::SinkExt;
 use reqwest::StatusCode;
 use std::future::Future;
-use std::ops::{DerefMut, Index, Neg};
 use std::pin::Pin;
 use std::time::SystemTime;
-use tracing::log::kv::Source;
 use tracing::{debug, error};
 
 #[derive(thiserror::Error, Debug)]
@@ -39,22 +36,27 @@ pub(crate) enum StreamServiceError {
     DatabaseError(#[from] sqlx::Error),
     #[error("Track index out of bounds")]
     TrackIndexOutOfBounds,
+    #[error("Pubsub client error: {0}")]
+    PubsubClientError(#[from] PubsubClientError),
 }
 
 #[derive(Clone)]
 pub(crate) struct StreamServiceFactory {
     mysql_client: MySqlClient,
     radio_streamer_config: RadioStreamerConfig,
+    pubsub_client: PubsubClient,
 }
 
 impl StreamServiceFactory {
     pub(crate) fn create(
         mysql_client: &MySqlClient,
         radio_streamer_config: &RadioStreamerConfig,
+        pubsub_client: &PubsubClient,
     ) -> Self {
         Self {
             mysql_client: mysql_client.clone(),
             radio_streamer_config: radio_streamer_config.clone(),
+            pubsub_client: pubsub_client.clone(),
         }
     }
 
@@ -64,19 +66,21 @@ impl StreamServiceFactory {
     ) -> Result<StreamService, StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
 
-        if get_single_stream_by_id(&mut connection, stream_id)
-            .await?
-            .is_none()
-        {
-            return Err(StreamServiceError::StreamNotFound);
+        let stream_row = match get_single_stream_by_id(&mut connection, stream_id).await? {
+            Some(row) => row,
+            None => {
+                return Err(StreamServiceError::StreamNotFound);
+            }
         };
 
         drop(connection);
 
         Ok(StreamService::create(
             stream_id.clone(),
+            stream_row.uid.clone(),
             self.mysql_client.clone(),
             self.radio_streamer_config.clone(),
+            self.pubsub_client.clone(),
         ))
     }
 
@@ -100,28 +104,36 @@ impl StreamServiceFactory {
 
         Ok(StreamService::create(
             stream_id.clone(),
+            user_id.clone(),
             self.mysql_client.clone(),
             self.radio_streamer_config.clone(),
+            self.pubsub_client.clone(),
         ))
     }
 }
 
 pub(crate) struct StreamService {
     stream_id: StreamId,
+    user_id: UserId,
     mysql_client: MySqlClient,
     radio_streamer_config: RadioStreamerConfig,
+    pubsub_client: PubsubClient,
 }
 
 impl StreamService {
     pub(crate) fn create(
         stream_id: StreamId,
+        user_id: UserId,
         mysql_client: MySqlClient,
         radio_streamer_config: RadioStreamerConfig,
+        pubsub_client: PubsubClient,
     ) -> Self {
         Self {
+            user_id,
             stream_id,
             mysql_client,
             radio_streamer_config,
+            pubsub_client,
         }
     }
 
@@ -134,6 +146,10 @@ impl StreamService {
 
         self.notify_streams();
 
+        self.pubsub_client
+            .restart_channel(&self.stream_id, &self.user_id)
+            .await?;
+
         Ok(())
     }
 
@@ -143,6 +159,10 @@ impl StreamService {
         drop(connection);
 
         self.notify_streams();
+
+        self.pubsub_client
+            .restart_channel(&self.stream_id, &self.user_id)
+            .await?;
 
         Ok(())
     }
@@ -174,6 +194,10 @@ impl StreamService {
 
         self.notify_streams();
 
+        self.pubsub_client
+            .restart_channel(&self.stream_id, &self.user_id)
+            .await?;
+
         Ok(())
     }
 
@@ -204,6 +228,10 @@ impl StreamService {
 
         self.notify_streams();
 
+        self.pubsub_client
+            .restart_channel(&self.stream_id, &self.user_id)
+            .await?;
+
         Ok(())
     }
 
@@ -221,6 +249,10 @@ impl StreamService {
                 self.play_internal(&mut connection, &position).await?;
 
                 self.notify_streams();
+
+                self.pubsub_client
+                    .restart_channel(&self.stream_id, &self.user_id)
+                    .await?;
 
                 Ok(())
             }
@@ -380,6 +412,10 @@ impl StreamService {
                     }
 
                     self.notify_streams();
+
+                    self.pubsub_client
+                        .restart_channel(&self.stream_id, &self.user_id)
+                        .await?;
                 }
             }
         }

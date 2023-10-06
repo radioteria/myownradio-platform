@@ -3,6 +3,7 @@ mod data_structures;
 mod http_extractors;
 mod http_server;
 mod mysql_client;
+mod pubsub_client;
 mod services;
 mod storage;
 mod system;
@@ -10,6 +11,7 @@ mod utils;
 
 use crate::config::Config;
 use crate::mysql_client::MySqlClient;
+use crate::pubsub_client::PubsubClient;
 use crate::services::StreamServiceFactory;
 use crate::storage::fs::local::LocalFileSystem;
 use dotenv::dotenv;
@@ -39,10 +41,12 @@ async fn main() -> Result<()> {
         .await
         .expect("Unable to initialize MySQL client");
 
+    let pubsub_client = PubsubClient::new(&config.pubsub.endpoint);
+
     let file_system = LocalFileSystem::create(config.file_system_root_path.clone());
 
     let stream_service_factory =
-        StreamServiceFactory::create(&mysql_client, &config.radio_streamer);
+        StreamServiceFactory::create(&mysql_client, &config.radio_streamer, &pubsub_client);
 
     let http_server = run_server(
         &bind_address,
@@ -50,6 +54,7 @@ async fn main() -> Result<()> {
         config,
         file_system,
         stream_service_factory,
+        pubsub_client,
     )?;
 
     tracing::info!("Application started");

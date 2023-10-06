@@ -90,18 +90,23 @@ export const composeStreamMediaSource = (channelId: number, opts: Options) => {
             }
 
             if (done) {
-              sourceBuffer.timestampOffset = sourceBuffer.buffered.end(
-                sourceBuffer.buffered.length - 1,
-              )
+              if (sourceBuffer.buffered.length > 0) {
+                sourceBuffer.timestampOffset = sourceBuffer.buffered.end(
+                  sourceBuffer.buffered.length - 1,
+                )
+              }
               break
             }
 
             await appendBuffer(sourceBuffer, value)
 
-            const bufferedTime = sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1) * 1000
-            const estimatedTime = performance.now() - startTimeMillis
+            if (sourceBuffer.buffered.length > 0) {
+              const bufferedTime =
+                sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1) * 1000
+              const estimatedTime = performance.now() - startTimeMillis
 
-            await sleep(bufferedTime - estimatedTime - bufferAheadTime)
+              await sleep(bufferedTime - estimatedTime - bufferAheadTime)
+            }
           }
 
           streamTimeMillis += remainder

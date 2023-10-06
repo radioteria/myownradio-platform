@@ -2,6 +2,7 @@ import { createClient } from "@redis/client"
 import express from "express"
 import makeDebug from "debug"
 import { Config } from "./config.js"
+import bodyParser from "body-parser"
 
 const debug = makeDebug("main")
 
@@ -14,6 +15,8 @@ async function main() {
   })
   await redisClient.connect()
   const app = express()
+
+  app.use(bodyParser.text({ type: "text/plain" }))
 
   app.post("/channel/:channelId/publish", async (req, res) => {
     const userId = req.headers["user-id"]

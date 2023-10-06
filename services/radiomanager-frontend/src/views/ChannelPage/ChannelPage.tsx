@@ -8,6 +8,7 @@ import { NowPlayingProvider } from '@/modules/NowPlaying'
 import { MediaUploaderComponent } from '@/modules/MediaUploader'
 import { useChannelPageStore } from './hooks/useChannelPageStore'
 import { ChannelControls } from './ChannelTracksList/ChannelControls'
+import { UserEventProvider } from '@/context/UserEventProvider'
 
 interface Props {
   readonly channelId: number
@@ -51,8 +52,10 @@ export const ChannelPage: React.FC<Props> = ({
 
 export const ChannelPageWithProviders: React.FC<Props> = (props) => {
   return (
-    <NowPlayingProvider channelId={props.channelId}>
-      <ChannelPage {...props} />
-    </NowPlayingProvider>
+    <UserEventProvider>
+      <NowPlayingProvider channelId={props.channelId}>
+        <ChannelPage {...props} />
+      </NowPlayingProvider>
+    </UserEventProvider>
   )
 }

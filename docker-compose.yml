@@ -131,6 +131,8 @@ services:
     working_dir: /code
     networks:
       - myownradio-dev
+    ports:
+      - "127.0.0.1:40006:8080"
     env_file:
       - services/radiomanager-pubsub-backend/.env
     labels:

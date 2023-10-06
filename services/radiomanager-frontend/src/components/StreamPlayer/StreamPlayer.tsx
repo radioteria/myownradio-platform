@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react'
+import makeDebug from 'debug'
 import { composeStreamMediaSource, CompositorEventType } from './Compositor'
 import { browserFeatures } from '@/features'
-import makeDebug from 'debug'
+import { useUserEvent } from '@/context/UserEventProvider'
+import { UserEventType } from '@/api/pubsub/UserEvents'
 
 const debug = makeDebug('StreamPlayer')
 
@@ -93,7 +95,21 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
 
       URL.revokeObjectURL(objectURL)
     }
-  }, [channelId])
+  }, [channelId, onTrackChanged])
+
+  const userEventSource = useUserEvent()
+
+  useEffect(() => {
+    const audioElement = audioElementRef.current
+    if (!audioElement) return
+
+    return userEventSource.subscribe((msg) => {
+      if (msg.eventType === UserEventType.RestartChannel && msg.channelId === channelId) {
+        // TODO Restart player
+        debug('Signal')
+      }
+    })
+  }, [channelId, userEventSource])
 
   return <audio ref={audioElementRef} />
 }

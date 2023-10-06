@@ -43,7 +43,13 @@ export const ChannelPage: React.FC<Props> = ({
             loadMoreTracks={channelPageStore.loadMoreTracks}
           />
         }
-        rightSidebar={<ChannelControls channelId={channelId} />}
+        rightSidebar={
+          <ChannelControls
+            channelId={channelId}
+            onPlayNext={channelPageStore.controls.playNext}
+            onPlayPrev={channelPageStore.controls.playPrev}
+          />
+        }
       />
       <MediaUploaderComponent targetChannelId={channelId} />
     </>

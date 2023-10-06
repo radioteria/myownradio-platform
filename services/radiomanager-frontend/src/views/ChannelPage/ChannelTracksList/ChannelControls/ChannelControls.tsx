@@ -8,9 +8,11 @@ import { StreamOverlay } from './StreamOverlay'
 
 interface Props {
   readonly channelId: number
+  readonly onPlayNext: () => void
+  readonly onPlayPrev: () => void
 }
 
-export const ChannelControls: React.FC<Props> = ({ channelId }) => {
+export const ChannelControls: React.FC<Props> = ({ channelId, onPlayNext, onPlayPrev }) => {
   const { nowPlaying } = useNowPlaying()
 
   return (
@@ -37,9 +39,14 @@ export const ChannelControls: React.FC<Props> = ({ channelId }) => {
       </div>
 
       <div className={'flex items-center justify-center gap-8'}>
-        <PrevIcon size={28} />
+        <button onClick={onPlayPrev}>
+          <PrevIcon size={28} />
+        </button>
+
         <PauseIcon size={48} />
-        <NextIcon size={28} />
+        <button onClick={onPlayNext}>
+          <NextIcon size={28} />
+        </button>
       </div>
     </div>
   )

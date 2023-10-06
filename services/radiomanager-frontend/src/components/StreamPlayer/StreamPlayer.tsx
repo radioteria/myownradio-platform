@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import makeDebug from 'debug'
 import { composeStreamMediaSource, CompositorEventType } from './Compositor'
 import { browserFeatures } from '@/features'
@@ -21,26 +21,61 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
   const bufferedTime = useRef(0)
 
   const trackTitlesQueueRef = useRef<{ title: string; pts: number }[]>([])
+  const currentObjectURL = useRef<string | null>(null)
+
+  const play = useCallback(() => {
+    if (currentObjectURL.current !== null) {
+      URL.revokeObjectURL(currentObjectURL.current)
+    }
+
+    if (!audioElementRef.current) return
+    const audioElement = audioElementRef.current
+
+    const mediaSource = composeStreamMediaSource(channelId, {
+      bufferAheadTime: BUFFER_AHEAD_TIME,
+      supportedCodecs: browserFeatures().supportedAudioCodecs,
+      onCompositorEvent: async (event) => {
+        switch (event.event) {
+          case CompositorEventType.Metadata:
+            trackTitlesQueueRef.current.push({ title: event.title, pts: event.pts })
+            break
+
+          default:
+        }
+      },
+    })
+
+    currentObjectURL.current = URL.createObjectURL(mediaSource)
+
+    audioElement.src = currentObjectURL.current
+    audioElement.play().catch((event) => debug('Unable to start stream playback', event))
+  }, [channelId])
+
+  const stop = useCallback(() => {
+    if (currentObjectURL.current !== null) {
+      URL.revokeObjectURL(currentObjectURL.current)
+    }
+
+    if (!audioElementRef.current) return
+    const audioElement = audioElementRef.current
+
+    audioElement.pause()
+    audioElement.load()
+    audioElement.removeAttribute('src')
+  }, [])
 
   useEffect(() => {
     const audioElement = audioElementRef.current
 
     if (!audioElement) return
 
-    const resetTime = () => {
-      bufferedTime.current = 0
-      currentTime.current = 0
-    }
-
     const handleEnded = () => {
-      resetTime()
       audioElement
         .play()
         .catch((event) => debug('Unable to restart stream playback on ended', event))
     }
 
     const handleError = (errorEvent: Event) => {
-      resetTime()
       audioElement
         .play()
         .catch((event) => debug('Unable to restart stream playback on error', errorEvent, event))
@@ -64,38 +99,16 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
     audioElement.addEventListener('error', handleError)
     audioElement.addEventListener('timeupdate', handleTimeUpdate)
 
-    const mediaSource = composeStreamMediaSource(channelId, {
-      bufferAheadTime: BUFFER_AHEAD_TIME,
-      supportedCodecs: browserFeatures().supportedAudioCodecs,
-      onCompositorEvent: async (event) => {
-        switch (event.event) {
-          case CompositorEventType.Metadata:
-            trackTitlesQueueRef.current.push({ title: event.title, pts: event.pts })
-            break
-
-          default:
-        }
-      },
-    })
-    const objectURL = URL.createObjectURL(mediaSource)
-
-    audioElement.src = objectURL
-    audioElement.play().catch((event) => debug('Unable to restart stream playback', event))
+    play()
 
     return () => {
+      stop()
+
       audioElement.removeEventListener('ended', handleEnded)
       audioElement.removeEventListener('error', handleError)
       audioElement.removeEventListener('timeupdate', handleTimeUpdate)
-
-      resetTime()
-
-      audioElement.pause()
-      audioElement.load()
-      audioElement.removeAttribute('src')
-
-      URL.revokeObjectURL(objectURL)
     }
-  }, [channelId, onTrackChanged])
+  }, [channelId, onTrackChanged, stop, play])
 
   const userEventSource = useUserEvent()
 
@@ -105,11 +118,11 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
 
     return userEventSource.subscribe((msg) => {
       if (msg.eventType === UserEventType.RestartChannel && msg.channelId === channelId) {
-        // TODO Restart player
-        debug('Signal')
+        debug('Restarting channel due to user event')
+        play()
       }
     })
-  }, [channelId, userEventSource])
+  }, [channelId, userEventSource, play])
 
   return <audio ref={audioElementRef} />
 }

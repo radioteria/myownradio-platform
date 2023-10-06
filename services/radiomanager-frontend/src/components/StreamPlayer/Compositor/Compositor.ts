@@ -120,7 +120,7 @@ export const composeStreamMediaSource = (channelId: number, opts: Options) => {
   }
 
   const handleSourceClose = () => {
-    debug('Media Source closed')
+    debug('MediaSource closed')
     abortController.abort()
   }
 

@@ -74,3 +74,17 @@ export const getChannelTracksPage = async (channelId: number, opts: PageRequestO
 
   return GetChannelTracksPageResponseSchema.parse(json)
 }
+
+export const playNext = async (channelId: number): Promise<void> => {
+  await fetch(`${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/controls/play-next`, {
+    method: 'post',
+    credentials: 'include',
+  })
+}
+
+export const playPrev = async (channelId: number): Promise<void> => {
+  await fetch(`${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/controls/play-prev`, {
+    method: 'post',
+    credentials: 'include',
+  })
+}

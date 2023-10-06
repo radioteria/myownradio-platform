@@ -1,5 +1,6 @@
 use crate::data_structures::{OrderId, StreamId, UserId};
 use crate::http_server::response::Response;
+use crate::pubsub_client::PubsubClient;
 use crate::services::StreamServiceFactory;
 use actix_web::{web, HttpResponse};
 

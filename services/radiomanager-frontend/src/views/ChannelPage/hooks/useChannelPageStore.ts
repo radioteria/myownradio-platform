@@ -1,15 +1,18 @@
 import { useCallback, useState } from 'react'
+import makeDebug from 'debug'
 import {
   toChannelTrackEntry,
   toChannelTrackEntry2,
   ChannelTrackEntry,
 } from '@/views/ChannelPage/ChannelTracksList'
 import { deleteTracksById, removeTracksFromChannelById } from '@/api'
-import { getChannelTracksPage } from '@/api/radiomanager'
+import { getChannelTracksPage, playNext, playPrev } from '@/api/radiomanager'
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { useHandleChannelLastUploadedTrack } from './useHandleChannelLastUploadedTrack'
 
 import type { UserChannelTrack } from '@/api'
+
+const debug = makeDebug('ChannelPageStore')
 
 export const useChannelPageStore = (
   channelId: number,
@@ -89,7 +92,17 @@ export const useChannelPageStore = (
     [channelId],
   )
 
+  const controls = {
+    playNext: () => {
+      playNext(channelId).catch((error) => debug('Unable to play next track: %s', error))
+    },
+    playPrev: () => {
+      playPrev(channelId).catch((error) => debug('Unable to play next track: %s', error))
+    },
+  }
+
   return {
+    controls,
     trackEntries,
     loadMoreTracks,
     handleDeletingTracks,

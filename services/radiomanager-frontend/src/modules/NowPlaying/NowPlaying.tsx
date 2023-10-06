@@ -1,5 +1,7 @@
 import { createContext, ReactNode, useContext, useEffect, useReducer, useState } from 'react'
 import { NowPlaying, getNowPlaying } from '@/api'
+import { useUserEvent } from '@/context/UserEventProvider'
+import { UserEventType } from '@/api/pubsub/UserEvents'
 
 export const NowPlayingContext = createContext<{
   readonly updatedAt: Date
@@ -19,6 +21,15 @@ export const NowPlayingProvider: React.FC<Props> = ({ channelId, children }) => 
   const [nowPlaying, setNowPlaying] = useState<null | NowPlaying>(null)
   const [refreshed, refresh] = useReducer((x) => x + 1, 0)
   const [updatedAt, setUpdatedAt] = useState(new Date())
+
+  const userEventSource = useUserEvent()
+  useEffect(() => {
+    return userEventSource.subscribe((event) => {
+      if (event.eventType === UserEventType.RestartChannel && event.channelId === channelId) {
+        refresh()
+      }
+    })
+  }, [refresh, channelId, userEventSource])
 
   useEffect(() => {
     let timeoutId: null | number = null

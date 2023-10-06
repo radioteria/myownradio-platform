@@ -84,6 +84,12 @@ pub(crate) struct RadioStreamerConfig {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+pub(crate) struct PubsubBackendConfig {
+    #[serde(rename = "pubsub_backend_endpoint")]
+    pub(crate) endpoint: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub(crate) struct Config {
     #[serde(default = "default_bind_address")]
     pub(crate) bind_address: String,
@@ -101,6 +107,8 @@ pub(crate) struct Config {
     pub(crate) mysql: MySqlConfig,
     #[serde(flatten)]
     pub(crate) radio_streamer: RadioStreamerConfig,
+    #[serde(flatten)]
+    pub(crate) pubsub: PubsubBackendConfig,
     pub(crate) file_server_endpoint: String,
     pub(crate) file_system_root_path: String,
 }

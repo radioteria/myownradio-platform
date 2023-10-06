@@ -23,41 +23,40 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
   const trackTitlesQueueRef = useRef<{ title: string; pts: number }[]>([])
   const currentObjectURL = useRef<string | null>(null)
 
-  const play = useCallback(() => {
+  const play = useCallback(
+    (audioElement: HTMLAudioElement) => {
+      const mediaSource = composeStreamMediaSource(channelId, {
+        bufferAheadTime: BUFFER_AHEAD_TIME,
+        supportedCodecs: browserFeatures().supportedAudioCodecs,
+        onCompositorEvent: async (event) => {
+          switch (event.event) {
+            case CompositorEventType.Metadata:
+              trackTitlesQueueRef.current.push({ title: event.title, pts: event.pts })
+              break
+
+            default:
+          }
+        },
+      })
+
+      const newObjectURL = URL.createObjectURL(mediaSource)
+
+      audioElement.src = newObjectURL
+      audioElement.play().catch((event) => debug('Unable to start stream playback', event))
+
+      if (currentObjectURL.current !== null) {
+        URL.revokeObjectURL(currentObjectURL.current)
+      }
+
+      currentObjectURL.current = newObjectURL
+    },
+    [channelId],
+  )
+
+  const stop = useCallback((audioElement: HTMLAudioElement) => {
     if (currentObjectURL.current !== null) {
       URL.revokeObjectURL(currentObjectURL.current)
     }
-
-    if (!audioElementRef.current) return
-    const audioElement = audioElementRef.current
-
-    const mediaSource = composeStreamMediaSource(channelId, {
-      bufferAheadTime: BUFFER_AHEAD_TIME,
-      supportedCodecs: browserFeatures().supportedAudioCodecs,
-      onCompositorEvent: async (event) => {
-        switch (event.event) {
-          case CompositorEventType.Metadata:
-            trackTitlesQueueRef.current.push({ title: event.title, pts: event.pts })
-            break
-
-          default:
-        }
-      },
-    })
-
-    currentObjectURL.current = URL.createObjectURL(mediaSource)
-
-    audioElement.src = currentObjectURL.current
-    audioElement.play().catch((event) => debug('Unable to start stream playback', event))
-  }, [channelId])
-
-  const stop = useCallback(() => {
-    if (currentObjectURL.current !== null) {
-      URL.revokeObjectURL(currentObjectURL.current)
-    }
-
-    if (!audioElementRef.current) return
-    const audioElement = audioElementRef.current
 
     audioElement.pause()
     audioElement.load()
@@ -99,10 +98,10 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
     audioElement.addEventListener('error', handleError)
     audioElement.addEventListener('timeupdate', handleTimeUpdate)
 
-    play()
+    play(audioElement)
 
     return () => {
-      stop()
+      stop(audioElement)
 
       audioElement.removeEventListener('ended', handleEnded)
       audioElement.removeEventListener('error', handleError)
@@ -119,7 +118,7 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
     return userEventSource.subscribe((msg) => {
       if (msg.eventType === UserEventType.RestartChannel && msg.channelId === channelId) {
         debug('Restarting channel due to user event')
-        play()
+        play(audioElement)
       }
     })
   }, [channelId, userEventSource, play])

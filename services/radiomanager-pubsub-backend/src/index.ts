@@ -16,7 +16,7 @@ async function main() {
   await redisClient.connect()
   const app = express()
 
-  app.use(bodyParser.text({ type: "text/plain" }))
+  app.use(bodyParser.json())
 
   app.post("/channel/:channelId/publish", async (req, res) => {
     const userId = req.headers["user-id"]
@@ -28,7 +28,7 @@ async function main() {
 
     try {
       const redisChannel = `${userId}_${channelId}`
-      await redisClient.publish(redisChannel, req.body)
+      await redisClient.publish(redisChannel, JSON.stringify(req.body))
 
       res.status(200).send("OK")
     } catch (e) {

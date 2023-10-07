@@ -66,7 +66,10 @@ export const composeStreamMediaSource = (channelId: number, opts: Options) => {
           title: nowPlaying.currentTrack.title,
           pts: sourceBuffer?.timestampOffset ?? 0,
         })
-        if (nowPlaying.playbackStatus !== 1) break
+        if (nowPlaying.playbackStatus !== 1) {
+          debug('Holding the stream because the channel is paused')
+          break
+        }
         const { stream, contentType } = await getTrackTranscodeStream(
           nowPlaying.currentTrack.trackId,
           nowPlaying.currentTrack.offset,

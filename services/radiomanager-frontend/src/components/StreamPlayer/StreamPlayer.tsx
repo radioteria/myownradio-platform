@@ -23,6 +23,17 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
   const trackTitlesQueueRef = useRef<{ title: string; pts: number }[]>([])
   const currentObjectURL = useRef<string | null>(null)
 
+  const updateTitle = useCallback(
+    (audioElement: HTMLAudioElement) => {
+      const firstTitleInQueue = trackTitlesQueueRef.current.at(0)
+      if (firstTitleInQueue && firstTitleInQueue.pts <= audioElement.currentTime) {
+        onTrackChanged?.(firstTitleInQueue.title)
+        trackTitlesQueueRef.current.shift()
+      }
+    },
+    [onTrackChanged],
+  )
+
   const play = useCallback(
     (audioElement: HTMLAudioElement) => {
       const mediaSource = composeStreamMediaSource(channelId, {
@@ -32,6 +43,7 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
           switch (event.event) {
             case CompositorEventType.Metadata:
               trackTitlesQueueRef.current.push({ title: event.title, pts: event.pts })
+              updateTitle(audioElement)
               break
 
             default:
@@ -50,7 +62,7 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
 
       currentObjectURL.current = newObjectURL
     },
-    [channelId],
+    [channelId, updateTitle],
   )
 
   const stop = useCallback((audioElement: HTMLAudioElement) => {
@@ -83,11 +95,7 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
     const handleTimeUpdate = () => {
       currentTime.current = audioElement.currentTime
 
-      const firstTitleInQueue = trackTitlesQueueRef.current.at(0)
-      if (firstTitleInQueue && firstTitleInQueue.pts <= audioElement.currentTime) {
-        onTrackChanged?.(firstTitleInQueue.title)
-        trackTitlesQueueRef.current.shift()
-      }
+      updateTitle(audioElement)
 
       if (audioElement.buffered.length > 0) {
         bufferedTime.current = audioElement.buffered.end(0)

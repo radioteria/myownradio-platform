@@ -25,7 +25,7 @@ interface Props<Item extends TrackItem> {
     signal: AbortSignal,
   ) => Promise<void>
   readonly renderChannelControls?: React.ReactNode
-  readonly onTrackItemDoubleClick: (itemIndex: number, event: React.MouseEvent) => void
+  readonly onTrackItemDoubleClick?: (itemIndex: number, event: React.MouseEvent) => void
 }
 
 export function TrackList<Item extends TrackItem>({
@@ -95,7 +95,7 @@ export function TrackList<Item extends TrackItem>({
               isMainSelected={selector.cursor === itemIndex}
               onSelect={(event) => handleSelectItem(itemIndex, event)}
               onThreeDotsClick={(event) => handleTreeDotsClick(itemIndex, event)}
-              onDoubleClick={(event) => onTrackItemDoubleClick(itemIndex, event)}
+              onDoubleClick={(event) => onTrackItemDoubleClick?.(itemIndex, event)}
             />
           )}
           loadMoreListItems={loadMoreTrackItems}

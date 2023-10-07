@@ -15,10 +15,23 @@ interface Props {
   onSelect: (event: React.MouseEvent<HTMLElement>) => void
 
   onThreeDotsClick: (event: React.MouseEvent<HTMLElement>) => void
+  onDoubleClick: (event: React.MouseEvent<HTMLElement>) => void
 }
 
 export const TrackListItem = React.forwardRef<HTMLDivElement, Props>(
-  ({ track, currentTrack, index, isSelected, isMainSelected, onSelect, onThreeDotsClick }, ref) => {
+  (
+    {
+      track,
+      currentTrack,
+      index,
+      isSelected,
+      isMainSelected,
+      onSelect,
+      onThreeDotsClick,
+      onDoubleClick,
+    },
+    ref,
+  ) => {
     const isCurrentTrack = currentTrack?.index === index
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -38,6 +51,7 @@ export const TrackListItem = React.forwardRef<HTMLDivElement, Props>(
           { 'bg-morblue-600 text-gray-300': isSelected },
         ])}
         onClick={handleClick}
+        onDoubleClick={onDoubleClick}
       >
         <div className="flex overflow-hidden items-center justify-end">
           {isCurrentTrack ? <GrowBar size={12} /> : <>{index + 1}</>}

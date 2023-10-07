@@ -14,6 +14,7 @@ import {
   pause,
   stop,
   seek,
+  playFrom,
 } from '@/api/radiomanager'
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { useHandleChannelLastUploadedTrack } from './useHandleChannelLastUploadedTrack'
@@ -118,6 +119,11 @@ export const useChannelPageStore = (
     },
     seek: (position: number) => {
       seek(channelId, position).catch((error) => debug('Unable to seek: %s', error))
+    },
+    playFromIndex: (index: number) => {
+      playFrom(channelId, index + 1).catch((error) =>
+        debug('Unable to play track from index = %d: %s', index, error),
+      )
     },
   }
 

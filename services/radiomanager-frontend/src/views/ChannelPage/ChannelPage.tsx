@@ -41,6 +41,7 @@ export const ChannelPage: React.FC<Props> = ({
             onDeleteTracks={channelPageStore.handleDeletingTracks}
             onRemoveTracksFromChannel={channelPageStore.handleRemovingTracksFromChannel}
             loadMoreTracks={channelPageStore.loadMoreTracks}
+            onTrackItemDoubleClick={channelPageStore.controls.playFromIndex}
           />
         }
         rightSidebar={

@@ -3,9 +3,10 @@ import React from 'react'
 interface Props {
   position: number
   duration: number
+  withProgressing: boolean
 }
 
-export const ProgressBar: React.FC<Props> = ({ position, duration }) => {
+export const ProgressBar: React.FC<Props> = ({ position, duration, withProgressing }) => {
   const animationDuration = duration - position
   const initialScale = (1 / duration) * position
 
@@ -29,6 +30,7 @@ export const ProgressBar: React.FC<Props> = ({ position, duration }) => {
           animation: 'scale',
           animationDuration: `${animationDuration}ms`,
           animationTimingFunction: 'linear',
+          animationPlayState: withProgressing ? 'running' : 'paused',
         }}
       />
     </div>

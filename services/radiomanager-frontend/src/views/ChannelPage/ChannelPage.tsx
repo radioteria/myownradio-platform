@@ -48,6 +48,9 @@ export const ChannelPage: React.FC<Props> = ({
             channelId={channelId}
             onPlayNext={channelPageStore.controls.playNext}
             onPlayPrev={channelPageStore.controls.playPrev}
+            onPlay={channelPageStore.controls.play}
+            onPause={channelPageStore.controls.pause}
+            onStop={channelPageStore.controls.stop}
           />
         }
       />

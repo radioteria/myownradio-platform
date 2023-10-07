@@ -10,9 +10,19 @@ interface Props {
   readonly channelId: number
   readonly onPlayNext: () => void
   readonly onPlayPrev: () => void
+  readonly onPlay: () => void
+  readonly onPause: () => void
+  readonly onStop: () => void
 }
 
-export const ChannelControls: React.FC<Props> = ({ channelId, onPlayNext, onPlayPrev }) => {
+export const ChannelControls: React.FC<Props> = ({
+  channelId,
+  onPlayNext,
+  onPlayPrev,
+  onPlay,
+  onPause,
+  onStop,
+}) => {
   const { nowPlaying } = useNowPlaying()
 
   return (
@@ -28,10 +38,12 @@ export const ChannelControls: React.FC<Props> = ({ channelId, onPlayNext, onPlay
           <TimePosition
             position={nowPlaying?.currentTrack.offset}
             duration={nowPlaying?.currentTrack.duration}
+            withProgressing={nowPlaying?.playbackStatus === 1}
             progressBar={
               <ProgressBar
                 position={nowPlaying?.currentTrack.offset}
                 duration={nowPlaying?.currentTrack.duration}
+                withProgressing={nowPlaying?.playbackStatus === 1}
               />
             }
           />
@@ -43,7 +55,20 @@ export const ChannelControls: React.FC<Props> = ({ channelId, onPlayNext, onPlay
           <PrevIcon size={28} />
         </button>
 
-        <PauseIcon size={48} />
+        {!nowPlaying ? (
+          <button onClick={onPlay}>
+            <PauseIcon size={48} />
+          </button>
+        ) : nowPlaying.playbackStatus === 1 ? (
+          <button onClick={onPause}>
+            <PauseIcon size={48} />
+          </button>
+        ) : (
+          <button onClick={onPlay}>
+            <PauseIcon size={48} />
+          </button>
+        )}
+
         <button onClick={onPlayNext}>
           <NextIcon size={28} />
         </button>

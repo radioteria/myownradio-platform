@@ -152,6 +152,7 @@ export const NowPlayingResponseSchema = z.object({
         })
         .transform((v) => camelKeys(v)),
       playlist_position: z.number(),
+      playback_status: z.number(),
       time: z.number(),
     })
     .transform((v) => camelKeys(v)),

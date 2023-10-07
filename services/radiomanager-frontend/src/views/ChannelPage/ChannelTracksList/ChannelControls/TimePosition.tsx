@@ -4,14 +4,22 @@ import { Duration } from '@/components/shared/Duration'
 interface Props {
   position: number
   duration: number
+  withProgressing: boolean
   progressBar: ReactNode
 }
 
-export const TimePosition: React.FC<Props> = ({ position, duration, progressBar }) => {
+export const TimePosition: React.FC<Props> = ({
+  position,
+  duration,
+  withProgressing,
+  progressBar,
+}) => {
   const updatedAt = useMemo(() => Date.now(), [position])
   const [positionProgress, setPositionProgress] = useState(position)
 
   useEffect(() => {
+    if (!withProgressing) return
+
     const intervalId = window.setInterval(() => {
       setPositionProgress(position + (Date.now() - updatedAt))
     })
@@ -19,7 +27,7 @@ export const TimePosition: React.FC<Props> = ({ position, duration, progressBar 
     return () => {
       window.clearInterval(intervalId)
     }
-  }, [updatedAt, position])
+  }, [updatedAt, position, withProgressing])
 
   return (
     <div className={'flex w-full items-center'}>

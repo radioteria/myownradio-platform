@@ -35,7 +35,7 @@ pub(crate) fn positive_mod(number: i64, by: i64) -> i64 {
     let mut number = number;
 
     while number.is_negative() {
-        number *= by;
+        number += by;
     }
 
     number % by

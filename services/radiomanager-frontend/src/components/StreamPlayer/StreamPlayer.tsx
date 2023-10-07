@@ -15,7 +15,20 @@ interface Props {
 }
 
 export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => {
-  const audioElementRef = useRef<HTMLAudioElement>(null)
+  const audioElement1Ref = useRef<HTMLAudioElement>(null)
+  const audioElement2Ref = useRef<HTMLAudioElement>(null)
+  const activeAudioElementIndexRef = useRef(0)
+  const getActiveAudioElement = useCallback(
+    () =>
+      activeAudioElementIndexRef.current === 0
+        ? audioElement1Ref.current
+        : audioElement2Ref.current,
+    [],
+  )
+  const toggleAudioElements = useCallback(() => {
+    activeAudioElementIndexRef.current += 1
+    activeAudioElementIndexRef.current %= 2
+  }, [])
 
   const currentTime = useRef(0)
   const bufferedTime = useRef(0)
@@ -34,15 +47,54 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
     [onTrackChanged],
   )
 
-  const stop = useCallback((audioElement: HTMLAudioElement) => {
-    if (currentObjectURL.current !== null) {
-      URL.revokeObjectURL(currentObjectURL.current)
-    }
+  const handleEnded = useCallback(() => {
+    const audioElement = getActiveAudioElement()
+    if (!audioElement) return
 
-    audioElement.pause()
-    audioElement.load()
-    audioElement.removeAttribute('src')
-  }, [])
+    audioElement.play().catch((event) => debug('Unable to restart stream playback on ended', event))
+  }, [getActiveAudioElement])
+
+  const handleError = useCallback(
+    (errorEvent: ErrorEvent) => {
+      const audioElement = getActiveAudioElement()
+      if (!audioElement) return
+
+      audioElement
+        .play()
+        .catch((event) => debug('Unable to restart stream playback on error', errorEvent, event))
+    },
+    [getActiveAudioElement],
+  )
+
+  const handleTimeUpdate = useCallback(() => {
+    const audioElement = getActiveAudioElement()
+    if (!audioElement) return
+
+    currentTime.current = audioElement.currentTime
+
+    updateTitle(audioElement)
+
+    if (audioElement.buffered.length > 0) {
+      bufferedTime.current = audioElement.buffered.end(0)
+    }
+  }, [updateTitle, getActiveAudioElement])
+
+  const stop = useCallback(
+    (audioElement: HTMLAudioElement) => {
+      audioElement.removeEventListener('ended', handleEnded)
+      audioElement.removeEventListener('error', handleError)
+      audioElement.removeEventListener('timeupdate', handleTimeUpdate)
+
+      if (currentObjectURL.current !== null) {
+        URL.revokeObjectURL(currentObjectURL.current)
+      }
+
+      audioElement.pause()
+      audioElement.load()
+      audioElement.removeAttribute('src')
+    },
+    [handleError, handleEnded, handleTimeUpdate],
+  )
 
   const play = useCallback(
     (audioElement: HTMLAudioElement) => {
@@ -57,7 +109,8 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
               break
 
             case CompositorEventType.Pause:
-              stop(audioElement)
+              audioElement1Ref.current && stop(audioElement1Ref.current)
+              audioElement2Ref.current && stop(audioElement2Ref.current)
               break
 
             default:
@@ -66,6 +119,10 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
       })
 
       const newObjectURL = URL.createObjectURL(mediaSource)
+
+      audioElement.addEventListener('ended', handleEnded)
+      audioElement.addEventListener('error', handleError)
+      audioElement.addEventListener('timeupdate', handleTimeUpdate)
 
       audioElement.src = newObjectURL
       audioElement.play().catch((event) => debug('Unable to start stream playback', event))
@@ -76,64 +133,49 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
 
       currentObjectURL.current = newObjectURL
     },
-    [channelId, updateTitle, stop],
+    [channelId, updateTitle, stop, handleError, handleEnded, handleTimeUpdate],
   )
 
   useEffect(() => {
-    const audioElement = audioElementRef.current
-
+    const audioElement = getActiveAudioElement()
     if (!audioElement) return
-
-    const handleEnded = () => {
-      audioElement
-        .play()
-        .catch((event) => debug('Unable to restart stream playback on ended', event))
-    }
-
-    const handleError = (errorEvent: Event) => {
-      audioElement
-        .play()
-        .catch((event) => debug('Unable to restart stream playback on error', errorEvent, event))
-    }
-
-    const handleTimeUpdate = () => {
-      currentTime.current = audioElement.currentTime
-
-      updateTitle(audioElement)
-
-      if (audioElement.buffered.length > 0) {
-        bufferedTime.current = audioElement.buffered.end(0)
-      }
-    }
-
-    audioElement.addEventListener('ended', handleEnded)
-    audioElement.addEventListener('error', handleError)
-    audioElement.addEventListener('timeupdate', handleTimeUpdate)
 
     play(audioElement)
 
     return () => {
       stop(audioElement)
-
-      audioElement.removeEventListener('ended', handleEnded)
-      audioElement.removeEventListener('error', handleError)
-      audioElement.removeEventListener('timeupdate', handleTimeUpdate)
     }
-  }, [channelId, onTrackChanged, stop, play])
+  }, [channelId, onTrackChanged, stop, play, getActiveAudioElement])
+
+  useEffect(() => {
+    const audioElement1 = audioElement1Ref.current
+    const audioElement2 = audioElement2Ref.current
+    if (!audioElement1 || !audioElement2) return
+
+    audioElement1.addEventListener('playing', () => stop(audioElement2))
+    audioElement2.addEventListener('playing', () => stop(audioElement1))
+  }, [stop])
 
   const userEventSource = useUserEvent()
 
   useEffect(() => {
-    const audioElement = audioElementRef.current
-    if (!audioElement) return
-
     return userEventSource.subscribe((msg) => {
       if (msg.eventType === UserEventType.RestartChannel && msg.channelId === channelId) {
         debug('Restarting channel due to user event')
-        play(audioElement)
+        toggleAudioElements()
+
+        const newActiveAudioElement = getActiveAudioElement()
+        if (newActiveAudioElement) {
+          play(newActiveAudioElement)
+        }
       }
     })
-  }, [channelId, userEventSource, play])
+  }, [channelId, userEventSource, play, getActiveAudioElement, toggleAudioElements])
 
-  return <audio ref={audioElementRef} />
+  return (
+    <>
+      <audio ref={audioElement1Ref} />
+      <audio ref={audioElement2Ref} />
+    </>
+  )
 }

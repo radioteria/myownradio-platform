@@ -30,6 +30,19 @@ pub(crate) async fn get_now_playing(
             &stream_row.started,
             &stream_row.started_from,
         ) {
+            (StreamStatus::Paused, Some(_), Some(started_from)) => {
+                let playlist_duration =
+                    get_stream_playlist_duration(&mut connection, &stream_id).await?;
+                let playlist_time_position =
+                    positive_mod(*started_from, playlist_duration.num_milliseconds());
+
+                get_current_and_next_stream_track_at_time_offset(
+                    &mut connection,
+                    &stream_id,
+                    &Duration::milliseconds(playlist_time_position),
+                )
+                .await?
+            }
             (StreamStatus::Playing, Some(started_at), Some(started_from)) => {
                 let time_millis = time.duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
 

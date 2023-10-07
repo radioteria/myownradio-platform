@@ -109,3 +109,13 @@ export const stop = async (channelId: number): Promise<void> => {
     credentials: 'include',
   })
 }
+
+export const seek = async (channelId: number, position: number): Promise<void> => {
+  await fetch(
+    `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/controls/seek/${position}`,
+    {
+      method: 'post',
+      credentials: 'include',
+    },
+  )
+}

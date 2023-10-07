@@ -15,6 +15,7 @@ interface Props {
   readonly onPlay: () => void
   readonly onPause: () => void
   readonly onStop: () => void
+  readonly onSeek: (position: number) => void
 }
 
 export const ChannelControls: React.FC<Props> = ({
@@ -24,6 +25,7 @@ export const ChannelControls: React.FC<Props> = ({
   onPlay,
   onPause,
   onStop,
+  onSeek,
 }) => {
   const { nowPlaying } = useNowPlaying()
 
@@ -46,6 +48,7 @@ export const ChannelControls: React.FC<Props> = ({
                 position={nowPlaying?.currentTrack.offset}
                 duration={nowPlaying?.currentTrack.duration}
                 withProgressing={nowPlaying?.playbackStatus === 1}
+                onSeek={onSeek}
               />
             }
           />

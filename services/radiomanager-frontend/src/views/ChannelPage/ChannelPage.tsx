@@ -51,6 +51,7 @@ export const ChannelPage: React.FC<Props> = ({
             onPlay={channelPageStore.controls.play}
             onPause={channelPageStore.controls.pause}
             onStop={channelPageStore.controls.stop}
+            onSeek={channelPageStore.controls.seek}
           />
         }
       />

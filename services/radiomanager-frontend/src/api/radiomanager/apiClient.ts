@@ -88,3 +88,24 @@ export const playPrev = async (channelId: number): Promise<void> => {
     credentials: 'include',
   })
 }
+
+export const play = async (channelId: number): Promise<void> => {
+  await fetch(`${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/controls/play`, {
+    method: 'post',
+    credentials: 'include',
+  })
+}
+
+export const pause = async (channelId: number): Promise<void> => {
+  await fetch(`${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/controls/pause`, {
+    method: 'post',
+    credentials: 'include',
+  })
+}
+
+export const stop = async (channelId: number): Promise<void> => {
+  await fetch(`${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/controls/stop`, {
+    method: 'post',
+    credentials: 'include',
+  })
+}

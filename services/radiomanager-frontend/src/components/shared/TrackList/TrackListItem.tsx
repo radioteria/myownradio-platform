@@ -32,8 +32,9 @@ export const TrackListItem = React.forwardRef<HTMLDivElement, Props>(
         ref={ref}
         key={track.trackId}
         className={cn([
-          'grid gap-4 grid-cols-playlist-item p-4 text-morblue-100',
+          'grid gap-4 grid-cols-playlist-item p-4',
           'border-gray-800 relative cursor-pointer select-none',
+          isCurrentTrack ? 'text-gray-0 font-semibold' : 'text-morblue-100',
           { 'bg-morblue-600 text-gray-300': isSelected },
         ])}
         onClick={handleClick}

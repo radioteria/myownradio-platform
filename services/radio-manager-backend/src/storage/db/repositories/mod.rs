@@ -62,6 +62,7 @@ pub(crate) struct LinkRow {
 pub(crate) enum StreamStatus {
     Stopped = 0,
     Playing = 1,
+    Paused = 2,
 }
 
 #[allow(dead_code)]

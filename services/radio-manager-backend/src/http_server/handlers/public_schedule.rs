@@ -117,11 +117,11 @@ pub(crate) async fn get_now_playing(
     };
 
     let time = UNIX_EPOCH + Duration::from_millis(params.timestamp);
-    let now_playing = match services::get_now_playing(time, &stream_id, &mut connection).await? {
-        Some(now_playing) => now_playing,
-        None => return Ok(HttpResponse::Conflict().finish()),
-    };
-    let (current_track, next_track, current_position) = now_playing;
+    let (current_track, next_track, current_position, status) =
+        match services::get_now_playing(&time, &stream_id, &mut connection).await? {
+            Some(now_playing) => now_playing,
+            None => return Ok(HttpResponse::Conflict().finish()),
+        };
 
     Ok(HttpResponse::Ok().json(serde_json::json!({
         "code": 1i32,
@@ -129,6 +129,7 @@ pub(crate) async fn get_now_playing(
         "data": {
             "time": params.timestamp,
             "playlist_position": current_track.link.t_order,
+            "playback_status": status,
             "current_track": {
                 "offset": current_position.num_milliseconds(),
                 "title": get_artist_and_title(&current_track),

@@ -9,13 +9,18 @@ const debug = makeDebug('compositor')
 
 export enum CompositorEventType {
   Metadata,
+  Pause,
 }
 
-type CompositorEvent = {
-  readonly event: CompositorEventType.Metadata
-  readonly title: string
-  readonly pts: number
-}
+type CompositorEvent =
+  | {
+      readonly event: CompositorEventType.Metadata
+      readonly title: string
+      readonly pts: number
+    }
+  | {
+      readonly event: CompositorEventType.Pause
+    }
 
 interface Options {
   readonly bufferAheadTime: number
@@ -53,6 +58,7 @@ export const composeStreamMediaSource = (channelId: number, opts: Options) => {
 
       while (true) {
         const nowPlaying = await getNowPlaying(channelId, streamTimeMillis)
+
         const remainder = nowPlaying.currentTrack.duration - nowPlaying.currentTrack.offset
         debug(
           'Now playing = %s (position = %d, remainder = %d)',
@@ -65,6 +71,12 @@ export const composeStreamMediaSource = (channelId: number, opts: Options) => {
           title: nowPlaying.currentTrack.title,
           pts: sourceBuffer?.timestampOffset ?? 0,
         })
+        if (nowPlaying.playbackStatus !== 1) {
+          await opts.onCompositorEvent?.({
+            event: CompositorEventType.Pause,
+          })
+          break
+        }
         const { stream, contentType } = await getTrackTranscodeStream(
           nowPlaying.currentTrack.trackId,
           nowPlaying.currentTrack.offset,

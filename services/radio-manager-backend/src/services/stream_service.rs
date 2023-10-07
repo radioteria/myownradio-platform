@@ -392,7 +392,7 @@ impl StreamService {
                 .await?;
             }
             // If it was on pause, then play.
-            Some((_, _, time_offset, StreamStatus::Paused)) => {
+            Some((curr, _, position, StreamStatus::Paused)) => {
                 let started_at = now.duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
 
                 update_stream_status(
@@ -400,7 +400,7 @@ impl StreamService {
                     &self.stream_id,
                     &StreamStatus::Playing,
                     &Some(started_at),
-                    &Some(time_offset.num_milliseconds()),
+                    &Some(curr.link.time_offset + position.num_milliseconds()),
                 )
                 .await?;
             }
@@ -432,7 +432,7 @@ impl StreamService {
                 .await?;
             }
             // If it was playing, then pause.
-            Some((_, _, time_offset, StreamStatus::Playing)) => {
+            Some((curr, _, position, StreamStatus::Playing)) => {
                 let started_at = now.duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
 
                 update_stream_status(
@@ -440,7 +440,7 @@ impl StreamService {
                     &self.stream_id,
                     &StreamStatus::Paused,
                     &Some(started_at),
-                    &Some(time_offset.num_milliseconds()),
+                    &Some(curr.link.time_offset + position.num_milliseconds()),
                 )
                 .await?;
             }

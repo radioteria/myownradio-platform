@@ -32,7 +32,7 @@ export const TimePosition: React.FC<Props> = ({
   return (
     <div className={'flex w-full items-center'}>
       <div className={'flex-shrink-0 w-7 text-right'}>
-        <Duration millis={positionProgress} />
+        <Duration millis={withProgressing ? positionProgress : position} />
       </div>
       {progressBar}
       <div className={'flex-shrink-0 w-7 text-left'}>

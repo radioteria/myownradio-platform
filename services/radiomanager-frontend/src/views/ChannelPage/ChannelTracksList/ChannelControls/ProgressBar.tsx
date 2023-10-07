@@ -4,14 +4,26 @@ interface Props {
   position: number
   duration: number
   withProgressing: boolean
+  onSeek: (position: number) => void
 }
 
-export const ProgressBar: React.FC<Props> = ({ position, duration, withProgressing }) => {
+export const ProgressBar: React.FC<Props> = ({ position, duration, withProgressing, onSeek }) => {
   const animationDuration = duration - position
   const initialScale = (1 / duration) * position
 
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const seekPosition =
+      (duration / event.currentTarget.clientWidth) *
+      (event.clientX - event.currentTarget.offsetLeft)
+
+    onSeek(Math.floor(seekPosition))
+  }
+
   return (
-    <div className={'h-2 bg-gray-400 rounded-md relative overflow-hidden flex-1 mx-2'}>
+    <div
+      className={'h-2 bg-gray-400 rounded-md relative overflow-hidden flex-1 mx-2 cursor-pointer'}
+      onClick={handleClick}
+    >
       <style jsx>{`
         @keyframes scale {
           0% {

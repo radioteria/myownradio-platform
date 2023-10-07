@@ -6,7 +6,15 @@ import {
   ChannelTrackEntry,
 } from '@/views/ChannelPage/ChannelTracksList'
 import { deleteTracksById, removeTracksFromChannelById } from '@/api'
-import { getChannelTracksPage, playNext, playPrev, play, pause, stop } from '@/api/radiomanager'
+import {
+  getChannelTracksPage,
+  playNext,
+  playPrev,
+  play,
+  pause,
+  stop,
+  seek,
+} from '@/api/radiomanager'
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { useHandleChannelLastUploadedTrack } from './useHandleChannelLastUploadedTrack'
 
@@ -107,6 +115,9 @@ export const useChannelPageStore = (
     },
     stop: () => {
       stop(channelId).catch((error) => debug('Unable to pause playback: %s', error))
+    },
+    seek: (position: number) => {
+      seek(channelId, position).catch((error) => debug('Unable to seek: %s', error))
     },
   }
 

@@ -164,6 +164,20 @@ impl StreamService {
         Ok(())
     }
 
+    pub(crate) async fn seek(&self, position: &Duration) -> Result<(), StreamServiceError> {
+        let mut connection = self.mysql_client.connection().await?;
+        self.seek_internal(&mut connection, position).await?;
+        drop(connection);
+
+        self.notify_streams();
+
+        self.pubsub_client
+            .restart_channel(&self.stream_id, &self.user_id)
+            .await?;
+
+        Ok(())
+    }
+
     pub(crate) async fn stop(&self) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
         self.stop_internal(&mut connection).await?;
@@ -367,6 +381,45 @@ impl StreamService {
             &Some(position.num_milliseconds()),
         )
         .await?;
+
+        Ok(())
+    }
+
+    async fn seek_internal(
+        &self,
+        mut connection: &mut MySqlConnection,
+        position: &Duration,
+    ) -> Result<(), StreamServiceError> {
+        let now = SystemTime::now();
+
+        match get_now_playing(&now, &self.stream_id, &mut connection).await? {
+            // If it was stopped, do nothing.
+            None | Some((_, _, _, StreamStatus::Stopped)) => {}
+            Some((curr, _, _, StreamStatus::Paused)) => {
+                let started_at = now.duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+
+                update_stream_status(
+                    &mut connection,
+                    &self.stream_id,
+                    &StreamStatus::Paused,
+                    &Some(started_at),
+                    &Some(curr.link.time_offset + position.num_milliseconds()),
+                )
+                .await?;
+            }
+            Some((curr, _, _, StreamStatus::Playing)) => {
+                let started_at = now.duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+
+                update_stream_status(
+                    &mut connection,
+                    &self.stream_id,
+                    &StreamStatus::Playing,
+                    &Some(started_at),
+                    &Some(curr.link.time_offset + position.num_milliseconds()),
+                )
+                .await?;
+            }
+        }
 
         Ok(())
     }

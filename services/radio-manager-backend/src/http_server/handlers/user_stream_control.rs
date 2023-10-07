@@ -58,6 +58,28 @@ pub(crate) async fn stop(
     Ok(HttpResponse::Ok().finish())
 }
 
+#[derive(Deserialize)]
+pub(crate) struct SeekPathParams {
+    pub(crate) stream_id: StreamId,
+    pub(crate) position: i64,
+}
+
+pub(crate) async fn seek(
+    params: web::Path<SeekPathParams>,
+    stream_service_factory: web::Data<StreamServiceFactory>,
+    user_id: UserId,
+) -> Response {
+    let stream_service = stream_service_factory
+        .create_service_for_user(&params.stream_id, &user_id)
+        .await?;
+
+    stream_service
+        .seek(&Duration::milliseconds(params.position))
+        .await?;
+
+    Ok(HttpResponse::Ok().finish())
+}
+
 pub(crate) async fn play_next(
     params: web::Path<StreamId>,
     stream_service_factory: web::Data<StreamServiceFactory>,

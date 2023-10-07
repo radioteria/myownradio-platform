@@ -63,7 +63,14 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
             ))
             .service(
                 web::scope("/v0/streams/{stream_id}/controls")
-                    .route("/play", web::post().to(user_stream_control::play))
+                    .route(
+                        "/play/{position}",
+                        web::post().to(user_stream_control::play),
+                    )
+                    .route(
+                        "/pause/{position}",
+                        web::post().to(user_stream_control::pause),
+                    )
                     .route("/stop", web::post().to(user_stream_control::stop))
                     .route("/play-next", web::post().to(user_stream_control::play_next))
                     .route("/play-prev", web::post().to(user_stream_control::play_prev))

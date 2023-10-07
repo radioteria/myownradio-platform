@@ -1,20 +1,50 @@
 use crate::data_structures::{OrderId, StreamId, UserId};
 use crate::http_server::response::Response;
-use crate::pubsub_client::PubsubClient;
 use crate::services::StreamServiceFactory;
 use actix_web::{web, HttpResponse};
+use chrono::Duration;
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+pub(crate) struct PlayPathParams {
+    pub(crate) stream_id: StreamId,
+    pub(crate) position: i64,
+}
 
 pub(crate) async fn play(
-    params: web::Path<StreamId>,
+    params: web::Path<PlayPathParams>,
     stream_service_factory: web::Data<StreamServiceFactory>,
     user_id: UserId,
 ) -> Response {
-    let stream_id = params.into_inner();
     let stream_service = stream_service_factory
-        .create_service_for_user(&stream_id, &user_id)
+        .create_service_for_user(&params.stream_id, &user_id)
         .await?;
 
-    stream_service.play().await?;
+    stream_service
+        .play(&Duration::milliseconds(params.position))
+        .await?;
+
+    Ok(HttpResponse::Ok().finish())
+}
+
+#[derive(Deserialize)]
+pub(crate) struct PausePathParams {
+    pub(crate) stream_id: StreamId,
+    pub(crate) position: i64,
+}
+
+pub(crate) async fn pause(
+    params: web::Path<PausePathParams>,
+    stream_service_factory: web::Data<StreamServiceFactory>,
+    user_id: UserId,
+) -> Response {
+    let stream_service = stream_service_factory
+        .create_service_for_user(&params.stream_id, &user_id)
+        .await?;
+
+    stream_service
+        .pause(&Duration::milliseconds(params.position))
+        .await?;
 
     Ok(HttpResponse::Ok().finish())
 }

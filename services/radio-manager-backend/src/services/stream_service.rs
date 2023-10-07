@@ -137,11 +137,23 @@ impl StreamService {
         }
     }
 
-    pub(crate) async fn play(&self) -> Result<(), StreamServiceError> {
-        let position = Duration::zero();
-
+    pub(crate) async fn play(&self, position: &Duration) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
-        self.play_internal(&mut connection, &position).await?;
+        self.play_internal(&mut connection, position).await?;
+        drop(connection);
+
+        self.notify_streams();
+
+        self.pubsub_client
+            .restart_channel(&self.stream_id, &self.user_id)
+            .await?;
+
+        Ok(())
+    }
+
+    pub(crate) async fn pause(&self, position: &Duration) -> Result<(), StreamServiceError> {
+        let mut connection = self.mysql_client.connection().await?;
+        self.pause_internal(&mut connection, position).await?;
         drop(connection);
 
         self.notify_streams();
@@ -321,6 +333,23 @@ impl StreamService {
             &StreamStatus::Stopped,
             &None,
             &None,
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    async fn pause_internal(
+        &self,
+        mut connection: &mut MySqlConnection,
+        position: &Duration,
+    ) -> Result<(), StreamServiceError> {
+        update_stream_status(
+            &mut connection,
+            &self.stream_id,
+            &StreamStatus::Paused,
+            &Some(now()),
+            &Some(position.num_milliseconds()),
         )
         .await?;
 

@@ -53,6 +53,8 @@ export const composeStreamMediaSource = (channelId: number, opts: Options) => {
 
       while (true) {
         const nowPlaying = await getNowPlaying(channelId, streamTimeMillis)
+        if (nowPlaying.playbackStatus !== 1) break
+
         const remainder = nowPlaying.currentTrack.duration - nowPlaying.currentTrack.offset
         debug(
           'Now playing = %s (position = %d, remainder = %d)',

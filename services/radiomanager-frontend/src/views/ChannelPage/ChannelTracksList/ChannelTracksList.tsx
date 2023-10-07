@@ -46,6 +46,7 @@ interface Props {
     endIndex: number,
     signal: AbortSignal,
   ) => Promise<void>
+  readonly onTrackItemDoubleClick: (trackIndex: number) => void
 }
 
 export const ChannelTracksList: React.FC<Props> = ({
@@ -54,6 +55,7 @@ export const ChannelTracksList: React.FC<Props> = ({
   onDeleteTracks,
   onRemoveTracksFromChannel,
   loadMoreTracks,
+  onTrackItemDoubleClick,
 }) => {
   const { nowPlaying } = useNowPlaying()
   const currentTrack = nowPlaying
@@ -108,6 +110,7 @@ export const ChannelTracksList: React.FC<Props> = ({
         onTrackListMenu={handleTracksListMenu}
         contextMenuRef={contextMenuRef}
         loadMoreTrackItems={loadMoreTracks}
+        onTrackItemDoubleClick={onTrackItemDoubleClick}
       />
     </section>
   )

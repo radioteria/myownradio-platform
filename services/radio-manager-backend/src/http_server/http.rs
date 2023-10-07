@@ -73,7 +73,7 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                     .route("/play-next", web::post().to(user_stream_control::play_next))
                     .route("/play-prev", web::post().to(user_stream_control::play_prev))
                     .route(
-                        "/play-from/{order_id}",
+                        "/play-from/{playlist_position}",
                         web::post().to(user_stream_control::play_from),
                     ),
             )

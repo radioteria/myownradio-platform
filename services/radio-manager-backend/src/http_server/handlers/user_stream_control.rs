@@ -115,12 +115,14 @@ pub(crate) async fn play_from(
     stream_service_factory: web::Data<StreamServiceFactory>,
     user_id: UserId,
 ) -> Response {
-    let (stream_id, order_id) = params.into_inner();
+    let (stream_id, playlist_position) = params.into_inner();
     let stream_service = stream_service_factory
         .create_service_for_user(&stream_id, &user_id)
         .await?;
 
-    stream_service.play_by_order_id(&order_id).await?;
+    stream_service
+        .play_from_playlist_position(&playlist_position)
+        .await?;
 
     Ok(HttpResponse::Ok().finish())
 }

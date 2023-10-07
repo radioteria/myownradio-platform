@@ -280,14 +280,18 @@ impl StreamService {
         Ok(())
     }
 
-    pub(crate) async fn play_by_order_id(
+    pub(crate) async fn play_from_playlist_position(
         &self,
-        order_id: &OrderId,
+        playlist_position: &OrderId,
     ) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
 
-        match get_single_stream_track_by_order_id(&mut connection, &self.stream_id, order_id)
-            .await?
+        match get_single_stream_track_by_order_id(
+            &mut connection,
+            &self.stream_id,
+            playlist_position,
+        )
+        .await?
         {
             Some(track) => {
                 let position = Duration::milliseconds(track.link.time_offset);

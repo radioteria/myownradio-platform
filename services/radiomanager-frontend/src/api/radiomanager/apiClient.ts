@@ -119,3 +119,13 @@ export const seek = async (channelId: number, position: number): Promise<void> =
     },
   )
 }
+
+export const playFrom = async (channelId: number, playlistPosition: number): Promise<void> => {
+  await fetch(
+    `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/controls/play-from/${playlistPosition}`,
+    {
+      method: 'post',
+      credentials: 'include',
+    },
+  )
+}

@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { UserTrack } from '@/api'
-import { TrackList } from '../../../components/shared/TrackList'
+import { TrackList } from '@/components/shared/TrackList'
 import { MenuItemType, useContextMenu } from '@/modules/ContextMenu'
 
 export interface LibraryTrackEntry {

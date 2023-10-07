@@ -9,13 +9,18 @@ const debug = makeDebug('compositor')
 
 export enum CompositorEventType {
   Metadata,
+  Pause,
 }
 
-type CompositorEvent = {
-  readonly event: CompositorEventType.Metadata
-  readonly title: string
-  readonly pts: number
-}
+type CompositorEvent =
+  | {
+      readonly event: CompositorEventType.Metadata
+      readonly title: string
+      readonly pts: number
+    }
+  | {
+      readonly event: CompositorEventType.Pause
+    }
 
 interface Options {
   readonly bufferAheadTime: number
@@ -67,7 +72,9 @@ export const composeStreamMediaSource = (channelId: number, opts: Options) => {
           pts: sourceBuffer?.timestampOffset ?? 0,
         })
         if (nowPlaying.playbackStatus !== 1) {
-          debug('Holding the stream because the channel is paused')
+          await opts.onCompositorEvent?.({
+            event: CompositorEventType.Pause,
+          })
           break
         }
         const { stream, contentType } = await getTrackTranscodeStream(

@@ -1,8 +1,10 @@
+import React from 'react'
 import { useNowPlaying } from '@/modules/NowPlaying'
 import { ProgressBar } from './ProgressBar'
 import { TimePosition } from './TimePosition'
 import { PrevIcon } from './icons/PrevIcon'
 import { NextIcon } from './icons/NextIcon'
+import { PlayIcon } from './icons/PlayIcon'
 import { PauseIcon } from './icons/PauseIcon'
 import { StreamOverlay } from './StreamOverlay'
 
@@ -57,7 +59,7 @@ export const ChannelControls: React.FC<Props> = ({
 
         {!nowPlaying ? (
           <button onClick={onPlay}>
-            <PauseIcon size={48} />
+            <PlayIcon size={48} />
           </button>
         ) : nowPlaying.playbackStatus === 1 ? (
           <button onClick={onPause}>
@@ -65,7 +67,7 @@ export const ChannelControls: React.FC<Props> = ({
           </button>
         ) : (
           <button onClick={onPlay}>
-            <PauseIcon size={48} />
+            <PlayIcon size={48} />
           </button>
         )}
 

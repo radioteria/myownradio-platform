@@ -34,6 +34,16 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
     [onTrackChanged],
   )
 
+  const stop = useCallback((audioElement: HTMLAudioElement) => {
+    if (currentObjectURL.current !== null) {
+      URL.revokeObjectURL(currentObjectURL.current)
+    }
+
+    audioElement.pause()
+    audioElement.load()
+    audioElement.removeAttribute('src')
+  }, [])
+
   const play = useCallback(
     (audioElement: HTMLAudioElement) => {
       const mediaSource = composeStreamMediaSource(channelId, {
@@ -44,6 +54,10 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
             case CompositorEventType.Metadata:
               trackTitlesQueueRef.current.push({ title: event.title, pts: event.pts })
               updateTitle(audioElement)
+              break
+
+            case CompositorEventType.Pause:
+              stop(audioElement)
               break
 
             default:
@@ -62,18 +76,8 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
 
       currentObjectURL.current = newObjectURL
     },
-    [channelId, updateTitle],
+    [channelId, updateTitle, stop],
   )
-
-  const stop = useCallback((audioElement: HTMLAudioElement) => {
-    if (currentObjectURL.current !== null) {
-      URL.revokeObjectURL(currentObjectURL.current)
-    }
-
-    audioElement.pause()
-    audioElement.load()
-    audioElement.removeAttribute('src')
-  }, [])
 
   useEffect(() => {
     const audioElement = audioElementRef.current

@@ -15,11 +15,10 @@ use crate::storage::db::repositories::StreamStatus;
 use crate::system::now;
 use crate::MySqlClient;
 use chrono::Duration;
-use futures::SinkExt;
 use reqwest::StatusCode;
 use std::future::Future;
 use std::pin::Pin;
-use std::time::SystemTime;
+use std::time::{SystemTime, UNIX_EPOCH};
 use tracing::{debug, error};
 
 #[derive(thiserror::Error, Debug)]
@@ -137,9 +136,9 @@ impl StreamService {
         }
     }
 
-    pub(crate) async fn play(&self, position: &Duration) -> Result<(), StreamServiceError> {
+    pub(crate) async fn play(&self) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
-        self.play_internal(&mut connection, position).await?;
+        self.play_internal(&mut connection).await?;
         drop(connection);
 
         self.notify_streams();
@@ -151,9 +150,9 @@ impl StreamService {
         Ok(())
     }
 
-    pub(crate) async fn pause(&self, position: &Duration) -> Result<(), StreamServiceError> {
+    pub(crate) async fn pause(&self) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
-        self.pause_internal(&mut connection, position).await?;
+        self.pause_internal(&mut connection).await?;
         drop(connection);
 
         self.notify_streams();
@@ -182,9 +181,9 @@ impl StreamService {
     pub(crate) async fn play_next(&self) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
 
-        let track =
-            match get_now_playing(SystemTime::now(), &self.stream_id, &mut connection).await? {
-                Some((track, _, _)) => track,
+        let (track, status) =
+            match get_now_playing(&SystemTime::now(), &self.stream_id, &mut connection).await? {
+                Some((track, _, _, status)) => (track, status),
                 None => return Err(StreamServiceError::StreamNotFound),
             };
 
@@ -201,8 +200,18 @@ impl StreamService {
             },
         );
 
-        self.play_internal(&mut connection, &next_time_offset)
-            .await?;
+        match status {
+            StreamStatus::Playing => {
+                self.play_from_position_internal(&mut connection, &next_time_offset)
+                    .await?;
+            }
+            StreamStatus::Paused => {
+                self.pause_at_position_internal(&mut connection, &next_time_offset)
+                    .await?;
+            }
+            _ => {}
+        }
+        drop(connection);
 
         self.notify_streams();
 
@@ -216,9 +225,9 @@ impl StreamService {
     pub(crate) async fn play_prev(&self) -> Result<(), StreamServiceError> {
         let mut connection = self.mysql_client.connection().await?;
 
-        let track =
-            match get_now_playing(SystemTime::now(), &self.stream_id, &mut connection).await? {
-                Some((track, _, _)) => track,
+        let (track, status) =
+            match get_now_playing(&SystemTime::now(), &self.stream_id, &mut connection).await? {
+                Some((track, _, _, status)) => (track, status),
                 None => return Err(StreamServiceError::StreamNotFound),
             };
 
@@ -235,8 +244,18 @@ impl StreamService {
             },
         );
 
-        self.play_internal(&mut connection, &next_time_offset)
-            .await?;
+        match status {
+            StreamStatus::Playing => {
+                self.play_from_position_internal(&mut connection, &next_time_offset)
+                    .await?;
+            }
+            StreamStatus::Paused => {
+                self.pause_at_position_internal(&mut connection, &next_time_offset)
+                    .await?;
+            }
+            _ => {}
+        }
+        drop(connection);
 
         self.notify_streams();
 
@@ -258,7 +277,9 @@ impl StreamService {
         {
             Some(track) => {
                 let position = Duration::milliseconds(track.link.time_offset);
-                self.play_internal(&mut connection, &position).await?;
+                self.play_from_position_internal(&mut connection, &position)
+                    .await?;
+                drop(connection);
 
                 self.notify_streams();
 
@@ -306,19 +327,126 @@ impl StreamService {
         .await
     }
 
-    async fn play_internal(
+    async fn play_from_position_internal(
         &self,
         mut connection: &mut MySqlConnection,
         position: &Duration,
     ) -> Result<(), StreamServiceError> {
+        let started_at = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis() as i64;
+
         update_stream_status(
             &mut connection,
             &self.stream_id,
             &StreamStatus::Playing,
-            &Some(now()),
+            &Some(started_at),
             &Some(position.num_milliseconds()),
         )
         .await?;
+
+        Ok(())
+    }
+
+    async fn pause_at_position_internal(
+        &self,
+        mut connection: &mut MySqlConnection,
+        position: &Duration,
+    ) -> Result<(), StreamServiceError> {
+        let started_at = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis() as i64;
+
+        update_stream_status(
+            &mut connection,
+            &self.stream_id,
+            &StreamStatus::Paused,
+            &Some(started_at),
+            &Some(position.num_milliseconds()),
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    async fn play_internal(
+        &self,
+        mut connection: &mut MySqlConnection,
+    ) -> Result<(), StreamServiceError> {
+        let now = SystemTime::now();
+
+        match get_now_playing(&now, &self.stream_id, &mut connection).await? {
+            // If it was stopped, then play from the beginning.
+            None | Some((_, _, _, StreamStatus::Stopped)) => {
+                let started_at = now.duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+
+                update_stream_status(
+                    &mut connection,
+                    &self.stream_id,
+                    &StreamStatus::Playing,
+                    &Some(started_at),
+                    &Some(0),
+                )
+                .await?;
+            }
+            // If it was on pause, then play.
+            Some((_, _, time_offset, StreamStatus::Paused)) => {
+                let started_at = now.duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+
+                update_stream_status(
+                    &mut connection,
+                    &self.stream_id,
+                    &StreamStatus::Playing,
+                    &Some(started_at),
+                    &Some(time_offset.num_milliseconds()),
+                )
+                .await?;
+            }
+            // If it was already playing, do nothing.
+            Some((_, _, _, StreamStatus::Playing)) => {}
+        }
+
+        Ok(())
+    }
+
+    async fn pause_internal(
+        &self,
+        mut connection: &mut MySqlConnection,
+    ) -> Result<(), StreamServiceError> {
+        let now = SystemTime::now();
+
+        match get_now_playing(&now, &self.stream_id, &mut connection).await? {
+            // If it was stopped, then pause at the beginning.
+            None | Some((_, _, _, StreamStatus::Stopped)) => {
+                let started_at = now.duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+
+                update_stream_status(
+                    &mut connection,
+                    &self.stream_id,
+                    &StreamStatus::Paused,
+                    &Some(started_at),
+                    &Some(0),
+                )
+                .await?;
+            }
+            // If it was playing, then pause.
+            Some((_, _, time_offset, StreamStatus::Playing)) => {
+                let started_at = now.duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
+
+                update_stream_status(
+                    &mut connection,
+                    &self.stream_id,
+                    &StreamStatus::Paused,
+                    &Some(started_at),
+                    &Some(time_offset.num_milliseconds()),
+                )
+                .await?;
+            }
+            // If it was already on pause, do nothing.
+            Some((_, _, _, StreamStatus::Paused)) => {}
+        }
 
         Ok(())
     }
@@ -339,23 +467,6 @@ impl StreamService {
         Ok(())
     }
 
-    async fn pause_internal(
-        &self,
-        mut connection: &mut MySqlConnection,
-        position: &Duration,
-    ) -> Result<(), StreamServiceError> {
-        update_stream_status(
-            &mut connection,
-            &self.stream_id,
-            &StreamStatus::Paused,
-            &Some(now()),
-            &Some(position.num_milliseconds()),
-        )
-        .await?;
-
-        Ok(())
-    }
-
     async fn update_stream_in_transaction<H>(&self, handler: H) -> Result<(), StreamServiceError>
     where
         H: for<'a> FnOnce(
@@ -366,9 +477,9 @@ impl StreamService {
     {
         let mut connection = self.mysql_client.transaction().await?;
 
-        let now_playing = get_now_playing(SystemTime::now(), &self.stream_id, &mut connection)
+        let now_playing = get_now_playing(&SystemTime::now(), &self.stream_id, &mut connection)
             .await
-            .map(|option| option.map(|(entry, _, _)| entry))?;
+            .map(|option| option.map(|(entry, _, _, _)| entry))?;
 
         debug!("Now playing track before transaction: {:?}", &now_playing);
 

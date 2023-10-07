@@ -14,11 +14,18 @@ use chrono::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub(crate) async fn get_now_playing(
-    time: SystemTime,
+    time: &SystemTime,
     stream_id: &StreamId,
     mut connection: &mut MySqlConnection,
-) -> Result<Option<(TrackFileLinkMergedRow, TrackFileLinkMergedRow, Duration)>, StreamServiceError>
-{
+) -> Result<
+    Option<(
+        TrackFileLinkMergedRow,
+        TrackFileLinkMergedRow,
+        Duration,
+        StreamStatus,
+    )>,
+    StreamServiceError,
+> {
     let stream_row = match get_single_stream_by_id(&mut connection, &stream_id).await? {
         Some(stream_row) => stream_row,
         None => return Err(StreamServiceError::StreamNotFound),
@@ -42,6 +49,7 @@ pub(crate) async fn get_now_playing(
                     &Duration::milliseconds(playlist_time_position),
                 )
                 .await?
+                .map(|(curr, next, offset)| (curr, next, offset, stream_row.status))
             }
             (StreamStatus::Playing, Some(started_at), Some(started_from)) => {
                 let time_millis = time.duration_since(UNIX_EPOCH).unwrap().as_millis() as i64;
@@ -58,6 +66,7 @@ pub(crate) async fn get_now_playing(
                     &Duration::milliseconds(playlist_time_position),
                 )
                 .await?
+                .map(|(curr, next, offset)| (curr, next, offset, stream_row.status))
             }
             _ => None,
         },

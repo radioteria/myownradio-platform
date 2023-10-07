@@ -8,7 +8,6 @@ use serde::Deserialize;
 #[derive(Deserialize)]
 pub(crate) struct PlayPathParams {
     pub(crate) stream_id: StreamId,
-    pub(crate) position: i64,
 }
 
 pub(crate) async fn play(
@@ -20,9 +19,7 @@ pub(crate) async fn play(
         .create_service_for_user(&params.stream_id, &user_id)
         .await?;
 
-    stream_service
-        .play(&Duration::milliseconds(params.position))
-        .await?;
+    stream_service.play().await?;
 
     Ok(HttpResponse::Ok().finish())
 }
@@ -30,7 +27,6 @@ pub(crate) async fn play(
 #[derive(Deserialize)]
 pub(crate) struct PausePathParams {
     pub(crate) stream_id: StreamId,
-    pub(crate) position: i64,
 }
 
 pub(crate) async fn pause(
@@ -42,9 +38,7 @@ pub(crate) async fn pause(
         .create_service_for_user(&params.stream_id, &user_id)
         .await?;
 
-    stream_service
-        .pause(&Duration::milliseconds(params.position))
-        .await?;
+    stream_service.pause().await?;
 
     Ok(HttpResponse::Ok().finish())
 }

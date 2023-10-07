@@ -37,8 +37,8 @@ pub(crate) async fn get_playing_at(
         }
     };
 
-    let (current_track, next_track, current_position) = {
-        match services::get_now_playing(system_time, &stream_id, &mut connection).await? {
+    let (current_track, next_track, current_position, status) = {
+        match services::get_now_playing(&system_time, &stream_id, &mut connection).await? {
             Some(now_playing) => now_playing,
             None => return Ok(HttpResponse::Conflict().finish()),
         }
@@ -49,6 +49,7 @@ pub(crate) async fn get_playing_at(
         "message": "OK",
         "data": {
             "playlist_position": current_track.link.t_order,
+            "playback_status": status,
             "current_track": {
                 "offset": current_position.num_milliseconds(),
                 "title": get_artist_and_title(&current_track),

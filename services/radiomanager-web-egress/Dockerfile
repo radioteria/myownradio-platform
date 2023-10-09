@@ -5,6 +5,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install build dependencies
 RUN apt-get update && \
     apt-get install -y \
+      cmake \
+      xvfb \
       git \
       pkg-config \
       curl \
@@ -30,11 +32,22 @@ RUN git clone https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git && \
 # Check whether webrtc plugins were successfully installed
 RUN GST_PLUGIN_PATH="$(echo -n gst-plugins-rs/target/*-unknown-linux-gnu/debug):$GST_PLUGIN_PATH" gst-inspect-1.0 webrtcsink
 
+# Build gstcefsrc plugin
+RUN git clone https://github.com/centricular/gstcefsrc.git && \
+    cd gstcefsrc && \
+    mkdir build && cd build && \
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release .. && \
+    make
+
+# Check whether gstcefsrc plugin was successfully installed
+RUN GST_PLUGIN_PATH="gstcefsrc/build/Release:$GST_PLUGIN_PATH" xvfb-run -a --server-args="-nolisten tcp -screen 0 1280x720x30+32" gst-inspect-1.0 cefsrc
+
 ## Use the official Rust base image
 FROM rust:1.73
 
 # Install GStreamer and its dependencies
 RUN apt-get update && apt-get install -y \
+    xvfb \
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good \
     gstreamer1.0-plugins-bad \
@@ -47,7 +60,10 @@ WORKDIR /code/
 
 # Copy compiled GStreamer plugins
 COPY --from=gst-plugins /src/gst-plugins-rs/target/* /opt/gst-plugins-rs/
-ENV GST_PLUGIN_PATH="/opt/gst-plugins-rs/debug:$GST_PLUGIN_PATH"
+COPY --from=gst-plugins /src/gstcefsrc/build/* /opt/gstcefsrc/
+
+ENV GST_PLUGIN_PATH="/opt/gst-plugins-rs/debug:/opt/gstcefsrc:$GST_PLUGIN_PATH"
 
 # Check whether GStreamer was successfully installed
 RUN gst-inspect-1.0 webrtcsink
+RUN xvfb-run -a --server-args="-nolisten tcp -screen 0 1280x720x30+32" gst-inspect-1.0 cefsrc

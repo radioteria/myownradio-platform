@@ -15,7 +15,7 @@ pub(crate) fn main() {
     gstreamer::init().expect("Unable to initialize GStreamer!");
 
     create_stream(
-        "",
+        config.webpage_url.clone(),
         &StreamConfig {
             output: StreamOutput::RTMP {
                 url: config.rtmp_url.clone(),

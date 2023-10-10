@@ -1,7 +1,7 @@
 use crate::gstreamer_utils::make_element;
 use crate::pipeline::{make_aac_encoder, make_h264_encoder};
 use gstreamer::prelude::*;
-use gstreamer::{Element, PadProbeData, PadProbeReturn, PadProbeType, State};
+use gstreamer::{Bin, Element, PadProbeData, PadProbeReturn, PadProbeType, State};
 use tracing::info;
 
 #[derive(Debug, thiserror::Error)]
@@ -15,21 +15,30 @@ pub(crate) struct StreamConfig {
     pub(crate) output: StreamOutput,
 }
 
-pub(crate) fn create_stream(webpage_url: &str, config: &StreamConfig) -> Result<(), StreamError> {
+pub(crate) fn create_stream(webpage_url: String, config: &StreamConfig) -> Result<(), StreamError> {
     let pipeline = gstreamer::Pipeline::new(Some("test"));
 
-    let videotestsrc = make_element("videotestsrc");
-    let audiotestsrc = make_element("audiotestsrc");
+    let audiomixer = make_element("audiomixer");
+
+    let cefbin = make_element("cefbin");
+    let cefsrc = cefbin
+        .downcast_ref::<Bin>()
+        .unwrap()
+        .by_name("cefsrc")
+        .unwrap();
+    cefsrc.set_property("url", webpage_url);
 
     pipeline
-        .add_many(&[&videotestsrc, &audiotestsrc])
+        .add_many(&[&cefbin, &audiomixer])
         .expect("Unable to add elements to pipeline");
+
+    cefbin.link(&audiomixer).unwrap();
 
     let (video_sink, video_src) = make_h264_encoder(&pipeline);
     let (audio_sink, audio_src) = make_aac_encoder(&pipeline);
 
-    Element::link_many(&[&videotestsrc, &video_sink]).expect("Unable to link elements");
-    Element::link_many(&[&audiotestsrc, &audio_sink]).expect("Unable to link elements");
+    Element::link_many(&[&cefbin, &video_sink]).expect("Unable to link elements");
+    Element::link_many(&[&audiomixer, &audio_sink]).expect("Unable to link elements");
 
     let clocksync = make_element("clocksync");
     let flvmux = make_element("flvmux");

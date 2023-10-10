@@ -2,7 +2,7 @@ use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub(crate) struct Config {
-    webpage_url: String,
+    pub(crate) webpage_url: String,
     pub(crate) rtmp_url: String,
     pub(crate) rtmp_stream_key: String,
 }

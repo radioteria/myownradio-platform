@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::stream::{create_stream, StreamConfig, StreamOutput};
+use crate::stream::{Stream, StreamConfig, StreamOutput};
 use std::time::Duration;
 
 pub(crate) mod config;
@@ -14,7 +14,7 @@ pub(crate) fn main() {
 
     gstreamer::init().expect("Unable to initialize GStreamer!");
 
-    create_stream(
+    let stream = Stream::create(
         config.webpage_url.clone(),
         &StreamConfig {
             output: StreamOutput::RTMP {

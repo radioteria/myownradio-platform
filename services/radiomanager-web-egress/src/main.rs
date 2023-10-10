@@ -4,6 +4,7 @@ use std::time::Duration;
 
 pub(crate) mod config;
 pub(crate) mod gstreamer_utils;
+pub(crate) mod pipeline;
 pub(crate) mod stream;
 
 pub(crate) fn main() {
@@ -17,8 +18,8 @@ pub(crate) fn main() {
         "",
         &StreamConfig {
             output: StreamOutput::RTMP {
-                url: String::from(""),
-                stream_key: String::from(""),
+                url: config.rtmp_url.clone(),
+                stream_key: config.rtmp_stream_key.clone(),
             },
         },
     )

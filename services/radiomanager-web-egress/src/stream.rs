@@ -1,6 +1,7 @@
 use crate::gstreamer_utils::make_element;
+use crate::pipeline::{make_aac_encoder, make_h264_encoder};
 use gstreamer::prelude::*;
-use gstreamer::{Bus, Element, PadProbeData, PadProbeReturn, PadProbeType, State};
+use gstreamer::{Element, PadProbeData, PadProbeReturn, PadProbeType, State};
 use tracing::info;
 
 #[derive(Debug, thiserror::Error)]
@@ -18,16 +19,54 @@ pub(crate) fn create_stream(webpage_url: &str, config: &StreamConfig) -> Result<
     let pipeline = gstreamer::Pipeline::new(Some("test"));
 
     let videotestsrc = make_element("videotestsrc");
-    let fakevideosink = make_element("fakevideosink");
+    let audiotestsrc = make_element("audiotestsrc");
 
     pipeline
-        .add_many(&[&videotestsrc, &fakevideosink])
+        .add_many(&[&videotestsrc, &audiotestsrc])
         .expect("Unable to add elements to pipeline");
 
-    Element::link_many(&[&videotestsrc, &fakevideosink]).expect("Unable to link elements");
+    let (video_sink, video_src) = make_h264_encoder(&pipeline);
+    let (audio_sink, audio_src) = make_aac_encoder(&pipeline);
 
-    fakevideosink
-        .static_pad("sink")
+    Element::link_many(&[&videotestsrc, &video_sink]).expect("Unable to link elements");
+    Element::link_many(&[&audiotestsrc, &audio_sink]).expect("Unable to link elements");
+
+    let clocksync = make_element("clocksync");
+    let flvmux = make_element("flvmux");
+    let rtmp2sink = make_element("rtmp2sink");
+    flvmux.set_property("streamable", &true);
+    flvmux.set_property("latency", &1_000_000_000_u64);
+
+    if let StreamOutput::RTMP { url, stream_key } = &config.output {
+        rtmp2sink.set_property("location", format!("{}/{}", url, stream_key));
+    }
+
+    pipeline
+        .add_many(&[&clocksync, &flvmux, &rtmp2sink])
+        .expect("Unable to add clocksync or flvmux to pipeline");
+
+    Element::link_many(&[&flvmux, &clocksync, &rtmp2sink]).unwrap();
+
+    let flv_video_sink = flvmux
+        .request_pad_simple("video")
+        .expect("Unable to get flv video");
+    let flv_audio_sink = flvmux
+        .request_pad_simple("audio")
+        .expect("Unable to get flv video");
+
+    video_src
+        .static_pad("src")
+        .expect("Unable to get video src")
+        .link(&flv_video_sink)
+        .unwrap();
+    audio_src
+        .static_pad("src")
+        .expect("Unable to get audio src")
+        .link(&flv_audio_sink)
+        .unwrap();
+
+    clocksync
+        .static_pad("src")
         .expect("Unable to get pad")
         .add_probe(PadProbeType::BUFFER, |_pad, info| {
             if let Some(PadProbeData::Buffer(buffer)) = &info.data {

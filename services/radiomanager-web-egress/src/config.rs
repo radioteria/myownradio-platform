@@ -3,8 +3,8 @@ use serde::Deserialize;
 #[derive(Deserialize)]
 pub(crate) struct Config {
     webpage_url: String,
-    rtmp_url: String,
-    rtmp_stream_key: String,
+    pub(crate) rtmp_url: String,
+    pub(crate) rtmp_stream_key: String,
 }
 
 impl Config {

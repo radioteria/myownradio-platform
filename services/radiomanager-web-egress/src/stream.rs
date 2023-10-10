@@ -1,3 +1,4 @@
+#[derive(Debug, thiserror::Error)]
 pub(crate) enum StreamError {}
 
 pub(crate) enum StreamOutput {
@@ -5,7 +6,7 @@ pub(crate) enum StreamOutput {
 }
 
 pub(crate) struct StreamConfig {
-    output: StreamOutput,
+    pub(crate) output: StreamOutput,
 }
 
 pub(crate) fn create_stream(webpage_url: &str, config: &StreamConfig) -> Result<(), StreamError> {

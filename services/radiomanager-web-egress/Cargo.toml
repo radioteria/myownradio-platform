@@ -1,0 +1,11 @@
+[package]
+name = "radiomanager-web-egress"
+version = "1.0.0"
+authors = ["Roman Lakhtadyr <roman.lakhtadyr@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+gstreamer = { version = "0.20.7", features = ["v1_20"] }
+gstreamer-base = { version = "0.20.7", features = ["v1_20"] }
+thiserror = { version = "1.0.44" }
+tracing = { version = "0.1.37" }

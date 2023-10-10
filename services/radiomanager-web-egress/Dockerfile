@@ -43,7 +43,7 @@ RUN git clone https://github.com/centricular/gstcefsrc.git && \
 RUN GST_PLUGIN_PATH="gstcefsrc/build/Release:$GST_PLUGIN_PATH" xvfb-run -a --server-args="-nolisten tcp -screen 0 1280x720x30+32" gst-inspect-1.0 cefsrc
 
 ## Use the official Rust base image
-FROM rust:1.73
+FROM rust:1.73 as devenv
 
 # Install GStreamer and its dependencies
 RUN apt-get update && apt-get install -y \

@@ -1,20 +1,26 @@
 use crate::gstreamer_utils::{make_capsfilter, make_element};
 use gstreamer::prelude::*;
-use gstreamer::{Caps, Element, Pipeline};
+use gstreamer::{Caps, Element, Fraction, Pipeline};
 
-pub(crate) fn make_h264_encoder(pipeline: &Pipeline) -> (Element, Element) {
+pub(crate) fn make_h264_encoder(
+    pipeline: &Pipeline,
+    video_width: u32,
+    video_height: u32,
+    video_bitrate: u32,
+    video_framerate: u32,
+) -> (Element, Element) {
     let queue_in = make_element("queue");
     let videoconvert = make_element("videoconvert");
     let x264enc = make_element("x264enc");
-    x264enc.set_property("key-int-max", 60u32);
-    x264enc.set_property("bitrate", 2_500u32);
+    x264enc.set_property("key-int-max", video_framerate * 2);
+    x264enc.set_property("bitrate", video_bitrate);
     let h264parse = make_element("h264parse");
     let caps = make_capsfilter(
         &Caps::builder("video/x-h264")
             .field("profile", "baseline")
-            .field("width", 1280)
-            .field("height", 720)
-            .field("rate", 30)
+            .field("width", video_width as i32)
+            .field("height", video_height as i32)
+            .field("rate", Fraction::new(video_framerate as i32, 1))
             .build(),
     );
     let queue_out = make_element("queue");
@@ -43,10 +49,11 @@ pub(crate) fn make_h264_encoder(pipeline: &Pipeline) -> (Element, Element) {
     (queue_in, queue_out)
 }
 
-pub(crate) fn make_aac_encoder(pipeline: &Pipeline) -> (Element, Element) {
+pub(crate) fn make_aac_encoder(pipeline: &Pipeline, audio_bitrate: u32) -> (Element, Element) {
     let queue_in = make_element("queue");
     let audioconvert = make_element("audioconvert");
     let fdkaacenc = make_element("fdkaacenc");
+    fdkaacenc.set_property("peak-bitrate", (audio_bitrate * 1000) as i32);
     let aacparse = make_element("aacparse");
     let caps = make_capsfilter(&Caps::builder("audio/mpeg").field("rate", 44100).build());
     let queue_out = make_element("queue");

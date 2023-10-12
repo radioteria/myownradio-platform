@@ -13,6 +13,11 @@ pub(crate) enum StreamOutput {
 
 pub(crate) struct StreamConfig {
     pub(crate) output: StreamOutput,
+    pub(crate) video_width: u32,
+    pub(crate) video_height: u32,
+    pub(crate) video_bitrate: u32,
+    pub(crate) video_framerate: u32,
+    pub(crate) audio_bitrate: u32,
 }
 
 pub(crate) struct Stream {
@@ -48,8 +53,14 @@ impl Stream {
 
         cefbin.link(&audiomixer).unwrap();
 
-        let (video_sink, video_src) = make_h264_encoder(&pipeline);
-        let (audio_sink, audio_src) = make_aac_encoder(&pipeline);
+        let (video_sink, video_src) = make_h264_encoder(
+            &pipeline,
+            config.video_width,
+            config.video_height,
+            config.video_bitrate,
+            config.video_framerate,
+        );
+        let (audio_sink, audio_src) = make_aac_encoder(&pipeline, config.audio_bitrate);
 
         Element::link_many(&[&cefbin, &video_sink]).expect("Unable to link elements");
         Element::link_many(&[&audiomixer, &audio_sink]).expect("Unable to link elements");

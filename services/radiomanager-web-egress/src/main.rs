@@ -14,18 +14,27 @@ pub(crate) fn main() {
 
     gstreamer::init().expect("Unable to initialize GStreamer!");
 
+    // TODO Implement proper handling of the stream lifecycle
     let stream = Stream::create(
-        config.webpage_url.clone(),
+        config.webpage_url,
         &StreamConfig {
             output: StreamOutput::RTMP {
-                url: config.rtmp_url.clone(),
-                stream_key: config.rtmp_stream_key.clone(),
+                url: config.rtmp_url,
+                stream_key: config.rtmp_stream_key,
             },
+            video_width: config.video.width,
+            video_height: config.video.height,
+            video_bitrate: config.video.bitrate,
+            video_framerate: config.video.framerate,
+            audio_bitrate: config.audio.bitrate,
         },
     )
     .expect("Unable to create stream");
 
     loop {
+        // TODO Stream events and handle process signals
         std::thread::sleep(Duration::from_secs(1));
     }
+
+    drop(stream);
 }

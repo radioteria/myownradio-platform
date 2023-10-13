@@ -42,14 +42,12 @@ RUN git clone https://github.com/centricular/gstcefsrc.git && \
 # Check whether gstcefsrc plugin was successfully installed
 RUN GST_PLUGIN_PATH="gstcefsrc/build/Release:$GST_PLUGIN_PATH" xvfb-run -a --server-args="-nolisten tcp -screen 0 1280x720x30+32" gst-inspect-1.0 cefsrc
 
-## Use the official Rust base image
-FROM ubuntu:22.04 as devenv
+FROM ubuntu:22.04 as build-deps
+
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG USER=1000:1000
-
-# Install GStreamer and its dependencies
+# Install GStreamer and dependencies
 RUN apt-get update && \
     apt-get install -y \
     curl \
@@ -62,6 +60,17 @@ RUN apt-get update && \
     gstreamer1.0 \
     libgirepository1.0-dev
 
+# Copy compiled GStreamer plugins
+COPY --from=gst-plugins /src/gst-plugins-rs/target/* /opt/gst-plugins-rs/
+COPY --from=gst-plugins /src/gstcefsrc/build/* /opt/gstcefsrc/
+
+ENV GST_PLUGIN_PATH="/opt/gst-plugins-rs/debug:/opt/gstcefsrc:$GST_PLUGIN_PATH"
+
+
+FROM build-deps as devenv
+
+ARG USER=1000:1000
+
 # Install Rust and Cargo helpers
 ENV RUSTUP_HOME=/opt/rust
 ENV CARGO_HOME=/opt/rust
@@ -72,12 +81,25 @@ ENV PATH="/opt/rust/bin:${PATH}"
 
 WORKDIR /code/
 
-# Copy compiled GStreamer plugins
-COPY --from=gst-plugins /src/gst-plugins-rs/target/* /opt/gst-plugins-rs/
-COPY --from=gst-plugins /src/gstcefsrc/build/* /opt/gstcefsrc/
-
-ENV GST_PLUGIN_PATH="/opt/gst-plugins-rs/debug:/opt/gstcefsrc:$GST_PLUGIN_PATH"
-
 # Check whether GStreamer was successfully installed
 RUN gst-inspect-1.0 webrtcsink
 RUN xvfb-run -a --server-args="-nolisten tcp -screen 0 1280x720x30+32" gst-inspect-1.0 cefsrc
+
+FROM build-deps as build
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+WORKDIR /code/
+
+COPY Cargo.toml ./
+COPY Cargo.lock ./
+COPY src ./src
+
+RUN ls -l && cargo build --release
+
+FROM build-deps
+
+COPY --from=build /code/target/release/radiomanager-web-egress-process /radiomanager-web-egress-process
+
+CMD ["/radiomanager-web-egress-process"]

@@ -1,5 +1,5 @@
 use crate::gstreamer_utils::make_element;
-use crate::pipeline::{make_aac_encoder, make_h264_encoder};
+use crate::stream_utils::{make_aac_encoder, make_h264_encoder, make_output};
 use gstreamer::prelude::*;
 use gstreamer::{Bin, Element, PadProbeData, PadProbeReturn, PadProbeType, Pipeline, State};
 use tracing::trace;
@@ -65,43 +65,20 @@ impl Stream {
         Element::link_many(&[&cefbin, &video_sink]).expect("Unable to link elements");
         Element::link_many(&[&audiomixer, &audio_sink]).expect("Unable to link elements");
 
-        let clocksync = make_element("clocksync");
-        let flvmux = make_element("flvmux");
-        let rtmp2sink = make_element("rtmp2sink");
-        flvmux.set_property("streamable", &true);
-        flvmux.set_property("latency", &1_000_000_000_u64);
-
-        if let StreamOutput::RTMP { url, stream_key } = &config.output {
-            rtmp2sink.set_property("location", format!("{}/{}", url, stream_key));
-        }
-
-        pipeline
-            .add_many(&[&clocksync, &flvmux, &rtmp2sink])
-            .expect("Unable to add clocksync or flvmux to pipeline");
-
-        Element::link_many(&[&flvmux, &clocksync, &rtmp2sink]).unwrap();
-
-        let flv_video_sink = flvmux
-            .request_pad_simple("video")
-            .expect("Unable to get flv video");
-        let flv_audio_sink = flvmux
-            .request_pad_simple("audio")
-            .expect("Unable to get flv video");
+        let (output_video_sink_pad, output_audio_sink_pad) = make_output(&pipeline, &config.output);
 
         video_src
             .static_pad("src")
-            .expect("Unable to get video src")
-            .link(&flv_video_sink)
-            .unwrap();
+            .expect("Unable to get video pad")
+            .link(&output_video_sink_pad)
+            .expect("Unable to link pads");
         audio_src
             .static_pad("src")
-            .expect("Unable to get audio src")
-            .link(&flv_audio_sink)
-            .unwrap();
+            .expect("Unable to get audio pad")
+            .link(&output_audio_sink_pad)
+            .expect("Unable to link pads");
 
-        clocksync
-            .static_pad("src")
-            .expect("Unable to get pad")
+        output_video_sink_pad
             .add_probe(PadProbeType::BUFFER, |_pad, info| {
                 if let Some(PadProbeData::Buffer(buffer)) = &info.data {
                     if let Some(pts) = buffer.pts() {

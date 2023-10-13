@@ -1,6 +1,37 @@
 use crate::gstreamer_utils::{make_capsfilter, make_element};
+use crate::stream::StreamOutput;
 use gstreamer::prelude::*;
-use gstreamer::{Caps, Element, Fraction, Pipeline};
+use gstreamer::{Caps, Element, Fraction, Pad, Pipeline};
+
+pub(crate) fn make_output(pipeline: &Pipeline, stream_output: &StreamOutput) -> (Pad, Pad) {
+    match stream_output {
+        StreamOutput::RTMP { url, stream_key } => {
+            let flvmux = make_element("flvmux");
+            flvmux.set_property("streamable", &true);
+            flvmux.set_property("latency", &1_000_000_000_u64);
+
+            let rtmp2sink = make_element("rtmp2sink");
+            rtmp2sink.set_property("location", format!("{}/{}", url, stream_key));
+
+            pipeline
+                .add_many(&[&flvmux, &rtmp2sink])
+                .expect("Unable to add flvmux or rtmp2sink to pipeline");
+
+            flvmux
+                .link(&rtmp2sink)
+                .expect("Unable to link flvmux to rtmp2sink");
+
+            let flv_video_sink = flvmux
+                .request_pad_simple("video")
+                .expect("Unable to get flv video");
+            let flv_audio_sink = flvmux
+                .request_pad_simple("audio")
+                .expect("Unable to get flv video");
+
+            (flv_video_sink, flv_audio_sink)
+        }
+    }
+}
 
 pub(crate) fn make_h264_encoder(
     pipeline: &Pipeline,

@@ -4,8 +4,8 @@ use std::time::Duration;
 
 pub(crate) mod config;
 pub(crate) mod gstreamer_utils;
-pub(crate) mod pipeline;
 pub(crate) mod stream;
+pub(crate) mod stream_utils;
 
 pub(crate) fn main() {
     tracing_subscriber::fmt::init();

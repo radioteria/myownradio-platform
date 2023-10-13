@@ -2,7 +2,7 @@ use crate::gstreamer_utils::make_element;
 use crate::pipeline::{make_aac_encoder, make_h264_encoder};
 use gstreamer::prelude::*;
 use gstreamer::{Bin, Element, PadProbeData, PadProbeReturn, PadProbeType, Pipeline, State};
-use tracing::info;
+use tracing::trace;
 
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum CreateStreamError {}
@@ -104,7 +104,9 @@ impl Stream {
             .expect("Unable to get pad")
             .add_probe(PadProbeType::BUFFER, |_pad, info| {
                 if let Some(PadProbeData::Buffer(buffer)) = &info.data {
-                    info!("Buffer {:?}", buffer.pts());
+                    if let Some(pts) = buffer.pts() {
+                        trace!("Buffer pts={}", pts);
+                    }
                 }
 
                 PadProbeReturn::Pass

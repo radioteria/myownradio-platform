@@ -1,0 +1,28 @@
+name: trigger radiomanager-web-egress-process image build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'services/radiomanager-web-egress-process/**'
+      - '.github/workflows/build-radiomanager-web-egress-process.yml'
+
+jobs:
+  main:
+    name: main
+    runs-on: ubuntu-latest
+    steps:
+      - name: trigger the build
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: build-image
+          client-payload: |
+            {
+              "image_name": "pldin601/myownradio-radiomanager-web-egress-process",
+              "dockerfile": "services/radiomanager-web-egress-process/Dockerfile",
+              "context": "services/radiomanager-web-egress-process",
+              "token": "${{ secrets.REPO_ACCESS_TOKEN }}"
+            }

@@ -448,7 +448,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "radiomanager-web-egress"
+name = "radiomanager-web-egress-process"
 version = "1.0.0"
 dependencies = [
  "envy",

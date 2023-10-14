@@ -42,6 +42,14 @@ pub(crate) fn make_video_encoder(
     video_encoder: &VideoEncoder,
 ) -> (Element, Element) {
     let queue_in = make_element("queue");
+    let caps_in = make_capsfilter(
+        &Caps::builder("video/x-raw")
+            .field("width", video_width as i32)
+            .field("height", video_height as i32)
+            .field("rate", Fraction::from(video_framerate as i32))
+            .field("format", &"BRGA")
+            .build(),
+    );
     let videoconvert = make_element("videoconvert");
 
     let encoder = match video_encoder {
@@ -60,7 +68,7 @@ pub(crate) fn make_video_encoder(
     };
 
     let h264parse = make_element("h264parse");
-    let caps = make_capsfilter(
+    let caps_enc = make_capsfilter(
         &Caps::builder("video/x-h264")
             .field("profile", "baseline")
             .field("width", video_width as i32)
@@ -73,20 +81,22 @@ pub(crate) fn make_video_encoder(
     pipeline
         .add_many(&[
             &queue_in,
+            &caps_in,
             &videoconvert,
             &encoder,
             &h264parse,
-            &caps,
+            &caps_enc,
             &queue_out,
         ])
         .expect("Unable to add elements to pipeline");
 
     Element::link_many(&[
         &queue_in,
+        &caps_in,
         &videoconvert,
         &encoder,
         &h264parse,
-        &caps,
+        &caps_enc,
         &queue_out,
     ])
     .expect("Unable to link elements");

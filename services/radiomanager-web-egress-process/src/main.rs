@@ -1,6 +1,7 @@
 use crate::config::Config;
-use crate::stream::{Stream, StreamConfig, StreamOutput};
-use std::time::Duration;
+use crate::stream::{Stream, StreamConfig, StreamEvent, StreamOutput};
+use std::sync::mpsc::channel;
+use tracing::error;
 
 pub(crate) mod config;
 pub(crate) mod gstreamer_utils;
@@ -14,7 +15,8 @@ pub(crate) fn main() {
 
     gstreamer::init().expect("Unable to initialize GStreamer!");
 
-    // TODO Implement proper handling of the stream lifecycle
+    let (event_sender, event_receiver) = channel();
+
     let stream = Stream::create(
         config.webpage_url,
         &StreamConfig {
@@ -28,12 +30,17 @@ pub(crate) fn main() {
             video_framerate: config.video.framerate,
             audio_bitrate: config.audio.bitrate,
         },
+        event_sender,
     )
     .expect("Unable to create stream");
 
-    loop {
-        // TODO Stream events and handle process signals
-        std::thread::sleep(Duration::from_secs(1));
+    while let Ok(event) = event_receiver.recv() {
+        match event {
+            StreamEvent::Error(error) => {
+                error!("Error happened while streaming: {:?}", error);
+                break;
+            }
+        }
     }
 
     drop(stream);

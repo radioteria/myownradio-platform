@@ -1,11 +1,25 @@
 use crate::gstreamer_utils::make_element;
 use crate::stream_utils::{make_aac_encoder, make_h264_encoder, make_output};
 use gstreamer::prelude::*;
-use gstreamer::{Bin, Element, PadProbeData, PadProbeReturn, PadProbeType, Pipeline, State};
-use tracing::trace;
+use gstreamer::{
+    Bin, BusSyncReply, Element, MessageView, PadProbeData, PadProbeReturn, PadProbeType, Pipeline,
+    State,
+};
+use std::sync::mpsc::Sender;
+use tracing::{error, trace, warn};
 
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum CreateStreamError {}
+
+#[derive(Debug)]
+pub(crate) enum Error {
+    PublishDenied,
+    Other,
+}
+
+pub(crate) enum StreamEvent {
+    Error(Error),
+}
 
 pub(crate) enum StreamOutput {
     RTMP { url: String, stream_key: String },
@@ -34,6 +48,7 @@ impl Stream {
     pub(crate) fn create(
         webpage_url: String,
         config: &StreamConfig,
+        event_sender: Sender<StreamEvent>,
     ) -> Result<Stream, CreateStreamError> {
         let pipeline = Pipeline::new(None);
 
@@ -89,6 +104,35 @@ impl Stream {
                 PadProbeReturn::Pass
             })
             .expect("Unable to add probe");
+
+        pipeline
+            .bus()
+            .expect("Unable to get Pipeline Bus")
+            .set_sync_handler({
+                move |bus, message| {
+                    match message.view() {
+                        MessageView::Warning(warning) => {
+                            warn!("{:?}", warning.debug())
+                        }
+                        MessageView::Error(err) => {
+                            let error_message = format!("{:?}", err.error());
+                            let debug_message = format!("{:?}", err.debug());
+                            warn!(
+                                "Streaming failed: error={}, debug={}",
+                                error_message, debug_message
+                            );
+
+                            if debug_message.contains("publish failed") {
+                                let _ = event_sender.send(StreamEvent::Error(Error::PublishDenied));
+                            } else {
+                                let _ = event_sender.send(StreamEvent::Error(Error::Other));
+                            }
+                        }
+                        _ => {}
+                    };
+                    BusSyncReply::Drop
+                }
+            });
 
         pipeline
             .set_state(State::Playing)

@@ -1,14 +1,33 @@
 use crate::gstreamer_utils::make_element;
-use crate::stream_utils::{make_aac_encoder, make_h264_encoder, make_output};
+use crate::stream_utils::{make_audio_encoder, make_output, make_video_encoder};
 use gstreamer::prelude::*;
-use gstreamer::{Bin, Element, PadProbeData, PadProbeReturn, PadProbeType, Pipeline, State};
-use tracing::trace;
+use gstreamer::{
+    Bin, BusSyncReply, Element, MessageView, PadProbeData, PadProbeReturn, PadProbeType, Pipeline,
+    State,
+};
+use std::sync::mpsc::Sender;
+use tracing::{info, trace, warn};
 
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum CreateStreamError {}
 
+#[derive(Debug)]
+pub(crate) enum Error {
+    PublishDenied,
+    Other,
+}
+
+pub(crate) enum StreamEvent {
+    Error(Error),
+}
+
 pub(crate) enum StreamOutput {
     RTMP { url: String, stream_key: String },
+}
+
+pub(crate) enum VideoEncoder {
+    Software,
+    VA,
 }
 
 pub(crate) struct StreamConfig {
@@ -17,7 +36,9 @@ pub(crate) struct StreamConfig {
     pub(crate) video_height: u32,
     pub(crate) video_bitrate: u32,
     pub(crate) video_framerate: u32,
+    pub(crate) video_encoder: VideoEncoder,
     pub(crate) audio_bitrate: u32,
+    pub(crate) cef_gpu_enabled: bool,
 }
 
 pub(crate) struct Stream {
@@ -34,6 +55,7 @@ impl Stream {
     pub(crate) fn create(
         webpage_url: String,
         config: &StreamConfig,
+        event_sender: Sender<StreamEvent>,
     ) -> Result<Stream, CreateStreamError> {
         let pipeline = Pipeline::new(None);
 
@@ -46,6 +68,10 @@ impl Stream {
             .by_name("cefsrc")
             .unwrap();
         cefsrc.set_property("url", webpage_url);
+        if config.cef_gpu_enabled {
+            info!("Enabling GPU acceleration");
+            cefsrc.set_property("gpu", &true);
+        }
 
         pipeline
             .add_many(&[&cefbin, &audiomixer])
@@ -53,14 +79,15 @@ impl Stream {
 
         cefbin.link(&audiomixer).unwrap();
 
-        let (video_sink, video_src) = make_h264_encoder(
+        let (video_sink, video_src) = make_video_encoder(
             &pipeline,
             config.video_width,
             config.video_height,
             config.video_bitrate,
             config.video_framerate,
+            &config.video_encoder,
         );
-        let (audio_sink, audio_src) = make_aac_encoder(&pipeline, config.audio_bitrate);
+        let (audio_sink, audio_src) = make_audio_encoder(&pipeline, config.audio_bitrate);
 
         Element::link_many(&[&cefbin, &video_sink]).expect("Unable to link elements");
         Element::link_many(&[&audiomixer, &audio_sink]).expect("Unable to link elements");
@@ -89,6 +116,35 @@ impl Stream {
                 PadProbeReturn::Pass
             })
             .expect("Unable to add probe");
+
+        pipeline
+            .bus()
+            .expect("Unable to get Pipeline Bus")
+            .set_sync_handler({
+                move |_bus, message| {
+                    match message.view() {
+                        MessageView::Warning(warning) => {
+                            warn!("{:?}", warning.debug())
+                        }
+                        MessageView::Error(err) => {
+                            let error_message = format!("{:?}", err.error());
+                            let debug_message = format!("{:?}", err.debug());
+                            warn!(
+                                "Streaming failed: error={}, debug={}",
+                                error_message, debug_message
+                            );
+
+                            if debug_message.contains("publish failed") {
+                                let _ = event_sender.send(StreamEvent::Error(Error::PublishDenied));
+                            } else {
+                                let _ = event_sender.send(StreamEvent::Error(Error::Other));
+                            }
+                        }
+                        _ => {}
+                    };
+                    BusSyncReply::Drop
+                }
+            });
 
         pipeline
             .set_state(State::Playing)

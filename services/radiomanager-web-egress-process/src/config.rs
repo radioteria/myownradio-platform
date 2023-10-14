@@ -26,6 +26,8 @@ pub(crate) struct VideoSettings {
     pub(crate) bitrate: u32,
     #[serde(rename = "video_framerate", deserialize_with = "from_str")]
     pub(crate) framerate: u32,
+    #[serde(rename = "video_profile")]
+    pub(crate) profile: Option<String>,
 }
 
 #[derive(Deserialize)]

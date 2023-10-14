@@ -42,15 +42,15 @@ pub(crate) fn make_video_encoder(
     video_encoder: &VideoEncoder,
 ) -> (Element, Element) {
     let queue_in = make_element("queue");
+    let videoconvert = make_element("videoconvert");
     let caps_in = make_capsfilter(
         &Caps::builder("video/x-raw")
             .field("width", video_width as i32)
             .field("height", video_height as i32)
             .field("rate", Fraction::from(video_framerate as i32))
-            .field("format", &"BGRA")
+            .field("format", &"NV12")
             .build(),
     );
-    let videoconvert = make_element("videoconvert");
 
     let encoder = match video_encoder {
         VideoEncoder::Software => {
@@ -71,9 +71,6 @@ pub(crate) fn make_video_encoder(
     let caps_enc = make_capsfilter(
         &Caps::builder("video/x-h264")
             .field("profile", "baseline")
-            .field("width", video_width as i32)
-            .field("height", video_height as i32)
-            .field("rate", Fraction::new(video_framerate as i32, 1))
             .build(),
     );
     let queue_out = make_element("queue");
@@ -81,8 +78,8 @@ pub(crate) fn make_video_encoder(
     pipeline
         .add_many(&[
             &queue_in,
-            &caps_in,
             &videoconvert,
+            &caps_in,
             &encoder,
             &h264parse,
             &caps_enc,
@@ -92,8 +89,8 @@ pub(crate) fn make_video_encoder(
 
     Element::link_many(&[
         &queue_in,
-        &caps_in,
         &videoconvert,
+        &caps_in,
         &encoder,
         &h264parse,
         &caps_enc,

@@ -33,6 +33,7 @@ pub(crate) fn main() {
                 Some(VideoAcceleration::VAAPI) => VideoEncoder::VA,
             },
             audio_bitrate: config.audio.bitrate,
+            cef_gpu_enabled: config.cef_gpu_enabled,
         },
         event_sender,
     )

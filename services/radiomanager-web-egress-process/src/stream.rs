@@ -6,7 +6,7 @@ use gstreamer::{
     State,
 };
 use std::sync::mpsc::Sender;
-use tracing::{error, trace, warn};
+use tracing::{info, trace, warn};
 
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum CreateStreamError {}
@@ -38,6 +38,7 @@ pub(crate) struct StreamConfig {
     pub(crate) video_framerate: u32,
     pub(crate) video_encoder: VideoEncoder,
     pub(crate) audio_bitrate: u32,
+    pub(crate) cef_gpu_enabled: bool,
 }
 
 pub(crate) struct Stream {
@@ -67,6 +68,10 @@ impl Stream {
             .by_name("cefsrc")
             .unwrap();
         cefsrc.set_property("url", webpage_url);
+        if config.cef_gpu_enabled {
+            info!("Enabling GPU acceleration");
+            cefsrc.set_property("gpu", &true);
+        }
 
         pipeline
             .add_many(&[&cefbin, &audiomixer])
@@ -116,7 +121,7 @@ impl Stream {
             .bus()
             .expect("Unable to get Pipeline Bus")
             .set_sync_handler({
-                move |bus, message| {
+                move |_bus, message| {
                     match message.view() {
                         MessageView::Warning(warning) => {
                             warn!("{:?}", warning.debug())

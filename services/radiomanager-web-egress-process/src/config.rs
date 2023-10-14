@@ -1,5 +1,4 @@
 use serde::Deserialize;
-use std::env;
 
 fn from_str<'de, D>(deserializer: D) -> Result<u32, D::Error>
 where
@@ -7,6 +6,14 @@ where
 {
     let s: String = Deserialize::deserialize(deserializer)?;
     s.parse::<u32>().map_err(serde::de::Error::custom)
+}
+
+fn bool_from_str<'de, D>(deserializer: D) -> Result<bool, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s: String = Deserialize::deserialize(deserializer)?;
+    s.parse::<bool>().map_err(serde::de::Error::custom)
 }
 
 #[derive(Deserialize)]
@@ -41,8 +48,9 @@ pub(crate) struct Config {
     pub(crate) audio: AudioSettings,
     #[serde(flatten)]
     pub(crate) video: VideoSettings,
-    #[serde(rename = "video_acceleration")]
     pub(crate) video_acceleration: Option<VideoAcceleration>,
+    #[serde(default, deserialize_with = "bool_from_str")]
+    pub(crate) cef_gpu_enabled: bool,
 }
 
 impl Config {

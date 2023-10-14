@@ -28,6 +28,7 @@ pub(crate) fn main() {
             video_height: config.video.height,
             video_bitrate: config.video.bitrate,
             video_framerate: config.video.framerate,
+            video_profile: config.video.profile,
             video_encoder: match config.video_acceleration {
                 None => VideoEncoder::Software,
                 Some(VideoAcceleration::VAAPI) => VideoEncoder::VA,

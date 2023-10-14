@@ -39,6 +39,7 @@ pub(crate) fn make_video_encoder(
     video_height: u32,
     video_bitrate: u32,
     video_framerate: u32,
+    video_profile: &Option<String>,
     video_encoder: &VideoEncoder,
 ) -> (Element, Element) {
     let queue_in = make_element("queue");
@@ -68,11 +69,13 @@ pub(crate) fn make_video_encoder(
     };
 
     let h264parse = make_element("h264parse");
-    let caps_enc = make_capsfilter(
-        &Caps::builder("video/x-h264")
-            .field("profile", "baseline")
-            .build(),
-    );
+    let caps_after_encoder = {
+        let mut caps_builder = Caps::builder("video/x-h264");
+        if let Some(profile) = video_profile {
+            caps_builder = caps_builder.field("profile", profile)
+        }
+        make_capsfilter(&caps_builder.build())
+    };
     let queue_out = make_element("queue");
 
     pipeline
@@ -82,7 +85,7 @@ pub(crate) fn make_video_encoder(
             &caps_in,
             &encoder,
             &h264parse,
-            &caps_enc,
+            &caps_after_encoder,
             &queue_out,
         ])
         .expect("Unable to add elements to pipeline");
@@ -93,7 +96,7 @@ pub(crate) fn make_video_encoder(
         &caps_in,
         &encoder,
         &h264parse,
-        &caps_enc,
+        &caps_after_encoder,
         &queue_out,
     ])
     .expect("Unable to link elements");

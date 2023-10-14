@@ -58,14 +58,14 @@ pub(crate) fn make_video_encoder(
             let x264enc = make_element("x264enc");
             x264enc.set_property("key-int-max", video_framerate * 2);
             x264enc.set_property("bitrate", video_bitrate);
-            x264enc.set_property("pass", "cbr");
+            x264enc.set_property_from_str("pass", "cbr");
             x264enc
         }
         VideoEncoder::VA => {
             let vaapih264enc = make_element("vaapih264enc");
             vaapih264enc.set_property("keyframe-period", video_framerate * 2);
             vaapih264enc.set_property("bitrate", video_bitrate);
-            vaapih264enc.set_property("rate-control", "cbr");
+            vaapih264enc.set_property_from_str("rate-control", "cbr");
             vaapih264enc
         }
     };

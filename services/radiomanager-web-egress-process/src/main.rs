@@ -1,5 +1,5 @@
-use crate::config::Config;
-use crate::stream::{Stream, StreamConfig, StreamEvent, StreamOutput};
+use crate::config::{Config, VideoAcceleration};
+use crate::stream::{Stream, StreamConfig, StreamEvent, StreamOutput, VideoEncoder};
 use std::sync::mpsc::channel;
 use tracing::error;
 
@@ -28,6 +28,10 @@ pub(crate) fn main() {
             video_height: config.video.height,
             video_bitrate: config.video.bitrate,
             video_framerate: config.video.framerate,
+            video_encoder: match config.video_acceleration {
+                None => VideoEncoder::Software,
+                Some(VideoAcceleration::VAAPI) => VideoEncoder::VA,
+            },
             audio_bitrate: config.audio.bitrate,
         },
         event_sender,

@@ -1,5 +1,5 @@
 use crate::gstreamer_utils::{make_capsfilter, make_element};
-use crate::stream::StreamOutput;
+use crate::stream::{StreamOutput, VideoEncoder};
 use gstreamer::prelude::*;
 use gstreamer::{Caps, Element, Fraction, Pad, Pipeline};
 
@@ -33,18 +33,32 @@ pub(crate) fn make_output(pipeline: &Pipeline, stream_output: &StreamOutput) -> 
     }
 }
 
-pub(crate) fn make_h264_encoder(
+pub(crate) fn make_video_encoder(
     pipeline: &Pipeline,
     video_width: u32,
     video_height: u32,
     video_bitrate: u32,
     video_framerate: u32,
+    video_encoder: &VideoEncoder,
 ) -> (Element, Element) {
     let queue_in = make_element("queue");
     let videoconvert = make_element("videoconvert");
-    let x264enc = make_element("x264enc");
-    x264enc.set_property("key-int-max", video_framerate * 2);
-    x264enc.set_property("bitrate", video_bitrate);
+
+    let encoder = match video_encoder {
+        VideoEncoder::Software => {
+            let x264enc = make_element("x264enc");
+            x264enc.set_property("key-int-max", video_framerate * 2);
+            x264enc.set_property("bitrate", video_bitrate);
+            x264enc
+        }
+        VideoEncoder::VA => {
+            let vaapih264enc = make_element("vaapih264enc");
+            vaapih264enc.set_property("keyframe-period", video_framerate * 2);
+            vaapih264enc.set_property("bitrate", video_bitrate);
+            vaapih264enc
+        }
+    };
+
     let h264parse = make_element("h264parse");
     let caps = make_capsfilter(
         &Caps::builder("video/x-h264")
@@ -60,7 +74,7 @@ pub(crate) fn make_h264_encoder(
         .add_many(&[
             &queue_in,
             &videoconvert,
-            &x264enc,
+            &encoder,
             &h264parse,
             &caps,
             &queue_out,
@@ -70,7 +84,7 @@ pub(crate) fn make_h264_encoder(
     Element::link_many(&[
         &queue_in,
         &videoconvert,
-        &x264enc,
+        &encoder,
         &h264parse,
         &caps,
         &queue_out,
@@ -80,7 +94,7 @@ pub(crate) fn make_h264_encoder(
     (queue_in, queue_out)
 }
 
-pub(crate) fn make_aac_encoder(pipeline: &Pipeline, audio_bitrate: u32) -> (Element, Element) {
+pub(crate) fn make_audio_encoder(pipeline: &Pipeline, audio_bitrate: u32) -> (Element, Element) {
     let queue_in = make_element("queue");
     let audioconvert = make_element("audioconvert");
     let fdkaacenc = make_element("fdkaacenc");

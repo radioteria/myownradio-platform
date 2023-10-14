@@ -28,6 +28,11 @@ pub(crate) struct AudioSettings {
 }
 
 #[derive(Deserialize)]
+pub(crate) enum VideoAcceleration {
+    VAAPI,
+}
+
+#[derive(Deserialize)]
 pub(crate) struct Config {
     pub(crate) webpage_url: String,
     pub(crate) rtmp_url: String,
@@ -36,6 +41,8 @@ pub(crate) struct Config {
     pub(crate) audio: AudioSettings,
     #[serde(flatten)]
     pub(crate) video: VideoSettings,
+    #[serde(rename = "video_acceleration")]
+    pub(crate) video_acceleration: Option<VideoAcceleration>,
 }
 
 impl Config {

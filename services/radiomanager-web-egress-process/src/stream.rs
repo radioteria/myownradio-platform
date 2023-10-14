@@ -1,5 +1,5 @@
 use crate::gstreamer_utils::make_element;
-use crate::stream_utils::{make_aac_encoder, make_h264_encoder, make_output};
+use crate::stream_utils::{make_audio_encoder, make_output, make_video_encoder};
 use gstreamer::prelude::*;
 use gstreamer::{
     Bin, BusSyncReply, Element, MessageView, PadProbeData, PadProbeReturn, PadProbeType, Pipeline,
@@ -25,12 +25,18 @@ pub(crate) enum StreamOutput {
     RTMP { url: String, stream_key: String },
 }
 
+pub(crate) enum VideoEncoder {
+    Software,
+    VA,
+}
+
 pub(crate) struct StreamConfig {
     pub(crate) output: StreamOutput,
     pub(crate) video_width: u32,
     pub(crate) video_height: u32,
     pub(crate) video_bitrate: u32,
     pub(crate) video_framerate: u32,
+    pub(crate) video_encoder: VideoEncoder,
     pub(crate) audio_bitrate: u32,
 }
 
@@ -68,14 +74,15 @@ impl Stream {
 
         cefbin.link(&audiomixer).unwrap();
 
-        let (video_sink, video_src) = make_h264_encoder(
+        let (video_sink, video_src) = make_video_encoder(
             &pipeline,
             config.video_width,
             config.video_height,
             config.video_bitrate,
             config.video_framerate,
+            &config.video_encoder,
         );
-        let (audio_sink, audio_src) = make_aac_encoder(&pipeline, config.audio_bitrate);
+        let (audio_sink, audio_src) = make_audio_encoder(&pipeline, config.audio_bitrate);
 
         Element::link_many(&[&cefbin, &video_sink]).expect("Unable to link elements");
         Element::link_many(&[&audiomixer, &audio_sink]).expect("Unable to link elements");

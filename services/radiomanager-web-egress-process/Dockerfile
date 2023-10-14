@@ -86,10 +86,10 @@ COPY Cargo.toml ./
 COPY Cargo.lock ./
 COPY src ./src
 
-RUN ls -l && cargo build --release
+RUN cargo build --release
 
 FROM build-deps
 
 COPY --from=build /code/target/release/radiomanager-web-egress-process /radiomanager-web-egress-process
 
-CMD ["xvfb-run", "-a", "--server-args=\"-nolisten tcp -screen 0 1280x720x30+32\"", "/radiomanager-web-egress-process"]
+CMD xvfb-run -a --server-args="-nolisten tcp -screen 0 1280x720x30+32" /radiomanager-web-egress-process

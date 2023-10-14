@@ -47,7 +47,7 @@ pub(crate) fn make_video_encoder(
             .field("width", video_width as i32)
             .field("height", video_height as i32)
             .field("rate", Fraction::from(video_framerate as i32))
-            .field("format", &"BRGA")
+            .field("format", &"BGRA")
             .build(),
     );
     let videoconvert = make_element("videoconvert");

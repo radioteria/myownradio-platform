@@ -63,6 +63,10 @@ pub(crate) async fn stop_stream(
     k8s_client: web::Data<K8sClient>,
     user_id: UserId,
 ) -> impl Responder {
+    let stream_id = path.into_inner();
+
+    k8s_client.delete_stream_job(&stream_id, &user_id).await.unwrap();
+
     HttpResponse::Ok().finish()
 }
 

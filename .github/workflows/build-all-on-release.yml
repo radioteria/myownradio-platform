@@ -101,3 +101,16 @@ jobs:
               "token": "${{ secrets.REPO_ACCESS_TOKEN }}",
               "release": "${{ github.event.release.tag_name }}"
             }
+      - name: trigger "pldin601/myownradio-radiomanager-web-egress-controller" build
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: build-image
+          client-payload: |
+            {
+              "image_name": "pldin601/myownradio-radiomanager-web-egress-controller",
+              "dockerfile": "services/radiomanager-web-egress-controller/Dockerfile",
+              "context": "services/radiomanager-web-egress-controller",
+              "token": "${{ secrets.REPO_ACCESS_TOKEN }}",
+              "release": "${{ github.event.release.tag_name }}"
+            }

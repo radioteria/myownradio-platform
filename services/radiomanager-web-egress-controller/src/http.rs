@@ -3,7 +3,6 @@ use crate::k8s::K8sClient;
 use crate::types::UserId;
 use actix_server::Server;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use k8s_openapi::serde_json;
 use serde::Deserialize;
 use tracing::error;
 
@@ -19,10 +18,7 @@ pub(crate) async fn get_streams(
         }
     };
 
-    HttpResponse::Ok().json(serde_json::json!(jobs
-        .into_iter()
-        .map(|stream| stream.name)
-        .collect::<Vec<_>>()))
+    HttpResponse::Ok().json(jobs)
 }
 
 pub(crate) async fn get_stream(
@@ -33,7 +29,7 @@ pub(crate) async fn get_stream(
     let stream_id = path.into_inner();
 
     match k8s_client.get_stream_job(&stream_id, &user_id).await {
-        Ok(Some(stream)) => HttpResponse::Ok().json(serde_json::json!({ "stream": stream.name })),
+        Ok(Some(stream)) => HttpResponse::Ok().json(stream),
         Ok(None) => HttpResponse::NotFound().body("no_stream"),
         Err(error) => {
             error!("{}", error);

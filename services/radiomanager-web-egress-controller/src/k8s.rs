@@ -1,13 +1,34 @@
 use crate::types::UserId;
-use k8s_openapi::api::batch::v1::Job;
-use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
+use k8s_openapi::api::batch::v1::{Job, JobStatus};
 use k8s_openapi::serde_json;
 use kube::api::{DeleteParams, ListParams, PostParams, PropagationPolicy};
+use kube::ResourceExt;
+use serde::Serialize;
 use tracing::info;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub(crate) struct StreamJob {
-    pub(crate) name: String,
+    pub(crate) stream_id: String,
+    pub(crate) status: StreamJobStatus,
+}
+
+#[derive(Debug, Serialize)]
+pub(crate) enum StreamJobStatus {
+    Started,
+    Finished,
+    Failed,
+}
+
+impl Into<StreamJobStatus> for JobStatus {
+    fn into(self) -> StreamJobStatus {
+        if self.failed.unwrap_or_default() > self.active.unwrap_or_default() {
+            StreamJobStatus::Failed
+        } else if self.succeeded.unwrap_or_default() > self.active.unwrap_or_default() {
+            StreamJobStatus::Finished
+        } else {
+            StreamJobStatus::Started
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -60,7 +81,12 @@ impl K8sClient {
             .items
             .into_iter()
             .map(|job| StreamJob {
-                name: job.metadata.name.unwrap_or_default(),
+                stream_id: job
+                    .labels()
+                    .get("radioterio-stream-id")
+                    .expect("Expected label radioterio-stream-id not found")
+                    .to_string(),
+                status: job.status.unwrap_or_default().into(),
             })
             .collect())
     }
@@ -232,7 +258,12 @@ impl K8sClient {
             .into_iter()
             .next()
             .map(|job| StreamJob {
-                name: job.metadata.name.unwrap(),
+                stream_id: job
+                    .labels()
+                    .get("radioterio-stream-id")
+                    .expect("Expected label radioterio-stream-id not found")
+                    .to_string(),
+                status: job.status.unwrap_or_default().into(),
             });
 
         Ok(stream_job)

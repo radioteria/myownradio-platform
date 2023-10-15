@@ -141,27 +141,27 @@ impl K8sClient {
             },
             {
               "name": "VIDEO_WIDTH",
-              "value": video_settings.width
+              "value": format_args!("{}", video_settings.width)
             },
             {
               "name": "VIDEO_HEIGHT",
-              "value": video_settings.height
+              "value": format_args!("{}", video_settings.height)
             },
             {
               "name": "VIDEO_BITRATE",
-              "value": video_settings.bitrate
+              "value": format_args!("{}", video_settings.bitrate)
             },
             {
               "name": "VIDEO_FRAMERATE",
-              "value": video_settings.framerate
+              "value": format_args!("{}", video_settings.framerate)
             },
             {
               "name": "AUDIO_BITRATE",
-              "value": audio_settings.bitrate
+              "value": format_args!("{}", audio_settings.bitrate)
             },
             {
               "name": "AUDIO_CHANNELS",
-              "value": audio_settings.channels
+              "value": format_args!("{}", audio_settings.channels)
             },
             {
               "name": "CEF_GPU_ENABLED",

@@ -215,4 +215,26 @@ impl K8sClient {
 
         Ok(())
     }
+
+    pub(crate) async fn get_stream_job(
+        &self,
+        stream_id: &str,
+        user_id: &UserId,
+    ) -> Result<Option<StreamJob>, K8sClientError> {
+        let label_selector = format!(
+            "radioterio-stream-id={},radioterio-stream-user-id={}",
+            stream_id, **user_id
+        );
+        let stream_job = self
+            .job_api
+            .list(&ListParams::default().labels(&label_selector))
+            .await?
+            .into_iter()
+            .next()
+            .map(|job| StreamJob {
+                name: job.metadata.name.unwrap(),
+            });
+
+        Ok(stream_job)
+    }
 }

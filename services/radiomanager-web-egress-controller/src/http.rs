@@ -3,8 +3,9 @@ use crate::k8s::K8sClient;
 use crate::types::UserId;
 use actix_server::Server;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use k8s_openapi::serde_json;
 use serde::Deserialize;
-use tracing::{error, info};
+use tracing::error;
 
 pub(crate) async fn get_streams(
     k8s_client: web::Data<K8sClient>,
@@ -18,9 +19,10 @@ pub(crate) async fn get_streams(
         }
     };
 
-    info!("{:?}", jobs);
-
-    HttpResponse::Ok().finish()
+    HttpResponse::Ok().json(serde_json::json!(jobs
+        .into_iter()
+        .map(|stream| stream.name)
+        .collect::<Vec<_>>()))
 }
 
 pub(crate) async fn get_stream(
@@ -28,7 +30,16 @@ pub(crate) async fn get_stream(
     k8s_client: web::Data<K8sClient>,
     user_id: UserId,
 ) -> impl Responder {
-    HttpResponse::Ok().finish()
+    let stream_id = path.into_inner();
+
+    match k8s_client.get_stream_job(&stream_id, &user_id).await {
+        Ok(Some(stream)) => HttpResponse::Ok().json(serde_json::json!({ "stream": stream.name })),
+        Ok(None) => HttpResponse::NotFound().body("no_stream"),
+        Err(error) => {
+            error!("{}", error);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
 }
 
 #[derive(Deserialize)]
@@ -44,7 +55,7 @@ pub(crate) async fn start_stream(
     k8s_client: web::Data<K8sClient>,
     user_id: UserId,
 ) -> impl Responder {
-    k8s_client
+    if let Err(error) = k8s_client
         .create_stream_job(
             &body.stream_id,
             &user_id,
@@ -53,7 +64,10 @@ pub(crate) async fn start_stream(
             &body.rtmp_stream_key,
         )
         .await
-        .unwrap();
+    {
+        error!("{}", error);
+        return HttpResponse::InternalServerError().finish();
+    }
 
     HttpResponse::Ok().finish()
 }
@@ -65,7 +79,10 @@ pub(crate) async fn stop_stream(
 ) -> impl Responder {
     let stream_id = path.into_inner();
 
-    k8s_client.delete_stream_job(&stream_id, &user_id).await.unwrap();
+    if let Err(error) = k8s_client.delete_stream_job(&stream_id, &user_id).await {
+        error!("{}", error);
+        return HttpResponse::InternalServerError().finish();
+    }
 
     HttpResponse::Ok().finish()
 }

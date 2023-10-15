@@ -40,14 +40,19 @@ pub(crate) fn main() {
     )
     .expect("Unable to create stream");
 
+    let mut is_error = false;
+
     while let Ok(event) = event_receiver.recv() {
         match event {
             StreamEvent::Error(error) => {
                 error!("Error happened while streaming: {:?}", error);
+                is_error = true;
                 break;
             }
         }
     }
 
     drop(stream);
+
+    std::process::exit(if is_error { 0 } else { 1 })
 }

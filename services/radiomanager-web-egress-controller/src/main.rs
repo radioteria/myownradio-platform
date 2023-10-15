@@ -5,14 +5,19 @@ use crate::k8s::K8sClient;
 mod config;
 mod http;
 mod k8s;
+mod types;
 
 #[actix_rt::main]
 pub(crate) async fn main() -> std::io::Result<()> {
+    tracing_subscriber::fmt::init();
+
     let config = Config::from_env();
-    let k8s_client = K8sClient::create()
+
+    let k8s_client = K8sClient::create(&config.egress_namespace)
         .await
         .expect("Unable to initialize k8s client");
-    let http_server = run_server(&config).expect("Unable to start HTTP server");
+
+    let http_server = run_server(&config, &k8s_client).expect("Unable to start HTTP server");
 
     http_server.await
 }

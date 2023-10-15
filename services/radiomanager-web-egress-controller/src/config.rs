@@ -5,6 +5,7 @@ pub(crate) struct Config {
     pub(crate) bind_address: String,
     pub(crate) egress_image_name: String,
     pub(crate) egress_image_tag: String,
+    pub(crate) egress_namespace: String,
 }
 
 impl Config {

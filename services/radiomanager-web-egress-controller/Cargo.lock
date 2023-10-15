@@ -1189,10 +1189,12 @@ dependencies = [
 name = "radiomanager-web-egress-controller"
 version = "1.0.0"
 dependencies = [
+ "actix-http",
  "actix-rt",
  "actix-server",
  "actix-web",
  "envy",
+ "futures",
  "k8s-openapi",
  "kube",
  "serde",

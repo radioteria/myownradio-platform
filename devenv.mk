@@ -17,6 +17,7 @@ devenv: prepare-devenv stop
 				-v "$(PWD)/.cargo-cache/git":/rust/.cargo/git \
 				-v "$(PWD)/.cargo-cache/registry":/rust/.cargo/registry \
 				-v "$(PWD)":/code \
+				$(foreach EXTRA_MOUNT,$(EXTRA_MOUNTS),-v $(EXTRA_MOUNT)) \
 				--env-file "$(PWD)/.env" \
 				--env "HOME=/tmp" \
 				--label-file "$(PWD)/.devenv-labels" \

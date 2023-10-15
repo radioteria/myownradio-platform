@@ -34,6 +34,8 @@ pub(crate) struct VideoSettings {
 pub(crate) struct AudioSettings {
     #[serde(rename = "audio_bitrate", deserialize_with = "from_str")]
     pub(crate) bitrate: u32,
+    #[serde(rename = "audio_channels", deserialize_with = "from_str")]
+    pub(crate) channels: u32,
 }
 
 #[derive(Deserialize)]

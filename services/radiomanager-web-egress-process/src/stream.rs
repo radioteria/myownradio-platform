@@ -39,6 +39,7 @@ pub(crate) struct StreamConfig {
     pub(crate) video_profile: Option<String>,
     pub(crate) video_encoder: VideoEncoder,
     pub(crate) audio_bitrate: u32,
+    pub(crate) audio_channels: u32,
     pub(crate) cef_gpu_enabled: bool,
 }
 
@@ -89,7 +90,8 @@ impl Stream {
             &config.video_profile,
             &config.video_encoder,
         );
-        let (audio_sink, audio_src) = make_audio_encoder(&pipeline, config.audio_bitrate);
+        let (audio_sink, audio_src) =
+            make_audio_encoder(&pipeline, config.audio_bitrate, config.audio_channels);
 
         Element::link_many(&[&cefbin, &video_sink]).expect("Unable to link elements");
         Element::link_many(&[&audiomixer, &audio_sink]).expect("Unable to link elements");

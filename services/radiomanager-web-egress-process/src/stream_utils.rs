@@ -106,13 +106,22 @@ pub(crate) fn make_video_encoder(
     (queue_in, queue_out)
 }
 
-pub(crate) fn make_audio_encoder(pipeline: &Pipeline, audio_bitrate: u32) -> (Element, Element) {
+pub(crate) fn make_audio_encoder(
+    pipeline: &Pipeline,
+    audio_bitrate: u32,
+    audio_channels: u32,
+) -> (Element, Element) {
     let queue_in = make_element("queue");
     let audioconvert = make_element("audioconvert");
     let fdkaacenc = make_element("fdkaacenc");
     fdkaacenc.set_property("peak-bitrate", (audio_bitrate * 1000) as i32);
     let aacparse = make_element("aacparse");
-    let caps = make_capsfilter(&Caps::builder("audio/mpeg").field("rate", 44100).build());
+    let caps = make_capsfilter(
+        &Caps::builder("audio/mpeg")
+            .field("rate", 44100)
+            .field("channels", audio_channels as i32)
+            .build(),
+    );
     let queue_out = make_element("queue");
 
     pipeline

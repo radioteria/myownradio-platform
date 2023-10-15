@@ -17,3 +17,23 @@ impl From<i32> for UserId {
         UserId(id)
     }
 }
+
+#[derive(Deserialize)]
+pub(crate) struct RtmpSettings {
+    pub(crate) rtmp_url: String,
+    pub(crate) stream_key: String,
+}
+
+#[derive(Deserialize)]
+pub(crate) struct VideoSettings {
+    pub(crate) width: u32,
+    pub(crate) height: u32,
+    pub(crate) framerate: u32,
+    pub(crate) bitrate: u32,
+}
+
+#[derive(Deserialize)]
+pub(crate) struct AudioSettings {
+    pub(crate) bitrate: u32,
+    pub(crate) channels: u32,
+}

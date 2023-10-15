@@ -1,6 +1,6 @@
 use crate::config::Config;
 use crate::k8s::K8sClient;
-use crate::types::UserId;
+use crate::types::{AudioSettings, RtmpSettings, UserId, VideoSettings};
 use actix_server::Server;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use serde::Deserialize;
@@ -42,9 +42,10 @@ pub(crate) async fn get_stream(
 #[derive(Deserialize)]
 pub(crate) struct StartStreamRequestBody {
     stream_id: String,
-    website_url: String,
-    rtmp_url: String,
-    rtmp_stream_key: String,
+    webpage_url: String,
+    rtmp_settings: RtmpSettings,
+    video_settings: VideoSettings,
+    audio_settings: AudioSettings,
 }
 
 pub(crate) async fn start_stream(
@@ -58,9 +59,10 @@ pub(crate) async fn start_stream(
         .create_stream_job(
             &body.stream_id,
             &user_id,
-            &body.website_url,
-            &body.rtmp_url,
-            &body.rtmp_stream_key,
+            &body.webpage_url,
+            &body.rtmp_settings,
+            &body.video_settings,
+            &body.audio_settings,
         )
         .await
     {

@@ -3,6 +3,7 @@ use crate::k8s::K8sClient;
 use crate::types::UserId;
 use actix_server::Server;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use serde::Deserialize;
 use tracing::{error, info};
 
 pub(crate) async fn get_streams(
@@ -30,11 +31,30 @@ pub(crate) async fn get_stream(
     HttpResponse::Ok().finish()
 }
 
+#[derive(Deserialize)]
+pub(crate) struct StartStreamRequestBody {
+    stream_id: String,
+    website_url: String,
+    rtmp_url: String,
+    rtmp_stream_key: String,
+}
+
 pub(crate) async fn start_stream(
-    path: web::Path<String>,
+    body: web::Json<StartStreamRequestBody>,
     k8s_client: web::Data<K8sClient>,
     user_id: UserId,
 ) -> impl Responder {
+    k8s_client
+        .create_stream_job(
+            &body.stream_id,
+            &user_id,
+            &body.website_url,
+            &body.rtmp_url,
+            &body.rtmp_stream_key,
+        )
+        .await
+        .unwrap();
+
     HttpResponse::Ok().finish()
 }
 
@@ -53,12 +73,15 @@ pub(crate) fn run_server(config: &Config, k8s_client: &K8sClient) -> std::io::Re
         move || {
             App::new()
                 .app_data(web::Data::new(k8s_client.clone()))
-                .service(web::resource("/streams").route(web::get().to(get_streams)))
+                .service(
+                    web::resource("/streams")
+                        .route(web::get().to(get_streams))
+                        .route(web::post().to(start_stream)),
+                )
                 .service(
                     web::resource("/streams/{id}")
                         .route(web::get().to(get_stream))
-                        .route(web::post().to(start_stream))
-                        .route(web::delete().to(start_stream)),
+                        .route(web::delete().to(stop_stream)),
                 )
         }
     });

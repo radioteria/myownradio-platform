@@ -13,9 +13,13 @@ pub(crate) async fn main() -> std::io::Result<()> {
 
     let config = Config::from_env();
 
-    let k8s_client = K8sClient::create(&config.egress_namespace)
-        .await
-        .expect("Unable to initialize k8s client");
+    let k8s_client = K8sClient::create(
+        &config.egress_namespace,
+        &config.egress_image_name,
+        &config.egress_image_tag,
+    )
+    .await
+    .expect("Unable to initialize k8s client");
 
     let http_server = run_server(&config, &k8s_client).expect("Unable to start HTTP server");
 

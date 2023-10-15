@@ -2,10 +2,19 @@ use actix_http::{BoxedPayloadStream, Payload};
 use actix_web::error::ErrorBadRequest;
 use actix_web::{FromRequest, HttpRequest};
 use futures::future::{err, ok, Ready};
+use std::ops::Deref;
 use tracing::warn;
 
 #[derive(Clone, Debug)]
 pub(crate) struct UserId(i32);
+
+impl Deref for UserId {
+    type Target = i32;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
 
 impl From<i32> for UserId {
     fn from(id: i32) -> Self {

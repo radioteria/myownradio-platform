@@ -1,4 +1,4 @@
-use crate::types::UserId;
+use crate::types::{AudioSettings, RtmpSettings, UserId, VideoSettings};
 use k8s_openapi::api::batch::v1::{Job, JobStatus};
 use k8s_openapi::serde_json;
 use kube::api::{DeleteParams, ListParams, PostParams, PropagationPolicy};
@@ -96,8 +96,9 @@ impl K8sClient {
         stream_id: &str,
         user_id: &UserId,
         webpage_url: &str,
-        rtmp_url: &str,
-        rtmp_stream_key: &str,
+        rtmp_settings: &RtmpSettings,
+        video_settings: &VideoSettings,
+        audio_settings: &AudioSettings,
     ) -> Result<(), K8sClientError> {
         let labels = serde_json::json!({
             "radioterio-stream-job": "true",
@@ -132,31 +133,35 @@ impl K8sClient {
             },
             {
               "name": "RTMP_URL",
-              "value": rtmp_url
+              "value": rtmp_settings.rtmp_url
             },
             {
               "name": "RTMP_STREAM_KEY",
-              "value": rtmp_stream_key
+              "value": rtmp_settings.stream_key
             },
             {
               "name": "VIDEO_WIDTH",
-              "value": "1280"
+              "value": format_args!("{}", video_settings.width)
             },
             {
               "name": "VIDEO_HEIGHT",
-              "value": "720"
+              "value": format_args!("{}", video_settings.height)
             },
             {
               "name": "VIDEO_BITRATE",
-              "value": "2500"
+              "value": format_args!("{}", video_settings.bitrate)
             },
             {
               "name": "VIDEO_FRAMERATE",
-              "value": "30"
+              "value": format_args!("{}", video_settings.framerate)
             },
             {
               "name": "AUDIO_BITRATE",
-              "value": "128"
+              "value": format_args!("{}", audio_settings.bitrate)
+            },
+            {
+              "name": "AUDIO_CHANNELS",
+              "value": format_args!("{}", audio_settings.channels)
             },
             {
               "name": "CEF_GPU_ENABLED",

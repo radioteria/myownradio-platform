@@ -1,5 +1,6 @@
 use crate::types::UserId;
 use k8s_openapi::api::batch::v1::Job;
+use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
 use k8s_openapi::serde_json;
 use kube::api::{ListParams, PostParams};
 use tracing::info;
@@ -91,6 +92,13 @@ impl K8sClient {
                   {
                     "name": "web-egress-process",
                     "image": format_args!("{}:{}", self.image_name, self.image_tag),
+                    "securityContext": {
+                      "privileged": true
+                    },
+                    "volumeMounts": [{
+                      "name": "dev-dri",
+                      "mountPath": "/dev/dri"
+                    }],
                     "env": [
                       {
                         "name": "WEBPAGE_URL",
@@ -135,6 +143,12 @@ impl K8sClient {
                     ]
                   }
                 ],
+                "volumes": [{
+                  "name": "dev-dri",
+                  "hostPath": {
+                    "path": "/dev/dri"
+                  }
+                }],
                 "restartPolicy": "OnFailure"
               }
             }

@@ -17,7 +17,3 @@ pub(crate) fn now() -> i64 {
         .unwrap()
         .as_millis() as i64
 }
-
-pub(crate) fn now_duration() -> Duration {
-    SystemTime::now().duration_since(UNIX_EPOCH).unwrap()
-}

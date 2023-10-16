@@ -11,6 +11,6 @@ impl IsActionAllowed for AuthTokenClaims {
 
         self.claims
             .iter()
-            .any(|claim| claim.methods.contains(&method) && claim.paths.contains(&uri))
+            .any(|claim| claim.methods.contains(&method) && claim.uris.contains(&uri))
     }
 }

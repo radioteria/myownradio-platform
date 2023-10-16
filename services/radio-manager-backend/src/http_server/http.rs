@@ -32,10 +32,10 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
             .app_data(Data::new(stream_service_factory.clone()))
             .app_data(Data::new(pubsub_client.clone()))
             .app_data(Data::new(auth_token_service.clone()))
-            .service(
-                web::scope("/pub/v0/auth")
-                    .route("/by-token", web::get().to(forward_auth::auth_by_jwt_token)),
-            )
+            .service(web::scope("/v0/forward-auth").route(
+                "/by-token",
+                web::get().to(forward_auth::auth_by_jwt_token_or_legacy_token),
+            ))
             .service(
                 web::scope("/v1/tracks")
                     .route(

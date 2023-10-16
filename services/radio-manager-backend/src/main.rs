@@ -44,7 +44,10 @@ async fn main() -> Result<()> {
 
     let pubsub_client = PubsubClient::new(&config.pubsub.endpoint);
 
-    let auth_token_service = AuthTokenService::create(&config.auth_jwt_secret_key);
+    let auth_token_service = AuthTokenService::create(
+        &config.auth_jwt_secret_key,
+        &config.legacy_auth_jwt_secret_key,
+    );
 
     let file_system = LocalFileSystem::create(config.file_system_root_path.clone());
 

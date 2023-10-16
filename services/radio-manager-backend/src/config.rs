@@ -112,6 +112,7 @@ pub(crate) struct Config {
     pub(crate) file_server_endpoint: String,
     pub(crate) file_system_root_path: String,
     pub(crate) auth_jwt_secret_key: String,
+    pub(crate) legacy_auth_jwt_secret_key: String,
 }
 
 impl Config {

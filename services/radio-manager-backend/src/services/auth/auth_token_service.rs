@@ -1,6 +1,7 @@
 use super::auth_token_claims::AuthTokenClaims;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use std::time::Duration;
+use tracing::warn;
 
 const TOKEN_EXPIRES_AFTER: Duration = Duration::from_secs(3600);
 
@@ -25,8 +26,13 @@ impl AuthTokenService {
 
     pub(crate) fn verify_claims(&self, token: &str) -> Option<AuthTokenClaims> {
         let key = DecodingKey::from_secret(self.secret_key.as_ref());
-        let token_data = decode::<AuthTokenClaims>(token, &key, &Validation::default()).ok()?;
 
-        Some(token_data.claims.clone())
+        match decode::<AuthTokenClaims>(token, &key, &Validation::default()) {
+            Ok(data) => Some(data.claims.clone()),
+            Err(error) => {
+                warn!("Unable to verify claims: {}", error);
+                None
+            }
+        }
     }
 }

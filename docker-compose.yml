@@ -141,7 +141,7 @@ services:
       - traefik.http.routers.pubsub.middlewares=stripprefixPubsub,forwardauthPubsub,corsPubsub
       - traefik.http.services.pubsub.loadbalancer.server.port=8080
       - traefik.http.middlewares.stripprefixPubsub.stripprefix.prefixes=/pubsub
-      - traefik.http.middlewares.forwardauthPubsub.forwardauth.address=http://radio-manager-backend:8080/v0/forward-auth/by-token:8080
+      - traefik.http.middlewares.forwardauthPubsub.forwardauth.address=http://radio-manager-backend:8080/v0/forward-auth/by-token
       - traefik.http.middlewares.forwardauthPubsub.forwardauth.authResponseHeaders=user-id
       - traefik.http.middlewares.forwardauthPubsub.forwardauth.trustForwardHeader=false
       - traefik.http.middlewares.corsPubsub.headers.accesscontrolallowmethods=GET
@@ -171,7 +171,7 @@ services:
       - traefik.http.routers.radioManagerPub.middlewares=stripprefixRadioManager,corsRadioManager
       - traefik.http.services.radioManager.loadbalancer.server.port=8080
       - traefik.http.middlewares.stripprefixRadioManager.stripprefix.prefixes=/radio-manager/api
-      - traefik.http.middlewares.forwardauthRadioManager.forwardauth.address=http://radio-manager-backend:8080/v0/forward-auth/by-token:8080
+      - traefik.http.middlewares.forwardauthRadioManager.forwardauth.address=http://radio-manager-backend:8080/v0/forward-auth/by-token
       - traefik.http.middlewares.forwardauthRadioManager.forwardauth.authResponseHeaders=user-id
       - traefik.http.middlewares.forwardauthRadioManager.forwardauth.trustForwardHeader=false
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowmethods=GET,POST

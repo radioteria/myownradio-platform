@@ -13,6 +13,7 @@ import {
   UploadTrackResponseSchema,
   UploadTrackToChannelResponseSchema,
 } from './httpSchemas'
+import { makeClientRequest } from '@/api/request'
 
 export const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
 
@@ -99,11 +100,10 @@ export async function uploadTrackToLibrary(file: File, abortSignal: AbortSignal)
   const form = new FormData()
   form.set('file', file)
 
-  const { tracks } = await fetch(`${BACKEND_BASE_URL}/api/v2/track/upload`, {
+  const { tracks } = await makeClientRequest(`${BACKEND_BASE_URL}/api/v2/track/upload`, {
     signal: abortSignal,
     method: 'POST',
     body: form,
-    credentials: 'include',
   })
     .then((res) => res.json())
     .then((json) => UploadTrackResponseSchema.parse(json).data)
@@ -124,11 +124,10 @@ export async function uploadTrackToChannel(
   form.set('file', file)
   form.set('stream_id', String(channelId))
 
-  const { tracks } = await fetch(`${BACKEND_BASE_URL}/api/v2/track/upload`, {
+  const { tracks } = await makeClientRequest(`${BACKEND_BASE_URL}/api/v2/track/upload`, {
     signal: abortSignal,
     method: 'POST',
     body: form,
-    credentials: 'include',
   })
     .then((res) => res.json())
     .then((json) => UploadTrackToChannelResponseSchema.parse(json).data)
@@ -158,10 +157,9 @@ export async function removeTracksFromChannelById(uniqueIds: readonly string[], 
   form.set('stream_id', String(channelId))
   form.set('unique_ids', uniqueIds.join(','))
 
-  await fetch(`${BACKEND_BASE_URL}/api/v2/stream/removeTracks`, {
+  await makeClientRequest(`${BACKEND_BASE_URL}/api/v2/stream/removeTracks`, {
     method: 'POST',
     body: form,
-    credentials: 'include',
   })
     .then((res) => res.json())
     .then((json) => RemoveTracksFromChannelResponseSchema.parse(json).data)
@@ -184,8 +182,7 @@ export const getTrackTranscodeStream = async (
   if (initialPosition > 0) audioUrl.searchParams.set('initialPosition', `${initialPosition}`)
   if (audioFormat) audioUrl.searchParams.set('audioFormat', audioFormat)
 
-  const response = await fetch(audioUrl, {
-    credentials: 'include',
+  const response = await makeClientRequest(audioUrl, {
     signal,
   })
   const contentType = response.headers.get('Content-Type')

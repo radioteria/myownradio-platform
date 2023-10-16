@@ -10,10 +10,13 @@ impl IsActionAllowed for AuthTokenClaims {
         let method = method.to_string();
         let uri = uri.to_string();
 
-        let is_allowed = self
-            .claims
-            .iter()
-            .any(|claim| claim.methods.contains(&method) && claim.uris.contains(&uri));
+        let is_allowed = self.claims.iter().any(|claim| {
+            claim.methods.contains(&method)
+                && claim
+                    .uris
+                    .iter()
+                    .any(|claim_uri| uri.starts_with(claim_uri))
+        });
 
         if !is_allowed {
             debug!(

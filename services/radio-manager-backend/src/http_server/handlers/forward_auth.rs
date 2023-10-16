@@ -4,7 +4,7 @@ use crate::mysql_client::MySqlClient;
 use crate::services::auth::{AuthTokenService, IsActionAllowed};
 use crate::storage::db::repositories::users::get_user_by_session_token;
 use actix_web::{web, HttpRequest, HttpResponse};
-use tracing::warn;
+use tracing::{debug, warn};
 
 const LEGACY_SESSION_COOKIE_NAME: &str = "secure_session";
 
@@ -13,6 +13,8 @@ pub(crate) async fn auth_by_jwt_token_or_legacy_token(
     auth_token_service: web::Data<AuthTokenService>,
     mysql_client: web::Data<MySqlClient>,
 ) -> Response {
+    debug!("Headers {:?}", req.headers());
+
     let forwarded_method = match req
         .headers()
         .get("X-Forwarded-Method")

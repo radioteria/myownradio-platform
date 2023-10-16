@@ -1357,18 +1357,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "jwt"
-version = "0.16.0"
+name = "jsonwebtoken"
+version = "8.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6204285f77fe7d9784db3fdc449ecce1a0114927a51d5a41c4c7a292011c015f"
+checksum = "6971da4d9c3aa03c3d8f3ff0f4155b534aad021292003895a469716b2a230378"
 dependencies = [
- "base64 0.13.0",
- "crypto-common",
- "digest",
- "hmac",
+ "base64 0.21.0",
+ "pem",
+ "ring",
  "serde",
  "serde_json",
- "sha2",
+ "simple_asn1",
 ]
 
 [[package]]
@@ -1542,6 +1541,17 @@ checksum = "a8903e5a29a317527874d0402f867152a3d21c908bb0b933e416c65e301d4c36"
 dependencies = [
  "memchr",
  "minimal-lexical",
+]
+
+[[package]]
+name = "num-bigint"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f93ab6289c7b344a8a9f60f88d80aa20032336fe78da341afc91c8a2341fc75f"
+dependencies = [
+ "autocfg",
+ "num-integer",
+ "num-traits",
 ]
 
 [[package]]
@@ -1722,6 +1732,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c520e05135d6e763148b6426a837e239041653ba7becd2e538c076c738025fc"
 
 [[package]]
+name = "pem"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8835c273a76a90455d7344889b0964598e3316e2a79ede8e36f16bdcf2228b8"
+dependencies = [
+ "base64 0.13.0",
+]
+
+[[package]]
 name = "pem-rfc7468"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1887,8 +1906,7 @@ dependencies = [
  "dotenv",
  "envy",
  "futures",
- "hmac",
- "jwt",
+ "jsonwebtoken",
  "prometheus",
  "reqwest",
  "scooby",
@@ -1896,7 +1914,6 @@ dependencies = [
  "serde_json",
  "serde_millis",
  "serde_repr",
- "sha2",
  "sqlx",
  "thiserror",
  "tracing",
@@ -2266,6 +2283,18 @@ checksum = "5e1788eed21689f9cf370582dfc467ef36ed9c707f073528ddafa8d83e3b8500"
 dependencies = [
  "digest",
  "rand_core",
+]
+
+[[package]]
+name = "simple_asn1"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "adc4e5204eb1910f40f9cfa375f6f05b68c3abac4b6fd879c8ff5e7ae8a0a085"
+dependencies = [
+ "num-bigint",
+ "num-traits",
+ "thiserror",
+ "time 0.3.11",
 ]
 
 [[package]]

@@ -1,39 +1,32 @@
 use super::auth_token_claims::AuthTokenClaims;
-use hmac::{Hmac, Mac};
-use jwt::{AlgorithmType, Header, SignWithKey, Token, VerifyWithKey};
-use sha2::Sha384;
+use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+use std::time::Duration;
+
+const TOKEN_EXPIRES_AFTER: Duration = Duration::from_secs(3600);
 
 #[derive(Clone)]
 pub(crate) struct AuthTokenService {
-    key: Hmac<Sha384>,
+    secret_key: String,
 }
 
 impl AuthTokenService {
-    pub(crate) fn create(secret_key: String) -> Self {
-        let key: Hmac<Sha384> =
-            Hmac::new_from_slice(secret_key.as_bytes()).expect("Unable to encrypt JWT key");
-
-        Self { key }
+    pub(crate) fn create(secret_key: &str) -> Self {
+        Self {
+            secret_key: secret_key.to_string(),
+        }
     }
 
     pub(crate) fn sign_claims(&self, claims: AuthTokenClaims) -> String {
-        let header = Header {
-            algorithm: AlgorithmType::Hs384,
-            ..Default::default()
-        };
+        let key = EncodingKey::from_secret(self.secret_key.as_ref());
+        let header = Header::new(Algorithm::HS256);
 
-        let token = Token::new(header, claims)
-            .sign_with_key(&self.key)
-            .expect("Unable to sign claims");
-
-        token.as_str().to_string()
+        encode(&header, &claims, &key).expect("Unable to sign claims")
     }
 
-    pub(crate) fn verify_claims(&self, token: String) -> Option<AuthTokenClaims> {
-        let token: Token<_, AuthTokenClaims, _> =
-            VerifyWithKey::verify_with_key(token, &self.key).ok()?;
-        let claims = token.claims();
+    pub(crate) fn verify_claims(&self, token: &str) -> Option<AuthTokenClaims> {
+        let key = DecodingKey::from_secret(self.secret_key.as_ref());
+        let token_data = decode::<AuthTokenClaims>(token, &key, &Validation::default()).ok()?;
 
-        Some(claims.clone())
+        Some(token_data.claims.clone())
     }
 }

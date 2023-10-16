@@ -9,6 +9,7 @@ pub(crate) struct AuthTokenClaim {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub(crate) struct AuthTokenClaims {
-    user_id: Option<UserId>,
-    claims: Vec<AuthTokenClaim>,
+    pub(crate) exp: usize,
+    pub(crate) user_id: UserId,
+    pub(crate) claims: Vec<AuthTokenClaim>,
 }

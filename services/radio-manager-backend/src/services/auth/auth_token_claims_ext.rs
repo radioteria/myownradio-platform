@@ -1,12 +1,16 @@
 use super::auth_token_claims::AuthTokenClaims;
 
-trait IsAllowed {
-    fn is_allowed(&self, method: String, path: String) -> bool;
+pub(crate) trait IsActionAllowed {
+    fn is_action_allowed(&self, method: &str, path: &str) -> bool;
 }
 
-impl IsAllowed for AuthTokenClaims {
-    fn is_allowed(&self, method: String, path: String) -> bool {
-        self.iter()
-            .any(|claim| claim.methods.contains(&method) && claim.paths.contains(&path))
+impl IsActionAllowed for AuthTokenClaims {
+    fn is_action_allowed(&self, method: &str, uri: &str) -> bool {
+        let method = method.to_string();
+        let uri = uri.to_string();
+
+        self.claims
+            .iter()
+            .any(|claim| claim.methods.contains(&method) && claim.paths.contains(&uri))
     }
 }

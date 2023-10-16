@@ -1,3 +1,4 @@
+pub(crate) mod forward_auth;
 pub(crate) mod internal_radio_streamer;
 pub(crate) mod public_schedule;
 pub(crate) mod public_streams;

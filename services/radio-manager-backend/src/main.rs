@@ -12,6 +12,7 @@ mod utils;
 use crate::config::Config;
 use crate::mysql_client::MySqlClient;
 use crate::pubsub_client::PubsubClient;
+use crate::services::auth::AuthTokenService;
 use crate::services::StreamServiceFactory;
 use crate::storage::fs::local::LocalFileSystem;
 use dotenv::dotenv;
@@ -43,6 +44,11 @@ async fn main() -> Result<()> {
 
     let pubsub_client = PubsubClient::new(&config.pubsub.endpoint);
 
+    let auth_token_service = AuthTokenService::create(
+        &config.auth_jwt_secret_key,
+        &config.legacy_auth_jwt_secret_key,
+    );
+
     let file_system = LocalFileSystem::create(config.file_system_root_path.clone());
 
     let stream_service_factory =
@@ -55,6 +61,7 @@ async fn main() -> Result<()> {
         file_system,
         stream_service_factory,
         pubsub_client,
+        auth_token_service,
     )?;
 
     tracing::info!("Application started");

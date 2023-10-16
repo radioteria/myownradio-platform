@@ -5,6 +5,7 @@ pub(crate) mod errors;
 pub(crate) mod streams;
 pub(crate) mod user_stream_tracks;
 pub(crate) mod user_tracks;
+pub(crate) mod users;
 
 #[allow(dead_code)]
 #[derive(sqlx::FromRow, Clone, Debug)]
@@ -83,4 +84,19 @@ pub(crate) struct StreamRow {
     pub(crate) cover: Option<String>,
     pub(crate) cover_background: Option<String>,
     pub(crate) created: i64,
+}
+
+#[derive(sqlx::FromRow, Clone)]
+pub(crate) struct UserRow {
+    pub(crate) uid: UserId,
+    pub(crate) mail: String,
+    pub(crate) login: Option<String>,
+    pub(crate) password: Option<String>,
+    pub(crate) name: Option<String>,
+    pub(crate) country_id: Option<i64>,
+    pub(crate) info: Option<String>,
+    pub(crate) rights: Option<i64>,
+    pub(crate) registration_date: u64,
+    pub(crate) last_visit_date: Option<u64>,
+    pub(crate) avatar: Option<String>,
 }

@@ -1,8 +1,9 @@
 use crate::http_server::handlers::{
-    internal_radio_streamer, public_schedule, public_streams, user_audio_stream, user_audio_tracks,
-    user_audio_tracks_v2, user_stream_control, user_streams,
+    forward_auth, internal_radio_streamer, public_schedule, public_streams, user_audio_stream,
+    user_audio_tracks, user_audio_tracks_v2, user_stream_control, user_streams,
 };
 use crate::pubsub_client::PubsubClient;
+use crate::services::auth::AuthTokenService;
 use crate::storage::fs::FileSystem;
 use crate::{Config, MySqlClient, StreamServiceFactory};
 use actix_server::Server;
@@ -17,6 +18,7 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
     file_system: FS,
     stream_service_factory: StreamServiceFactory,
     pubsub_client: PubsubClient,
+    auth_token_service: AuthTokenService,
 ) -> Result<Server> {
     let mysql_client = mysql_client.clone();
 
@@ -29,6 +31,11 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
             .app_data(Data::new(file_system.clone()))
             .app_data(Data::new(stream_service_factory.clone()))
             .app_data(Data::new(pubsub_client.clone()))
+            .app_data(Data::new(auth_token_service.clone()))
+            .service(web::scope("/v0/forward-auth").route(
+                "/by-token",
+                web::get().to(forward_auth::auth_by_jwt_token_or_legacy_token),
+            ))
             .service(
                 web::scope("/v1/tracks")
                     .route(

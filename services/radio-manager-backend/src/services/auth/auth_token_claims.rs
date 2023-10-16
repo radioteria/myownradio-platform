@@ -1,3 +1,4 @@
+use crate::data_structures::UserId;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
@@ -6,4 +7,8 @@ pub(crate) struct AuthTokenClaim {
     pub(crate) paths: Vec<String>,
 }
 
-pub(crate) type AuthTokenClaims = Vec<AuthTokenClaim>;
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub(crate) struct AuthTokenClaims {
+    user_id: Option<UserId>,
+    claims: Vec<AuthTokenClaim>,
+}

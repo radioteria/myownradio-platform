@@ -1,3 +1,4 @@
+pub(crate) mod auth;
 pub(crate) mod ffmpeg_service;
 mod stream_service;
 mod stream_service_utils;

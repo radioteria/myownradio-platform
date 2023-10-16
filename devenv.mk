@@ -14,8 +14,6 @@ devenv: prepare-devenv stop
 				--network-alias $(SERVICE_NAME) \
 				$(foreach PORT_BINDING,$(PORT_BINDINGS),-p $(PORT_BINDING)) \
 				--user $(USER) \
-				-v "$(PWD)/.cargo-cache/git":/rust/.cargo/git \
-				-v "$(PWD)/.cargo-cache/registry":/rust/.cargo/registry \
 				-v "$(PWD)":/code \
 				$(foreach EXTRA_MOUNT,$(EXTRA_MOUNTS),-v $(EXTRA_MOUNT)) \
 				--env-file "$(PWD)/.env" \

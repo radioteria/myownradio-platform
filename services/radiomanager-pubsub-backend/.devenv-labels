@@ -7,6 +7,6 @@ traefik.http.middlewares.forwardauthPubsub.forwardauth.address=http://radio-mana
 traefik.http.middlewares.forwardauthPubsub.forwardauth.authResponseHeaders=user-id
 traefik.http.middlewares.forwardauthPubsub.forwardauth.trustForwardHeader=false
 traefik.http.middlewares.corsPubsub.headers.accesscontrolallowmethods=GET
-traefik.http.middlewares.corsPubsub.headers.accesscontrolallowheaders=*
+traefik.http.middlewares.corsPubsub.headers.accesscontrolallowheaders=authentication
 traefik.http.middlewares.corsPubsub.headers.accesscontrolalloworiginlist=http://localhost:3000
 traefik.http.middlewares.corsPubsub.headers.accesscontrolallowcredentials=true

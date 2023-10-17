@@ -145,7 +145,7 @@ services:
       - traefik.http.middlewares.forwardauthPubsub.forwardauth.authResponseHeaders=user-id
       - traefik.http.middlewares.forwardauthPubsub.forwardauth.trustForwardHeader=false
       - traefik.http.middlewares.corsPubsub.headers.accesscontrolallowmethods=GET
-      - traefik.http.middlewares.corsPubsub.headers.accesscontrolallowheaders=*
+      - traefik.http.middlewares.corsPubsub.headers.accesscontrolallowheaders=authentication
       - traefik.http.middlewares.corsPubsub.headers.accesscontrolalloworiginlist=http://localhost:3000
       - traefik.http.middlewares.corsPubsub.headers.accesscontrolallowcredentials=true
 
@@ -175,7 +175,7 @@ services:
       - traefik.http.middlewares.forwardauthRadioManager.forwardauth.authResponseHeaders=user-id
       - traefik.http.middlewares.forwardauthRadioManager.forwardauth.trustForwardHeader=false
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowmethods=GET,POST
-      - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowheaders=*
+      - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowheaders=authentication
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolalloworiginlist=http://localhost:3000
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowcredentials=true
 volumes:

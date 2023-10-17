@@ -26,6 +26,7 @@ async-process = "1.7.0"
 bytes = "1.4.0"
 async-fs = "1.6.0"
 jsonwebtoken = { version = "8.3.0" }
+qstring = "0.7.2"
 
 [dependencies.sqlx]
 version = "0.7.1"

@@ -24,6 +24,10 @@ export class UserEventSource {
     this.eventSource?.close()
 
     const url = new URL(`${BACKEND_BASE_URL}/pubsub/channel/user/subscribe`)
+    const token = new URL(window.location.href).searchParams.get('token')
+    if (token) {
+      url.searchParams.set('token', token)
+    }
     const eventSource = new EventSource(url, { withCredentials: true })
 
     this.eventSource = eventSource

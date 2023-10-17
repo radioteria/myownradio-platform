@@ -27,6 +27,12 @@ pub(crate) async fn auth_by_jwt_token_or_legacy_token(
         }
     };
 
+    // Allow preflight requests by bypassing authentication
+    if forwarded_method == "OPTIONS" {
+        debug!("Bypassing preflight request");
+        return Ok(HttpResponse::Ok().finish());
+    }
+
     let forwarded_uri = match req
         .headers()
         .get("X-Forwarded-Uri")

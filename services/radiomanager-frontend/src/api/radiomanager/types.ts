@@ -15,4 +15,4 @@ export type UserTrack = z.infer<typeof UserTrackSchema>
 export const ChannelEntrySchema = z.object({
   uniqueId: z.string(),
 })
-export type ChannelEntry = z.infer<typeof UserTrackSchema>
+export type ChannelEntry = z.infer<typeof ChannelEntrySchema>

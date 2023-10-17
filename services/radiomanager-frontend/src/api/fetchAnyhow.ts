@@ -1,10 +1,9 @@
-import { fetch } from 'next/dist/compiled/@edge-runtime/primitives'
 import z from 'zod'
-import { shape } from 'prop-types'
 
 const SESSION_COOKIE_NAME = 'secure_session'
 
 interface InitParams {
+  method?: string
   searchParams?: [string, string][]
   headers?: [string, string][]
   signal?: AbortSignal
@@ -14,7 +13,14 @@ interface InitParams {
 
 export async function fetchAnyhow(url: string, initParams: InitParams = {}): Promise<Response> {
   const urlObject = new URL(url)
-  const { searchParams = [], headers = [], signal, body, withCredentials = false } = initParams
+  const {
+    method = 'GET',
+    searchParams = [],
+    headers = [],
+    signal,
+    body,
+    withCredentials = false,
+  } = initParams
 
   for (const [key, value] of searchParams ?? []) {
     urlObject.searchParams.set(key, value)
@@ -28,13 +34,6 @@ export async function fetchAnyhow(url: string, initParams: InitParams = {}): Pro
     if (sessionCookie) {
       headers.push(['Cookie', `${sessionCookie.name}=${sessionCookie.value}`])
     }
-
-    return fetch(urlObject.toString(), {
-      credentials: 'include',
-      signal,
-      headers,
-      body,
-    })
   }
 
   if (!isServer && withCredentials) {
@@ -45,12 +44,9 @@ export async function fetchAnyhow(url: string, initParams: InitParams = {}): Pro
     }
   }
 
-  return fetch(urlObject.toString(), {
-    credentials: withCredentials ? 'include' : undefined,
-    signal,
-    headers,
-    body,
-  })
+  const credentials = withCredentials ? 'include' : undefined
+
+  return fetch(urlObject.toString(), { credentials, method, signal, headers, body })
 }
 
 export async function fetchAnyhowWithSchema<T>(

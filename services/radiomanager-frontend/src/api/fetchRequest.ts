@@ -1,7 +1,7 @@
 import z from 'zod'
 import { isomorphicFetch } from '@/api/isomorphicFetch'
 
-export class Request {
+export class FetchRequest {
   private readonly url: URL
   private readonly headers: [string, string][] = []
 
@@ -15,32 +15,32 @@ export class Request {
     this.url = typeof url === 'string' ? new URL(url) : url
   }
 
-  public setMethod(method: string): Request {
+  public setMethod(method: string): FetchRequest {
     this.method = method
     return this
   }
 
-  public setQueryParam(name: string, value: string): Request {
+  public setQueryParam(name: string, value: string): FetchRequest {
     this.url.searchParams.set(name, value)
     return this
   }
 
-  public addHeader(name: string, value: string): Request {
+  public addHeader(name: string, value: string): FetchRequest {
     this.headers.push([name, value])
     return this
   }
 
-  public setAbortSignal(signal: AbortSignal): Request {
+  public setAbortSignal(signal: AbortSignal): FetchRequest {
     this.signal = signal
     return this
   }
 
-  public setBody(body: BodyInit): Request {
+  public setBody(body: BodyInit): FetchRequest {
     this.body = body
     return this
   }
 
-  public withTokenAuth(): Request {
+  public withTokenAuth(): FetchRequest {
     const token = new URL(window.location.href).searchParams.get('token')
 
     if (token) {
@@ -50,12 +50,12 @@ export class Request {
     return this
   }
 
-  public withServerSideAuth(): Request {
+  public withServerSideAuth(): FetchRequest {
     this.shouldEnableServerSideAuth = true
     return this
   }
 
-  public withCredentials(): Request {
+  public withCredentials(): FetchRequest {
     this.shouldIncludeCredentials = true
     return this
   }

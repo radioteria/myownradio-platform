@@ -62,3 +62,14 @@ export async function fetchAnyhowWithSchema<T>(
     .then((response) => response.json())
     .then((json) => schema.parse(json))
 }
+
+export async function fetchAnyhowWithDataSchema<T>(
+  url: string,
+  initParams: InitParams = {},
+  schema: z.ZodType<{ data: T }, any, unknown>,
+): Promise<T> {
+  return fetchAnyhow(url, initParams)
+    .then((response) => response.json())
+    .then((json) => schema.parse(json))
+    .then(({ data }) => data)
+}

@@ -1,11 +1,4 @@
-import { config } from '@/config'
-import {
-  ChannelTracksResponseSchema,
-  LibraryTracksResponseSchema,
-  NowPlayingResponseSchema,
-  SelfResponseSchema,
-} from './apiTypes'
-import { isomorphicFetch } from './isomorphicFetch'
+import { NowPlayingResponseSchema, SelfResponseSchema } from './apiTypes'
 import {
   DeleteTracksResponseSchema,
   GetChannelsSchema,
@@ -13,24 +6,19 @@ import {
   UploadTrackResponseSchema,
   UploadTrackToChannelResponseSchema,
 } from './httpSchemas'
-import { FetchRequest } from '@/api/fetchRequest'
-
-export const BACKEND_BASE_URL = config.NEXT_PUBLIC_RADIOMANAGER_BACKEND_URL
-
-export const MAX_TRACKS_PER_REQUEST = 200
+import { BACKEND_BASE_URL } from './constants'
+import { fetchAnyhow, fetchAnyhowWithDataSchema } from './fetchAnyhow'
 
 export async function getChannels() {
-  const url = `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/`
-
-  return await isomorphicFetch(url)
-    .then((res) => res.json())
-    .then((json) => GetChannelsSchema.parse(json).data)
+  return fetchAnyhowWithDataSchema(
+    `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/`,
+    { withCredentials: true },
+    GetChannelsSchema,
+  )
 }
 
 export async function getSelf() {
-  const url = `${BACKEND_BASE_URL}/api/v2/self`
-
-  return await isomorphicFetch(url)
+  return await fetchAnyhow(`${BACKEND_BASE_URL}/api/v2/self`, { withCredentials: true })
     .then((res) => res.json())
     .then((json) => {
       try {
@@ -41,59 +29,15 @@ export async function getSelf() {
     })
 }
 
-interface GetLibraryTracksOpts {
-  readonly offset?: number
-  readonly limit?: number
-  readonly signal?: AbortSignal
-}
-
-export async function getLibraryTracks(opts?: GetLibraryTracksOpts) {
-  const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/`)
-  url.searchParams.set('offset', String(opts?.offset ?? 0))
-  url.searchParams.set('limit', String(opts?.limit ?? MAX_TRACKS_PER_REQUEST))
-
-  return await isomorphicFetch(url, { signal: opts?.signal })
-    .then((res) => res.json())
-    .then((json) => LibraryTracksResponseSchema.parse(json).data)
-}
-
-export async function getUnusedLibraryTracks(opts?: GetLibraryTracksOpts) {
-  const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/`)
-  url.searchParams.set('unused', 'true')
-  url.searchParams.set('offset', String(opts?.offset ?? 0))
-  url.searchParams.set('limit', String(opts?.limit ?? MAX_TRACKS_PER_REQUEST))
-
-  return await isomorphicFetch(url, { signal: opts?.signal })
-    .then((res) => res.json())
-    .then((json) => LibraryTracksResponseSchema.parse(json).data)
-}
-
-interface GetChannelTracksOpts {
-  readonly offset?: number
-  readonly limit?: number
-  readonly signal?: AbortSignal
-}
-
-export async function getChannelTracks(channelId: number, opts?: GetChannelTracksOpts) {
-  const url = new URL(`${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/tracks/`)
-  url.searchParams.set('offset', String(opts?.offset ?? 0))
-  url.searchParams.set('limit', String(opts?.limit ?? MAX_TRACKS_PER_REQUEST))
-
-  return await isomorphicFetch(url, { signal: opts?.signal })
-    .then((res) => res.json())
-    .then((json) => ChannelTracksResponseSchema.parse(json).data)
-}
-
 export async function getNowPlaying(channelId: number, timestamp: number) {
-  const url = new URL(
+  return await fetchAnyhowWithDataSchema(
     `${BACKEND_BASE_URL}/radio-manager/api/pub/v0/streams/${channelId}/now-playing`,
+    {
+      searchParams: [['ts', String(timestamp)]],
+      withCredentials: true,
+    },
+    NowPlayingResponseSchema,
   )
-
-  url.searchParams.set('ts', String(timestamp))
-
-  return await isomorphicFetch(url.toString())
-    .then((res) => res.json())
-    .then((json) => NowPlayingResponseSchema.parse(json).data)
 }
 
 export async function uploadTrackToLibrary(file: File, abortSignal: AbortSignal) {
@@ -102,12 +46,16 @@ export async function uploadTrackToLibrary(file: File, abortSignal: AbortSignal)
 
   const {
     tracks: [track],
-  } = await new FetchRequest(`${BACKEND_BASE_URL}/api/v2/track/upload`)
-    .setMethod('POST')
-    .setAbortSignal(abortSignal)
-    .setBody(form)
-    .fetchWithSchema(UploadTrackResponseSchema)
-    .then(({ data }) => data)
+  } = await fetchAnyhowWithDataSchema(
+    `${BACKEND_BASE_URL}/api/v2/track/upload`,
+    {
+      method: 'POST',
+      signal: abortSignal,
+      body: form,
+      withCredentials: true,
+    },
+    UploadTrackResponseSchema,
+  )
 
   if (!track) {
     throw new Error('Unable to upload track to library')
@@ -127,12 +75,16 @@ export async function uploadTrackToChannel(
 
   const {
     tracks: [track],
-  } = await new FetchRequest(`${BACKEND_BASE_URL}/api/v2/track/upload`)
-    .setMethod('POST')
-    .setAbortSignal(abortSignal)
-    .setBody(form)
-    .fetchWithSchema(UploadTrackToChannelResponseSchema)
-    .then(({ data }) => data)
+  } = await fetchAnyhowWithDataSchema(
+    `${BACKEND_BASE_URL}/api/v2/track/upload`,
+    {
+      method: 'POST',
+      signal: abortSignal,
+      body: form,
+      withCredentials: true,
+    },
+    UploadTrackToChannelResponseSchema,
+  )
 
   if (!track) {
     throw new Error('Unable to upload track to channel')
@@ -145,13 +97,15 @@ export async function deleteTracksById(trackIds: readonly number[]) {
   const form = new FormData()
   form.set('track_id', trackIds.join(','))
 
-  const nullResult = await fetch(`${BACKEND_BASE_URL}/api/v2/track/delete`, {
-    method: 'POST',
-    body: form,
-    credentials: 'include',
-  })
-    .then((res) => res.json())
-    .then((json) => DeleteTracksResponseSchema.parse(json).data)
+  const nullResult = await fetchAnyhowWithDataSchema(
+    `${BACKEND_BASE_URL}/api/v2/track/delete`,
+    {
+      method: 'POST',
+      body: form,
+      withCredentials: true,
+    },
+    DeleteTracksResponseSchema,
+  )
 }
 
 export async function removeTracksFromChannelById(uniqueIds: readonly string[], channelId: number) {
@@ -159,11 +113,15 @@ export async function removeTracksFromChannelById(uniqueIds: readonly string[], 
   form.set('stream_id', String(channelId))
   form.set('unique_ids', uniqueIds.join(','))
 
-  return new FetchRequest(`${BACKEND_BASE_URL}/api/v2/stream/removeTracks`)
-    .setMethod('POST')
-    .setBody(form)
-    .fetchWithSchema(RemoveTracksFromChannelResponseSchema)
-    .then((resp) => resp.data)
+  return fetchAnyhowWithDataSchema(
+    `${BACKEND_BASE_URL}/api/v2/stream/removeTracks`,
+    {
+      method: 'POST',
+      body: form,
+      withCredentials: true,
+    },
+    RemoveTracksFromChannelResponseSchema,
+  )
 }
 
 export enum AudioFormat {
@@ -178,19 +136,17 @@ export const getTrackTranscodeStream = async (
   audioFormat: AudioFormat | null,
   signal: AbortSignal,
 ): Promise<{ readonly stream: ReadableStream<Uint8Array>; readonly contentType: string }> => {
-  const request = new FetchRequest(
+  const response = await fetchAnyhow(
     `${BACKEND_BASE_URL}/radio-manager/api/v0/tracks/${trackId}/transcode`,
+    {
+      searchParams: [
+        ['initialPosition', `${initialPosition}`],
+        ['audioFormat', audioFormat ?? AudioFormat.Opus],
+      ],
+      signal,
+      withCredentials: true,
+    },
   )
-
-  if (initialPosition > 0) {
-    request.setQueryParam('initialPosition', `${initialPosition}`)
-  }
-
-  if (audioFormat) {
-    request.setQueryParam('audioFormat', audioFormat)
-  }
-
-  const response = await request.setAbortSignal(signal).withTokenAuth().fetch()
 
   const contentType = response.headers.get('Content-Type')
 

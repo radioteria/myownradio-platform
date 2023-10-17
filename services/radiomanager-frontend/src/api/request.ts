@@ -1,4 +1,5 @@
 import z from 'zod'
+import { isomorphicFetch } from '@/api/isomorphicFetch'
 
 export class Request {
   private readonly url: URL
@@ -7,6 +8,8 @@ export class Request {
   private method = 'GET'
   private signal: AbortSignal | null = null
   private body: BodyInit | null = null
+  private shouldEnableServerSideAuth: boolean = false
+  private shouldIncludeCredentials: boolean = false
 
   constructor(url: string | URL) {
     this.url = typeof url === 'string' ? new URL(url) : url
@@ -47,12 +50,27 @@ export class Request {
     return this
   }
 
+  public withServerSideAuth(): Request {
+    this.shouldEnableServerSideAuth = true
+    return this
+  }
+
+  public withCredentials(): Request {
+    this.shouldIncludeCredentials = true
+    return this
+  }
+
   public fetch(): Promise<Response> {
-    return fetch(this.url, {
-      method: this.method,
-      signal: this.signal,
-      body: this.body,
-      headers: this.headers,
+    const fetchClient = this.shouldEnableServerSideAuth ? isomorphicFetch : fetch
+    const credentials = this.shouldIncludeCredentials ? 'include' : undefined
+    const { method, signal, body, headers } = this
+
+    return fetchClient(this.url, {
+      credentials,
+      method,
+      signal,
+      body,
+      headers,
     })
   }
 

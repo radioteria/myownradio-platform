@@ -1,4 +1,7 @@
 import z from 'zod'
+import makeDebug from 'debug'
+
+const debug = makeDebug('fetchAnyhow')
 
 const SESSION_COOKIE_NAME = 'secure_session'
 
@@ -32,6 +35,7 @@ export async function fetchAnyhow(url: string, initParams: InitParams = {}): Pro
     const sessionCookie = require('next/headers').cookies().get(SESSION_COOKIE_NAME)
 
     if (sessionCookie) {
+      debug('Adding Cookie header to the request')
       headers.push(['Cookie', `${sessionCookie.name}=${sessionCookie.value}`])
     }
   }
@@ -40,6 +44,7 @@ export async function fetchAnyhow(url: string, initParams: InitParams = {}): Pro
     const token = new URL(window.location.href).searchParams.get('token')
 
     if (token) {
+      debug('Adding Authentication header to the request')
       headers.push(['Authentication', `Bearer ${token}`])
     }
   }

@@ -10,34 +10,31 @@ export interface Props {
 }
 
 export const DynamicFontSize: React.FC<Props> = ({ className, formula, children }) => {
-  const containerRef = useRef<HTMLDivElement>(null)
   const [containerSize, setContainerSize] = useState<Size>({
     width: 0,
     height: 0,
   })
 
   useEffect(() => {
-    if (!containerRef.current) return
+    const handleResize = () => {
+      setContainerSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      })
+    }
 
-    setContainerSize({
-      width: containerRef.current.clientWidth,
-      height: containerRef.current.clientHeight,
-    })
+    window.addEventListener('resize', handleResize)
+
+    handleResize()
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
   }, [])
 
   return (
-    <div
-      className={cn(`w-full h-full`, className)}
-      style={{ fontSize: formula(containerSize) }}
-      ref={containerRef}
-      onResize={(event) =>
-        setContainerSize({
-          width: event.currentTarget.clientWidth,
-          height: event.currentTarget.clientHeight,
-        })
-      }
-    >
+    <span className={className} style={{ fontSize: formula(containerSize) }}>
       {children}
-    </div>
+    </span>
   )
 }

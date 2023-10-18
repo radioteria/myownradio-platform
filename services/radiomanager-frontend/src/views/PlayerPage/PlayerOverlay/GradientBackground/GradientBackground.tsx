@@ -5,57 +5,59 @@ interface Props {
 }
 
 const colors = [
-  '#3B5998', // Darker Sky Blue
-  '#004777', // Darker Ocean Blue
-  '#004040', // Darker Teal
-  '#1E487D', // Darker Royal Blue
-  '#0F0E48', // Darker Midnight Blue
-  '#B5B5D1', // Darker Lavender
-  '#A347A6', // Darker Orchid
-  '#B039B0', // Darker Violet
-  '#9B819B', // Darker Plum
-  '#CC00CC', // Darker Magenta
-  '#CC0053', // Darker Rose
-  '#CC6033', // Darker Coral
-  '#CC9E99', // Darker Peach
-  '#CC6600', // Darker Tangerine
-  '#CC9900', // Darker Gold
-  '#CCCC00', // Darker Lemon Yellow
-  '#2D862D', // Darker Lime Green
-  '#1B5C1B', // Darker Forest Green
-  '#2D8F8F', // Darker Turquoise
-  '#808080', // Darker Silver
+  '#87CEEB', // Sky Blue
+  '#006994', // Ocean Blue
+  '#008080', // Teal
+  '#4169E1', // Royal Blue
+  '#191970', // Midnight Blue
+  '#E6E6FA', // Lavender
+  '#DA70D6', // Orchid
+  '#EE82EE', // Violet
+  '#DDA0DD', // Plum
+  '#FF00FF', // Magenta
+  '#FF007F', // Rose
+  '#FF7F50', // Coral
+  '#FFDAB9', // Peach
+  '#FFA500', // Tangerine
+  '#FFD700', // Gold
+  '#FFFF00', // Lemon Yellow
+  '#32CD32', // Lime Green
+  '#228B22', // Forest Green
+  '#40E0D0', // Turquoise
+  '#C0C0C0', // Silver
 ]
 
-export const GradientBackground: React.FC<Props> = ({ children }) => {
-  const [color1, setColor1] = useState('#000000')
-  const [color2, setColor2] = useState('#000000')
-  const [color3, setColor3] = useState('#000000')
-  const [color4, setColor4] = useState('#000000')
+const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)]
 
-  const [color5, setColor5] = useState('#000000')
-  const [color6, setColor6] = useState('#000000')
-  const [color7, setColor7] = useState('#000000')
-  const [color8, setColor8] = useState('#000000')
+export const GradientBackground: React.FC<Props> = ({ children }) => {
+  const [color1, setColor1] = useState(() => getRandomColor())
+  const [color2, setColor2] = useState(() => getRandomColor())
+  const [color3, setColor3] = useState(() => getRandomColor())
+  const [color4, setColor4] = useState(() => getRandomColor())
+
+  const [color5, setColor5] = useState(() => getRandomColor())
+  const [color6, setColor6] = useState(() => getRandomColor())
+  const [color7, setColor7] = useState(() => getRandomColor())
+  const [color8, setColor8] = useState(() => getRandomColor())
 
   const [activeLayer, setActiveLayer] = useState(0)
 
   useEffect(() => {
     if (activeLayer === 0) {
-      setColor1(colors[Math.floor(Math.random() * colors.length)])
-      setColor2(colors[Math.floor(Math.random() * colors.length)])
-      setColor3(colors[Math.floor(Math.random() * colors.length)])
-      setColor4(colors[Math.floor(Math.random() * colors.length)])
+      setColor1(getRandomColor())
+      setColor2(getRandomColor())
+      setColor3(getRandomColor())
+      setColor4(getRandomColor())
     } else {
-      setColor5(colors[Math.floor(Math.random() * colors.length)])
-      setColor6(colors[Math.floor(Math.random() * colors.length)])
-      setColor7(colors[Math.floor(Math.random() * colors.length)])
-      setColor8(colors[Math.floor(Math.random() * colors.length)])
+      setColor5(getRandomColor())
+      setColor6(getRandomColor())
+      setColor7(getRandomColor())
+      setColor8(getRandomColor())
     }
 
     let timeoutId = window.setTimeout(() => {
       setActiveLayer((layer) => 1 - layer)
-    }, 1_000)
+    }, 60_000)
 
     return () => {
       window.clearTimeout(timeoutId)
@@ -67,19 +69,19 @@ export const GradientBackground: React.FC<Props> = ({ children }) => {
       <style jsx>{`
         .gradient1 {
           opacity: ${activeLayer === 0 ? '1' : '0'};
-          transition: opacity 1s linear;
-          background: linear-gradient(to bottom left, ${color1}, transparent),
-            linear-gradient(to bottom right, ${color2}, transparent),
-            linear-gradient(to top left, ${color3}, transparent),
-            linear-gradient(to top right, ${color4}, transparent);
+          transition: opacity 45s linear;
+          background: linear-gradient(to bottom left, ${color1} 0%, transparent 75%),
+            linear-gradient(to bottom right, ${color2} 0%, transparent 75%),
+            linear-gradient(to top left, ${color3} 0%, transparent 75%),
+            linear-gradient(to top right, ${color4} 0%, transparent 75%);
         }
         .gradient2 {
           opacity: ${activeLayer === 1 ? '1' : '0'};
-          transition: opacity 1s linear;
-          background: linear-gradient(to bottom left, ${color5}, transparent),
-            linear-gradient(to bottom right, ${color6}, transparent),
-            linear-gradient(to top left, ${color7}, transparent),
-            linear-gradient(to top right, ${color8}, transparent);
+          transition: opacity 45s linear;
+          background: linear-gradient(to bottom left, ${color5} 0%, transparent 75%),
+            linear-gradient(to bottom right, ${color6} 0%, transparent 75%),
+            linear-gradient(to top left, ${color7} 0%, transparent 75%),
+            linear-gradient(to top right, ${color8} 0%, transparent 75%);
         }
       `}</style>
       <div className={'w-full h-full gradient1 absolute'} />

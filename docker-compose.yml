@@ -69,7 +69,7 @@ services:
       - traefik.http.routers.backend.middlewares=corsBackend
       - traefik.http.services.backend.loadbalancer.server.port=80
       - traefik.http.middlewares.corsBackend.headers.accesscontrolallowmethods=GET,POST
-      - traefik.http.middlewares.corsBackend.headers.accesscontrolallowheaders=*
+      - traefik.http.middlewares.corsBackend.headers.accesscontrolallowheaders=authorization
       - traefik.http.middlewares.corsBackend.headers.accesscontrolalloworiginlist=http://localhost:3000
       - traefik.http.middlewares.corsBackend.headers.accesscontrolallowcredentials=true
   backend-php-fpm:
@@ -145,7 +145,7 @@ services:
       - traefik.http.middlewares.forwardauthPubsub.forwardauth.authResponseHeaders=user-id
       - traefik.http.middlewares.forwardauthPubsub.forwardauth.trustForwardHeader=false
       - traefik.http.middlewares.corsPubsub.headers.accesscontrolallowmethods=GET
-      - traefik.http.middlewares.corsPubsub.headers.accesscontrolallowheaders=authentication
+      - traefik.http.middlewares.corsPubsub.headers.accesscontrolallowheaders=authorization
       - traefik.http.middlewares.corsPubsub.headers.accesscontrolalloworiginlist=http://localhost:3000
       - traefik.http.middlewares.corsPubsub.headers.accesscontrolallowcredentials=true
 

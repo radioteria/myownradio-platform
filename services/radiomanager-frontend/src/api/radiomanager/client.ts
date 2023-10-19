@@ -1,5 +1,10 @@
 import z from 'zod'
-import { ChannelEntrySchema, UserTrackSchema } from './types'
+import {
+  ChannelEntrySchema,
+  StreamDestination,
+  StreamDestinationSchema,
+  UserTrackSchema,
+} from './types'
 import { fetchAnyhow, fetchAnyhowWithSchema } from '../fetchAnyhow'
 import { BACKEND_BASE_URL, MAX_TRACKS_PER_REQUEST } from '../constants'
 
@@ -142,4 +147,40 @@ export const playFrom = async (channelId: number, playlistPosition: number): Pro
       withCredentials: true,
     },
   )
+}
+
+export const getStreamDestinations = async (): Promise<readonly StreamDestination[]> => {
+  return fetchAnyhowWithSchema(
+    `${BACKEND_BASE_URL}/radio-manager/api/v0/destinations/`,
+    {
+      withCredentials: true,
+    },
+    z.array(StreamDestinationSchema),
+  )
+}
+
+export const createStreamDestination = async (): Promise<void> => {
+  await fetchAnyhow(`${BACKEND_BASE_URL}/radio-manager/api/v0/destinations/`, {
+    method: 'POST',
+    withCredentials: true,
+  })
+}
+
+export const deleteStreamDestination = async (id: number): Promise<void> => {
+  await fetchAnyhow(`${BACKEND_BASE_URL}/radio-manager/api/v0/destinations/${id}`, {
+    method: 'DELETE',
+    withCredentials: true,
+  })
+}
+
+export const updateStreamDestination = async (
+  id: number,
+  destination: StreamDestination,
+): Promise<void> => {
+  await fetchAnyhow(`${BACKEND_BASE_URL}/radio-manager/api/v0/destinations/${id}`, {
+    method: 'PUT',
+    withCredentials: true,
+    body: JSON.stringify(destination),
+    headers: [['Content-Type', 'application/json']],
+  })
 }

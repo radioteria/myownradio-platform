@@ -105,7 +105,7 @@ pub(crate) struct UserRow {
 }
 
 #[derive(Clone, Deserialize, Serialize)]
-#[serde(tag = "type")]
+#[serde(tag = "type", rename_all = "camelCase")]
 pub(crate) enum StreamDestination {
     RTMP {
         rtmp_url: String,

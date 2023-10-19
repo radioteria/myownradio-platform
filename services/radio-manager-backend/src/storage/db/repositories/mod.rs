@@ -1,5 +1,6 @@
 use crate::data_structures::{FileId, LinkId, OrderId, StreamId, TrackId, UserId};
 use serde_repr::Serialize_repr;
+use sqlx::types::Json;
 
 pub(crate) mod errors;
 pub(crate) mod streams;
@@ -99,4 +100,21 @@ pub(crate) struct UserRow {
     pub(crate) registration_date: u64,
     pub(crate) last_visit_date: Option<u64>,
     pub(crate) avatar: Option<String>,
+}
+
+#[derive(Clone)]
+pub(crate) enum StreamDestination {
+    RTMP {
+        rtmp_url: String,
+        streaming_key: String,
+    },
+}
+
+#[derive(sqlx::FromRow, Clone)]
+pub(crate) struct StreamDestinationRow {
+    pub(crate) id: i32,
+    pub(crate) user_id: UserId,
+    pub(crate) destination_json: Json<StreamDestination>,
+    pub(crate) created_at: chrono::DateTime<chrono::Utc>,
+    pub(crate) updated_at: chrono::DateTime<chrono::Utc>,
 }

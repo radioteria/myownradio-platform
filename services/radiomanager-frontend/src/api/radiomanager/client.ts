@@ -159,11 +159,14 @@ export const getStreamDestinations = async (): Promise<readonly StreamDestinatio
   )
 }
 
-export const createStreamDestination = async (): Promise<void> => {
-  await fetchAnyhow(`${BACKEND_BASE_URL}/radio-manager/api/v0/destinations/`, {
-    method: 'POST',
-    withCredentials: true,
-  })
+export const createStreamDestination = async (channelId: number): Promise<void> => {
+  await fetchAnyhow(
+    `${BACKEND_BASE_URL}/radio-manager/api/v0/destinations/create-for-channel/${channelId}`,
+    {
+      method: 'POST',
+      withCredentials: true,
+    },
+  )
 }
 
 export const deleteStreamDestination = async (id: number): Promise<void> => {

@@ -118,7 +118,7 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                         web::get().to(user_stream_destinations::get_stream_destinations),
                     )
                     .route(
-                        "/",
+                        "/create-for-channel/{channel_id}",
                         web::post().to(user_stream_destinations::create_stream_destination),
                     )
                     .route(

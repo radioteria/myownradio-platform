@@ -30,7 +30,7 @@ pub(crate) async fn get_stream_destinations(
 
 pub(crate) async fn create_stream_destination(
     user_id: UserId,
-    stream_id: StreamId,
+    stream_id: Path<StreamId>,
     mysql_client: Data<MySqlClient>,
 ) -> Response {
     let mut connection = mysql_client.connection().await?;

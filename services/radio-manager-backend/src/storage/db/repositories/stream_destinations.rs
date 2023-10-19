@@ -1,4 +1,4 @@
-use crate::data_structures::UserId;
+use crate::data_structures::{StreamId, UserId};
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::{StreamDestination, StreamDestinationRow};
@@ -12,6 +12,7 @@ fn create_select_query_builder<'a>() -> QueryBuilder<'a, MySql> {
         r#"
 SELECT `id`, 
        `user_id`,
+       `stream_id`,
        `destination_json`,
        `created_at`,
        `updated_at`
@@ -61,12 +62,14 @@ pub(crate) async fn update_stream_destination(
 pub(crate) async fn create_stream_destination(
     connection: &mut MySqlConnection,
     user_id: &UserId,
+    stream_id: &StreamId,
     destination: &StreamDestination,
 ) -> RepositoryResult<()> {
     let query = query(
-        "INSERT INTO `stream_destinations` (`user_id`, `destination_json`, `created_at`, `updated_at`) VALUES (?, ?, ?, ?)",
+        "INSERT INTO `stream_destinations` (`user_id`, `stream_id`, `destination_json`, `created_at`, `updated_at`) VALUES (?, ?, ?, ?)",
     )
     .bind(user_id)
+    .bind(stream_id)
     .bind(serde_json::to_string(destination).expect("Unable to serialize StreamDestination"))
     .bind(Utc::now())
     .bind(Utc::now());

@@ -1,4 +1,4 @@
-use crate::data_structures::UserId;
+use crate::data_structures::{StreamId, UserId};
 use crate::http_server::response::Response;
 use crate::mysql_client::MySqlClient;
 use crate::storage::db::repositories::{stream_destinations, StreamDestination};
@@ -20,6 +20,7 @@ pub(crate) async fn get_stream_destinations(
             .map(|dest| {
                 json!({
                     "id": dest.id,
+                    "channelId": dest.stream_id,
                     "destination": dest.destination_json
                 })
             })
@@ -29,6 +30,7 @@ pub(crate) async fn get_stream_destinations(
 
 pub(crate) async fn create_stream_destination(
     user_id: UserId,
+    stream_id: StreamId,
     mysql_client: Data<MySqlClient>,
 ) -> Response {
     let mut connection = mysql_client.connection().await?;
@@ -38,7 +40,13 @@ pub(crate) async fn create_stream_destination(
         streaming_key: String::new(),
     };
 
-    stream_destinations::create_stream_destination(&mut connection, &user_id, &destination).await?;
+    stream_destinations::create_stream_destination(
+        &mut connection,
+        &user_id,
+        &stream_id,
+        &destination,
+    )
+    .await?;
 
     Ok(HttpResponse::Created().finish())
 }
@@ -57,8 +65,8 @@ pub(crate) async fn delete_stream_destination(
 
 pub(crate) async fn update_stream_destination(
     id: Path<i32>,
-    stream_destination: Json<StreamDestination>,
     user_id: UserId,
+    stream_destination: Json<StreamDestination>,
     mysql_client: Data<MySqlClient>,
 ) -> Response {
     let mut connection = mysql_client.connection().await?;

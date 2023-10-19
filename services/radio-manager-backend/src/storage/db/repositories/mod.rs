@@ -117,6 +117,7 @@ pub(crate) enum StreamDestination {
 pub(crate) struct StreamDestinationRow {
     pub(crate) id: i32,
     pub(crate) user_id: UserId,
+    pub(crate) stream_id: StreamId,
     pub(crate) destination_json: Json<StreamDestination>,
     pub(crate) created_at: chrono::DateTime<chrono::Utc>,
     pub(crate) updated_at: chrono::DateTime<chrono::Utc>,

@@ -45,7 +45,7 @@ export async function fetchAnyhow(url: string, initParams: InitParams = {}): Pro
 
     if (token) {
       debug('Adding Authentication header to the request')
-      headers.push(['Authentication', `Bearer ${token}`])
+      headers.push(['Authorization', `Bearer ${token}`])
     }
   }
 

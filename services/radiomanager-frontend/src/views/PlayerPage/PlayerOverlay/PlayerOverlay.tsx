@@ -13,7 +13,7 @@ export const PlayerOverlay: React.FC<Props> = ({ channelId, muted = false }) => 
 
   return (
     <section className={'w-full h-full bg-black overflow-hidden relative'}>
-      <GradientBackground initialColorIndex={0}>
+      <GradientBackground>
         {title && (
           <DynamicFontSize formula={({ width }) => `${width * 0.02}pt`}>
             <div className={'text-gray-100 bottom-0 left-0 p-[2%] absolute w-full truncate'}>

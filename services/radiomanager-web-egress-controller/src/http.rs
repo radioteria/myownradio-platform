@@ -27,9 +27,9 @@ pub(crate) async fn get_stream(
     path: web::Path<(UserId, String)>,
     k8s_client: web::Data<K8sClient>,
 ) -> impl Responder {
-    let (user_id, stream_id) = path.into_inner();
+    let (user_id, channel_id) = path.into_inner();
 
-    match k8s_client.get_stream_job(&stream_id, &user_id).await {
+    match k8s_client.get_stream_job(&channel_id, &user_id).await {
         Ok(Some(stream)) => HttpResponse::Ok().json(stream),
         Ok(None) => HttpResponse::NotFound().body("no_stream"),
         Err(error) => {
@@ -42,6 +42,7 @@ pub(crate) async fn get_stream(
 #[derive(Deserialize)]
 pub(crate) struct StartStreamRequestBody {
     stream_id: String,
+    channel_id: String,
     webpage_url: String,
     rtmp_settings: RtmpSettings,
     video_settings: VideoSettings,
@@ -58,6 +59,7 @@ pub(crate) async fn start_stream(
     if let Err(error) = k8s_client
         .create_stream_job(
             &body.stream_id,
+            &body.channel_id,
             &user_id,
             &body.webpage_url,
             &body.rtmp_settings,
@@ -77,14 +79,21 @@ pub(crate) async fn stop_stream(
     path: web::Path<(UserId, String)>,
     k8s_client: web::Data<K8sClient>,
 ) -> impl Responder {
-    let (user_id, stream_id) = path.into_inner();
+    let (user_id, channel_id) = path.into_inner();
 
-    if let Err(error) = k8s_client.delete_stream_job(&stream_id, &user_id).await {
-        error!("{}", error);
-        return HttpResponse::InternalServerError().finish();
+    let result = match k8s_client.delete_stream_job(&channel_id, &user_id).await {
+        Ok(result) => result,
+        Err(error) => {
+            error!("{}", error);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    if result {
+        HttpResponse::Ok().finish()
+    } else {
+        HttpResponse::Conflict().finish()
     }
-
-    HttpResponse::Ok().finish()
 }
 
 pub(crate) fn run_server(config: &Config, k8s_client: &K8sClient) -> std::io::Result<Server> {
@@ -100,7 +109,7 @@ pub(crate) fn run_server(config: &Config, k8s_client: &K8sClient) -> std::io::Re
                         .route(web::post().to(start_stream)),
                 )
                 .service(
-                    web::resource("/users/{user_id}/streams/{id}")
+                    web::resource("/users/{user_id}/streams/{channel_id}")
                         .route(web::get().to(get_stream))
                         .route(web::delete().to(stop_stream)),
                 )

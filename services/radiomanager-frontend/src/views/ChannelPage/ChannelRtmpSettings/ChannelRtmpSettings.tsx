@@ -26,14 +26,19 @@ export const ChannelRtmpSettings: React.FC<Props> = ({ channel, onUpdateRtmpSett
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className={'block'} onSubmit={handleSubmit}>
       <div>
         <div>URL</div>
-        <input value={rtmpUrl} onChange={handleRtmpUrlChange} />
+        <input className={'block w-full'} value={rtmpUrl} onChange={handleRtmpUrlChange} />
       </div>
       <div>
         <div>Streaming Key</div>
-        <input value={rtmpStreamingKey} type={'password'} onChange={handleRtmpStreamingKeyChange} />
+        <input
+          className={'block w-full'}
+          value={rtmpStreamingKey}
+          type={'password'}
+          onChange={handleRtmpStreamingKeyChange}
+        />
       </div>
       <div>
         <button type={'submit'}>Save</button>

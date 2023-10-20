@@ -87,6 +87,8 @@ pub(crate) struct StreamRow {
     pub(crate) cover: Option<String>,
     pub(crate) cover_background: Option<String>,
     pub(crate) created: i64,
+    pub(crate) rtmp_url: String,
+    pub(crate) rtmp_streaming_key: String,
 }
 
 #[derive(sqlx::FromRow, Clone)]

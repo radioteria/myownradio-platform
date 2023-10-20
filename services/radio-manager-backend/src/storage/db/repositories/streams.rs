@@ -24,7 +24,9 @@ SELECT `r_streams`.`sid`,
        `r_streams`.`hashtags`,
        `r_streams`.`cover`,
        `r_streams`.`cover_background`,
-       `r_streams`.`created`
+       `r_streams`.`created`,
+       `r_streams`.`rtmp_url`,
+       `r_streams`.`rtmp_streaming_key`
 FROM `r_streams`
 "#,
     )
@@ -87,9 +89,7 @@ pub(crate) async fn get_user_streams_by_user_id(
 
     trace!("Running SQL query: {}", query.sql());
 
-    let stream = query
-        .fetch_all(connection.deref_mut())
-        .await?;
+    let stream = query.fetch_all(connection.deref_mut()).await?;
 
     Ok(stream)
 }
@@ -152,6 +152,30 @@ WHERE `sid` = ?
     )
     .bind(seek_time.num_milliseconds())
     .bind(stream_id.deref())
+    .execute(connection.deref_mut())
+    .await?;
+
+    Ok(())
+}
+
+pub(crate) async fn update_channel_rtmp_parameters(
+    connection: &mut MySqlConnection,
+    stream_id: &StreamId,
+    user_id: &UserId,
+    rtmp_url: &str,
+    rtmp_streaming_key: &str,
+) -> RepositoryResult<()> {
+    query(
+        r#"
+UPDATE `r_streams` 
+SET `rtmp_url` = ?, `rtmp_streaming_key` = ?
+WHERE `sid` = ? AND `uid` = ?
+"#,
+    )
+    .bind(rtmp_url)
+    .bind(rtmp_streaming_key)
+    .bind(stream_id)
+    .bind(user_id)
     .execute(connection.deref_mut())
     .await?;
 

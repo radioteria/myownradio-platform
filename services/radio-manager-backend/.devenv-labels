@@ -9,6 +9,6 @@ traefik.http.middlewares.forwardauthRadioManager.forwardauth.address=http://radi
 traefik.http.middlewares.forwardauthRadioManager.forwardauth.authResponseHeaders=user-id
 traefik.http.middlewares.forwardauthRadioManager.forwardauth.trustForwardHeader=false
 traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowmethods=GET,POST
-traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowheaders=authorization
+traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowheaders=authorization,content-type
 traefik.http.middlewares.corsRadioManager.headers.accesscontrolalloworiginlist=http://localhost:3000
 traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowcredentials=true

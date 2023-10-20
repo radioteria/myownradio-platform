@@ -11,10 +11,11 @@ const BUFFER_AHEAD_TIME = 30_000 // 30 seconds
 
 interface Props {
   readonly channelId: number
+  readonly muted: boolean
   readonly onTrackChanged?: (title: string) => void
 }
 
-export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => {
+export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged, muted }) => {
   const audioElement1Ref = useRef<HTMLAudioElement>(null)
   const audioElement2Ref = useRef<HTMLAudioElement>(null)
   const activeAudioElementIndexRef = useRef(0)
@@ -174,8 +175,8 @@ export const StreamPlayer: React.FC<Props> = ({ channelId, onTrackChanged }) => 
 
   return (
     <>
-      <audio ref={audioElement1Ref} />
-      <audio ref={audioElement2Ref} />
+      <audio ref={audioElement1Ref} muted={muted} />
+      <audio ref={audioElement2Ref} muted={muted} />
     </>
   )
 }

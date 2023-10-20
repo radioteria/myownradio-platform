@@ -7,6 +7,7 @@ import { NextIcon } from './icons/NextIcon'
 import { PlayIcon } from './icons/PlayIcon'
 import { PauseIcon } from './icons/PauseIcon'
 import { StreamOverlay } from './StreamOverlay'
+import { PlayerOverlay } from '@/views/PlayerPage/PlayerOverlay'
 
 interface Props {
   readonly channelId: number

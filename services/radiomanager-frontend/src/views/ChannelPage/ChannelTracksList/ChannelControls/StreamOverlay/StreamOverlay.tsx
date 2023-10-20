@@ -14,7 +14,7 @@ const Player: React.FC<Props> = ({ channelId }) => {
 
   return (
     <>
-      <DynamicFontSize formula={({ width }) => `${width * 0.025}px`}>
+      <DynamicFontSize className={'relative'} formula={({ width }) => `${width * 0.02}pt`}>
         <div className={'absolute left-2 bottom-2 bg-morblue-800 px-2'}>{title}</div>
       </DynamicFontSize>
 

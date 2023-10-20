@@ -1,5 +1,5 @@
 import cn from 'classnames'
-import { UserChannel } from '@/api'
+import { Channel } from '@/api'
 import Link from 'next/link'
 
 type ActiveItem =
@@ -9,7 +9,7 @@ type ActiveItem =
   | readonly ['upload']
 
 interface Props {
-  channels: readonly UserChannel[]
+  channels: readonly Channel[]
   activeItem: ActiveItem | null
 }
 

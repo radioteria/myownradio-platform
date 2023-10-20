@@ -86,12 +86,13 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                     ),
             )
             .service(
-                web::scope("/v0/streams").route("/", web::get().to(user_streams::get_user_streams)),
+                web::scope("/v0/streams")
+                    .route("/", web::get().to(user_streams::get_user_streams))
+                    .route(
+                        "/{stream_id}/rtmp-settings",
+                        web::post().to(user_streams::update_rtmp_settings),
+                    ),
             )
-            .service(web::scope("/v0/streams").route(
-                "/{stream_id}/rtmp-parameters",
-                web::post().to(user_streams::update_rtmp_parameters),
-            ))
             .service(
                 web::scope("/pub/v0/streams/{stream_id}")
                     .route(

@@ -54,20 +54,20 @@ pub(crate) struct RtmpParameters {
     rtmp_streaming_key: String,
 }
 
-pub(crate) async fn update_rtmp_parameters(
+pub(crate) async fn update_rtmp_settings(
     user_id: UserId,
     stream_id: Path<StreamId>,
-    rtmp_parameters: Json<RtmpParameters>,
+    rtmp_settings: Json<RtmpParameters>,
     mysql_client: Data<MySqlClient>,
 ) -> Response {
     let mut connection = mysql_client.connection().await?;
 
-    streams::update_channel_rtmp_parameters(
+    streams::update_channel_rtmp_settings(
         &mut connection,
         &stream_id,
         &user_id,
-        &rtmp_parameters.rtmp_url,
-        &rtmp_parameters.rtmp_streaming_key,
+        &rtmp_settings.rtmp_url,
+        &rtmp_settings.rtmp_streaming_key,
     )
     .await?;
 

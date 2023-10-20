@@ -1,6 +1,6 @@
 'use client'
 
-import { User, UserChannel, UserChannelTrack } from '@/api'
+import { User, Channel, UserChannelTrack } from '@/api'
 import { LibraryLayout, Header } from '@/layouts/LibraryLayout'
 import { Sidebar } from '@/components/Sidebar'
 import { ChannelTracksList } from './ChannelTracksList'
@@ -9,14 +9,16 @@ import { MediaUploaderComponent } from '@/modules/MediaUploader'
 import { useChannelPageStore } from './hooks/useChannelPageStore'
 import { ChannelControls } from './ChannelTracksList/ChannelControls'
 import { UserEventProvider } from '@/context/UserEventProvider'
+import { ChannelRtmpSettings } from '@/views/ChannelPage/ChannelRtmpSettings'
+import { useRtmpSettingsStore } from '@/views/ChannelPage/hooks/useRtmpSettingsStore'
 
 interface Props {
   readonly channelId: number
-  readonly channel: UserChannel
+  readonly channel: Channel
   readonly tracks: readonly UserChannelTrack[]
   readonly totalTracks: number
   readonly user: User
-  readonly channels: readonly UserChannel[]
+  readonly channels: readonly Channel[]
 }
 
 export const ChannelPage: React.FC<Props> = ({
@@ -28,6 +30,7 @@ export const ChannelPage: React.FC<Props> = ({
   channels,
 }) => {
   const channelPageStore = useChannelPageStore(channelId, tracks, totalTracks)
+  const rtmpSettingsStore = useRtmpSettingsStore(channel)
 
   return (
     <>
@@ -45,15 +48,21 @@ export const ChannelPage: React.FC<Props> = ({
           />
         }
         rightSidebar={
-          <ChannelControls
-            channelId={channelId}
-            onPlayNext={channelPageStore.controls.playNext}
-            onPlayPrev={channelPageStore.controls.playPrev}
-            onPlay={channelPageStore.controls.play}
-            onPause={channelPageStore.controls.pause}
-            onStop={channelPageStore.controls.stop}
-            onSeek={channelPageStore.controls.seek}
-          />
+          <>
+            <ChannelControls
+              channelId={channelId}
+              onPlayNext={channelPageStore.controls.playNext}
+              onPlayPrev={channelPageStore.controls.playPrev}
+              onPlay={channelPageStore.controls.play}
+              onPause={channelPageStore.controls.pause}
+              onStop={channelPageStore.controls.stop}
+              onSeek={channelPageStore.controls.seek}
+            />
+            <ChannelRtmpSettings
+              channel={rtmpSettingsStore.channel}
+              onUpdateRtmpSettings={rtmpSettingsStore.handleUpdateRtmpSettings}
+            />
+          </>
         }
       />
       <MediaUploaderComponent targetChannelId={channelId} />

@@ -158,7 +158,7 @@ WHERE `sid` = ?
     Ok(())
 }
 
-pub(crate) async fn update_channel_rtmp_parameters(
+pub(crate) async fn update_channel_rtmp_settings(
     connection: &mut MySqlConnection,
     stream_id: &StreamId,
     user_id: &UserId,

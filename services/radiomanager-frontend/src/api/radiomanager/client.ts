@@ -187,3 +187,16 @@ export const updateStreamDestination = async (
     headers: [['Content-Type', 'application/json']],
   })
 }
+
+export const updateRtmpSettings = async (
+  channelId: number,
+  rtmpUrl: string,
+  rtmpStreamingKey: string,
+): Promise<void> => {
+  await fetchAnyhow(`${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/rtmp-settings`, {
+    method: 'POST',
+    withCredentials: true,
+    body: JSON.stringify({ rtmpUrl, rtmpStreamingKey }),
+    headers: [['Content-Type', 'application/json']],
+  })
+}

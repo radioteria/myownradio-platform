@@ -1,7 +1,7 @@
 use crate::http_server::handlers::{
     forward_auth, internal_radio_streamer, public_schedule, public_streams, user_audio_stream,
-    user_audio_tracks, user_audio_tracks_v2, user_stream_control, user_stream_destinations,
-    user_streams,
+    user_audio_tracks, user_audio_tracks_v2, user_outgoing_stream, user_stream_control,
+    user_stream_destinations, user_streams,
 };
 use crate::pubsub_client::PubsubClient;
 use crate::services::auth::AuthTokenService;
@@ -104,6 +104,12 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                         web::get().to(public_schedule::get_current_track),
                     )
                     .route("/info", web::get().to(public_streams::get_stream_info)),
+            )
+            .service(
+                web::resource("/pub/v0/streams/{stream_id}/outgoing-stream")
+                    .route(web::get().to(user_outgoing_stream::get_outgoing_stream))
+                    .route(web::post().to(user_outgoing_stream::start_outgoing_stream))
+                    .route(web::delete().to(user_outgoing_stream::stop_outgoing_stream)),
             )
             .service(
                 web::scope("/internal/radio-streamer")

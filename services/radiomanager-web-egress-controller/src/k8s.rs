@@ -1,39 +1,33 @@
 use crate::types::{AudioSettings, RtmpSettings, UserId, VideoSettings};
-use k8s_openapi::api::batch::v1::{Job, JobStatus};
+use k8s_openapi::api::batch::v1::Job;
+use k8s_openapi::api::core::v1::Pod;
 use k8s_openapi::serde_json;
 use kube::api::{DeleteParams, ListParams, PostParams, PropagationPolicy};
 use kube::ResourceExt;
 use serde::Serialize;
-use tracing::info;
+use std::collections::HashMap;
+use tracing::{error, info};
 
 #[derive(Debug, Serialize)]
 pub(crate) struct StreamJob {
+    pub(crate) channel_id: String,
     pub(crate) stream_id: String,
     pub(crate) status: StreamJobStatus,
 }
 
 #[derive(Debug, Serialize)]
 pub(crate) enum StreamJobStatus {
-    Started,
+    Starting,
+    Running,
     Finished,
     Failed,
-}
-
-impl Into<StreamJobStatus> for JobStatus {
-    fn into(self) -> StreamJobStatus {
-        if self.failed.unwrap_or_default() > self.active.unwrap_or_default() {
-            StreamJobStatus::Failed
-        } else if self.succeeded.unwrap_or_default() > self.active.unwrap_or_default() {
-            StreamJobStatus::Finished
-        } else {
-            StreamJobStatus::Started
-        }
-    }
+    Unknown,
 }
 
 #[derive(Clone)]
 pub(crate) struct K8sClient {
     job_api: kube::Api<Job>,
+    pod_api: kube::Api<Pod>,
 
     image_name: String,
     image_tag: String,
@@ -52,10 +46,12 @@ impl K8sClient {
         image_tag: &str,
     ) -> Result<Self, K8sClientError> {
         let client = kube::Client::try_default().await?;
-        let job_api = kube::Api::namespaced(client, namespace);
+        let job_api = kube::Api::namespaced(client.clone(), namespace);
+        let pod_api = kube::Api::namespaced(client, namespace);
 
         Ok(Self {
             job_api,
+            pod_api,
             image_name: image_name.to_string(),
             image_tag: image_tag.to_string(),
         })
@@ -72,6 +68,14 @@ impl K8sClient {
         &self,
         user_id: &UserId,
     ) -> Result<Vec<StreamJob>, K8sClientError> {
+        let pod_to_job_map = self
+            .pod_api
+            .list(&ListParams::default())
+            .await?
+            .into_iter()
+            .map(|pod| (pod.labels().get("job-name").cloned(), pod))
+            .collect::<HashMap<_, _>>();
+
         let jobs = self
             .job_api
             .list(&ListParams::default().labels(&self.create_stream_job_selector(user_id)))
@@ -80,13 +84,31 @@ impl K8sClient {
         Ok(jobs
             .items
             .into_iter()
-            .map(|job| StreamJob {
-                stream_id: job
-                    .labels()
-                    .get("radioterio-stream-id")
-                    .expect("Expected label radioterio-stream-id not found")
-                    .to_string(),
-                status: job.status.unwrap_or_default().into(),
+            .map(|job| {
+                let pod_status = pod_to_job_map
+                    .get(&Some(job.name_any()))
+                    .and_then(|pod| pod.status.clone())
+                    .and_then(|status| status.phase);
+
+                StreamJob {
+                    stream_id: job
+                        .labels()
+                        .get("radioterio-stream-id")
+                        .cloned()
+                        .unwrap_or_default(),
+                    channel_id: job
+                        .labels()
+                        .get("radioterio-stream-channel-id")
+                        .cloned()
+                        .unwrap_or_default(),
+                    status: match pod_status.as_ref().map(AsRef::as_ref) {
+                        Some("Pending") => StreamJobStatus::Starting,
+                        Some("Running") => StreamJobStatus::Running,
+                        Some("Succeeded") => StreamJobStatus::Finished,
+                        Some("Failed") => StreamJobStatus::Failed,
+                        _ => StreamJobStatus::Unknown,
+                    },
+                }
             })
             .collect())
     }
@@ -94,6 +116,7 @@ impl K8sClient {
     pub(crate) async fn create_stream_job(
         &self,
         stream_id: &str,
+        channel_id: &str,
         user_id: &UserId,
         webpage_url: &str,
         rtmp_settings: &RtmpSettings,
@@ -104,6 +127,7 @@ impl K8sClient {
             "radioterio-stream-job": "true",
             "radioterio-stream-user-id": format_args!("{}", **user_id),
             "radioterio-stream-id": stream_id,
+            "radioterio-stream-channel-id": channel_id
         });
 
         let egress_container_manifest = serde_json::json!({
@@ -178,7 +202,7 @@ impl K8sClient {
           "apiVersion": "batch/v1",
           "kind": "Job",
           "metadata": {
-            "name": format_args!("radioterio-stream-{}", stream_id),
+            "name": format_args!("radioterio-stream-{}-{}", **user_id, channel_id),
             "labels": labels,
           },
           "spec": {
@@ -217,12 +241,12 @@ impl K8sClient {
 
     pub(crate) async fn delete_stream_job(
         &self,
-        stream_id: &str,
+        channel_id: &str,
         user_id: &UserId,
-    ) -> Result<(), K8sClientError> {
+    ) -> Result<bool, K8sClientError> {
         let label_selector = format!(
-            "radioterio-stream-id={},radioterio-stream-user-id={}",
-            stream_id, **user_id
+            "radioterio-stream-channel-id={},radioterio-stream-user-id={}",
+            channel_id, **user_id
         );
         let job = self
             .job_api
@@ -231,45 +255,77 @@ impl K8sClient {
             .into_iter()
             .next();
 
-        if let Some(name) = &job.unwrap().metadata.name {
-            let _ = self
-                .job_api
-                .delete(
-                    name,
-                    &DeleteParams {
-                        propagation_policy: Some(PropagationPolicy::Foreground),
-                        ..DeleteParams::default()
-                    },
-                )
-                .await?;
+        match job {
+            Some(job) => {
+                let r = self
+                    .job_api
+                    .delete(
+                        &job.name_any(),
+                        &DeleteParams {
+                            propagation_policy: Some(PropagationPolicy::Foreground),
+                            ..DeleteParams::default()
+                        },
+                    )
+                    .await?;
+
+                error!("Unable to stop the stream: {:?}", r);
+            }
+            None => return Ok(false),
         }
 
-        Ok(())
+        Ok(true)
     }
 
     pub(crate) async fn get_stream_job(
         &self,
-        stream_id: &str,
+        channel_id: &str,
         user_id: &UserId,
     ) -> Result<Option<StreamJob>, K8sClientError> {
         let label_selector = format!(
-            "radioterio-stream-id={},radioterio-stream-user-id={}",
-            stream_id, **user_id
+            "radioterio-stream-channel-id={},radioterio-stream-user-id={}",
+            channel_id, **user_id
         );
-        let stream_job = self
+
+        let job = self
             .job_api
             .list(&ListParams::default().labels(&label_selector))
             .await?
             .into_iter()
-            .next()
-            .map(|job| StreamJob {
-                stream_id: job
-                    .labels()
-                    .get("radioterio-stream-id")
-                    .expect("Expected label radioterio-stream-id not found")
-                    .to_string(),
-                status: job.status.unwrap_or_default().into(),
-            });
+            .next();
+
+        let pod = match job.as_ref() {
+            Some(job) => self
+                .pod_api
+                .list(&ListParams::default().labels(&format!("job-name={}", job.name_any())))
+                .await?
+                .into_iter()
+                .next(),
+            None => None,
+        };
+
+        let pod_status = pod
+            .and_then(|pod| pod.status)
+            .and_then(|status| status.phase);
+
+        let stream_job = job.map(|job| StreamJob {
+            stream_id: job
+                .labels()
+                .get("radioterio-stream-id")
+                .cloned()
+                .unwrap_or_default(),
+            channel_id: job
+                .labels()
+                .get("radioterio-stream-channel-id")
+                .cloned()
+                .unwrap_or_default(),
+            status: match pod_status.as_ref().map(AsRef::as_ref) {
+                Some("Pending") => StreamJobStatus::Starting,
+                Some("Running") => StreamJobStatus::Running,
+                Some("Succeeded") => StreamJobStatus::Finished,
+                Some("Failed") => StreamJobStatus::Failed,
+                _ => StreamJobStatus::Unknown,
+            },
+        });
 
         Ok(stream_job)
     }

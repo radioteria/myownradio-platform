@@ -91,5 +91,6 @@ RUN cargo build --release
 FROM build-deps
 
 COPY --from=build /code/target/release/radiomanager-web-egress-process /radiomanager-web-egress-process
+COPY ./entrypoint.sh /entrypoint.sh
 
-CMD xvfb-run -a --server-args="-nolisten tcp -screen 0 1280x720x30+32" /radiomanager-web-egress-process
+ENTRYPOINT ["/entrypoint.sh"]

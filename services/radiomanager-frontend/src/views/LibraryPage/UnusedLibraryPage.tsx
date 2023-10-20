@@ -6,13 +6,13 @@ import { LibraryTracksList } from '@/views/LibraryPage/LibraryTracksList/Library
 import { MediaUploaderComponent } from '@/modules/MediaUploader'
 import { useLibraryPageStore } from './hooks/useLibraryPageStore'
 
-import type { User, UserChannel, UserTrack } from '@/api'
+import type { User, Channel, UserTrack } from '@/api'
 
 interface Props {
   readonly user: User
   readonly initialTracks: readonly UserTrack[]
   readonly initialTotalCount: number
-  readonly userChannels: readonly UserChannel[]
+  readonly userChannels: readonly Channel[]
 }
 
 export const UnusedLibraryPage: React.FC<Props> = ({

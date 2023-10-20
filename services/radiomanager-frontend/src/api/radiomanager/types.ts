@@ -16,3 +16,14 @@ export const ChannelEntrySchema = z.object({
   uniqueId: z.string(),
 })
 export type ChannelEntry = z.infer<typeof ChannelEntrySchema>
+
+export const StreamDestinationSchema = z.object({
+  id: z.number(),
+  channelId: z.number(),
+  destination: z.object({
+    type: z.literal('RTMP'),
+    rtmpUrl: z.string(),
+    streamingKey: z.string(),
+  }),
+})
+export type StreamDestination = z.infer<typeof StreamDestinationSchema>

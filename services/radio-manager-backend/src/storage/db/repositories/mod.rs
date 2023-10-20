@@ -1,7 +1,10 @@
 use crate::data_structures::{FileId, LinkId, OrderId, StreamId, TrackId, UserId};
+use serde::{Deserialize, Serialize};
 use serde_repr::Serialize_repr;
+use sqlx::types::Json;
 
 pub(crate) mod errors;
+pub(crate) mod stream_destinations;
 pub(crate) mod streams;
 pub(crate) mod user_stream_tracks;
 pub(crate) mod user_tracks;
@@ -84,6 +87,8 @@ pub(crate) struct StreamRow {
     pub(crate) cover: Option<String>,
     pub(crate) cover_background: Option<String>,
     pub(crate) created: i64,
+    pub(crate) rtmp_url: String,
+    pub(crate) rtmp_streaming_key: String,
 }
 
 #[derive(sqlx::FromRow, Clone)]
@@ -99,4 +104,23 @@ pub(crate) struct UserRow {
     pub(crate) registration_date: u64,
     pub(crate) last_visit_date: Option<u64>,
     pub(crate) avatar: Option<String>,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub(crate) enum StreamDestination {
+    RTMP {
+        rtmp_url: String,
+        streaming_key: String,
+    },
+}
+
+#[derive(sqlx::FromRow, Clone)]
+pub(crate) struct StreamDestinationRow {
+    pub(crate) id: i32,
+    pub(crate) user_id: UserId,
+    pub(crate) stream_id: StreamId,
+    pub(crate) destination_json: Json<StreamDestination>,
+    pub(crate) created_at: chrono::DateTime<chrono::Utc>,
+    pub(crate) updated_at: chrono::DateTime<chrono::Utc>,
 }

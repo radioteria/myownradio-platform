@@ -160,5 +160,12 @@ export const NowPlayingResponseSchema = z.object({
 export type NowPlayingResponse = z.infer<typeof NowPlayingResponseSchema>
 export type NowPlaying = NowPlayingResponse['data']
 
-export const ChannelSchema = z.object({})
+export const ChannelSchema = z.object({
+  sid: z.number(),
+  status: z.number(),
+  info: z.string(),
+  name: z.string(),
+  rtmpUrl: z.string(),
+  rtmpStreamingKey: z.string(),
+})
 export type Channel = z.infer<typeof ChannelSchema>

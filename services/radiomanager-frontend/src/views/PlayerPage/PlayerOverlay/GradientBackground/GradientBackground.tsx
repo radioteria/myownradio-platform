@@ -10,7 +10,6 @@ const colors = [
   '#008080', // Teal
   '#4169E1', // Royal Blue
   '#191970', // Midnight Blue
-  '#E6E6FA', // Lavender
   '#DA70D6', // Orchid
   '#EE82EE', // Violet
   '#DDA0DD', // Plum
@@ -24,7 +23,6 @@ const colors = [
   '#32CD32', // Lime Green
   '#228B22', // Forest Green
   '#40E0D0', // Turquoise
-  '#C0C0C0', // Silver
 ]
 
 const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)]

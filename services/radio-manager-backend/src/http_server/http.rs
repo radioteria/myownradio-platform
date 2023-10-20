@@ -1,6 +1,7 @@
 use crate::http_server::handlers::{
     forward_auth, internal_radio_streamer, public_schedule, public_streams, user_audio_stream,
-    user_audio_tracks, user_audio_tracks_v2, user_stream_control, user_streams,
+    user_audio_tracks, user_audio_tracks_v2, user_stream_control, user_stream_destinations,
+    user_streams,
 };
 use crate::pubsub_client::PubsubClient;
 use crate::services::auth::AuthTokenService;
@@ -85,7 +86,12 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                     ),
             )
             .service(
-                web::scope("/v0/streams").route("/", web::get().to(user_streams::get_user_streams)),
+                web::scope("/v0/streams")
+                    .route("/", web::get().to(user_streams::get_user_streams))
+                    .route(
+                        "/{stream_id}/rtmp-settings",
+                        web::post().to(user_streams::update_rtmp_settings),
+                    ),
             )
             .service(
                 web::scope("/pub/v0/streams/{stream_id}")
@@ -108,6 +114,25 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                     .route(
                         "/v0/streams/{stream_id}/skip-track",
                         web::post().to(internal_radio_streamer::skip_track),
+                    ),
+            )
+            .service(
+                web::scope("/v0/destinations")
+                    .route(
+                        "/",
+                        web::get().to(user_stream_destinations::get_stream_destinations),
+                    )
+                    .route(
+                        "/create-for-channel/{channel_id}",
+                        web::post().to(user_stream_destinations::create_stream_destination),
+                    )
+                    .route(
+                        "/{id}",
+                        web::put().to(user_stream_destinations::update_stream_destination),
+                    )
+                    .route(
+                        "/{id}",
+                        web::delete().to(user_stream_destinations::delete_stream_destination),
                     ),
             )
     });

@@ -1,5 +1,5 @@
 import { ChannelPageWithProviders } from '@/views/ChannelPage'
-import { getSelf } from '@/api'
+import { getChannels, getSelf } from '@/api'
 import { INITIAL_AUDIO_TRACKS_CHUNK_SIZE } from '@/constants'
 import { getChannelTracksPage } from '@/api/radiomanager'
 
@@ -12,7 +12,8 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
     return <h1>Unauthorized</h1>
   }
 
-  const userChannel = self.streams.find((c) => c.sid === channelId)
+  const channels = await getChannels()
+  const userChannel = channels.find((c) => c.sid === channelId)
 
   if (!userChannel) {
     return <h1>Channel not found</h1>
@@ -29,7 +30,7 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
       tracks={data.items.map(({ track, entry }) => ({ ...track, ...entry }))}
       totalTracks={data.totalCount}
       user={self.user}
-      channels={self.streams}
+      channels={channels}
     />
   )
 }

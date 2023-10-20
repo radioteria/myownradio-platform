@@ -1,5 +1,5 @@
-import { getSelf } from '@/api'
-import { UploadPageWithProviders } from '../../views/UploadPage'
+import { getChannels, getSelf } from '@/api'
+import { UploadPageWithProviders } from '@/views/UploadPage'
 
 export default async function Upload() {
   const self = await getSelf()
@@ -8,5 +8,7 @@ export default async function Upload() {
     return <h1>Unauthorized</h1>
   }
 
-  return <UploadPageWithProviders user={self.user} userChannels={self.streams} />
+  const channels = await getChannels()
+
+  return <UploadPageWithProviders user={self.user} userChannels={channels} />
 }

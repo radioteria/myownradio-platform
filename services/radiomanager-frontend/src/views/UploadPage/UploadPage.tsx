@@ -1,6 +1,6 @@
 'use client'
 
-import { User, UserChannel } from '@/api'
+import { User, Channel } from '@/api'
 import { MediaUploaderComponent, useMediaUploader } from '@/modules/MediaUploader'
 import { LibraryLayout, Header } from '@/layouts/LibraryLayout'
 import { Sidebar } from '@/components/Sidebar'
@@ -8,7 +8,7 @@ import { UploadList } from './UploadList'
 
 interface Props {
   readonly user: User
-  readonly userChannels: readonly UserChannel[]
+  readonly userChannels: readonly Channel[]
 }
 
 export const UploadPage: React.FC<Props> = ({ user, userChannels }) => {

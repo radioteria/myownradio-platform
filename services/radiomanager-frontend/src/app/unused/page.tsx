@@ -1,4 +1,4 @@
-import { getSelf } from '@/api'
+import { getChannels, getSelf } from '@/api'
 import { getUnusedUserTracksPage } from '@/api/radiomanager'
 import { UnusedLibraryPageWithProviders } from '@/views/LibraryPage'
 import { INITIAL_AUDIO_TRACKS_CHUNK_SIZE } from '@/constants'
@@ -10,6 +10,8 @@ export default async function UnusedTracks() {
     return <h1>Unauthorized</h1>
   }
 
+  const channels = await getChannels()
+
   const data = await getUnusedUserTracksPage({
     limit: INITIAL_AUDIO_TRACKS_CHUNK_SIZE,
   })
@@ -19,7 +21,7 @@ export default async function UnusedTracks() {
       user={self.user}
       initialTracks={data.items}
       initialTotalCount={data.totalCount}
-      userChannels={self.streams}
+      userChannels={channels}
     />
   )
 }

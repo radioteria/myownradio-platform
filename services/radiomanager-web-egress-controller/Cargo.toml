@@ -17,3 +17,4 @@ actix-http = { version = "3.3.1" }
 futures = { version = "0.3.28" }
 kube = { version = "0.86.0" }
 k8s-openapi = { version = "0.20.0", features = ["v1_28"] }
+either = "1.9.0"

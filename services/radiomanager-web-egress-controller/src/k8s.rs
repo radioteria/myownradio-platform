@@ -1,12 +1,14 @@
+use crate::k8s_utils::make_stream_job_name;
 use crate::types::{AudioSettings, RtmpSettings, UserId, VideoSettings};
+use either::Either;
 use k8s_openapi::api::batch::v1::Job;
 use k8s_openapi::api::core::v1::Pod;
 use k8s_openapi::serde_json;
-use kube::api::{DeleteParams, ListParams, PostParams, PropagationPolicy};
+use kube::api::{DeleteParams, ListParams, PostParams};
 use kube::ResourceExt;
 use serde::Serialize;
 use std::collections::HashMap;
-use tracing::{error, info};
+use tracing::{debug, error, info, instrument};
 
 #[derive(Debug, Serialize)]
 pub(crate) struct StreamJob {
@@ -239,38 +241,50 @@ impl K8sClient {
         Ok(())
     }
 
+    #[instrument(skip(self))]
     pub(crate) async fn delete_stream_job(
         &self,
-        channel_id: &str,
         user_id: &UserId,
+        channel_id: &u32,
     ) -> Result<bool, K8sClientError> {
-        let label_selector = format!(
-            "radioterio-stream-channel-id={},radioterio-stream-user-id={}",
-            channel_id, **user_id
-        );
-        let job = self
+        let job_name = make_stream_job_name(user_id, channel_id);
+
+        let result = self
             .job_api
-            .list(&ListParams::default().labels(&label_selector))
-            .await?
-            .into_iter()
-            .next();
+            .delete(&job_name, &DeleteParams::foreground())
+            .await?;
 
-        match job {
-            Some(job) => {
-                let r = self
-                    .job_api
-                    .delete(
-                        &job.name_any(),
-                        &DeleteParams {
-                            propagation_policy: Some(PropagationPolicy::Foreground),
-                            ..DeleteParams::default()
-                        },
-                    )
-                    .await?;
-
-                error!("Unable to stop the stream: {:?}", r);
+        match result {
+            Either::Left(job) => {
+                debug!("Stream job deletion has started: {:?}", job.status)
             }
-            None => return Ok(false),
+            Either::Right(status) => {
+                debug!("Stream job deleted: {:?}", status)
+            }
+        }
+
+        let label_selector = format!("job-name={}", job_name);
+        let pods = self
+            .pod_api
+            .list(&ListParams::default().labels(&label_selector))
+            .await?;
+
+        for pod in pods.items.iter() {
+            match self
+                .pod_api
+                .delete(pod.name_any().as_ref(), &DeleteParams::background())
+                .await
+            {
+                Ok(Either::Left(pod)) => {
+                    debug!("Stream pod deletion has started: {:?}", pod.status)
+                }
+                Ok(Either::Right(status)) => {
+                    debug!("Stream pod deleted: {:?}", status)
+                }
+                Err(error) => {
+                    error!("Stream pod deletion failed: {:?}", error);
+                }
+            }
         }
 
         Ok(true)

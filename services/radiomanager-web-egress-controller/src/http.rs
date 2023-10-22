@@ -1,8 +1,10 @@
 use crate::config::Config;
-use crate::k8s::K8sClient;
+use crate::k8s::{K8sClient, K8sClientError};
 use crate::types::{AudioSettings, RtmpSettings, UserId, VideoSettings};
 use actix_server::Server;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use k8s_openapi::serde_json::json;
+use kube::Error;
 use serde::Deserialize;
 use tracing::error;
 
@@ -76,13 +78,16 @@ pub(crate) async fn start_stream(
 }
 
 pub(crate) async fn stop_stream(
-    path: web::Path<(UserId, String)>,
+    path: web::Path<(UserId, u32)>,
     k8s_client: web::Data<K8sClient>,
 ) -> impl Responder {
     let (user_id, channel_id) = path.into_inner();
 
-    let result = match k8s_client.delete_stream_job(&channel_id, &user_id).await {
+    let result = match k8s_client.delete_stream_job(&user_id, &channel_id).await {
         Ok(result) => result,
+        Err(K8sClientError::KubeClient(Error::Api(res))) if res.code == 404 => {
+            return HttpResponse::Conflict().json(json!({ "error": "STREAM_NOT_FOUND" }));
+        }
         Err(error) => {
             error!("{}", error);
             return HttpResponse::InternalServerError().finish();

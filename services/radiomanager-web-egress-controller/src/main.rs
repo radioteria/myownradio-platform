@@ -5,6 +5,7 @@ use crate::k8s::K8sClient;
 mod config;
 mod http;
 mod k8s;
+mod k8s_utils;
 mod types;
 
 #[actix_rt::main]

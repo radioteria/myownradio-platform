@@ -8,6 +8,8 @@ use kube::Error;
 use serde::Deserialize;
 use tracing::error;
 
+const STREAM_NOT_FOUND: &str = "STREAM_NOT_FOUND";
+
 pub(crate) async fn get_streams(
     path: web::Path<UserId>,
     k8s_client: web::Data<K8sClient>,
@@ -26,14 +28,16 @@ pub(crate) async fn get_streams(
 }
 
 pub(crate) async fn get_stream(
-    path: web::Path<(UserId, String)>,
+    path: web::Path<(UserId, u32)>,
     k8s_client: web::Data<K8sClient>,
 ) -> impl Responder {
     let (user_id, channel_id) = path.into_inner();
 
-    match k8s_client.get_stream_job(&channel_id, &user_id).await {
-        Ok(Some(stream)) => HttpResponse::Ok().json(stream),
-        Ok(None) => HttpResponse::NotFound().body("no_stream"),
+    match k8s_client.get_stream_job(&user_id, &channel_id).await {
+        Ok(stream) => HttpResponse::Ok().json(stream),
+        Err(K8sClientError::KubeClient(Error::Api(res))) if res.code == 404 => {
+            HttpResponse::NotFound().json(json!({ "error": STREAM_NOT_FOUND }))
+        }
         Err(error) => {
             error!("{}", error);
             HttpResponse::InternalServerError().finish()
@@ -86,7 +90,7 @@ pub(crate) async fn stop_stream(
     let result = match k8s_client.delete_stream_job(&user_id, &channel_id).await {
         Ok(result) => result,
         Err(K8sClientError::KubeClient(Error::Api(res))) if res.code == 404 => {
-            return HttpResponse::Conflict().json(json!({ "error": "STREAM_NOT_FOUND" }));
+            return HttpResponse::Conflict().json(json!({ "error": STREAM_NOT_FOUND }));
         }
         Err(error) => {
             error!("{}", error);

@@ -292,36 +292,23 @@ impl K8sClient {
 
     pub(crate) async fn get_stream_job(
         &self,
-        channel_id: &str,
         user_id: &UserId,
-    ) -> Result<Option<StreamJob>, K8sClientError> {
-        let label_selector = format!(
-            "radioterio-stream-channel-id={},radioterio-stream-user-id={}",
-            channel_id, **user_id
-        );
+        channel_id: &u32,
+    ) -> Result<StreamJob, K8sClientError> {
+        let job_name = make_stream_job_name(user_id, channel_id);
+        let job = self.job_api.get(&job_name).await?;
 
-        let job = self
-            .job_api
+        let label_selector = format!("job-name={}", job_name);
+        let pod_status = self
+            .pod_api
             .list(&ListParams::default().labels(&label_selector))
             .await?
             .into_iter()
-            .next();
-
-        let pod = match job.as_ref() {
-            Some(job) => self
-                .pod_api
-                .list(&ListParams::default().labels(&format!("job-name={}", job.name_any())))
-                .await?
-                .into_iter()
-                .next(),
-            None => None,
-        };
-
-        let pod_status = pod
+            .next()
             .and_then(|pod| pod.status)
             .and_then(|status| status.phase);
 
-        let stream_job = job.map(|job| StreamJob {
+        Ok(StreamJob {
             stream_id: job
                 .labels()
                 .get("radioterio-stream-id")
@@ -339,8 +326,6 @@ impl K8sClient {
                 Some("Failed") => StreamJobStatus::Failed,
                 _ => StreamJobStatus::Unknown,
             },
-        });
-
-        Ok(stream_job)
+        })
     }
 }

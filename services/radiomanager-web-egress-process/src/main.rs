@@ -45,7 +45,7 @@ pub(crate) fn main() {
     let mut is_error = false;
 
     while let Ok(event) = event_receiver.recv() {
-        debug!("Stream event: {:?}", event);
+        debug!("{:?}", event);
 
         match event {
             StreamEvent::Stats {

@@ -1,4 +1,4 @@
-use crate::k8s_utils::{make_stream_job_name, make_stream_job_selector, StreamJobMeta};
+use crate::k8s_utils::{make_stream_job_name, make_stream_job_selector};
 use crate::types::{AudioSettings, RtmpSettings, UserId, VideoSettings};
 use either::Either;
 use k8s_openapi::api::batch::v1::Job;

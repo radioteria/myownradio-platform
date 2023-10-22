@@ -1,11 +1,11 @@
 use crate::data_structures::{StreamId, UserId};
-use reqwest::{Client, StatusCode};
+use reqwest::Client;
 use serde::Deserialize;
 use serde_json::json;
-use tracing::{error, warn};
+use tracing::error;
 
 #[derive(Debug, Deserialize)]
-pub(crate) enum WebEgressControllerStreamStatus {
+pub(crate) enum StreamStatus {
     Starting,
     Running,
     Finished,
@@ -15,10 +15,27 @@ pub(crate) enum WebEgressControllerStreamStatus {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct WebEgressControllerStreamEntry {
+pub(crate) struct StreamEntry {
     pub(crate) channel_id: StreamId,
     pub(crate) stream_id: String,
-    pub(crate) status: WebEgressControllerStreamStatus,
+    pub(crate) status: StreamStatus,
+}
+
+pub(crate) struct RtmpSettings {
+    pub(crate) rtmp_url: String,
+    pub(crate) stream_key: String,
+}
+
+pub(crate) struct VideoSettings {
+    pub(crate) width: u32,
+    pub(crate) height: u32,
+    pub(crate) bitrate: u32,
+    pub(crate) framerate: u32,
+}
+
+pub(crate) struct AudioSettings {
+    pub(crate) bitrate: u32,
+    pub(crate) channels: u8,
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -45,26 +62,28 @@ impl WebEgressControllerClient {
         &self,
         channel_id: &StreamId,
         user_id: &UserId,
+        stream_id: &str,
+        rtmp_settings: &RtmpSettings,
+        video_settings: &VideoSettings,
+        audio_settings: &AudioSettings,
     ) -> Result<(), WebEgressControllerClientError> {
-        let stream_id = uuid::Uuid::new_v4();
-
         let json = json!({
-            "stream_id": "118whatever",
-            "channel_id": 118,
-            "webpage_url": "https://radioter.io/new/player/118?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3OTc0ODM4NjgsImNsYWltcyI6W3sibWV0aG9kcyI6WyJHRVQiXSwidXJpcyI6WyIvIl19XX0.dwzeNu9cqwEbrI-HMon72RXYmshdUMNUycBsmQ7JZqE",
-            "rtmp_settings": {
-                "rtmp_url": "rtmp://live.restream.io/live",
-                "stream_key": "re_1394117_053712c0c61e533c5f67"
+            "streamId": stream_id,
+            "channelId": **channel_id,
+            "webpageUrl": "https://radioter.io/new/player/118?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3OTc0ODM4NjgsImNsYWltcyI6W3sibWV0aG9kcyI6WyJHRVQiXSwidXJpcyI6WyIvIl19XX0.dwzeNu9cqwEbrI-HMon72RXYmshdUMNUycBsmQ7JZqE",
+            "rtmpSettings": {
+                "rtmpUrl": rtmp_settings.rtmp_url,
+                "streamKey": rtmp_settings.stream_key
             },
-            "video_settings": {
-                "width": 1280,
-                "height": 720,
-                "bitrate": 2500,
-                "framerate": 30
+            "videoSettings": {
+                "width": video_settings.width,
+                "height": video_settings.height,
+                "bitrate": video_settings.bitrate,
+                "framerate": video_settings.framerate
             },
-            "audio_settings": {
-                "bitrate": 128,
-                "channels": 2
+            "audioSettings": {
+                "bitrate": audio_settings.bitrate,
+                "channels": audio_settings.channels
             }
         });
         todo!()
@@ -82,7 +101,7 @@ impl WebEgressControllerClient {
         &self,
         channel_id: &StreamId,
         user_id: &UserId,
-    ) -> Result<WebEgressControllerStreamEntry, WebEgressControllerClientError> {
+    ) -> Result<StreamEntry, WebEgressControllerClientError> {
         Ok(self
             .client
             .get(format!(

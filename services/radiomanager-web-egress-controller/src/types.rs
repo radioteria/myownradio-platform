@@ -19,12 +19,14 @@ impl From<i32> for UserId {
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct RtmpSettings {
     pub(crate) rtmp_url: String,
     pub(crate) stream_key: String,
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct VideoSettings {
     pub(crate) width: u32,
     pub(crate) height: u32,
@@ -33,6 +35,7 @@ pub(crate) struct VideoSettings {
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct AudioSettings {
     pub(crate) bitrate: u32,
     pub(crate) channels: u32,

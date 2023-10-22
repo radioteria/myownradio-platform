@@ -46,6 +46,7 @@ pub(crate) async fn get_stream(
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct StartStreamRequestBody {
     stream_id: String,
     channel_id: u32,

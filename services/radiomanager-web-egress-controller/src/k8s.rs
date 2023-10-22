@@ -11,6 +11,7 @@ use std::collections::HashMap;
 use tracing::{debug, error, instrument};
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct StreamJob {
     pub(crate) channel_id: String,
     pub(crate) stream_id: String,

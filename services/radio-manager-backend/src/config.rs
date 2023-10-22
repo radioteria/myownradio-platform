@@ -90,6 +90,12 @@ pub(crate) struct PubsubBackendConfig {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+pub(crate) struct WebEgressControllerConfig {
+    #[serde(rename = "web_egress_controller_endpoint")]
+    pub(crate) endpoint: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub(crate) struct Config {
     #[serde(default = "default_bind_address")]
     pub(crate) bind_address: String,
@@ -109,6 +115,8 @@ pub(crate) struct Config {
     pub(crate) radio_streamer: RadioStreamerConfig,
     #[serde(flatten)]
     pub(crate) pubsub: PubsubBackendConfig,
+    #[serde(flatten)]
+    pub(crate) web_egress_controller: WebEgressControllerConfig,
     pub(crate) file_server_endpoint: String,
     pub(crate) file_system_root_path: String,
     pub(crate) auth_jwt_secret_key: String,

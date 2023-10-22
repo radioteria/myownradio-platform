@@ -8,6 +8,7 @@ mod services;
 mod storage;
 mod system;
 mod utils;
+mod web_egress_controller_client;
 
 use crate::config::Config;
 use crate::mysql_client::MySqlClient;

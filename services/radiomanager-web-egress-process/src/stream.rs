@@ -2,12 +2,14 @@ use crate::gstreamer_utils::make_element;
 use crate::stream_utils::{make_audio_encoder, make_output, make_video_encoder};
 use gstreamer::prelude::*;
 use gstreamer::{
-    Bin, BusSyncReply, Element, MessageView, PadProbeData, PadProbeReturn, PadProbeType, Pipeline,
-    State,
+    Bin, BusSyncReply, ClockTime, Element, MessageView, PadProbeData, PadProbeReturn, PadProbeType,
+    Pipeline, State,
 };
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::mpsc::Sender;
-use tracing::{info, trace, warn};
-use tracing_subscriber::fmt::format;
+use std::sync::Arc;
+use std::time::Duration;
+use tracing::{debug, info, warn};
 
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum CreateStreamError {}
@@ -18,8 +20,10 @@ pub(crate) enum Error {
     Other,
 }
 
+#[derive(Debug)]
 pub(crate) enum StreamEvent {
     Error(Error),
+    Stats { time_position: u64, byte_count: u64 },
 }
 
 pub(crate) enum StreamOutput {
@@ -112,22 +116,72 @@ impl Stream {
             .link(&output_audio_sink_pad)
             .expect("Unable to link pads");
 
-        output_video_sink_pad
-            .add_probe(PadProbeType::BUFFER, |_pad, info| {
-                if let Some(PadProbeData::Buffer(buffer)) = &info.data {
-                    if let Some(pts) = buffer.pts() {
-                        trace!("Buffer pts={}", pts);
-                    }
-                }
+        {
+            let byte_count = Arc::new(AtomicU64::new(0));
 
-                PadProbeReturn::Pass
-            })
-            .expect("Unable to add probe");
+            std::thread::spawn({
+                let pipeline = pipeline.downgrade();
+                let byte_count = byte_count.clone();
+                let event_sender = event_sender.clone();
+
+                move || {
+                    while let Some(pipeline) = pipeline.upgrade() {
+                        let position = pipeline.query_position::<ClockTime>();
+
+                        if let Some(time) = position {
+                            let byte_count = byte_count.load(Ordering::Relaxed);
+                            let time_position = time.mseconds();
+
+                            if let Err(_) = event_sender.send(StreamEvent::Stats {
+                                time_position,
+                                byte_count,
+                            }) {
+                                break;
+                            }
+                        }
+
+                        std::thread::sleep(Duration::from_secs(5));
+                    }
+
+                    debug!("Stats thread finished");
+                }
+            });
+
+            output_video_sink_pad
+                .add_probe(PadProbeType::BUFFER, {
+                    let byte_count = byte_count.clone();
+
+                    move |_pad, info| {
+                        if let Some(PadProbeData::Buffer(buffer)) = &info.data {
+                            byte_count.fetch_add(buffer.size() as u64, Ordering::Relaxed);
+                        }
+
+                        PadProbeReturn::Ok
+                    }
+                })
+                .expect("Unable to add probe");
+
+            output_audio_sink_pad
+                .add_probe(PadProbeType::BUFFER, {
+                    let byte_count = byte_count.clone();
+
+                    move |_pad, info| {
+                        if let Some(PadProbeData::Buffer(buffer)) = &info.data {
+                            byte_count.fetch_add(buffer.size() as u64, Ordering::Relaxed);
+                        }
+
+                        PadProbeReturn::Ok
+                    }
+                })
+                .expect("Unable to add probe");
+        }
 
         pipeline
             .bus()
             .expect("Unable to get Pipeline Bus")
             .set_sync_handler({
+                let event_sender = event_sender.clone();
+
                 move |_bus, message| {
                     match message.view() {
                         MessageView::Warning(warning) => {

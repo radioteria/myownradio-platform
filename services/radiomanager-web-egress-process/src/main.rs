@@ -1,7 +1,7 @@
 use crate::config::{Config, VideoAcceleration};
 use crate::stream::{Stream, StreamConfig, StreamEvent, StreamOutput, VideoEncoder};
 use std::sync::mpsc::channel;
-use tracing::error;
+use tracing::{debug, error};
 
 pub(crate) mod config;
 pub(crate) mod gstreamer_utils;
@@ -45,7 +45,15 @@ pub(crate) fn main() {
     let mut is_error = false;
 
     while let Ok(event) = event_receiver.recv() {
+        debug!("Stream event: {:?}", event);
+
         match event {
+            StreamEvent::Stats {
+                time_position,
+                byte_count,
+            } => {
+                // TODO: Publish stats
+            }
             StreamEvent::Error(error) => {
                 error!("Error happened while streaming: {:?}", error);
                 is_error = true;

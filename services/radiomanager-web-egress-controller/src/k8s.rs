@@ -153,6 +153,14 @@ impl K8sClient {
               "value": webpage_url
             },
             {
+              "name": "STREAM_ID",
+              "value": stream_id
+            },
+            {
+              "name": "USER_ID",
+              "value": format_args!("{}", **user_id)
+            },
+            {
               "name": "RTMP_URL",
               "value": rtmp_settings.rtmp_url
             },

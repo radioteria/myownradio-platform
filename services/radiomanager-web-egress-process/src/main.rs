@@ -18,6 +18,7 @@ pub(crate) fn main() {
     let (event_sender, event_receiver) = channel();
 
     let stream = Stream::create(
+        config.stream_id,
         config.webpage_url,
         &StreamConfig {
             output: StreamOutput::RTMP {

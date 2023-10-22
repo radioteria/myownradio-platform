@@ -7,6 +7,7 @@ use gstreamer::{
 };
 use std::sync::mpsc::Sender;
 use tracing::{info, trace, warn};
+use tracing_subscriber::fmt::format;
 
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum CreateStreamError {}
@@ -55,11 +56,13 @@ impl Drop for Stream {
 
 impl Stream {
     pub(crate) fn create(
+        stream_id: String,
         webpage_url: String,
         config: &StreamConfig,
         event_sender: Sender<StreamEvent>,
     ) -> Result<Stream, CreateStreamError> {
-        let pipeline = Pipeline::new(None);
+        let pipeline_name = format!("web-egress-{}", stream_id);
+        let pipeline = Pipeline::new(Some(&pipeline_name));
 
         let audiomixer = make_element("audiomixer");
 

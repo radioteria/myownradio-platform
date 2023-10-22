@@ -64,5 +64,5 @@ pub(crate) fn main() {
 
     drop(stream);
 
-    std::process::exit(if is_error { 0 } else { 1 })
+    std::process::exit(if is_error { 1 } else { 0 })
 }

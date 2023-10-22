@@ -12,6 +12,8 @@ pub(crate) fn main() {
     tracing_subscriber::fmt::init();
 
     let config = Config::from_env();
+    let _stream_id = config.stream_id.clone();
+    let _user_id = config.user_id.clone();
 
     gstreamer::init().expect("Unable to initialize GStreamer!");
 

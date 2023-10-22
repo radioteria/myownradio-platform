@@ -46,6 +46,8 @@ pub(crate) enum VideoAcceleration {
 #[derive(Deserialize)]
 pub(crate) struct Config {
     pub(crate) stream_id: String,
+    #[serde(deserialize_with = "from_str")]
+    pub(crate) user_id: u32,
     pub(crate) webpage_url: String,
     pub(crate) rtmp_url: String,
     pub(crate) rtmp_stream_key: String,

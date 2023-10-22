@@ -48,7 +48,7 @@ pub(crate) async fn get_stream(
 #[derive(Deserialize)]
 pub(crate) struct StartStreamRequestBody {
     stream_id: String,
-    channel_id: String,
+    channel_id: u32,
     webpage_url: String,
     rtmp_settings: RtmpSettings,
     video_settings: VideoSettings,
@@ -64,9 +64,9 @@ pub(crate) async fn start_stream(
 
     if let Err(error) = k8s_client
         .create_stream_job(
+            &user_id,
             &body.stream_id,
             &body.channel_id,
-            &user_id,
             &body.webpage_url,
             &body.rtmp_settings,
             &body.video_settings,

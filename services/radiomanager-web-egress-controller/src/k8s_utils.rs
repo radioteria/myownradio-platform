@@ -11,3 +11,7 @@ pub(crate) struct StreamJobMeta {
 pub(crate) fn make_stream_job_name(user_id: &UserId, channel_id: &u32) -> String {
     format!("radioterio-stream-{}-{}", **user_id, channel_id)
 }
+
+pub(crate) fn make_stream_job_selector(user_id: &UserId) -> String {
+    format!("radioterio-stream-user-id={}", **user_id)
+}

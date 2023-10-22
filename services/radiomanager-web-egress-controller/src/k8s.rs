@@ -1,4 +1,4 @@
-use crate::k8s_utils::make_stream_job_name;
+use crate::k8s_utils::{make_stream_job_name, make_stream_job_selector, StreamJobMeta};
 use crate::types::{AudioSettings, RtmpSettings, UserId, VideoSettings};
 use either::Either;
 use k8s_openapi::api::batch::v1::Job;
@@ -8,7 +8,7 @@ use kube::api::{DeleteParams, ListParams, PostParams};
 use kube::ResourceExt;
 use serde::Serialize;
 use std::collections::HashMap;
-use tracing::{debug, error, info, instrument};
+use tracing::{debug, error, instrument};
 
 #[derive(Debug, Serialize)]
 pub(crate) struct StreamJob {
@@ -59,36 +59,30 @@ impl K8sClient {
         })
     }
 
-    fn create_stream_job_selector(&self, user_id: &UserId) -> String {
-        format!(
-            "radioterio-stream-job=true,radioterio-stream-user-id={}",
-            **user_id
-        )
-    }
-
     pub(crate) async fn get_stream_jobs_by_user(
         &self,
         user_id: &UserId,
     ) -> Result<Vec<StreamJob>, K8sClientError> {
-        let pod_to_job_map = self
+        let job_to_pod_map = self
             .pod_api
             .list(&ListParams::default())
             .await?
             .into_iter()
-            .map(|pod| (pod.labels().get("job-name").cloned(), pod))
+            .filter_map(|pod| Some((pod.labels().get("job-name").cloned()?, pod)))
             .collect::<HashMap<_, _>>();
 
-        let jobs = self
+        let labels_selector = make_stream_job_selector(user_id);
+        let user_stream_jobs = self
             .job_api
-            .list(&ListParams::default().labels(&self.create_stream_job_selector(user_id)))
+            .list(&ListParams::default().labels(&labels_selector))
             .await?;
 
-        Ok(jobs
+        Ok(user_stream_jobs
             .items
             .into_iter()
             .map(|job| {
-                let pod_status = pod_to_job_map
-                    .get(&Some(job.name_any()))
+                let pod_status = job_to_pod_map
+                    .get(&job.name_any())
                     .and_then(|pod| pod.status.clone())
                     .and_then(|status| status.phase);
 
@@ -117,19 +111,20 @@ impl K8sClient {
 
     pub(crate) async fn create_stream_job(
         &self,
-        stream_id: &str,
-        channel_id: &str,
         user_id: &UserId,
+        stream_id: &str,
+        channel_id: &u32,
         webpage_url: &str,
         rtmp_settings: &RtmpSettings,
         video_settings: &VideoSettings,
         audio_settings: &AudioSettings,
     ) -> Result<(), K8sClientError> {
+        let job_name = make_stream_job_name(user_id, channel_id);
+
         let labels = serde_json::json!({
-            "radioterio-stream-job": "true",
             "radioterio-stream-user-id": format_args!("{}", **user_id),
             "radioterio-stream-id": stream_id,
-            "radioterio-stream-channel-id": channel_id
+            "radioterio-stream-channel-id": format_args!("{}", channel_id)
         });
 
         let egress_container_manifest = serde_json::json!({
@@ -204,7 +199,7 @@ impl K8sClient {
           "apiVersion": "batch/v1",
           "kind": "Job",
           "metadata": {
-            "name": format_args!("radioterio-stream-{}-{}", **user_id, channel_id),
+            "name": job_name,
             "labels": labels,
           },
           "spec": {
@@ -228,15 +223,12 @@ impl K8sClient {
         }
         );
 
-        let job = self
-            .job_api
+        self.job_api
             .create(
                 &PostParams::default(),
-                &serde_json::from_value(job_manifest).expect("Unable to parse job manifest"),
+                &serde_json::from_value(job_manifest).expect("Unable to parse stream job manifest"),
             )
             .await?;
-
-        info!("Created job: {:?}", job);
 
         Ok(())
     }

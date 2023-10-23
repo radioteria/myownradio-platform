@@ -68,25 +68,30 @@ impl Stream {
         let pipeline_name = format!("web-egress-{}", stream_id);
         let pipeline = Pipeline::new(Some(&pipeline_name));
 
+        let liveaudio = make_element("audiotestsrc");
+        liveaudio.set_property("is-live", &true);
+        liveaudio.set_property_from_str("wave", "silence");
+
         let audiomixer = make_element("audiomixer");
 
-        let cefbin = make_element("cefbin");
-        let cefsrc = cefbin
-            .downcast_ref::<Bin>()
-            .unwrap()
-            .by_name("cefsrc")
-            .unwrap();
-        cefsrc.set_property("url", webpage_url);
-        if config.cef_gpu_enabled {
-            info!("Enabling GPU acceleration");
-            cefsrc.set_property("gpu", &true);
-        }
+        let wpesrc = make_element("wpesrc");
+        wpesrc.set_property("location", webpage_url);
+        wpesrc.connect_pad_added({
+            move |_el, pad| {
+                eprintln!("!!!!!!!!!!!! Pad added: {:?}", pad);
+            }
+        });
+        wpesrc.connect_pad_removed({
+            move |_el, pad| {
+                eprintln!("Pad removed: {:?}", pad);
+            }
+        });
 
         pipeline
-            .add_many(&[&cefbin, &audiomixer])
+            .add_many(&[&wpesrc, &liveaudio, &audiomixer])
             .expect("Unable to add elements to pipeline");
 
-        cefbin.link(&audiomixer).unwrap();
+        liveaudio.link(&audiomixer).unwrap();
 
         let (video_sink, video_src) = make_video_encoder(
             &pipeline,
@@ -100,7 +105,7 @@ impl Stream {
         let (audio_sink, audio_src) =
             make_audio_encoder(&pipeline, config.audio_bitrate, config.audio_channels);
 
-        Element::link_many(&[&cefbin, &video_sink]).expect("Unable to link elements");
+        Element::link_many(&[&wpesrc, &video_sink]).expect("Unable to link elements");
         Element::link_many(&[&audiomixer, &audio_sink]).expect("Unable to link elements");
 
         let (output_video_sink_pad, output_audio_sink_pad) = make_output(&pipeline, &config.output);

@@ -43,8 +43,8 @@ pub(crate) async fn start_outgoing_stream(
         // 1 week for testing purposes
         exp: now_timestamp + 604_800,
         claims: vec![AuthTokenClaim {
-            methods: vec!["GET"],
-            uris: vec!["/"],
+            methods: vec!["GET".to_string()],
+            uris: vec!["/".to_string()],
         }],
     };
     let token = auth_token_service.sign_claims(claims);

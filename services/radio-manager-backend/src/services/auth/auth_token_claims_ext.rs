@@ -7,8 +7,9 @@ pub(crate) trait IsActionAllowed {
 
 impl IsActionAllowed for AuthTokenClaims {
     fn is_action_allowed(&self, method: &str, uri: &str) -> bool {
+        let method_as_string = method.to_string();
         let is_allowed = self.claims.iter().any(|claim| {
-            claim.methods.contains(&method)
+            claim.methods.contains(&method_as_string)
                 && claim
                     .uris
                     .iter()

@@ -75,7 +75,7 @@ impl WebEgressControllerClient {
         audio_settings: &AudioSettings,
     ) -> Result<(), WebEgressControllerClientError> {
         let webpage_url = format!(
-            "{}/{}?token={}",
+            "{}{}?token={}",
             self.stream_player_url_prefix, **channel_id, token
         );
 

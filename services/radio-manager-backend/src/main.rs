@@ -16,6 +16,7 @@ use crate::pubsub_client::PubsubClient;
 use crate::services::auth::AuthTokenService;
 use crate::services::StreamServiceFactory;
 use crate::storage::fs::local::LocalFileSystem;
+use crate::web_egress_controller_client::WebEgressControllerClient;
 use dotenv::dotenv;
 use http_server::run_server;
 use std::io::Result;
@@ -44,6 +45,10 @@ async fn main() -> Result<()> {
         .expect("Unable to initialize MySQL client");
 
     let pubsub_client = PubsubClient::new(&config.pubsub.endpoint);
+    let web_egress_controller_client = WebEgressControllerClient::new(
+        &config.web_egress_controller.endpoint,
+        &config.web_egress_controller.stream_player_url_prefix,
+    );
 
     let auth_token_service = AuthTokenService::create(
         &config.auth_jwt_secret_key,
@@ -63,6 +68,7 @@ async fn main() -> Result<()> {
         stream_service_factory,
         pubsub_client,
         auth_token_service,
+        web_egress_controller_client,
     )?;
 
     tracing::info!("Application started");

@@ -93,6 +93,8 @@ pub(crate) struct PubsubBackendConfig {
 pub(crate) struct WebEgressControllerConfig {
     #[serde(rename = "web_egress_controller_endpoint")]
     pub(crate) endpoint: String,
+    #[serde(rename = "web_egress_stream_player_url_prefix")]
+    pub(crate) stream_player_url_prefix: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -121,7 +123,6 @@ pub(crate) struct Config {
     pub(crate) file_system_root_path: String,
     pub(crate) auth_jwt_secret_key: String,
     pub(crate) legacy_auth_jwt_secret_key: String,
-    pub(crate) stream_player_url_prefix: String,
 }
 
 impl Config {

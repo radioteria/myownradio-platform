@@ -1,5 +1,6 @@
 use crate::services::StreamServiceError;
 use crate::storage::db::repositories::errors::RepositoryError;
+use crate::web_egress_controller_client::WebEgressControllerClientError;
 use actix_http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
 use serde::Serialize;
@@ -18,6 +19,8 @@ pub(crate) enum Error {
     IOError(#[from] std::io::Error),
     #[error("StreamServiceError: {0}")]
     StreamServiceError(#[from] StreamServiceError),
+    #[error("WebEgressControllerClientError: {0}")]
+    WebEgressControllerClientError(#[from] WebEgressControllerClientError),
 }
 
 #[derive(Serialize)]
@@ -32,6 +35,7 @@ impl ResponseError for Error {
             Error::RepositoryError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::IOError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::StreamServiceError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::WebEgressControllerClientError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
@@ -57,6 +61,10 @@ impl ResponseError for Error {
                     error: "stream_service_error",
                 })
             }
+            Error::WebEgressControllerClientError(_) => HttpResponse::build(self.status_code())
+                .json(ErrorResponse {
+                    error: "web_egress_service_error",
+                }),
         }
     }
 }

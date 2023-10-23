@@ -6,6 +6,7 @@ use crate::http_server::handlers::{
 use crate::pubsub_client::PubsubClient;
 use crate::services::auth::AuthTokenService;
 use crate::storage::fs::FileSystem;
+use crate::web_egress_controller_client::WebEgressControllerClient;
 use crate::{Config, MySqlClient, StreamServiceFactory};
 use actix_server::Server;
 use actix_web::web::Data;
@@ -20,6 +21,7 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
     stream_service_factory: StreamServiceFactory,
     pubsub_client: PubsubClient,
     auth_token_service: AuthTokenService,
+    web_egress_controller_client: WebEgressControllerClient,
 ) -> Result<Server> {
     let mysql_client = mysql_client.clone();
 
@@ -33,6 +35,7 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
             .app_data(Data::new(stream_service_factory.clone()))
             .app_data(Data::new(pubsub_client.clone()))
             .app_data(Data::new(auth_token_service.clone()))
+            .app_data(Data::new(web_egress_controller_client.clone()))
             .service(web::scope("/v0/forward-auth").route(
                 "/by-token",
                 web::get().to(forward_auth::auth_by_jwt_token_or_legacy_token),
@@ -84,6 +87,12 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                         "/play-from/{playlist_position}",
                         web::post().to(user_stream_control::play_from),
                     ),
+            )
+            .service(
+                web::resource("/v0/streams/{channel_id}/outgoing-stream")
+                    .route(web::get().to(user_outgoing_stream::get_outgoing_stream))
+                    .route(web::delete().to(user_outgoing_stream::stop_outgoing_stream))
+                    .route(web::post().to(user_outgoing_stream::start_outgoing_stream)),
             )
             .service(
                 web::scope("/v0/streams")

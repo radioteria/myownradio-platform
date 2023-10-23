@@ -2,7 +2,7 @@ use crate::data_structures::{StreamId, UserId};
 use reqwest::Client;
 use serde::Deserialize;
 use serde_json::json;
-use tracing::error;
+use tracing::{error, trace};
 
 #[derive(Debug, Deserialize)]
 pub(crate) enum StreamStatus {
@@ -47,15 +47,21 @@ pub(crate) enum WebEgressControllerClientError {
 #[derive(Clone)]
 pub(crate) struct WebEgressControllerClient {
     endpoint: String,
+    stream_player_url_prefix: String,
     client: Client,
 }
 
 impl WebEgressControllerClient {
-    pub(crate) fn new(endpoint: &str) -> Self {
+    pub(crate) fn new(endpoint: &str, stream_player_url_prefix: &str) -> Self {
         let client = Client::new();
         let endpoint = endpoint.to_string();
+        let stream_player_url_prefix = stream_player_url_prefix.to_string();
 
-        Self { endpoint, client }
+        Self {
+            endpoint,
+            stream_player_url_prefix,
+            client,
+        }
     }
 
     pub(crate) async fn start_stream(
@@ -63,14 +69,20 @@ impl WebEgressControllerClient {
         channel_id: &StreamId,
         user_id: &UserId,
         stream_id: &str,
+        token: &str,
         rtmp_settings: &RtmpSettings,
         video_settings: &VideoSettings,
         audio_settings: &AudioSettings,
     ) -> Result<(), WebEgressControllerClientError> {
+        let webpage_url = format!(
+            "{}/{}?token={}",
+            self.stream_player_url_prefix, **channel_id, token
+        );
+
         let json = json!({
             "streamId": stream_id,
             "channelId": **channel_id,
-            "webpageUrl": "https://radioter.io/new/player/118?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE3OTc0ODM4NjgsImNsYWltcyI6W3sibWV0aG9kcyI6WyJHRVQiXSwidXJpcyI6WyIvIl19XX0.dwzeNu9cqwEbrI-HMon72RXYmshdUMNUycBsmQ7JZqE",
+            "webpageUrl": webpage_url,
             "rtmpSettings": {
                 "rtmpUrl": rtmp_settings.rtmp_url,
                 "streamKey": rtmp_settings.stream_key
@@ -86,7 +98,20 @@ impl WebEgressControllerClient {
                 "channels": audio_settings.channels
             }
         });
-        todo!()
+
+        let response = self
+            .client
+            .post(format!("{}/users/{}/streams", self.endpoint, **user_id))
+            .json(&json)
+            .send()
+            .await?
+            .error_for_status()?
+            .text()
+            .await?;
+
+        trace!("Start stream response={}", response);
+
+        Ok(())
     }
 
     pub(crate) async fn stop_stream(
@@ -94,7 +119,21 @@ impl WebEgressControllerClient {
         channel_id: &StreamId,
         user_id: &UserId,
     ) -> Result<(), WebEgressControllerClientError> {
-        todo!()
+        let response = self
+            .client
+            .delete(format!(
+                "{}/users/{}/streams/{}",
+                self.endpoint, **user_id, **channel_id
+            ))
+            .send()
+            .await?
+            .error_for_status()?
+            .text()
+            .await?;
+
+        trace!("Stop stream response={}", response);
+
+        Ok(())
     }
 
     pub(crate) async fn get_stream(

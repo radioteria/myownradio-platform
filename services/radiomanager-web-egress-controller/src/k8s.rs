@@ -13,7 +13,7 @@ use tracing::{debug, error, instrument};
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct StreamJob {
-    pub(crate) channel_id: String,
+    pub(crate) channel_id: u32,
     pub(crate) stream_id: String,
     pub(crate) status: StreamJobStatus,
 }
@@ -96,7 +96,7 @@ impl K8sClient {
                     channel_id: job
                         .labels()
                         .get("radioterio-stream-channel-id")
-                        .cloned()
+                        .and_then(|str| str.parse().ok())
                         .unwrap_or_default(),
                     status: match pod_status.as_ref().map(AsRef::as_ref) {
                         Some("Pending") => StreamJobStatus::Starting,
@@ -318,7 +318,7 @@ impl K8sClient {
             channel_id: job
                 .labels()
                 .get("radioterio-stream-channel-id")
-                .cloned()
+                .and_then(|str| str.parse().ok())
                 .unwrap_or_default(),
             status: match pod_status.as_ref().map(AsRef::as_ref) {
                 Some("Pending") => StreamJobStatus::Starting,

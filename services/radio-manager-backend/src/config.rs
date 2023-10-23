@@ -121,6 +121,7 @@ pub(crate) struct Config {
     pub(crate) file_system_root_path: String,
     pub(crate) auth_jwt_secret_key: String,
     pub(crate) legacy_auth_jwt_secret_key: String,
+    pub(crate) stream_player_url_prefix: String,
 }
 
 impl Config {

@@ -75,6 +75,9 @@ WORKDIR /code/
 # Check whether GStreamer was successfully installed
 RUN xvfb-run -a --server-args="-nolisten tcp -screen 0 1280x720x30+32" gst-inspect-1.0 cefsrc
 
+# Start pulseaudio server
+RUN pulseaudio -D --disable-shm=true --realtime=true --exit-idle-time=-1
+
 FROM build-deps as build
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -92,5 +95,8 @@ FROM build-deps
 
 COPY --from=build /code/target/release/radiomanager-web-egress-process /radiomanager-web-egress-process
 COPY ./entrypoint.sh /entrypoint.sh
+
+# Start pulseaudio server
+RUN pulseaudio -D --disable-shm=true --realtime=true --exit-idle-time=-1
 
 ENTRYPOINT ["/entrypoint.sh"]

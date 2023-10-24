@@ -1,9 +1,9 @@
-use crate::gstreamer_utils::{make_capsfilter, make_element};
+use crate::gstreamer_utils::make_element;
 use crate::stream_utils::{make_audio_encoder, make_output, make_video_encoder};
 use gstreamer::prelude::*;
 use gstreamer::{
-    Bin, BusSyncReply, Caps, ClockTime, Element, MessageView, PadDirection, PadPresence,
-    PadProbeData, PadProbeReturn, PadProbeType, PadTemplate, Pipeline, State,
+    Bin, BusSyncReply, ClockTime, Element, MessageView, PadProbeData, PadProbeReturn, PadProbeType,
+    Pipeline, State,
 };
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::mpsc::Sender;
@@ -68,39 +68,25 @@ impl Stream {
         let pipeline_name = format!("web-egress-{}", stream_id);
         let pipeline = Pipeline::new(Some(&pipeline_name));
 
-        let liveaudio = make_element("audiotestsrc");
-        liveaudio.set_property("is-live", &true);
-        liveaudio.set_property_from_str("wave", "silence");
-
-        let pulsesrc = make_element("pulsesrc");
         let audiomixer = make_element("audiomixer");
 
-        let wpesrc = make_element("wpevideosrc");
-        let timeoverlay = make_element("timeoverlay");
-        let wpecaps = make_capsfilter(&Caps::new_empty_simple("video/x-raw"));
-
-        wpesrc.set_property("location", webpage_url);
-        wpesrc.connect_pad_added({
-            move |_el, pad| {
-                eprintln!("!!!!!!!!!!!! Pad added: {:?}", pad);
-            }
-        });
-        wpesrc.connect_pad_removed({
-            move |_el, pad| {
-                eprintln!("Pad removed: {:?}", pad);
-            }
-        });
+        let cefbin = make_element("cefbin");
+        let cefsrc = cefbin
+            .downcast_ref::<Bin>()
+            .unwrap()
+            .by_name("cefsrc")
+            .unwrap();
+        cefsrc.set_property("url", webpage_url);
+        if config.cef_gpu_enabled {
+            info!("Enabling GPU acceleration");
+            cefsrc.set_property("gpu", &true);
+        }
 
         pipeline
-            .add_many(&[
-                &wpesrc,
-                &wpecaps,
-                &timeoverlay,
-                &liveaudio,
-                &pulsesrc,
-                &audiomixer,
-            ])
+            .add_many(&[&cefbin, &audiomixer])
             .expect("Unable to add elements to pipeline");
+
+        cefbin.link(&audiomixer).unwrap();
 
         let (video_sink, video_src) = make_video_encoder(
             &pipeline,
@@ -114,11 +100,7 @@ impl Stream {
         let (audio_sink, audio_src) =
             make_audio_encoder(&pipeline, config.audio_bitrate, config.audio_channels);
 
-        liveaudio.link(&audiomixer).unwrap();
-        pulsesrc.link(&audiomixer).unwrap();
-
-        Element::link_many(&[&wpesrc, &wpecaps, &timeoverlay, &video_sink])
-            .expect("Unable to link elements");
+        Element::link_many(&[&cefbin, &video_sink]).expect("Unable to link elements");
         Element::link_many(&[&audiomixer, &audio_sink]).expect("Unable to link elements");
 
         let (output_video_sink_pad, output_audio_sink_pad) = make_output(&pipeline, &config.output);
@@ -219,9 +201,7 @@ impl Stream {
                                 let _ = event_sender.send(StreamEvent::Error(Error::Other));
                             }
                         }
-                        event => {
-                            // eprintln!("!EVENT: {:?}", event);
-                        }
+                        _ => {}
                     };
                     BusSyncReply::Drop
                 }

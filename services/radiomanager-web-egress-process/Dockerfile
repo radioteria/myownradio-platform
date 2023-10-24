@@ -50,13 +50,13 @@ RUN apt-get update && \
     gstreamer1.0-plugins-ugly \
     gstreamer1.0-libav \
     gstreamer1.0 \
-    libgirepository1.0-dev
+    libgirepository1.0-dev \
+    pulseaudio
 
 # Copy compiled GStreamer plugins
 COPY --from=gst-plugins /src/gstcefsrc/build/* /opt/gstcefsrc/
 
 ENV GST_PLUGIN_PATH="/opt/gstcefsrc:$GST_PLUGIN_PATH"
-
 
 FROM build-deps as devenv
 
@@ -75,6 +75,9 @@ WORKDIR /code/
 # Check whether GStreamer was successfully installed
 RUN xvfb-run -a --server-args="-nolisten tcp -screen 0 1280x720x30+32" gst-inspect-1.0 cefsrc
 
+# Start pulseaudio server
+RUN pulseaudio -D --disable-shm=true --realtime=true --exit-idle-time=-1
+
 FROM build-deps as build
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -92,5 +95,8 @@ FROM build-deps
 
 COPY --from=build /code/target/release/radiomanager-web-egress-process /radiomanager-web-egress-process
 COPY ./entrypoint.sh /entrypoint.sh
+
+# Start pulseaudio server
+RUN pulseaudio -D --disable-shm=true --realtime=true --exit-idle-time=-1
 
 ENTRYPOINT ["/entrypoint.sh"]

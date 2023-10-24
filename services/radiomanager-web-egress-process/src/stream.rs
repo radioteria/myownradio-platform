@@ -1,9 +1,9 @@
-use crate::gstreamer_utils::make_element;
+use crate::gstreamer_utils::{make_capsfilter, make_element};
 use crate::stream_utils::{make_audio_encoder, make_output, make_video_encoder};
 use gstreamer::prelude::*;
 use gstreamer::{
-    Bin, BusSyncReply, ClockTime, Element, MessageView, PadProbeData, PadProbeReturn, PadProbeType,
-    Pipeline, State,
+    Bin, BusSyncReply, Caps, ClockTime, Element, MessageView, PadDirection, PadPresence,
+    PadProbeData, PadProbeReturn, PadProbeType, PadTemplate, Pipeline, State,
 };
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::mpsc::Sender;
@@ -72,9 +72,13 @@ impl Stream {
         liveaudio.set_property("is-live", &true);
         liveaudio.set_property_from_str("wave", "silence");
 
+        let pulsesrc = make_element("pulsesrc");
         let audiomixer = make_element("audiomixer");
 
-        let wpesrc = make_element("wpesrc");
+        let wpesrc = make_element("wpevideosrc");
+        let timeoverlay = make_element("timeoverlay");
+        let wpecaps = make_capsfilter(&Caps::new_empty_simple("video/x-raw"));
+
         wpesrc.set_property("location", webpage_url);
         wpesrc.connect_pad_added({
             move |_el, pad| {
@@ -88,10 +92,15 @@ impl Stream {
         });
 
         pipeline
-            .add_many(&[&wpesrc, &liveaudio, &audiomixer])
+            .add_many(&[
+                &wpesrc,
+                &wpecaps,
+                &timeoverlay,
+                &liveaudio,
+                &pulsesrc,
+                &audiomixer,
+            ])
             .expect("Unable to add elements to pipeline");
-
-        liveaudio.link(&audiomixer).unwrap();
 
         let (video_sink, video_src) = make_video_encoder(
             &pipeline,
@@ -105,7 +114,11 @@ impl Stream {
         let (audio_sink, audio_src) =
             make_audio_encoder(&pipeline, config.audio_bitrate, config.audio_channels);
 
-        Element::link_many(&[&wpesrc, &video_sink]).expect("Unable to link elements");
+        liveaudio.link(&audiomixer).unwrap();
+        pulsesrc.link(&audiomixer).unwrap();
+
+        Element::link_many(&[&wpesrc, &wpecaps, &timeoverlay, &video_sink])
+            .expect("Unable to link elements");
         Element::link_many(&[&audiomixer, &audio_sink]).expect("Unable to link elements");
 
         let (output_video_sink_pad, output_audio_sink_pad) = make_output(&pipeline, &config.output);
@@ -206,7 +219,9 @@ impl Stream {
                                 let _ = event_sender.send(StreamEvent::Error(Error::Other));
                             }
                         }
-                        _ => {}
+                        event => {
+                            // eprintln!("!EVENT: {:?}", event);
+                        }
                     };
                     BusSyncReply::Drop
                 }

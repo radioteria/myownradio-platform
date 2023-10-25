@@ -77,6 +77,7 @@ impl Stream {
             .by_name("cefsrc")
             .unwrap();
         cefsrc.set_property("url", webpage_url);
+        cefsrc.set_property("chrome-extra-flags", "disable-features=site-per-process");
         if config.cef_gpu_enabled {
             info!("Enabling GPU acceleration");
             cefsrc.set_property("gpu", &true);

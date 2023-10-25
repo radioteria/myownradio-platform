@@ -15,7 +15,7 @@ pub(crate) fn main() {
 
     let config = Config::from_env();
     let stream_id = uuid::Uuid::new_v4();
-    let _user_id = config.user_id.clone();
+    let user_id = config.user_id.clone();
 
     gstreamer::init().expect("Unable to initialize GStreamer!");
 
@@ -25,7 +25,6 @@ pub(crate) fn main() {
     let (event_sender, event_receiver) = channel();
 
     let stream = Stream::create(
-        config.stream_id,
         config.webpage_url,
         &StreamConfig {
             output: StreamOutput::RTMP {
@@ -55,14 +54,30 @@ pub(crate) fn main() {
         debug!("{:?}", event);
 
         match event {
+            StreamEvent::Started => {
+                radiomanager_backend_client.send_stream_started(&stream_id, &user_id);
+            }
+            StreamEvent::Finished => {
+                radiomanager_backend_client.send_stream_finished(&stream_id, &user_id);
+            }
             StreamEvent::Stats {
                 time_position,
                 byte_count,
             } => {
-                // TODO: Publish stats
+                radiomanager_backend_client.send_stream_stats(
+                    &stream_id,
+                    &user_id,
+                    byte_count,
+                    time_position,
+                );
             }
             StreamEvent::Error(error) => {
                 error!("Error happened while streaming: {:?}", error);
+                radiomanager_backend_client.send_stream_error(
+                    &stream_id,
+                    &user_id,
+                    &format!("{:?}", error),
+                );
                 is_error = true;
                 break;
             }

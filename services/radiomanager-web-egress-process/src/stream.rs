@@ -2,8 +2,8 @@ use crate::gstreamer_utils::make_element;
 use crate::stream_utils::{make_audio_encoder, make_output, make_video_encoder};
 use gstreamer::prelude::*;
 use gstreamer::{
-    Bin, BusSyncReply, ClockTime, Element, MessageView, PadProbeData, PadProbeReturn, PadProbeType,
-    Pipeline, State,
+    Bin, BusSyncReply, ClockTime, Element, MessageView, Pad, PadProbeData, PadProbeInfo,
+    PadProbeReturn, PadProbeType, Pipeline, State,
 };
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::mpsc::Sender;
@@ -24,6 +24,8 @@ pub(crate) enum Error {
 pub(crate) enum StreamEvent {
     Error(Error),
     Stats { time_position: u64, byte_count: u64 },
+    Started,
+    Finished,
 }
 
 pub(crate) enum StreamOutput {
@@ -60,12 +62,11 @@ impl Drop for Stream {
 
 impl Stream {
     pub(crate) fn create(
-        stream_id: String,
         webpage_url: String,
         config: &StreamConfig,
         event_sender: Sender<StreamEvent>,
     ) -> Result<Stream, CreateStreamError> {
-        let pipeline_name = format!("web-egress-{}", stream_id);
+        let pipeline_name = format!("web-egress");
         let pipeline = Pipeline::new(Some(&pipeline_name));
 
         let audiomixer = make_element("audiomixer");
@@ -150,30 +151,34 @@ impl Stream {
 
             output_video_sink_pad
                 .add_probe(PadProbeType::BUFFER, {
-                    let byte_count = byte_count.clone();
+                    let event_sender = event_sender.clone();
 
-                    move |_pad, info| {
-                        if let Some(PadProbeData::Buffer(buffer)) = &info.data {
-                            byte_count.fetch_add(buffer.size() as u64, Ordering::Relaxed);
-                        }
+                    move |_pad, _info| {
+                        let _ = event_sender.send(StreamEvent::Started);
 
-                        PadProbeReturn::Ok
+                        PadProbeReturn::Drop
                     }
                 })
                 .expect("Unable to add probe");
 
-            output_audio_sink_pad
-                .add_probe(PadProbeType::BUFFER, {
-                    let byte_count = byte_count.clone();
+            let byte_count_fn = {
+                let byte_count = byte_count.clone();
 
-                    move |_pad, info| {
-                        if let Some(PadProbeData::Buffer(buffer)) = &info.data {
-                            byte_count.fetch_add(buffer.size() as u64, Ordering::Relaxed);
-                        }
-
-                        PadProbeReturn::Ok
+                move |_pad: &Pad, info: &mut PadProbeInfo| {
+                    if let Some(PadProbeData::Buffer(buffer)) = &info.data {
+                        byte_count.fetch_add(buffer.size() as u64, Ordering::Relaxed);
                     }
-                })
+
+                    PadProbeReturn::Ok
+                }
+            };
+
+            output_video_sink_pad
+                .add_probe(PadProbeType::BUFFER, byte_count_fn.clone())
+                .expect("Unable to add probe");
+
+            output_audio_sink_pad
+                .add_probe(PadProbeType::BUFFER, byte_count_fn)
                 .expect("Unable to add probe");
         }
 

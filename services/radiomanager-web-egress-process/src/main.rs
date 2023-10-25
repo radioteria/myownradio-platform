@@ -1,10 +1,12 @@
 use crate::config::{Config, VideoAcceleration};
+use crate::radiomanager_backend_client::RadiomanagerBackendClient;
 use crate::stream::{Stream, StreamConfig, StreamEvent, StreamOutput, VideoEncoder};
 use std::sync::mpsc::channel;
 use tracing::{debug, error};
 
 pub(crate) mod config;
 pub(crate) mod gstreamer_utils;
+pub(crate) mod radiomanager_backend_client;
 pub(crate) mod stream;
 pub(crate) mod stream_utils;
 
@@ -12,10 +14,13 @@ pub(crate) fn main() {
     tracing_subscriber::fmt::init();
 
     let config = Config::from_env();
-    let _stream_id = config.stream_id.clone();
+    let stream_id = uuid::Uuid::new_v4();
     let _user_id = config.user_id.clone();
 
     gstreamer::init().expect("Unable to initialize GStreamer!");
+
+    let radiomanager_backend_client =
+        RadiomanagerBackendClient::create(&config.radiomanager_backend.endpoint);
 
     let (event_sender, event_receiver) = channel();
 

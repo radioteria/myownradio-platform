@@ -44,8 +44,13 @@ pub(crate) enum VideoAcceleration {
 }
 
 #[derive(Deserialize)]
+pub(crate) struct RadiomanagerBackendSettings {
+    #[serde(rename = "radiomanager_backend_endpoint")]
+    pub(crate) endpoint: String,
+}
+
+#[derive(Deserialize)]
 pub(crate) struct Config {
-    pub(crate) stream_id: String,
     #[serde(deserialize_with = "from_str")]
     pub(crate) user_id: u32,
     pub(crate) webpage_url: String,
@@ -58,6 +63,8 @@ pub(crate) struct Config {
     pub(crate) video_acceleration: Option<VideoAcceleration>,
     #[serde(default, deserialize_with = "bool_from_str")]
     pub(crate) cef_gpu_enabled: bool,
+    #[serde(flatten)]
+    pub(crate) radiomanager_backend: RadiomanagerBackendSettings,
 }
 
 impl Config {

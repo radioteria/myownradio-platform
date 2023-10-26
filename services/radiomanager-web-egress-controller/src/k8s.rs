@@ -34,6 +34,8 @@ pub(crate) struct K8sClient {
 
     image_name: String,
     image_tag: String,
+
+    radiomanager_backend_endpoint: String,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -47,6 +49,7 @@ impl K8sClient {
         namespace: &str,
         image_name: &str,
         image_tag: &str,
+        radiomanager_backend_endpoint: &str,
     ) -> Result<Self, K8sClientError> {
         let client = kube::Client::try_default().await?;
         let job_api = kube::Api::namespaced(client.clone(), namespace);
@@ -57,6 +60,7 @@ impl K8sClient {
             pod_api,
             image_name: image_name.to_string(),
             image_tag: image_tag.to_string(),
+            radiomanager_backend_endpoint: radiomanager_backend_endpoint.to_string(),
         })
     }
 
@@ -128,6 +132,65 @@ impl K8sClient {
             "radioterio-stream-channel-id": format_args!("{}", channel_id)
         });
 
+        let env = serde_json::json!([
+          {
+            "name": "WEBPAGE_URL",
+            "value": webpage_url
+          },
+          {
+            "name": "STREAM_ID",
+            "value": stream_id
+          },
+          {
+            "name": "USER_ID",
+            "value": format_args!("{}", **user_id)
+          },
+          {
+            "name": "RTMP_URL",
+            "value": rtmp_settings.rtmp_url
+          },
+          {
+            "name": "RTMP_STREAM_KEY",
+            "value": rtmp_settings.stream_key
+          },
+          {
+            "name": "VIDEO_WIDTH",
+            "value": format_args!("{}", video_settings.width)
+          },
+          {
+            "name": "VIDEO_HEIGHT",
+            "value": format_args!("{}", video_settings.height)
+          },
+          {
+            "name": "VIDEO_BITRATE",
+            "value": format_args!("{}", video_settings.bitrate)
+          },
+          {
+            "name": "VIDEO_FRAMERATE",
+            "value": format_args!("{}", video_settings.framerate)
+          },
+          {
+            "name": "AUDIO_BITRATE",
+            "value": format_args!("{}", audio_settings.bitrate)
+          },
+          {
+            "name": "AUDIO_CHANNELS",
+            "value": format_args!("{}", audio_settings.channels)
+          },
+          {
+            "name": "CEF_GPU_ENABLED",
+            "value": "true"
+          },
+          {
+            "name": "VIDEO_ACCELERATION",
+            "value": "VAAPI"
+          },
+          {
+              "name": "RADIOMANAGER_BACKEND_ENDPOINT",
+              "value": self.radiomanager_backend_endpoint
+          }
+        ]);
+
         let egress_container_manifest = serde_json::json!({
           "name": "web-egress-process",
           "image": format_args!("{}:{}", self.image_name, self.image_tag),
@@ -148,60 +211,7 @@ impl K8sClient {
                "cpu": "1500m"
             }
           },
-          "env": [
-            {
-              "name": "WEBPAGE_URL",
-              "value": webpage_url
-            },
-            {
-              "name": "STREAM_ID",
-              "value": stream_id
-            },
-            {
-              "name": "USER_ID",
-              "value": format_args!("{}", **user_id)
-            },
-            {
-              "name": "RTMP_URL",
-              "value": rtmp_settings.rtmp_url
-            },
-            {
-              "name": "RTMP_STREAM_KEY",
-              "value": rtmp_settings.stream_key
-            },
-            {
-              "name": "VIDEO_WIDTH",
-              "value": format_args!("{}", video_settings.width)
-            },
-            {
-              "name": "VIDEO_HEIGHT",
-              "value": format_args!("{}", video_settings.height)
-            },
-            {
-              "name": "VIDEO_BITRATE",
-              "value": format_args!("{}", video_settings.bitrate)
-            },
-            {
-              "name": "VIDEO_FRAMERATE",
-              "value": format_args!("{}", video_settings.framerate)
-            },
-            {
-              "name": "AUDIO_BITRATE",
-              "value": format_args!("{}", audio_settings.bitrate)
-            },
-            {
-              "name": "AUDIO_CHANNELS",
-              "value": format_args!("{}", audio_settings.channels)
-            },
-            {
-              "name": "CEF_GPU_ENABLED",
-              "value": "true"
-            },
-            {
-              "name": "VIDEO_ACCELERATION",
-              "value": "VAAPI"
-            },
-          ]
+          "env": env
         });
 
         let job_manifest = serde_json::json!({

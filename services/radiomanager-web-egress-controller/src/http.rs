@@ -9,6 +9,7 @@ use serde::Deserialize;
 use tracing::error;
 
 const STREAM_NOT_FOUND: &str = "STREAM_NOT_FOUND";
+const STREAM_ALREADY_EXISTS: &str = "STREAM_ALREADY_EXISTS";
 
 pub(crate) async fn get_streams(
     path: web::Path<UserId>,
@@ -63,7 +64,7 @@ pub(crate) async fn start_stream(
 ) -> impl Responder {
     let user_id = path.into_inner();
 
-    if let Err(error) = k8s_client
+    match k8s_client
         .create_stream_job(
             &user_id,
             &body.stream_id,
@@ -75,11 +76,15 @@ pub(crate) async fn start_stream(
         )
         .await
     {
-        error!("{}", error);
-        return HttpResponse::InternalServerError().finish();
+        Ok(_) => HttpResponse::Ok().finish(),
+        Err(K8sClientError::KubeClient(Error::Api(res))) if res.code == 409 => {
+            HttpResponse::Conflict().json(json!({ "error": STREAM_ALREADY_EXISTS }))
+        }
+        Err(error) => {
+            error!("{}", error);
+            HttpResponse::InternalServerError().finish()
+        }
     }
-
-    HttpResponse::Ok().finish()
 }
 
 pub(crate) async fn stop_stream(
@@ -88,21 +93,15 @@ pub(crate) async fn stop_stream(
 ) -> impl Responder {
     let (user_id, channel_id) = path.into_inner();
 
-    let result = match k8s_client.delete_stream_job(&user_id, &channel_id).await {
-        Ok(result) => result,
+    match k8s_client.delete_stream_job(&user_id, &channel_id).await {
+        Ok(_) => HttpResponse::Ok().finish(),
         Err(K8sClientError::KubeClient(Error::Api(res))) if res.code == 404 => {
-            return HttpResponse::Conflict().json(json!({ "error": STREAM_NOT_FOUND }));
+            HttpResponse::Conflict().json(json!({ "error": STREAM_NOT_FOUND }))
         }
         Err(error) => {
             error!("{}", error);
-            return HttpResponse::InternalServerError().finish();
+            HttpResponse::InternalServerError().finish()
         }
-    };
-
-    if result {
-        HttpResponse::Ok().finish()
-    } else {
-        HttpResponse::Conflict().finish()
     }
 }
 

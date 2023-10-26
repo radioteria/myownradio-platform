@@ -22,9 +22,7 @@ pub(crate) struct StreamJob {
 pub(crate) enum StreamJobStatus {
     Starting,
     Running,
-    Finished,
-    Failed,
-    Unknown,
+    Error,
 }
 
 #[derive(Clone)]
@@ -105,9 +103,7 @@ impl K8sClient {
                     status: match pod_status.as_ref().map(AsRef::as_ref) {
                         Some("Pending") => StreamJobStatus::Starting,
                         Some("Running") => StreamJobStatus::Running,
-                        Some("Succeeded") => StreamJobStatus::Finished,
-                        Some("Failed") => StreamJobStatus::Failed,
-                        _ => StreamJobStatus::Unknown,
+                        _ => StreamJobStatus::Error,
                     },
                 }
             })
@@ -257,7 +253,7 @@ impl K8sClient {
         &self,
         user_id: &UserId,
         channel_id: &u32,
-    ) -> Result<bool, K8sClientError> {
+    ) -> Result<(), K8sClientError> {
         let job_name = make_stream_job_name(user_id, channel_id);
 
         let result = self
@@ -298,7 +294,7 @@ impl K8sClient {
             }
         }
 
-        Ok(true)
+        Ok(())
     }
 
     pub(crate) async fn get_stream_job(
@@ -333,9 +329,7 @@ impl K8sClient {
             status: match pod_status.as_ref().map(AsRef::as_ref) {
                 Some("Pending") => StreamJobStatus::Starting,
                 Some("Running") => StreamJobStatus::Running,
-                Some("Succeeded") => StreamJobStatus::Finished,
-                Some("Failed") => StreamJobStatus::Failed,
-                _ => StreamJobStatus::Unknown,
+                _ => StreamJobStatus::Error,
             },
         })
     }

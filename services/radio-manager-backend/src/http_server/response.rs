@@ -1,6 +1,6 @@
 use crate::services::StreamServiceError;
 use crate::storage::db::repositories::errors::RepositoryError;
-use crate::web_egress_controller_client::WebEgressControllerClientError;
+use crate::web_egress_controller_client::WebEgressControllerError;
 use actix_http::StatusCode;
 use actix_web::{HttpResponse, ResponseError};
 use serde::Serialize;
@@ -20,7 +20,7 @@ pub(crate) enum Error {
     #[error("StreamServiceError: {0}")]
     StreamServiceError(#[from] StreamServiceError),
     #[error("WebEgressControllerClientError: {0}")]
-    WebEgressControllerClientError(#[from] WebEgressControllerClientError),
+    WebEgressControllerClientError(#[from] WebEgressControllerError),
 }
 
 #[derive(Serialize)]

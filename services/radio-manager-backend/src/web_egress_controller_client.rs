@@ -39,7 +39,7 @@ pub(crate) struct AudioSettings {
 }
 
 #[derive(thiserror::Error, Debug)]
-pub(crate) enum WebEgressControllerClientError {
+pub(crate) enum WebEgressControllerError {
     #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
 }
@@ -73,7 +73,7 @@ impl WebEgressControllerClient {
         rtmp_settings: &RtmpSettings,
         video_settings: &VideoSettings,
         audio_settings: &AudioSettings,
-    ) -> Result<(), WebEgressControllerClientError> {
+    ) -> Result<(), WebEgressControllerError> {
         let webpage_url = format!(
             "{}{}?token={}",
             self.stream_player_url_prefix, **channel_id, token
@@ -118,7 +118,7 @@ impl WebEgressControllerClient {
         &self,
         channel_id: &StreamId,
         user_id: &UserId,
-    ) -> Result<(), WebEgressControllerClientError> {
+    ) -> Result<(), WebEgressControllerError> {
         let response = self
             .client
             .delete(format!(
@@ -140,7 +140,7 @@ impl WebEgressControllerClient {
         &self,
         channel_id: &StreamId,
         user_id: &UserId,
-    ) -> Result<StreamEntry, WebEgressControllerClientError> {
+    ) -> Result<StreamEntry, WebEgressControllerError> {
         Ok(self
             .client
             .get(format!(

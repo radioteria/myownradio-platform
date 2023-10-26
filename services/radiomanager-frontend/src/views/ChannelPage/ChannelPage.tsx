@@ -11,6 +11,7 @@ import { ChannelControls } from './ChannelTracksList/ChannelControls'
 import { UserEventProvider } from '@/context/UserEventProvider'
 import { ChannelRtmpSettings } from '@/views/ChannelPage/ChannelRtmpSettings'
 import { useRtmpSettingsStore } from '@/views/ChannelPage/hooks/useRtmpSettingsStore'
+import { useLiveStatusStore } from '@/views/ChannelPage/hooks/useLiveStatusStore'
 
 interface Props {
   readonly channelId: number
@@ -31,6 +32,7 @@ export const ChannelPage: React.FC<Props> = ({
 }) => {
   const channelPageStore = useChannelPageStore(channelId, tracks, totalTracks)
   const rtmpSettingsStore = useRtmpSettingsStore(channel)
+  const liveStatusStore = useLiveStatusStore(channelId, 'preview')
 
   return (
     <>
@@ -61,6 +63,9 @@ export const ChannelPage: React.FC<Props> = ({
             <ChannelRtmpSettings
               channel={rtmpSettingsStore.channel}
               onUpdateRtmpSettings={rtmpSettingsStore.handleUpdateRtmpSettings}
+              desiredLiveStatus={liveStatusStore.desiredLiveStatus}
+              onToggleDesiredLiveStatus={liveStatusStore.handleToggleDesiredLiveStatus}
+              actualLiveStatus={liveStatusStore.actualLiveStatus}
             />
           </>
         }

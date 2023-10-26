@@ -18,6 +18,7 @@ pub(crate) async fn main() -> std::io::Result<()> {
         &config.egress_namespace,
         &config.egress_image_name,
         &config.egress_image_tag,
+        &config.radiomanager_backend.endpoint,
     )
     .await
     .expect("Unable to initialize k8s client");

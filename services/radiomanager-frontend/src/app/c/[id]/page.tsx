@@ -19,18 +19,19 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
     return <h1>Channel not found</h1>
   }
 
-  const data = await getChannelTracksPage(channelId, {
-    limit: INITIAL_AUDIO_TRACKS_CHUNK_SIZE,
-  })
-
-  const outgoingStream = await getOutgoingStream(channelId)
+  const [{ totalCount, items }, outgoingStream] = await Promise.all([
+    getChannelTracksPage(channelId, {
+      limit: INITIAL_AUDIO_TRACKS_CHUNK_SIZE,
+    }),
+    getOutgoingStream(channelId),
+  ])
 
   return (
     <ChannelPageWithProviders
       channelId={channelId}
       channel={userChannel}
-      tracks={data.items.map(({ track, entry }) => ({ ...track, ...entry }))}
-      totalTracks={data.totalCount}
+      tracks={items.map(({ track, entry }) => ({ ...track, ...entry }))}
+      totalTracks={totalCount}
       user={self.user}
       channels={channels}
     />

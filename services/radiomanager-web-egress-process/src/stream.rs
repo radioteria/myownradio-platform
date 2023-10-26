@@ -156,7 +156,7 @@ impl Stream {
                     move |_pad, _info| {
                         let _ = event_sender.send(StreamEvent::Started);
 
-                        PadProbeReturn::Drop
+                        PadProbeReturn::Remove
                     }
                 })
                 .expect("Unable to add probe");

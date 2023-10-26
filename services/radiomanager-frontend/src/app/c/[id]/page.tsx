@@ -34,6 +34,7 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
       totalTracks={totalCount}
       user={self.user}
       channels={channels}
+      outgoingStream={outgoingStream}
     />
   )
 }

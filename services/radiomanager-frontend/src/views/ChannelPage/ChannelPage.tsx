@@ -1,6 +1,5 @@
 'use client'
 
-import { User, Channel, UserChannelTrack } from '@/api'
 import { LibraryLayout, Header } from '@/layouts/LibraryLayout'
 import { Sidebar } from '@/components/Sidebar'
 import { ChannelTracksList } from './ChannelTracksList'
@@ -13,6 +12,9 @@ import { ChannelRtmpSettings } from '@/views/ChannelPage/ChannelRtmpSettings'
 import { useRtmpSettingsStore } from '@/views/ChannelPage/hooks/useRtmpSettingsStore'
 import { useLiveStatusStore } from '@/views/ChannelPage/hooks/useLiveStatusStore'
 
+import type { User, Channel, UserChannelTrack } from '@/api'
+import type { OutgoingStream } from '@/api/radiomanager'
+
 interface Props {
   readonly channelId: number
   readonly channel: Channel
@@ -20,6 +22,7 @@ interface Props {
   readonly totalTracks: number
   readonly user: User
   readonly channels: readonly Channel[]
+  readonly outgoingStream: OutgoingStream
 }
 
 export const ChannelPage: React.FC<Props> = ({
@@ -29,10 +32,11 @@ export const ChannelPage: React.FC<Props> = ({
   totalTracks,
   user,
   channels,
+  outgoingStream,
 }) => {
   const channelPageStore = useChannelPageStore(channelId, tracks, totalTracks)
   const rtmpSettingsStore = useRtmpSettingsStore(channel)
-  const liveStatusStore = useLiveStatusStore(channelId, 'preview')
+  const liveStatusStore = useLiveStatusStore(channelId, outgoingStream)
 
   return (
     <>
@@ -63,7 +67,6 @@ export const ChannelPage: React.FC<Props> = ({
             <ChannelRtmpSettings
               channel={rtmpSettingsStore.channel}
               onUpdateRtmpSettings={rtmpSettingsStore.handleUpdateRtmpSettings}
-              desiredLiveStatus={liveStatusStore.desiredLiveStatus}
               onToggleDesiredLiveStatus={liveStatusStore.handleToggleDesiredLiveStatus}
               actualLiveStatus={liveStatusStore.actualLiveStatus}
             />

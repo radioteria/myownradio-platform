@@ -4,11 +4,13 @@ use crate::mysql_client::MySqlClient;
 use crate::services::auth::{AuthTokenClaim, AuthTokenClaims, AuthTokenService};
 use crate::storage::db::repositories::streams;
 use crate::web_egress_controller_client::{
-    AudioSettings, RtmpSettings, StreamStatus, VideoSettings, WebEgressControllerClient,
+    AudioSettings, OutgoingStreamStartingError, OutgoingStreamStoppingError, RtmpSettings,
+    StreamStatus, VideoSettings, WebEgressControllerClient,
 };
 use actix_web::web::{Data, Path};
 use actix_web::HttpResponse;
 use serde_json::json;
+use tracing::error;
 
 pub(crate) async fn get_outgoing_stream(
     user_id: UserId,
@@ -76,7 +78,7 @@ pub(crate) async fn start_outgoing_stream(
         channels: 2,
     };
 
-    web_egress_client
+    let response = match web_egress_client
         .start_stream(
             &channel_id,
             &user_id,
@@ -86,9 +88,14 @@ pub(crate) async fn start_outgoing_stream(
             &video_settings,
             &audio_settings,
         )
-        .await?;
+        .await
+    {
+        Ok(_) => HttpResponse::Ok().finish(),
+        Err(OutgoingStreamStartingError::AlreadyStarted) => HttpResponse::Conflict().finish(),
+        Err(error) => HttpResponse::InternalServerError().finish(),
+    };
 
-    Ok(HttpResponse::Ok().finish())
+    Ok(response)
 }
 
 pub(crate) async fn stop_outgoing_stream(
@@ -97,7 +104,14 @@ pub(crate) async fn stop_outgoing_stream(
     mysql_client: Data<MySqlClient>,
     web_egress_client: Data<WebEgressControllerClient>,
 ) -> Response {
-    web_egress_client.stop_stream(&channel_id, &user_id).await?;
+    let response = match web_egress_client.stop_stream(&channel_id, &user_id).await {
+        Ok(_) => HttpResponse::Ok().finish(),
+        Err(OutgoingStreamStoppingError::AlreadyStopped) => HttpResponse::Conflict().finish(),
+        Err(error) => {
+            error!("{}", error);
+            HttpResponse::InternalServerError().finish()
+        }
+    };
 
-    Ok(HttpResponse::Ok().finish())
+    Ok(response)
 }

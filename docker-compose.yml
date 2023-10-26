@@ -150,6 +150,8 @@ services:
       - traefik.http.middlewares.corsPubsub.headers.accesscontrolallowcredentials=true
 
   radio-manager-backend:
+    depends_on:
+      - radiomanager-web-egress-controller
     build:
       context: services/radio-manager-backend
       dockerfile: Dockerfile
@@ -178,6 +180,20 @@ services:
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowheaders=authentication,content-type
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolalloworiginlist=http://localhost:3000
       - traefik.http.middlewares.corsRadioManager.headers.accesscontrolallowcredentials=true
+  radiomanager-web-egress-controller:
+    build:
+      context: services/radiomanager-web-egress-controller
+      dockerfile: Dockerfile
+    volumes:
+      - ./services/radiomanager-web-egress-controller/.kube:/.kube:ro
+    user: "${USER}"
+    working_dir: /code
+    networks:
+      - myownradio-dev
+    ports:
+      - "127.0.0.1:40007:8080"
+    env_file:
+      - services/radiomanager-web-egress-controller/.env
 volumes:
   mysql-data:
     driver: local

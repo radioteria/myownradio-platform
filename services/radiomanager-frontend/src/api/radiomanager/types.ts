@@ -29,16 +29,13 @@ export const StreamDestinationSchema = z.object({
 export type StreamDestination = z.infer<typeof StreamDestinationSchema>
 
 export enum LiveStreamStatusEnum {
+  Stopped = 'Stopped',
   Starting = 'Starting',
   Running = 'Running',
-  Finished = 'Finished',
-  Failed = 'Failed',
-  Unknown = 'Unknown',
+  Error = 'Error',
 }
 
 export const OutgoingStreamSchema = z.object({
-  channelId: z.number(),
-  streamId: z.string(),
   status: z.nativeEnum(LiveStreamStatusEnum),
 })
 export type OutgoingStream = z.infer<typeof OutgoingStreamSchema>

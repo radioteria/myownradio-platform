@@ -43,7 +43,7 @@ pub(crate) enum WebEgressControllerError {
 }
 
 #[derive(thiserror::Error, Debug)]
-pub(crate) enum StartOutgoingStreamError {
+pub(crate) enum OutgoingStreamStartingError {
     #[error("Outgoing stream has already been started")]
     AlreadyStarted,
     #[error(transparent)]
@@ -51,7 +51,7 @@ pub(crate) enum StartOutgoingStreamError {
 }
 
 #[derive(thiserror::Error, Debug)]
-pub(crate) enum StopOutgoingStreamError {
+pub(crate) enum OutgoingStreamStoppingError {
     #[error("Outgoing stream has already been stopped")]
     AlreadyStopped,
     #[error(transparent)]
@@ -87,7 +87,7 @@ impl WebEgressControllerClient {
         rtmp_settings: &RtmpSettings,
         video_settings: &VideoSettings,
         audio_settings: &AudioSettings,
-    ) -> Result<(), StartOutgoingStreamError> {
+    ) -> Result<(), OutgoingStreamStartingError> {
         let webpage_url = format!(
             "{}{}?token={}",
             self.stream_player_url_prefix, **channel_id, token
@@ -113,31 +113,30 @@ impl WebEgressControllerClient {
             }
         });
 
-        let response = match self
+        match self
             .client
             .post(format!("{}/users/{}/streams", self.endpoint, **user_id))
             .json(&json)
             .send()
             .await?
-            .error_for_status()?
-            .text()
-            .await
+            .error_for_status()
         {
-            Ok(_) => Ok(()),
-            Err(error) if matches!(error.status(), Some(StatusCode::CONFLICT)) => {
-                Err(StartOutgoingStreamError::AlreadyStarted)
+            Ok(response) => {
+                response.text().await?;
+                Ok(())
             }
-            Err(error) => Err(StartOutgoingStreamError::Reqwest(error)),
-        };
-
-        Ok(())
+            Err(error) if matches!(error.status(), Some(StatusCode::CONFLICT)) => {
+                Err(OutgoingStreamStartingError::AlreadyStarted)
+            }
+            Err(error) => Err(OutgoingStreamStartingError::Reqwest(error)),
+        }
     }
 
     pub(crate) async fn stop_stream(
         &self,
         channel_id: &StreamId,
         user_id: &UserId,
-    ) -> Result<(), StopOutgoingStreamError> {
+    ) -> Result<(), OutgoingStreamStoppingError> {
         match self
             .client
             .delete(format!(
@@ -146,13 +145,14 @@ impl WebEgressControllerClient {
             ))
             .send()
             .await?
-            .error_for_status()?
-            .text()
-            .await
+            .error_for_status()
         {
-            Ok(_) => Ok(()),
+            Ok(response) => {
+                response.text().await?;
+                Ok(())
+            }
             Err(error) if matches!(error.status(), Some(StatusCode::CONFLICT)) => {
-                Err(StopOutgoingStreamError::AlreadyStopped)
+                Err(OutgoingStreamStoppingError::AlreadyStopped)
             }
             Err(error) => Err(error)?,
         }
@@ -167,17 +167,9 @@ impl WebEgressControllerClient {
             "{}/users/{}/streams/{}",
             self.endpoint, **user_id, **channel_id
         );
-        let response = self
-            .client
-            .get(url)
-            .send()
-            .await?
-            .error_for_status()?
-            .json::<StreamEntry>()
-            .await;
 
-        match response {
-            Ok(stream) => Ok(Some(stream)),
+        match self.client.get(url).send().await?.error_for_status() {
+            Ok(res) => Ok(Some(res.json::<StreamEntry>().await?)),
             Err(error) if matches!(error.status(), Some(StatusCode::NOT_FOUND)) => Ok(None),
             Err(error) => Err(error)?,
         }

@@ -1,7 +1,8 @@
 import { ChannelPageWithProviders } from '@/views/ChannelPage'
 import { getChannels, getSelf } from '@/api'
 import { INITIAL_AUDIO_TRACKS_CHUNK_SIZE } from '@/constants'
-import { getChannelTracksPage } from '@/api/radiomanager'
+import { getChannelTracksPage, getLiveStream, LiveStreamStatusEnum } from '@/api/radiomanager'
+import { ActualLiveStatus } from '@/views/ChannelPage/types'
 
 export default async function UserChannel({ params: { id } }: { params: { id: string } }) {
   const channelId = Number(id)
@@ -22,6 +23,8 @@ export default async function UserChannel({ params: { id } }: { params: { id: st
   const data = await getChannelTracksPage(channelId, {
     limit: INITIAL_AUDIO_TRACKS_CHUNK_SIZE,
   })
+
+  const liveStream = await getLiveStream(channelId).catch(() => null)
 
   return (
     <ChannelPageWithProviders

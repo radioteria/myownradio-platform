@@ -3,12 +3,13 @@ import { ActualLiveStatus, DesiredLiveStatus } from '@/views/ChannelPage/types'
 
 export const useLiveStatusStore = (
   channelId: number,
-  initialDesiredLiveStatus: DesiredLiveStatus,
+  initialActualLiveStatus: ActualLiveStatus,
 ) => {
-  const [desiredLiveStatus, setDesiredLiveStatus] =
-    useState<DesiredLiveStatus>(initialDesiredLiveStatus)
   const [actualLiveStatus, setActualLiveStatus] =
-    useState<ActualLiveStatus>(initialDesiredLiveStatus)
+    useState<ActualLiveStatus>(initialActualLiveStatus)
+  const [desiredLiveStatus, setDesiredLiveStatus] = useState<DesiredLiveStatus>(
+    actualLiveStatus === 'live' || actualLiveStatus === 'error' ? 'live' : 'preview',
+  )
 
   const handleToggleDesiredLiveStatus = (status: DesiredLiveStatus) => {
     setDesiredLiveStatus(status)

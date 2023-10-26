@@ -1,11 +1,12 @@
 import z from 'zod'
 import {
   ChannelEntrySchema,
+  LiveStreamStatusSchema,
   StreamDestination,
   StreamDestinationSchema,
   UserTrackSchema,
 } from './types'
-import { fetchAnyhow, fetchAnyhowWithSchema } from '../fetchAnyhow'
+import { fetchAnyhow, fetchAnyhowWithDataSchema, fetchAnyhowWithSchema } from '../fetchAnyhow'
 import { BACKEND_BASE_URL, MAX_TRACKS_PER_REQUEST } from '../constants'
 
 interface PageRequestOptions {
@@ -199,4 +200,26 @@ export const updateRtmpSettings = async (
     body: JSON.stringify({ rtmpUrl, rtmpStreamingKey }),
     headers: [['Content-Type', 'application/json']],
   })
+}
+
+export const startLiveStream = async (channelId: number) => {
+  await fetchAnyhow(
+    `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/outgoing-stream`,
+    { method: 'POST', withCredentials: true },
+  )
+}
+
+export const stopLiveStream = async (channelId: number) => {
+  await fetchAnyhow(
+    `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/outgoing-stream`,
+    { method: 'DELETE', withCredentials: true },
+  )
+}
+
+export const getLiveStream = async (channelId: number) => {
+  return fetchAnyhowWithSchema(
+    `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/outgoing-stream`,
+    { method: 'GET', withCredentials: true },
+    LiveStreamStatusSchema,
+  )
 }

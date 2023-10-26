@@ -1,7 +1,7 @@
 import z from 'zod'
 import {
   ChannelEntrySchema,
-  LiveStreamStatusSchema,
+  OutgoingStreamSchema,
   StreamDestination,
   StreamDestinationSchema,
   UserTrackSchema,
@@ -202,24 +202,24 @@ export const updateRtmpSettings = async (
   })
 }
 
-export const startLiveStream = async (channelId: number) => {
+export const startOutgoingStream = async (channelId: number) => {
   await fetchAnyhow(
     `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/outgoing-stream`,
     { method: 'POST', withCredentials: true },
   )
 }
 
-export const stopLiveStream = async (channelId: number) => {
+export const stopOutgoingStream = async (channelId: number) => {
   await fetchAnyhow(
     `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/outgoing-stream`,
     { method: 'DELETE', withCredentials: true },
   )
 }
 
-export const getLiveStream = async (channelId: number) => {
+export const getOutgoingStream = async (channelId: number) => {
   return fetchAnyhowWithSchema(
     `${BACKEND_BASE_URL}/radio-manager/api/v0/streams/${channelId}/outgoing-stream`,
     { method: 'GET', withCredentials: true },
-    LiveStreamStatusSchema,
+    OutgoingStreamSchema,
   )
 }

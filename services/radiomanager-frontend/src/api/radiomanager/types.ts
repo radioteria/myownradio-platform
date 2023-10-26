@@ -36,9 +36,9 @@ export enum LiveStreamStatusEnum {
   Unknown = 'Unknown',
 }
 
-export const LiveStreamStatusSchema = z.object({
+export const OutgoingStreamSchema = z.object({
   channelId: z.number(),
   streamId: z.string(),
   status: z.nativeEnum(LiveStreamStatusEnum),
 })
-export type LiveStreamStatus = z.infer<typeof LiveStreamStatusSchema>
+export type OutgoingStream = z.infer<typeof OutgoingStreamSchema>

@@ -4,7 +4,7 @@ use crate::mysql_client::MySqlClient;
 use crate::services::auth::{AuthTokenClaim, AuthTokenClaims, AuthTokenService};
 use crate::storage::db::repositories::streams;
 use crate::web_egress_controller_client::{
-    AudioSettings, RtmpSettings, VideoSettings, WebEgressControllerClient,
+    AudioSettings, RtmpSettings, StreamStatus, VideoSettings, WebEgressControllerClient,
 };
 use actix_web::web::{Data, Path};
 use actix_web::HttpResponse;
@@ -16,9 +16,20 @@ pub(crate) async fn get_outgoing_stream(
     mysql_client: Data<MySqlClient>,
     web_egress_client: Data<WebEgressControllerClient>,
 ) -> Response {
-    let status = web_egress_client.get_stream(&channel_id, &user_id).await?;
+    let stream = web_egress_client.get_stream(&channel_id, &user_id).await?;
 
-    Ok(HttpResponse::Ok().json(&status))
+    let response = match stream {
+        Some(stream) if matches!(stream.status, StreamStatus::Running) => {
+            HttpResponse::Ok().json(&json!({ "status": "Running" }))
+        }
+        Some(stream) if matches!(stream.status, StreamStatus::Starting) => {
+            HttpResponse::Ok().json(&json!({ "status": "Starting" }))
+        }
+        Some(stream) => HttpResponse::Ok().json(&json!({ "status": "Error" })),
+        None => HttpResponse::Ok().json(&json!({ "status": "Stopped" })),
+    };
+
+    Ok(response)
 }
 
 pub(crate) async fn start_outgoing_stream(

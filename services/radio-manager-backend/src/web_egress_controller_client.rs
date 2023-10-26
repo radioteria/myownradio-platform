@@ -1,19 +1,17 @@
 use crate::data_structures::{StreamId, UserId};
-use reqwest::Client;
+use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tracing::{error, trace};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 pub(crate) enum StreamStatus {
     Starting,
     Running,
-    Finished,
-    Failed,
-    Unknown,
+    Error,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct StreamEntry {
     pub(crate) channel_id: StreamId,
@@ -40,6 +38,22 @@ pub(crate) struct AudioSettings {
 
 #[derive(thiserror::Error, Debug)]
 pub(crate) enum WebEgressControllerError {
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
+}
+
+#[derive(thiserror::Error, Debug)]
+pub(crate) enum StartOutgoingStreamError {
+    #[error("Outgoing stream has already been started")]
+    AlreadyStarted,
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
+}
+
+#[derive(thiserror::Error, Debug)]
+pub(crate) enum StopOutgoingStreamError {
+    #[error("Outgoing stream has already been stopped")]
+    AlreadyStopped,
     #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
 }
@@ -73,7 +87,7 @@ impl WebEgressControllerClient {
         rtmp_settings: &RtmpSettings,
         video_settings: &VideoSettings,
         audio_settings: &AudioSettings,
-    ) -> Result<(), WebEgressControllerError> {
+    ) -> Result<(), StartOutgoingStreamError> {
         let webpage_url = format!(
             "{}{}?token={}",
             self.stream_player_url_prefix, **channel_id, token
@@ -99,7 +113,7 @@ impl WebEgressControllerClient {
             }
         });
 
-        let response = self
+        let response = match self
             .client
             .post(format!("{}/users/{}/streams", self.endpoint, **user_id))
             .json(&json)
@@ -107,9 +121,14 @@ impl WebEgressControllerClient {
             .await?
             .error_for_status()?
             .text()
-            .await?;
-
-        trace!("Start stream response={}", response);
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(error) if matches!(error.status(), Some(StatusCode::CONFLICT)) => {
+                Err(StartOutgoingStreamError::AlreadyStarted)
+            }
+            Err(error) => Err(StartOutgoingStreamError::Reqwest(error)),
+        };
 
         Ok(())
     }
@@ -118,8 +137,8 @@ impl WebEgressControllerClient {
         &self,
         channel_id: &StreamId,
         user_id: &UserId,
-    ) -> Result<(), WebEgressControllerError> {
-        let response = self
+    ) -> Result<(), StopOutgoingStreamError> {
+        match self
             .client
             .delete(format!(
                 "{}/users/{}/streams/{}",
@@ -129,28 +148,38 @@ impl WebEgressControllerClient {
             .await?
             .error_for_status()?
             .text()
-            .await?;
-
-        trace!("Stop stream response={}", response);
-
-        Ok(())
+            .await
+        {
+            Ok(_) => Ok(()),
+            Err(error) if matches!(error.status(), Some(StatusCode::CONFLICT)) => {
+                Err(StopOutgoingStreamError::AlreadyStopped)
+            }
+            Err(error) => Err(error)?,
+        }
     }
 
     pub(crate) async fn get_stream(
         &self,
         channel_id: &StreamId,
         user_id: &UserId,
-    ) -> Result<StreamEntry, WebEgressControllerError> {
-        Ok(self
+    ) -> Result<Option<StreamEntry>, WebEgressControllerError> {
+        let url = format!(
+            "{}/users/{}/streams/{}",
+            self.endpoint, **user_id, **channel_id
+        );
+        let response = self
             .client
-            .get(format!(
-                "{}/users/{}/streams/{}",
-                self.endpoint, **user_id, **channel_id
-            ))
+            .get(url)
             .send()
             .await?
             .error_for_status()?
-            .json()
-            .await?)
+            .json::<StreamEntry>()
+            .await;
+
+        match response {
+            Ok(stream) => Ok(Some(stream)),
+            Err(error) if matches!(error.status(), Some(StatusCode::NOT_FOUND)) => Ok(None),
+            Err(error) => Err(error)?,
+        }
     }
 }

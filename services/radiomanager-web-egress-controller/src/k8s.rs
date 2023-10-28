@@ -128,7 +128,7 @@ impl K8sClient {
           },
           {
             "name": "CHANNEL_ID",
-            "value": channel_id
+            "value": format_args!("{}", channel_id)
           },
           {
             "name": "USER_ID",

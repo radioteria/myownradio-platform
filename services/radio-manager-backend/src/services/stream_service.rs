@@ -144,7 +144,7 @@ impl StreamService {
         self.notify_streams();
 
         self.pubsub_client
-            .restart_channel(&self.stream_id, &self.user_id)
+            .publish_restart_channel_message(&self.stream_id, &self.user_id)
             .await?;
 
         Ok(())
@@ -158,7 +158,7 @@ impl StreamService {
         self.notify_streams();
 
         self.pubsub_client
-            .restart_channel(&self.stream_id, &self.user_id)
+            .publish_restart_channel_message(&self.stream_id, &self.user_id)
             .await?;
 
         Ok(())
@@ -172,7 +172,7 @@ impl StreamService {
         self.notify_streams();
 
         self.pubsub_client
-            .restart_channel(&self.stream_id, &self.user_id)
+            .publish_restart_channel_message(&self.stream_id, &self.user_id)
             .await?;
 
         Ok(())
@@ -186,7 +186,7 @@ impl StreamService {
         self.notify_streams();
 
         self.pubsub_client
-            .restart_channel(&self.stream_id, &self.user_id)
+            .publish_restart_channel_message(&self.stream_id, &self.user_id)
             .await?;
 
         Ok(())
@@ -230,7 +230,7 @@ impl StreamService {
         self.notify_streams();
 
         self.pubsub_client
-            .restart_channel(&self.stream_id, &self.user_id)
+            .publish_restart_channel_message(&self.stream_id, &self.user_id)
             .await?;
 
         Ok(())
@@ -274,7 +274,7 @@ impl StreamService {
         self.notify_streams();
 
         self.pubsub_client
-            .restart_channel(&self.stream_id, &self.user_id)
+            .publish_restart_channel_message(&self.stream_id, &self.user_id)
             .await?;
 
         Ok(())
@@ -302,7 +302,7 @@ impl StreamService {
                 self.notify_streams();
 
                 self.pubsub_client
-                    .restart_channel(&self.stream_id, &self.user_id)
+                    .publish_restart_channel_message(&self.stream_id, &self.user_id)
                     .await?;
 
                 Ok(())
@@ -611,7 +611,7 @@ impl StreamService {
                     self.notify_streams();
 
                     self.pubsub_client
-                        .restart_channel(&self.stream_id, &self.user_id)
+                        .publish_restart_channel_message(&self.stream_id, &self.user_id)
                         .await?;
                 }
             }

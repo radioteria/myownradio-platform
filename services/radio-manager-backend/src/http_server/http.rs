@@ -132,21 +132,21 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                     ),
             )
             .service(
-                web::scope("/internal/egress-process")
+                web::scope("/internal/web-egress-process")
                     .route(
-                        "/stream-started",
+                        "/v0/stream-started",
                         web::post().to(internal_egress_process::handle_stream_started),
                     )
                     .route(
-                        "/stream-finished",
+                        "/v0/stream-finished",
                         web::post().to(internal_egress_process::handle_stream_finished),
                     )
                     .route(
-                        "/stream-stats",
+                        "/v0/stream-stats",
                         web::post().to(internal_egress_process::handle_stream_stats),
                     )
                     .route(
-                        "/stream-error",
+                        "/v0/stream-error",
                         web::post().to(internal_egress_process::handle_stream_error),
                     ),
             )

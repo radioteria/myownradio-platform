@@ -16,6 +16,7 @@ pub(crate) fn main() {
     let config = Config::from_env();
     let stream_id = uuid::Uuid::new_v4();
     let user_id = config.user_id.clone();
+    let channel_id = config.channel_id.clone();
 
     gstreamer::init().expect("Unable to initialize GStreamer!");
 
@@ -55,10 +56,10 @@ pub(crate) fn main() {
 
         match event {
             StreamEvent::Started => {
-                radiomanager_backend_client.send_stream_started(&stream_id, &user_id);
+                radiomanager_backend_client.send_stream_started(&stream_id, &user_id, &channel_id);
             }
             StreamEvent::Finished => {
-                radiomanager_backend_client.send_stream_finished(&stream_id, &user_id);
+                radiomanager_backend_client.send_stream_finished(&stream_id, &user_id, &channel_id);
             }
             StreamEvent::Stats {
                 time_position,
@@ -67,6 +68,7 @@ pub(crate) fn main() {
                 radiomanager_backend_client.send_stream_stats(
                     &stream_id,
                     &user_id,
+                    &channel_id,
                     byte_count,
                     time_position,
                 );
@@ -76,6 +78,7 @@ pub(crate) fn main() {
                 radiomanager_backend_client.send_stream_error(
                     &stream_id,
                     &user_id,
+                    &channel_id,
                     &format!("{:?}", error),
                 );
                 is_error = true;

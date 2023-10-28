@@ -14,7 +14,6 @@ use tracing::{debug, error, instrument};
 #[serde(rename_all = "camelCase")]
 pub(crate) struct StreamJob {
     pub(crate) channel_id: u32,
-    pub(crate) stream_id: String,
     pub(crate) status: StreamJobStatus,
 }
 
@@ -90,11 +89,6 @@ impl K8sClient {
                     .and_then(|status| status.phase);
 
                 StreamJob {
-                    stream_id: job
-                        .labels()
-                        .get("radioterio-stream-id")
-                        .cloned()
-                        .unwrap_or_default(),
                     channel_id: job
                         .labels()
                         .get("radioterio-stream-channel-id")
@@ -124,7 +118,6 @@ impl K8sClient {
 
         let labels = serde_json::json!({
             "radioterio-stream-user-id": format_args!("{}", **user_id),
-            "radioterio-stream-id": stream_id,
             "radioterio-stream-channel-id": format_args!("{}", channel_id)
         });
 
@@ -134,8 +127,8 @@ impl K8sClient {
             "value": webpage_url
           },
           {
-            "name": "STREAM_ID",
-            "value": stream_id
+            "name": "CHANNEL_ID",
+            "value": channel_id
           },
           {
             "name": "USER_ID",
@@ -316,11 +309,6 @@ impl K8sClient {
             .and_then(|status| status.phase);
 
         Ok(StreamJob {
-            stream_id: job
-                .labels()
-                .get("radioterio-stream-id")
-                .cloned()
-                .unwrap_or_default(),
             channel_id: job
                 .labels()
                 .get("radioterio-stream-channel-id")

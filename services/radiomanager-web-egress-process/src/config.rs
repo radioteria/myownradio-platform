@@ -53,6 +53,8 @@ pub(crate) struct RadiomanagerBackendSettings {
 pub(crate) struct Config {
     #[serde(deserialize_with = "from_str")]
     pub(crate) user_id: u32,
+    #[serde(deserialize_with = "from_str")]
+    pub(crate) channel_id: u32,
     pub(crate) webpage_url: String,
     pub(crate) rtmp_url: String,
     pub(crate) rtmp_stream_key: String,

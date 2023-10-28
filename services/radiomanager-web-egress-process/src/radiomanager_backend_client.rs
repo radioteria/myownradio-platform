@@ -21,15 +21,16 @@ impl RadiomanagerBackendClient {
         Self { endpoint, client }
     }
 
-    pub(crate) fn send_stream_started(&self, stream_id: &Uuid, user_id: &u32) {
+    pub(crate) fn send_stream_started(&self, stream_id: &Uuid, user_id: &u32, channel_id: &u32) {
         if let Err(error) = self
             .client
             .post(format!(
-                "{}/api/v0/egress-process/stream-started",
+                "{}/internal/web-egress-process/v0/stream-started",
                 self.endpoint
             ))
             .json(&json!({
                 "userId": user_id,
+                "channelId": channel_id,
                 "streamId": stream_id.to_string()
             }))
             .send()
@@ -39,15 +40,16 @@ impl RadiomanagerBackendClient {
         }
     }
 
-    pub(crate) fn send_stream_finished(&self, stream_id: &Uuid, user_id: &u32) {
+    pub(crate) fn send_stream_finished(&self, stream_id: &Uuid, user_id: &u32, channel_id: &u32) {
         if let Err(error) = self
             .client
             .post(format!(
-                "{}/api/v0/egress-process/stream-finished",
+                "{}/internal/web-egress-process/v0/stream-finished",
                 self.endpoint
             ))
             .json(&json!({
                 "userId": user_id,
+                "channelId": channel_id,
                 "streamId": stream_id.to_string()
             }))
             .send()
@@ -61,17 +63,19 @@ impl RadiomanagerBackendClient {
         &self,
         stream_id: &Uuid,
         user_id: &u32,
+        channel_id: &u32,
         byte_count: u64,
         time_position: u64,
     ) {
         if let Err(error) = self
             .client
             .post(format!(
-                "{}/api/v0/egress-process/stream-stats",
+                "{}/internal/web-egress-process/v0/stream-stats",
                 self.endpoint
             ))
             .json(&json!({
                 "userId": user_id,
+                "channelId": channel_id,
                 "streamId": stream_id.to_string(),
                 "byteCount": byte_count,
                 "timePosition": time_position
@@ -83,15 +87,22 @@ impl RadiomanagerBackendClient {
         }
     }
 
-    pub(crate) fn send_stream_error(&self, stream_id: &Uuid, user_id: &u32, reason: &str) {
+    pub(crate) fn send_stream_error(
+        &self,
+        stream_id: &Uuid,
+        user_id: &u32,
+        channel_id: &u32,
+        reason: &str,
+    ) {
         if let Err(error) = self
             .client
             .post(format!(
-                "{}/api/v0/egress-process/stream-error",
+                "{}/internal/web-egress-process/v0/stream-error",
                 self.endpoint
             ))
             .json(&json!({
                 "userId": user_id,
+                "channelId": channel_id,
                 "streamId": stream_id.to_string(),
                 "reason": reason
             }))

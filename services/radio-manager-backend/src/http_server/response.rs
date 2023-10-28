@@ -1,3 +1,4 @@
+use crate::pubsub_client::PubsubClientError;
 use crate::services::StreamServiceError;
 use crate::storage::db::repositories::errors::RepositoryError;
 use crate::web_egress_controller_client::WebEgressControllerError;
@@ -21,6 +22,8 @@ pub(crate) enum Error {
     StreamServiceError(#[from] StreamServiceError),
     #[error("WebEgressControllerClientError: {0}")]
     WebEgressControllerClientError(#[from] WebEgressControllerError),
+    #[error("PubsubClientError: {0}")]
+    PubsubClientError(#[from] PubsubClientError),
 }
 
 #[derive(Serialize)]
@@ -36,6 +39,7 @@ impl ResponseError for Error {
             Error::IOError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::StreamServiceError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::WebEgressControllerClientError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::PubsubClientError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
@@ -65,6 +69,11 @@ impl ResponseError for Error {
                 .json(ErrorResponse {
                     error: "web_egress_service_error",
                 }),
+            Error::PubsubClientError(_) => {
+                HttpResponse::build(self.status_code()).json(ErrorResponse {
+                    error: "pubsub_client_error",
+                })
+            }
         }
     }
 }

@@ -39,6 +39,7 @@ impl PubsubClient {
                 "eventType": "RestartChannel"
             }),
         )
+        .await
     }
 
     pub(crate) async fn publish_outgoing_stream_started_message(
@@ -55,6 +56,7 @@ impl PubsubClient {
                 "eventType": "OutgoingStreamStarted"
             }),
         )
+        .await
     }
 
     pub(crate) async fn publish_outgoing_stream_stats_message(
@@ -75,6 +77,7 @@ impl PubsubClient {
                 "timePosition": time_position,
             }),
         )
+        .await
     }
 
     pub(crate) async fn publish_outgoing_stream_error_message(
@@ -91,6 +94,7 @@ impl PubsubClient {
                 "eventType": "OutgoingStreamError"
             }),
         )
+        .await
     }
 
     pub(crate) async fn publish_outgoing_stream_finished_message(
@@ -107,6 +111,7 @@ impl PubsubClient {
                 "eventType": "OutgoingStreamFinished"
             }),
         )
+        .await
     }
 
     async fn publish_message(

@@ -1,8 +1,8 @@
 use crate::data_structures::{StreamId, UserId};
 use reqwest::{Client, StatusCode};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::json;
-use tracing::{error, trace};
+use tracing::error;
 
 #[derive(Debug, Deserialize)]
 pub(crate) enum StreamStatus {
@@ -15,7 +15,6 @@ pub(crate) enum StreamStatus {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct StreamEntry {
     pub(crate) channel_id: StreamId,
-    pub(crate) stream_id: String,
     pub(crate) status: StreamStatus,
 }
 

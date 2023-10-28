@@ -1,7 +1,7 @@
 use crate::http_server::handlers::{
-    forward_auth, internal_radio_streamer, public_schedule, public_streams, user_audio_stream,
-    user_audio_tracks, user_audio_tracks_v2, user_outgoing_stream, user_stream_control,
-    user_stream_destinations, user_streams,
+    forward_auth, internal_egress_process, internal_radio_streamer, public_schedule,
+    public_streams, user_audio_stream, user_audio_tracks, user_audio_tracks_v2,
+    user_outgoing_stream, user_stream_control, user_stream_destinations, user_streams,
 };
 use crate::pubsub_client::PubsubClient;
 use crate::services::auth::AuthTokenService;
@@ -129,6 +129,25 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                     .route(
                         "/v0/streams/{stream_id}/skip-track",
                         web::post().to(internal_radio_streamer::skip_track),
+                    ),
+            )
+            .service(
+                web::scope("/internal/egress-process")
+                    .route(
+                        "/stream-started",
+                        web::post().to(internal_egress_process::handle_stream_started),
+                    )
+                    .route(
+                        "/stream-finished",
+                        web::post().to(internal_egress_process::handle_stream_finished),
+                    )
+                    .route(
+                        "/stream-stats",
+                        web::post().to(internal_egress_process::handle_stream_stats),
+                    )
+                    .route(
+                        "/stream-error",
+                        web::post().to(internal_egress_process::handle_stream_error),
                     ),
             )
             .service(

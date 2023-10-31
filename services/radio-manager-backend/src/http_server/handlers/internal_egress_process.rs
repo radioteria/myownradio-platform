@@ -1,6 +1,8 @@
 use crate::data_structures::{StreamId, UserId};
 use crate::http_server::response::Response;
+use crate::mysql_client::MySqlClient;
 use crate::pubsub_client::PubsubClient;
+use crate::storage::db::repositories::outgoing_streams;
 use actix_web::web::{Data, Json};
 use actix_web::HttpResponse;
 use serde::Deserialize;
@@ -16,6 +18,7 @@ pub(crate) struct StreamStartedPayload {
 pub(crate) async fn handle_stream_started(
     payload: Json<StreamStartedPayload>,
     pubsub_client: Data<PubsubClient>,
+    mysql_client: Data<MySqlClient>,
 ) -> Response {
     pubsub_client
         .publish_outgoing_stream_started_message(
@@ -24,6 +27,18 @@ pub(crate) async fn handle_stream_started(
             &payload.stream_id,
         )
         .await?;
+
+    let mut connection = mysql_client.connection().await?;
+
+    outgoing_streams::create_or_update_outging_stream(
+        &mut connection,
+        &payload.user_id,
+        &payload.channel_id,
+        &payload.stream_id,
+        &0,
+        &0,
+    )
+    .await?;
 
     Ok(HttpResponse::Ok().finish())
 }
@@ -41,6 +56,7 @@ pub(crate) struct StreamStatsPayload {
 pub(crate) async fn handle_stream_stats(
     payload: Json<StreamStatsPayload>,
     pubsub_client: Data<PubsubClient>,
+    mysql_client: Data<MySqlClient>,
 ) -> Response {
     pubsub_client
         .publish_outgoing_stream_stats_message(
@@ -51,6 +67,18 @@ pub(crate) async fn handle_stream_stats(
             &payload.stream_id,
         )
         .await?;
+
+    let mut connection = mysql_client.connection().await?;
+
+    outgoing_streams::create_or_update_outging_stream(
+        &mut connection,
+        &payload.user_id,
+        &payload.channel_id,
+        &payload.stream_id,
+        &(payload.time_position as i64),
+        &(payload.byte_count as i64),
+    )
+    .await?;
 
     Ok(HttpResponse::Ok().finish())
 }

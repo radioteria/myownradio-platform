@@ -4,6 +4,7 @@ use serde_repr::Serialize_repr;
 use sqlx::types::Json;
 
 pub(crate) mod errors;
+pub(crate) mod outgoing_streams;
 pub(crate) mod stream_destinations;
 pub(crate) mod streams;
 pub(crate) mod user_stream_tracks;
@@ -121,6 +122,18 @@ pub(crate) struct StreamDestinationRow {
     pub(crate) user_id: UserId,
     pub(crate) stream_id: StreamId,
     pub(crate) destination_json: Json<StreamDestination>,
+    pub(crate) created_at: chrono::DateTime<chrono::Utc>,
+    pub(crate) updated_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(sqlx::FromRow, Clone)]
+pub(crate) struct OutgoingStreamRow {
+    pub(crate) id: i32,
+    pub(crate) user_id: UserId,
+    pub(crate) channel_id: StreamId,
+    pub(crate) stream_id: String,
+    pub(crate) duration: i64,
+    pub(crate) byte_count: i64,
     pub(crate) created_at: chrono::DateTime<chrono::Utc>,
     pub(crate) updated_at: chrono::DateTime<chrono::Utc>,
 }

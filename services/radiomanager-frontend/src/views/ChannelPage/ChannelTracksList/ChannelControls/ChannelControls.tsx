@@ -8,6 +8,7 @@ import { PlayIcon } from './icons/PlayIcon'
 import { PauseIcon } from './icons/PauseIcon'
 import { StreamOverlay } from './StreamOverlay'
 import { PlayerOverlay } from '@/views/PlayerPage/PlayerOverlay'
+import { StreamInfoBar } from '@/views/ChannelPage/ChannelTracksList/ChannelControls/StreamInfoBar/StreamInfoBar'
 
 interface Props {
   readonly channelId: number
@@ -32,7 +33,12 @@ export const ChannelControls: React.FC<Props> = ({
 
   return (
     <div className={'bg-morblue-950 text-gray-400 rounded-lg p-4 flex flex-col text-xs'}>
-      <StreamOverlay channelId={channelId} />
+      <StreamInfoBar
+        status={'preview'}
+        muted={false}
+        setMuted={() => {}}
+        overlay={<StreamOverlay channelId={channelId} />}
+      />
 
       <div className={'truncate h-4 align-middle text-center my-4'}>
         {nowPlaying?.currentTrack.title ?? ''}

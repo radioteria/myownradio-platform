@@ -33,12 +33,7 @@ export const ChannelControls: React.FC<Props> = ({
 
   return (
     <div className={'bg-morblue-950 text-gray-400 rounded-lg p-4 flex flex-col text-xs'}>
-      <StreamInfoBar
-        status={'preview'}
-        muted={false}
-        setMuted={() => {}}
-        overlay={<StreamOverlay channelId={channelId} />}
-      />
+      <StreamInfoBar status={'preview'} overlay={<StreamOverlay channelId={channelId} />} />
 
       <div className={'truncate h-4 align-middle text-center my-4'}>
         {nowPlaying?.currentTrack.title ?? ''}

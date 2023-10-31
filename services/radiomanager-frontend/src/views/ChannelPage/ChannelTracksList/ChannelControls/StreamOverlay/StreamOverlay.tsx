@@ -24,7 +24,7 @@ export const StreamOverlay: React.FC<Props> = ({ channelId }) => {
             title={'Mute'}
             onClick={() => setPlaying(false)}
             className={
-              'grow-0 bg-black bg-opacity-50 transition hover:bg-opacity-75 w-8 rounded-md'
+              'grow-0 bg-black bg-opacity-50 transition hover:bg-opacity-75 w-8 h-8 rounded-md'
             }
           >
             <UnmuteIcon size={'100%'} />
@@ -34,7 +34,7 @@ export const StreamOverlay: React.FC<Props> = ({ channelId }) => {
             title={'Unmute'}
             onClick={() => setPlaying(true)}
             className={
-              'grow-0 bg-black bg-opacity-50 transition hover:bg-opacity-75 w-8 rounded-md'
+              'grow-0 bg-black bg-opacity-50 transition hover:bg-opacity-75 w-8 h-8 rounded-md'
             }
           >
             <MuteIcon size={'100%'} />

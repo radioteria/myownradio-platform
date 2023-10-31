@@ -15,7 +15,7 @@ export const StreamInfoBar: React.FC<Props> = ({ overlay, status }) => {
         <div
           className={cn(
             'py-1 px-2 font-bold text-sm',
-            status === 'preview' ? 'text-gray-400' : 'text-gray-950',
+            status === 'preview' ? 'text-gray-400' : 'text-white',
           )}
         >
           {status === 'preview' ? 'PREVIEW' : 'LIVE'}

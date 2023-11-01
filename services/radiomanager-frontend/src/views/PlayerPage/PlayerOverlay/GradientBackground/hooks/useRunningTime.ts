@@ -14,7 +14,7 @@ export const useRunningTime = (initialTimeMillis: number, paused: boolean): numb
     const intervalId = window.setInterval(() => {
       const delta = performance.now() - start
       setTime(initialTimeMillis + delta)
-    }, 500)
+    }, 250)
 
     return () => {
       window.clearInterval(intervalId)

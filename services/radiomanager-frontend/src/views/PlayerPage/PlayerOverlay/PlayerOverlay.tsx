@@ -1,7 +1,7 @@
-import { StreamPlayer } from '@/components/StreamPlayer'
 import { useState } from 'react'
+import { StreamPlayer } from '@/components/StreamPlayer'
 import { DynamicFontSize } from '@/components/shared/DynamicFontSize/DynamicFontSize'
-import { GradientBackground } from '@/views/PlayerPage/PlayerOverlay/GradientBackground/GradientBackground'
+import { GradientBackground } from './GradientBackground/GradientBackground'
 
 interface Props {
   readonly channelId: number
@@ -13,7 +13,7 @@ export const PlayerOverlay: React.FC<Props> = ({ channelId, muted = false }) => 
 
   return (
     <section className={'w-full h-full bg-black overflow-hidden relative'}>
-      <GradientBackground>
+      <GradientBackground timePosition={Date.now()}>
         {title && (
           <DynamicFontSize formula={({ width }) => `${width * 0.02}pt`}>
             <div className={'text-gray-100 bottom-0 left-0 p-[2%] absolute w-full truncate'}>

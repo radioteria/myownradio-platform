@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
-import { useColorsAnimation } from '@/views/PlayerPage/PlayerOverlay/GradientBackground/hooks/useColorsAnimation'
+import { useColorsAnimation } from './hooks/useColorsAnimation'
 
 interface Props {
   readonly children?: React.ReactNode
+  readonly timePosition: number
 }
 
-export const GradientBackground: React.FC<Props> = ({ children }) => {
-  const colorsState = useColorsAnimation(0)
+export const GradientBackground: React.FC<Props> = ({ children, timePosition }) => {
+  const colorsState = useColorsAnimation(timePosition)
 
   return (
     <>

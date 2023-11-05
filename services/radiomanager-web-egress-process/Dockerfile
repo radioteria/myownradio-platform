@@ -25,7 +25,7 @@ RUN cargo install cargo-c
 WORKDIR /src
 
 # Build gstcefsrc plugin
-RUN git clone https://github.com/centricular/gstcefsrc.git && \
+RUN git clone -b fix/pts https://github.com/myownradio/gstcefsrc.git && \
     cd gstcefsrc && \
     mkdir build && cd build && \
     cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release .. && \

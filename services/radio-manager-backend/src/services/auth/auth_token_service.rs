@@ -55,4 +55,11 @@ impl AuthTokenService {
             }
         }
     }
+
+    pub(crate) fn sign_legacy_claims(&self, claims: LegacyAuthTokenClaims) -> String {
+        let key = EncodingKey::from_secret(self.legacy_secret_key.as_ref());
+        let header = Header::new(Algorithm::HS256);
+
+        encode(&header, &claims, &key).expect("Unable to sign legacy claims")
+    }
 }

@@ -46,3 +46,18 @@ pub(crate) async fn get_user_by_session_token(
 
     Ok(maybe_user)
 }
+
+pub(crate) async fn get_user_by_email(
+    connection: &mut MySqlConnection,
+    email: &str,
+) -> RepositoryResult<Option<UserRow>> {
+    let mut builder = create_select_query_builder();
+
+    builder.push(" WHERE `r_users`.`mail` = ");
+    builder.push_bind(email);
+    builder.push(" LIMIT 1");
+
+    let query = builder.build_query_as();
+
+    Ok(query.fetch_optional(connection.deref_mut()).await?)
+}

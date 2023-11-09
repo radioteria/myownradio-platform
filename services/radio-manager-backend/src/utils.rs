@@ -1,3 +1,5 @@
+use bcrypt::{hash, verify, DEFAULT_COST};
+
 pub(crate) trait TeeResultUtils<I, E> {
     fn tee_ok<CB>(self, cb: CB) -> Self
     where
@@ -39,4 +41,12 @@ pub(crate) fn positive_mod(number: i64, by: i64) -> i64 {
     }
 
     number % by
+}
+
+pub(crate) fn hash_password(password: &str) -> Result<String, bcrypt::BcryptError> {
+    hash(password, DEFAULT_COST)
+}
+
+pub(crate) fn verify_password(password: &str, hash: &str) -> Result<bool, bcrypt::BcryptError> {
+    verify(password, hash)
 }

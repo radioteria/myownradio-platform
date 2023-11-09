@@ -9,7 +9,7 @@ pub(crate) async fn create_legacy_session(
     connection: &mut MySqlConnection,
     user_id: &UserId,
 ) -> RepositoryResult<LegacySessionRow> {
-    let token = uuid::Uuid::new_v4().to_string();
+    let token = uuid::Uuid::new_v4().to_string().replace("-", "");
     let session_id = uuid::Uuid::new_v4().to_string();
 
     let insert_query = query(

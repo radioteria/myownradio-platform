@@ -6,3 +6,4 @@ mod legacy_auth_token_claims;
 pub(crate) use auth_token_claims::{AuthTokenClaim, AuthTokenClaims};
 pub(crate) use auth_token_claims_ext::IsActionAllowed;
 pub(crate) use auth_token_service::AuthTokenService;
+pub(crate) use legacy_auth_token_claims::{LegacyAuthTokenClaims, LegacyAuthTokenData};

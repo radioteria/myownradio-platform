@@ -24,13 +24,32 @@ impl Deref for LegacyToken {
 }
 
 #[derive(thiserror::Error, Debug)]
-pub(crate) enum LoginError {
+pub(crate) enum LegacyLoginError {
     #[error("Bad credentials")]
     BadCredentials,
     #[error(transparent)]
     DatabaseError(#[from] sqlx::Error),
     #[error(transparent)]
     RepositoryError(#[from] RepositoryError),
+}
+
+#[derive(thiserror::Error, Debug)]
+pub(crate) enum LegacySignupError {
+    #[error("Invalid email address")]
+    InvalidEmailAddress,
+    #[error("Invalid password")]
+    InvalidPassword,
+    #[error("Non-unique email address")]
+    NonUniqueEmailAddress,
+    #[error(transparent)]
+    DatabaseError(#[from] sqlx::Error),
+    #[error(transparent)]
+    RepositoryError(#[from] RepositoryError),
+}
+
+pub(crate) enum LegacySignupResult {
+    SignedUp,
+    ConfirmEmail,
 }
 
 #[derive(Clone)]
@@ -51,7 +70,7 @@ impl AuthService {
         &self,
         email: &str,
         password: &str,
-    ) -> Result<(LoggedInUser, LegacyToken), LoginError> {
+    ) -> Result<(LoggedInUser, LegacyToken), LegacyLoginError> {
         let mut connection = self.mysql_client.connection().await?;
 
         let user = match users::get_user_by_email(&mut connection, email).await? {
@@ -61,13 +80,13 @@ impl AuthService {
                     verify_password(password, &hashed_password).expect("Unable to verify password");
 
                 if !is_valid {
-                    return Err(LoginError::BadCredentials);
+                    return Err(LegacyLoginError::BadCredentials);
                 }
 
                 user
             }
             None => {
-                return Err(LoginError::BadCredentials);
+                return Err(LegacyLoginError::BadCredentials);
             }
         };
 
@@ -90,5 +109,35 @@ impl AuthService {
             },
             LegacyToken(token),
         ))
+    }
+
+    pub(crate) async fn legacy_signup(
+        &self,
+        email: &str,
+        password: &str,
+    ) -> Result<LegacySignupResult, LegacySignupError> {
+        let mut connection = self.mysql_client.transaction().await?;
+
+        if !email_address::EmailAddress::is_valid(email) {
+            return Err(LegacySignupError::InvalidEmailAddress);
+        }
+
+        if password.len() < 8 {
+            return Err(LegacySignupError::InvalidPassword);
+        }
+
+        match users::create_user(&mut connection, email, password).await {
+            Ok(_) => (),
+            Err(RepositoryError::DatabaseError(error))
+                if error.to_string().contains("UNIQUE_EMAIL") =>
+            {
+                return Err(LegacySignupError::NonUniqueEmailAddress);
+            }
+            Err(error) => return Err(error.into()),
+        }
+
+        connection.commit().await?;
+
+        Ok(LegacySignupResult::SignedUp)
     }
 }

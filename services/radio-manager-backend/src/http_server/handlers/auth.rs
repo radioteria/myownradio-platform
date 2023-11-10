@@ -1,6 +1,6 @@
 use crate::http_server::constants::LEGACY_SESSION_COOKIE_NAME;
 use crate::http_server::response::Response;
-use crate::services::auth::{AuthService, LoginError};
+use crate::services::auth::{AuthService, LegacyLoginError, LegacySignupError, LegacySignupResult};
 use actix_web::cookie::CookieBuilder;
 use actix_web::{web, HttpResponse};
 use serde::Deserialize;
@@ -22,11 +22,11 @@ pub(crate) async fn login(
 
             Ok(HttpResponse::Ok().cookie(cookie).json(user))
         }
-        Err(LoginError::BadCredentials) => Ok(HttpResponse::Unauthorized().json(json!({
+        Err(LegacyLoginError::BadCredentials) => Ok(HttpResponse::Unauthorized().json(json!({
             "error": "BAD_CREDENTIALS"
         }))),
-        Err(LoginError::DatabaseError(err)) => Err(err.into()),
-        Err(LoginError::RepositoryError(err)) => Err(err.into()),
+        Err(LegacyLoginError::DatabaseError(err)) => Err(err.into()),
+        Err(LegacyLoginError::RepositoryError(err)) => Err(err.into()),
     }
 }
 
@@ -34,8 +34,35 @@ pub(crate) async fn logout() -> Response {
     Ok(HttpResponse::NotImplemented().finish())
 }
 
-pub(crate) async fn signup() -> Response {
-    Ok(HttpResponse::NotImplemented().finish())
+#[derive(Deserialize)]
+pub(crate) struct SignupBody {
+    pub(crate) email: String,
+    pub(crate) password: String,
+}
+
+pub(crate) async fn signup(
+    body: web::Json<SignupBody>,
+    auth_service: web::Data<AuthService>,
+) -> Response {
+    match auth_service
+        .legacy_signup(&body.email, &body.password)
+        .await
+    {
+        Ok(LegacySignupResult::SignedUp) => {
+            Ok(HttpResponse::Ok().json(json!({ "result": "SignedUp" })))
+        }
+        Ok(LegacySignupResult::ConfirmEmail) => {
+            Ok(HttpResponse::Ok().json(json!({ "result": "ConfirmEmail" })))
+        }
+        Err(LegacySignupError::InvalidEmailAddress | LegacySignupError::InvalidPassword) => {
+            Ok(HttpResponse::BadRequest().json(json!({ "error": "BAD_CREDENTIALS" })))
+        }
+        Err(LegacySignupError::NonUniqueEmailAddress) => {
+            Ok(HttpResponse::Conflict().json(json!({ "error": "NON_UNIQUE_EMAIL_ADDRESS" })))
+        }
+        Err(LegacySignupError::DatabaseError(err)) => Err(err.into()),
+        Err(LegacySignupError::RepositoryError(err)) => Err(err.into()),
+    }
 }
 
 pub(crate) async fn confirm_email() -> Response {

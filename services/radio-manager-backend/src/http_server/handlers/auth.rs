@@ -1,9 +1,6 @@
 use crate::http_server::constants::LEGACY_SESSION_COOKIE_NAME;
 use crate::http_server::response::Response;
-use crate::mysql_client::MySqlClient;
-use crate::services::auth::{AuthTokenService, LegacyAuthTokenClaims, LegacyAuthTokenData};
-use crate::storage::db::repositories::{legacy_sessions, users};
-use crate::utils::verify_password;
+use crate::services::auth::{AuthService, LoginError};
 use actix_web::cookie::CookieBuilder;
 use actix_web::{web, HttpResponse};
 use serde::Deserialize;
@@ -17,47 +14,20 @@ pub(crate) struct LoginBody {
 
 pub(crate) async fn login(
     body: web::Json<LoginBody>,
-    mysql_client: web::Data<MySqlClient>,
-    token_service: web::Data<AuthTokenService>,
+    auth_service: web::Data<AuthService>,
 ) -> Response {
-    let mut connection = mysql_client.connection().await?;
+    match auth_service.legacy_login(&body.email, &body.password).await {
+        Ok((user, token)) => {
+            let cookie = CookieBuilder::new(LEGACY_SESSION_COOKIE_NAME, token.clone()).finish();
 
-    let user = match users::get_user_by_email(&mut connection, &body.email).await? {
-        Some(user) => {
-            let hashed_password = user.password.clone().unwrap_or_default();
-            let is_valid = verify_password(&body.password, &hashed_password)
-                .expect("Unable to verify password");
-
-            if !is_valid {
-                return Ok(HttpResponse::Unauthorized().json(json!({
-                    "error": "BAD_CREDENTIALS"
-                })));
-            }
-
-            user
+            Ok(HttpResponse::Ok().cookie(cookie).json(user))
         }
-        None => {
-            return Ok(HttpResponse::Unauthorized().json(json!({
-                "error": "BAD_CREDENTIALS"
-            })));
-        }
-    };
-
-    let legacy_session = legacy_sessions::create_legacy_session(&mut connection, &user.uid).await?;
-
-    let token = token_service.sign_legacy_claims(LegacyAuthTokenClaims {
-        id: legacy_session.session_id,
-        data: LegacyAuthTokenData {
-            token: legacy_session.token,
-        },
-    });
-
-    let cookie = CookieBuilder::new(LEGACY_SESSION_COOKIE_NAME, token).finish();
-
-    Ok(HttpResponse::Ok().cookie(cookie).json(json!({
-        "id": user.uid,
-        "email": user.mail
-    })))
+        Err(LoginError::BadCredentials) => Ok(HttpResponse::Unauthorized().json(json!({
+            "error": "BAD_CREDENTIALS"
+        }))),
+        Err(LoginError::DatabaseError(err)) => Err(err.into()),
+        Err(LoginError::RepositoryError(err)) => Err(err.into()),
+    }
 }
 
 pub(crate) async fn logout() -> Response {

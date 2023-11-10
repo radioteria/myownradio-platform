@@ -4,7 +4,7 @@ use crate::http_server::handlers::{
     user_outgoing_stream, user_stream_control, user_stream_destinations, user_streams,
 };
 use crate::pubsub_client::PubsubClient;
-use crate::services::auth::AuthTokenService;
+use crate::services::auth::{AuthService, AuthTokenService};
 use crate::storage::fs::FileSystem;
 use crate::web_egress_controller_client::WebEgressControllerClient;
 use crate::{Config, MySqlClient, StreamServiceFactory};
@@ -22,6 +22,7 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
     pubsub_client: PubsubClient,
     auth_token_service: AuthTokenService,
     web_egress_controller_client: WebEgressControllerClient,
+    auth_service: AuthService,
 ) -> Result<Server> {
     let mysql_client = mysql_client.clone();
 
@@ -35,6 +36,7 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
             .app_data(Data::new(stream_service_factory.clone()))
             .app_data(Data::new(pubsub_client.clone()))
             .app_data(Data::new(auth_token_service.clone()))
+            .app_data(Data::new(auth_service.clone()))
             .app_data(Data::new(web_egress_controller_client.clone()))
             .service(
                 web::scope("/v0/auth")

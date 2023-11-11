@@ -3,7 +3,7 @@ use crate::mysql_client::MySqlClient;
 use crate::services::auth::{AuthTokenService, LegacyAuthTokenClaims, LegacyAuthTokenData};
 use crate::storage::db::repositories::errors::RepositoryError;
 use crate::storage::db::repositories::{legacy_sessions, users};
-use crate::utils::verify_password;
+use crate::utils::{hash_password, verify_password};
 use serde::Serialize;
 use std::ops::Deref;
 
@@ -126,7 +126,9 @@ impl AuthService {
             return Err(LegacySignupError::InvalidPassword);
         }
 
-        match users::create_user(&mut connection, email, password).await {
+        let hashed_password = hash_password(password).expect("Unable to hash password");
+
+        match users::create_user(&mut connection, email, &hashed_password).await {
             Ok(_) => (),
             Err(RepositoryError::DatabaseError(error))
                 if error.to_string().contains("UNIQUE_EMAIL") =>

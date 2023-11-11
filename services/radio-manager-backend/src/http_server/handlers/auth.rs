@@ -109,6 +109,7 @@ pub(crate) async fn request_password_reset() -> Response {
 #[derive(Deserialize)]
 pub(crate) struct ResetPasswordBody {
     pub(crate) action_token: String,
+    pub(crate) old_password_hash: String,
     pub(crate) new_password: String,
 }
 
@@ -139,12 +140,23 @@ pub(crate) async fn reset_password(
     }
 
     match auth_service
-        .legacy_reset_password(&action_claims.user_id, &body.new_password)
+        .legacy_reset_password(
+            &action_claims.user_id,
+            &body.new_password,
+            &body.old_password_hash,
+        )
         .await
     {
         Ok(()) => Ok(HttpResponse::NoContent().finish()),
         Err(LegacyResetPasswordError::DidNotUpdate) => Ok(HttpResponse::Conflict().json(json!({
             "error": "PASSWORD_DID_NOT_UPDATE"
+        }))),
+        Err(LegacyResetPasswordError::PasswordHashIsOutOfDate) => Ok(HttpResponse::Conflict()
+            .json(json!({
+                "error": "PASSWORD_HASH_IS_OUT_OF_DATE"
+            }))),
+        Err(LegacyResetPasswordError::UserNotFound) => Ok(HttpResponse::BadRequest().json(json!({
+            "error": "USER_NOT_FOUND"
         }))),
         Err(LegacyResetPasswordError::DatabaseError(err)) => Err(err.into()),
         Err(LegacyResetPasswordError::RepositoryError(err)) => Err(err.into()),

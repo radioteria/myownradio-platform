@@ -56,8 +56,12 @@ pub(crate) enum LegacyLogoutError {
 }
 #[derive(thiserror::Error, Debug)]
 pub(crate) enum LegacyResetPasswordError {
-    #[error("Invalid password")]
+    #[error("Password did not update")]
     DidNotUpdate,
+    #[error("User not found")]
+    UserNotFound,
+    #[error("Password hash is out of date")]
+    PasswordHashIsOutOfDate,
     #[error(transparent)]
     DatabaseError(#[from] sqlx::Error),
     #[error(transparent)]
@@ -172,8 +176,22 @@ impl AuthService {
         &self,
         user_id: &UserId,
         new_password: &str,
+        old_password_hash: &str,
     ) -> Result<(), LegacyResetPasswordError> {
         let mut connection = self.mysql_client.transaction().await?;
+
+        let user = match users::get_user_by_id(&mut connection, &user_id).await? {
+            Some(user) => user,
+            None => {
+                return Err(LegacyResetPasswordError::UserNotFound);
+            }
+        };
+
+        let old_password = user.password.clone().unwrap_or_default();
+
+        if !verify_password(&old_password, old_password_hash).expect("Unable to hash password") {
+            return Err(LegacyResetPasswordError::PasswordHashIsOutOfDate);
+        }
 
         let password_hash = hash_password(new_password).expect("Unable to hash password");
 

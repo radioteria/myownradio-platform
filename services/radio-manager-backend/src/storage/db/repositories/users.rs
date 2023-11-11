@@ -63,6 +63,21 @@ pub(crate) async fn get_user_by_email(
     Ok(query.fetch_optional(connection.deref_mut()).await?)
 }
 
+pub(crate) async fn get_user_by_id(
+    connection: &mut MySqlConnection,
+    user_id: &UserId,
+) -> RepositoryResult<Option<UserRow>> {
+    let mut builder = create_select_query_builder();
+
+    builder.push(" WHERE `r_users`.`uid` = ");
+    builder.push_bind(user_id);
+    builder.push(" LIMIT 1");
+
+    let query = builder.build_query_as();
+
+    Ok(query.fetch_optional(connection.deref_mut()).await?)
+}
+
 pub(crate) async fn create_user(
     connection: &mut MySqlConnection,
     email: &str,

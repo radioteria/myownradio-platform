@@ -1,4 +1,3 @@
-use crate::data_structures::UserId;
 use crate::http_server::constants::LEGACY_SESSION_COOKIE_NAME;
 use crate::http_server::response::Response;
 use crate::services::auth::{

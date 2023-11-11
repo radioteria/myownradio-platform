@@ -223,3 +223,11 @@ export const getOutgoingStream = async (channelId: number) => {
     OutgoingStreamSchema,
   )
 }
+
+export const legacyLogin = async (email: string, password: string, abortSignal: AbortSignal) => {
+  return fetchAnyhow(`${BACKEND_BASE_URL}/radio-manager/api/auth/v0/login`, {
+    method: 'GET',
+    withCredentials: true,
+    signal: abortSignal,
+  })
+}

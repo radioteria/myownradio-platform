@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { legacyLogin } from '@/api/radiomanager'
 
 export const useLoginPageStore = () => {
   const [email, setEmail] = useState('')
@@ -6,6 +7,8 @@ export const useLoginPageStore = () => {
 
   const [isValidEmail, setIsValidEmail] = useState(true)
   const [isValidPassword, setIsValidPassword] = useState(true)
+
+  const [isBusy, setIsBusy] = useState(false)
 
   const handleEmailChange = useCallback((email: string) => {
     setEmail(email)
@@ -26,7 +29,7 @@ export const useLoginPageStore = () => {
   }, [abortController])
 
   const handleSubmitLoginForm = () => {
-    if (!isValidEmail || !isValidPassword) return
+    if (isBusy || !isValidEmail || !isValidPassword) return
 
     if (email.length === 0) {
       setIsValidEmail(false)
@@ -39,6 +42,16 @@ export const useLoginPageStore = () => {
     }
 
     // TODO Submit form
+    setIsBusy(true)
+
+    legacyLogin(email, password, abortController.signal)
+      .then(() => {
+        // TODO Goto Success Page
+      })
+      .catch((err) => {
+        // TODO Show Error Message
+      })
+      .finally(() => setIsBusy(false))
   }
 
   return {

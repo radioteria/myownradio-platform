@@ -151,7 +151,7 @@ pub(crate) async fn reset_password(
         Err(LegacyResetPasswordError::DidNotUpdate) => Ok(HttpResponse::Conflict().json(json!({
             "error": "PASSWORD_DID_NOT_UPDATE"
         }))),
-        Err(LegacyResetPasswordError::PasswordHashIsOutOfDate) => Ok(HttpResponse::Conflict()
+        Err(LegacyResetPasswordError::PasswordHashIsOutOfDate) => Ok(HttpResponse::BadRequest()
             .json(json!({
                 "error": "PASSWORD_HASH_IS_OUT_OF_DATE"
             }))),

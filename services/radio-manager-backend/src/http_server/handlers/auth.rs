@@ -120,7 +120,7 @@ pub(crate) async fn reset_password(
     let action_claims = match token_service.verify_action_claims(&body.action_token) {
         Some(claims) => claims,
         None => {
-            warn!("Missing claims in {} cookie", LEGACY_SESSION_COOKIE_NAME);
+            warn!("Missing claims in action token");
             return Ok(HttpResponse::Unauthorized().json(json!({
                 "error": "MISSING_CLAIMS_IN_COOKIE"
             })));

@@ -1,10 +1,14 @@
 use crate::http_server::constants::LEGACY_SESSION_COOKIE_NAME;
 use crate::http_server::response::Response;
-use crate::services::auth::{AuthService, LegacyLoginError, LegacySignupError, LegacySignupResult};
+use crate::services::auth::{
+    AuthService, AuthTokenService, LegacyLoginError, LegacyLogoutError, LegacySignupError,
+    LegacySignupResult,
+};
 use actix_web::cookie::CookieBuilder;
-use actix_web::{web, HttpResponse};
+use actix_web::{web, HttpRequest, HttpResponse};
 use serde::Deserialize;
 use serde_json::json;
+use tracing::warn;
 
 #[derive(Deserialize)]
 pub(crate) struct LoginBody {
@@ -30,8 +34,36 @@ pub(crate) async fn login(
     }
 }
 
-pub(crate) async fn logout() -> Response {
-    Ok(HttpResponse::NotImplemented().finish())
+pub(crate) async fn logout(
+    req: HttpRequest,
+    auth_service: web::Data<AuthService>,
+    token_service: web::Data<AuthTokenService>,
+) -> Response {
+    let cookie_value = match req.cookie(LEGACY_SESSION_COOKIE_NAME) {
+        Some(cookie) => cookie.value().to_string(),
+        None => {
+            warn!("Missing {} cookie", LEGACY_SESSION_COOKIE_NAME);
+            return Ok(HttpResponse::Unauthorized().json(json!({
+                "error": "MISSING_COOKIE"
+            })));
+        }
+    };
+
+    let legacy_claims = match token_service.verify_legacy_claims(&cookie_value) {
+        Some(claims) => claims,
+        None => {
+            warn!("Missing claims in {} cookie", LEGACY_SESSION_COOKIE_NAME);
+            return Ok(HttpResponse::Unauthorized().json(json!({
+                "error": "MISSING_CLAIMS_IN_COOKIE"
+            })));
+        }
+    };
+
+    match auth_service.legacy_logout(&legacy_claims.data.token).await {
+        Ok(_) => Ok(HttpResponse::NoContent().finish()),
+        Err(LegacyLogoutError::DatabaseError(err)) => Err(err.into()),
+        Err(LegacyLogoutError::RepositoryError(err)) => Err(err.into()),
+    }
 }
 
 #[derive(Deserialize)]

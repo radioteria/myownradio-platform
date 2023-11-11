@@ -47,6 +47,14 @@ pub(crate) enum LegacySignupError {
     RepositoryError(#[from] RepositoryError),
 }
 
+#[derive(thiserror::Error, Debug)]
+pub(crate) enum LegacyLogoutError {
+    #[error(transparent)]
+    DatabaseError(#[from] sqlx::Error),
+    #[error(transparent)]
+    RepositoryError(#[from] RepositoryError),
+}
+
 pub(crate) enum LegacySignupResult {
     SignedUp,
     ConfirmEmail,
@@ -141,5 +149,13 @@ impl AuthService {
         connection.commit().await?;
 
         Ok(LegacySignupResult::SignedUp)
+    }
+
+    pub(crate) async fn legacy_logout(&self, session_token: &str) -> Result<(), LegacyLogoutError> {
+        let mut connection = self.mysql_client.connection().await?;
+
+        legacy_sessions::delete_legacy_session(&mut connection, session_token).await?;
+
+        Ok(())
     }
 }

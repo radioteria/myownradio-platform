@@ -94,10 +94,10 @@ pub(crate) async fn signup(
         .await
     {
         Ok(LegacySignupResult::SignedUp) => {
-            Ok(HttpResponse::Ok().json(json!({ "result": "SignedUp" })))
+            Ok(HttpResponse::Ok().json(json!({ "result": "SIGNED_UP" })))
         }
         Ok(LegacySignupResult::ConfirmEmail) => {
-            Ok(HttpResponse::Ok().json(json!({ "result": "ConfirmEmail" })))
+            Ok(HttpResponse::Ok().json(json!({ "result": "CONFIRM_EMAIL" })))
         }
         Err(LegacySignupError::InvalidEmailAddress | LegacySignupError::InvalidPassword) => {
             Ok(HttpResponse::BadRequest().json(json!({ "error": "BAD_CREDENTIALS" })))

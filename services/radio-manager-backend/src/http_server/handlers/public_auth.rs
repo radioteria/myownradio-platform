@@ -1,4 +1,4 @@
-use crate::http_server::constants::LEGACY_SESSION_COOKIE_NAME;
+use crate::http_server::constants::{LEGACY_SESSION_COOKIE_NAME, YEAR};
 use crate::http_server::response::Response;
 use crate::services::auth::{
     Action, AuthService, AuthTokenService, LegacyLoginError, LegacyLogoutError,
@@ -9,7 +9,6 @@ use actix_web::cookie::CookieBuilder;
 use actix_web::{post, web, HttpRequest, HttpResponse};
 use serde::Deserialize;
 use serde_json::json;
-use std::time::Duration;
 use tracing::warn;
 
 #[derive(Deserialize)]
@@ -26,7 +25,7 @@ pub(crate) async fn login(
     match auth_service.legacy_login(&body.email, &body.password).await {
         Ok((user, token)) => {
             let cookie = CookieBuilder::new(LEGACY_SESSION_COOKIE_NAME, token.clone())
-                .expires(OffsetDateTime::now_utc() + Duration::from_secs(31_536_000))
+                .expires(OffsetDateTime::now_utc() + YEAR)
                 .finish();
 
             Ok(HttpResponse::Ok().cookie(cookie).json(user))

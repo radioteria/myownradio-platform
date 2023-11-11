@@ -1,4 +1,5 @@
 use super::auth_token_claims::AuthTokenClaims;
+use crate::services::auth::action_token_claims::ActionTokenClaims;
 use crate::services::auth::legacy_auth_token_claims::LegacyAuthTokenClaims;
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use std::collections::HashSet;
@@ -61,5 +62,24 @@ impl AuthTokenService {
         let header = Header::new(Algorithm::HS256);
 
         encode(&header, &claims, &key).expect("Unable to sign legacy claims")
+    }
+
+    pub(crate) fn sign_action_claims(&self, claims: ActionTokenClaims) -> String {
+        let key = EncodingKey::from_secret(self.secret_key.as_ref());
+        let header = Header::new(Algorithm::HS256);
+
+        encode(&header, &claims, &key).expect("Unable to sign claims")
+    }
+
+    pub(crate) fn verify_action_claims(&self, token: &str) -> Option<ActionTokenClaims> {
+        let key = DecodingKey::from_secret(self.secret_key.as_ref());
+
+        match decode::<ActionTokenClaims>(token, &key, &Validation::default()) {
+            Ok(data) => Some(data.claims.clone()),
+            Err(error) => {
+                warn!("Unable to verify claims: {}", error);
+                None
+            }
+        }
     }
 }

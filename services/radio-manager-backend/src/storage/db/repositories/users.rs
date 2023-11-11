@@ -1,3 +1,4 @@
+use crate::data_structures::UserId;
 use crate::mysql_client::MySqlConnection;
 use crate::storage::db::repositories::errors::RepositoryResult;
 use crate::storage::db::repositories::UserRow;
@@ -95,4 +96,24 @@ pub(crate) async fn create_user(
     let select_query = builder.build_query_as();
 
     Ok(select_query.fetch_one(connection.deref_mut()).await?)
+}
+
+pub(crate) async fn update_user_password(
+    connection: &mut MySqlConnection,
+    user_id: &UserId,
+    password: &str,
+) -> RepositoryResult<bool> {
+    query("UPDATE `r_users` SET `password` = ? WHERE `mail` = ?")
+        .bind(password)
+        .bind(user_id)
+        .execute(connection.deref_mut())
+        .await?;
+
+    let row_count = query_as::<_, (u32,)>("SELECT ROW_COUNT();")
+        .fetch_one(connection.deref_mut())
+        .await
+        .unwrap()
+        .0;
+
+    Ok(row_count != 0)
 }

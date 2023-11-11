@@ -1,8 +1,9 @@
+use crate::data_structures::UserId;
 use crate::http_server::constants::LEGACY_SESSION_COOKIE_NAME;
 use crate::http_server::response::Response;
 use crate::services::auth::{
-    AuthService, AuthTokenService, LegacyLoginError, LegacyLogoutError, LegacySignupError,
-    LegacySignupResult,
+    Action, AuthService, AuthTokenService, LegacyLoginError, LegacyLogoutError,
+    LegacyResetPasswordError, LegacySignupError, LegacySignupResult,
 };
 use actix_web::cookie::CookieBuilder;
 use actix_web::{web, HttpRequest, HttpResponse};
@@ -105,6 +106,47 @@ pub(crate) async fn request_password_reset() -> Response {
     Ok(HttpResponse::NotImplemented().finish())
 }
 
-pub(crate) async fn reset_password() -> Response {
-    Ok(HttpResponse::NotImplemented().finish())
+#[derive(Deserialize)]
+pub(crate) struct ResetPasswordBody {
+    pub(crate) action_token: String,
+    pub(crate) new_password: String,
+}
+
+pub(crate) async fn reset_password(
+    body: web::Json<ResetPasswordBody>,
+    auth_service: web::Data<AuthService>,
+    token_service: web::Data<AuthTokenService>,
+) -> Response {
+    let action_claims = match token_service.verify_action_claims(&body.action_token) {
+        Some(claims) => claims,
+        None => {
+            warn!("Missing claims in {} cookie", LEGACY_SESSION_COOKIE_NAME);
+            return Ok(HttpResponse::Unauthorized().json(json!({
+                "error": "MISSING_CLAIMS_IN_COOKIE"
+            })));
+        }
+    };
+
+    if action_claims
+        .actions
+        .iter()
+        .all(|action| !matches!(action, Action::ResetPassword))
+    {
+        warn!("Action not allowed in action claims");
+        return Ok(HttpResponse::Unauthorized().json(json!({
+            "error": "NO_PERMISSION"
+        })));
+    }
+
+    match auth_service
+        .legacy_reset_password(&action_claims.user_id, &body.new_password)
+        .await
+    {
+        Ok(()) => Ok(HttpResponse::NoContent().finish()),
+        Err(LegacyResetPasswordError::DidNotUpdate) => Ok(HttpResponse::Conflict().json(json!({
+            "error": "PASSWORD_DID_NOT_UPDATE"
+        }))),
+        Err(LegacyResetPasswordError::DatabaseError(err)) => Err(err.into()),
+        Err(LegacyResetPasswordError::RepositoryError(err)) => Err(err.into()),
+    }
 }

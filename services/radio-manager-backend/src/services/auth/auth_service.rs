@@ -54,6 +54,15 @@ pub(crate) enum LegacyLogoutError {
     #[error(transparent)]
     RepositoryError(#[from] RepositoryError),
 }
+#[derive(thiserror::Error, Debug)]
+pub(crate) enum LegacyResetPasswordError {
+    #[error("Invalid password")]
+    DidNotUpdate,
+    #[error(transparent)]
+    DatabaseError(#[from] sqlx::Error),
+    #[error(transparent)]
+    RepositoryError(#[from] RepositoryError),
+}
 
 pub(crate) enum LegacySignupResult {
     SignedUp,
@@ -155,6 +164,27 @@ impl AuthService {
         let mut connection = self.mysql_client.connection().await?;
 
         legacy_sessions::delete_legacy_session(&mut connection, session_token).await?;
+
+        Ok(())
+    }
+
+    pub(crate) async fn legacy_reset_password(
+        &self,
+        user_id: &UserId,
+        new_password: &str,
+    ) -> Result<(), LegacyResetPasswordError> {
+        let mut connection = self.mysql_client.transaction().await?;
+
+        let password_hash = hash_password(new_password).expect("Unable to hash password");
+
+        let updated =
+            users::update_user_password(&mut connection, &user_id, &password_hash).await?;
+
+        if !updated {
+            return Err(LegacyResetPasswordError::DidNotUpdate);
+        }
+
+        connection.commit().await?;
 
         Ok(())
     }

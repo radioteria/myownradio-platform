@@ -6,9 +6,10 @@ use crate::services::auth::{
 };
 use actix_web::cookie::time::OffsetDateTime;
 use actix_web::cookie::CookieBuilder;
-use actix_web::{web, HttpRequest, HttpResponse};
+use actix_web::{post, web, HttpRequest, HttpResponse};
 use serde::Deserialize;
 use serde_json::json;
+use std::time::Duration;
 use tracing::warn;
 
 #[derive(Deserialize)]
@@ -17,13 +18,16 @@ pub(crate) struct LoginBody {
     pub(crate) password: String,
 }
 
+#[post("/v0/login")]
 pub(crate) async fn login(
     body: web::Json<LoginBody>,
     auth_service: web::Data<AuthService>,
 ) -> Response {
     match auth_service.legacy_login(&body.email, &body.password).await {
         Ok((user, token)) => {
-            let cookie = CookieBuilder::new(LEGACY_SESSION_COOKIE_NAME, token.clone()).finish();
+            let cookie = CookieBuilder::new(LEGACY_SESSION_COOKIE_NAME, token.clone())
+                .expires(OffsetDateTime::now_utc() + Duration::from_secs(31_536_000))
+                .finish();
 
             Ok(HttpResponse::Ok().cookie(cookie).json(user))
         }
@@ -35,6 +39,7 @@ pub(crate) async fn login(
     }
 }
 
+#[post("/v0/logout")]
 pub(crate) async fn logout(
     req: HttpRequest,
     auth_service: web::Data<AuthService>,
@@ -79,6 +84,7 @@ pub(crate) struct SignupBody {
     pub(crate) password: String,
 }
 
+#[post("/v0/signup")]
 pub(crate) async fn signup(
     body: web::Json<SignupBody>,
     auth_service: web::Data<AuthService>,
@@ -104,10 +110,12 @@ pub(crate) async fn signup(
     }
 }
 
+#[post("/v0/confirm-email")]
 pub(crate) async fn confirm_email() -> Response {
     Ok(HttpResponse::NotImplemented().finish())
 }
 
+#[post("/v0/request-password-reset")]
 pub(crate) async fn request_password_reset() -> Response {
     Ok(HttpResponse::NotImplemented().finish())
 }
@@ -119,6 +127,7 @@ pub(crate) struct ResetPasswordBody {
     pub(crate) new_password: String,
 }
 
+#[post("/v0/reset-password")]
 pub(crate) async fn reset_password(
     body: web::Json<ResetPasswordBody>,
     auth_service: web::Data<AuthService>,

@@ -1,5 +1,5 @@
 use crate::http_server::handlers::{
-    auth, forward_auth, internal_egress_process, internal_radio_streamer, public_schedule,
+    forward_auth, internal_egress_process, internal_radio_streamer, public_auth, public_schedule,
     public_streams, user_audio_stream, user_audio_tracks, user_audio_tracks_v2,
     user_outgoing_stream, user_stream_control, user_stream_destinations, user_streams,
 };
@@ -39,16 +39,15 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
             .app_data(Data::new(auth_service.clone()))
             .app_data(Data::new(web_egress_controller_client.clone()))
             .service(
-                web::scope("/v0/auth")
-                    .route("/login", web::post().to(auth::login))
-                    .route("/logout", web::post().to(auth::logout))
-                    .route("/signup", web::post().to(auth::signup))
-                    .route("/confirm-email", web::post().to(auth::confirm_email))
-                    .route(
-                        "/request-password-reset",
-                        web::post().to(auth::request_password_reset),
-                    )
-                    .route("/reset-password", web::post().to(auth::reset_password)),
+                web::scope("/pub").service(
+                    web::scope("/auth")
+                        .service(public_auth::login)
+                        .service(public_auth::logout)
+                        .service(public_auth::signup)
+                        .service(public_auth::reset_password)
+                        .service(public_auth::request_password_reset)
+                        .service(public_auth::confirm_email),
+                ),
             )
             .service(web::scope("/v0/forward-auth").route(
                 "/by-token",

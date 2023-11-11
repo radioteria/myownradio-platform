@@ -1,4 +1,4 @@
-pub(crate) mod auth;
+pub(crate) mod public_auth;
 pub(crate) mod forward_auth;
 pub(crate) mod internal_egress_process;
 pub(crate) mod internal_radio_streamer;

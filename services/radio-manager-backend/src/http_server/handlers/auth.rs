@@ -4,6 +4,7 @@ use crate::services::auth::{
     Action, AuthService, AuthTokenService, LegacyLoginError, LegacyLogoutError,
     LegacyResetPasswordError, LegacySignupError, LegacySignupResult,
 };
+use actix_web::cookie::time::OffsetDateTime;
 use actix_web::cookie::CookieBuilder;
 use actix_web::{web, HttpRequest, HttpResponse};
 use serde::Deserialize;
@@ -60,7 +61,13 @@ pub(crate) async fn logout(
     };
 
     match auth_service.legacy_logout(&legacy_claims.data.token).await {
-        Ok(_) => Ok(HttpResponse::NoContent().finish()),
+        Ok(_) => {
+            let cookie = CookieBuilder::new(LEGACY_SESSION_COOKIE_NAME, "")
+                .expires(OffsetDateTime::now_utc())
+                .finish();
+
+            Ok(HttpResponse::NoContent().cookie(cookie).finish())
+        }
         Err(LegacyLogoutError::DatabaseError(err)) => Err(err.into()),
         Err(LegacyLogoutError::RepositoryError(err)) => Err(err.into()),
     }

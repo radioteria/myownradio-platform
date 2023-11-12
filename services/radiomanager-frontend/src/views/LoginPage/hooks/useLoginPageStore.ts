@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { legacyLogin } from '@/api/radiomanager'
+import { useAbortController } from '@/hooks/useAbortController'
 
 export const useLoginPageStore = () => {
   const [email, setEmail] = useState('')
@@ -20,13 +21,7 @@ export const useLoginPageStore = () => {
     setIsValidPassword(true)
   }, [])
 
-  const abortController = useMemo(() => new AbortController(), [])
-
-  useEffect(() => {
-    return () => {
-      abortController.abort()
-    }
-  }, [abortController])
+  const abortController = useAbortController()
 
   const handleSubmitLoginForm = () => {
     if (isBusy || !isValidEmail || !isValidPassword) return

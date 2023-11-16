@@ -5,7 +5,7 @@ authors = ["Roman Lakhtadyr <roman.lakhtadyr@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-thiserror = { version = "1.0.44" }
+thiserror = { version = "1.0.50" }
 tracing = { version = "0.1.37" }
 tracing-subscriber = { version = "0.3.17" }
 envy = { version = "0.4.2" }

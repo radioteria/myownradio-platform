@@ -1,5 +1,7 @@
 # Web Radio Station Service
 
+[![TODOs](https://img.shields.io/endpoint?url=https://todos.tickgit.com/badge?repo=github.com/pyldin601/myownradio)](https://todos.tickgit.com/browse?repo=github.com/pyldin601/myownradio)
+
 ## Screenshots
 
 <image width=800 src="https://user-images.githubusercontent.com/8050895/234032612-587bf1f8-63b8-4bd3-b252-34577776759d.png" />

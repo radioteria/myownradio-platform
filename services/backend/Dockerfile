@@ -24,7 +24,7 @@ RUN echo 'pm.max_children = 500' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     echo 'pm.max_spare_servers = 200' >> /usr/local/etc/php-fpm.d/zz-docker.conf && \
     echo 'pm.max_requests = 500' >> /usr/local/etc/php-fpm.d/zz-docker.conf
 
-COPY --from=composer:1.10.26 /usr/bin/composer /usr/local/bin/
+COPY --from=composer:1.10.27 /usr/bin/composer /usr/local/bin/
 COPY --from=mwader/static-ffmpeg:5.0.1-3 /ffmpeg /usr/local/bin/
 COPY --from=mwader/static-ffmpeg:5.0.1-3 /ffprobe /usr/local/bin/
 

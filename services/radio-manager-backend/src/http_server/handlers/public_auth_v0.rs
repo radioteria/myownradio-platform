@@ -17,7 +17,7 @@ pub(crate) struct LoginBody {
     pub(crate) password: String,
 }
 
-#[post("/v0/login")]
+#[post("/login")]
 pub(crate) async fn login(
     body: web::Json<LoginBody>,
     auth_service: web::Data<AuthService>,
@@ -38,7 +38,7 @@ pub(crate) async fn login(
     }
 }
 
-#[post("/v0/logout")]
+#[post("/logout")]
 pub(crate) async fn logout(
     req: HttpRequest,
     auth_service: web::Data<AuthService>,
@@ -83,7 +83,7 @@ pub(crate) struct SignupBody {
     pub(crate) password: String,
 }
 
-#[post("/v0/signup")]
+#[post("/signup")]
 pub(crate) async fn signup(
     body: web::Json<SignupBody>,
     auth_service: web::Data<AuthService>,
@@ -109,12 +109,12 @@ pub(crate) async fn signup(
     }
 }
 
-#[post("/v0/confirm-email")]
+#[post("/confirm-email")]
 pub(crate) async fn confirm_email() -> Response {
     Ok(HttpResponse::NotImplemented().finish())
 }
 
-#[post("/v0/request-password-reset")]
+#[post("/request-password-reset")]
 pub(crate) async fn request_password_reset() -> Response {
     Ok(HttpResponse::NotImplemented().finish())
 }
@@ -126,7 +126,7 @@ pub(crate) struct ResetPasswordBody {
     pub(crate) new_password: String,
 }
 
-#[post("/v0/reset-password")]
+#[post("/reset-password")]
 pub(crate) async fn reset_password(
     body: web::Json<ResetPasswordBody>,
     auth_service: web::Data<AuthService>,

@@ -1,6 +1,6 @@
 use crate::http_server::handlers::{
-    forward_auth, internal_egress_process, internal_radio_streamer, public_auth, public_schedule,
-    public_streams, user_audio_stream, user_audio_tracks, user_audio_tracks_v2,
+    forward_auth, internal_egress_process, internal_radio_streamer, public_auth_v0,
+    public_schedule, public_streams, user_audio_stream, user_audio_tracks, user_audio_tracks_v2,
     user_outgoing_stream, user_stream_control, user_stream_destinations, user_streams,
 };
 use crate::pubsub_client::PubsubClient;
@@ -40,13 +40,13 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
             .app_data(Data::new(web_egress_controller_client.clone()))
             .service(
                 web::scope("/pub").service(
-                    web::scope("/auth")
-                        .service(public_auth::login)
-                        .service(public_auth::logout)
-                        .service(public_auth::signup)
-                        .service(public_auth::reset_password)
-                        .service(public_auth::request_password_reset)
-                        .service(public_auth::confirm_email),
+                    web::scope("/v0/auth")
+                        .service(public_auth_v0::login)
+                        .service(public_auth_v0::logout)
+                        .service(public_auth_v0::signup)
+                        .service(public_auth_v0::reset_password)
+                        .service(public_auth_v0::request_password_reset)
+                        .service(public_auth_v0::confirm_email),
                 ),
             )
             .service(web::scope("/v0/forward-auth").route(

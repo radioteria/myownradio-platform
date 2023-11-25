@@ -1,13 +1,16 @@
 use crate::k8s_utils::{make_stream_job_name, make_stream_job_selector};
 use crate::types::{AudioSettings, RtmpSettings, UserId, VideoSettings};
+use actix_rt::task::JoinHandle;
 use either::Either;
+use futures::{StreamExt, TryStreamExt};
 use k8s_openapi::api::batch::v1::Job;
 use k8s_openapi::api::core::v1::Pod;
 use k8s_openapi::serde_json;
-use kube::api::{DeleteParams, ListParams, PostParams};
+use kube::api::{DeleteParams, ListParams, PostParams, WatchEvent, WatchParams};
 use kube::ResourceExt;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::sync::Arc;
 use tracing::{debug, error, instrument};
 
 #[derive(Debug, Serialize)]
@@ -31,8 +34,9 @@ pub(crate) struct K8sClient {
 
     image_name: String,
     image_tag: String,
-
     radiomanager_backend_endpoint: String,
+
+    watch_handle: Arc<JoinHandle<()>>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -50,11 +54,33 @@ impl K8sClient {
     ) -> Result<Self, K8sClientError> {
         let client = kube::Client::try_default().await?;
         let job_api = kube::Api::namespaced(client.clone(), namespace);
-        let pod_api = kube::Api::namespaced(client, namespace);
+        let pod_api: kube::Api<Pod> = kube::Api::namespaced(client, namespace);
 
         let image_name = image_name.to_string();
         let image_tag = image_tag.to_string();
         let radiomanager_backend_endpoint = radiomanager_backend_endpoint.to_string();
+
+        let watch_handle = Arc::from(actix_rt::spawn({
+            let pod_api = pod_api.clone();
+
+            async move {
+                let wp = WatchParams::default();
+                let mut stream = pod_api
+                    .watch(&wp, "0")
+                    .await
+                    .expect("Unable to start watching pod events")
+                    .boxed();
+                while let Some(status) = stream.try_next().await.expect("Unable to get pod event") {
+                    match status {
+                        WatchEvent::Added(pod) => println!("Added pod: {}", pod.name_any()),
+                        WatchEvent::Modified(pod) => println!("Modified pod: {}", pod.name_any()),
+                        WatchEvent::Deleted(pod) => println!("Deleted pod: {}", pod.name_any()),
+                        WatchEvent::Bookmark(_) => {}
+                        WatchEvent::Error(err) => println!("Error: {}", err),
+                    }
+                }
+            }
+        }));
 
         Ok(Self {
             job_api,
@@ -62,6 +88,7 @@ impl K8sClient {
             image_name,
             image_tag,
             radiomanager_backend_endpoint,
+            watch_handle,
         })
     }
 

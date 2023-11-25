@@ -8,7 +8,7 @@ compose:
 	mkdir -p services/radio-manager-backend/.cargo-cache/git
 	mkdir -p services/radio-manager-backend/.cargo-cache/registry
 	mkdir -p services/radio-manager-backend/target
-	USER=$(USER) docker-compose up -d
+	USER=$(USER) docker-compose up
 
 clean:
 	rm -rf services/backend/.cache/storage

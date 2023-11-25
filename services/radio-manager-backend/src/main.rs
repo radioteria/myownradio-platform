@@ -13,7 +13,7 @@ mod web_egress_controller_client;
 use crate::config::Config;
 use crate::mysql_client::MySqlClient;
 use crate::pubsub_client::PubsubClient;
-use crate::services::auth::AuthTokenService;
+use crate::services::auth::{AuthService, AuthTokenService};
 use crate::services::StreamServiceFactory;
 use crate::storage::fs::local::LocalFileSystem;
 use crate::web_egress_controller_client::WebEgressControllerClient;
@@ -60,6 +60,8 @@ async fn main() -> Result<()> {
     let stream_service_factory =
         StreamServiceFactory::create(&mysql_client, &config.radio_streamer, &pubsub_client);
 
+    let auth_service = AuthService::new(mysql_client.clone(), auth_token_service.clone());
+
     let http_server = run_server(
         &bind_address,
         mysql_client,
@@ -69,6 +71,7 @@ async fn main() -> Result<()> {
         pubsub_client,
         auth_token_service,
         web_egress_controller_client,
+        auth_service,
     )?;
 
     tracing::info!("Application started");

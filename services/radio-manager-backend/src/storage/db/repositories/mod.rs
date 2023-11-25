@@ -4,6 +4,7 @@ use serde_repr::Serialize_repr;
 use sqlx::types::Json;
 
 pub(crate) mod errors;
+pub(crate) mod legacy_sessions;
 pub(crate) mod outgoing_streams;
 pub(crate) mod stream_destinations;
 pub(crate) mod streams;
@@ -136,4 +137,17 @@ pub(crate) struct OutgoingStreamRow {
     pub(crate) byte_count: i64,
     pub(crate) created_at: chrono::DateTime<chrono::Utc>,
     pub(crate) updated_at: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(sqlx::FromRow, Clone)]
+pub(crate) struct LegacySessionRow {
+    pub(crate) token: String,
+    pub(crate) uid: UserId,
+    pub(crate) ip: String,
+    pub(crate) client_id: String,
+    pub(crate) authorized: chrono::DateTime<chrono::Utc>,
+    pub(crate) http_user_agent: String,
+    pub(crate) session_id: String,
+    pub(crate) permanent: i8,
+    pub(crate) expires: chrono::DateTime<chrono::Utc>,
 }

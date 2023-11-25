@@ -39,15 +39,42 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
             .app_data(Data::new(auth_service.clone()))
             .app_data(Data::new(web_egress_controller_client.clone()))
             .service(
-                web::scope("/pub").service(
-                    web::scope("/v0/auth")
-                        .service(public_auth_v0::login)
-                        .service(public_auth_v0::logout)
-                        .service(public_auth_v0::signup)
-                        .service(public_auth_v0::reset_password)
-                        .service(public_auth_v0::request_password_reset)
-                        .service(public_auth_v0::confirm_email),
-                ),
+                web::scope("/pub")
+                    .service(
+                        web::scope("/v0/auth")
+                            .service(public_auth_v0::login)
+                            .service(public_auth_v0::logout)
+                            .service(public_auth_v0::signup)
+                            .service(public_auth_v0::reset_password)
+                            .service(public_auth_v0::request_password_reset)
+                            .service(public_auth_v0::confirm_email),
+                    )
+                    .service(
+                        web::scope("/v0/streams")
+                            .service(
+                                web::resource("/{stream_id}/outgoing-stream")
+                                    .route(web::get().to(user_outgoing_stream::get_outgoing_stream))
+                                    .route(
+                                        web::post().to(user_outgoing_stream::start_outgoing_stream),
+                                    )
+                                    .route(
+                                        web::delete()
+                                            .to(user_outgoing_stream::stop_outgoing_stream),
+                                    ),
+                            )
+                            .route(
+                                "/{stream_id}/now-playing",
+                                web::get().to(public_schedule::get_now_playing),
+                            )
+                            .route(
+                                "/{stream_id}/current-track",
+                                web::get().to(public_schedule::get_current_track),
+                            )
+                            .route(
+                                "/{stream_id}/info",
+                                web::get().to(public_streams::get_stream_info),
+                            ),
+                    ),
             )
             .service(web::scope("/v0/forward-auth").route(
                 "/by-token",
@@ -114,24 +141,6 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                         "/{stream_id}/rtmp-settings",
                         web::post().to(user_streams::update_rtmp_settings),
                     ),
-            )
-            .service(
-                web::scope("/pub/v0/streams/{stream_id}")
-                    .route(
-                        "/now-playing",
-                        web::get().to(public_schedule::get_now_playing),
-                    )
-                    .route(
-                        "/current-track",
-                        web::get().to(public_schedule::get_current_track),
-                    )
-                    .route("/info", web::get().to(public_streams::get_stream_info)),
-            )
-            .service(
-                web::resource("/pub/v0/streams/{stream_id}/outgoing-stream")
-                    .route(web::get().to(user_outgoing_stream::get_outgoing_stream))
-                    .route(web::post().to(user_outgoing_stream::start_outgoing_stream))
-                    .route(web::delete().to(user_outgoing_stream::stop_outgoing_stream)),
             )
             .service(
                 web::scope("/internal/radio-streamer")

@@ -52,12 +52,16 @@ impl K8sClient {
         let job_api = kube::Api::namespaced(client.clone(), namespace);
         let pod_api = kube::Api::namespaced(client, namespace);
 
+        let image_name = image_name.to_string();
+        let image_tag = image_tag.to_string();
+        let radiomanager_backend_endpoint = radiomanager_backend_endpoint.to_string();
+
         Ok(Self {
             job_api,
             pod_api,
-            image_name: image_name.to_string(),
-            image_tag: image_tag.to_string(),
-            radiomanager_backend_endpoint: radiomanager_backend_endpoint.to_string(),
+            image_name,
+            image_tag,
+            radiomanager_backend_endpoint,
         })
     }
 

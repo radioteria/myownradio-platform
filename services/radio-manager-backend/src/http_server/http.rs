@@ -1,10 +1,10 @@
 use crate::http_server::handlers::{
-    forward_auth, internal_egress_process, internal_radio_streamer, public_schedule,
-    public_streams, user_audio_stream, user_audio_tracks, user_audio_tracks_v2,
+    forward_auth, internal_egress_process, internal_radio_streamer, public_auth_v0,
+    public_schedule, public_streams, user_audio_stream, user_audio_tracks, user_audio_tracks_v2,
     user_outgoing_stream, user_stream_control, user_stream_destinations, user_streams,
 };
 use crate::pubsub_client::PubsubClient;
-use crate::services::auth::AuthTokenService;
+use crate::services::auth::{AuthService, AuthTokenService};
 use crate::storage::fs::FileSystem;
 use crate::web_egress_controller_client::WebEgressControllerClient;
 use crate::{Config, MySqlClient, StreamServiceFactory};
@@ -22,6 +22,7 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
     pubsub_client: PubsubClient,
     auth_token_service: AuthTokenService,
     web_egress_controller_client: WebEgressControllerClient,
+    auth_service: AuthService,
 ) -> Result<Server> {
     let mysql_client = mysql_client.clone();
 
@@ -35,7 +36,19 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
             .app_data(Data::new(stream_service_factory.clone()))
             .app_data(Data::new(pubsub_client.clone()))
             .app_data(Data::new(auth_token_service.clone()))
+            .app_data(Data::new(auth_service.clone()))
             .app_data(Data::new(web_egress_controller_client.clone()))
+            .service(
+                web::scope("/pub").service(
+                    web::scope("/v0/auth")
+                        .service(public_auth_v0::login)
+                        .service(public_auth_v0::logout)
+                        .service(public_auth_v0::signup)
+                        .service(public_auth_v0::reset_password)
+                        .service(public_auth_v0::request_password_reset)
+                        .service(public_auth_v0::confirm_email),
+                ),
+            )
             .service(web::scope("/v0/forward-auth").route(
                 "/by-token",
                 web::get().to(forward_auth::auth_by_jwt_token_or_legacy_token),

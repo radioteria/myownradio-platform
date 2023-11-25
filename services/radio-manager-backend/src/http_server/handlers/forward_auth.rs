@@ -1,3 +1,4 @@
+use crate::http_server::constants::LEGACY_SESSION_COOKIE_NAME;
 use crate::http_server::response::Response;
 use crate::mysql_client::MySqlClient;
 use crate::services::auth::{AuthTokenService, IsActionAllowed};
@@ -5,8 +6,6 @@ use crate::storage::db::repositories::users::get_user_by_session_token;
 use actix_web::{web, HttpRequest, HttpResponse};
 use qstring::QString;
 use tracing::{debug, warn};
-
-const LEGACY_SESSION_COOKIE_NAME: &str = "secure_session";
 
 pub(crate) async fn auth_by_jwt_token_or_legacy_token(
     req: HttpRequest,

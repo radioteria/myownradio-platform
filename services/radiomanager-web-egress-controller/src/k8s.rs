@@ -72,9 +72,21 @@ impl K8sClient {
                     .boxed();
                 while let Some(status) = stream.try_next().await.expect("Unable to get pod event") {
                     match status {
-                        WatchEvent::Added(pod) => println!("Added pod: {}", pod.name_any()),
-                        WatchEvent::Modified(pod) => println!("Modified pod: {}", pod.name_any()),
-                        WatchEvent::Deleted(pod) => println!("Deleted pod: {}", pod.name_any()),
+                        WatchEvent::Added(pod) => println!(
+                            "Added pod: {} {}",
+                            pod.name_any(),
+                            pod.status.unwrap().phase.unwrap()
+                        ),
+                        WatchEvent::Modified(pod) => println!(
+                            "Modified pod: {} {}",
+                            pod.name_any(),
+                            pod.status.unwrap().phase.unwrap()
+                        ),
+                        WatchEvent::Deleted(pod) => println!(
+                            "Deleted pod: {} {}",
+                            pod.name_any(),
+                            pod.status.unwrap().phase.unwrap()
+                        ),
                         WatchEvent::Bookmark(_) => {}
                         WatchEvent::Error(err) => println!("Error: {}", err),
                     }

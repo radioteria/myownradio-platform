@@ -1,3 +1,4 @@
+use crate::backend_client::BackendClient;
 use crate::k8s_utils::{make_stream_job_name, make_stream_job_selector};
 use crate::types::{AudioSettings, RtmpSettings, UserId, VideoSettings};
 use actix_rt::task::JoinHandle;
@@ -35,6 +36,7 @@ pub(crate) struct K8sClient {
     image_name: String,
     image_tag: String,
     radiomanager_backend_endpoint: String,
+    backend_client: BackendClient,
 
     watch_handle: Arc<JoinHandle<()>>,
 }
@@ -51,6 +53,7 @@ impl K8sClient {
         image_name: &str,
         image_tag: &str,
         radiomanager_backend_endpoint: &str,
+        backend_client: &BackendClient,
     ) -> Result<Self, K8sClientError> {
         let client = kube::Client::try_default().await?;
         let job_api = kube::Api::namespaced(client.clone(), namespace);
@@ -59,6 +62,7 @@ impl K8sClient {
         let image_name = image_name.to_string();
         let image_tag = image_tag.to_string();
         let radiomanager_backend_endpoint = radiomanager_backend_endpoint.to_string();
+        let backend_client = backend_client.clone();
 
         let watch_handle = Arc::from(actix_rt::spawn({
             let pod_api = pod_api.clone();
@@ -100,6 +104,7 @@ impl K8sClient {
             image_name,
             image_tag,
             radiomanager_backend_endpoint,
+            backend_client,
             watch_handle,
         })
     }

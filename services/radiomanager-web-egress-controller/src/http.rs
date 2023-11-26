@@ -1,3 +1,4 @@
+use crate::backend_client::BackendClient;
 use crate::config::Config;
 use crate::k8s::{K8sClient, K8sClientError};
 use crate::types::{AudioSettings, RtmpSettings, UserId, VideoSettings};
@@ -105,13 +106,19 @@ pub(crate) async fn stop_stream(
     }
 }
 
-pub(crate) fn run_server(config: &Config, k8s_client: &K8sClient) -> std::io::Result<Server> {
+pub(crate) fn run_server(
+    config: &Config,
+    k8s_client: &K8sClient,
+    backend_client: &BackendClient,
+) -> std::io::Result<Server> {
     let server = HttpServer::new({
         let k8s_client = k8s_client.clone();
+        let backend_client = backend_client.clone();
 
         move || {
             App::new()
                 .app_data(web::Data::new(k8s_client.clone()))
+                .app_data(web::Data::new(backend_client.clone()))
                 .service(
                     web::resource("/users/{user_id}/streams")
                         .route(web::get().to(get_streams))

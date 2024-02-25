@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "137c189eee306587ee76f5301627312c",
+    "content-hash": "7211aaf839c622c0e346570de8d540d5",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1455,6 +1455,7 @@
                 "Guzzle",
                 "http"
             ],
+            "abandoned": "guzzlehttp/guzzle or php-http/guzzle7-adapter",
             "time": "2018-12-16T14:44:03+00:00"
         },
         {
@@ -1634,6 +1635,7 @@
                 "stream",
                 "uri"
             ],
+            "abandoned": "psr/http-factory",
             "time": "2015-12-19T14:08:53+00:00"
         },
         {
@@ -2734,6 +2736,20 @@
             "keywords": [
                 "constructor",
                 "instantiate"
+            ],
+            "funding": [
+                {
+                    "url": "https://www.doctrine-project.org/sponsorship.html",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://www.patreon.com/phpdoctrine",
+                    "type": "patreon"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/doctrine%2Finstantiator",
+                    "type": "tidelift"
+                }
             ],
             "time": "2019-10-21T16:45:58+00:00"
         },

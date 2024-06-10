@@ -3,7 +3,7 @@
   "description": "",
   "minimum-stability": "beta",
   "license": "proprietary",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "authors": [
     {
       "name": "Roman Gemini",
@@ -19,7 +19,7 @@
     "mikehaertl/php-shellcommand": "^1.2",
     "aws/aws-sdk-php": "^3.19",
     "intervention/image": "^2.3",
-    "firebase/php-jwt": "^v6.8.1",
+    "firebase/php-jwt": "^6.0",
     "php": "^7.4",
     "ext-curl": "*",
     "ext-fileinfo": "*",

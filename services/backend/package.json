@@ -33,7 +33,7 @@
   },
   "eslintConfig": {},
   "devDependencies": {
-    "@prettier/plugin-php": "^0.19.3",
+    "@prettier/plugin-php": "^0.22.0",
     "@types/angular": "^1.8.4",
     "@types/classnames": "^2.3.1",
     "@types/debug": "^4.1.7",

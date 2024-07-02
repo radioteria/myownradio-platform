@@ -1,4 +1,4 @@
-FROM migrate/migrate:v4.16.2
+FROM migrate/migrate:v4.17.1
 
 COPY images/migration/entrypoint.sh /entrypoint.sh
 COPY migrations /migrations

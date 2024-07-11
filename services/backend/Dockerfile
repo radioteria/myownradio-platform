@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.4.3-labs
+# syntax=docker/dockerfile:1.9.0-labs
 FROM php:7.4-fpm-alpine as php-base
 
 MAINTAINER Roman Lakhtadyr <roman.lakhtadyr@gmail.com>

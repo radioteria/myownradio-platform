@@ -267,3 +267,12 @@ pub(crate) async fn delete_audio_track<FS: FileSystem>(
 
     Ok(HttpResponse::Ok().finish())
 }
+
+pub(crate) async fn download_audio_track<FS: FileSystem>(
+    user_id: UserId,
+    path: Path<TrackId>,
+    mysql_client: Data<MySqlClient>,
+    file_system: Data<FS>,
+) -> Response {
+    Ok(HttpResponse::Ok().finish())
+}

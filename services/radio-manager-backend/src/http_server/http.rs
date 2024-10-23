@@ -106,6 +106,10 @@ pub(crate) fn run_server<FS: FileSystem + Send + Sync + Clone + 'static>(
                     .route(
                         "/{track_id}/transcode",
                         web::get().to(user_audio_stream::transcode_audio_track),
+                    )
+                    .route(
+                        "/{track_id}/download",
+                        web::get().to(user_audio_tracks::download_audio_track::<FS>),
                     ),
             )
             .service(web::scope("/v0/streams/{stream_id}/tracks").route(

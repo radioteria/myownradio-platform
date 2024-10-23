@@ -294,8 +294,10 @@ pub(crate) async fn download_audio_track<FS: FileSystem>(
 
     let file_name = track_row.track.filename;
     let file_size = track_row.file.file_size;
+    let file_path = track_row.file.get_path();
+
     let file_contents = file_system
-        .get_file_contents(&format!("audio/{}", track_row.file.get_path()))
+        .get_file_contents(&format!("audio/{}", file_path))
         .await?;
 
     let mut response = HttpResponse::Ok();

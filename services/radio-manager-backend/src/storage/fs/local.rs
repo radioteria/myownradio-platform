@@ -3,7 +3,7 @@ use crate::utils::TeeResultUtils;
 use async_trait::async_trait;
 use futures::SinkExt;
 use std::io::Read;
-use tokio::fs::File;
+use tokio::fs;
 use tokio::io::AsyncReadExt;
 use tracing::error;
 
@@ -24,12 +24,9 @@ impl FileSystem for LocalFileSystem {
         let root_path = self.root_path.clone();
         let path = path.to_string();
 
-        actix_rt::task::spawn_blocking(move || {
-            std::fs::remove_file(format!("{}/{}", root_path, path))
-        })
-        .await
-        .expect("Unable to spawn blocking task")
-        .tee_err(|error| error!(?error, "Unable to delete file from local file system"))?;
+        fs::remove_file(format!("{}/{}", root_path, path))
+            .await
+            .tee_err(|error| error!(?error, "Unable to delete file from local file system"))?;
 
         Ok(())
     }
@@ -43,7 +40,7 @@ impl FileSystem for LocalFileSystem {
         let root_path = self.root_path.clone();
         let path = path.to_string();
 
-        let file = File::open(format!("{}/{}", root_path, path)).await?;
+        let file = fs::File::open(format!("{}/{}", root_path, path)).await?;
 
         actix_rt::spawn(async move {
             let mut tx = tx;

@@ -86,14 +86,20 @@ foreach ($assets as $asset) {
 
     <script type="text/javascript">var switchTo5x = true;</script>
     <script type="text/javascript" src="https://ws.sharethis.com/button/buttons.js"></script>
-    <script type="text/javascript">stLight.options({
-        publisher: "de700707-90c8-4e3a-a916-5e4fea867686",
-        doNotHash: false,
-        doNotCopy: false,
-        hashAddressBar: false,
-        popup: 'true',
-        onhover: false
-    });</script>
+    <script type="text/javascript">
+    if (stLight) {
+        stLight.options({
+            publisher: "de700707-90c8-4e3a-a916-5e4fea867686",
+            doNotHash: false,
+            doNotCopy: false,
+            hashAddressBar: false,
+            popup: 'true',
+            onhover: false
+        });
+    } else {
+        console.warn('stLight is not defined');
+    }
+    </script>
 
 
 </head>

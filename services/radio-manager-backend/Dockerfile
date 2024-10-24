@@ -1,4 +1,4 @@
-FROM rust:1.66.0 as build
+FROM rust:1.80.1 AS build
 
 WORKDIR /code
 
@@ -22,7 +22,7 @@ RUN \
     mv target/release/radio-manager-backend radio-manager-backend && \
     rm -rf target
 
-FROM rust:1.66.0 as devenv
+FROM rust:1.80.1 AS devenv
 
 ARG USER=1000:1000
 
@@ -38,7 +38,7 @@ COPY --from=mwader/static-ffmpeg:5.0.1-3 /ffmpeg /usr/local/bin/
 COPY --from=mwader/static-ffmpeg:5.0.1-3 /ffprobe /usr/local/bin/
 
 
-FROM rust:1.66.0
+FROM rust:1.80.1
 
 USER nobody:nogroup
 

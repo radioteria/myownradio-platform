@@ -1,4 +1,4 @@
-FROM rust:1.66.0 as base
+FROM rust:1.80.1 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -64,7 +64,7 @@ RUN \
     cargo build -p myownradio-radio-player --release
 
 
-FROM base as devenv
+FROM base AS devenv
 
 ARG USER=1000:1000
 
@@ -78,7 +78,7 @@ WORKDIR /code
 
 RUN cargo install cargo-watch
 
-FROM base as pre-final
+FROM base AS pre-final
 
 USER nobody:nogroup
 

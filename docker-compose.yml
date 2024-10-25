@@ -26,8 +26,8 @@ services:
       - myownradio-dev
     image: library/traefik:2.4
     ports:
-      - "40180:80"
-      - "40181:8080"
+      - "127.0.0.1:40180:80"
+      - "127.0.0.1:40181:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command:
@@ -39,7 +39,7 @@ services:
   db:
     image: mysql:8.0.29-oracle
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_ROOT_PASSWORD: "root"
       MYSQL_DATABASE: "mor"
       MYSQL_USER: "mor"
       MYSQL_PASSWORD: "mor"
@@ -95,8 +95,8 @@ services:
       - myownradio-dev
     environment:
       MYSQL_DB: "mor"
-      MYSQL_USER: "mor"
-      MYSQL_PASSWORD: "mor"
+      MYSQL_USER: "root"
+      MYSQL_PASSWORD: "root"
       MYSQL_HOST: "db"
   file-server:
     image: myownradio/file-server:1.0.2

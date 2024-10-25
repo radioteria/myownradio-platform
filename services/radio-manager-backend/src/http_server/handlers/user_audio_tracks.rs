@@ -17,6 +17,8 @@ use crate::utils::TeeResultUtils;
 use crate::MySqlClient;
 use actix_web::web::{Data, Form, Path, Query};
 use actix_web::{web, HttpResponse};
+use bytes::Bytes;
+use futures::{SinkExt, StreamExt};
 use serde::Deserialize;
 use tracing::error;
 
@@ -266,4 +268,44 @@ pub(crate) async fn delete_audio_track<FS: FileSystem>(
     connection.commit().await?;
 
     Ok(HttpResponse::Ok().finish())
+}
+
+pub(crate) async fn download_audio_track<FS: FileSystem>(
+    user_id: UserId,
+    path: Path<TrackId>,
+    mysql_client: Data<MySqlClient>,
+    file_system: Data<FS>,
+) -> Response {
+    let track_id = path.into_inner();
+
+    let mut connection = mysql_client.transaction().await?;
+
+    let track_row = match get_single_user_track(&mut connection, &track_id)
+        .await
+        .tee_err(|error| error!(?error, "Unable to get user track from database"))?
+    {
+        Some(track_row) => track_row,
+        None => return Ok(HttpResponse::NotFound().finish()),
+    };
+
+    if track_row.track.uid != user_id {
+        return Ok(HttpResponse::Forbidden().finish());
+    }
+
+    let file_name = track_row.track.filename;
+    let file_size = track_row.file.file_size;
+    let file_path = track_row.file.get_path();
+
+    let file_contents = file_system
+        .get_file_contents(&format!("audio/{}", file_path))
+        .await?;
+
+    let mut response = HttpResponse::Ok();
+
+    response.insert_header(("Content-Disposition", format!("filename={}", file_name)));
+    response.insert_header(("Content-Length", format!("{}", file_size)));
+
+    Ok(response.streaming(
+        file_contents.map(|data| Ok::<_, actix_web::Error>(Bytes::copy_from_slice(&data))),
+    ))
 }

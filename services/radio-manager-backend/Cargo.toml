@@ -29,6 +29,7 @@ jsonwebtoken = { version = "8.3.0" }
 qstring = "0.7.2"
 bcrypt = "0.15.0"
 email_address = "0.2.4"
+tokio = { version = "1.41.0", features = ["fs"] }
 
 [dependencies.sqlx]
 version = "0.7.1"

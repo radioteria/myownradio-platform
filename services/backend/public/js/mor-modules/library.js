@@ -310,6 +310,20 @@
                 });
             };
 
+            $scope.downloadSelected = function () {
+                if ($scope.target.length === 0) {
+                    return;
+                }
+
+                const [track,] = $scope.target;
+
+                if (!track) {
+                    return;
+                }
+
+                window.open(`/radio-manager/api/v0/tracks/${track.tid}/download`, '_blank');
+            };
+
             $scope.addToStream = function (streamObject) {
                 TrackAction.addTracksToStream(streamObject, $scope.target, function () {
                     Popup.message($rootScope.tr("FR_TRACKS_ADDED_TO_STATION", {

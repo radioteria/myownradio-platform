@@ -225,11 +225,9 @@
 
     lib.controller("TracksLibraryController", ["$rootScope", "$scope", "TrackWorks", "StreamWorks",
         "ngDialog", "$route", "$dialog", "AudioInfoEditor", "TrackAction", "Popup", "TrackPreviewService",
-        "$tracks",
 
         function ($rootScope, $scope, TrackWorks, StreamWorks, ngDialog, $route,
-                  $dialog, AudioInfoEditor, TrackAction, Popup, TrackPreviewService,
-                  $tracks) {
+                  $dialog, AudioInfoEditor, TrackAction, Popup, TrackPreviewService) {
 
             $scope.tracksPending = true;
             $scope.tracks = [];

@@ -225,9 +225,11 @@
 
     lib.controller("TracksLibraryController", ["$rootScope", "$scope", "TrackWorks", "StreamWorks",
         "ngDialog", "$route", "$dialog", "AudioInfoEditor", "TrackAction", "Popup", "TrackPreviewService",
+        "$tracks",
 
         function ($rootScope, $scope, TrackWorks, StreamWorks, ngDialog, $route,
-                  $dialog, AudioInfoEditor, TrackAction, Popup, TrackPreviewService) {
+                  $dialog, AudioInfoEditor, TrackAction, Popup, TrackPreviewService,
+                  $tracks) {
 
             $scope.tracksPending = true;
             $scope.tracks = [];
@@ -308,6 +310,20 @@
                     truncateArray($scope.target);
                     $rootScope.account.init();
                 });
+            };
+
+            $scope.downloadSelected = function () {
+                if ($scope.target.length === 0) {
+                    return;
+                }
+
+                const [track,] = $scope.target;
+
+                if (!track) {
+                    return;
+                }
+
+                window.open(`/radio-manager/api/v0/tracks/${track.tid}/download`, '_blank');
             };
 
             $scope.addToStream = function (streamObject) {

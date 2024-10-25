@@ -453,8 +453,8 @@ END;
 
 CREATE TABLE `mor_track_stat` (
                                   `track_id` int(11) NOT NULL,
-                                  `likes` int(11) NOT NULL,
-                                  `dislikes` int(11) NOT NULL,
+                                  `likes` int(11) NOT NULL DEFAULT '0',
+                                  `dislikes` int(11) NOT NULL DEFAULT '0',
                                   PRIMARY KEY (`track_id`),
                                   CONSTRAINT `mor_track_stat_ibfk_1` FOREIGN KEY (`track_id`) REFERENCES `r_tracks` (`tid`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

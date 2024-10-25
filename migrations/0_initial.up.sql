@@ -698,7 +698,7 @@ CREATE TABLE `r_static_user_vars` (
                                       `tracks_duration` bigint(20) NOT NULL DEFAULT '0',
                                       `tracks_size` bigint(20) NOT NULL DEFAULT '0',
                                       `streams_count` int(11) NOT NULL DEFAULT '0',
-                                      `listeners_count` int(11) NOT NULL,
+                                      `listeners_count` int(11) NOT NULL DEFAULT '0',
                                       PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

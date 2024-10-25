@@ -39,7 +39,7 @@ services:
   db:
     image: mysql:8.0.29-oracle
     environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_ROOT_PASSWORD: "root"
       MYSQL_DATABASE: "mor"
       MYSQL_USER: "mor"
       MYSQL_PASSWORD: "mor"
@@ -95,8 +95,8 @@ services:
       - myownradio-dev
     environment:
       MYSQL_DB: "mor"
-      MYSQL_USER: "mor"
-      MYSQL_PASSWORD: "mor"
+      MYSQL_USER: "root"
+      MYSQL_PASSWORD: "root"
       MYSQL_HOST: "db"
   file-server:
     image: myownradio/file-server:1.0.2

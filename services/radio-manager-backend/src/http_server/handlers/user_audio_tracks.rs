@@ -302,10 +302,15 @@ pub(crate) async fn download_audio_track<FS: FileSystem>(
 
     let mut response = HttpResponse::Ok();
 
-    response.insert_header(("Content-Disposition", format!("filename={}", file_name)));
+    response.insert_header((
+        "Content-Disposition",
+        format!("attachment; filename={}", file_name),
+    ));
     response.insert_header(("Content-Length", format!("{}", file_size)));
 
-    Ok(response.streaming(
-        file_contents.map(|data| Ok::<_, actix_web::Error>(Bytes::copy_from_slice(&data))),
-    ))
+    let response = response.streaming::<_, actix_web::Error>(
+        file_contents.map(|data| Ok(Bytes::copy_from_slice(&data))),
+    );
+
+    Ok(response)
 }

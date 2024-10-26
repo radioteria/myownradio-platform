@@ -12,7 +12,7 @@ export const Channel = z.object({
   access: PDOString,
   // bookmarked: z.number(),
   bookmarks_count: z.number(),
-  cover: PDOString,
+  cover: z.nullable(PDOString),
   cover_background: z.nullable(PDOString),
   created: z.number(),
   hashtags: PDOString,

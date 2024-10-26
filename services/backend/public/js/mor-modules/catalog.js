@@ -60,7 +60,7 @@
                 $scope.status = "";
                 $scope.error = "";
 
-                var fd = new FormData();
+                const fd = new FormData();
 
                 if ($scope.cover) {
                     fd.append("file", $scope.cover);
@@ -73,7 +73,7 @@
                 fd.append("category", $scope.stream.category);
                 fd.append("access", $scope.stream.access);
 
-                var uploader = Response($http({
+                const response = Response($http({
                     method: "POST",
                     url: "/api/v2/stream/create",
                     data: fd,
@@ -81,13 +81,12 @@
                     headers: {'Content-Type': undefined}
                 }));
 
-                uploader.onSuccess(function (data) {
+                response.onSuccess((streamId) => {
                     $rootScope.reload();
-                    $rootScope.account.init("/profile/streams/" + data.sid);
-                }, function (resp) {
-                    $scope.error = resp;
+                    $rootScope.account.init(`/profile/streams/${streamId}`);
+                }, (error) => {
+                    $scope.error = error;
                 });
-
             };
 
         }

@@ -684,7 +684,7 @@ CREATE TABLE `r_static_stream_vars` (
                                         `listeners_count` int(11) NOT NULL DEFAULT '0',
                                         `bookmarks_count` int(11) NOT NULL DEFAULT '0',
                                         `is_featured` tinyint(1) NOT NULL DEFAULT '0',
-                                        `playbacks` int(11) NOT NULL,
+                                        `playbacks` int(11) NOT NULL DEFAULT '0',
                                         `summary_played` bigint(20) NOT NULL DEFAULT '0',
                                         PRIMARY KEY (`stream_id`),
                                         CONSTRAINT `r_static_stream_vars_ibfk_1` FOREIGN KEY (`stream_id`) REFERENCES `r_streams` (`sid`) ON DELETE CASCADE ON UPDATE CASCADE

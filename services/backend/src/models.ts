@@ -1,18 +1,26 @@
 import z from 'zod'
 
+export const PDOString = z.preprocess((input) => {
+  if (typeof input === 'number') {
+    return `${input}`
+  }
+
+  return input
+}, z.string())
+
 export const Channel = z.object({
-  access: z.string(),
+  access: PDOString,
   // bookmarked: z.number(),
   bookmarks_count: z.number(),
-  cover: z.string(),
-  cover_background: z.nullable(z.string()),
+  cover: PDOString,
+  cover_background: z.nullable(PDOString),
   created: z.number(),
-  hashtags: z.string(),
-  info: z.string(),
+  hashtags: PDOString,
+  info: PDOString,
   // is_featured: z.number(),
   listeners_count: z.number(),
-  name: z.string(),
-  permalink: z.string(),
+  name: PDOString,
+  permalink: PDOString,
   // playbacks: z.number(),
   sid: z.number(),
   status: z.number(),
@@ -32,12 +40,12 @@ export const PlayFormat = z.enum([
 export type PlayFormat = z.infer<typeof PlayFormat>
 
 export const User = z.object({
-  avatar: z.string(),
+  avatar: PDOString,
   country_id: z.nullable(z.number()),
-  info: z.nullable(z.string()),
-  login: z.string(),
-  name: z.string(),
-  permalink: z.nullable(z.string()),
+  info: z.nullable(PDOString),
+  login: PDOString,
+  name: PDOString,
+  permalink: z.nullable(PDOString),
   plan_id: z.number(),
   streams_count: z.number(),
   tracks_count: z.number(),

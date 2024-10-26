@@ -294,12 +294,9 @@
 
     ]);
 
-    module.filter("channelArtwork", [function () {
-        return function (source) {
-            return "content/streamcovers/" + source;
-        }
+    module.filter("channelArtwork", [() => {
+        return (source) => "/content/streamcovers/" + source;
     }]);
-
 
     module.filter("channelLink", [function () {
         return function (channel) {

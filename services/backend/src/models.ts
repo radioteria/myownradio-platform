@@ -20,7 +20,7 @@ export const Channel = z.object({
   // is_featured: z.number(),
   listeners_count: z.number(),
   name: PDOString,
-  permalink: PDOString,
+  permalink: z.nullable(PDOString),
   // playbacks: z.number(),
   sid: z.number(),
   status: z.number(),

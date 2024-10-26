@@ -150,6 +150,20 @@
 
             };
 
+            $scope.downloadSelected = function () {
+                if ($scope.target.length === 0) {
+                    return;
+                }
+
+                const [track,] = $scope.target;
+
+                if (!track) {
+                    return;
+                }
+
+                window.open(`/radio-manager/api/v0/tracks/${track.tid}/download`, '_blank');
+            };
+
             $scope.shuffle = function () {
                 StreamWorks.shuffle(streamId).onSuccess(function () {
                     $scope.load(true);

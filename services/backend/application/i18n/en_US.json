@@ -227,7 +227,7 @@
     "FR_PASSWORD_RESET_SENT"            : "We sent to your email address a letter with further steps to reset your password.<br>Please check your mailbox for letter and follow confirmation link in it.",
     "FR_PASSWORD_SUCCESS"               : "You're successfully changed your password. Now you can proceed to login with your new credentials.",
 
-    "FR_HOW_TO_RESET_PASSWORD"          : "Tell us your login or email address and we'll send you instructions on how to reset your password.",
+    "FR_HOW_TO_RESET_PASSWORD"          : "Tell us your login or email address, and we’ll send you instructions to reset your password.",
     "FR_CHANGE_PASSWORD_HINT"           : "If you forget your existing password here you can change it to another one. Please enter new password for your account.",
     "FR_PASSWORD_MISMATCH"              : "Entered password must match previous",
     "FR_I_FORGOT_MY_PASSWORD"           : "I forgot my current password",

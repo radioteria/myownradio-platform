@@ -7,7 +7,8 @@ import makeDebug from 'debug'
 import { AppStore } from './store'
 import { RadioPlayerStatus } from './entries/RadioPlayer'
 import { RadioPlayerStats } from './entries/RadioPlayer/RadioPlayerStats'
-import { makeReactApp } from './reactInterop'
+import { StreamPreview } from './entries/StreamPreview/StreamPreview'
+import { makeReactApp, makeReactAppWithAttrs } from './reactInterop'
 
 const debug = makeDebug('main')
 
@@ -24,6 +25,15 @@ ng.module('application')
   .directive(
     'radioPlayerStats',
     makeReactApp(<RadioPlayerStats radioPlayerStore={appStore.radioPlayerStore} />),
+  )
+  .directive(
+    'streamPreview',
+    makeReactAppWithAttrs(
+      ({ streamId }) => {
+        return <StreamPreview streamId={streamId} />
+      },
+      ['streamId'],
+    ),
   )
   .run([
     '$rootScope',

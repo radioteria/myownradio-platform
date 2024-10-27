@@ -116,8 +116,6 @@ class Folders implements Injectable, SingletonInterface {
 
     // @todo Check and get rid
     function genStreamPageUrl($id) {
-        return sprintf("//radioter.io/streams/%s", $id["key"]);
+        return sprintf("/streams/%s", $id["key"]);
     }
-
-
 }

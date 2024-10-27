@@ -13,12 +13,12 @@
                 </a>
             </div>
             <h1>
-                <i class="icon-music"></i> {{ stream.name | uppercase}}
+                <i class="icon-wifi-tethering"></i>
+                {{ stream.name | uppercase}}
+                <a ng-visible="stream.url" href="{{stream.url}}" aria-label="Open {{stream.name}}" title="Open {{stream.name}}" target="_blank">
+                    <i class="icon-folder-open small"></i>
+                </a>
             </h1>
-            <div class="link" ng-visible="stream.url">
-                <span>URL <a class="small" href="{{stream.url}}">https:{{stream.url}}</a></span>
-            </div>
-
             <div class="tracks-wrap">
                 <div class="dws-wrap">
                     <div class="filter">

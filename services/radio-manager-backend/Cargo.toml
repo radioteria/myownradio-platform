@@ -32,7 +32,7 @@ email_address = "0.2.4"
 tokio = { version = "1.41.0", features = ["fs"] }
 
 [dependencies.sqlx]
-version = "0.7.1"
+version = "0.8.0"
 features = ["mysql", "runtime-async-std-native-tls", "uuid", "chrono", "macros"]
 
 [dependencies.actix-web]

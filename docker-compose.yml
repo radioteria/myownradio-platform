@@ -76,7 +76,7 @@ services:
     depends_on:
       - db
       - file-server
-    image: myownradio/backend-php-base:3.0.3
+    image: myownradio/backend-php-base:3.0.6
     working_dir: /code
     volumes:
       - ./services/backend:/code:rw
